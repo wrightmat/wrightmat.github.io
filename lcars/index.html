@@ -5,20 +5,22 @@
   <title>LCARS</title>
   <link rel="stylesheet" href="https://joernweissenborn.github.io/lcars/css/lcars.css">
   <style>
+    html, body { background: black; }
+    p, h1, h2, h3 {
+      margin-top: 1em;
+    }
 
-  html, body { background: black; }
-  p, h1, h2, h3 {
-    margin-top: 1em;
-  }
-
-  pre {
-    display: inline;
-    white-space: pre-line;
-    word-wrap: break-word;
-  }
-
+    pre {
+      display: inline;
+      white-space: pre-line;
+      word-wrap: break-word;
+    }
   </style>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="config.js"></script>
+  <script type="text/javascript" src="script.js"></script>
 </head>
+
 <body>
 
 	<!-- LEFT SIDE ==================================================== -->
@@ -29,49 +31,14 @@
 			<!-- ROUNDED EDGE DECORATED -->
 			<div class="lcars-bar horizontal left-end decorated"></div>
 			<!-- BAR WITH TITLE -->
-			<div class="lcars-bar horizontal lcars-u-6">
-				<div class="lcars-title left">dt/tm</div>
-			</div>
+			<div class="lcars-bar horizontal lcars-u-6"><div id="title-left" class="lcars-title left"></div></div>
 			<!-- ELBOW -->
 			<div class="lcars-elbow right-bottom lcars-tan-bg"></div>
 		</div>
 
 		<!-- MAIN CONTANIER ================================================= -->
-		<div id="left-menu" class="lcars-column start-space">
-			<!-- BUTTONS -->
-			<div class="lcars-row">
-				<div class="lcars-element left-rounded lcars-u-1 button"></div>
-				<div class="lcars-element lcars-u-1 button">
-					<img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/lock.svg" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-				<div class="lcars-element lcars-u-1 button">
-					<div class="lcars-element-addition">Disarmed</div>
-				</div>
-				<div class="lcars-text-box full-centered lcars-u-3"></div>
-				<div class="lcars-bar lcars-u-1"></div>
-			</div>
-			<div class="lcars-row">
-				<div class="lcars-element left-rounded lcars-u-1 button"></div>
-				<div class="lcars-element lcars-u-1 button">
-					<img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/cloud.svg" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-				<div class="lcars-element lcars-u-1 button">
-					<div class="lcars-element-addition">33°</div>
-				</div>
-				<div class="lcars-text-box full-centered lcars-u-3">Clear</div>
-				<div class="lcars-bar lcars-u-1"></div>
-			</div>
-			<div class="lcars-row">
-				<div class="lcars-element left-rounded button"></div>
-				<div class="lcars-element button">
-					<img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/thermometer.svg" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-				<div class="lcars-element button">
-					<div class="lcars-element-addition">66°</div>
-				</div>
-				<div class="lcars-text-box full-centered lcars-u-3">Heat to 66°</div>
-				<div class="lcars-bar"></div>
-			</div>
-		</div>
+		<div id="left-menu" class="lcars-column"></div>
 		
-
 		<!-- FOOTER ==================================================== -->
 		<div id="left-footer" class="lcars-row">
 			<!-- ROUNDED EDGE -->
@@ -92,18 +59,13 @@
 			<!-- ELBOW -->
 			<div class="lcars-elbow left-bottom lcars-tan-bg"></div>
 			<!-- BAR WITH TITLE -->
-			<div class="lcars-bar horizontal">
-				<div class="lcars-title right">LCARS</div>
-			</div>
+			<div class="lcars-bar horizontal"><div id="title-right" class="lcars-title right">LCARS</div></div>
 			<!-- ROUNDED EDGE DECORATED -->
 			<div class="lcars-bar horizontal right-end decorated"></div>
 		</div>
 
 		<!-- MAIN CONTAINER ================================================= -->
-		<div id="right-menu" class="lcars-column start-space lcars-u-1">
-			<!-- FILLER -->
-			<div class="lcars-bar lcars-u-1"></div>
-		</div>
+		<div id="right-menu" class="lcars-column"></div>
 
 		<!-- FOOTER ==================================================== -->
 		<div id="right-footer" class="lcars-row ">
@@ -114,7 +76,6 @@
 			<!-- ROUNDED EDGE -->
 			<div class="lcars-bar horizontal right-end left-divider bottom"></div>
 		</div>
-
 	</div>
 
 </body>
