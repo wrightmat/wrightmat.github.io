@@ -22,7 +22,11 @@ async function loadAuth(file) {
 	    setTimeout(function(){
 		refreshDisplay()
 	    }, 3000); // Wait 3 seconds to refresh display so the devices are returned
-        }
+        },
+	error: function(xhr, error){
+            console.log(xhr)
+	    $('#title-right').text("LCARS FAILURE " + xhr["status"])
+ 	}
     })
 }
 
