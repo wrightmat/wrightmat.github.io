@@ -1,6 +1,6 @@
-const auth = config.AUTH_KEY
-const fav_menu_left = config.MENU_LEFT_IDS
-const fav_menu_right = config.MENU_RIGHT_IDS
+const fav_menu_left = ['340a2a7e-f4ed-42fa-88e6-8067f5779c9f','5b7dd0c0-3053-42f1-a63f-b674d3370a6f','c047215e-c82d-4461-8167-da3455b47048','57012c94-fa9b-45ff-a60d-8a51aaf98cb0','5aba48fd-e5b1-4a95-a89f-4037e283cb27','8842352f-8123-4728-a5ee-bf038f7f9b0f']
+const fav_menu_right =  ['5aa96cee-36eb-4f15-be8b-fea024e43b45','3f9e9f5b-e44f-432f-9cb9-6b876560158d','5848eccf-fca5-4c36-9d92-61e51624ba48','00355c73-2d06-46d8-a90b-db9e8a8e626b','6eac9a89-3243-47e2-a053-590fec9e6179','ee64c4c4-545f-4093-a75e-88c05c0e5d81','cb2b8413-1efb-48fc-b831-13341134ab82','77a8764a-ab27-4420-9025-31d55749670d','fe6be7c4-d1fb-4f8e-a2b8-9021a32918af']
+var auth
 var loc
 var rooms
 var scenes
@@ -8,11 +8,15 @@ var devices
 var devicePreferences
 
 
-$(document).ready(function(){
+async function loadAuth(file) {
+    $('#title-right').text("LCARS INITIALIZING...")
+    let text = await file.text();
+    window.auth = text;
+
     $.ajax({
         url: "https://api.smartthings.com/v1/locations",
         type: "GET",
-	headers: { 'Authorization': 'Bearer ' + auth },
+	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    getDevices(result.items[0].locationId)
 	    setTimeout(function(){
@@ -20,14 +24,13 @@ $(document).ready(function(){
 	    }, 3000); // Wait 3 seconds to refresh display so the devices are returned
         }
     })
-})
-
+}
 
 function getDevices(locationId) {
     $.ajax({
         url: "https://api.smartthings.com/v1/locations/" + locationId,
         type: "GET",
-	headers: { 'Authorization': 'Bearer ' + auth },
+	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.loc = result
 	    console.log(window.loc)
@@ -36,7 +39,7 @@ function getDevices(locationId) {
     $.ajax({
         url: "https://api.smartthings.com/v1/locations/" + locationId + "/rooms",
         type: "GET",
-	headers: { 'Authorization': 'Bearer ' + auth },
+	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.rooms = result["items"]
 	    console.log(window.rooms)
@@ -45,7 +48,7 @@ function getDevices(locationId) {
     $.ajax({
         url: "https://api.smartthings.com/v1/scenes",
         type: "GET",
-	headers: { 'Authorization': 'Bearer ' + auth },
+	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.scenes = result["items"]
 	    console.log(window.scenes)
@@ -55,7 +58,7 @@ function getDevices(locationId) {
     $.ajax({
         url: "https://api.smartthings.com/v1/devices",
         type: "GET",
-	headers: { 'Authorization': 'Bearer ' + auth },
+	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.devices = result["items"]
 	    console.log(window.devices)
@@ -65,7 +68,7 @@ function getDevices(locationId) {
     $.ajax({
         url: "https://api.smartthings.com/v1/devicepreferences",
         type: "GET",
-	headers: { 'Authorization': 'Bearer ' + auth },
+	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.devicePreferences = result["items"]
 	    console.log(window.devicePreferences)
@@ -96,7 +99,7 @@ function getDevice(id) {
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/devices/" + window.devices[i].deviceId,
 	        type: "GET",
-		headers: { 'Authorization': 'Bearer ' + auth },
+		headers: { 'Authorization': 'Bearer ' + window.auth },
 	        success: function(result){
 		    returnResult = jsonConcat(returnResult, result)
 	        },
@@ -106,7 +109,7 @@ function getDevice(id) {
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/devices/" + window.devices[i].deviceId + "/status",
 	        type: "GET",
-		headers: { 'Authorization': 'Bearer ' + auth },
+		headers: { 'Authorization': 'Bearer ' + window.auth },
 	        success: function(result){
 		    returnResult = jsonConcat(returnResult, result)
 	        },
@@ -143,7 +146,7 @@ function commandDevice(id) {
 	            url: 'https://api.smartthings.com/v1/devices/' + window.devices[i].deviceId + '/commands',
 	            type: 'POST',
 		    data: '[{ "capability": "' + capability + '", "command": "' + command + '" }]',
-		    headers: { 'Authorization': 'Bearer ' + auth },
+		    headers: { 'Authorization': 'Bearer ' + window.auth },
 	            success: function(result) {
 			return result
 	            }
@@ -163,7 +166,7 @@ function executeScene(id) {
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/scenes/" + window.scenes[i].sceneId + "/execute",
 	        type: "POST",
-		headers: { 'Authorization': 'Bearer ' + auth },
+		headers: { 'Authorization': 'Bearer ' + window.auth },
 	        success: function(result) {
 		    return result
 	        },
@@ -347,6 +350,11 @@ function rebuildDisplay() {
     var now = new Date()
     var now_formatted = now.getFullYear() + "-" + right("00"+(now.getMonth() + 1),2) + "-" + right("00"+now.getDate(),2) + " " + now.toTimeString().substr(0,5)
     $('#title-left').text(now_formatted)
+    if (window.auth) {
+	$('#title-right').text("LCARS ACCESS")
+    } else {
+	$('#title-right').text("LCARS UNINITIALIZED")
+    }
 
     // left side - favorite devices and routines
     for (var i = 0; i < fav_menu_left.length; i++) {

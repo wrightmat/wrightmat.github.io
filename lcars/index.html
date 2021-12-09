@@ -17,7 +17,6 @@
     }
   </style>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script type="text/javascript" src="config.js"></script>
   <script type="text/javascript" src="script.js"></script>
 </head>
 
@@ -55,11 +54,11 @@
 	<div id="right-side" class="lcars-column lcars-u-8" style="float:left;width:58%;margin-left:10px;">
 
 		<!-- HEADER ==================================================== -->
-		<div id="right-header" class="lcars-row header">
+		<div id="right-header" class="lcars-row header button" onclick="document.getElementById('auth-input').click();">
 			<!-- ELBOW -->
 			<div class="lcars-elbow left-bottom lcars-tan-bg"></div>
 			<!-- BAR WITH TITLE -->
-			<div class="lcars-bar horizontal"><div id="title-right" class="lcars-title right">LCARS</div></div>
+			<div class="lcars-bar horizontal"><div id="title-right" class="lcars-title right">LCARS UNINITIALIZED</div></div>
 			<!-- ROUNDED EDGE DECORATED -->
 			<div class="lcars-bar horizontal right-end decorated"></div>
 		</div>
@@ -77,6 +76,8 @@
 			<div class="lcars-bar horizontal right-end left-divider bottom"></div>
 		</div>
 	</div>
+
+<input id="auth-input" type="file" name="name" style="display: none;" onchange="loadAuth(this.files[0])" />
 
 </body>
 </html>
