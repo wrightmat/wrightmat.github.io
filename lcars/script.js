@@ -484,7 +484,11 @@ function rebuildDisplay() {
 	}
 	if (deviceInfo) {
 	    var indicator = ""
-	    if (deviceInfo[6]) { var indicator = '<div class="lcars-element right-rounded button '+deviceInfo[3]+'"></div>' }
+	    if (deviceInfo[6]) {
+		var indicator = '<div class="lcars-element right-rounded button '+deviceInfo[3]+'"></div>'
+	    } else {
+		var indicator = '<div class="lcars-element right-rounded button lcars-gray-bg"></div>'
+	    }
 	    $('<div id="'+deviceInfo[9]+'" title="'+deviceInfo[8]+'" class="lcars-row"><div class="lcars-element button '+deviceInfo[4]+'" title="'+deviceInfo[5]+'"></div><div class="lcars-element button lcars-u-2 '+deviceInfo[3]+'">'+deviceInfo[8]+'</div><div class="lcars-text-box small full-centered lcars-u-3">'+deviceInfo[1]+'</div>'+indicator+'</div>').appendTo("#right-menu")
 	    // If device is present more than once, then the onclick will be added more than once and cause devices to turn on and then off.
 	    // TODO: Check if the onclick is already registered and don't add another?
