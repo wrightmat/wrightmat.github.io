@@ -527,7 +527,8 @@ function rebuildDisplay() {
     // Top bars
     var now = new Date()
     var now_formatted = now.getFullYear() + "-" + right("00"+(now.getMonth() + 1),2) + "-" + right("00"+now.getDate(),2) + " " + now.toTimeString().substr(0,5)
-    $('#title-left').text(now_formatted + " [" + stardate() + "]")
+    $('#title-left').text(now_formatted)
+    $('#title-left-btm').text(stardate())
     if (window.auth) { $('#title-right').text("LCARS ACCESS") } else { $('#title-right').text("LCARS UNINITIALIZED") }
 
     // left side - favorite devices and scenes/routines
