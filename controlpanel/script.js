@@ -6,13 +6,18 @@ const groups = {
     "Kitchen" : ['66c93b9c-4c3e-49c9-8b48-3cf80ae8fa7c','432f9d9f-03e8-4cad-9df7-8a5326d7f0ea','fe6be7c4-d1fb-4f8e-a2b8-9021a32918af','7651e84d-f72f-4b7c-84b0-ee76fbe9c3f7','3d5612ca-d8b6-412f-9d0d-39f4ea757bad'],
     "Bathroom" : ['fe984912-fe96-4428-a2b2-32e452ec1f55','e93d8f70-6a3c-4b6d-9409-167fd65dfafa','4ef55556-c9e4-4312-af0d-4e74f312ebad'],
     "Bedroom" : ['be6e94a3-fa52-47a9-869c-6f3c211781ee','0233e3b7-6ff4-4fac-89b7-adbc5cd1483d','6d7f8205-5a56-4130-94bd-76249073e0c9','72fd6018-77fd-45d1-bb2b-728c6a2c56fd'],
-    "TV" : ['cb2b8413-1efb-48fc-b831-13341134ab82']
+    "TV" : ['cb2b8413-1efb-48fc-b831-13341134ab82'],
+    "Hubs" : ['ef676997-101f-43f1-a78a-1f00343c138a','340a2a7e-f4ed-42fa-88e6-8067f5779c9f'],
+    "Presence" : ['872d2ca6-7c50-44e8-995c-f3e4f3722187','0638bae1-d55e-4630-89fa-fc4103ac550b'],
+    "Doorbell" : ['5848eccf-fca5-4c36-9d92-61e51624ba48','5aa96cee-36eb-4f15-be8b-fea024e43b45']
 }
-const fav_menu_left = ['340a2a7e-f4ed-42fa-88e6-8067f5779c9f','5b7dd0c0-3053-42f1-a63f-b674d3370a6f','c047215e-c82d-4461-8167-da3455b47048','57012c94-fa9b-45ff-a60d-8a51aaf98cb0','5aba48fd-e5b1-4a95-a89f-4037e283cb27','8842352f-8123-4728-a5ee-bf038f7f9b0f']
-const fav_menu_right =  ['Living Room','Office','Front Door','Back Door','Kitchen','Bathroom','Bedroom','TV']
+const fav_menu_left = ['Hubs','5b7dd0c0-3053-42f1-a63f-b674d3370a6f','c047215e-c82d-4461-8167-da3455b47048','Presence','Doorbell']
+const fav_menu_right = ['Living Room','Office','Front Door','Back Door','Kitchen','Bathroom','Bedroom']
+const fav_scenes = ['57012c94-fa9b-45ff-a60d-8a51aaf98cb0','5aba48fd-e5b1-4a95-a89f-4037e283cb27','8842352f-8123-4728-a5ee-bf038f7f9b0f']
 var auth
 var loc
 var rooms
+var rooms_array = []
 var scenes
 var devices
 var devicePreferences
@@ -30,14 +35,24 @@ function right(str, chr) {
     return newstr = str.substr(str.length - chr, str.length)
 }
 
-function arrayContains(arr, val) {
+function arrayContains(arr, val, ret = 'value') {
     var val = val.toLowerCase()
     for (i = 0; i < arr.length; ++i) {
         var arri = arr[i].toLowerCase()
 	if (arri.indexOf(val) >= 0) {
-	    return arr[i]; break;
+	    if (ret == 'index') { return i; break; } else { return arr[i]; break; }
 	}
     }
+}
+
+function stardate() {
+    var StardateOrigin = new Date("July 15, 1987 00:00:00");
+    var StardateToday = new Date();
+    var stardate = StardateToday.getTime() - StardateOrigin.getTime();
+    stardate = stardate / (1000 * 60 * 60 * 24 * 0.036525);
+    stardate = Math.floor(stardate + 410000);
+    stardate = stardate / 10
+    return stardate;
 }
 
 
@@ -80,7 +95,17 @@ function getDevices(locationId) {
 	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.loc = result
-	    console.log(window.loc)
+        }
+    })
+    // Current mode (and all modes) is apparently available, but not documented
+    $.ajax({
+        url: "https://api.smartthings.com/v1/locations/" + locationId + "/modes/current",
+        type: "GET",
+	headers: { 'Authorization': 'Bearer ' + window.auth },
+        success: function(result){
+	    delete result["name"]  // conflicting key
+	    window.loc = jsonConcat(window.loc, result)
+	    console.log(window.loc)  // loc object now contains both location name and current mode (label)
         }
     })
     $.ajax({
@@ -89,6 +114,10 @@ function getDevices(locationId) {
 	headers: { 'Authorization': 'Bearer ' + window.auth },
         success: function(result){
 	    window.rooms = result["items"]
+	    Object.keys(window.rooms).forEach(function(key) {
+		var value = window.rooms[key];
+		rooms_array.push(value["roomId"])
+	    });
 	    console.log(window.rooms)
         }
     })
@@ -99,8 +128,7 @@ function getDevices(locationId) {
         success: function(result){
 	    window.scenes = result["items"]
 	    console.log(window.scenes)
-        },
-	async:false
+        }, async:false
     })
     $.ajax({
         url: "https://api.smartthings.com/v1/devices",
@@ -109,8 +137,7 @@ function getDevices(locationId) {
         success: function(result){
 	    window.devices = result["items"]
 	    console.log(window.devices)
-        },
-	async:false
+        }, async:false
     })
     $.ajax({
         url: "https://api.smartthings.com/v1/devicepreferences",
@@ -138,8 +165,7 @@ function getDevice(id) {
 		headers: { 'Authorization': 'Bearer ' + window.auth },
 	        success: function(result){
 		    returnResult = jsonConcat(returnResult, result)
-	        },
-		async:false
+	        }, async:false
 	    })
 
 	    $.ajax({
@@ -148,8 +174,16 @@ function getDevice(id) {
 		headers: { 'Authorization': 'Bearer ' + window.auth },
 	        success: function(result){
 		    returnResult = jsonConcat(returnResult, result)
-	        },
-		async:false
+	        }, async:false
+	    })
+
+	    $.ajax({
+	        url: "https://api.smartthings.com/v1/devices/" + window.devices[i].deviceId + "/health",
+	        type: "GET",
+		headers: { 'Authorization': 'Bearer ' + window.auth },
+	        success: function(result){
+		    returnResult = jsonConcat(returnResult, result)
+	        }, async:false
 	    })
 	    return returnResult
 
@@ -169,23 +203,20 @@ function commandDevice(id) {
     for (var i = 0; i < window.devices.length; i++) {
 	if (window.devices[i].deviceId == id) {
 	    var deviceInfo = getDeviceInfo(window.devices[i].deviceId)
-	    var capability = deviceInfo[7]
+	    var capability = deviceInfo[4]
 	    if (capability == "switch") {
-		if (deviceInfo[6]) { var command = "off" } else { var command = "on" }
+		if (deviceInfo[5] == 1) { var command = "off" } else { var command = "on" }
 	    } else if (capability == "lock") {
-		if (deviceInfo[6]) { var command = "lock" } else { var command = "unlock" }
+		if (deviceInfo[5] == 1) { var command = "lock" } else { var command = "unlock" }
 	    }
 
 	    if (capability && command) {
-		console.log(id + ", " + capability + ": " + command)
 		$.ajax({
 	            url: 'https://api.smartthings.com/v1/devices/' + window.devices[i].deviceId + '/commands',
 	            type: 'POST',
 		    data: '[{ "capability": "' + capability + '", "command": "' + command + '" }]',
 		    headers: { 'Authorization': 'Bearer ' + window.auth },
-	            success: function(result) {
-			return result
-	            }
+	            success: function(result) { return result }
 		})
 	    } else { console.log("can't execute command on " + id + ", no capability or command given") }
 
@@ -211,74 +242,127 @@ function executeScene(id) {
 }
 
 function getColor(colorType, colorValue) {
-    var color
     if (colorType == "battery") {
 	if (colorValue <= 30) {
 	    var color = "lcars-red-alert-bg"
 	} else if (colorValue <= 60) {
 	    var color = "lcars-red-damask-bg"
 	} else { var color = "lcars-tan-bg" }
+    } else if (colorType == "type") {
+	switch(colorValue) {
+	    case "weather": var color = "lcars-periwinkle-bg"; break;
+	    case "thermostat": var color = "lcars-dodger-blue-bg"; break;
+	    case "contact": var color = "lcars-melrose-bg"; break;
+	    case "motion": var color = "lcars-anakiwa-bg"; break;
+	    case "lock": var color = "lcars-hopbush-bg"; break;
+	    case "light": var color = "lcars-pale-canary-bg"; break;
+	    case "outlet": var color = "lcars-sandy-brown-bg"; break;
+	    case "switch": var color = "lcars-bourbon-bg"; break;
+	    case "smoke": var color = "lcars-mariner-bg"; break;
+	    case "water": var color = "lcars-mariner-bg"; break;
+	    case "presence": var color = "lcars-husk-bg"; break;
+	    case "device": var color = "lcars-husk-bg"; break;
+	    case "location": var color = "lcars-husk-bg"; break;
+	    default: var color = "lcars-cosmic-bg"
+	}
     }
     return color
 }
 
+function getIcon(iconType, iconValue) {
+    if (iconType == "weather") {
+	switch(iconValue) {
+	    case 1:  var icon = "cloud"; break;
+	    case 2:  var icon = "sun"; break;
+	    case 3:  var icon = "cloud-drizzle"; break;
+	    case 4:  var icon = "cloud-lightning"; break;
+	    case 5:  var icon = "cloud-rain"; break;
+	    case 6:  var icon = "cloud-snow"; break;
+	    default: var icon = "cloud-off"
+	}
+    } else if (iconType == "type") {
+	switch(iconValue) {
+	    case "thermostat": var icon = "thermometer"; break;
+	    case "contact": var icon = "sidebar"; break;
+	    case "motion": var icon = "navigation"; break;
+	    case "lock": var icon = "lock"; break;
+	    case "light": var icon = "zap"; break;
+	    case "outlet": var icon = "trello"; break;
+	    case "switch": var icon = "sliders"; break
+	    case "smoke": var icon = "droplet"; break;
+	    case "water": var icon = "droplet"; break;
+	    case "presence": var icon = "smartphone"; break;
+	    case "device": var icon = "hard-drive"; break;
+	    case "location": var icon = "map-pin"; break;
+	    default: var icon = "help-circle"
+	}
+    }
+    return icon
+}
+
 function getGroupInfo(group) {
-    var icon
-    var text
-    var value
-    var color
-    var color_battery
-    var battery = 100
-    var status = false
-    var capability
-    var name
     var id
+    var label
+    var state = 1
+    var type
+    var capability
+    var status
+    var level = 100
+    var value
+    var text
+    var room
 
     for (var i = 0; i < groups[group].length; i++) {
 	var deviceInfo = getDeviceInfo(groups[group][i])
 	// Info associated with device control is derived from first device in group
 	if (i == 0) {
-	    var icon = deviceInfo[0]
-	    var value = deviceInfo[2]
-	    var color = deviceInfo[3]
-	    var status = deviceInfo[6]
-	    var capability = deviceInfo[7]
-	    var name = group
-	    var id = deviceInfo[9]
+	    var id = deviceInfo[0]
+	    var label = group
+	    var type = deviceInfo[3]
+	    var capability = deviceInfo[4]
+	    var status = deviceInfo[5]
+	    var value = deviceInfo[7]
+	    var room = deviceInfo[9]
 	}
 	// Info associated with status is aggregated from all devices in group
-	if (typeof deviceInfo[1] !== null && deviceInfo[1] !== undefined) {
+	if (typeof deviceInfo[8] !== null && deviceInfo[8] !== undefined) {
 	    if (typeof text !== null && text !== undefined) {
-		var text = text + ', ' + deviceInfo[8] + ': ' + deviceInfo[1]
+		var text = text + ', ' + deviceInfo[1] + ': ' + deviceInfo[8]
 	    } else {
-		var text = deviceInfo[8] + ': ' + deviceInfo[1]
+		var text = deviceInfo[1] + ': ' + deviceInfo[8]
 	    }
 	}
-	if (typeof deviceInfo[5] === "number" && deviceInfo[5] !== null && deviceInfo[5] !== undefined) {
-	    var battery = Math.min(battery, deviceInfo[5])
+	if (typeof deviceInfo[6] === "number" && deviceInfo[6] !== null && deviceInfo[6] !== undefined) {
+	    var level = Math.min(level, deviceInfo[6])
 	}
-	var color_battery = getColor("battery", battery)
+	if (typeof deviceInfo[2] === "number" && deviceInfo[2] !== null && deviceInfo[2] !== undefined) {
+	    var state = Math.min(state, deviceInfo[2]) // If anything is down, the whole group is down
+	}
     }
 
-    return [icon, text, value, color, color_battery, battery, status, capability, name, id]
+    return [id, label, state, type, capability, status, level, value, text, room]
 }
 
 function getDeviceInfo(deviceId) {
-    var device = getDevice(deviceId)
-    var icon
-    var text
-    var value
-    var color
-    var color_battery
-    var battery
-    var status = false
-    var capability
-    var name
     var id
+    var label
+    var state = 0
+    var type
+    var capability
+    var status = 0
+    var level = 0
+    var value
+    var text
+    var room = 0
+    var device = getDevice(deviceId)
 
     if (device) {
-	var name = device["label"]
 	var id = device["deviceId"]
+	var label = device["label"]
+	if (device.hasOwnProperty('state')) {
+	     if (device["state"] == "ONLINE") { var state = 1 }
+	} else { var state = 9 }  // Unknown state
+
 	if (device["components"].hasOwnProperty('main')) {
 	    var main = device["components"]["main"]
 	    var components = Object.keys(device["components"]["main"])
@@ -302,84 +386,67 @@ function getDeviceInfo(deviceId) {
 	    var water = arrayContains(components, "waterSensor")
 	    var presence = arrayContains(components, "presenceSensor")
 	    var battery = arrayContains(components, "battery")
+	    var bridge = arrayContains(components, "bridge")
 	    if (weather) {
+		var type = "weather"
 		switch(main[weather]["weather"]["value"]) {
-		    case "Clear":
-			var icon = "cloud"; break;
-		    case "Sunny":
-			var icon = "sun"; break;
-		    case "Drizzle": // All values except Clear need confirmed!
-			var icon = "cloud-drizzle"; break;
-		    case "Storm":
-			var icon = "cloud-lightning"; break;
-		    case "Rain":
-			var icon = "cloud-rain"; break;
-		    case "Snow":
-			var icon = "cloud-snow"; break;
-		    default: var icon = "cloud-off"
+		    case "Clear":   var status = 1; break;
+		    case "Sunny":   var status = 2; break;
+		    case "Drizzle": var status = 3; break;
+		    case "Storm":   var status = 4; break;
+		    case "Rain":    var status = 5; break;
+		    case "Snow":    var status = 6; break;
+		    default:        var status = 0
 		}
-		var text = main[weather]["weather"]["value"] + ', humidity: ' + main[humidity]["humidity"]["value"] + main[humidity]["humidity"]["unit"]
-		var value = main[temperature]["temperature"]["value"] + '°' + main[temperature]["temperature"]["unit"]
-		var color = "lcars-periwinkle-bg"
+		var text = main[weather]["weather"]["value"]
+		var value = Math.round(main[temperature]["temperature"]["value"]) + '°' + main[temperature]["temperature"]["unit"]
 	    } else if (thermostat) {
-		var icon = "thermometer"
+		var type = "thermostat"
 		var text = main[thermostat]["thermostatMode"]["value"] + ': ' + main[setpoint]["heatingSetpoint"]["value"] + '°' + main[setpoint]["heatingSetpoint"]["unit"]
-		var value = main[temperature]["temperature"]["value"] + '°' + main[temperature]["temperature"]["unit"]
-		var color = "lcars-dodger-blue-bg"
+		var value = Math.round(main[temperature]["temperature"]["value"]) + '°' + main[temperature]["temperature"]["unit"]
 	    } else if (contact) {
-		var icon = "sidebar"
+		var type = "contact"
 		var text = main[contact]["contact"]["value"]
-		var value = device["type"]
-		var color = "lcars-melrose-bg"
 	    } else if (motion) {
-		var icon = "navigation"
+		var type = "motion"
 		var text = main[motion]["motion"]["value"]
-		var value = device["type"]
-		var color = "lcars-anakiwa-bg"
-		if (main[motion]["motion"]["value"] == "active") { var status = true }
+		if (main[motion]["motion"]["value"] == "active") { var status = 1 }
 	    } else if (lock) {
+		var type = "lock"
 		var capability = "lock"
-		var icon = "lock"
 		var text = main[lock]["lock"]["value"]
-		var value = device["type"]
-		var color = "lcars-hopbush-bg"
-		if (main[lock]["lock"]["value"] == "unlocked") { var status = true }
+		if (main[lock]["lock"]["value"] == "unlocked") { var status = 1 }
 	    } else if (light) {
+		var type = "light"
 		var capability = "switch"
-		var icon = "zap"
 		var text = main[light]["switch"]["value"]
-		var value = device["type"]
-		var color = "lcars-pale-canary-bg"
-		if (main[light]["switch"]["value"] == "on") { var status = true }
+		if (main[light]["switch"]["value"] == "on") { var status = 1 }
 	    } else if (outlet) {
+		var type = "outlet"
 		var capability = "switch"
-		var icon = "trello"
 		var text = main[outlet]["switch"]["value"]
-		var value = device["type"]
-		var color = "lcars-sandy-brown-bg"
-		if (main[outlet]["switch"]["value"] == "on") { var status = true }
+		if (main[outlet]["switch"]["value"] == "on") { var status = 1 }
 	    } else if (swtch) {
+		var type = "switch"
 		var capability = "switch"
-		var icon = "sliders"
 		var text = main[swtch]["switch"]["value"]
-		var value = device["type"]
-		var color = "lcars-bourbon-bg"
-		if (main[swtch]["switch"]["value"] == "on") { var status = true }
+		if (main[swtch]["switch"]["value"] == "on") { var status = 1 }
 	    } else if (smoke || water) {
-		var icon = "droplet"
+		var type = "smoke"
 		var text = main[smoke]["smoke"]["value"]
-		var value = device["type"]
-		var color = "lcars-mariner-bg"
+	    } else if (water) {
+		var type = "water"
+		//var text = main[water]["water"]["value"]
 	    } else if (presence) {
-		var icon = "smartphone"
-		var text = ""
-		var value = device["type"]
-		var color = "lcars-husk-bg"
+		var type = "presence"
+		var text = main[presence]["presence"]["value"]
+		if (main[presence]["presence"]["value"] == "present") { var status = 1 }
+	    } else if (bridge) {
+		var type = "device"
+		var text = device["state"]
 	    } else {  // Unknown
-		var icon = "help-circle"
-		var text = ""
-		var value = device["type"]
-		var color = "lcars-cosmic-bg"
+		var type = device["type"]
+		var text = device["name"]
 	    }
 	    if (button) {
 		if (!!main[button]["button"]["value"]) {
@@ -411,20 +478,36 @@ function getDeviceInfo(deviceId) {
 		    var text = text + ', ' + main[temperature]["temperature"]["value"] + '°' + main[temperature]["temperature"]["unit"]
 		}
 	    }
-	    if (battery) {
-		var color_battery = getColor("battery", main[battery]["battery"]["value"])
-		var battery = main[battery]["battery"]["value"]
+	    if (humidity) {
+		if (!!main[humidity]["humidity"]["value"]) {
+		    var text = text + ', ' + main[humidity]["humidity"]["value"] + main[humidity]["humidity"]["unit"] + 'RH'
+		}
 	    }
-	} else {  // Hub doesn't have any components
-	    var icon = "hard-drive"
-	    var text = ""
-	    var value = device["type"]
-	    var color = "lcars-husk-bg"
-	    var color_battery = "lcars-husk-bg"
+	    if (level) {
+		var level = main[level]["level"]["value"]
+	    } else if (power) {
+		var level = main[power]["power"]["value"]
+	    } else if (battery) {
+		var level = main[battery]["battery"]["value"]
+	    }
+	} else {  // Hub (no components)
+	    var type = "device"
+	    var text = device["state"]
 	}
+
+	if (device.hasOwnProperty('roomId')) { 
+	    var room = arrayContains(window.rooms_array, device["roomId"], 'index') + 1
+	}
+    } else if (window.loc["locationId"] === deviceId) {  // Location (no device)
+	var type = "location"
+	var id = window.loc["locationId"]
+	var label = window.loc["label"]
+	var value = window.loc["name"]
+	var text = window.loc["label"]
+	var state = 1
     }
 
-    return [icon, text, value, color, color_battery, battery, status, capability, name, id]
+    return [id, label, state, type, capability, status, level, value, text, room]
 }
 
 function refreshDisplay() {
@@ -444,55 +527,63 @@ function rebuildDisplay() {
     // Top bars
     var now = new Date()
     var now_formatted = now.getFullYear() + "-" + right("00"+(now.getMonth() + 1),2) + "-" + right("00"+now.getDate(),2) + " " + now.toTimeString().substr(0,5)
-    $('#title-left').text(now_formatted)
-    if (window.auth) {
-	$('#title-right').text("LCARS ACCESS")
-    } else {
-	$('#title-right').text("LCARS UNINITIALIZED")
-    }
+    $('#title-left').text(now_formatted + " [" + stardate() + "]")
+    if (window.auth) { $('#title-right').text("LCARS ACCESS") } else { $('#title-right').text("LCARS UNINITIALIZED") }
 
-    // left side - favorite devices and routines
+    // left side - favorite devices and scenes/routines
     for (var i = 0; i < fav_menu_left.length; i++) {
-	var device = getDevice(fav_menu_left[i])
-	if (device) {
+	if (fav_menu_left[i].length == 36 && fav_menu_left[i].indexOf("-") == 8) {
 	    var deviceInfo = getDeviceInfo(fav_menu_left[i])
-	    $('<div id="'+device["deviceId"]+'" title="'+device["label"]+'" class="lcars-row"><div id="left-menu-'+(i+1)+'-ind" class="lcars-element left-rounded button '+deviceInfo[3]+'"></div><div id="left-menu-'+(i+1)+'-icon" class="lcars-element button '+deviceInfo[3]+'"><img src="https://raw.githubusercontent.com/feathericons/feather/master/icons/'+deviceInfo[0]+'.svg" /></div><div id="left-menu-'+(i+1)+'-label" class="lcars-element button '+deviceInfo[3]+'"><div class="lcars-element-addition">'+deviceInfo[2]+'</div></div><div id="left-menu-'+(i+1)+'-text" class="lcars-text-box small full-centered lcars-u-3">'+deviceInfo[1]+'</div><div class="lcars-bar"></div></div>').appendTo("#left-menu")
-	    $(document).on('click', '#'+device["deviceId"], function() {
+	} else { var deviceInfo = getGroupInfo(fav_menu_left[i]) }
+	if (deviceInfo) {
+	    if (deviceInfo[3] == "weather") { var icon = getIcon("weather", deviceInfo[3]) } else { var icon = getIcon("type", deviceInfo[5]) }
+	    var color = getColor("type", deviceInfo[3])
+	    if (deviceInfo[2] !== null && deviceInfo[2] !== undefined) {
+		if (deviceInfo[2] == 0) { var element = ' lcars-red-alert-bg">' } else { var element = '">' }
+	    } else { element = '">' }
+	    if (deviceInfo[7]) { var element = element + deviceInfo[7] } else { var element = element + deviceInfo[2] + deviceInfo[9] + deviceInfo[5] }
+	    $('<div id="' + deviceInfo[0] + '" title="' + deviceInfo[1] + '" class="lcars-row"><div class="lcars-element left-rounded button ' + color + '"></div><div class="lcars-element button lcars-u-2 ' + color + '">' + deviceInfo[1] + '</div><div class="lcars-element button ' + color + '"><div class="lcars-element-addition' + element + '</div></div><div class="lcars-text-box small full-centered lcars-u-3">' + deviceInfo[8] + '</div><div class="lcars-element lcars-black-bg"></div></div>').appendTo("#left-menu")
+	    $(document).on('click', '#'+deviceInfo[0], function() {
 		console.log(getDevice(this.id))
+		commandDevice(this.id)
+		refreshDisplay()
 	    })
 	}
     }
-    $('<div id="left-menu-spacer-1" class="lcars-row lcars-vu-2"></div><div id="left-menu-scenes" class="lcars-row"></div>').appendTo("#left-menu")
-    for (var i = 0; i < fav_menu_left.length; i++) {
-	var scene = getScene(fav_menu_left[i])
+    $('<div id="left-menu-spacer" class="lcars-row lcars-vu-1"></div><div id="left-menu-scenes" class="lcars-row"></div>').appendTo("#left-menu")
+    for (var i = 0; i < fav_scenes.length; i++) {
+	var scene = getScene(fav_scenes[i])
 	if (scene) {
 	    $('<div id="'+scene["sceneId"]+'" class="lcars-element rounded button">'+scene["sceneName"]+'</div>').appendTo("#left-menu-scenes")
 	    $(document).on('click', '#'+scene["sceneId"], function() {
+		command.log(scene)
 		executeScene(this.id)
 		refreshDisplay()
 	    })
 	}
     }
-    $('<div id="left-menu-spacer-2" class="lcars-row lcars-vu-1"></div><div id="left-menu-scenes" class="lcars-row"></div>').appendTo("#left-menu")
 
     // right side - only devices
     for (var i = 0; i < fav_menu_right.length; i++) {
 	if (fav_menu_right[i].length == 36 && fav_menu_right[i].indexOf("-") == 8) {
 	    var deviceInfo = getDeviceInfo(fav_menu_right[i])
-	} else {
-	    var deviceInfo = getGroupInfo(fav_menu_right[i])
-	}
+	} else { var deviceInfo = getGroupInfo(fav_menu_right[i]) }
 	if (deviceInfo) {
-	    var indicator = ""
-	    if (deviceInfo[6]) {
-		var indicator = '<div class="lcars-element right-rounded button '+deviceInfo[3]+'"></div>'
-	    } else {
-		var indicator = '<div class="lcars-element right-rounded button lcars-gray-bg"></div>'
-	    }
-	    $('<div id="'+deviceInfo[9]+'" title="'+deviceInfo[8]+'" class="lcars-row"><div class="lcars-element button '+deviceInfo[4]+'" title="'+deviceInfo[5]+'"></div><div class="lcars-element button lcars-u-2 '+deviceInfo[3]+'">'+deviceInfo[8]+'</div><div class="lcars-text-box small full-centered lcars-u-3">'+deviceInfo[1]+'</div>'+indicator+'</div>').appendTo("#right-menu")
+	    if (deviceInfo[3] == "weather") { var icon = getIcon("weather", deviceInfo[3]) } else { var icon = getIcon("type", deviceInfo[3]) }
+	    var color = getColor("type", deviceInfo[3])
+	    var color_battery = getColor("battery", deviceInfo[6])
+	    if (deviceInfo[2] !== null && deviceInfo[2] !== undefined) {
+		if (deviceInfo[2] == 0) { var element = ' lcars-red-alert-bg">' } else { var element = '">' }
+	    } else { element = '">' }
+	    if (deviceInfo[7]) { var element = element + deviceInfo[7] } else { var element = element + deviceInfo[2] + deviceInfo[9] + deviceInfo[5] }
+	    if (deviceInfo[5] == 1) {
+		var indicator = '<div class="lcars-element right-rounded button ' + getColor("type", deviceInfo[3]) + '"></div>'
+	    } else { var indicator = '<div class="lcars-element right-rounded button lcars-gray-bg"></div>' }
+	    $('<div id="' + deviceInfo[0] + '" title="' + deviceInfo[1] + '" class="lcars-row"><div class="lcars-element button ' + color_battery + '" title="' + deviceInfo[6] + '"></div><div class="lcars-element button ' + color + '"><div class="lcars-element-addition' + element + '</div></div><div class="lcars-element button lcars-u-2 ' + color + '">' + deviceInfo[1] + '</div><div class="lcars-text-box small full-centered lcars-u-3">' + deviceInfo[8] + '</div>' + indicator + '</div>').appendTo("#right-menu")
 	    // If device is present more than once, then the onclick will be added more than once and cause devices to turn on and then off.
 	    // TODO: Check if the onclick is already registered and don't add another?
-	    $(document).on('click', '#'+deviceInfo[9], function() {
+	    $(document).on('click', '#'+deviceInfo[0], function() {
+		console.log(getDevice(this.id))
 		commandDevice(this.id)
 		refreshDisplay()
 	    })

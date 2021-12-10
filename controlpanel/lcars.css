@@ -340,7 +340,7 @@
 }
 html,
 body {
-  font-family: "arial", monospace;
+  font-family: "Oswald", "Roboto Mono", "Cascadia Mono", "Segoe UI Mono", "Oxygen Mono", "Ubuntu Monospace", "Droid Sans Mono", ui-monospace, monospace;
   color: #fff;
 }
 h1 {
