@@ -475,12 +475,16 @@ function getDeviceInfo(deviceId) {
 	    }
 	    if (temperature) {
 		if (!!main[temperature]["temperature"]["value"]) {
-		    var text = text + ', ' + main[temperature]["temperature"]["value"] + '°' + main[temperature]["temperature"]["unit"]
+		    var text = text + ', ' + Math.round(main[temperature]["temperature"]["value"])
+		    if (main[temperature]["temperature"]["unit"].indexOf("°") == -1) { var text = text + '°' }
+ 		    if (main[temperature]["temperature"]["unit"] == "fahrenheit") { var text = text + 'F' } else { var text = text + main[temperature]["temperature"]["unit"] }
 		}
 	    }
 	    if (humidity) {
 		if (!!main[humidity]["humidity"]["value"]) {
-		    var text = text + ', ' + main[humidity]["humidity"]["value"] + main[humidity]["humidity"]["unit"] + 'RH'
+		    var text = text + ', ' + Math.round(main[humidity]["humidity"]["value"])
+		    var text = text + main[humidity]["humidity"]["unit"]
+		    if (main[humidity]["humidity"]["unit"].indexOf("RH") == -1) { var text = text + 'RH' }
 		}
 	    }
 	    if (level) {
