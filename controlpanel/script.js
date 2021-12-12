@@ -557,7 +557,7 @@ function rebuildDisplay() {
 	if (scene) {
 	    $('<div id="'+scene["sceneId"]+'" class="lcars-element rounded button">'+scene["sceneName"]+'</div>').appendTo("#left-menu-scenes")
 	    $(document).on('click', '#'+scene["sceneId"], function() {
-		command.log(scene)
+		console.log(scene)
 		executeScene(this.id)
 		refreshDisplay()
 	    })
