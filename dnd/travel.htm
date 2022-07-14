@@ -14,7 +14,7 @@
 
 <header id="header"></header>
 
-<div class="column-3" id="div-settings">
+<div class="column-main" id="div-settings">
   <label for="travel-means">Means of Travel:</label>
   <select name="travel-means" id="travel-means" onChange="$('#travel-hours').val($('#travel-means').val());calcDays();">
     <option id="1" value="8">Custom</option>
@@ -93,15 +93,14 @@
   <input type="button" name="generate-days" id="generate-days" onClick="generateDays();" value="Generate Days"></input><br /><br />
 </div>
 
-<div class="column-3" id="div-output">
+<div class="column-main" id="div-output">
   <div id="days-div"></div><br /><br />
   <div id="costs-div"></div>
 </div>
 
-<div class="column-3"></div>
 
 <div class="modal" id="div-players">
-  <div class="column-2">
+  <div class="column-modal">
     <table id="players-table">
       <tr>
         <th width="400">Player</th>
@@ -109,7 +108,7 @@
       </tr>
     </table>
   </div>
-  <div class="column-2">
+  <div class="column-modal">
     <input type="button" id="players-add" style="width:30px;" onClick="addPlayer()" value="+"></input><br /><br />
     <input type="reset" id="players-remove" style="width:30px;" onClick="removePlayer()" value="-"></input><br />
   </div>

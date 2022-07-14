@@ -5,8 +5,8 @@ table > tbody > tr > td { padding: 2px 20px; }
 table > tbody > tr > th { padding: 2px 20px; }
 table > tbody > tr > td:hover { background-color: #eee; }
 .bg_grey { background: #ccc; }
-.column-2 { float: left; width: 40%; margin-right: 30px; }
-.column-3 { float: left; width: 33.33%; margin-top: 50px; }
+.column-modal { float: left; width: 40%; margin-right: 30px; }
+.column-main { float: left; width: 50%; margin-top: 50px; }
 .row:after { content: ""; display: table; clear: both; }
 label { float: left; width: 200px; padding-right: 24px; padding-bottom: 2px; }
 input[type=button], input[type=submit] { background-color: #04AA6D; border: none; color: white; padding: 16px 32px; text-decoration: none; margin: 4px 2px; cursor: pointer; }
@@ -22,4 +22,4 @@ header { background-color: #bbb; position: fixed; left: 0; right: 0; top: 5px; h
 header * { display: inline; }
 header li { margin: 20px; }
 header li a { color: black; font-weight: bold; text-decoration: none; }
-.modal { background-color: #fff; border:4px solid #ccc; width:405px; height:325px; position:absolute; left:50%; top:50%; margin:-25px 0 0 -50px; border-radius:5px; padding:5px; right:0px; top:100px; }   ​
+.modal { background-color: #fff; border:4px solid #ccc; width:405px; height:325px; position:absolute; margin:-25px 0 0 -50px; border-radius:5px; padding:5px; right:50px; bottom:50px; }   ​
