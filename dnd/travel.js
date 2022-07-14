@@ -10,6 +10,7 @@ function init() {
   addPlayer("Bystan", 4);
   addPlayer("Onme", 4);
   addPlayer("Windsor", 4);
+  $('#div-players').draggable();
 }
 
 function calcDays() {
@@ -185,25 +186,38 @@ function generateDays() {
   var pc_count = levels.length || 1;
   if (levels.length >= 1) {
     var enc_level = (levels.reduce((a, b) => a + b) / players);
-  } else {
-    var enc_level = 1;
-  }
+  } else { var enc_level = 1; }
 
   $('#days-div').html("<table id='days-table'><tbody><tr><th>Day</th><th>Miles</th><th>Combat</th><th>Weather</th></tr></tbody></table>");
   for (let i = 0; i < $('#travel-days').val(); i++) {
     var days = i + 1;
     var t_combat_val = rollDice("1d20");
-    var t_combat_link = "https://donjon.bin.sh/5e/random/#type=encounter;encounter-n_pc=" + pc_count + ";encounter-level=" + enc_level + ";encounter-difficulty=medium;encounter-environment=" + $('#travel-environ').val() + ";encounter-loot_type=individual_treasure"
-    if (t_combat_val > 18) {
-      var t_combat = '<a target="_blank" href="' + t_combat_link + '"> Random Encounter (' + t_combat_val + ')</a>';
+    if ($('#travel-environ').val() == "grassland_xge") {
+      if (enc_level <= 5 ) { t_combat_lvl = "1-5" }
+      else if (enc_level >= 6 && enc_level <= 10) { t_combat_lvl = "6-10" }
+      else if (enc_level >= 11 && enc_level <= 16) { t_combat_lvl = "11-16" }
+      else if (enc_level >= 17 && enc_level <= 20) { t_combat_lvl = "17-20" }
+    } else if ($('#travel-environ').val() == "open%20water_gos" || $('#travel-environ').val() == "swamp_xge" || $('#travel-environ').val() == "underwater_xge") {
+      if (enc_level <= 4 ) { t_combat_lvl = "1-4" }
+      else if (enc_level >= 5 && enc_level <= 10) { t_combat_lvl = "5-10" }
+      else if (enc_level >= 11 && enc_level <= 20) { t_combat_lvl = "11-20" }
     } else {
-      var t_combat = '(' + t_combat_val + ')';
+      if (enc_level <= 4 ) { t_combat_lvl = "1-4" }
+      else if (enc_level >= 5 && enc_level <= 10) { t_combat_lvl = "5-10" }
+      else if (enc_level >= 11 && enc_level <= 16) { t_combat_lvl = "11-16" }
+      else if (enc_level >= 17 && enc_level <= 20) { t_combat_lvl = "17-20" }
+    }
+    var t_combat_link = 'https://5e.tools/encountergen.html#' + $('#travel-environ').val() + '_' + t_combat_lvl;
+    if (t_combat_val > 18) {
+      var t_combat = '<a target="_blank" href="' + t_combat_link + '">' +  t_combat_val +': Random Encounter (d100: ' + rollDice("1d100") + ')</a>';
+    } else {
+      var t_combat = t_combat_val;
     }
 
     if ($('#travel-weather').is(":checked")) {
       if ((days % $('#travel-weather-days').val()) == 1) {
          var t_weather_val = rollDice("1d100");
-         var t_weather = lookupWeather($('#travel-season').val(), t_weather_val) + ' (' + t_weather_val + ')'
+         var t_weather = t_weather_val + ': ' + lookupWeather($('#travel-season').val(), t_weather_val)
       }
     } else {
       var t_weather = ''

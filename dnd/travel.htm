@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 <script type="text/javascript" src="common.js"></script>
 <script type="text/javascript" src="travel.js"></script>
 </head>
@@ -35,18 +36,18 @@
 
   <label for="travel-environ">Travel Environment:</label>
   <select name="travel-environ" id="travel-environ">
-    <option id="arctic" value="arctic">Arctic</option>
-    <option id="coastal" value="coastal">Coastal</option>
-    <option id="desert" value="desert">Desert</option>
-    <option id="forest" value="forest">Forest</option>
-    <option id="grassland" value="grassland" selected>Grassland</option>
-    <option id="hill" value="hill">Hill</option>
-    <option id="jungle" value="jungle">Jungle</option>
-    <option id="mountain" value="mountain">Mountain</option>
-    <option id="swamp" value="swamp">Swamp</option>
-    <option id="underdark" value="underdark">Underdark</option>
-    <option id="underwater" value="underwater">Underwater</option>
-    <option id="urban" value="urban">Urban</option>
+    <option id="arctic" value="arctic_xge">Arctic</option>
+    <option id="coastal" value="coastal_xge">Coastal</option>
+    <option id="desert" value="desert_xge">Desert</option>
+    <option id="forest" value="forest_xge">Forest</option>
+    <option id="grassland" value="grassland_xge" selected>Grassland</option>
+    <option id="hill" value="hill_xge">Hill</option>
+    <option id="mountain" value="mountain_xge">Mountain</option>
+    <option id="open-water" value="open%20water_gos">Open Water</option>
+    <option id="swamp" value="swamp_xge">Swamp</option>
+    <option id="underdark" value="underdark_xge">Underdark</option>
+    <option id="underwater" value="underwater_xge">Underwater</option>
+    <option id="urban" value="urban_xge">Urban</option>
   </select><br /><br />
 
   <label for="travel-speed">Travel Speed (miles/hour):</label>
@@ -92,7 +93,14 @@
   <input type="button" name="generate-days" id="generate-days" onClick="generateDays();" value="Generate Days"></input><br /><br />
 </div>
 
-<div class="column-3" id="div-players">
+<div class="column-3" id="div-output">
+  <div id="days-div"></div><br /><br />
+  <div id="costs-div"></div>
+</div>
+
+<div class="column-3"></div>
+
+<div class="modal" id="div-players">
   <div class="column-2">
     <table id="players-table">
       <tr>
@@ -105,11 +113,6 @@
     <input type="button" id="players-add" style="width:30px;" onClick="addPlayer()" value="+"></input><br /><br />
     <input type="reset" id="players-remove" style="width:30px;" onClick="removePlayer()" value="-"></input><br />
   </div>
-</div>
-
-<div class="column-3" id="div-output">
-  <div id="days-div"></div><br /><br />
-  <div id="costs-div"></div>
 </div>
 
 </body>

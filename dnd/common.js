@@ -18,6 +18,6 @@ function rollDice(dice, sum=true) {
 }
 
 function navbar() {
-  var navbar = '<nav><ul> <li><a href="#"> Travel </a></li> <li><a href="#"> ??? </a></li> <li><a href="#"> ??? </a></li> </ul></nav><br /><br />';
+  var navbar = '<nav><ul> <li><a href="https://5e.tools/dmscreen.html" target="_blank"> DM Screen </a></li> <li><a href="travel.htm"> Travel </a></li> <li><a href="#"> Locations </a></li> </ul></nav><br /><br />';
   $('#header').html(navbar);
 }
