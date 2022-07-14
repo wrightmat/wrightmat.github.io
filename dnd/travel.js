@@ -2,16 +2,6 @@ var players = 0;
 var player_selected;
 
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-function rollDie(num) {
-  num = num.substring(1, num.length);
-  return getRandomInt(1, num);
-}
-
-
 function init() {
   calcDays();
   checkWeather();
@@ -106,7 +96,7 @@ function lookupWeather(season, roll) {
     else if (roll >= 31 && roll <= 40) { weather = "Heavy Clouds" }
     else if (roll >= 41 && roll <= 60) { weather = "Light Clouds" }
     else if (roll >= 61 && roll <= 99) { weather = "Clear Skies" }
-    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDie("d6")) }
+    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDice("d6")) }
   } else if (season == "spring") {
     if (roll >= 1 && roll <= 2) { weather = "Thunderstorm" }
     else if (roll >= 3 && roll <= 5) { weather = "Heavy Rain" }
@@ -115,7 +105,7 @@ function lookupWeather(season, roll) {
     else if (roll >= 51 && roll <= 80) { weather = "Clear Skies" }
     else if (roll >= 81 && roll <= 90) { weather = "High Winds" }
     else if (roll >= 91 && roll <= 99) { weather = "Scorching Heat" }
-    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDie("d6")) }
+    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDice("d6")) }
   } else if (season == "summer") {
     if (roll == 1) { weather = "Thunderstorm" }
     else if (roll >= 2 && roll <= 5) { weather = "Rain" }
@@ -123,7 +113,7 @@ function lookupWeather(season, roll) {
     else if (roll >= 31 && roll <= 80) { weather = "Clear Skies" }
     else if (roll >= 81 && roll <= 85) { weather = "High Winds" }
     else if (roll >= 86 && roll <= 99) { weather = "Scorching Heat" }
-    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDie("d6")) }
+    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDice("d6")) }
   } else if (season == "autumn") {
     if (roll >= 1 && roll <= 2) { weather = "Thunderstorm" }
     else if (roll >= 3 && roll <= 10) { weather = "Rain" }
@@ -132,7 +122,7 @@ function lookupWeather(season, roll) {
     else if (roll >= 51 && roll <= 70) { weather = "Clear Skies" }
     else if (roll >= 71 && roll <= 90) { weather = "High Winds" }
     else if (roll >= 91 && roll <= 99) { weather = "Scorching Heat" }
-    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDie("d6")) }
+    else if (roll == 100) { weather = lookupWeather("phenomenon", rollDice("d6")) }
   } else if (season == "phenomenon") {
     if (roll == 1) { weather = "Ashfall" }
     else if (roll == 2) { weather = "Solar Eclipse" }
@@ -194,7 +184,7 @@ function generateDays() {
   var levels = getPlayersLevels();
   var pc_count = levels.length || 1;
   if (levels.length >= 1) {
-    var enc_level = (levels.reduce((accumulator, curr) => accumulator + curr) / players);
+    var enc_level = (levels.reduce((a, b) => a + b) / players);
   } else {
     var enc_level = 1;
   }
@@ -202,7 +192,7 @@ function generateDays() {
   $('#days-div').html("<table id='days-table'><tbody><tr><th>Day</th><th>Miles</th><th>Combat</th><th>Weather</th></tr></tbody></table>");
   for (let i = 0; i < $('#travel-days').val(); i++) {
     var days = i + 1;
-    var t_combat_val = rollDie("d20");
+    var t_combat_val = rollDice("1d20");
     var t_combat_link = "https://donjon.bin.sh/5e/random/#type=encounter;encounter-n_pc=" + pc_count + ";encounter-level=" + enc_level + ";encounter-difficulty=medium;encounter-environment=" + $('#travel-environ').val() + ";encounter-loot_type=individual_treasure"
     if (t_combat_val > 18) {
       var t_combat = '<a target="_blank" href="' + t_combat_link + '"> Random Encounter (' + t_combat_val + ')</a>';
@@ -212,7 +202,7 @@ function generateDays() {
 
     if ($('#travel-weather').is(":checked")) {
       if ((days % $('#travel-weather-days').val()) == 1) {
-         var t_weather_val = rollDie("d100");
+         var t_weather_val = rollDice("1d100");
          var t_weather = lookupWeather($('#travel-season').val(), t_weather_val) + ' (' + t_weather_val + ')'
       }
     } else {
@@ -253,11 +243,6 @@ function getPlayersLevels() {
     }
   });
   return levels;
-}
-
-function navbar() {
-  var navbar = '<nav><ul> <li><a href="#"> Travel </a></li> <li><a href="#"> ??? </a></li> <li><a href="#"> ??? </a></li> </ul></nav><br /><br />';
-  $('#header').html(navbar);
 }
 
 $(document).on("click", "#players-table tr", function() {
