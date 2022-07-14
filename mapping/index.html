@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapping test</title>
+  <link rel="stylesheet" href="ol.css" type="text/css">
+  <style>
+      .map {
+	height: 700px;
+        width: 100%;
+      }
+  </style>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="ol.js"></script>
+  <script type="text/javascript" src="script.js"></script>
+</head>
+
+<body>
+
+<div id="map" class="map" style="float:left;width:80%;">
+<input id="auth-input" type="file" name="name" onchange="loadFile(this.files[0])" />
+</div>
+
+<div id="right" style="float:left;width:18%;padding:10px;">
+    <div id="right-top" style="padding=bottom:50px;">
+	<table><tr>
+	    <td style="width:95%"><select id="route-select" size="1" style="width:100%;" onchange="selectRoute();"><option></option></select></td>
+	    <td style="width:5%"><a id="link-route-add" title="Add New Route" href="#" onclick="addRoute();"> + </a></td>
+	</tr><tr>
+	    <td><select id="stop-select" size="10" style="width:100%;height:400px;" onchange="selectStop();"></select></td>
+	    <td>
+		<a id="link-stop-up" title="Move Up Stop in List" href="#" onclick="moveUpStop()"> ^ </a><br />
+		<a id="link-stop-down" title="Move Down Stop in List" href="#" onclick="moveDownStop()"> v </a><br /><br />
+		<a id="link-stop-delete" title="Delete Stop" href="#" onclick="deleteStop()"> x </a><br /><br />
+		<a id="link-stop-add" title="Add Stop from Blanks (click on map to add from point)" href="#" onclick="addStop()"> + </a><br /><br />
+		<a id="link-download" title="Generate File Contents (Save)" href="#" onclick="saveRoutes();"> ↓ </a><br /><br /><br />
+		<a id="link-map-refresh" title="Refresh Map" href="#" onclick="updateMap();"> ↻ </a><br />
+	    </td>
+	</tr></table>
+    </div>
+    <div id="right-info" style="padding-top:50px;display:block;"></div>
+    <div id="right-btm" style="padding-top:50px;display:none;">
+	<table><tr>
+	    <td><label for="index">Index:</label></td>
+	    <td><input type="text" id="index" name="index" disabled></td>
+	</tr><tr>
+	    <td><label for="lat">Latitude:</label></td>
+	    <td><input type="text" id="lat" name="lat"></td>
+	</tr><tr>
+	    <td><label for="lng">Longitude:</label></td>
+	    <td><input type="text" id="lng" name="lng"></td>
+	</tr><tr>
+	    <td><label for="lat">Route:</label></td>
+	    <td><input type="text" id="route" name="route"></td>
+	</tr><tr>
+	    <td><label for="stop">Stop?</label></td>
+	    <td><input type="checkbox" id="stop" name="stop" onchange="updateCheckbox(this)"></td>
+	</tr><tr>
+	    <td><label for="name">Name:</label></td>
+	    <td><input type="text" id="name" name="name"></td>
+	</tr><tr>
+	    <td><label for="num">Number:</label></td>
+	    <td><input type="text" id="num" name="num"></td>
+	</tr><tr>
+	    <td colspan="2"><br /><a href="#" id="updt-add-link" onclick="updateStop();">Update Stop</a></td>
+	</tr></table>
+    </div>
+</div>
+
+</body>
+</html>
