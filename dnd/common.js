@@ -1,3 +1,22 @@
+function alphabetizeSelectList(el) {
+  var selected = el.val();
+  var opts_list = el.find('option');
+  opts_list.sort(function (a, b) {
+    return $(a).text() > $(b).text() ? 1 : -1;
+  });
+  el.html('').append(opts_list);
+  el.val(selected);
+
+  var opts = [];
+  opts_list.each(function() {
+    if($.inArray(this.value, opts) > -1) {
+      $(this).remove()
+    } else {
+      opts.push(this.value);
+    }
+  });
+}
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }

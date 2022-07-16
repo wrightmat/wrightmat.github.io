@@ -1,0 +1,65 @@
+[
+	{
+		"special": [],
+		"index": "arcane-lock-kundarak",
+		"name": "Arcane Lock (House Kundarak)",
+		"service_category": {
+			"index": "spells",
+			"name": "Spells",
+			"url": "/api/spells/arcane-lock"
+		},
+		"sub_category": "Security",
+		"house": "House Kundarak",
+		"cost": {
+			"quantity": 20,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "glyph-of-warding-kundarak",
+		"name": "Glyph of Warding (House Kundarak)",
+		"service_category": {
+			"index": "spells",
+			"name": "Spells",
+			"url": "/api/spells/glyph-of-warding"
+		},
+		"sub_category": "Security",
+		"house": "House Kundarak",
+		"cost": {
+			"quantity": 20,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "courier-service-orien",
+		"name": "Courier service (House Orien)",
+		"service_category": {
+			"index": "services",
+			"name": "Services"
+		},
+		"sub_category": "Communication",
+		"house": "House Orien",
+		"cost": {
+			"quantity": 1,
+			"unit": "sp",
+			"per": "mile"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	}
+]
