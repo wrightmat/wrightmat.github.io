@@ -2,6 +2,13 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+function jsonConcat(o1, o2) {
+  for (var key in o2) {
+    o1[key] = o2[key];
+  }
+  return o1;
+}
+
 function rollDice(dice, sum=true) {
   var arr = [];
   var d = dice.indexOf("d");
@@ -18,6 +25,6 @@ function rollDice(dice, sum=true) {
 }
 
 function navbar() {
-  var navbar = '<nav><ul> <li><a href="https://5e.tools/dmscreen.html" target="_blank"> DM Screen </a></li> <li><a href="travel.htm"> Travel </a></li> <li><a href="#"> Locations </a></li> </ul></nav><br /><br />';
+  var navbar = '<nav><ul> <li><a href="https://5e.tools/dmscreen.html" target="_blank"> DM Screen </a></li> <li><a href="travel.htm"> Travel </a></li> <li><a href="locations.htm"> Locations </a></li> </ul></nav><br /><br />';
   $('#header').html(navbar);
 }
