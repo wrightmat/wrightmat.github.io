@@ -1,4 +1,4 @@
-[{
+{
 	"special": [],
 	"index": "tindertwig",
 	"name": "Tindertwig",
@@ -73,7 +73,7 @@
 	"weight": 3,
 	"desc": [
 		"Truelight lanterns are elaborately crafted from flametouched iron and heavily polished to have a silvery hue. The flame inside them is a translucent white and gives off no heat. Whenever its secondary ability is activated, this flame becomes fully invisible. They shed a similar amount of light to that of a standard bullseye lantern and are known to share many of the same properties as an everbright lantern.",
-		"Once per day, speaking the word "reveal" in Celestial causes a truelight lantern to emit clear illumination in a cone of 60 ft., as well as shadowy illumination out to 120 ft., for a period of 10 minutes. Furthermore, anything that falls within the light of the 60 ft. cone becomes visible as if all creatures viewing them were under the effect of the spell true seeing."
+		"Once per day, speaking the word 'reveal' in Celestial causes a truelight lantern to emit clear illumination in a cone of 60 ft., as well as shadowy illumination out to 120 ft., for a period of 10 minutes. Furthermore, anything that falls within the light of the 60 ft. cone becomes visible as if all creatures viewing them were under the effect of the spell true seeing."
 	],
 	"url": "https://eberron.fandom.com/wiki/Truelight_lantern",
 	"contents": [],
@@ -99,7 +99,7 @@
 	},
 	"weight": 30,
 	"desc": [
-		"Speaking stones are magic items carved from Siberys dragonshards that allow communication. They are the means by which House Sivis operates their network of messaging stations, enabling instantaneous communication between them.",
+		"Speaking stones are magic items carved from Siberys dragonshards that allow communication. They are the means by which House Sivis operates their network of messaging stations, enabling instantaneous communication between them."
 	],
 	"url": "https://eberron.fandom.com/wiki/Speaking_stone",
 	"contents": [],
@@ -131,4 +131,4 @@
 	"url": "https://eberron.fandom.com/wiki/Feather_token",
 	"contents": [],
 	"properties": []
-}]
+}
