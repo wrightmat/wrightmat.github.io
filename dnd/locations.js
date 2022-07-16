@@ -2,10 +2,15 @@ var equipment = {};
 var categories = {}
 var groups = {};
 
-
 function init() {
   var i = 0;
   var arr_cat = [];
+  var json_equip;
+
+  // Non-API (Eberron-specific, custom) content
+  json_equip = getLocal("equipment.json");
+console.log(json_equip);
+
   // Recursively call the API to loop through all the equipment categories, equipment, and details
   // WARNING: This is SLOW! Gotta figure out a better way to do this, probably will need to make it asynchronous
   groups = getAPI("equipment-categories")["results"];
@@ -19,7 +24,8 @@ function init() {
       arr_cat.push(equip["equipment_category"]);
     });
   });
-  // populate the categories select list
+
+  // Populate the categories select list
   for (let cat in arr_cat) {
     var exists = $('#select-groups option').filter(function(){ return $(this).val() == arr_cat[cat]["url"]; }).length;
     if (!exists) {
@@ -28,14 +34,24 @@ function init() {
   }
 }
 
-function getAPI(type) {
+function getAPI(r_type) {
   var r_text, r_url;
-  if (type.substring(0, 4) !== "/api") {
-    r_url = "/api/" + type;
-  } else { r_url = type; }
-
+  if (r_type.substring(0, 4) !== "/api") {
+    r_url = "/api/" + r_type;
+  } else { r_url = r_type; }
   $.get({
     url: "https://www.dnd5eapi.co" + r_url,
+    success: function(result) { r_text = result },
+    error: function(xhr, error) { console.log(xhr) },
+    async: false
+  });
+  return r_text;
+}
+
+function getLocal(r_url) {
+  var r_text;
+  $.get({
+    url: "https://wrightmat.github.io/dnd/" + r_url,
     success: function(result) { r_text = result },
     error: function(xhr, error) { console.log(xhr) },
     async: false
@@ -66,17 +82,15 @@ function getGroup(index) {
 function rebuildSelect(group) {
   $('#select-items option').remove();
   Object.keys(equipment).forEach( (key) => {
-    //if (equipment[key]["equipment_category"]) {
-      if (equipment[key]["equipment_category"]["index"] == group) {
-        $('#select-items').append('<option id="' + equipment[key]["index"] + '" value="' + equipment[key]["url"] +'">' + equipment[key]["name"] +'</option>');
-      }
-    //}
+    if (equipment[key]["equipment_category"]["index"] == group) {
+      $('#select-items').append('<option id="' + equipment[key]["index"] + '" value="' + equipment[key]["url"] +'">' + equipment[key]["name"] +'</option>');
+    }
   });
 }
 
 function selectItem(el) {
   var item = getEquipment(el.options[el.selectedIndex].id);
-console.log(item);
+  //console.log(item);
   $("#info-name").val(item["name"]);
   $("#info-category-equip").val(item["equipment_category"]["name"]);
   if (item["equipment_category"]["index"] == "adventuring-gear") {
@@ -101,7 +115,7 @@ console.log(item);
 
 function selectGroup(el) {
   var item = getGroup(el.options[el.selectedIndex].id);
-console.log(item);
+  //console.log(item);
   $("#info-name").val(item["name"]);
   rebuildSelect(item["index"]);
 }
