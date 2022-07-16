@@ -1,134 +1,136 @@
-{
-	"special": [],
-	"index": "tindertwig",
-	"name": "Tindertwig",
-	"equipment_category": {
-		"index": "adventuring-gear",
-		"name": "Adventuring Gear",
-		"url": "/api/equipment-categories/adventuring-gear"
+[
+	{
+		"special": [],
+		"index": "tindertwig",
+		"name": "Tindertwig",
+		"equipment_category": {
+			"index": "adventuring-gear",
+			"name": "Adventuring Gear",
+			"url": "/api/equipment-categories/adventuring-gear"
+		},
+		"gear_category": {
+			"index": "standard-gear",
+			"name": "Standard Gear",
+			"url": "/api/equipment-categories/standard-gear"
+		},
+		"cost": {
+			"quantity": 1,
+			"unit": "gp"
+		},
+		"weight": 0,
+		"desc": [
+			"A tindertwig is an alchemical tool used to easily light fires. It is a tiny wooden stick with an alchemical substance applied to one end.",
+			"When the alchemical substance is struck against something rough, it ignites automatically, much quicker than a flint and steel, let alone with a magnifying glass, and without additional tinder. They make lighting torches and other fires easier and faster."
+		],
+		"url": "https://eberron.fandom.com/wiki/Tindertwig",
+		"contents": [],
+		"properties": []
 	},
-	"gear_category": {
-		"index": "standard-gear",
-		"name": "Standard Gear",
-		"url": "/api/equipment-categories/standard-gear"
+	{
+		"special": [],
+		"index": "everbright-lantern",
+		"name": "Everbright lantern",
+		"equipment_category": {
+			"index": "adventuring-gear",
+			"name": "Adventuring Gear",
+			"url": "/api/equipment-categories/adventuring-gear"
+		},
+		"gear_category": {
+			"index": "standard-gear",
+			"name": "Standard Gear",
+			"url": "/api/equipment-categories/standard-gear"
+		},
+		"cost": {
+			"quantity": 212,
+			"unit": "gp"
+		},
+		"weight": 3,
+		"desc": [
+			"Everbright lanterns are lanterns enchanted to shed a magical light that never dies out. While they can be carried, they are also used as street lights in cities across Khorvaire. They are a creation of House Cannith.",
+			"Everbright lanterns resemble normal bullseye lanterns, but with an Eberron dragonshard contained in the lantern's housing as the source of light. When the shutters are open, the light from the Eberron dragonshard can brightly illuminate an area up to 60 ft (18 m) away, similar to a normal bullseye lantern, but without the need for fuel."
+		],
+		"url": "https://eberron.fandom.com/wiki/Everbright_lantern",
+		"contents": [],
+		"properties": []
 	},
-	"cost": {
-		"quantity": 1,
-		"unit": "gp"
+	{
+		"special": [],
+		"index": "truelight-lantern",
+		"name": "Truelight lantern",
+		"equipment_category": {
+			"index": "adventuring-gear",
+			"name": "Adventuring Gear",
+			"url": "/api/equipment-categories/adventuring-gear"
+		},
+			"gear_category": {
+			"index": "standard-gear",
+			"name": "Standard Gear",
+			"url": "/api/equipment-categories/standard-gear"
+		},
+		"cost": {
+			"quantity": 36000,
+			"unit": "gp"
+		},
+		"weight": 3,
+		"desc": [
+			"Truelight lanterns are elaborately crafted from flametouched iron and heavily polished to have a silvery hue. The flame inside them is a translucent white and gives off no heat. Whenever its secondary ability is activated, this flame becomes fully invisible. They shed a similar amount of light to that of a standard bullseye lantern and are known to share many of the same properties as an everbright lantern.",
+			"Once per day, speaking the word 'reveal' in Celestial causes a truelight lantern to emit clear illumination in a cone of 60 ft., as well as shadowy illumination out to 120 ft., for a period of 10 minutes. Furthermore, anything that falls within the light of the 60 ft. cone becomes visible as if all creatures viewing them were under the effect of the spell true seeing."
+		],
+		"url": "https://eberron.fandom.com/wiki/Truelight_lantern",
+		"contents": [],
+		"properties": []
 	},
-	"weight": 0,
-	"desc": [
-		"A tindertwig is an alchemical tool used to easily light fires. It is a tiny wooden stick with an alchemical substance applied to one end.",
-		"When the alchemical substance is struck against something rough, it ignites automatically, much quicker than a flint and steel, let alone with a magnifying glass, and without additional tinder. They make lighting torches and other fires easier and faster."
-	],
-	"url": "https://eberron.fandom.com/wiki/Tindertwig",
-	"contents": [],
-	"properties": []
-},
-{
-	"special": [],
-	"index": "everbright-lantern",
-	"name": "Everbright lantern",
-	"equipment_category": {
-		"index": "adventuring-gear",
-		"name": "Adventuring Gear",
-		"url": "/api/equipment-categories/adventuring-gear"
+	{
+		"special": [],
+		"index": "speaking-stone",
+		"name": "Speaking stone",
+		"equipment_category": {
+			"index": "adventuring-gear",
+			"name": "Adventuring Gear",
+			"url": "/api/equipment-categories/adventuring-gear"
+		},
+		"gear_category": {
+			"index": "standard-gear",
+			"name": "Standard Gear",
+			"url": "/api/equipment-categories/standard-gear"
+		},
+		"cost": {
+			"quantity": 10000,
+			"unit": "gp"
+		},
+		"weight": 30,
+		"desc": [
+			"Speaking stones are magic items carved from Siberys dragonshards that allow communication. They are the means by which House Sivis operates their network of messaging stations, enabling instantaneous communication between them."
+		],
+		"url": "https://eberron.fandom.com/wiki/Speaking_stone",
+		"contents": [],
+		"properties": []
 	},
-	"gear_category": {
-		"index": "standard-gear",
-		"name": "Standard Gear",
-		"url": "/api/equipment-categories/standard-gear"
-	},
-	"cost": {
-		"quantity": 212,
-		"unit": "gp"
-	},
-	"weight": 3,
-	"desc": [
-		"Everbright lanterns are lanterns enchanted to shed a magical light that never dies out. While they can be carried, they are also used as street lights in cities across Khorvaire. They are a creation of House Cannith.",
-		"Everbright lanterns resemble normal bullseye lanterns, but with an Eberron dragonshard contained in the lantern's housing as the source of light. When the shutters are open, the light from the Eberron dragonshard can brightly illuminate an area up to 60 ft (18 m) away, similar to a normal bullseye lantern, but without the need for fuel."
-	],
-	"url": "https://eberron.fandom.com/wiki/Everbright_lantern",
-	"contents": [],
-	"properties": []
-},
-{
-	"special": [],
-	"index": "truelight-lantern",
-	"name": "Truelight lantern",
-	"equipment_category": {
-		"index": "adventuring-gear",
-		"name": "Adventuring Gear",
-		"url": "/api/equipment-categories/adventuring-gear"
-	},
-	"gear_category": {
-		"index": "standard-gear",
-		"name": "Standard Gear",
-		"url": "/api/equipment-categories/standard-gear"
-	},
-	"cost": {
-		"quantity": 36000,
-		"unit": "gp"
-	},
-	"weight": 3,
-	"desc": [
-		"Truelight lanterns are elaborately crafted from flametouched iron and heavily polished to have a silvery hue. The flame inside them is a translucent white and gives off no heat. Whenever its secondary ability is activated, this flame becomes fully invisible. They shed a similar amount of light to that of a standard bullseye lantern and are known to share many of the same properties as an everbright lantern.",
-		"Once per day, speaking the word 'reveal' in Celestial causes a truelight lantern to emit clear illumination in a cone of 60 ft., as well as shadowy illumination out to 120 ft., for a period of 10 minutes. Furthermore, anything that falls within the light of the 60 ft. cone becomes visible as if all creatures viewing them were under the effect of the spell true seeing."
-	],
-	"url": "https://eberron.fandom.com/wiki/Truelight_lantern",
-	"contents": [],
-	"properties": []
-},
-{
-	"special": [],
-	"index": "speaking-stone",
-	"name": "Speaking stone",
-	"equipment_category": {
-		"index": "adventuring-gear",
-		"name": "Adventuring Gear",
-		"url": "/api/equipment-categories/adventuring-gear"
-	},
-	"gear_category": {
-		"index": "standard-gear",
-		"name": "Standard Gear",
-		"url": "/api/equipment-categories/standard-gear"
-	},
-	"cost": {
-		"quantity": 10000,
-		"unit": "gp"
-	},
-	"weight": 30,
-	"desc": [
-		"Speaking stones are magic items carved from Siberys dragonshards that allow communication. They are the means by which House Sivis operates their network of messaging stations, enabling instantaneous communication between them."
-	],
-	"url": "https://eberron.fandom.com/wiki/Speaking_stone",
-	"contents": [],
-	"properties": []
-},
-{
-	"special": [],
-	"index": "feather-token",
-	"name": "Feather token",
-	"equipment_category": {
-		"index": "adventuring-gear",
-		"name": "Adventuring Gear",
-		"url": "/api/equipment-categories/adventuring-gear"
-	},
-	"gear_category": {
-		"index": "standard-gear",
-		"name": "Standard Gear",
-		"url": "/api/equipment-categories/standard-gear"
-	},
-	"cost": {
-		"quantity": 80,
-		"unit": "gp"
-	},
-	"weight": 1,
-	"desc": [
-		"A feather token is a magical item designed to protect a user from the danger of falling from great heights. It is a small metal disk inscribed with a feather. Those used by House Orien are instead shaped like unicorns and inscribed with their sigil.",
-		"If one who carries this token falls more than 20 feet (6.1 meters), it will activate and carry them safely to the ground. Thereafter, its magic is spent. Feather tokens are commonly used in case of falls from the heights of Sharn, at least by those who can afford them, while those who can consider them inexpensive."
-	],
-	"url": "https://eberron.fandom.com/wiki/Feather_token",
-	"contents": [],
-	"properties": []
-}
+	{
+		"special": [],
+		"index": "feather-token",
+		"name": "Feather token",
+		"equipment_category": {
+			"index": "adventuring-gear",
+			"name": "Adventuring Gear",
+			"url": "/api/equipment-categories/adventuring-gear"
+		},
+		"gear_category": {
+			"index": "standard-gear",
+			"name": "Standard Gear",
+			"url": "/api/equipment-categories/standard-gear"
+		},
+		"cost": {
+			"quantity": 80,
+			"unit": "gp"
+		},
+		"weight": 1,
+		"desc": [
+			"A feather token is a magical item designed to protect a user from the danger of falling from great heights. It is a small metal disk inscribed with a feather. Those used by House Orien are instead shaped like unicorns and inscribed with their sigil.",
+			"If one who carries this token falls more than 20 feet (6.1 meters), it will activate and carry them safely to the ground. Thereafter, its magic is spent. Feather tokens are commonly used in case of falls from the heights of Sharn, at least by those who can afford them, while those who can consider them inexpensive."
+		],
+		"url": "https://eberron.fandom.com/wiki/Feather_token",
+		"contents": [],
+		"properties": []
+	}
+]
