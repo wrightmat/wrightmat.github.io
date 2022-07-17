@@ -6,6 +6,7 @@ function init() {
   var i = 0;
   var arr_cat = [];
   var json_equip;
+  var json_service;
 
   // Recursively call the API to loop through all the equipment categories, equipment, and details
   // WARNING: This is SLOW! Gotta figure out a better way to do this, probably will need to make it asynchronous
@@ -24,9 +25,9 @@ function init() {
   // Non-API (Eberron-specific, custom) content
   json_equip = getLocal("equipment.json");
   Object.keys(json_equip).forEach( (key) => {
-      i += 1;
-      $('#select-items').append('<option id="' + json_equip[key]["index"] + '" value="' + json_equip[key]["url"] +'">' + json_equip[key]["name"] +'</option>');
-      equipment[i] = json_equip[key];
+    i += 1;
+    $('#select-items').append('<option id="' + json_equip[key]["index"] + '" value="' + json_equip[key]["url"] +'">' + json_equip[key]["name"] +'</option>');
+    equipment[i] = json_equip[key];
   });
   alphabetizeSelectList($('#select-items'))
 
@@ -37,6 +38,11 @@ function init() {
       $('#select-groups').append('<option id="' + arr_cat[cat]["index"] + '" value="' + arr_cat[cat]["url"] +'">' + arr_cat[cat]["name"] +'</option>');
     }
   }
+
+  json_service = getLocal("services.json");
+  Object.keys(json_service).forEach( (key) => {
+    $('#select-services').append('<option id="' + json_service[key]["index"] + '" value="' + json_service[key]["index"] +'">' + json_service[key]["name"] +'</option>');
+  });
 }
 
 function getAPI(r_type) {

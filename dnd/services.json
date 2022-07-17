@@ -9,7 +9,7 @@
 			"url": "/api/spells/arcane-lock"
 		},
 		"sub_category": "Security",
-		"house": "House Kundarak",
+		"house": "Kundarak",
 		"cost": {
 			"quantity": 20,
 			"unit": "gp"
@@ -30,7 +30,7 @@
 			"url": "/api/spells/glyph-of-warding"
 		},
 		"sub_category": "Security",
-		"house": "House Kundarak",
+		"house": "Kundarak",
 		"cost": {
 			"quantity": 20,
 			"unit": "gp"
@@ -50,11 +50,497 @@
 			"name": "Services"
 		},
 		"sub_category": "Communication",
-		"house": "House Orien",
+		"house": "Orien",
 		"cost": {
 			"quantity": 1,
 			"unit": "sp",
 			"per": "mile"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "mail-service-orien",
+		"name": "Mail Service (House Orien)",
+		"service_category": {
+			"index": "services",
+			"name": "Services"
+		},
+		"sub_category": "Communication",
+		"house": "Orien",
+		"cost": {
+			"quantity": 1,
+			"unit": "cp",
+			"per": "mile"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "illusory-script-sivis",
+		"name": "Illusory Script (House Sivis)",
+		"service_category": {
+			"index": "spells",
+			"name": "Spells",
+			"url": "/api/spells/illusory-script"
+		},
+		"sub_category": "Communication",
+		"house": "Sivis",
+		"cost": {
+			"quantity": 15,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "message-station-sivis",
+		"name": "Message Station (House Sivis)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Communication",
+		"house": "Sivis",
+		"cost": {
+			"quantity": 2,
+			"unit": "sp",
+			"per": "word"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "translation-sivis",
+		"name": "Translation (House Sivis)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Communication",
+		"house": "Sivis",
+		"cost": {
+			"quantity": 2,
+			"unit": "cp",
+			"per": "word"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "minor-nonmagical-care-jorasco",
+		"name": "Minor Non-magical Care (House Jorasco)",
+		"service_category": {
+			"index": "skill",
+			"name": "Skill",
+			"url": "/api/skills/medicine"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 3,
+			"unit": "sp",
+			"per": "use of the Medicine skill"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "major-nonmagical-care-jorasco",
+		"name": "Major Non-magical Care (House Jorasco)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 1,
+			"unit": "gp",
+			"per": "day"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "cure-wounds-jorasco",
+		"name": "Cure Wounds (House Jorasco)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/cure-wounds"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 25,
+			"unit": "gp",
+			"per": "level of spell"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "lesser-restoration-jorasco",
+		"name": "Lesser Restoration (House Jorasco)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/lesser-restoration"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 50,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "remove-curse-jorasco",
+		"name": "Remove Curse (House Jorasco)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/remove-curse"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 75,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "greater-restoration-jorasco",
+		"name": "Greater Restoration (House Jorasco)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/greater-restoration"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 150,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "raise-dead-jorasco",
+		"name": "Raise Dead (House Jorasco)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/raise-dead"
+		},
+		"sub_category": "Healing",
+		"house": "Jorasco",
+		"cost": {
+			"quantity": 750,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "airship-1-lyrandar",
+		"name": "Airship. First Class (House Lyrandar)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Lyrandar",
+		"cost": {
+			"quantity": 10,
+			"unit": "sp",
+			"per": "20 miles (at 20 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "airship-2-lyrandar",
+		"name": "Airship. Second Class (House Lyrandar)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Lyrandar",
+		"cost": {
+			"quantity": 5,
+			"unit": "sp",
+			"per": "20 miles (at 20 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "elemental-galleon-1-lyrandar",
+		"name": "Elemental Galleon, First Class (House Lyrandar)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Lyrandar",
+		"cost": {
+			"quantity": 6,
+			"unit": "sp",
+			"per": "15 miles (at 12 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "elemental-galleon-2-lyrandar",
+		"name": "Elemental Galleon, Second Class (House Lyrandar)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Lyrandar",
+		"cost": {
+			"quantity": 2,
+			"unit": "sp",
+			"per": "15 miles (at 12 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "elemental-galleon-3-lyrandar",
+		"name": "Elemental Galleon, Steerage (House Lyrandar)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Lyrandar",
+		"cost": {
+			"quantity": 5,
+			"unit": "cp",
+			"per": "15 miles (at 12 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "lightning-rail-1-orien",
+		"name": "Lightning Rail, First Class (House Orien)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Orien",
+		"cost": {
+			"quantity": 6,
+			"unit": "sp",
+			"per": "15 miles (at 30 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "lightning-rail-2-orien",
+		"name": "Lightning Rail, Second Class (House Orien)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Orien",
+		"cost": {
+			"quantity": 2,
+			"unit": "sp",
+			"per": "15 miles (at 30 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "lightning-rail-3-oriend",
+		"name": "Lightning Rail, Steerage (House Orien)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Orien",
+		"cost": {
+			"quantity": 5,
+			"unit": "cp",
+			"per": "15 miles (at 30 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "magebred-coach-orien",
+		"name": "Magebred Coach (House Orien)",
+		"service_category": {
+			"index": "service",
+			"name": "Service"
+		},
+		"sub_category": "Travel",
+		"house": "Orien",
+		"cost": {
+			"quantity": 4,
+			"unit": "cp",
+			"per": "5 miles (at 7 mph)"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "teleportation-circle-orien",
+		"name": "Teleportation Circle (House Orien)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/teleportation-circle"
+		},
+		"sub_category": "Travel",
+		"house": "Orien",
+		"cost": {
+			"quantity": 2500,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "mending-cannith",
+		"name": "Mending (House Cannith)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/mending"
+		},
+		"sub_category": "Repair",
+		"house": "Cannith",
+		"cost": {
+			"quantity": 5,
+			"unit": "gp"
+		},
+		"desc": [
+			""
+		],
+		"contents": [],
+		"properties": []
+	},
+	{
+		"special": [],
+		"index": "heroes-feast-ghallandra",
+		"name": "Heroes' Feast (House Ghallandra)",
+		"service_category": {
+			"index": "spell",
+			"name": "Spell",
+			"url": "/api/spells/heroes-feast"
+		},
+		"sub_category": "Food",
+		"house": "Cannith",
+		"cost": {
+			"quantity": 60,
+			"unit": "gp",
+			"per": "person"
 		},
 		"desc": [
 			""
