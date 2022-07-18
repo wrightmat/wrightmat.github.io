@@ -1,6 +1,8 @@
 var equipment = {};
 var categories = {}
 var groups = {};
+var services = {};
+var item_selected;
 
 function init() {
   var i = 0;
@@ -15,10 +17,10 @@ function init() {
     categories = getAPI("equipment-categories/" + groups[key]["index"])["equipment"];
     Object.keys(categories).forEach( (key) => {
       i += 1;
-      $('#select-items').append('<option id="' + categories[key]["index"] + '" value="' + categories[key]["url"] +'">' + categories[key]["name"] +'</option>');
       var equip = getAPI(categories[key]["url"]);
       equipment[i] = equip;
       arr_cat.push(equip["equipment_category"]);
+      $('#select-items').append('<option id="' + categories[key]["index"] + '" value="' + categories[key]["url"] +'">' + categories[key]["name"] +'</option>');
     });
   });
 
@@ -39,10 +41,13 @@ function init() {
     }
   }
 
+  // Populate the services select list
   json_service = getLocal("services.json");
   Object.keys(json_service).forEach( (key) => {
     $('#select-services').append('<option id="' + json_service[key]["index"] + '" value="' + json_service[key]["index"] +'">' + json_service[key]["name"] +'</option>');
+    services[key] = json_service[key];
   });
+  alphabetizeSelectList($('#select-services'))
 }
 
 function getAPI(r_type) {
@@ -90,6 +95,16 @@ function getGroup(index) {
   return r_group;
 }
 
+function getService(index) {
+  var r_service;
+  Object.keys(services).forEach( (key) => {
+    if (services[key]["index"] == index) {
+      r_service = services[key];
+    }
+  });
+  return r_service;
+}
+
 function rebuildSelect(group) {
   $('#select-items option').remove();
   Object.keys(equipment).forEach( (key) => {
@@ -101,49 +116,131 @@ function rebuildSelect(group) {
 }
 
 function selectItem(el) {
+  var tooltip = "";
   var item = getEquipment(el.options[el.selectedIndex].id);
-  //console.log(item);
-  $("#info-name").val(item["name"]);
-  $("#info-category-equip").val(item["equipment_category"]["name"]);
+  tooltip += item["name"] + ', ' + item["equipment_category"]["name"];
   if (item["equipment_category"]["index"] == "adventuring-gear") {
-    $("#info-category-sub").val(item["gear_category"]["name"]);
+    tooltip += ' (' + item["gear_category"]["name"] + ')';
   } else if (item["equipment_category"]["index"] == "mounts-and-vehicles") {
-    $("#info-category-sub").val(item["vehicle_category"]);
+    tooltip += ' (' + item["vehicle_category"] + ')';
   } else if (item["equipment_category"]["index"] == "armor") {
-    $("#info-category-sub").val(item["armor_category"]);
+    tooltip += ' (' + item["armor_category"] + ')';
   } else if (item["equipment_category"]["index"] == "weapon") {
-    $("#info-category-sub").val(item["weapon_category"]);
+    tooltip += ' (' + item["weapon_category"] + ')';
   } else if (item["equipment_category"]["index"] == "tools") {
-    $("#info-category-sub").val(item["tool_category"]);
-  } else {
-    $("#info-category-sub").val("");
+    tooltip += ' (' + item["tool_category"] + ')';
   }
   if (item["cost"] != undefined) {
-    $("#info-cost").val(item["cost"]["quantity"] + ' ' + item["cost"]["unit"]);
+    tooltip += ', ' + item["cost"]["quantity"] + ' ' + item["cost"]["unit"];
   }
-  $("#info-weight").val(item["weight"]);
-  $("#info-desc").val(item["desc"]);
+  if (item["weight"] != undefined) {
+    tooltip += ', ' + item["weight"] + ' lbs';
+  }
+  $('#select-items').prop('title', tooltip);
 }
 
 function selectGroup(el) {
   var item = getGroup(el.options[el.selectedIndex].id);
-  //console.log(item);
-  $("#info-name").val(item["name"]);
+  $('#select-groups').prop('title', item["name"]);
   rebuildSelect(item["index"]);
 }
 
-$(document).on("click", "#players-table tr", function() {
-  $("#players-table tr").removeClass('bg_grey');
+function selectService(el) {
+  var item = getService(el.options[el.selectedIndex].id);
+  $('#select-services').prop('title', item["name"]);
+}
+
+function filterEquipment(filters) {
+  const newObj = {};
+  for (const [key, value] of Object.entries(equipment)) {
+    if (filters.includes(value["equipment_category"]["index"])) {
+      newObj[key] = value;
+    }
+  }
+  return newObj;
+}
+
+function filterServices(filters, by = 'service') {
+console.log(filters);
+  const newObj = {};
+  for (const [key, value] of Object.entries(services)) {
+    if ((by == "house" && filters.includes(value["house"])) || (by == "service" && filters.includes(value["service_category"]["index"]))) {
+      newObj[key] = value;
+    }
+  }
+  return newObj;
+}
+
+function selectPreset(el) {
+  var sel = el.options[el.selectedIndex].id;
+  var sel_index = el.selectedIndex;
+console.log(sel_index);
+  if (sel == "general-store") {
+    var items = filterEquipment(['adventuring-gear','ammunition','tools','potion']);
+  } else if (sel == "armor-shop") {
+    var items = filterEquipment(['armor']);
+  } else if (sel == "weapon-shop") {
+    var items = filterEquipment(['weapon']);
+  } else if (sel == "potion-shop") {
+    var items = filterEquipment(['potion']);
+  } else if (sel == "magic-shop") {
+    var items = filterEquipment(['potion','ring','rod','scroll','staff','wand','wondrous-item']);
+  } else if (sel == "tool-shop") {
+    var items = filterEquipment(['tools']);
+  } else if (el.selectedIndex >= 7)  {
+    var items = filterServices([sel], 'house');
+  }
+  console.log(Object.keys(items).length);
+  console.log(items);
+}
+
+function addItem(el) {
+  var cost = "";
+  var item = getEquipment(el.options[el.selectedIndex].id);
+  if (item["cost"] != undefined) { cost = item["cost"]["quantity"] + ' ' + item["cost"]["unit"]; }
+  $('#items-table > tbody:last-child').append('<tr id="' + item["index"] + '"><td id="name">' + item["name"] +'</td><td id="category">' + item["equipment_category"]["name"] + '</td><td id="cost">' + cost + '</td><td id="description">' + item["desc"] + '</td><td id="delete" style="visibility:hidden;"><a href"#" onClick="deleteItem(this);">[x]</a></td></tr>');
+}
+
+function addGroup(el) {
+  var cost = "";
+  var group = el.options[el.selectedIndex].id;
+  Object.keys(equipment).forEach( (key) => {
+    if (equipment[key]["equipment_category"]["index"] == group) {
+      var item = getEquipment(equipment[key]["index"]);
+      if (item["cost"] != undefined) { cost = item["cost"]["quantity"] + ' ' + item["cost"]["unit"]; }
+      $('#items-table > tbody:last-child').append('<tr id="' + item["index"] + '"><td id="name">' + item["name"] +'</td><td id="category">' + item["equipment_category"]["name"] + '</td><td id="cost">' + cost + '</td><td id="description">' + item["desc"] + '</td><td id="delete" style="visibility:hidden;"><a href"#" onClick="deleteItem(this);">[x]</a></td></tr>');
+    }
+  });
+}
+
+function addService(el) {
+  var cost = "";
+  var item = getService(el.options[el.selectedIndex].id);
+  if (item["cost"] != undefined) { 
+    cost = item["cost"]["quantity"] + ' ' + item["cost"]["unit"]
+    if (item["cost"]["per"] != undefined) { cost += " per " + item["cost"]["per"] }
+  }
+  $('#items-table > tbody:last-child').append('<tr id="' + item["index"] + '"><td id="name">' + item["name"] +'</td><td id="category">' + item["service_category"]["name"] + ' (' + item["sub_category"] + ')</td><td id="cost">' + cost + '</td><td id="description">' + item["desc"] + '</td><td id="delete" style="visibility:hidden;"><a href"#" onClick="deleteItem(this);">[x]</a></td></tr>');
+}
+
+function deleteItem(el) {
+  item_selected.remove();
+}
+
+$(document).on("click", "#items-table tr", function() {
+  $("#items-table tr").removeClass('bg_grey');
+  $("#items-table tr").find('td:last').css("visibility","hidden");
   if ($(this).attr("id") != undefined) {
     $(this).addClass('bg_grey');
-    player_selected = this
+    item_selected = this;
+    $(this).find('td:last').css("visibility","visible");
   }
 });
 
-$(document).on("dblclick", "#players-table td", function() {
+$(document).on("dblclick", "#items-table td", function() {
   var td_text = $(this).text();
   var td_text_new = prompt("Enter new text for:", td_text);
   if (td_text_new != null) {
-    $(this).text(td_text_new)
+    $(this).text(td_text_new);
   }
 });

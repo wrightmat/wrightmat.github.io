@@ -15,27 +15,37 @@
 
 <div class="column-main" id="div-builder">
   <div class="column-main" id="div-builder-list">
-    <select id="select-groups" size="13" style="width:200px;" onChange="selectGroup(this);"></select><br /><br />
-    <select id="select-items" size="20" style="width:200px;" onChange="selectItem(this);"></select><br /><br />
-    <select id="select-services" size="10" style="width:200px;" onChange="selectService(this);"></select><br />
+    <select id="preset-location" onChange="selectPreset(this);">
+      <option id="general-store">General Store</option>
+      <option id="armor-shop">Armor Shop</option>
+      <option id="weapon-shop">Weapon Shop</option>
+      <option id="potion-shop">Potion Shop</option>
+      <option id="magic-shop">Magic Shop</option>
+      <option id="tool-shop">Tool Shop</option>
+      <option id="food-shop">Food Shop</option>
+      <option id="cannith">House Cannith</option>
+      <option id="ghallanda">House Ghallanda</option>
+      <option id="jorasco">House Jorasco</option>
+      <option id="kundarak">House Kundarak</option>
+      <option id="lyrandar">House Lyrandar</option>
+      <option id="orien">House Orien</option>
+      <option id="sivis">House Sivis</option>
+    </select><input type="button" id="generate" style="height:25px;" value="Generate Preset"></input><br /><br />
+    <select id="select-groups" size="13" style="width:200px;" onChange="selectGroup(this);" onDblClick="addGroup(this);"></select><br /><br />
+    <select id="select-items" size="20" style="width:200px;" onChange="selectItem(this);" onDblClick="addItem(this);"></select><br /><br />
+    <select id="select-services" size="10" style="width:200px;" onChange="selectService(this);" onDblClick="addService(this);"></select><br />
   </div>
-  <div class="column-main" id="div-builder-info">
-    <label for="info-name">Name:</label>
-    <input id="info-name"></input><br /><br />
-    <label for="info-category-equip">Category:</label>
-    <input id="info-category-equip"></input><br /><br />
-    <label for="info-category-sub">Sub-Category:</label>
-    <input id="info-category-sub"></input><br /><br />
-    <label for="info-cost">Cost:</label>
-    <input id="info-cost"></input><br /><br />
-    <label for="info-weight">Weight (lbs):</label>
-    <input id="info-weight"></input><br /><br />
-    <label for="info-desc">Description:</label>
-    <textarea rows="12" cols="40" id="info-desc"></textarea>
+  <div class="column-main" id="div-output">
+    <table id="items-table" width="1000px;">
+      <tr>
+        <th width="140px;">Name</th>
+        <th width="180px;">Category</th>
+        <th width="60px;">Cost</th>
+        <th width="600px;">Description</th>
+        <th width="20px;"></th>
+      </tr>
+    </table>
   </div>
-</div>
-
-<div class="column-main" id="div-output">
 </div>
 
 </body>
