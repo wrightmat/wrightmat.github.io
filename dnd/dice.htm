@@ -13,7 +13,7 @@
     const params = new Proxy(new URLSearchParams(window.location.search), {
       get: (searchParams, prop) => searchParams.get(prop),
     });
-    roll = params.roll;
+    roll = params.roll || 'd20';
     $('#dice-button').html(roll);
   };
 
