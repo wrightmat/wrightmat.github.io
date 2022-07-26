@@ -31,9 +31,9 @@ function jsonConcat(o1, o2) {
 function rollDice(dice, sum=true) {
   var arr = [];
   var d = dice.indexOf("d");
-console.log(d);
   var die = dice.substring(d+1, dice.length);
   var num = dice.substring(0, d) || 1;
+  if (parseInt(d) == 0) { d = 1; }
   for (let i = 0; i < num; i++) {
     arr.push(getRandomInt(d, die));
   }
