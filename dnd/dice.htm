@@ -8,35 +8,46 @@
 <script type="text/javascript" src="common.js"></script>
 <script>
   var roll;
+  var params;
 
   function init() {
-    const params = new Proxy(new URLSearchParams(window.location.search), {
+    params = new Proxy(new URLSearchParams(window.location.search), {
       get: (searchParams, prop) => searchParams.get(prop),
     });
     roll = params.roll || 'd20';
-    $('#dice-button').html(roll);
+    var roll_text = roll
+    if (params.mult !== null) { roll_text = roll_text + 'x' + params.mult; }
+    if (params.add !== null) { roll_text = roll_text + '+' + params.add; }
+    $('#dice-button').html(roll_text);
     diceButton();
   };
 
   function diceButton() {
-    var rolled = rollDice(roll);
-    $('#dice-label').html(rolled);
+    var rolled = parseInt(rollDice(roll));
     if (roll == '1d20' || roll == 'd20') {
-      if (parseInt(rolled) == 20) {
+      if (rolled == 20) {
         $('#dice-label').addClass('nat-20');
       } else {
         $('#dice-label').removeClass('nat-20');
       }
-      if (parseInt(rolled) == 1) {
+      if (rolled == 1) {
         $('#dice-label').addClass('nat-1');
       } else {
         $('#dice-label').removeClass('nat-1');
       }
     }
+    if (params.mult !== null) { rolled = rolled * parseInt(params.mult); }
+    else if (roll.includes('x')) {
+      if (roll.includes('+')) { rolled = rolled * parseInt(roll.substring(roll.indexOf('x')+1, roll.indexOf('+')));
+      } else { rolled = rolled * parseInt(roll.substring(roll.indexOf('x')+1, roll.length)); }
+    }
+    if (params.add !== null) { rolled = rolled + parseInt(params.add); }
+    else if (roll.includes('+')) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); }
+    $('#dice-label').html(rolled);
   };
 </script>
 <style>
-  .dice-roller { width: 75px; height: 30px; }
+  .dice-roller { width: 100px; height: 30px; }
   .dice-button { background: black; color: white; font-weight: bold; border: 1px black; border-radius: 5px 0px 0px 5px; float: left; height: 100%; width: 62%; cursor: pointer; user-select: none; }
   .dice-button:hover { background: #323232; }
   .dice-button:active { background: #595959; }
