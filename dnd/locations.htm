@@ -15,7 +15,7 @@
 
 <div class="column-main" id="div-builder">
   <div class="column-main" id="div-builder-list">
-    <select id="preset-location" onChange="selectPreset(this);">
+    <select id="preset-location">
       <option id="general-store">General Store</option>
       <option id="armor-shop">Armor Shop</option>
       <option id="weapon-shop">Weapon Shop</option>
@@ -30,7 +30,7 @@
       <option id="lyrandar">House Lyrandar</option>
       <option id="orien">House Orien</option>
       <option id="sivis">House Sivis</option>
-    </select><input type="button" id="generate" style="height:25px;" value="Generate Preset"></input><br /><br />
+    </select><input type="button" id="generate" style="height:25px;" value="Generate Preset" onClick="generatePreset();"></input><br /><br />
     <select id="select-groups" size="13" style="width:200px;" onChange="selectGroup(this);" onDblClick="addGroup(this);"></select><br /><br />
     <select id="select-items" size="20" style="width:200px;" onChange="selectItem(this);" onDblClick="addItem(this);"></select><br /><br />
     <select id="select-services" size="10" style="width:200px;" onChange="selectService(this);" onDblClick="addService(this);"></select><br />

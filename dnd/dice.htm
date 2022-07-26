@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>5e Dice Roller</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+<script type="text/javascript" src="common.js"></script>
+<script>
+  var roll;
+
+  function init() {
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+      get: (searchParams, prop) => searchParams.get(prop),
+    });
+    roll = params.roll;
+    $('#dice-button').html(roll);
+  };
+
+  function diceButton() {
+    var rolled = rollDice(roll);
+    $('#dice-label').html(rolled);
+    if (roll == '1d20' || roll == 'd20') {
+      if (parseInt(rolled) == 20) {
+        $('#dice-label').addClass('nat-20');
+      } else {
+        $('#dice-label').removeClass('nat-20');
+      }
+      if (parseInt(rolled) == 1) {
+        $('#dice-label').addClass('nat-1');
+      } else {
+        $('#dice-label').removeClass('nat-1');
+      }
+    }
+  };
+</script>
+<style>
+  .dice-roller { width: 75px; height: 30px; }
+  .dice-button { background: black; color: white; font-weight: bold; border: 1px black; border-radius: 5px 0px 0px 5px; float: left; height: 100%; width: 62%; cursor: pointer; user-select: none; }
+  .dice-button:hover { background: #323232; }
+  .dice-button:active { background: #595959; }
+  .dice-label { border: 1px solid black; border-radius: 0px 5px 5px 0px; float: right; height: 22px; width: 35%; padding-top: 6px; text-align: center; }
+  .nat-20 { background: #ffd700; }
+  .nat-1 { background: #ff7276; }
+</style>
+</head>
+
+<body onLoad="init();">
+
+<div class="dice-roller" id="dice-roller">
+  <button class="dice-button" id="dice-button" onclick="diceButton();"></button>
+  <div class="dice-label" id="dice-label"></div>
+</div>
+
+</body>
+</html>

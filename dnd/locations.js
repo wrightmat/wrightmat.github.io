@@ -151,47 +151,82 @@ function selectService(el) {
 }
 
 function filterEquipment(filters) {
+  var i = 0;
   const newObj = {};
   for (const [key, value] of Object.entries(equipment)) {
     if (filters.includes(value["equipment_category"]["index"])) {
-      newObj[key] = value;
+      newObj[i] = value;
+      newObj[i]["key_prior"] = key;
+      i = i + 1;
     }
   }
   return newObj;
 }
 
 function filterServices(filters, by = 'service') {
-console.log(filters);
+  var i = 0;
   const newObj = {};
   for (const [key, value] of Object.entries(services)) {
     if ((by == "house" && filters.includes(value["house"])) || (by == "service" && filters.includes(value["service_category"]["index"]))) {
-      newObj[key] = value;
+      newObj[i] = value;
+      newObj[i]["key_prior"] = key;
+      i = i + 1;
     }
   }
   return newObj;
 }
 
-function selectPreset(el) {
-  var sel = el.options[el.selectedIndex].id;
-  var sel_index = el.selectedIndex;
-console.log(sel_index);
+function generatePreset() {
+  var i = 0;
+  var items = {};
+  var sel = $('#preset-location option:selected').attr('id');
+  var sel_index = $('#preset-location').prop('selectedIndex');
+  $('#div-output').html("<table id='items-table' width='1000px;'><tbody><tr><th width='140px;'>Name</th><th width='180px;'>Category</th><th width='60px;'>Cost</th><th width='600px;'>Description</th><th width='20px;'></th></tr></tbody></table>");
+
   if (sel == "general-store") {
-    var items = filterEquipment(['adventuring-gear','ammunition','tools','potion']);
+    var e_items = filterEquipment(['adventuring-gear','ammunition','tools','potion']);
   } else if (sel == "armor-shop") {
-    var items = filterEquipment(['armor']);
+    var e_items = filterEquipment(['armor']);
   } else if (sel == "weapon-shop") {
-    var items = filterEquipment(['weapon']);
+    var e_items = filterEquipment(['weapon']);
   } else if (sel == "potion-shop") {
-    var items = filterEquipment(['potion']);
+    var e_items = filterEquipment(['potion']);
   } else if (sel == "magic-shop") {
-    var items = filterEquipment(['potion','ring','rod','scroll','staff','wand','wondrous-item']);
+    var e_items = filterEquipment(['potion','ring','rod','scroll','staff','wand','wondrous-item']);
   } else if (sel == "tool-shop") {
-    var items = filterEquipment(['tools']);
-  } else if (el.selectedIndex >= 7)  {
-    var items = filterServices([sel], 'house');
+    var e_items = filterEquipment(['tools']);
+  } else if (sel_index >= 7)  {
+    var s_items = filterServices([sel], 'house');
+    if (sel == "cannith") {
+      var e_items = { ...filterEquipment(['armor']), ...filterEquipment(['armor']) }
+    } else if (sel == "jorasco") {
+      var e_items = { ...filterEquipment(['armor']), ...filterEquipment(['potion']) }
+    } else if (sel == "cannith") {
+      var e_items = { ...filterEquipment(['armor']), ...filterEquipment(['tools']) }
+    }
+    for (const [key, value] of Object.entries(s_items)) {
+      items[i] = value;
+      i += 1;
+      var cost = "";
+      if (value["cost"] != undefined) { 
+        cost = value["cost"]["quantity"] + ' ' + value["cost"]["unit"]
+        if (value["cost"]["per"] != undefined) { cost += " per " + value["cost"]["per"] }
+      }
+      $('#items-table > tbody:last-child').append('<tr id="' + value["index"] + '"><td id="name">' + value["name"] +'</td><td id="category">' + value["service_category"]["name"] + ' (' + value["sub_category"] + ')</td><td id="cost">' + cost + '</td><td id="description">' + value["desc"] + '</td><td id="delete" style="visibility:hidden;"><a href"#" onClick="deleteItem(this);">[x]</a></td></tr>');
+    }
+    if (e_items != undefined) {
+      for (let j = i; j < (10 - Object.keys(s_items).length + i); j++) {
+        it = e_items[getRandomInt(0, Object.keys(e_items).length-1)];
+        items[j] = it;
+        var cost = "";
+        if (it["cost"] != undefined) { 
+          cost = it["cost"]["quantity"] + ' ' + it["cost"]["unit"]
+          if (it["cost"]["per"] != undefined) { cost += " per " + it["cost"]["per"] }
+        }
+        $('#items-table > tbody:last-child').append('<tr id="' + it["index"] + '"><td id="name">' + it["name"] +'</td><td id="category">' + it["equipment_category"]["name"] + '</td><td id="cost">' + cost + '</td><td id="description">' + it["desc"] + '</td><td id="delete" style="visibility:hidden;"><a href"#" onClick="deleteItem(this);">[x]</a></td></tr>');
+      }
+    }
   }
-  console.log(Object.keys(items).length);
-  console.log(items);
 }
 
 function addItem(el) {
