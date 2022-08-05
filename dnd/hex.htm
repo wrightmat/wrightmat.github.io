@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="coloris.min.css">
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+<script type="text/javascript" src="coloris.min.js"></script>
+<script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="hex.js"></script>
+<script type="text/javascript">
+    Coloris({
+      el: '.coloris',
+      swatches: [
+        '#3d3a3a',
+        '#b2ad9c',
+        '#8a7763',
+        '#554e46',
+        '#587473',
+        '#6f7273',
+        '#9f72a0',
+        '#455760'
+      ]
+    });
+</script>
+</head>
+
+<body>
+
+Orientation: <br />
+<input type="radio" name="hexOrientation" id="hexOrientationNormal" value="0" onChange="changeOrientation();" checked="true" /><label for="hexOrientationNormal">Normal</label><br />
+<input type="radio" name="hexOrientation" id="hexOrientationRotated" value="1" onChange="changeOrientation();" /><label for="hexOrientationRotated">Rotated</label><br />
+Width: <input type="text" id="hexWidth" value="100.0" /><br />
+Height: <input type="text" id="hexHeight" value="86.60254037844388" /><br />
+<input type="button" onclick="getHexGridWH()" value="Draw Hex Grid" /><br />
+<input id="color-picker" type="text" value="#b2ad9c" data-coloris><br />
+<div id="hexStatus"></div><br />
+
+<canvas id="hexCanvas" width="1200" height="800" style="width:1200px;height:800px" />
+
+</body>
+</html>
