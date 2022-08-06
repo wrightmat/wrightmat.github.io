@@ -1,41 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="style.css">
 <link rel="stylesheet" type="text/css" href="coloris.min.css">
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script type="text/javascript" src="file_saver.min.js"></script>
 <script type="text/javascript" src="coloris.min.js"></script>
 <script type="text/javascript" src="common.js"></script>
 <script type="text/javascript" src="hex.js"></script>
 <script type="text/javascript">
     Coloris({
       el: '.coloris',
-      swatches: [
-        '#3d3a3a',
-        '#b2ad9c',
-        '#8a7763',
-        '#554e46',
-        '#587473',
-        '#6f7273',
-        '#9f72a0',
-        '#455760'
-      ]
+      swatches: [ '#3d3a3a','#b2ad9c','#8a7763','#554e46','#587473','#6f7273','#9f72a0','#dba6d8','#455760','#60101b' ]
     });
 </script>
 </head>
 
 <body>
 
-Orientation: <br />
-<input type="radio" name="hexOrientation" id="hexOrientationNormal" value="0" onChange="changeOrientation();" checked="true" /><label for="hexOrientationNormal">Normal</label><br />
-<input type="radio" name="hexOrientation" id="hexOrientationRotated" value="1" onChange="changeOrientation();" /><label for="hexOrientationRotated">Rotated</label><br />
-Width: <input type="text" id="hexWidth" value="100.0" /><br />
-Height: <input type="text" id="hexHeight" value="86.60254037844388" /><br />
-<input type="button" onclick="getHexGridWH()" value="Draw Hex Grid" /><br />
-<input id="color-picker" type="text" value="#b2ad9c" data-coloris><br />
-<div id="hexStatus"></div><br />
-
-<canvas id="hexCanvas" width="1200" height="800" style="width:1200px;height:800px" />
+<div id="div-dm" class="modal" style="position:fixed;right:10px;top:40px;height:100px;">
+<label for="select-mode">Mode:</label><select id="select-mode" onchange="changeMode();">
+<option id="color">Set Color/Terrain</option>
+<option id="visible">Toggle Visibility</option>
+<option id="title">Change Title</option>
+<option id="files">Save/Load/Reset</option></select><br /><br />
+<div id="mode-color"><label for="color-picker">Color:</label> <input id="color-picker" type="text" value="#b2ad9c" data-coloris></div>
+<div id="mode-visible">
+<input id="button-visible-all" type="button" onclick="visibleHexGrid(true);" value="Make All Visible" />
+<input id="button-visible-none" type="button" onclick="visibleHexGrid(false);" value="Make None Visible" />
+</div>
+<div id="mode-files">
+<input id="button-save" type="button" onclick="saveHexGrid();" value="Save Grid to File" />
+<input id="button-load" type="file" value="Load Grid from File" onchange="loadHexGrid(this.files[0])" style="width:90px;" />
+<input id="button-reset" type="button" onclick="resetHexGrid();" value="Reset Grid" />
+</div>
+<br /><br /></div>
+<canvas id="hexCanvas" width="3200" height="8400" /><br />
+<div id="hexStatus" style="display:none;"></div><br />
 
 </body>
 </html>
