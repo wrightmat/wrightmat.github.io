@@ -1,8 +1,9 @@
 var grid;
-var hex_highlight;
 var hex_selected;
+var marker_selected;
 var params;
-var mode = 0;
+var view = 0;
+var mode;
 
 var canvas;
 var ctx;
@@ -29,8 +30,8 @@ function setup() {
     params = new Proxy(new URLSearchParams(window.location.search), {
 	get: (searchParams, prop) => searchParams.get(prop),
     });
-    if (params.view == "DM") { mode = 1 }
-    if (mode == 0) {
+    if (params.view == "DM") { view = 1 }
+    if (view == 0) {
 	$('#div-dm').remove();
 	setTimeout("location.reload(true);", 10000);  // refresh every 10 seconds so any DM changes are displayed
     } else {
@@ -42,6 +43,7 @@ function setup() {
 	canvas.addEventListener("mouseup", handleMouseUp, false);
 	canvas.addEventListener("mousewheel", handleMouseWheel, false); // mousewheel duplicates dblclick function
 	canvas.addEventListener("DOMMouseScroll", handleMouseWheel, false); // for Firefox
+	document.addEventListener('keydown', handleKeyPress, false);
     }
 
     changeMode();
@@ -89,8 +91,7 @@ HT.Line = function(x1, y1, x2, y2) {
  */
 HT.Hexagon = function(id, x, y, PathCoOrdX = undefined, PathCoOrdY = undefined, visible, color = undefined, title = undefined) {
     this.Points = []; // Polygon Base
-    var x1 = null;
-    var y1 = null;
+    var x1 = null; var y1 = null;
     if(HT.Hexagon.Static.ORIENTATION == HT.Hexagon.Orientation.Normal) {
 	x1 = (HT.Hexagon.Static.WIDTH - HT.Hexagon.Static.SIDE)/2;
 	y1 = (HT.Hexagon.Static.HEIGHT / 2);
@@ -112,11 +113,9 @@ HT.Hexagon = function(id, x, y, PathCoOrdX = undefined, PathCoOrdY = undefined, 
     }
 
     this.Id = id;
-    this.x = x;
-    this.y = y;
-    this.x1 = x1;
-    this.y1 = y1;
-	
+    this.x = x; this.y = y;
+    this.x1 = x1; this.y1 = y1;
+
     this.TopLeftPoint = new HT.Point(this.x, this.y);
     this.BottomRightPoint = new HT.Point(this.x + HT.Hexagon.Static.WIDTH, this.y + HT.Hexagon.Static.HEIGHT);
     this.MidPoint = new HT.Point(this.x + (HT.Hexagon.Static.WIDTH / 2), this.y + (HT.Hexagon.Static.HEIGHT / 2));
@@ -129,7 +128,7 @@ HT.Hexagon = function(id, x, y, PathCoOrdX = undefined, PathCoOrdY = undefined, 
     if (title !== undefined) { this.title = title }
     this.visible = visible
 };
-	
+
 /**
  * draws this Hexagon to the canvas
  * @this {HT.Hexagon}
@@ -155,7 +154,7 @@ HT.Hexagon.prototype.draw = function(ctx) {
     ctx.stroke();
 	
     if (!this.visible) {
-	if (mode == 1) { ctx.globalAlpha = 0.5; } else { ctx.globalAlpha = 0; }
+	if (view == 1) { ctx.globalAlpha = 0.5; } else { ctx.globalAlpha = 0; }
     } else {
 	ctx.globalAlpha = 1;
     }
@@ -164,7 +163,7 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.fill();
     }
 	
-    if(this.Id && mode == 1) {
+    if(this.Id && view == 1) {
 	// draw id text
 	ctx.fillStyle = "black";
 	ctx.font = "bolder 8pt Trebuchet MS,Tahoma,Verdana,Arial,sans-serif";
@@ -173,7 +172,7 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.fillText(this.Id, this.MidPoint.X, this.MidPoint.Y);
     }
 
-    if(this.PathCoOrdX !== null && this.PathCoOrdY !== null && typeof(this.PathCoOrdX) != "undefined" && typeof(this.PathCoOrdY) != "undefined" && mode == 1) {
+    if(this.PathCoOrdX !== null && this.PathCoOrdY !== null && typeof(this.PathCoOrdX) != "undefined" && typeof(this.PathCoOrdY) != "undefined" && view == 1) {
 	// draw co-ordinates text
 	ctx.fillStyle = "black";
 	ctx.font = "bolder 8pt Trebuchet MS,Tahoma,Verdana,Arial,sans-serif";
@@ -213,6 +212,37 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.fillText("(" + this.x1.toFixed(2) + "," + this.y1.toFixed(2) + ")", this.P1.X, this.P1.Y + 10);
     }
 };
+
+HT.Marker = function(hex, x, y, visible, color, title) {
+    this.hex = hex;
+    this.x = x; this.y = y;
+    this.MidPoint = new HT.Point(x, y);
+    this.visible = visible;
+    this.color = color;
+    this.title = title;
+};
+
+HT.Marker.prototype.draw = function(ctx) {
+    var radius = 20; ctx.lineWidth = 4;
+    ctx.strokeStyle = this.color;
+
+    if (!this.visible) {
+	if (view == 1) { ctx.globalAlpha = 0.5; } else { ctx.globalAlpha = 0; }
+    } else {
+	ctx.globalAlpha = 1;
+    }
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI, false);
+    ctx.closePath();
+    ctx.stroke();
+
+    if (this.selected) {
+	ctx.fillStyle = this.color;
+	ctx.fill();
+    }
+}
+
 
 /**
  * Returns true if the x,y coordinates are inside this hexagon
@@ -295,28 +325,27 @@ HT.Hexagon.Static = {HEIGHT:91.14378277661477, WIDTH:91.14378277661477
  * @constructor
  */
 HT.Grid = function(/*double*/ width, /*double*/ height) {
-    this.Hexes = [];
+    this.Hexes = []; this.Markers = [];
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(widthCanvas/widthView, heightCanvas/heightView);
     ctx.translate(-xleftView, -ytopView);
 
     // setup a dictionary for use later for assigning the X or Y CoOrd (depending on Orientation)
-    var HexagonsByXOrYCoOrd = {}; //Dictionary<int, List<Hexagon>>
+    var HexagonsByXOrYCoOrd = {};
 
-    var row = 0;
-    var y = 0.0;
+    var row = 0; var y = 0.0;
     while (y + HT.Hexagon.Static.HEIGHT <= height) {
 	var col = 0;
 	var offset = 0.0;
 	if (row % 2 == 1) {
 	    if(HT.Hexagon.Static.ORIENTATION == HT.Hexagon.Orientation.Normal)
-		offset = (HT.Hexagon.Static.WIDTH - HT.Hexagon.Static.SIDE)/2 + HT.Hexagon.Static.SIDE;
+		offset = (HT.Hexagon.Static.WIDTH - HT.Hexagon.Static.SIDE) / 2 + HT.Hexagon.Static.SIDE;
 	    else
 		offset = HT.Hexagon.Static.WIDTH / 2;
 	    col = 1;
 	}
-		
+	
 	var x = offset;
 	while (x + HT.Hexagon.Static.WIDTH <= width) {
 	    var hexId = this.GetHexId(row, col);
@@ -345,7 +374,7 @@ HT.Grid = function(/*double*/ width, /*double*/ height) {
 	if(HT.Hexagon.Static.ORIENTATION == HT.Hexagon.Orientation.Normal)
 	    y += HT.Hexagon.Static.HEIGHT / 2;
 	else
-	    y += (HT.Hexagon.Static.HEIGHT - HT.Hexagon.Static.SIDE)/2 + HT.Hexagon.Static.SIDE;
+	    y += (HT.Hexagon.Static.HEIGHT - HT.Hexagon.Static.SIDE) / 2 + HT.Hexagon.Static.SIDE;
     }
 
     // finally go through our list of hexagons by their x co-ordinate to assign the y co-ordinate
@@ -388,6 +417,16 @@ HT.Grid.prototype.GetHexAt = function(/*Point*/ p) {
     return null;
 };
 
+HT.Grid.prototype.GetMarkerAt = function(hex) {
+    // find the marker that contains this point
+    for(var m in this.Markers) {
+	if (this.Markers[m].hex == hex) {
+	    return this.Markers[m];
+	}
+    }
+    return null;
+};
+
 /**
  * Returns a distance between two hexes
  * @this {HT.Grid}
@@ -414,6 +453,33 @@ HT.Grid.prototype.GetHexById = function(id) {
     }
     return null;
 };
+
+HT.Grid.prototype.GetHexByCoords = function(coordX, coordY) {
+    for(var i in this.Hexes) {
+	if(this.Hexes[i].PathCoOrdX == coordX && this.Hexes[i].PathCoOrdY == coordY) {
+	    return this.Hexes[i];
+	}
+    }
+    return null;
+};
+
+function sortByCoordsAsc(a, b) {
+    if (a.PathCoOrdY === b.PathCoOrdY) {
+        return 0;
+    }
+    else {
+        return (a.PathCoOrdY < b.PathCoOrdY) ? -1 : 1;
+    }
+}
+
+function sortByCoordsDesc(a, b) {
+    if (a.PathCoOrdY === b.PathCoOrdY) {
+        return 0;
+    }
+    else {
+        return (a.PathCoOrdY > b.PathCoOrdY) ? -1 : 1;
+    }
+}
 
 /**
 * Returns the nearest hex to a given point
@@ -470,16 +536,45 @@ function drawHexGrid() {
     } else {
 	grid = new HT.Grid(widthCanvas, heightCanvas);
     }
-    if (mode == 0) { ctx.scale(0.4, 0.4); }
+    if (localStorage.getItem("dnd_hex_markers") !== null) {
+	grid.Markers = JSON.parse(localStorage.getItem("dnd_hex_markers"));
+	for(var m in grid.Markers) {
+	    grid.Markers[m] = new HT.Marker(grid.Markers[m].hex, grid.Markers[m].x, grid.Markers[m].y, grid.Markers[m].visible, grid.Markers[m].color, grid.Markers[m].title);
+	}
+    }
+    if (view == 0) { ctx.scale(0.4, 0.4); }
     ctx.clearRect(0, 0, widthCanvas, heightCanvas);
     for(var h in grid.Hexes) {
 	grid.Hexes[h].draw(ctx);
     }
+    for(var m in grid.Markers) {
+	grid.Markers[m].draw(ctx);
+    }
+}
+
+function shiftAllHexes(x, y) {
+    grid.Hexes.sort(sortByCoordsDesc);
+    for(var h in grid.Hexes) {
+	var copyHex = grid.GetHexByCoords(grid.Hexes[h].PathCoOrdX - x, grid.Hexes[h].PathCoOrdY - y)
+	if (copyHex !== null) {
+	    grid.Hexes[h].color = copyHex.color;
+	    grid.Hexes[h].visible = copyHex.visible;
+	    grid.Hexes[h].title = copyHex.title;
+	} else {
+	    grid.Hexes[h].color = undefined;
+	    grid.Hexes[h].visible = undefined;
+	    grid.Hexes[h].title = undefined;
+	}
+    }
+    // sorting back to ascending prevents clipping of titles
+    grid.Hexes.sort(sortByCoordsAsc);
+    refreshHexGrid();
 }
 
 function resetHexGrid() {
     if (confirm("Are you sure you want to reset the grid?")) {
 	localStorage.removeItem("dnd_hex_grid");
+	localStorage.removeItem("dnd_hex_markers");
 	findHexWithWidthAndHeight();
 	drawHexGrid();
     }
@@ -493,10 +588,10 @@ async function loadHexGrid(file) {
 }
 
 function saveHexGrid() {
-    var title = prompt("Enter a filename", "hex_grid.txt");
+    var title = prompt("Enter a filename (.txt will be added)", "hex_grid");
     if (title !== null) {
 	var blob = new Blob([localStorage.getItem("dnd_hex_grid")], {type: "text/plain;charset=utf-8"});
-	saveAs(blob, title);
+	saveAs(blob, title+".txt");
     }
 }
 
@@ -505,16 +600,21 @@ function refreshHexGrid() {
     for(var h in grid.Hexes) {
 	grid.Hexes[h].draw(ctx);
     }
+    for(var m in grid.Markers) {
+	grid.Markers[m].draw(ctx);
+    }
     var hex_grid = JSON.stringify(grid.Hexes);
     localStorage.setItem("dnd_hex_grid", hex_grid);
+    var hex_markers = JSON.stringify(grid.Markers);
+    localStorage.setItem("dnd_hex_markers", hex_markers);
 }
 
 function changeMode() {
-    var sel = $('#select-mode :selected').attr("id");
+    mode = $('#select-mode :selected').attr("id");
     $("#select-mode > option").each(function() {
 	$('#mode-' + this.id).hide();
     });
-    $('#mode-' + sel).show();
+    $('#mode-' + mode).show();
 }
 
 function changeOrientation() {
@@ -538,60 +638,74 @@ function handleClick(e) {
     const rect = this.getBoundingClientRect()
     var point = new HT.Point(e.x - rect.left, e.y - rect.top)
     var hex = grid.GetHexAt(point);
+    var marker;
     for(var h in grid.Hexes) {
 	grid.Hexes[h].selected = false;
     }
     if (hex !== null) {
+	hex_selected = hex;
 	hex.selected = true;
-	var sel = $('#select-mode :selected').attr("id");
-	if (sel == "color") {
-	    if ($('#color-picker').val() !== "")
-		hex.color = $('#color-picker').val();
-	    else
-		hex.color = undefined;
-	} else if (sel == "visible") {
-	    hex.visible = !hex.visible;
-	} else if (sel == "title") {
-	    var title = prompt("Enter a title for this hex", hex.title);
-	    if (title !== null) { hex.title = title; }
+	$('#hex-selected').html(hex.Id + " (" + hex.PathCoOrdX + ", " + hex.PathCoOrdY + ")");
+	for(var m in grid.Markers) {
+	    grid.Markers[m].selected = false;
+	    if (grid.Markers[m].hex == hex) { marker = grid.Markers[m] }
 	}
     }
+
+    if (mode == "hexes" && hex !== null) {
+	$('#hex-title').val(hex.title);
+	if (e.ctrlKey) {
+	    // ctrl+click to pick the color from the selected hex
+	    $('#color-picker').val(hex.color);
+	    document.querySelector('#color-picker').dispatchEvent(new Event('input', { bubbles: true }));
+	} else if ($('#color-check').prop('checked')) {
+	    // regular click to apply the color (if the checkbox is checked)
+	    if ($('#color-picker').val() !== "") {
+		hex.color = $('#color-picker').val();
+	    } else { hex.color = undefined; }
+	}
+    } else if (mode == "markers") {
+	if (marker == undefined) {
+	    var m = new HT.Marker(hex, hex.MidPoint.X, hex.MidPoint.Y, true, $('#color-picker-markers').val(), $('#marker-title').val());
+	    grid.Markers.push(m);
+	    m.selected = true;
+	    marker_selected = m;
+	} else {
+	    if (e.ctrlKey) {
+		// ctrl+click to pick the color from the selected marker
+		$('#color-picker-markers').val(marker.color);
+		document.querySelector('#color-picker-markers').dispatchEvent(new Event('input', { bubbles: true }));
+	    }
+	    marker.selected = true;
+	    marker_selected = marker;
+	}
+    } else {
+	$('#hex-title').val("");
+	$('#hex-selected').html("");
+    }
+
     refreshHexGrid();
 }
 
 function handleDblClick(e) {
-    var X = e.clientX - this.offsetLeft - this.clientLeft + this.scrollLeft; // canvas coordinates
-    var Y = e.clientY - this.offsetTop - this.clientTop + this.scrollTop;
-    var x = X / widthCanvas * widthView + xleftView;  // view coordinates
-    var y = Y / heightCanvas * heightView + ytopView;
-
-    var scale = e.shiftKey == 1 ? 1.5 : 0.5; // shrink (1.5) if shift key pressed
-    widthView *= scale;
-    heightView *= scale;
-
-    if (widthView > widthViewOriginal || heightView > heightViewOriginal) {
-	widthView = widthViewOriginal;
-	heightView = heightViewOriginal;
-	x = widthView / 2;
-	y = heightView / 2;
-    }
-
-    xleftView = x - widthView / 2;
-    ytopView = y - heightView / 2;
-
-    refreshHexGrid();
+    //refreshHexGrid();
 }
 
 function handleRightClick(e) {
-    e.preventDefault();
-
     const rect = this.getBoundingClientRect()
     var point = new HT.Point(e.x - rect.left, e.y - rect.top)
     var hex = grid.GetHexAt(point);
-    if (hex !== null) {
-	$('#color-picker').val(hex.color);
-	document.querySelector('#color-picker').dispatchEvent(new Event('input', { bubbles: true }));
+    var marker = grid.GetMarkerAt(hex);
+
+    if (mode == "hexes" && hex !== null) {
+	e.preventDefault();
+	hex.visible = !hex.visible;
+    } else if (mode == "markers" && marker !== null) {
+	e.preventDefault();
+	marker.visible = !marker.visible;
     }
+
+    refreshHexGrid();
 }
 
 var mouseDown = false;
@@ -608,7 +722,7 @@ function handleMouseMove(e) {
     var Y = e.clientY - this.offsetTop - this.clientTop + this.scrollTop;
     if (mouseDown) {
         var dx = (X - lastX) / widthCanvas * widthView;
-        var dy = (Y - lastY)/ heightCanvas * heightView;
+        var dy = (Y - lastY) / heightCanvas * heightView;
 	xleftView -= dx;
 	ytopView -= dy;
     }
@@ -647,5 +761,41 @@ function handleMouseWheel(e) {
     xleftView = x - widthView / 2;
     ytopView = y - heightView / 2;
 
+    refreshHexGrid();
+}
+
+function handleKeyPress(e) {
+    var markerHex;
+    // key between 1 and 6
+    if (e.keyCode == 49) {  // 1: North
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX, marker_selected.hex.PathCoOrdY - 1);
+    } else if (e.keyCode == 50) {  // 2: NE
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX + 1, marker_selected.hex.PathCoOrdY);
+    } else if (e.keyCode == 51) {  // 3: SE
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX + 1, marker_selected.hex.PathCoOrdY + 1);
+    } else if (e.keyCode == 52) {  // 4: South
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX, marker_selected.hex.PathCoOrdY + 1);
+    } else if (e.keyCode == 53) {  // 5: SW
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX - 1, marker_selected.hex.PathCoOrdY);
+    } else if (e.keyCode == 54) {  // 6: NW
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX - 1, marker_selected.hex.PathCoOrdY - 1);
+    } else if (e.keyCode == 46) {  // Delete
+	for(var m in grid.Markers) {
+	    if (grid.Markers[m] == marker_selected) { grid.Markers.splice(m, 1); }
+	}
+    }
+    if (markerHex !== undefined) {
+	marker_selected.hex = markerHex;
+	marker_selected.x = markerHex.MidPoint.X;
+	marker_selected.y = markerHex.MidPoint.Y;
+	marker_selected.MidPoint = markerHex.MidPoint;
+    }
+
+    refreshHexGrid();
+}
+
+function updateHexTitle() {
+    var title = $('#hex-title').val();
+    hex_selected.title = title;
     refreshHexGrid();
 }

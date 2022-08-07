@@ -20,23 +20,38 @@
 
 <body>
 
-<div id="div-dm" class="modal" style="position:fixed;right:10px;top:40px;height:100px;">
-<label for="select-mode">Mode:</label><select id="select-mode" onchange="changeMode();">
-<option id="color">Set Color/Terrain</option>
-<option id="visible">Toggle Visibility</option>
-<option id="title">Change Title</option>
-<option id="files">Save/Load/Reset</option></select><br /><br />
-<div id="mode-color"><label for="color-picker">Color:</label> <input id="color-picker" type="text" value="#b2ad9c" data-coloris></div>
-<div id="mode-visible">
-<input id="button-visible-all" type="button" onclick="visibleHexGrid(true);" value="Make All Visible" />
-<input id="button-visible-none" type="button" onclick="visibleHexGrid(false);" value="Make None Visible" />
+<div id="div-dm" class="modal" style="position:fixed;right:10px;top:40px;height:200px;">
+<label for="select-mode"><b>Mode:</b></label><select id="select-mode" onchange="changeMode();">
+<option id="hexes">Select Hexes</option>
+<option id="markers">Select Markers</option>
+<option id="all">Move/Toggle All</option>
+<option id="grid">Save/Load/Reset Grid</option></select><br /><br />
+<div id="mode-hexes">
+<label for="color-picker"><b>Color:</b></label> <input id="color-picker" type="text" value="#b2ad9c" data-coloris><input type="checkbox" id="color-check" checked><br /><br />
+<label for="hex-title"><b>Title:</b></label> <input id="hex-title" type="text" value="" onchange="updateHexTitle();" />
+<p><b>Ctrl+Click:</b> Pick color from hex</p>
+<p><b>Right Click:</b> Toggle visiblity</p>
 </div>
-<div id="mode-files">
+<div id="mode-markers">
+<label for="color-picker-markers"><b>Color:</b></label> <input id="color-picker-markers" type="text" value="#0000ff" data-coloris><input type="checkbox" id="color-check-markers" checked><br /><br />
+<label for="marker-title"><b>Title:</b></label> <input id="marker-title" type="text" value="" onchange="updateMarkerTitle();" />
+<p><b>1 - 6:</b> Move marker (1= North, 4= South)</p>
+<p><b>Right Click:</b> Toggle visibility</p>
+</div>
+<div id="mode-all">
+<label for="hexes-move-x">X:</label> <input id="hexes-move-x" type="text" value="0" />
+<label for="hexes-move-y">Y:</label> <input id="hexes-move-y" type="text" value="0" />
+<input id="button-hexes-move" type="button" onclick="shiftAllHexes($('#hexes-move-x').val(), $('#hexes-move-y').val());" value="Move All Hexes" /><br />
+<input id="button-visible-all" type="button" onclick="visibleHexGrid(true);" value="Make All Visible" />
+<input id="button-visible-none" type="reset" onclick="visibleHexGrid(false);" value="Make None Visible" />
+</div>
+<div id="mode-grid">
 <input id="button-save" type="button" onclick="saveHexGrid();" value="Save Grid to File" />
-<input id="button-load" type="file" value="Load Grid from File" onchange="loadHexGrid(this.files[0])" style="width:90px;" />
+<input id="button-load" type="file" value="Load Grid from File" onchange="loadHexGrid(this.files[0])" style="width:200px;" /><br />
 <input id="button-reset" type="button" onclick="resetHexGrid();" value="Reset Grid" />
 </div>
-<br /><br /></div>
+<div id="hex-selected" style="position:absolute;right:10px;bottom:10px;"></div>
+</div>
 <canvas id="hexCanvas" width="3200" height="8400" /><br />
 <div id="hexStatus" style="display:none;"></div><br />
 
