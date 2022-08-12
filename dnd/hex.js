@@ -10,6 +10,7 @@ var ctx;
 var widthCanvas;
 var heightCanvas;
 var scaleCanvas;
+var rotateCanvas;
 
 // View parameters
 var xleftView = 0;
@@ -31,10 +32,18 @@ function setup() {
 	get: (searchParams, prop) => searchParams.get(prop),
     });
     if (params.view == "DM") { view = 1; }
-    if (params.scale) { scaleCanvas = params.scale; }
+    if (params.rotate) {
+	rotateCanvas = params.rotate;
+	$('#hexCanvas').css({ 'transform-origin': 4168 * params.scale + 'px' });
+	$('#hexCanvas').css({ 'transform': 'rotate(' + params.rotate + 'deg)' });
+    }
+    if (params.scale) {
+	scaleCanvas = params.scale;
+	canvas.height = heightCanvas * params.scale;
+	canvas.width = widthCanvas * params.scale;
+    }
 
     if (view == 0) {
-	if (params.rotate) { $('#hexCanvas').css({ transform: 'rotate(' + params.rotate + 'deg)' }) }
 	setTimeout("location.reload(true);", 10000);  // refresh every 10 seconds so any DM changes are displayed
     } else {
 	$('#div-dm').css({ visibility: 'visible' })
@@ -549,6 +558,7 @@ function drawHexGrid() {
 	    grid.Markers[m] = new HT.Marker(grid.Markers[m].hex, grid.Markers[m].x, grid.Markers[m].y, grid.Markers[m].visible, grid.Markers[m].color, grid.Markers[m].title);
 	}
     }
+    
     if (scaleCanvas !== undefined) { ctx.scale(scaleCanvas, scaleCanvas); }
     ctx.clearRect(0, 0, widthCanvas, heightCanvas);
     for(var h in grid.Hexes) {
