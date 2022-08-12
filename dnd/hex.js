@@ -9,6 +9,7 @@ var canvas;
 var ctx;
 var widthCanvas;
 var heightCanvas;
+var scaleCanvas;
 
 // View parameters
 var xleftView = 0;
@@ -29,9 +30,11 @@ function setup() {
     params = new Proxy(new URLSearchParams(window.location.search), {
 	get: (searchParams, prop) => searchParams.get(prop),
     });
-    if (params.view == "DM") { view = 1 }
+    if (params.view == "DM") { view = 1; }
+    if (params.scale) { scaleCanvas = params.scale; }
 
     if (view == 0) {
+	if (params.rotate) { $('#hexCanvas').css({ transform: 'rotate(' + params.rotate + 'deg)' }) }
 	setTimeout("location.reload(true);", 10000);  // refresh every 10 seconds so any DM changes are displayed
     } else {
 	$('#div-dm').css({ visibility: 'visible' })
@@ -181,7 +184,7 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.fillText("("+this.PathCoOrdX+","+this.PathCoOrdY+")", this.MidPoint.X, this.MidPoint.Y + 10);
     }
 
-    if (this.title !== undefined) {
+    if (this.title !== undefined && view == 1) {
 	ctx.fillStyle = "black";
 	ctx.font = "bolder 10pt Trebuchet MS,Tahoma,Verdana,Arial,sans-serif";
 	ctx.fillText(this.title, this.MidPoint.X, this.MidPoint.Y - 20);
@@ -234,10 +237,14 @@ HT.Marker.prototype.draw = function(ctx) {
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI, false);
+    if (view == 0) { // drawing a darker circle around the marker makes it stand out in player view
+	ctx.strokeStyle = "#000";
+	ctx.arc(this.x, this.y, 5, 0, 2 * Math.PI, false);
+    }
     ctx.closePath();
     ctx.stroke();
 
-    if (this.selected) {
+    if (this.selected || view == 0) {
 	ctx.fillStyle = this.color;
 	ctx.fill();
     }
@@ -542,7 +549,7 @@ function drawHexGrid() {
 	    grid.Markers[m] = new HT.Marker(grid.Markers[m].hex, grid.Markers[m].x, grid.Markers[m].y, grid.Markers[m].visible, grid.Markers[m].color, grid.Markers[m].title);
 	}
     }
-    if (view == 0) { ctx.scale(0.4, 0.4); }
+    if (scaleCanvas !== undefined) { ctx.scale(scaleCanvas, scaleCanvas); }
     ctx.clearRect(0, 0, widthCanvas, heightCanvas);
     for(var h in grid.Hexes) {
 	grid.Hexes[h].draw(ctx);
