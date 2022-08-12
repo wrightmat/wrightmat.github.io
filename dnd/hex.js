@@ -18,8 +18,6 @@ var heightViewOriginal = heightCanvas;
 var widthView = widthViewOriginal;	// actual width and height of zoomed and panned display
 var heightView = heightViewOriginal;
 
-window.addEventListener("load", setup, false);
-
 function setup() {
     $('#div-dm').hide();
     canvas = document.getElementById("hexCanvas");
