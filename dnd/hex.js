@@ -615,6 +615,9 @@ function changeMode() {
 	$('#mode-' + this.id).hide();
     });
     $('#mode-' + mode).show();
+    if (mode == "markers") {
+	$('#marker-move').hide();
+    }
 }
 
 function changeOrientation() {
@@ -644,12 +647,12 @@ function handleClick(e) {
     }
     if (hex !== null) {
 	hex_selected = hex;
-	hex.selected = true;
 	$('#hex-selected').html(hex.Id + " (" + hex.PathCoOrdX + ", " + hex.PathCoOrdY + ")");
 	for(var m in grid.Markers) {
 	    grid.Markers[m].selected = false;
-	    if (grid.Markers[m].hex == hex) { marker = grid.Markers[m] }
+	    if (grid.Markers[m].hex.Id == hex.Id) { marker = grid.Markers[m] }
 	}
+	hex.selected = true;
     }
 
     if (mode == "hexes" && hex !== null) {
@@ -670,6 +673,7 @@ function handleClick(e) {
 	    grid.Markers.push(m);
 	    m.selected = true;
 	    marker_selected = m;
+	    $('#marker-move').show();
 	} else {
 	    if (e.ctrlKey) {
 		// ctrl+click to pick the color from the selected marker
@@ -678,10 +682,12 @@ function handleClick(e) {
 	    }
 	    marker.selected = true;
 	    marker_selected = marker;
+	    $('#marker-move').show();
 	}
     } else {
 	$('#hex-title').val("");
 	$('#hex-selected').html("");
+	$('#marker-move').hide();
     }
 
     refreshHexGrid();
@@ -765,24 +771,35 @@ function handleMouseWheel(e) {
 }
 
 function handleKeyPress(e) {
-    var markerHex;
-    // key between 1 and 6
-    if (e.keyCode == 49) {  // 1: North
-	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX, marker_selected.hex.PathCoOrdY - 1);
-    } else if (e.keyCode == 50) {  // 2: NE
-	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX + 1, marker_selected.hex.PathCoOrdY);
-    } else if (e.keyCode == 51) {  // 3: SE
-	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX + 1, marker_selected.hex.PathCoOrdY + 1);
-    } else if (e.keyCode == 52) {  // 4: South
-	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX, marker_selected.hex.PathCoOrdY + 1);
-    } else if (e.keyCode == 53) {  // 5: SW
-	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX - 1, marker_selected.hex.PathCoOrdY);
-    } else if (e.keyCode == 54) {  // 6: NW
-	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX - 1, marker_selected.hex.PathCoOrdY - 1);
+    // keys between 1 and 6
+    if (e.keyCode == 49) {  moveMarker(1);
+    } else if (e.keyCode == 50) {  moveMarker(2);
+    } else if (e.keyCode == 51) {  moveMarker(3);
+    } else if (e.keyCode == 52) {  moveMarker(4);
+    } else if (e.keyCode == 53) {  moveMarker(5);
+    } else if (e.keyCode == 54) {  moveMarker(6);
     } else if (e.keyCode == 46) {  // Delete
 	for(var m in grid.Markers) {
 	    if (grid.Markers[m] == marker_selected) { grid.Markers.splice(m, 1); }
 	}
+    }
+}
+
+function moveMarker(dir) {
+    var markerHex;
+
+    if (dir == 1) {  // 1: North
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX, marker_selected.hex.PathCoOrdY - 1);
+    } else if (dir == 2) {  // 2: NE
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX + 1, marker_selected.hex.PathCoOrdY);
+    } else if (dir == 3) {  // 3: SE
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX + 1, marker_selected.hex.PathCoOrdY + 1);
+    } else if (dir == 4) {  // 4: South
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX, marker_selected.hex.PathCoOrdY + 1);
+    } else if (dir == 5) {  // 5: SW
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX - 1, marker_selected.hex.PathCoOrdY);
+    } else if (dir == 6) {  // 6: NW
+	var markerHex = grid.GetHexByCoords(marker_selected.hex.PathCoOrdX - 1, marker_selected.hex.PathCoOrdY - 1);
     }
     if (markerHex !== undefined) {
 	marker_selected.hex = markerHex;
@@ -792,6 +809,11 @@ function handleKeyPress(e) {
     }
 
     refreshHexGrid();
+}
+
+function removeMarkers() {
+    grid.Markers = [];
+    marker_selected = undefined;
 }
 
 function updateHexTitle() {
