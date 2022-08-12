@@ -18,8 +18,9 @@ var heightViewOriginal = heightCanvas;
 var widthView = widthViewOriginal;	// actual width and height of zoomed and panned display
 var heightView = heightViewOriginal;
 
+window.addEventListener("load", setup, false);
+
 function setup() {
-    $('#div-dm').hide();
     canvas = document.getElementById("hexCanvas");
     ctx = canvas.getContext("2d");
     widthCanvas = canvas.width;
@@ -33,7 +34,7 @@ function setup() {
     if (view == 0) {
 	setTimeout("location.reload(true);", 10000);  // refresh every 10 seconds so any DM changes are displayed
     } else {
-	$('#div-dm').show();
+	$('#div-dm').css({ visibility: 'visible' })
 	$('#div-dm').draggable();
 	canvas.addEventListener("click", handleClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
 	canvas.addEventListener("dblclick", handleDblClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
