@@ -21,9 +21,9 @@ var heightView = heightViewOriginal;
 window.addEventListener("load", setup, false);
 
 function setup() {
+    $('#div-dm').hide();
     canvas = document.getElementById("hexCanvas");
     ctx = canvas.getContext("2d");
-
     widthCanvas = canvas.width;
     heightCanvas = canvas.height;
 
@@ -31,10 +31,12 @@ function setup() {
 	get: (searchParams, prop) => searchParams.get(prop),
     });
     if (params.view == "DM") { view = 1 }
+
     if (view == 0) {
-	$('#div-dm').remove();
 	setTimeout("location.reload(true);", 10000);  // refresh every 10 seconds so any DM changes are displayed
     } else {
+	$('#div-dm').show();
+	$('#div-dm').draggable();
 	canvas.addEventListener("click", handleClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
 	canvas.addEventListener("dblclick", handleDblClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
 	canvas.addEventListener("contextmenu", handleRightClick, false);  // right click
@@ -49,7 +51,6 @@ function setup() {
     changeMode();
     findHexWithWidthAndHeight();
     drawHexGrid();
-    $('#div-dm').draggable();
 }
 
 
