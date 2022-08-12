@@ -15,10 +15,8 @@ var rotateCanvas;
 // View parameters
 var xleftView = 0;
 var ytopView = 0;
-var widthViewOriginal = widthCanvas;           // actual width and height of zoomed and panned display
-var heightViewOriginal = heightCanvas;
-var widthView = widthViewOriginal;	// actual width and height of zoomed and panned display
-var heightView = heightViewOriginal;
+var widthView;
+var heightView;
 
 window.addEventListener("load", setup, false);
 
@@ -27,6 +25,8 @@ function setup() {
     ctx = canvas.getContext("2d");
     widthCanvas = canvas.width;
     heightCanvas = canvas.height;
+    widthView = canvas.width;
+    heightView = canvas.height;
 
     params = new Proxy(new URLSearchParams(window.location.search), {
 	get: (searchParams, prop) => searchParams.get(prop),
@@ -45,17 +45,17 @@ function setup() {
 
     if (view == 0) {
 	setTimeout("location.reload(true);", 10000);  // refresh every 10 seconds so any DM changes are displayed
+	canvas.addEventListener("mousedown", handleMouseDown, false); // click and hold to pan
+	canvas.addEventListener("mousemove", handleMouseMove, false);
+	canvas.addEventListener("mouseup", handleMouseUp, false);
+	//$('body').css({ overflow: 'hidden' });
     } else {
 	$('#div-dm').css({ visibility: 'visible' })
 	$('#div-dm').draggable();
 	canvas.addEventListener("click", handleClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
 	canvas.addEventListener("dblclick", handleDblClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
 	canvas.addEventListener("contextmenu", handleRightClick, false);  // right click
-	canvas.addEventListener("mousedown", handleMouseDown, false); // click and hold to pan
 	canvas.addEventListener("mousemove", handleMouseMove, false);
-	canvas.addEventListener("mouseup", handleMouseUp, false);
-	canvas.addEventListener("mousewheel", handleMouseWheel, false); // mousewheel duplicates dblclick function
-	canvas.addEventListener("DOMMouseScroll", handleMouseWheel, false); // for Firefox
 	document.addEventListener('keydown', handleKeyPress, false);
     }
 
@@ -732,10 +732,10 @@ function handleRightClick(e) {
 }
 
 var mouseDown = false;
-function handleMouseDown(event) {
+function handleMouseDown(e) {
     mouseDown = true;
 }
-function handleMouseUp(event) {
+function handleMouseUp(e) {
     mouseDown = false;
 }
 
@@ -746,8 +746,9 @@ function handleMouseMove(e) {
     if (mouseDown) {
         var dx = (X - lastX) / widthCanvas * widthView;
         var dy = (Y - lastY) / heightCanvas * heightView;
-	xleftView -= dx;
-	ytopView -= dy;
+	xleftView += dx;
+	ytopView += dy;
+	$('body').css({ 'transform': 'translateY(' + ytopView + 'px) translateX(' + xleftView + 'px)' });
     }
     lastX = X;
     lastY = Y;
@@ -766,25 +767,7 @@ function handleMouseMove(e) {
 }
 
 function handleMouseWheel(e) {
-    var x = widthView / 2 + xleftView;  // view coordinates
-    var y = heightView / 2 + ytopView;
-
-    var scale = (e.wheelDelta < 0 || e.detail > 0) ? 1.2 : 0.8;
-    widthView *= scale;
-    heightView *= scale;
-
-    if (widthView > widthViewOriginal || heightView > heightViewOriginal) {
-	widthView = widthViewOriginal;
-	heightView = heightViewOriginal;
-	x = widthView / 2;
-	y = heightView / 2;
-    }
-
-    // scale about center of view, rather than mouse position. This is different than dblclick behavior.
-    xleftView = x - widthView / 2;
-    ytopView = y - heightView / 2;
-
-    refreshHexGrid();
+    //refreshHexGrid();
 }
 
 function handleKeyPress(e) {
