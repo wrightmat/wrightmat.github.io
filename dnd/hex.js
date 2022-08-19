@@ -48,8 +48,10 @@ function setup() {
 	canvas.addEventListener("mousedown", handleMouseDown, false); // click and hold to pan
 	canvas.addEventListener("mousemove", handleMouseMove, false);
 	canvas.addEventListener("mouseup", handleMouseUp, false);
+	$('#header').css({ visibility: 'hidden' })
 	//$('body').css({ overflow: 'hidden' });
     } else {
+	navbar();
 	$('#div-dm').css({ visibility: 'visible' })
 	$('#div-dm').draggable();
 	canvas.addEventListener("click", handleClick, false);  // dblclick to zoom in at point, shift dblclick to zoom out.
