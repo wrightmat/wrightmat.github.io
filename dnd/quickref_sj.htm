@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <title>D&D 5e Quick Reference - Spelljammer</title>
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="icons.css">
+    <!-- Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lora:700' rel='stylesheet' type='text/css'>
+    <!-- Javascript -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="page-background" onload="init_sj();">
+    <div class="page fontsize" data-size="fullscreen">
+
+        <div id="section-movement" class="section-container">
+            <div class="section-title">
+                Ship Movement <span class="float-right">limited by movement speed and agility</span>
+            </div>
+            <div class="section-content">
+                <div class="section-row section-subtitle text fontsize">
+                    You can move at any time during your turn (before, after, or during actions).
+                </div>
+                <div class="section-row" id="basic-movement">
+                </div>
+            </div>
+        </div>
+
+        <div id="section-action" class="section-container">
+            <div class="section-title">
+                Ship Actions <span class="float-right">1/turn</span>
+            </div>
+            <div class="section-content">
+                <div class="section-row section-subtitle text fontsize">
+                    You can perform these only if you're in the Spelljammer position, and only one person can hold that position at a time.
+                </div>
+                <div class="section-row" id="basic-actions"></div>
+            </div>
+        </div>
+
+        <div id="section-bonus-action" class="section-container">
+            <div class="section-title">
+                Officer Actions <span class="float-right">1/officer/turn</span>
+            </div>
+            <div class="section-content">
+                <div class="section-row section-subtitle text fontsize">
+                    You can take one of these actions from the available list for your position.
+                </div>
+                <div class="section-row" id="basic-bonus-actions"></div>
+            </div>
+        </div>
+
+        <div id="section-reaction" class="section-container">
+            <div class="section-title">
+                Officer Positions <span class="float-right"></span>
+            </div>
+            <div class="section-content">
+                <div class="section-row section-subtitle text fontsize">
+                    Any number of characters can concurrently serve in the same officer position (except Spelljammer), in which case they share the responsibilities and duties of that position.
+                </div>
+                <div class="section-row" id="basic-reactions"></div>
+            </div>
+        </div>
+
+        <div id="section-condition" class="section-container">
+            <div class="section-title">
+               Ship Critical Effects
+            </div>
+            <div class="section-content">
+                <div class="section-row section-subtitle text fontsize">
+                    Critical Effects occur to the ship on a critical fail, and alter its capabilities in a variety of ways. They remain in effect until repaired by the "Repair Critical Effect" Officer Action.
+                </div>
+                <div class="section-row" id="basic-conditions"></div>
+            </div>
+        </div>
+<!--
+        <div id="section-environment" class="section-container">
+            <div class="section-title">
+                Environmental Effects
+            </div>
+            <div class="section-content">
+                <div class="section-row section-subtitle text fontsize">
+                    Effects that obscure vision can prove a significant hindrance to most adventuring tasks.
+                </div>
+                <div class="section-row" id="environment-obscurance"></div>
+                <div class="section-row section-subtitle text fontsize">
+                    The presence or absence of light in an environment creates three categories of illumination.
+                </div>
+                <div class="section-row" id="environment-light"></div>
+                <div class="section-row section-subtitle text fontsize">
+                    Some creatures have extraordinary senses that allow them to perceive their environment.
+                </div>
+                <div class="section-row" id="environment-vision"></div>
+                <div class="section-row section-subtitle text fontsize">
+                    Obstacles can provide cover during combat, making a target more difficult to harm.
+                </div>
+                <div class="section-row" id="environment-cover"></div>
+            </div>
+        </div>
+-->
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" tabindex="-1">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-dialog modalsize">
+            <div class="section-container modal-container" id="modal-container">
+                <div class="section-title" id="modal-title">
+                    Modal title<span class="float-right">Action</span>
+                </div>
+                <div class="section-content">
+                    <div class="section-row section-subtitle text" id="modal-subtitle">
+                        Subtitle
+                    </div>
+                    <div class="section-row text">
+                        <div id="modal-bullets" style="white-space: pre-line;">
+                        </div>
+                    </div>
+                    <div class="section-row text" id="modal-reference">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data -->
+    <script type="text/javascript" src="data_ship_movement.js" charset="utf-8"></script>
+    <script type="text/javascript" src="data_ship_action.js" charset="utf-8"></script>
+    <script type="text/javascript" src="data_officer_action.js" charset="utf-8"></script>
+    <script type="text/javascript" src="data_officer_position.js" charset="utf-8"></script>
+    <script type="text/javascript" src="data_critical_effect.js" charset="utf-8"></script>
+    <script type="text/javascript" src="quickref.js" charset="utf-8"></script>
+</body>
+</html>
