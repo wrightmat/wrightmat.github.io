@@ -61,8 +61,8 @@ data_officer_position = [
     {
         title: "Medic",
         icon: "medical-pack",
-        subtitle: "Heal and motivate the crew",
-        description: "Heal and motivate the crew",
+        subtitle: "Heal and reassure the crew",
+        description: "Heal and reassure the crew",
         bullets: [
             "The Medic takes on the duties of tending to the injuries and illness of the crew and fellow officers. The Medic Officer role is usually a good fit for someone with high Wisdom.",
             "During your turn and while aboard a friendly spelljammer, you have access to the following special options in addition to your normal options and abilities:"

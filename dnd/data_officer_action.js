@@ -93,7 +93,7 @@ data_officer_action = [
         reference: "",
         bullets: [
             "As an action, you can reverse the effect of a critical hit. This requires succeeding at a DC 20 Intelligence (Investigation) check. You gain advantage on this roll if you have access to appropriate artisans’ tools (Carpenter’s Tools, Mason’s Tools, Tinker’s Tools, etc.) and proficiency with them.",
-	    "If successful, the effect ends (so a fire is put out, helm power is restored, a weapon is restored, sails are raised, etc.).",
+	    "If successful, the effect ends (so a fire is put out, helm power is restored, a weapon is restored, etc.).",
 	    "If the ship or weapon suffers a critical hit twice, the damage is so severe that it cannot be repaired until the combat ends."
         ]
     },

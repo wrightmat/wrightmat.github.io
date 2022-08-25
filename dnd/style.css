@@ -41,12 +41,19 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 }
 
 .section-content {
-    padding:8px;
+    padding: 8px;
     padding-bottom: 0;
     border-radius: 8px;
     margin-top: 0;
     background-color: white;
     border-color: inherit;
+    font-size: inherit;
+}
+
+.section-content-condensed {
+    padding-bottom: 0;
+    margin-top: 0;
+    background-color: white;
     font-size: inherit;
 }
 
@@ -139,6 +146,12 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
     height: 100%;
 }
 
+.itemhalf {
+    width: 47%;
+    height: 470px;
+    margin: 10px;
+}
+
 
 /* ------------------------------------------------------------------------- */
 /* Colors */
@@ -168,11 +181,11 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 }
 
 #section-reaction, #section-reaction .item-icon {
-    background-color: DarkOliveGreen ;
-    border-color: DarkOliveGreen ;
+    background-color: DarkOliveGreen;
+    border-color: DarkOliveGreen;
 }
 #section-reaction .text {
-    color: DarkOliveGreen ;
+    color: DarkOliveGreen;
 }
 
 #section-condition, #section-condition .item-icon {
@@ -339,10 +352,11 @@ p:first-child {
 
 /* Print */
 @media print {
-    .fontsize { font-size: 10pt; }
+    .fontsize { font-size: 8pt; }
     .iconsize { width: 36px; height: 36px;}
-    .itemsize { height: 36px; width:  33%; }
+    .itemsize { height: 36px; width: 33%; }
     .modalsize {}
+    body {-webkit-print-color-adjust: exact;}
 }
 
 

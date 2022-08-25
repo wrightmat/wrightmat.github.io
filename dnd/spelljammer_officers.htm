@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <title>D&D Spelljammer Officers Reference</title>
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="icons.css">
+    <!-- Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lora:700' rel='stylesheet' type='text/css'>
+    <!-- Javascript -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+
+    <div class="page fontsize" data-size="fullscreen">
+        <!-- Action section -->
+        <div id="section-action">
+            <div class="section-content-condensed">
+                <div class="section-row" id="basic-actions"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data -->
+    <script type="text/javascript" src="data_officer_action.js" charset="utf-8"></script>
+    <script type="text/javascript" src="data_officer_position.js" charset="utf-8"></script>
+    <script type="text/javascript">
+	data_officer_position.forEach(function (officer) {
+	    var icon = officer.icon || "perspective-dice-six-faces-one";
+	    var subtitle = officer.subtitle || "";
+	    var title = officer.title || "[no title]";
+	    var bullets = officer.bullets.map(function (item) { return "<p class=\"fonstsize\">" + item + "</p>"; }).join("<hr>");
+
+	    var item = document.createElement("div");
+	    item.className += "item itemhalf"
+	    item.innerHTML =
+	    '\
+	    <div class="item-icon iconsize icon-' + icon + '"></div>\
+	    <div class="item-text-container text" id="' + title + '">\
+	        <div class="item-title">' + title + '</div>\
+	        <div class="item-desc">' + subtitle + '</div>\
+	        <div class="item-details">' + bullets + '</div>\
+	    </div>\
+	    ';
+
+	    document.getElementById('basic-actions').appendChild(item);
+
+	    if (officer.actions != undefined) {
+		officer.actions.forEach(function (action) {
+		    data_officer_action.forEach(function (item) {
+			if (item.title == action) { data = item; }
+		    });
+		    var line = document.createElement('div');
+		    var line_text = "";
+		    data.bullets.forEach(function (bullet) {
+			line_text += bullet + '<br />';
+		    });
+		    line.innerHTML = "<div class='item-icon iconsize icon-" + data.icon + "'></div><b>" + data.title + ". </b>" + line_text + "<hr>";
+		    document.getElementById(title).appendChild(line);
+		});
+	    }
+
+	});
+    </script>
+
+</body>
+</html>
