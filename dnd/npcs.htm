@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>5e NPC Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="npcs.json"></script>
+  <script type="text/javascript" src="npcs.js"></script>
+  <script type="text/javascript" src="npcs_names.json"></script>
+</head>
+
+<body onLoad="init();navbar();">
+<header id="header"></header>
+
+<div class="column-main" id="div-settings">
+  <label for="npc-type">NPC Type:</label>
+  <select name="npc-type" id="npc-type">
+    <option id="random" value="random">Random</option>
+  </select><br /><br />
+
+  <label for="npc-race">NPC Race:</label>
+  <select name="npc-race" id="npc-race">
+    <option id="random" value="random">Random</option>
+  </select><br /><br />
+
+  <label for="npc-gender">NPC Gender:</label>
+  <select name="npc-gender" id="npc-gender">
+    <option id="random" value="random">Random</option>
+  </select><br /><br />
+
+  <label for="npc-alignment">NPC Alignment:</label>
+  <select name="npc-alignment" id="npc-alignment" onchange="changeAlignment();">
+    <option id="random" value="random">Random</option>
+    <option id="lg" value="lg">LG (Lawful Good)</option>
+    <option id="ln" value="ln">LN (Lawful Neutral)</option>
+    <option id="le" value="le">LE (Lawful Evil)</option>
+    <option id="ng" value="ng">NG (Neutral Good)</option>
+    <option id="nn" value="nn">NN (True Neutral)</option>
+    <option id="ne" value="ne">NE (Neutral Evil)</option>
+    <option id="cg" value="cg">CG (Chaotic Good)</option>
+    <option id="cn" value="cn">CN (Chaotic Neutral)</option>
+    <option id="ce" value="ce">CE (Chaotic Evil)</option>
+  </select><br /><br />
+  <div id="div-alignment"><table id="tbl-alignment" class="table-pointer"><tbody>
+    <tr><th></th><th width="40">Good</th><th width="40">Neutral</th><th width="40">Evil</th></tr>
+    <tr><th height="40">Lawful</th><td id="lg">LG</td><td id="ln">LN</td><td id="le">LE</td></tr>
+    <tr><th height="40">Neutral</th><td id="ng">NG</td><td id="nn">NN</td><td id="ne">NE</td></tr>
+    <tr><th height="40">Chaotic</th><td id="cg">CG</td><td id="cn">CN</td><td id="ce">CE</td></tr>
+  </tbody></table></div><br /><br />
+
+  <input type="button" name="generate-npc" value="Generate NPC" onclick="generateNPC();"></input><br /><br />
+</div>
+
+<div class="column-main" id="div-output">
+  <div id="div-npc"></div><br /><br />
+  <div id="div-misc"></div>
+</div>
+
+</body>
+</html>

@@ -4,11 +4,13 @@ table { text-align: left; }
 table > tbody > tr > td { padding: 2px 20px; }
 table > tbody > tr > th { padding: 2px 20px; }
 table > tbody > tr > td:hover { background-color: #eee; }
+.table-pointer td { cursor: pointer; }
+.table-pointer th { cursor: default; }
 .bg_grey { background: #ccc; }
 .column-modal { float: left; width: 40%; margin-right: 30px; }
 .column-main { float: left; width: 50%; margin-top: 50px; }
 .row:after { content: ""; display: table; clear: both; }
-label { float: left; width: 200px; padding-right: 24px; padding-bottom: 2px; }
+label { float: left; width: 200px; padding-right: 24px; padding-bottom: 2px; font-weight: bold; }
 input[type=button], input[type=submit] { background-color: #04AA6D; border: none; color: white; padding: 16px 32px; text-decoration: none; margin: 4px 2px; cursor: pointer; }
 input[type=reset] { background-color: red; border: none; color: white; padding: 16px 32px; text-decoration: none; margin: 4px 2px; cursor: pointer; }
 input[type=button]:disabled, input[type=submit]:disabled, input[type=reset]:disabled { background-color: #ccc; border: none; color: white; padding: 16px 32px; text-decoration: none; margin: 4px 2px; cursor: default; }

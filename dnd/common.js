@@ -44,6 +44,29 @@ function rollDice(dice, sum=true) {
   }
 }
 
+function getTableResult(table) {
+    // returns a table result based on random roll as denoted in the table
+    // either a string or array depending on the table
+    if (typeof table[0] == "string") {
+	// simple table, without ranges
+	return table[rollDice(table[0])];
+    } else if (typeof table[0] == "object") {
+	// complex table, with ranges
+	var ind;
+	var roll = rollDice(table[0][0]);
+	table[0].forEach(function (item, index) {
+	    if (typeof item == "object") {
+		if (item.length == 2 && roll >= item[0] && roll <= item[1]) {
+		    ind = index;
+		} else if (item.length == 1 && roll == item[0]) {
+		    ind = index;
+		}
+	    }
+	});
+	return table[ind];
+    }
+}
+
 function navbar() {
   var navbar = '<nav><ul> <li><a href="https://5e.tools/dmscreen.html" target="_blank"> DM Screen </a></li> <li><a href="quickref.htm" target="_blank"> Quick Reference </a></li> <li><a href="quickref_sj.htm" target="_blank"> Quick Reference (Spelljammer) </a></li> <li> - </li> <li><a href="travel.htm"> Travel Calculator </a></li> <li><a href="locations.htm"> Location Builder </a></li> <li><a href="hex.htm?view=DM"> Hex Mapper </a></li> </ul></nav><br /><br />';
   $('#header').html(navbar);

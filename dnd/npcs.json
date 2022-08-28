@@ -1,0 +1,330 @@
+npc_type = [
+	[ "1d100", [1,5], [6,10], [11,15], [16,20], [21,25], [26,35], [36,40], [41,45], [46,50], [51,55], [56,60], [61,65], [66,70], [71,75], [76,80], [81,85], [86,90], [91,95], [96,100] ],
+	{
+		title: "Acolyte",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Assassin",
+		stats: [ 11, 16, 14, 13, 11, 10 ]
+	},
+	{
+		title: "Bandit",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Bandit Captain",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Berserker",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Commoner",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Cultist",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Cult Fanatic",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Druid",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Gladiator",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Guard",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Knight",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Mage",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Noble",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Priest",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Scout",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Thug",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Tribal Warrior",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	},
+	{
+		title: "Veteran",
+		stats: [ 10, 10, 10, 10, 14, 11 ]
+	}
+]
+
+npc_race = [
+	[ "1d100", [1,3], [4,6], [7,15], [16,24], [25,35], [36,39], [40,60], [61,68], [69,79], [80,86], [87,90], [91,93], [94,96], [97], [98,100] ],
+	"Changeling",
+	"Dragonborn",
+	"Dwarf",
+	"Elf",
+	"Gnome",
+	"Goblinoid",
+	"Human",
+	"Halfling",
+	"Half-Elf",
+	"Half-Orc",
+	"Kalashtar",
+	"Orc",
+	"Shifter",
+	"Tiefling",
+	"Warforged"
+]
+
+npc_gender = [
+	[ "4d8", [1,3], [4,17], [18,31], [32] ],
+	{
+		title: "Non-Binary",
+		pronouns: [ "they", "them" ]
+	},
+	{
+		title: "Male",
+		pronouns: [ "he", "him" ]
+	},
+	{
+		title: "Female",
+		pronouns: [ "she", "her" ]
+	},
+	{
+		title: "Other/Undifferentiated",
+		pronouns: [ "it" ]
+	}
+]
+
+npc_appearance = [
+	"1d20",
+	"Distinctive jewelry: earrings, necklace, circlet, bracelets",
+	"Piercings",
+	"Flamboyant or outlandish clothes",
+	"Formal, clean clothes",
+	"Ragged, dirty clothes",
+	"Pronounced scar",
+	"Missing teeth",
+	"Missing fingers",
+	"Unusual eye color (or two different colors)",
+	"Tattoos",
+	"Birthmark",
+	"Unusual skin color",
+	"Bald",
+	"Braided beard or hair",
+	"Unusual hair color",
+	"Nervous eye twitch",
+	"Distinctive nose",
+	"Distinctive posture (crooked or rigid)",
+	"Exceptionally beautiful",
+	"Exceptionally ugly"
+]
+
+npc_ability_high = [
+	"1d6",
+	{
+		"stat": 1,
+		"mod": 2,
+		"adjectives": [ "powerful", "brawny", "strong as an ox" ]
+	},
+	{
+		"stat": 2,
+		"mod": 2,
+		"adjectives": [ "lithe", "agile", "graceful" ]
+	},
+	{
+		"stat": 3,
+		"mod": 2,
+		"adjectives": [ "hardy", "hale", "healthy" ]
+	},
+	{
+		"stat": 4,
+		"mod": 2,
+		"adjectives": [ "studious", "learned", "inquisitive" ]
+	},
+	{
+		"stat": 5,
+		"mod": 2,
+		"adjectives": [ "perceptive", "spiritual", "insightful" ]
+	},
+	{
+		"stat": 6,
+		"mod": 2,
+		"adjectives": [ "persuasive", "forceful", "born leader" ]
+	}
+]
+
+npc_ability_low = [
+	"1d6",
+	{
+		"stat": 1,
+		"mod": -1,
+		"adjectives": [ "feeble", "scrawny" ]
+	},
+	{
+		"stat": 2,
+		"mod": -1,
+		"adjectives": [ "clumsy", "fumbling" ]
+	},
+	{
+		"stat": 3,
+		"mod": -1,
+		"adjectives": [ "sickly", "pale" ]
+	},
+	{
+		"stat": 4,
+		"mod": -1,
+		"adjectives": [ "dim-witted", "slow" ]
+	},
+	{
+		"stat": 5,
+		"mod": -1,
+		"adjectives": [ "oblivious", "absent-minded" ]
+	},
+	{
+		"stat": 6,
+		"mod": -1,
+		"adjectives": [ "dull", "boring" ]
+	}
+]
+
+npc_talents = [
+	"1d20",
+	"Plays a musical instrument",
+	"Speaks several languages fluently",
+	"Unbelievably lucky",
+	"Perfect memory",
+	"Great with animals",
+	"Great with children",
+	"Great at solving puzzles",
+	"Great at one game",
+	"Great at impersonations",
+	"Draws beautifully",
+	"Paints beautifully",
+	"Sings beautifully",
+	"Drinks everyone under the table",
+	"Expert carpenter",
+	"Expert cook",
+	"Expert dart thrower and rock skipper",
+	"Expert juggler",
+	"Skilled actor and master of disguise",
+	"Skilled dancer",
+	"Knows thieves' cant"
+]
+
+npc_mannerisms = [
+	"1d20",
+	"Prone to singing, whistling, or humming quietly",
+	"Speaks in rhyme or some other peculiar way",
+	"Particularly low or high voice",
+	"Slurs words, lisps, or stutters",
+	"Enunciates overly clearly",
+	"Speaks loudly",
+	"Whispers",
+	"Uses flowery speech or long words",
+	"Frequently uses the wrong word",
+	"Uses colorful oaths and exclamations",
+	"Makes constant jokes or puns",
+	"Prone to predictions of doom",
+	"Fidgets",
+	"Squints",
+	"Stares into the distance",
+	"Chews something",
+	"Paces",
+	"Taps fingers",
+	"Bites fingernails",
+	"Twirls hair or tugs beard"
+]
+
+npc_interaction_traits = [
+	"1d12",
+	"Argumentative",
+	"Arrogant",
+	"Blustering",
+	"Rude",
+	"Curious",
+	"Friendly",
+	"Honest",
+	"Hot tempered",
+	"Irritable",
+	"Ponderous",
+	"Quiet",
+	"Suspicious"
+]
+
+npc_bonds = [
+	"1d10",
+	"Dedicated to fulfilling a personal life goal",
+	"Protective of close family members",
+	"Protective of colleagues or compatriots",
+	"Loyal to a benefactor, patron, or employer",
+	"Captivated by a romantic interest",
+	"Drawn to a special place",
+	"Protective of a sentimental keepsake",
+	"Protective of a valuable possession",
+	"Out for revenge",
+	"???"
+]
+
+npc_flaws = [
+	"1d12",
+	"Forbidden love or susceptibility to romance",
+	"Enjoys decadent pleasures",
+	"Arrogance",
+	"Envies another creature's possessions or station",
+	"Overpowering greed",
+	"Prone to rage",
+	"Has a powerful enemy",
+	"Specific phobia",
+	"Shameful or scandalous history",
+	"Secret crime or misdeed",
+	"Possession offorbidden lore",
+	"Foolhardy bravery"
+]
+
+npc_ideals = []
+npc_ideals["G"] = [
+	"1d6",
+	"Beauty", "Charity", "Greater good", "Life", "Respect", "Self-sacrifice"
+]
+npc_ideals["E"] = [
+	"1d6",
+	"Domination", "Greed", "Might", "Pain", "Retribution", "Slaughter"
+]
+npc_ideals["L"] = [
+	"1d6",
+	"Community", "Fairness", "Honor", "Logic", "Responsibility", "Tradition"
+]
+npc_ideals["C"] = [
+	"1d6",
+	"Change", "Creativity", "Freedom", "Independence", "No limits", "Whimsy"
+]
+npc_ideals["N"] = [
+	"1d6",
+	"Balance", "Knowledge", "Live and let live", "Moderation", "Neutrality", "People"
+]
+npc_ideals["O"] = [
+	"1d6",
+	"Aspiration", "Discovery", "Glory", "Nation", "Redemption", "Self-knowledge"
+]

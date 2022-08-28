@@ -1,0 +1,103 @@
+name_set['Changeling'] = [
+	'Aunn', 'Bin', 'Cas', 'Dox', 'Ek', 'Hars', 'Kilk', 'Mas', 'Nix', 'Ot', 'Paik', 'Sim', 'Vil', 'Yug'
+]
+
+name_set['Dragonborn Male'] = [
+	'Arjhan', 'Balasar', 'Bharash', 'Donaar', 'Ghesh', 'Heskan', 'Kriv', 'Medrash', 'Mehen', 'Nadarr', 'Pandjed', 'Patrin', 'Rhogar', 'Shamash', 'Shedinn', 'Tarhun', 'Torinn', 'Balvarax', 'Belahunt', 'Caersashi', 'Drakax', 'Dralasku', 'Draqrin', 'Drazakan', 'Egorox', 'Errax', 'Exizz', 'Faxan', 'Fermoz', 'Ghezax', 'Gorax', 'Herzix', 'Hisanax', 'Iorn', 'Jayrax', 'Klixan', 'Locar', 'Matahez', 'Moarax', 'Morvaraxan', 'Nagraxak', 'Navroth', 'Orlaseth', 'Pazie', 'Prixiros', 'Ravkiro', 'Rimsikara', 'Rraxon', 'Saroth', 'Sulpraxon', 'Taznax', 'Vaxan', 'Vorfarn', 'Wraeth', 'Wulunax', 'Xarrax', 'Yorax', 'Yrexal', 'Zavbron', 'Zrag', 'Zrann'
+]
+
+name_set['Dragonborn Female'] = [
+	'Akra', 'Biri', 'Daar', 'Farideh', 'Harann', 'Havilar', 'Jheri', 'Kava', 'Korinn', 'Mishann', 'Nala', 'Perra', 'Raiann', 'Sora', 'Surina', 'Thava', 'Uadjit', 'Asgarri', 'Belnoraeza', 'Birisika', 'Caerlasar', 'Calurinn', 'Delbithani', 'Desbiska', 'Draqrin', 'Dur', 'Estekk', 'Faejun', 'Faeshah', 'Fajurn', 'Forkoros', 'Fridoh', 'Ghash', 'Ghreah', 'Gorax', 'Gorlin', 'Grax', 'Greyama', 'Iorn', 'Iorskan', 'Jarax', 'Juilrama', 'Luskan', 'Mian', 'Mortrin', 'Nagiluga', 'Nalianna', 'Neszyski', 'Orlaseth', 'Pazireis', 'Perlasaha', 'Perthrapo', 'Pilam', 'Prikris', 'Qihu', 'Quiannni', 'Rasmor', 'Rasqioth', 'Rasturim', 'Ravarn', 'Rherdusa', 'Ruhimen', 'Sap', 'Sobih', 'Sosam', 'Sulinma', 'Sulpx', 'Taaphar', 'Tazn', 'Thava', 'Thebis', 'Unkiash', 'Vorurn', 'Wrahazar', 'Wralina','Yozavur', 'Zarisham', 'Zenporamba', 'Zragar'
+]
+
+name_set['Dragonborn Clan'] = [
+	'Clethtinthiallor', 'Daardendrian', 'Delmirev', 'Drachedandion', 'Fenkenkabradon', 'Kepeshkmolik', 'Kerrhylon', 'Kimbatuul', 'Linxakasendalor', 'Myastan', 'Nemmonis', 'Norixius', 'Ophinshtalajiir', 'Prexijandilin', 'Shestendeliath', 'Turnuroth', 'Verthisathurgiesh', 'Yarjerit'
+]
+
+name_set['Dwarf Male'] = [
+	'Adrik', 'Barn', 'Dain', 'Einkil', 'Fargrim', 'Flint', 'Harbek', 'Kildrak', 'Orsik', 'Rurik', 'Thoradin', 'Traubon', 'Ulfgar', 'Vondal'
+]
+
+name_set['Dwarf Female'] = [
+	'Amber', 'Dagnal', 'Eldeth', 'Gunnloda', 'Gurdis', 'Kathra', 'Ilde', 'Mardred', 'Sannl', 'Tobera', 'Vistra'
+]
+
+name_set['Dwarf Clan'] = [
+	'Balderk', 'Battlehammer', 'Brawnanvil', 'Dankil', 'Fireforge', 'Frostbeard', 'Gorunn', 'Holderhek', 'Ironfist', 'Loderr', 'Lutgehr', 'Rumnaheim', 'Strakeln', 'Torunn', 'Ungart'
+]
+
+name_set['Elf Male'] = [
+	'Adran', 'Aelar', 'Aramil', 'Arannis', 'Aust', 'Beiro', 'Berrian', 'Carric', 'Enialis', 'Erdan', 'Erevan', 'Galinndan', 'Hadarai', 'Heian', 'Himo', 'Immeral', 'Ivellios', 'Laucian', 'Mindartis', 'Paelias', 'Peren', 'Quarion', 'Riardon', 'Rolen', 'Soveliss', 'Thamior', 'Tharivol', 'Theren', 'Vari'
+]
+
+name_set['Elf Female'] = [
+	'Adrie', 'Althaea', 'Anastrianna', 'Andraste', 'Antinua', 'Bethrynna', 'Birel', 'Caelynn', 'Drusilia', 'Enna', 'Felosial', 'Ielenia', 'Jelenneth', 'Keyleth', 'Leshanna', 'Lia', 'Meriele', 'Mialee', 'Naivara', 'Quelenna', 'Quillathe', 'Sariel', 'Shanairra', 'Shava', 'Silaqui', 'Theirastra', 'Thia', 'Vadania', 'Valanthe', 'Xanaphi'
+]
+
+name_set['Gnome Male'] = [
+	'Alston', 'Alvyn', 'Boddynock', 'Brocc', 'Burgell', 'Dimble', 'Eldon', 'Erky', 'Fonkin', 'Frug', 'Gerbo', 'Gimble', 'Glim', 'Jebeddo', 'Kellen', 'Namfoodle', 'Orryn', 'Roondar', 'Seebo', 'Sindri', 'Warryn', 'Wrenn', 'Zook'
+]
+
+name_set['Gnome Female'] = [
+	'Bimpnottin', 'Breena', 'Caramip', 'Carlin', 'Donella', 'Duvamil', 'Ella', 'Ellyjobell', 'Ellywick', 'Lilli', 'Loopmottin', 'Lorilla', 'Mardnab', 'Nissa', 'Nyx', 'Oda', 'Orla', 'Roywyn', 'Shamil', 'Tana', 'Waywocket', 'Zanna'
+]
+
+name_set['Gnome Clan'] = [
+	'Beren', 'Daergel', 'Folkor', 'Garrick', 'Nackle', 'Murnig', 'Ningel', 'Raulnor', 'Scheppen', 'Timbers', 'Turen'
+]
+
+name_set['Goblinoid Male'] = [
+	'Srebnalk', 'Xiagluld', 'Caatterd', 'Grutaat', 'Drarm', 'Riobs', 'Oiq', 'Vic'
+]
+
+name_set['Goblinoid Female'] = [
+	'Gliokkolsia', 'Hokoiszea', 'Bhaftaaz', 'Criotnalmee', 'Khinkea', 'Gryh', 'Tamif', 'Duzz', 'Sharx'
+]
+
+name_set['Human Male'] = [
+	'Anton', 'Diero', 'Marcon', 'Pieron', 'Rimardo', 'Romero', 'Salazar', 'Umbero', 'Payton', 'Osmar', 'Sinclair', 'Theodor', 'Jonatan', 'Erick', 'Elbert', 'Logan', 'Hans', 'Haden', 'Brayton', 'Dean', 'Charles', 'Matthew', 'Alex', 'Ander', 'Bran', 'Faurgar', 'Windsor'
+]
+
+name_set['Human Female'] = [
+	'Balama', 'Dona', 'Faila', 'Jalana', 'Luisa', 'Marta', 'Quara', 'Selise', 'Vonda', 'Mindy', 'Skyla', 'Suzette', 'Joan', 'Macey', 'Rhiannon', 'Louella', 'Sofia', 'Sarah', 'Jolene', 'Claire', 'Kerrie', 'Rea', 'Tessa', 'Nulara', 'Umara', 'Navarra', 'Alex'
+]
+
+name_set['Halfling Male'] = [
+	'Alton', 'Ander', 'Cade', 'Corrin', 'Eldon', 'Errich', 'Finnan', 'Garret', 'Lindal', 'Lyle', 'Merric', 'Milo', 'Osborn', 'Perrin', 'Reed', 'Roscoe', 'Wellby'
+]
+
+name_set['Halfling Female'] = [
+	'Andry', 'Bree', 'Callie', 'Cora', 'Euphemia', 'Jillian', 'Kithri', 'Lavinia', 'Lidda', 'Merla', 'Nedda', 'Paela', 'Portia', 'Seraphina', 'Shaena', 'Trym', 'Vani', 'Verna'
+]
+
+name_set['Kalashtar'] = [
+	'Coratash', 'Dalavash', 'Dolishara', 'Halakosh', 'Khoratari', 'Koratana', 'Lanhareth', 'Molavakri', 'Nevitash', 'Sorashana', 'Torashtai', 'Valakhad', 'Vishara'
+]
+
+name_set['Quori'] = [
+	'Ashana', 'Ashtai', 'Ishara', 'Hareth', 'Khad', 'Kosh', 'Melk', 'Nari', 'Tana', 'Tari', 'Tash', 'Ulad', 'Vakri', 'Vash'
+]
+
+name_set['Orc Male'] = [
+	'Dench', 'Feng', 'Gell', 'Henk', 'Holg', 'Imsh', 'Keth', 'Krusk', 'Mhurren', 'Ront', 'Shump', 'Thokk'
+]
+
+name_set['Orc Female'] = [
+	'Baggi', 'Emen', 'Engong', 'Kansif', 'Myev', 'Neega', 'Ovak', 'Ownka', 'Shautha', 'Sutha', 'Vola', 'Volen', 'Yevelda'
+]
+
+name_set['Shifter'] = [
+	'Badger', 'Bear', 'Cat', 'Fang', 'Grace', 'Grim', 'Moon', 'Rain', 'Red', 'Scar', 'Stripe', 'Swift', 'Talon', 'Wolf'
+]
+
+name_set['Tiefling Male'] = [
+	'Akmenos', 'Amnon', 'Barakas', 'Damakos', 'Ekemon', 'Iados', 'Kairon', 'Leucis', 'Melech', 'Mordai', 'Morthos', 'Pelaios', 'Skamos', 'Therai'
+]
+
+name_set['Tiefling Female'] = [
+	'Akta', 'Anakis', 'Bryseis', 'Criella', 'Damaia', 'Ea', 'Kallista', 'Lerissa', 'Makaria', 'Nemeia', 'Orianna', 'Phelaia', 'Rieta'
+]
+
+name_set['Warforged'] = [
+	'Anchor', 'Banner', 'Bastion', 'Blade', 'Blue', 'Bow', 'Cart', 'Church', 'Crunch', 'Crystal', 'Dagger', 'Dent', 'Five', 'Glaive', 'Hammer', 'Iron', 'Lucky', 'Mace', 'Oak', 'Onyx', 'Pants', 'Pierce', 'Red', 'Rod', 'Rusty', 'Scout', 'Seven', 'Shield', 'Slash', 'Smith', 'Spike', 'Temple', 'Vault', 'Wall', 'Defender', 'Echo', 'Inspector', 'Prism'
+]
