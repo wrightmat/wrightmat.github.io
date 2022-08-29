@@ -68,6 +68,6 @@ function getTableResult(table) {
 }
 
 function navbar() {
-  var navbar = '<nav><ul> <li><a href="https://5e.tools/dmscreen.html" target="_blank"> DM Screen </a></li> <li><a href="quickref.htm" target="_blank"> Quick Reference </a></li> <li><a href="quickref_sj.htm" target="_blank"> Quick Reference (Spelljammer) </a></li> <li> - </li> <li><a href="travel.htm"> Travel Calculator </a></li> <li><a href="locations.htm"> Location Builder </a></li> <li><a href="hex.htm?view=DM"> Hex Mapper </a></li> </ul></nav><br /><br />';
+  var navbar = '<nav><ul> <li><a href="https://5e.tools/dmscreen.html" target="_blank"> DM Screen </a></li> <li><a href="quickref.htm" target="_blank"> Quick Reference </a></li> <li><a href="quickref_sj.htm" target="_blank"> Quick Reference (Spelljammer) </a></li> <li> - </li> <li><a href="travel.htm"> Travel Calculator </a></li> <li><a href="locations.htm"> Location Builder </a></li> <li><a href="npcs.htm"> NPC Generator </a></li> <li><a href="hex.htm?view=DM"> Hex Mapper </a></li> </ul></nav><br /><br />';
   $('#header').html(navbar);
 }

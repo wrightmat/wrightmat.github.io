@@ -101,3 +101,15 @@ name_set['Tiefling Female'] = [
 name_set['Warforged'] = [
 	'Anchor', 'Banner', 'Bastion', 'Blade', 'Blue', 'Bow', 'Cart', 'Church', 'Crunch', 'Crystal', 'Dagger', 'Dent', 'Five', 'Glaive', 'Hammer', 'Iron', 'Lucky', 'Mace', 'Oak', 'Onyx', 'Pants', 'Pierce', 'Red', 'Rod', 'Rusty', 'Scout', 'Seven', 'Shield', 'Slash', 'Smith', 'Spike', 'Temple', 'Vault', 'Wall', 'Defender', 'Echo', 'Inspector', 'Prism'
 ]
+
+name_set['Gith'] = [
+	"Osan", "Vrililrun", "Treth", "Trad'a'th", "Asath", "Lyp'a'ath", "Gelin", "X'a'aros", "L'a'as", "Xith", "Zatrug", "Fetru", "Aaluth", "Jallag", "Zelresra", "Paalle", "Idrelzy", "Jissal", "Ver'reg", "Saarstuth"
+]
+
+name_set['Giff Male'] = [
+	'Algernon', 'Horatio'
+]
+
+name_set['Giff Female'] = [
+	'Beatrice', 'Ophelia'
+]

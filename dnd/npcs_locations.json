@@ -1,0 +1,181 @@
+npc_locations = [
+	"Aundair",
+	"Breland",
+	"Eldeen Reaches",
+	"Karrnath",
+	"Thrane",
+	"Zilargo",
+	"Darguun",
+	"Valenar",
+	"Q'barra",
+	"Talenta Plains",
+	"Mror Holds",
+	"Shadow Marches",
+	"Droaam",
+	"Lhazaar Principalities",
+	"Aerenal"
+]
+
+
+npc_race['Siberspace'] = [
+	[ "1d100", [1,30], [31,50], [51,60], [61,65], [66,70], [71,75], [76,100] ],
+	"Gith",
+	"Giff",
+	"Astral Elf",
+	"Autognome",
+	"Hadozee",
+	"Plasmoid",
+	"Other"
+]
+
+npc_race['Aundair'] = [
+	[ "1d100", [1,51], [52,67], [68,78], [79,89], [90,94], [95,97], [98,99], [100] ],
+	"Human",
+	"Half-Elf",
+	"Elf",
+	"Gnome",
+	"Halfling",
+	"Shifter",
+	"Changeling",
+	"Other"
+]
+
+npc_race['Breland'] = [
+	[ "1d100", [1,44], [45,58], [59,68], [69,76], [77,83], [84,87], [88,91], [92,95], [96,98], [99,100] ],
+	"Human",
+	"Gnome",
+	"Half-Elf",
+	"Elf",
+	"Dwarf",
+	"Halfling",
+	"Changeling",
+	"Goblinoid",
+	"Orc",
+	"Other"
+]
+
+npc_race['Eldeen Reaches'] = [
+	[ "1d100", [1,45], [46,61], [62,77], [78,84], [85,91], [92,94], [95,97], [98,100] ],
+	"Human",
+	"Half-Elf",
+	"Shifter",
+	"Gnome",
+	"Halfling",
+	"Orc",
+	"Elf",
+	"Other"
+]
+
+npc_race['Karrnath'] = [
+	[ "1d100", [1,52], [53,70], [71,80], [81,88], [89,96], [97,100] ],
+	"Human",
+	"Dwarf",
+	"Halfling",
+	"Half-Elf",
+	"Elf",
+	"Other"
+]
+
+npc_race['Thrane'] = [
+	[ "1d100", [1,70], [71,80], [81,89], [90,93], [94,97], [98,100] ],
+	"Human",
+	"Half-Elf",
+	"Dwarf",
+	"Elf",
+	"Halfling",
+	"Other"
+]
+
+npc_race['Zilargo'] = [
+	[ "1d100", [1,60], [61,76], [77,87], [88,94], [95,100] ],
+	"Gnome",
+	"Human",
+	"Dwarf",
+	"Kobold",
+	"Other"
+]
+
+npc_race['Darguun'] = [
+	[ "1d100", [1,81], [82,87], [88,93], [94,100] ],
+	"Goblinoid",
+	"Kobold",
+	"Human",
+	"Other"
+]
+
+npc_race['Valenar'] = [
+	[ "1d100", [1,43], [44,71], [72,86], [87,91], [92,96], [97,100] ],
+	"Elf",
+	"Human",
+	"Half-Elf",
+	"Halfling",
+	"Goblinoid",
+	"Other"
+]
+
+npc_race["Q'barra"] = [
+	[ "1d100", [1,46], [47,78], [79,85], [86,92], [93,95], [96,97], [98,100] ],
+	"Lizardfolk",
+	"Human",
+	"Kobold",
+	"Halfling",
+	"Dwarf",
+	"Half-Elf",
+	"Other"
+]
+
+npc_race['Talenta Plains'] = [
+	[ "1d100", [1,80], [81,90], [91,94], [95,98], [99,100] ],
+	"Halfling",
+	"Human",
+	"Changeling",
+	"Dwarf",
+	"Other"
+]
+
+npc_race['Mror Holds'] = [
+	[ "1d100", [1,65], [66,77], [78,87], [88,95], [96,100] ],
+	"Dwarf",
+	"Human",
+	"Orc",
+	"Gnome",
+	"Other"
+]
+
+npc_race['Shadow Marches'] = [
+	[ "1d100", [1,55], [56,80], [81,90], [91,97], [98,100] ],
+	"Orc",
+	"Human",
+	"Goblinoid",
+	"Half-Orc",
+	"Other"
+]
+
+npc_race['Droaam'] = [
+	[ "1d100", [1,20], [21,39], [40,57], [58,62], [63,100] ],
+	"Gnoll",
+	"Orc",
+	"Goblinoid",
+	"Shifter",
+	"Other"
+]
+
+npc_race['Lhazaar Principalities'] = [
+	[ "1d100", [1,42], [43,58], [59,72], [73,84], [85,89], [90,93], [94,97], [98,100] ],
+	"Human",
+	"Gnome",
+	"Half-Elf",
+	"Changeling",
+	"Dwarf",
+	"Elf",
+	"Halfling",
+	"Other"
+]
+
+npc_race['Aerenal'] = [
+	[ "1d100", [1,77], [78,96], [97,99], [100] ],
+	"Elf",
+	"Undying",
+	"Half-Elf",
+	"Other"
+]

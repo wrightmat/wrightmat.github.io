@@ -1,6 +1,11 @@
 var align_selected = [];
 function init() {
     // populate npc choices from json data
+    npc_locations.forEach(function (item) {
+	if (typeof item == "string") {
+	    $('#npc-location').append(`<option id="${item}">${item}</option>`);
+	}
+    });
     npc_type.forEach(function (item) {
 	if (item.title != undefined) {
 	    $('#npc-type').append(`<option id="${item.title}">${item.title}</option>`);
@@ -52,7 +57,19 @@ function generateNPC() {
 	var type = ind.title;
     }
     if ($('#npc-race').find(':selected').val() == 'random') {
-	var race = getTableResult(npc_race);
+	if ($('#npc-location').find(':selected').val() == 'eberron') {
+	    var race = getTableResult(npc_race);
+	} else if ($('#npc-location').find(':selected').val() == 'space') {
+	    var race = getTableResult(npc_race['Siberspace']);
+	    if (race == "Other") {
+		var race = getTableResult(npc_race);
+	    }
+	} else {
+	    var race = getTableResult(npc_race[$('#npc-location').find(':selected').text()]);
+	    if (race == "Other") {
+		var race = getTableResult(npc_race);
+	    }
+	}
     } else {
 	var race = $('#npc-race').find(':selected').val()
     }
@@ -66,15 +83,20 @@ function generateNPC() {
     } else {
 	var alignment = $('#npc-alignment').find(':selected').val()
     }
+    // Half races - combine the two name sets before using the markov generator
     if (race == "Half-Elf") {
 	var names = name_set['Elf ' + gender].concat(name_set['Human ' + gender]);
 	var name = generate_name(names);
     } else if (race == "Half-Orc") {
 	var names = name_set['Orc ' + gender].concat(name_set['Human ' + gender]);
 	var name = generate_name(names);
-    } else if (['Changeling','Kalashtar','Shifter','Warforged'].includes(race)) {
+    // Non-gendered races
+    } else if (['Changeling','Kalashtar'].includes(race)) {
 	var name_type = race;
 	var name = generate_name(name_type);
+    // Races with specific names that shouldn't use the markov generator
+    } else if (['Shifter','Warforged'].includes(race)) {
+	var name = name_set[race][Math.floor(Math.random() * name_set[race].length)];
     } else {
 	var name_type = race + ' ' + gender;
 	var name = generate_name(name_type);
@@ -92,8 +114,8 @@ function generateNPC() {
     stats[ability_high.stat - 1] += ability_high.mod;
     stats[ability_low.stat - 1] += ability_low.mod;
     output += "<b>Name</b>: " + name + "<br /><br />";
-    output += "<b>Type</b>: " + type + "<br />";
     output += "<b>Race</b>: " + race + "<br />";
+    output += "<b>Type</b>: " + type + "<br />";
     output += "<b>Gender</b>: " + gender + "<br />";
     output += "<b>Alignment</b>: " + alignment.toUpperCase() + "<br /><br />";
     output += "<b>Stats</b>: STR " + stats[0] + " (" + (Math.floor((stats[0]-10)/2)) + "), DEX " + stats[1] + " (" + (Math.floor((stats[1]-10)/2)) + "), CON " + stats[2] + " (" + (Math.floor((stats[2]-10)/2)) + "), INT " + stats[3] + " (" + (Math.floor((stats[3]-10)/2)) + "), WIS " + stats[4] + " (" + (Math.floor((stats[4]-10)/2)) + "), CHA " + stats[5] + " (" + (Math.floor((stats[5]-10)/2)) + ")<br /><br />";

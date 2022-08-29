@@ -94,7 +94,20 @@ npc_race = [
 	"Orc",
 	"Shifter",
 	"Tiefling",
-	"Warforged"
+	"Warforged",
+	" --- ",
+	"Kobold",
+	"Lizardfolk",
+	"Gnoll",
+	"Undying",
+	"Gith (-yanki/-zerai)",
+	"Giff",
+	"Astral Elf",
+	"Autognome",
+	"Plasmoid",
+	"Hadozee",
+	"Slaad",
+	"Herengon"
 ]
 
 npc_gender = [

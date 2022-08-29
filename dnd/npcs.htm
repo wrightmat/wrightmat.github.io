@@ -10,19 +10,26 @@
   <script type="text/javascript" src="npcs.json"></script>
   <script type="text/javascript" src="npcs.js"></script>
   <script type="text/javascript" src="npcs_names.json"></script>
+  <script type="text/javascript" src="npcs_locations.json"></script>
 </head>
 
 <body onLoad="init();navbar();">
 <header id="header"></header>
 
 <div class="column-main" id="div-settings">
-  <label for="npc-type">NPC Type:</label>
-  <select name="npc-type" id="npc-type">
-    <option id="random" value="random">Random</option>
-  </select><br /><br />
+  <label for="npc-location">NPC Location:</label>
+  <select name="npc-location" id="npc-location">
+    <option id="eberron" value="eberron">General Eberron</option>
+    <option id="space" value="space">General Siberspace</option>
+  </select><br /><br /><br />
 
   <label for="npc-race">NPC Race:</label>
   <select name="npc-race" id="npc-race">
+    <option id="random" value="random">Random</option>
+  </select><br /><br />
+
+  <label for="npc-type">NPC Type:</label>
+  <select name="npc-type" id="npc-type">
     <option id="random" value="random">Random</option>
   </select><br /><br />
 
