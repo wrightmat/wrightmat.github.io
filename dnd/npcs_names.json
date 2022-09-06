@@ -79,11 +79,11 @@ name_set['Quori'] = [
 ]
 
 name_set['Orc Male'] = [
-	'Dench', 'Feng', 'Gell', 'Henk', 'Holg', 'Imsh', 'Keth', 'Krusk', 'Mhurren', 'Ront', 'Shump', 'Thokk'
+	'Dench', 'Feng', 'Gell', 'Henk', 'Holg', 'Imsh', 'Keth', 'Krusk', 'Mhurren', 'Ront', 'Shump', 'Thokk', 'Grutok', 'Lortar', 'Abzug', 'Shugog', 'Urzul', 'Ruhk', 'Mobad', 'Shamog', 'Mugrub', 'Bajok', 'Rhorog', 'Jahrukk'
 ]
 
 name_set['Orc Female'] = [
-	'Baggi', 'Emen', 'Engong', 'Kansif', 'Myev', 'Neega', 'Ovak', 'Ownka', 'Shautha', 'Sutha', 'Vola', 'Volen', 'Yevelda'
+	'Baggi', 'Emen', 'Engong', 'Kansif', 'Myev', 'Neega', 'Ovak', 'Ownka', 'Shautha', 'Sutha', 'Vola', 'Volen', 'Yevelda', 'Kansif', 'Ownka', 'Emen', 'Sutha', 'Myev', 'Neega', 'Baggi', 'Shautha', 'Ovak', 'Vola', 'Engong'
 ]
 
 name_set['Shifter'] = [

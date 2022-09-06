@@ -12,8 +12,8 @@ function init() {
 	}
     });
     npc_race.forEach(function (item) {
-	if (typeof item == "string") {
-	    $('#npc-race').append(`<option id="${item}">${item}</option>`);
+	if (item.title != undefined) {
+	    $('#npc-race').append(`<option id="${item.title}">${item.title}</option>`);
 	}
     });
     npc_gender.forEach(function (item) {
@@ -38,14 +38,11 @@ function changeAlignment() {
 
 function generateNPC() {
     var output = ""
-    var ind
 
-    var name = generate_name('Dragonborn Clan');
     if ($('#npc-type').find(':selected').val() == 'random') {
 	var type = getTableResult(npc_type);
-	var stats = type.stats;
-	type = type.title;
     } else {
+	var ind = []
 	npc_type.forEach(function (item) {
 	    if (item.title != undefined) {
 		if (item.title == $('#npc-type').find(':selected').val()) {
@@ -53,8 +50,7 @@ function generateNPC() {
 		}
 	    }
 	});
-	var stats = ind.stats;
-	var type = ind.title;
+	var type = ind;
     }
     if ($('#npc-race').find(':selected').val() == 'random') {
 	if ($('#npc-location').find(':selected').val() == 'eberron') {
@@ -71,12 +67,28 @@ function generateNPC() {
 	    }
 	}
     } else {
-	var race = $('#npc-race').find(':selected').val()
+	var ind = []
+	npc_race.forEach(function (item) {
+	    if (item.title != undefined) {
+		if (item.title == $('#npc-race').find(':selected').val()) {
+		    ind = item;
+		}
+	    }
+	});
+	var race = ind
     }
     if ($('#npc-gender').find(':selected').val() == 'random') {
-	var gender = getTableResult(npc_gender).title;
+	var gender = getTableResult(npc_gender);
     } else {
-	var gender = $('#npc-gender').find(':selected').val()
+	var ind = []
+	npc_gender.forEach(function (item) {
+	    if (item.title != undefined) {
+		if (item.title == $('#npc-gender').find(':selected').val()) {
+		    ind = item;
+		}
+	    }
+	});
+	var gender = ind
     }
     if ($('#npc-alignment').find(':selected').val() == 'random') {
 	var alignment = align_selected[Math.floor(Math.random() * align_selected.length)]
@@ -84,47 +96,119 @@ function generateNPC() {
 	var alignment = $('#npc-alignment').find(':selected').val()
     }
     // Half races - combine the two name sets before using the markov generator
-    if (race == "Half-Elf") {
-	var names = name_set['Elf ' + gender].concat(name_set['Human ' + gender]);
+    if (race.title == "Half-Elf") {
+	var names = name_set['Elf ' + gender.title].concat(name_set['Human ' + gender.title]);
 	var name = generate_name(names);
-    } else if (race == "Half-Orc") {
-	var names = name_set['Orc ' + gender].concat(name_set['Human ' + gender]);
+    } else if (race.title == "Half-Orc") {
+	var names = name_set['Orc ' + gender.title].concat(name_set['Human ' + gender.title]);
 	var name = generate_name(names);
     // Non-gendered races
-    } else if (['Changeling','Kalashtar'].includes(race)) {
-	var name_type = race;
+    } else if (['Changeling','Kalashtar'].includes(race.title)) {
+	var name_type = race.title;
 	var name = generate_name(name_type);
     // Races with specific names that shouldn't use the markov generator
-    } else if (['Shifter','Warforged'].includes(race)) {
-	var name = name_set[race][Math.floor(Math.random() * name_set[race].length)];
+    } else if (['Shifter','Warforged'].includes(race.title)) {
+	var name = name_set[race.title][Math.floor(Math.random() * name_set[race.title].length)];
     } else {
-	var name_type = race + ' ' + gender;
+	var name_type = race.title + ' ' + gender.title;
 	var name = generate_name(name_type);
     }
+
+    var age = []; var height; var weight; var speed; var eyes = ""; var hair = ""; var skin = "";
+    var tiers = [ "Young Adult", "Adult", "Middle Aged", "Older Adult", "Elderly" ];
+    if (race.age) {
+	age.age = getRandomInt(race.age[0], race.age[1]);
+	var age_tiers = Math.floor((race.age[1] - race.age[0]) / 5);
+	var age_tier = Math.floor(age.age / age_tiers);
+	age.group = tiers[age_tier - 1];
+    }
+    if (race.height) { height = getRandomInt(race.height[0], race.height[1]); }
+    if (race.weight) { weight = getRandomInt(race.weight[0], race.weight[1]); }
+    if (race.speed) { speed = race.speed; }
+    if (race.eyes) { eyes = getTableResult(race.eyes); }
+    if (race.hair) { hair = getTableResult(race.hair); }
+    if (race.skin) { skin = getTableResult(race.skin); }
+
+    var orientation = getTableResult(npc_orientation);
+    var relationship = getTableResult(npc_relationship);
     var appearance = getTableResult(npc_appearance);
     var ability_high = getTableResult(npc_ability_high);
     var ability_low = getTableResult(npc_ability_low);
-    var talents = getTableResult(npc_talents);
-    var mannerisms = getTableResult(npc_mannerisms);
-    var interaction_traits = getTableResult(npc_interaction_traits);
-    var bonds = getTableResult(npc_bonds);
-    var flaws = getTableResult(npc_flaws);
+    var talent = getTableResult(npc_talents);
+    var mannerism = getTableResult(npc_mannerisms);
+    var interaction_trait = getTableResult(npc_interaction_traits);
+    var bond = getTableResult(npc_bonds);
+    var flaw = getTableResult(npc_flaws);
     var ideal_1 = getTableResult(npc_ideals[alignment.substring(0,1).toUpperCase()])
     var ideal_2 = getTableResult(npc_ideals[alignment.substring(2,1).toUpperCase()])
+    if (getRandomInt(0,1) == 0) { var ideal = ideal_1 } else { var ideal = ideal_2 }
+    var saying; do { saying = getTableResult(npc_sayings); }
+    while ( (saying.race != undefined && !saying.race.includes(race)) || (saying.alignment != undefined && !(saying.alignment.includes(alignment.substring(0,1)) || saying.alignment.includes(alignment.substring(2,1)))) || (saying.type != undefined && !saying.type.includes(type)) );
+    var stats = type.stats;
     stats[ability_high.stat - 1] += ability_high.mod;
     stats[ability_low.stat - 1] += ability_low.mod;
+
+    var npc = [];
+    npc.name = name;
+    npc.race = race;
+    npc.type = type;
+    npc.gender = gender;
+    npc.orientation = orientation;
+    npc.relationship = relationship;
+    npc.age = age;
+    npc.height = height;
+    npc.weight = weight;
+    npc.eyes = eyes;
+    npc.hair = hair;
+    npc.skin = skin;
+    npc.alignment = alignment;
+    npc.stats = stats;
+    npc.speed = speed;
+    npc.appearance = appearance;
+    npc.talent = talent;
+    npc.mannerism = mannerism;
+    npc.interaction_trait = interaction_trait;
+    npc.bond = bond;
+    npc.flaw = flaw;
+    npc.ideal = ideal;
+    npc.saying = saying.saying
+console.log(npc);
+
     output += "<b>Name</b>: " + name + "<br /><br />";
-    output += "<b>Race</b>: " + race + "<br />";
-    output += "<b>Type</b>: " + type + "<br />";
-    output += "<b>Gender</b>: " + gender + "<br />";
-    output += "<b>Alignment</b>: " + alignment.toUpperCase() + "<br /><br />";
-    output += "<b>Stats</b>: STR " + stats[0] + " (" + (Math.floor((stats[0]-10)/2)) + "), DEX " + stats[1] + " (" + (Math.floor((stats[1]-10)/2)) + "), CON " + stats[2] + " (" + (Math.floor((stats[2]-10)/2)) + "), INT " + stats[3] + " (" + (Math.floor((stats[3]-10)/2)) + "), WIS " + stats[4] + " (" + (Math.floor((stats[4]-10)/2)) + "), CHA " + stats[5] + " (" + (Math.floor((stats[5]-10)/2)) + ")<br /><br />";
+
+    output += "<b>Race</b>: " + race.title + "<br />";
+    output += "<b>Type</b>: " + type.title + "<br /><br />";
+
+    output += "<b>Gender</b>: " + gender.title + "<br />";
+    output += "<b>Sexual Orientation</b>: " + orientation + "<br />";
+    output += "<b>Relationship Status</b>: " + relationship + "<br /><br />";
+
+    output += "<b>Age</b>: " + age.age + " (" + age.group + ")<br />";
+    output += "<b>Height</b>: " + Math.floor(height/12) + "' " + (height%12) + "\" (" + height +" in.)<br />";
+    output += "<b>Weight</b>: " + weight + " lbs.<br />";
+    output += "<b>Eyes</b>: " + eyes + "<br />";
+    output += "<b>Hair</b>: " + hair + "<br />";
+    output += "<b>Skin</b>: " + skin + "<br /><br />";
+
+    output += "<b>Alignment</b>: " + alignment.toUpperCase() + "<br />";
+    output += "<b>Stats</b>: STR " + stats[0] + ", DEX " + stats[1] + ", CON " + stats[2] + ", INT " + stats[3] + ", WIS " + stats[4] + ", CHA " + stats[5] + "<br />";
+    output += "<iframe src='dice.htm?ability=" + stats[0] + "&label=Strength' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + stats[1] + "&label=Dexterity' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + stats[2] + "&label=Constitution' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + stats[3] + "&label=Intelligence' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + stats[4] + "&label=Wisdom' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + stats[5] + "&label=Charisma' style='width:100px;height:120px;border:0px;'></iframe><br />";
+    output += "<b>Speed</b>: " + speed + "<br /><br />";
+
     output += "<b>Appearance</b>: " + appearance + "<br />";
-    output += "<b>Talents</b>: " + talents + "<br />";
-    output += "<b>Interaction Traits</b>: " + interaction_traits + "<br />";
-    output += "<b>Bonds</b>: " + bonds + "<br />";
-    output += "<b>Flaws</b>: " + flaws + "<br />";
-    output += "<b>Ideals</b>: " + ideal_1 + ", " + ideal_2 + "<br />";
+    output += "<b>Talents</b>: " + talent + "<br />";
+    output += "<b>Mannerisms</b>: " + mannerism + "<br />";
+    output += "<b>Interaction Traits</b>: " + interaction_trait + "<br />";
+    output += "<b>Bonds</b>: " + bond + "<br />";
+    output += "<b>Flaws</b>: " + flaw + "<br />";
+    output += "<b>Ideals</b>: " + ideal + "<br /><br />";
+
+    output += "<b>Saying</b>: " + saying.saying + "<br />";
     $('#div-npc').html(output);
 }
 

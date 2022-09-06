@@ -1,0 +1,376 @@
+npc_sayings = [
+	"1d100",
+	{
+		saying: "What happens happened and will happen again!"
+	},
+	{
+		saying: "By my Great Aunt Myrra's beard!",
+		race: [ 'Dwarf' ]
+	},
+	{
+		saying:  "I once knew a goblin who talked like you, I didn't know him for long if you get what I mean.",
+		alignment:  [ 'e', 'n' ]
+	},
+	{
+		saying:  "I'm a good guy! I kill things before they hurt you.",
+		alignment:  [ 'g' ]
+	},
+	{
+		saying:  "When I'm done with you I'll be the tall one!",
+		race:  [ 'Dwarf', 'Gnome', 'Halfling' ]
+	},
+	{
+		saying:  "By my own beard!",
+		race: [ 'Dwarf' ]
+	},
+	{
+		saying: "It's not the size of the dwarf in a fight. It's the size of the fight in a dwarf!",
+		race: [ 'Dwarf' ]
+	},
+	{
+		saying: "My father is a Lord, do you know what that means? It means that I am more important than you.",
+		type: [ 'Noble' ]
+	},
+	{
+		saying: "I'm a PASS-A-FIST. Here, catch! *Punch random PC*",
+		alignment: [ 'c' ]
+	},
+	{
+		saying: "If something is nonlethal then you aren’t trying hard enough.",
+		alignment: [ 'c', 'e' ]
+	},
+	{
+		saying: "May the bridges I burn light the way.",
+		alignment: [ 'c', 'e' ]
+	},
+	{
+		saying: "May madness and disease visit you often.",
+		alignment: [ 'c', 'e' ]
+	},
+	{
+		saying: "You're up against the wall, and I am the fucking wall",
+		alignment: [ 'c', 'e' ]
+	},
+	{
+		saying: "May your knives drink deeply. (A farewell to fellow soldiers)",
+		type: [ 'Gladiator', 'Knight', 'Veteran' ]
+	},
+	{
+		saying: "Never let up on your foe. To give them even a moment's chance to recover was folly.",
+		type: [ 'Gladiator', 'Knight', 'Veteran' ]
+	},
+	{
+		saying: "Peasants.",
+		type: [ 'Noble' ]
+	},
+	{
+		saying: "I've wrastled Owlbears tougher than you, boy!",
+		type: [ 'Tribal Warrior', 'Thug', 'Gladiator', 'Berserker' ]
+	},
+	{
+		saying: "Always trust a flumph."
+	},
+	{
+		saying: "I hate the Underdark. It's too dark."
+	},
+	{
+		saying: "Don't feed the owlbears!"
+	},
+	{
+		saying: "You've got some nerve, looking at me and all."
+	},
+	{
+		saying: "So it has come to this?"
+	},
+	{
+		saying: "I wish we were better strangers."
+	},
+	{
+		saying: "If you're gonna be dumb you gotta be tough!"
+	},
+	{
+		saying: "Dishonor on you. Dishonor on your family. Dishonor on your COW!"
+	},
+	{
+		saying: "When all you have is a hammer. Everything else becomes the nail."
+	},
+	{
+		saying: "Take it up with my lawyer."
+	},
+	{
+		saying: "I'll drink you under the table, scrub!"
+	},
+	{
+		saying: "The wheel weaves as the wheel wills."
+	},
+	{
+		saying: "Chattering doesn't roll the barrel. (Shut up and get to work, in other words.)"
+	},
+	{
+		saying: "Dirty hands stroke a white beard. (As you get older, you may have to compromise your youthful ideals. More generally used to mean sometimes you have to compromise.)"
+	},
+	{
+		saying: "Always have two strings for your bow. (An expression of caution and preparation.)"
+	},
+	{
+		saying: "Without wine there is no conversation. (Beyond its obvious meaning, the phrase is spoken as a request for or promise of hospitality.)"
+	},
+	{
+		saying: "You can break a single arrow, but not ten in a bunch."
+	},
+	{
+		saying: "There's more to good ale than a silver flagon. (Substance over style.)"
+	},
+	{
+		saying: "You must have been born in a stupid-tree, fell, and hit every branch on the way down!"
+	},
+	{
+		saying: "Well you can go straight to Khyber."
+	},
+	{
+		saying: "A little love goes a long way."
+	},
+	{
+		saying: "Drugs won't make you happy, but sometimes they help."
+	},
+	{
+		saying: "Don't do anything that your evil mirror twin would do!"
+	},
+	{
+		saying: "That's rough. [hands you a fresh peach] Maybe this'll help."
+	},
+	{
+		saying: "You wanna die bitch?!"
+	},
+	{
+		saying: "Can it burn? Maybe we should just burn it."
+	},
+	{
+		saying: "[After every order or statement by the players:] Why? Seriously, I wanna know.."
+	},
+	{
+		saying: "They can't hurt ya if ya don't believe in 'em."
+	},
+	{
+		saying: "And so the turn tables, are turning."
+	},
+	{
+		saying: "Looks like the glove is on the other foot."
+	},
+	{
+		saying: "Curiousity killed the dog."
+	},
+	{
+		saying: "What in all that is holy is going on here?!"
+	},
+	{
+		saying: "Better in than out, I say."
+	},
+	{
+		saying: "Bang a gong, let's get it on!"
+	},
+	{
+		saying: "I kick ass for the Flame/Sovereign!"
+	},
+	{
+		saying: "I think I'm allergic to that."
+	},
+	{
+		saying: "Something stinks, and it ain't my toe fungus."
+	},
+	{
+		saying: "You know, the best thing about brain damage is you get to keep hearing the same jokes over and over and they never stop being funny. (repeat as often as possible, even in the same conversation)"
+	},
+	{
+		saying: "This is your burn notice."
+	},
+	{
+		saying: "A balance must always be paid."
+	},
+	{
+		saying: "This, too, is the will of the prophesy."
+	},
+	{
+		saying: "Weapons are for weak men, mercy is for weak women."
+	},
+	{
+		saying: "It has been foreseen."
+	},
+	{
+		saying: "You have made your choice."
+	},
+	{
+		saying: "All will be revealed..."
+	},
+	{
+		saying: "In all the planes I have never seen something so..."
+	},
+	{
+		saying: "Redemption is overrated."
+	},
+	{
+		saying: "My mother always told me to have mercy. Unfortunately for you, I'm a bit of a rebel."
+	},
+	{
+		saying: "Let me tell you how this is going to go."
+	},
+	{
+		saying: "I was never here."
+	},
+	{
+		saying: "Happiness is like a mimic, deceptive and deadly."
+	},
+	{
+		saying: "I hope your next wound is unique."
+	},
+	{
+		saying: "What wonderful art I could make with a soul as colorful as yours."
+	},
+	{
+		saying: "The stars align in my favor."
+	},
+	{
+		saying: "Foresight makes life so boring."
+	},
+	{
+		saying: "Do you ever wonder what life would be like if you just disappeared?"
+	},
+	{
+		saying: "You lie? You die."
+	},
+	{
+		saying: "Keep your gold close and your dagger closer."
+	},
+	{
+		saying: "Insanity is law in a land driven by chaos."
+	},
+	{
+		saying: "Yeah, I'm gonna stop you right there."
+	},
+	{
+		saying: "The relationship between luck and talent is 500 gold pieces."
+	},
+	{
+		saying: "I'm only here for the gold."
+	},
+	{
+		saying: "Grant me the serenity to accept the things I cannot change, the courage to change the things I can, and the weaponry to make the difference"
+	},
+	{
+		saying: "Don't splash me with acid and tell me it's raining."
+	},
+	{
+		saying: "Does an Owlbear shit in the woods?"
+	},
+	{
+		saying: "Dragons are like the best thing ever."
+	},
+	{
+		saying: "Honor is the only thing that matters."
+	},
+	{
+		saying: "You may kiss my pinky."
+	},
+	{
+		saying: "But is there gold?"
+	},
+	{
+		saying: "It was there, so I took it."
+	},
+	{
+		saying: "It looks safe enough."
+	},
+	{
+		saying: "-sigh- ...this is going to hurt."
+	},
+	{
+		saying: "I used to be an adventurer like you, but then I took an arrow to the knee."
+	},
+	{
+		saying: "It's not really magic unless something goes *boom*"
+	},
+	{
+		saying: "Plan?...There ain't no plan!"
+	},
+	{
+		saying: "Well, butter me nibblets."
+	},
+	{
+		saying: "It's all about the right tool for the job."
+	},
+	{
+		saying: "My blade is sharper than your tongue."
+	},
+	{
+		saying: "My horse is smarter than you and I reckon he's a dumb horse."
+	},
+	{
+		saying: "You ain’t useful or pretty."
+	},
+	{
+		saying: "Secrets are like acid. They burn you up but they can be fun to spit out."
+	},
+	{
+		saying: "Things do look bad, but I am confident that they will get worse soon."
+	},
+	{
+		saying: "Shame you didn’t work on your brains AND your muscles."
+	},
+	{
+		saying: "I'm not drunk enough for this."
+	},
+	{
+		saying: "Perhaps if you’d use both brain cells things would go faster?"
+	},
+	{
+		saying: "I can resist any torture – as long as it doesn’t hurt."
+	},
+	{
+		saying: "You remind me of my mother."
+	},
+	{
+		saying: "Never trust a sober dwarf."
+	},
+	{
+		saying: "I'd rather be infamous than famous but known and rich will do also."
+	},
+	{
+		saying: "I might not always be right but I'm always confidently wrong."
+	},
+	{
+		saying: "When I listen to you, I die a little on the inside."
+	},
+	{
+		saying: "I just love it when a good plan falls apart."
+	},
+	{
+		saying: "Why don't you take a long walk off a short bridge."
+	},
+	{
+		saying: "You remind me of someone I killed last week – they were super annoying too."
+	},
+	{
+		saying: "You should be ashamed of yourself, but as you're not, fancy a drink?"
+	},
+	{
+		saying: "Never bring a dog to a dragon fight."
+	},
+	{
+		saying: "Gazing into your eyes is like staring into a bottomless void."
+	},
+	{
+		saying: "I don’t hate everyone, I’m just okay if most people die."
+	},
+	{
+		saying: "You stealth like a drunk bagpiper."
+	},
+	{
+		saying: "Yes, I have morals, but you have gold, so let's talk."
+	},
+	{
+		saying: "They'd be difficult to love."
+	},
+	{
+		saying: "You haven't experienced true disaster until you wake up in a pentagram with a succubus under each arm."
+	}
+]

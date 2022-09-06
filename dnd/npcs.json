@@ -80,34 +80,217 @@ npc_type = [
 
 npc_race = [
 	[ "1d100", [1,3], [4,6], [7,15], [16,24], [25,35], [36,39], [40,60], [61,68], [69,79], [80,86], [87,90], [91,93], [94,96], [97], [98,100] ],
-	"Changeling",
-	"Dragonborn",
-	"Dwarf",
-	"Elf",
-	"Gnome",
-	"Goblinoid",
-	"Human",
-	"Halfling",
-	"Half-Elf",
-	"Half-Orc",
-	"Kalashtar",
-	"Orc",
-	"Shifter",
-	"Tiefling",
-	"Warforged",
-	" --- ",
-	"Kobold",
-	"Lizardfolk",
-	"Gnoll",
-	"Undying",
-	"Gith (-yanki/-zerai)",
-	"Giff",
-	"Astral Elf",
-	"Autognome",
-	"Plasmoid",
-	"Hadozee",
-	"Slaad",
-	"Herengon"
+	{
+		title: "Changeling",
+		group: "Base",
+		age: [16, 100],
+		height: [50, 80], // inches
+		weight: [80, 300], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "grey", "white", "blonde" ],
+		skin: [ "1d6", "white", "pale", "fair", "light brown", "dark brown", "black" ]
+	},
+	{
+		title: "Dragonborn",
+		group: "Base",
+		age: [15, 90],
+		height: [60, 90], // inches
+		weight: [150, 450], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		skin: [ "1d10", "black", "blue", "brass", "bronze", "copper", "gold", "green", "red", "silver", "white" ]
+	},
+	{
+		title: "Dwarf",
+		group: "Base",
+		age: [50, 360],
+		height: [45, 65], // inches
+		weight: [60, 280], // lbs
+		speed: 25, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Elf",
+		group: "Base",
+		age: [100, 760],
+		height: [55, 85], // inches
+		weight: [60, 280], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "white", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Gnome",
+		group: "Base",
+		age: [40, 460],
+		height: [45, 65], // inches
+		weight: [20, 80], // lbs
+		speed: 25, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Goblinoid",
+		group: "Base",
+		age: [40, 260],
+		height: [45, 65], // inches
+		weight: [60, 280], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "tan", "green", "yellow", "red", "brown", "black" ]
+	},
+	{
+		title: "Half-Elf",
+		group: "Base",
+		age: [20, 200],
+		height: [50, 80], // inches
+		weight: [80, 300], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Half-Orc",
+		group: "Base",
+		age: [14, 80],
+		height: [60, 80], // inches
+		weight: [100, 400], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "tan", "green", "yellow", "red", "brown", "black" ]
+	},
+	{
+		title: "Halfling",
+		group: "Base",
+		age: [20, 260],
+		height: [25, 55], // inches
+		weight: [20, 80], // lbs
+		speed: 25, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Human",
+		group: "Base",
+		age: [18, 100],
+		height: [50, 80], // inches
+		weight: [80, 300], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Kalashtar",
+		group: "Base",
+		age: [18, 100],
+		height: [50, 80], // inches
+		weight: [80, 300], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "grey", "white", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Orc",
+		group: "Base",
+		age: [12, 50],
+		height: [60, 80], // inches
+		weight: [130, 400], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
+		skin: [ "1d6", "tan", "green", "yellow", "red", "brown", "black" ]
+	},
+	{
+		title: "Shifter",
+		group: "Base",
+		age: [10, 75],
+		height: [50, 80], // inches
+		weight: [80, 300], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
+		hair: [ "1d6", "white", "black", "brown", "grey", "white", "blonde" ],
+		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Tiefling",
+		group: "Base",
+		age: [18, 110],
+		height: [50, 80], // inches
+		weight: [80, 300], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "black", "black", "red", "white", "silver", "gold" ],
+		hair: [ "1d6", "purple", "blue", "dark brown", "dark red", "black", "black" ],
+		skin: [ "1d6", "light red", "dark red", "light brown", "olive", "dark brown", "black" ]
+	},
+	{
+		title: "Warforged",
+		group: "Base",
+		age: [2, 50],
+		height: [50, 80], // inches
+		weight: [180, 400], // lbs
+		speed: 30, // feet per round
+		eyes: [ "1d6", "quartz", "onyx", "citrine", "emerald", "sapphire", "amethyst" ],
+		skin: [ "1d12", "wood", "stone", "stone", "ceramic", "metal (iron)", "metal (steel)", "metal (steel)", "metal (silver)", "metal (gold)", "metal (byeshk)", "adamantine", "mithral" ]
+	},
+	{
+		title: "Kobold",
+		group: "Eberron",
+	},
+	{
+		title: "Lizardfolk",
+		group: "Eberron",
+	},
+	{
+		title: "Gnoll",
+		group: "Eberron",
+	},
+	{
+		title: "Undying",
+		group: "Eberron",
+	},
+	{
+		title: "Gith (-yanki/-zerai)",
+		group: "Spelljammer",
+	},
+	{
+		title: "Giff",
+		group: "Spelljammer",
+	},
+	{
+		title: "Astral Elf",
+		group: "Spelljammer",
+	},
+	{
+		title: "Autognome",
+		group: "Spelljammer",
+	},
+	{
+		title: "Plasmoid",
+		group: "Spelljammer",
+	},
+	{
+		title: "Hadozee",
+		group: "Spelljammer",
+	},
+	{
+		title: "Slaad",
+		group: "Spelljammer",
+	},
+	{
+		title: "Herengon",
+		group: "Spelljammer",
+	}
 ]
 
 npc_gender = [
@@ -128,6 +311,23 @@ npc_gender = [
 		title: "Other/Undifferentiated",
 		pronouns: [ "it" ]
 	}
+]
+
+npc_orientation = [
+	[ "4d8", [1,3], [4,28], [29,31], [32] ],
+	"Bisexual",
+	"Heterosexual",
+	"Homosexual",
+	"Asexual"
+]
+
+npc_relationship = [
+	[ "4d8", [1,2], [3,15], [16,23], [25,31], [32] ],
+	"Recently divorced",
+	"Single",
+	"Married",
+	"In a relationship",
+	"Seeing someone who is married"
 ]
 
 npc_appearance = [
