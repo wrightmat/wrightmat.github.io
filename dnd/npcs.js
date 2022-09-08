@@ -56,14 +56,22 @@ function generateNPC() {
 	if ($('#npc-location').find(':selected').val() == 'eberron') {
 	    var race = getTableResult(npc_race);
 	} else if ($('#npc-location').find(':selected').val() == 'space') {
-	    var race = getTableResult(npc_race['Siberspace']);
-	    if (race == "Other") {
-		var race = getTableResult(npc_race);
+	    while (race == undefined || race == 'Other') {
+		var race = getTableResult(npc_race[$('#npc-location').find(':selected').text()]);
+		var ind = []; npc_race.forEach(function (item) {
+		    if (item.title != undefined) {
+			if (item.title == race) { ind = item; }
+		    }
+		}); var race = ind
 	    }
 	} else {
-	    var race = getTableResult(npc_race[$('#npc-location').find(':selected').text()]);
-	    if (race == "Other") {
-		var race = getTableResult(npc_race);
+	    while (race == undefined || race == 'Other') {
+		var race = getTableResult(npc_race[$('#npc-location').find(':selected').text()]);
+		var ind = []; npc_race.forEach(function (item) {
+		    if (item.title != undefined) {
+			if (item.title == race) { ind = item; }
+		    }
+		}); var race = ind
 	    }
 	}
     } else {
