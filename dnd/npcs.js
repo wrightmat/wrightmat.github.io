@@ -1,4 +1,6 @@
+var npcs = [];
 var align_selected = [];
+
 function init() {
     // populate npc choices from json data
     npc_locations.forEach(function (item) {
@@ -37,8 +39,6 @@ function changeAlignment() {
 }
 
 function generateNPC() {
-    var output = ""
-
     if ($('#npc-type').find(':selected').val() == 'random') {
 	var type = getTableResult(npc_type);
     } else {
@@ -179,45 +179,80 @@ function generateNPC() {
     npc.bond = bond;
     npc.flaw = flaw;
     npc.ideal = ideal;
-    npc.saying = saying.saying
-console.log(npc);
+    npc.saying = saying.saying;
+    npc.location = $('#npc-location').find(':selected').val();
 
-    output += "<b>Name</b>: " + name + "<br /><br />";
+    npcs.push(npc);
+    populateOutput(npcs.length-1);
+    refreshSelect();
+}
 
-    output += "<b>Race</b>: " + race.title + "<br />";
-    output += "<b>Type</b>: " + type.title + "<br /><br />";
+function refreshSelect() {
+    $('#npc-select').empty();
+    for (let i = 0; i < npcs.length; i++) {
+	$('#npc-select').append('<option value="">' + npcs[i].name + ' (' + npcs[i].race.title + ' ' + npcs[i].type.title + ')</option>');
+    }
+}
 
-    output += "<b>Gender</b>: " + gender.title + "<br />";
-    output += "<b>Sexual Orientation</b>: " + orientation + "<br />";
-    output += "<b>Relationship Status</b>: " + relationship + "<br /><br />";
+function changeSelect(el) {
+console.log(npcs[el.selectedIndex]);
+    populateOutput(el.selectedIndex);
+}
 
-    output += "<b>Age</b>: " + age.age + " (" + age.group + ")<br />";
-    output += "<b>Height</b>: " + Math.floor(height/12) + "' " + (height%12) + "\" (" + height +" in.)<br />";
-    output += "<b>Weight</b>: " + weight + " lbs.<br />";
-    output += "<b>Eyes</b>: " + eyes + "<br />";
-    output += "<b>Hair</b>: " + hair + "<br />";
-    output += "<b>Skin</b>: " + skin + "<br /><br />";
+function removeNPC() {
+    npcs.splice($('#npc-select').prop('selectedIndex'), 1);
+    $('#div-npc').html("");
+    refreshSelect();
+}
 
-    output += "<b>Alignment</b>: " + alignment.toUpperCase() + "<br />";
-    output += "<b>Stats</b>: STR " + stats[0] + ", DEX " + stats[1] + ", CON " + stats[2] + ", INT " + stats[3] + ", WIS " + stats[4] + ", CHA " + stats[5] + "<br />";
-    output += "<iframe src='dice.htm?ability=" + stats[0] + "&label=Strength' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + stats[1] + "&label=Dexterity' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + stats[2] + "&label=Constitution' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + stats[3] + "&label=Intelligence' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + stats[4] + "&label=Wisdom' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + stats[5] + "&label=Charisma' style='width:100px;height:120px;border:0px;'></iframe><br />";
-    output += "<b>Speed</b>: " + speed + "<br /><br />";
+function populateOutput(index) {
+    var output = ""
+    var npc = npcs[index]
 
-    output += "<b>Appearance</b>: " + appearance + "<br />";
-    output += "<b>Talents</b>: " + talent + "<br />";
-    output += "<b>Mannerisms</b>: " + mannerism + "<br />";
-    output += "<b>Interaction Traits</b>: " + interaction_trait + "<br />";
-    output += "<b>Bonds</b>: " + bond + "<br />";
-    output += "<b>Flaws</b>: " + flaw + "<br />";
-    output += "<b>Ideals</b>: " + ideal + "<br /><br />";
+    output += "<b>Name</b>: " + npc.name + "<br /><br />";
 
-    output += "<b>Saying</b>: " + saying.saying + "<br />";
+    output += "<b>Race</b>: " + npc.race.title + "<br />";
+    output += "<b>Type</b>: " + npc.type.title + "<br /><br />";
+
+    output += "<b>Gender</b>: " + npc.gender.title + "<br />";
+    output += "<b>Sexual Orientation</b>: " + npc.orientation + "<br />";
+    output += "<b>Relationship Status</b>: " + npc.relationship + "<br /><br />";
+
+    output += "<b>Age</b>: " + npc.age.age + " (" + npc.age.group + ")<br />";
+    output += "<b>Height</b>: " + Math.floor(npc.height/12) + "' " + (npc.height%12) + "\" (" + npc.height +" in.)<br />";
+    output += "<b>Weight</b>: " + npc.weight + " lbs.<br />";
+    output += "<b>Eyes</b>: " + npc.eyes + "<br />";
+    output += "<b>Hair</b>: " + npc.hair + "<br />";
+    output += "<b>Skin</b>: " + npc.skin + "<br /><br />";
+
+    output += "<b>Alignment</b>: " + npc.alignment.toUpperCase() + "<br />";
+    output += "<b>Stats</b>: STR " + npc.stats[0] + ", DEX " + npc.stats[1] + ", CON " + npc.stats[2] + ", INT " + npc.stats[3] + ", WIS " + npc.stats[4] + ", CHA " + npc.stats[5] + "<br />";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&label=Strength' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&label=Dexterity' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&label=Constitution' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[3] + "&label=Intelligence' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[4] + "&label=Wisdom' style='width:100px;height:120px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[5] + "&label=Charisma' style='width:100px;height:120px;border:0px;'></iframe><br />";
+    output += "<b>Speed</b>: " + npc.speed + "<br /><br />";
+
+    output += "<b>Appearance</b>: " + npc.appearance + "<br />";
+    output += "<b>Talents</b>: " + npc.talent + "<br />";
+    output += "<b>Mannerisms</b>: " + npc.mannerism + "<br />";
+    output += "<b>Interaction Traits</b>: " + npc.interaction_trait + "<br />";
+    output += "<b>Bonds</b>: " + npc.bond + "<br />";
+    output += "<b>Flaws</b>: " + npc.flaw + "<br />";
+    output += "<b>Ideals</b>: " + npc.ideal + "<br /><br />";
+
+    output += "<b>Saying</b>: " + npc.saying + "<br />";
     $('#div-npc').html(output);
+}
+
+function exportNPCs() {
+    var title = prompt("Enter a filename (.json will be added)", "npcs");
+    if (title !== null) {
+	var blob = new Blob(npcs, {type: "text/plain;charset=utf-8"});
+	saveAs(blob, title + ".json");
+    }
 }
 
 $(document).on("click", "#tbl-alignment td", function() {

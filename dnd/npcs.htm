@@ -6,6 +6,7 @@
   <link rel="stylesheet" type="text/css" href="style.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+  <script type="text/javascript" src="file_saver.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="npcs.json"></script>
   <script type="text/javascript" src="npcs.js"></script>
@@ -59,7 +60,11 @@
     <tr><th height="40">Chaotic</th><td id="cg">CG</td><td id="cn">CN</td><td id="ce">CE</td></tr>
   </tbody></table></div><br /><br />
 
-  <input type="button" name="generate-npc" value="Generate NPC" onclick="generateNPC();"></input><br /><br />
+  <input type="button" name="generate-npc" value="Generate NPC" onclick="generateNPC();"></input><br /><br /><br />
+
+  <select id="npc-select" size="15" style="width:250px;" onchange="changeSelect(this);"></select>
+  <button id="btn-npc-remove" onclick="removeNPC();">[X]</button><br />
+  <input type="button" name="export-npcs" value="Export NPCs to JSON" onclick="exportNPCs();"></input>
 </div>
 
 <div class="column-main" id="div-output">
