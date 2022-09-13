@@ -24,6 +24,7 @@ header { background-color: #bbb; position: fixed; left: 0; right: 0; top: 5px; h
 header * { display: inline; }
 header li { margin: 20px; }
 header li a { color: black; font-weight: bold; text-decoration: none; }
+.mode { background-color: #fff; border:4px solid #ccc; width:405px; height:325px; position:absolute; margin:-25px 0 0 -50px; border-radius:5px; padding:5px; right:50px; bottom:50px; }
 .dice-roller { width: 100px; height: 30px; }
 .dice-button { background: black; color: white; font-weight: bold; border: 1px black; border-radius: 5px 0px 0px 5px; float: left; height: 100%; width: 62%; cursor: pointer; user-select: none; }
 .dice-button:hover { background: #323232; }
@@ -217,17 +218,6 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 }
 #section-environment .text {
     color: ForestGreen;
-}
-
-
-/* ------------------------------------------------------------------------- */
-/* Page container */
-/* ------------------------------------------------------------------------- */
-
-body {
-    display: flex;
-    justify-content:center;
-    align-content:center;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -11,6 +11,7 @@
 <script type="text/javascript" src="coloris.min.js"></script>
 <script type="text/javascript" src="common.js"></script>
 <script type="text/javascript" src="hex.js"></script>
+<script type="text/javascript" src="hex.json"></script>
 <script type="text/javascript">
     Coloris({
       el: '.coloris',
@@ -22,7 +23,7 @@
 <body>
 <header id="header"></header>
 
-<div id="div-dm" class="modal" style="visibility:hidden;position:fixed;right:10px;top:40px;height:240px;">
+<div id="div-dm" class="mode" style="visibility:hidden;position:fixed;right:10px;top:40px;height:240px;">
   <label for="select-mode"><b>Mode:</b></label><select id="select-mode" onchange="changeMode();">
   <option id="hexes">Select Hexes</option>
   <option id="markers">Select Markers</option>
@@ -55,7 +56,6 @@
   </div>
   <div id="mode-grid">
     <input id="button-save" type="button" onclick="saveHexGrid();" value="Save Grid to File" /><br /><br />
-    <label for="button-load">Load File:</label> <input id="button-load" type="file" value="Load Grid from File" onchange="loadHexGrid(this.files[0])" style="width:200px;" /><br /><br />
     <input id="button-reset" type="button" onclick="resetHexGrid();" value="Reset Grid" />
   </div>
   <div id="hex-selected" style="position:absolute;right:10px;bottom:10px;"></div>

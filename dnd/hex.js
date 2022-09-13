@@ -64,6 +64,11 @@ function setup() {
     changeMode();
     findHexWithWidthAndHeight();
     drawHexGrid();
+    if (typeof hex_map !== 'undefined') {
+	localStorage.setItem("dnd_hex_grid", JSON.stringify(hex_map));
+	findHexWithWidthAndHeight();
+	drawHexGrid();
+    }
 }
 
 
@@ -599,18 +604,20 @@ function resetHexGrid() {
     }
 }
 
+// Deprecated - we load a standard file at start now.
 async function loadHexGrid(file) {
     let text = await file.text();
-    localStorage.setItem("dnd_hex_grid", text);
+    localStorage.setItem("dnd_hex_grid", JSON.stringify(hex_map));
     findHexWithWidthAndHeight();
     drawHexGrid();
 }
 
 function saveHexGrid() {
-    var title = prompt("Enter a filename (.txt will be added)", "hex_grid");
+    var title = prompt("Enter a filename (.json will be added)", "hex");
     if (title !== null) {
-	var blob = new Blob([localStorage.getItem("dnd_hex_grid")], {type: "text/plain;charset=utf-8"});
-	saveAs(blob, title+".txt");
+	var grid = "hex_map = " + localStorage.getItem("dnd_hex_grid")
+	var blob = new Blob([grid], {type: "text/plain;charset=utf-8"});
+	saveAs(blob, title + ".json");
     }
 }
 
