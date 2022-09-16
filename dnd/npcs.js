@@ -214,9 +214,10 @@ function populateOutput(index) {
     output += "<b>Race</b>: " + npc.race.title + "<br />";
     output += "<b>Type</b>: " + npc.type.title + "<br /><br />";
 
+    output += "<b>Alignment</b>: " + npc.alignment.toUpperCase() + "<br />";
     output += "<b>Gender</b>: " + npc.gender.title + "<br />";
-    output += "<b>Sexual Orientation</b>: " + npc.orientation + "<br />";
-    output += "<b>Relationship Status</b>: " + npc.relationship + "<br /><br />";
+    output += "<b>Relationship Status</b>: " + npc.relationship + "<br />";
+    output += "<b>Sexual Orientation</b>: " + npc.orientation + "<br /><br />";
 
     output += "<b>Age</b>: " + npc.age.age + " (" + npc.age.group + ")<br />";
     output += "<b>Height</b>: " + Math.floor(npc.height/12) + "' " + (npc.height%12) + "\" (" + npc.height +" in.)<br />";
@@ -225,25 +226,55 @@ function populateOutput(index) {
     output += "<b>Hair</b>: " + npc.hair + "<br />";
     output += "<b>Skin</b>: " + npc.skin + "<br /><br />";
 
-    output += "<b>Alignment</b>: " + npc.alignment.toUpperCase() + "<br />";
-    output += "<b>Stats</b>: STR " + npc.stats[0] + ", DEX " + npc.stats[1] + ", CON " + npc.stats[2] + ", INT " + npc.stats[3] + ", WIS " + npc.stats[4] + ", CHA " + npc.stats[5] + "<br />";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&label=Strength' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&label=Dexterity' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&label=Constitution' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[3] + "&label=Intelligence' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[4] + "&label=Wisdom' style='width:100px;height:120px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[5] + "&label=Charisma' style='width:100px;height:120px;border:0px;'></iframe><br />";
-    output += "<b>Speed</b>: " + npc.speed + "<br /><br />";
-
     output += "<b>Appearance</b>: " + npc.appearance + "<br />";
     output += "<b>Talents</b>: " + npc.talent + "<br />";
     output += "<b>Mannerisms</b>: " + npc.mannerism + "<br />";
     output += "<b>Interaction Traits</b>: " + npc.interaction_trait + "<br />";
     output += "<b>Bonds</b>: " + npc.bond + "<br />";
     output += "<b>Flaws</b>: " + npc.flaw + "<br />";
-    output += "<b>Ideals</b>: " + npc.ideal + "<br /><br />";
+    output += "<b>Ideals</b>: " + npc.ideal + "<br />";
+    output += "<b>Saying</b>: " + npc.saying + "<br /><br />";
 
-    output += "<b>Saying</b>: " + npc.saying + "<br />";
+    output += "<b>AC</b>: " + npc.type.ac + "<br />";
+    output += "<b>HP</b>: " + npc.type.hp_avg + "<br />";
+    output += "<b>Speed</b>: " + npc.speed + "<br />";
+    output += "<b>Stats</b>: STR " + npc.stats[0] + ", DEX " + npc.stats[1] + ", CON " + npc.stats[2] + ", INT " + npc.stats[3] + ", WIS " + npc.stats[4] + ", CHA " + npc.stats[5] + "<br />";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&label=Strength' style='width:120px;height:170px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&label=Dexterity' style='width:120px;height:170px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&label=Constitution' style='width:120px;height:170px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[3] + "&label=Intelligence' style='width:120px;height:170px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[4] + "&label=Wisdom' style='width:120px;height:170px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[5] + "&label=Charisma' style='width:120px;height:170px;border:0px;'></iframe><br />";
+    if (npc.type.saves !== undefined) {
+	output += "<b>Saving Throws</b>: " + npc.type.saves + "<br />";
+    }
+    if (npc.type.skills !== undefined) {
+	output += "<b>Skills</b>: " + npc.type.skills + "<br />";
+    }
+    output += "<b>CR</b>: " + npc.type.cr + "<br /><br />";
+
+    if (npc.type.abilities !== undefined && npc.type.abilities.length > 0) {
+	for (let i = 0; i < npc.type.abilities.length; i++) {
+	    output += npc.type.abilities[i] + "<br /><br />";
+	}
+    }
+
+    if (npc.type.actions !== undefined && npc.type.actions.length > 0) {
+	output += "<b>Actions</b>:<br />";
+	for (let i = 0; i < npc.type.actions.length; i++) {
+	    output += npc.type.actions[i] + "<br /><br />";
+	}
+    }
+
+    if (npc.type.reactions !== undefined && npc.type.reactions.length > 0) {
+	output += "<b>Reactions</b>:<br />";
+	for (let i = 0; i < npc.type.reactions.length; i++) {
+	    output += npc.type.reactions[i] + "<br />";
+	}
+    }
+
+    output += "<b>Description</b>: " + npc.type.description + "<br /><br />";
+
     $('#div-npc').html(output);
 }
 

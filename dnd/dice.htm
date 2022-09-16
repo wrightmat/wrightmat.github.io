@@ -48,7 +48,7 @@
   };
 
   function diceButton() {
-    var rolled = parseInt(rollDice(roll));
+    var rolled = parseInt(rollDice(roll.substring(0, roll.indexOf('+'))));
     if (roll == '1d20' || roll == 'd20') {
       if (rolled == 20) {
         $('#dice-label').addClass('dice-nat-20');
@@ -67,7 +67,7 @@
       } else { rolled = rolled * parseInt(roll.substring(roll.indexOf('x')+1, roll.length)); }
     }
     if (add) { rolled = rolled + parseInt(add); }
-    else if (roll.includes('+')) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); }
+    else if (roll.includes('+')) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); console.log(rolled); }
     $('#dice-label').html(rolled);
   };
 </script>
