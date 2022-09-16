@@ -29,7 +29,7 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .dice-button { background: black; color: white; font-weight: bold; border: 1px black; border-radius: 5px 0px 0px 5px; float: left; height: 100%; width: 62%; cursor: pointer; user-select: none; }
 .dice-button:hover { background: #323232; }
 .dice-button:active { background: #595959; }
-.dice-label { border: 1px solid black; border-radius: 0px 5px 5px 0px; float: right; height: 22px; width: 35%; padding-top: 6px; text-align: center; }
+.dice-label { border: 1px solid black; border-radius: 0px 5px 5px 0px; float: right; height: 22px; width: 35%; padding-top: 5px; text-align: center; }
 .dice-nat-20 { background: #ffd700; }
 .dice-nat-1 { background: #ff7276; }
 .dice-ability-roller { width: 90px; height: 90px; text-align: center; font-size: 80%; }

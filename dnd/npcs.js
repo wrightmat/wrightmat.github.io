@@ -255,16 +255,16 @@ function populateOutput(index) {
     output += addOutputLine("saying", "Saying", npc.saying);
     output += addOutputLine("");
     output += addOutputLine("ac", "AC", npc.ac);
-    output += addOutputLine("hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:120px;height:45px;border:0px;'></iframe>");
+    output += addOutputLine("hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
     output += addOutputLine("speed", "Speed", npc.speed);
     output += '</table><br />';
     output += "<b>Stats</b><br />";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&pad=false&label=Strength' style='width:120px;height:140px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&pad=false&label=Dexterity' style='width:120px;height:140px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&pad=false&label=Constitution' style='width:120px;height:140px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[3] + "&pad=false&label=Intelligence' style='width:120px;height:140px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[4] + "&pad=false&label=Wisdom' style='width:120px;height:140px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[5] + "&pad=false&label=Charisma' style='width:120px;height:140px;border:0px;'></iframe><br />";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&pad=false&label=Strength' style='width:110px;height:130px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&pad=false&label=Dexterity' style='width:110px;height:130px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&pad=false&label=Constitution' style='width:110px;height:130px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[3] + "&pad=false&label=Intelligence' style='width:110px;height:130px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[4] + "&pad=false&label=Wisdom' style='width:110px;height:130px;border:0px;'></iframe>";
+    output += "<iframe src='dice.htm?ability=" + npc.stats[5] + "&pad=false&label=Charisma' style='width:110px;height:130px;border:0px;'></iframe><br />";
     if (npc.type.saves !== undefined) {
 	output += "<b>Saving Throws</b>: " + npc.type.saves + "<br />";
     }
