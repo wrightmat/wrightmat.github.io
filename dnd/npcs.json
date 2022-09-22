@@ -566,7 +566,7 @@ npc_orientation = [
 ]
 
 npc_relationship = [
-	[ "4d8", [1,2], [3,15], [16,23], [25,31], [32] ],
+	[ "4d8", [1,2], [3,15], [16,24], [25,31], [32] ],
 	"Recently divorced",
 	"Single",
 	"Married",

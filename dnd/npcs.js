@@ -216,49 +216,69 @@ function removeNPC() {
     refreshSelect();
 }
 
-function addOutputLine(id, header, cell, suppl) {
-    if (typeof suppl == "undefined") { suppl = "" }
-    if (id == "") {
-	return '<tr><th></th><td>&nbsp;</td></tr>';
-    } else {
-	return '<tr><th>' + header + '</th><td id="' + id + '">' + cell + '</td><td>' + suppl + '</td></tr>';
+function outputLine(id, header, cell, suppl) {
+    var updated = false;
+    $('#tbl-npc tr').each(function() {
+	if (id !== "" && id == this.id) {
+	    updated = true;
+	    if (header !== "") { $(this).find('th').text(header); }
+	    if (cell !== "") { $(this).find('td:eq(0)').text(cell); }
+	    $(this).find('td:eq(1)').html(replaceText($(this).find('td:eq(1)').attr("id"), cell));
+	}
+    })
+    if (!updated) {
+	var line = ""
+	if (typeof suppl == "undefined") { suppl = "" }
+	if (id == "") {
+	    line = '<tr><th></th><td>&nbsp;</td></tr>';
+	} else {
+	    line = '<tr id="' + id + '"><th>' + header + '</th><td id="' + id + '">' + cell + '</td><td id="' + suppl + '">' + replaceText(suppl, cell) + '</td></tr>';
+	}
+	$('#tbl-npc').append(line);
     }
 }
 
+function replaceText(suppl, txt, char = "^") {
+    var replaced = ""
+    if (suppl.indexOf(char) >= 0) {
+	replaced = suppl.replaceAll(char, txt);
+    } else {
+	replaced = suppl;
+    }
+    return replaced;
+}
+
 function populateOutput(index) {
-    var output = ""
     var npc = npcs[index]
-    output += '<table id="tbl-npc">'
-    output += addOutputLine("name", "Name", npc.name);
-    output += addOutputLine("race", "Race", npc.race.title);
-    output += addOutputLine("type", "Type", npc.type.title);
-    output += addOutputLine("");
-    output += addOutputLine("alignment", "Alignment", npc.alignment.toUpperCase());
-    output += addOutputLine("gender", "Gender", npc.gender.title);
-    output += addOutputLine("relationship", "Relationship Status", npc.relationship);
-    output += addOutputLine("orientation", "Sexual Orientation", npc.orientation);
-    output += addOutputLine("");
-    output += addOutputLine("age.age", "Age", npc.age.age, npc.age.age + " (" + npc.age.group + ")");
-    output += addOutputLine("height", "Height", npc.height, Math.floor(npc.height/12) + "' " + (npc.height%12) + "\" (" + npc.height +" in.)");
-    output += addOutputLine("weight", "Weight", npc.weight, npc.weight + " lbs.");
-    output += addOutputLine("eyes", "Eyes", npc.eyes);
-    output += addOutputLine("hair", "Hair", npc.hair);
-    output += addOutputLine("skin", "Skin", npc.skin);
-    output += addOutputLine("");
-    output += addOutputLine("appearance", "Appearance", npc.appearance);
-    output += addOutputLine("talent", "Talents", npc.talent);
-    output += addOutputLine("mannerism", "Mannerisms", npc.mannerism);
-    output += addOutputLine("interaction_trait", "Interaction Traits", npc.interaction_trait);
-    output += addOutputLine("bond", "Bonds", npc.bond);
-    output += addOutputLine("flaw", "Flaws", npc.flaw);
-    output += addOutputLine("ideal", "Ideals", npc.ideal);
-    output += addOutputLine("saying", "Saying", npc.saying);
-    output += addOutputLine("");
-    output += addOutputLine("ac", "AC", npc.ac);
-    output += addOutputLine("hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
-    output += addOutputLine("speed", "Speed", npc.speed);
-    output += '</table><br />';
-    output += "<b>Stats</b><br />";
+    outputLine("name", "Name", npc.name);
+    outputLine("race", "Race", npc.race.title);
+    outputLine("type", "Type", npc.type.title);
+    outputLine("");
+    outputLine("alignment", "Alignment", npc.alignment.toUpperCase());
+    outputLine("gender", "Gender", npc.gender.title);
+    outputLine("relationship", "Relationship Status", npc.relationship);
+    outputLine("orientation", "Sexual Orientation", npc.orientation);
+    outputLine("");
+    outputLine("age.age", "Age", npc.age.age, "^ (" + npc.age.group + ")");
+    outputLine("height", "Height", npc.height, "^ in.");
+    outputLine("weight", "Weight", npc.weight, "^ lbs.");
+    outputLine("eyes", "Eyes", npc.eyes);
+    outputLine("hair", "Hair", npc.hair);
+    outputLine("skin", "Skin", npc.skin);
+    outputLine("");
+    outputLine("appearance", "Appearance", npc.appearance);
+    outputLine("talent", "Talents", npc.talent);
+    outputLine("mannerism", "Mannerisms", npc.mannerism);
+    outputLine("interaction_trait", "Interaction Traits", npc.interaction_trait);
+    outputLine("bond", "Bonds", npc.bond);
+    outputLine("flaw", "Flaws", npc.flaw);
+    outputLine("ideal", "Ideals", npc.ideal);
+    outputLine("saying", "Saying", npc.saying);
+    outputLine("");
+    outputLine("ac", "AC", npc.ac);
+    outputLine("hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
+    outputLine("speed", "Speed", npc.speed, "^ ft.");
+    var output = "<br /><b>Stats:</b><br />";
     output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&pad=false&label=Strength' style='width:110px;height:130px;border:0px;'></iframe>";
     output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&pad=false&label=Dexterity' style='width:110px;height:130px;border:0px;'></iframe>";
     output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&pad=false&label=Constitution' style='width:110px;height:130px;border:0px;'></iframe>";
@@ -290,7 +310,7 @@ function populateOutput(index) {
 	}
     }
     output += "<b>Description</b>: " + npc.type.description + "<br /><br />";
-    $('#div-npc').html(output);
+    $('#div-npc').append(output);
 }
 
 function exportNPCs() {
@@ -330,7 +350,8 @@ $(document).on("dblclick", "#tbl-npc td", function() {
 	    }
 	    var td_text_new = prompt("Enter new value:", td_text);
 	    if (td_text_new != null) {
-		$(this).text(td_text_new);
+		outputLine($(this).attr("id"), "", td_text_new);
+		//$(this).text(td_text_new);
 		if (typeof npcs[0][id][id_2] !== "undefined") {
 		    npcs[0][id][id_2] = $(this).text();
 		} else {
