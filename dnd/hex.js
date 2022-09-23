@@ -45,7 +45,9 @@ function setup() {
 	canvas.width = widthCanvas * params.scale;
     }
     if (params.titles) {
-	if params.titles == "true" {
+console.log(params.titles);
+	if (params.titles == "true") {
+console.log("titles true");
 	    show_titles_to_players = true;
 	} else {
 	    show_titles_to_players = false;
