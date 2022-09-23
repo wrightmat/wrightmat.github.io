@@ -18,6 +18,8 @@ var ytopView = 0;
 var widthView;
 var heightView;
 
+var show_titles_to_players = false;
+
 window.addEventListener("load", setup, false);
 
 function setup() {
@@ -41,6 +43,13 @@ function setup() {
 	scaleCanvas = params.scale;
 	canvas.height = heightCanvas * params.scale;
 	canvas.width = widthCanvas * params.scale;
+    }
+    if (params.titles) {
+	if params.titles == "true" {
+	    show_titles_to_players = true;
+	} else {
+	    show_titles_to_players = false;
+	}
     }
 
     if (view == 0) {
@@ -181,7 +190,6 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.fillStyle = this.color;
 	ctx.fill();
     }
-	
     if(this.Id && view == 1) {
 	// draw id text
 	ctx.fillStyle = "black";
@@ -190,7 +198,6 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.textBaseline = "middle";
 	ctx.fillText(this.Id, this.MidPoint.X, this.MidPoint.Y);
     }
-
     if(this.PathCoOrdX !== null && this.PathCoOrdY !== null && typeof(this.PathCoOrdX) != "undefined" && typeof(this.PathCoOrdY) != "undefined" && view == 1) {
 	// draw co-ordinates text
 	ctx.fillStyle = "black";
@@ -199,15 +206,13 @@ HT.Hexagon.prototype.draw = function(ctx) {
 	ctx.textBaseline = "middle";
 	ctx.fillText("("+this.PathCoOrdX+","+this.PathCoOrdY+")", this.MidPoint.X, this.MidPoint.Y + 10);
     }
-
-    if (this.title !== undefined && view == 1) {
+    if (this.title !== undefined && (view == 1 || show_titles_to_players == true)) {
 	ctx.fillStyle = "black";
 	ctx.font = "bolder 10pt Trebuchet MS,Tahoma,Verdana,Arial,sans-serif";
 	ctx.fillText(this.title, this.MidPoint.X, this.MidPoint.Y - 20);
 	ctx.fillStyle = "white";
 	ctx.fillText(this.title, this.MidPoint.X - 1, this.MidPoint.Y - 21);
     }
-
     if(HT.Hexagon.Static.DRAWSTATS) {
 	ctx.strokeStyle = "black";
 	ctx.lineWidth = 2;
