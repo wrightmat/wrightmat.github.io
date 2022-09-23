@@ -546,10 +546,8 @@ function findHexWithWidthAndHeight() {
     var z = (-b - Math.sqrt(Math.pow(b,2)-(4.0*a*c)))/(2.0*a);
     var x = (width - z) / 2.0;
 
-    if (view == 1) {
-	var contentDiv = document.getElementById("hexStatus");
-	contentDiv.innerHTML = "Values for Hex: <br /><b>Width:</b> " + width + "<br /><b>Height: </b>" + height + "<br /><b>Side Length, z:</b> " + z + "<br /><b>x:</b> " + x + "<br /><b>y:</b> " + y;
-    }
+//var contentDiv = document.getElementById("hexStatus");
+//contentDiv.innerHTML = "Values for Hex: <br /><b>Width:</b> " + width + "<br /><b>Height: </b>" + height + "<br /><b>Side Length, z:</b> " + z + "<br /><b>x:</b> " + x + "<br /><b>y:</b> " + y;
 	
     HT.Hexagon.Static.WIDTH = width;
     HT.Hexagon.Static.HEIGHT = height;
