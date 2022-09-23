@@ -45,9 +45,7 @@ function setup() {
 	canvas.width = widthCanvas * params.scale;
     }
     if (params.titles) {
-console.log(params.titles);
 	if (params.titles == "true") {
-console.log("titles true");
 	    show_titles_to_players = true;
 	} else {
 	    show_titles_to_players = false;
@@ -60,6 +58,7 @@ console.log("titles true");
 	canvas.addEventListener("mousemove", handleMouseMove, false);
 	canvas.addEventListener("mouseup", handleMouseUp, false);
 	$('#header').css({ visibility: 'hidden' })
+	$('#hexStatus').append($('<input type="button" value="Show As Image" onclick="canvasToImage();" />'));
 	//$('body').css({ overflow: 'hidden' });
     } else {
 	navbar();
@@ -547,8 +546,10 @@ function findHexWithWidthAndHeight() {
     var z = (-b - Math.sqrt(Math.pow(b,2)-(4.0*a*c)))/(2.0*a);
     var x = (width - z) / 2.0;
 
-    var contentDiv = document.getElementById("hexStatus");
-    contentDiv.innerHTML = "Values for Hex: <br /><b>Width:</b> " + width + "<br /><b>Height: </b>" + height + "<br /><b>Side Length, z:</b> " + z + "<br /><b>x:</b> " + x + "<br /><b>y:</b> " + y;
+    if (view == 1) {
+	var contentDiv = document.getElementById("hexStatus");
+	contentDiv.innerHTML = "Values for Hex: <br /><b>Width:</b> " + width + "<br /><b>Height: </b>" + height + "<br /><b>Side Length, z:</b> " + z + "<br /><b>x:</b> " + x + "<br /><b>y:</b> " + y;
+    }
 	
     HT.Hexagon.Static.WIDTH = width;
     HT.Hexagon.Static.HEIGHT = height;
@@ -836,4 +837,11 @@ function updateHexTitle() {
     var title = $('#hex-title').val();
     hex_selected.title = title;
     refreshHexGrid();
+}
+
+function canvasToImage() {
+    var canvas = $('#hexCanvas')
+    var dataURL = canvas[0].toDataURL("image/png");
+    var newTab = window.open('about:blank','image from canvas');
+    newTab.document.write("<img src='" + dataURL + "' alt='from canvas'/>");
 }
