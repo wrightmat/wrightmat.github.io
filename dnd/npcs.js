@@ -36,6 +36,7 @@ function getNotionPageNPCs() {
     url: "https://api.notion.com/v1/search",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
+    dataType: "jsonp",
     data: { 
         "query": "npc",
         "filter": "page"
