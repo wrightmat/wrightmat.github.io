@@ -2,6 +2,9 @@ var npcs = [];
 var align_selected = [];
 
 function init() {
+setCookie("test", 1, 1);
+console.log(getCookie("test"));
+getNotionPageNPCs();
     // populate npc choices from json data
     npc_locations.forEach(function (item) {
 	if (typeof item == "string") {
@@ -28,6 +31,41 @@ function init() {
 	$(item).addClass('bg_grey');
 	align_selected.push(item.id);
     });
+}
+
+function getNotionPageNPCs() {
+  var auth = "secret_Wxwu0oGmW8rDOT1GhX2yD2JW6Fzy6xEpFlhEny4SaRq"
+  $.get({
+    url: "https://api.notion.com/v1/search",
+    headers: { 'Authorization': 'Bearer ' + auth },
+    data: { 
+        "query": "npc",
+        "filter": "page"
+    },
+    success: function(result) {
+	console.log(result)
+    },
+    error: function(xhr, error) {
+	console.log(xhr)
+    },
+    async: false
+  });
+  //return result
+}
+
+function exportToNotion(npc) {
+  $.post({
+    url: "https://api.notion.com/v1/pages",
+    headers: { 'Authorization': 'Bearer ' + window.auth },
+    success: function(result) {
+	r_text = result
+    },
+    error: function(xhr, error) {
+	console.log(xhr)
+    },
+    async: false
+  });
+  return r_text;
 }
 
 function changeAlignment() {
