@@ -34,7 +34,7 @@ console.log(getNotionPageNPCs());
 function getNotionPageNPCs() {
   var r
   $.post({
-    url: "https://cors.io/?https://api.notion.com/v1/search",
+    url: "https://notion-api.splitbee.io/v1/search",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
     data: { 
