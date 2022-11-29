@@ -34,22 +34,18 @@ getNotionPageNPCs();
 function getNotionPageNPCs() {
   var auth = getCookie("notion-key");
 console.log(auth);
-  $.get({
+  $.ajax({
     url: "https://api.notion.com/v1/search",
+    type: "POST",
     headers: { 'Authorization': 'Bearer ' + auth },
     data: { 
         "query": "npc",
         "filter": "page"
     },
     success: function(result) {
-	console.log(result)
-    },
-    error: function(xhr, error) {
-	console.log(xhr)
-    },
-    async: false
-  });
-  //return result
+	return result
+    }
+  })
 }
 
 function exportToNotion(npc) {
