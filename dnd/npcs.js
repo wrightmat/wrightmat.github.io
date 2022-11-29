@@ -2,8 +2,6 @@ var npcs = [];
 var align_selected = [];
 
 function init() {
-setCookie("test", 1, 1);
-console.log(getCookie("test"));
 getNotionPageNPCs();
     // populate npc choices from json data
     npc_locations.forEach(function (item) {
@@ -34,7 +32,8 @@ getNotionPageNPCs();
 }
 
 function getNotionPageNPCs() {
-  var auth = "secret_Wxwu0oGmW8rDOT1GhX2yD2JW6Fzy6xEpFlhEny4SaRq"
+  var auth = getCookie("notion-key");
+console.log(auth);
   $.get({
     url: "https://api.notion.com/v1/search",
     headers: { 'Authorization': 'Bearer ' + auth },

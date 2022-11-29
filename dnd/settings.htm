@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="style.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-  <script type="text/javascript" src="file_saver.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript">
     function init() {
@@ -16,7 +15,6 @@
     }
     function save() {
 	$("input[type=text]").each(function() {
-console.log(this.name)
 	    setCookie(this.name, this.value, 365);
 	});
     }
@@ -33,8 +31,7 @@ console.log(this.name)
   <input type="button" name="save" value="Save Settings" onclick="save();"></input>
 </div>
 
-<div class="column-main" id="div-output">
-</div>
+<div class="column-main" id="div-output"></div>
 
 </body>
 </html>
