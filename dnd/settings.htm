@@ -17,6 +17,8 @@
 	$("input[type=text]").each(function() {
 	    setCookie(this.name, this.value, 365);
 	});
+	$("#div-output").html("Settings saved!");
+	setTimeout( function() { $("#div-output").html(""); }, 5000);
     }
   </script>
 </head>
@@ -26,7 +28,7 @@
 
 <div class="column-main" id="div-settings">
   <label for="notion-key">Notion API Key:</label>
-  <input type="text" name="notion-key"></input><br /><br /><br />
+  <input type="text" name="notion-key" style="width:400px;"></input><br /><br /><br />
 
   <input type="button" name="save" value="Save Settings" onclick="save();"></input>
 </div>
