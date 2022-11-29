@@ -33,7 +33,7 @@ getNotionPageNPCs();
 
 function getNotionPageNPCs() {
   $.post({
-    url: "http://cors.io/?https://api.notion.com/v1/search",
+    url: "https://cors.io/?https://api.notion.com/v1/search",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
     data: { 
