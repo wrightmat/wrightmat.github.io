@@ -43,24 +43,30 @@ function getNotionPageNPCs() {
     },
     success: function(result) {
 	r = result
-    }
+    },
+    error: function(xhr, error) {
+	console.log(xhr)
+    },
+    async: false
   })
-  return r
+  return r;
 }
 
 function exportToNotion(npc) {
+  var r
   $.post({
     url: "https://api.notion.com/v1/pages",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
+    contentType: "application/json",
     success: function(result) {
-	r_text = result
+	r = result
     },
     error: function(xhr, error) {
 	console.log(xhr)
     },
     async: false
   });
-  return r_text;
+  return r;
 }
 
 function changeAlignment() {
