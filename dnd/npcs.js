@@ -32,6 +32,7 @@ console.log(getNotionPageNPCs());
 }
 
 function getNotionPageNPCs() {
+  var r
   $.post({
     url: "https://cors.io/?https://api.notion.com/v1/search",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
@@ -41,9 +42,10 @@ function getNotionPageNPCs() {
         "filter": "page"
     },
     success: function(result) {
-	return result
+	r = result
     }
   })
+  return r
 }
 
 function exportToNotion(npc) {
