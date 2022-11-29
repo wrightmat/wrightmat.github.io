@@ -2,7 +2,6 @@ var npcs = [];
 var align_selected = [];
 
 function init() {
-console.log(getNotionPageNPCs());
     // populate npc choices from json data
     npc_locations.forEach(function (item) {
 	if (typeof item == "string") {
@@ -32,9 +31,10 @@ console.log(getNotionPageNPCs());
 }
 
 function getNotionPageNPCs() {
+  // doesn't work due to a CORS error
   var r
   $.post({
-    url: "https://notion-api.splitbee.io/v1/search",
+    url: "https://api.notion.com/v1/search",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
     data: { 
@@ -58,6 +58,7 @@ function exportToNotion(npc) {
     url: "https://api.notion.com/v1/pages",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
+    // send data in correct JSON format based on Notion documentations
     success: function(result) {
 	r = result
     },
