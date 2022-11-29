@@ -2,7 +2,7 @@ var npcs = [];
 var align_selected = [];
 
 function init() {
-getNotionPageNPCs();
+console.log(getNotionPageNPCs());
     // populate npc choices from json data
     npc_locations.forEach(function (item) {
 	if (typeof item == "string") {
