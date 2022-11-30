@@ -785,3 +785,12 @@ npc_ideals["O"] = [
 	"1d6",
 	"Aspiration", "Discovery", "Glory", "Nation", "Redemption", "Self-knowledge"
 ]
+
+npc_attitude = [
+	[ "4d8", [1,2], [3,9], [10,23], [24,30], [31,32] ],
+	"Hostile",
+	"Unfriendly",
+	"Indifferent",
+	"Friendly",
+	"Helpful"
+]

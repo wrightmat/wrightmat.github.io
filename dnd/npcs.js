@@ -30,35 +30,20 @@ function init() {
     });
 }
 
-function getNotionPageNPCs() {
-  // doesn't work due to a CORS error
-  var r
-  $.post({
-    url: "https://api.notion.com/v1/search",
-    headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
-    contentType: "application/json",
-    data: { 
-        "query": "npc",
-        "filter": "page"
-    },
-    success: function(result) {
-	r = result
-    },
-    error: function(xhr, error) {
-	console.log(xhr)
-    },
-    async: false
-  })
-  return r;
-}
-
 function exportToNotion(npc) {
   var r
   $.post({
-    url: "https://api.notion.com/v1/pages",
+    url: "https://eofnfmyljbhw62c.m.pipedream.net",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
-    // send data in correct JSON format based on Notion documentations
+    data: { 
+        "name": npc.name,
+        "gender": npc.gender,
+        "race": npc.race,
+        "occupation": npc.occupation,
+        "attitude": npc.attitude,
+        "content": npc,
+    },
     success: function(result) {
 	r = result
     },
@@ -177,6 +162,7 @@ function generateNPC() {
     if (race.hair) { hair = getTableResult(race.hair); }
     if (race.skin) { skin = getTableResult(race.skin); }
 
+    var attitude = getTableResult(npc_attitude);
     var orientation = getTableResult(npc_orientation);
     var relationship = getTableResult(npc_relationship);
     var appearance = getTableResult(npc_appearance);
@@ -206,8 +192,9 @@ function generateNPC() {
     npc.type = type;
     npc.alignment = alignment;
     npc.gender = gender;
-    npc.relationship = relationship;
+    npc.attitude = attitude;
     npc.orientation = orientation;
+    npc.relationship = relationship;
     npc.age = age;
     npc.height = height;
     npc.weight = weight;
@@ -295,6 +282,7 @@ function populateOutput(index) {
     outputLine("type", "Type", npc.type.title);
     outputLine("");
     outputLine("alignment", "Alignment", npc.alignment.toUpperCase());
+    outputLine("alignment", "Initial Attitude", npc.attitude);
     outputLine("gender", "Gender", npc.gender.title);
     outputLine("relationship", "Relationship Status", npc.relationship);
     outputLine("orientation", "Sexual Orientation", npc.orientation);
