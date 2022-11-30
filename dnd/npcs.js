@@ -30,7 +30,9 @@ function init() {
     });
 }
 
-function exportToNotion(npc) {
+function exportToNotion() {
+  console.log($('#npc-select').prop('selectedIndex'));
+  var npc = npcs[$('#npc-select').prop('selectedIndex')];
   var r
   $.post({
     url: "https://eofnfmyljbhw62c.m.pipedream.net",
