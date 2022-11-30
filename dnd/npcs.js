@@ -39,7 +39,21 @@ console.log(npc);
         race: npc.race.title,
         attitude: npc.attitude,
 	occupation: npc.type.title,
-        content: "Relationship Status: " + npc.relationship + "<br />" + "Sexual Orientation: " + npc.orientation
+	content: [
+	  {
+	    "type": "text",
+	    "text": {
+	      "content": "This is an example"
+	    }
+	  },
+	  {
+	    "type": "text",
+	    "text": {
+	      "content": "Another test"
+	    }
+	  }
+	]
+        //content: "Relationship Status: " + npc.relationship + "<br />" + "Sexual Orientation: " + npc.orientation
     };
     d = JSON.stringify(ob);
 console.log(d)
