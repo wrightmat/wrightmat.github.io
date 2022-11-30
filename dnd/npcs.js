@@ -31,6 +31,7 @@ function init() {
 }
 
 function exportToNotion() {
+  var pageId
   var npc = npcs[$('#npc-select').prop('selectedIndex')];
 console.log(npc);
     var ob = {
@@ -39,11 +40,16 @@ console.log(npc);
         race: npc.race.title,
         attitude: npc.attitude,
 	occupation: npc.type.title,
-        content: "**Relationship Status**: " + npc.relationship + "/n" + "**Sexual Orientation**: " + npc.orientation
+        content: "**Initial Attitude**: " + npc.attitude
     };
     d = JSON.stringify(ob);
 console.log(d);
-  var r;
+    pageId = notionCreatePage(d);
+console.log(pageId);
+}
+
+function notionCreatePage(d) {
+  var r
   $.post({
     url: "https://eofnfmyljbhw62c.m.pipedream.net",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
@@ -57,8 +63,11 @@ console.log(d);
     },
     async: false
   });
-console.log(r);
-  return r;
+  return r
+}
+
+function notionAppendBlock(page) {
+
 }
 
 function changeAlignment() {
