@@ -31,20 +31,19 @@ function init() {
 }
 
 function exportToNotion() {
-  console.log($('#npc-select').prop('selectedIndex'));
   var npc = npcs[$('#npc-select').prop('selectedIndex')];
+console.log(npc)
   var r
   $.post({
     url: "https://eofnfmyljbhw62c.m.pipedream.net",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
     data: { 
-        "name": npc.name,
-        "gender": npc.gender,
-        "race": npc.race,
-        "occupation": npc.occupation,
-        "attitude": npc.attitude,
-        "content": npc,
+        name: npc.name,
+        gender: npc.gender.title,
+        race: npc.race.title,
+        attitude: npc.attitude,
+        content: npc,
     },
     success: function(result) {
 	r = result
@@ -54,6 +53,7 @@ function exportToNotion() {
     },
     async: false
   });
+console.log(r);
   return r;
 }
 
