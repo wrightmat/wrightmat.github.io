@@ -31,23 +31,23 @@ function init() {
 }
 
 function exportToNotion() {
-console.log(npcs);
   var npc = npcs[$('#npc-select').prop('selectedIndex')];
 console.log(npc);
-  var cont = "Type: " + npc.type.title;
-console.log(cont);
+    var ob = {
+	name: npc.name, 
+        gender: npc.gender.title,
+        race: npc.race.title,
+        attitude: npc.attitude,
+        content: "This is a test of only properties"
+    };
+    d = JSON.stringify(ob);
+console.log(d)
   var r;
   $.post({
     url: "https://eofnfmyljbhw62c.m.pipedream.net",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
-    data: { 
-        name: npc.name,
-        gender: npc.gender.title,
-        race: npc.race.title,
-        attitude: npc.attitude,
-        content: "This is a test of only properties"
-    },
+    data: d,
     success: function(result) {
 	r = result
     },
