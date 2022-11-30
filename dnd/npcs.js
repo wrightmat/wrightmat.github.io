@@ -31,9 +31,12 @@ function init() {
 }
 
 function exportToNotion() {
+console.log(npcs);
   var npc = npcs[$('#npc-select').prop('selectedIndex')];
-console.log(npc)
-  var r
+console.log(npc);
+  var cont = "Type: " + npc.type
+console.log(cont);
+  var r;
   $.post({
     url: "https://eofnfmyljbhw62c.m.pipedream.net",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
@@ -43,7 +46,7 @@ console.log(npc)
         gender: npc.gender.title,
         race: npc.race.title,
         attitude: npc.attitude,
-        content: npc,
+        content: cont,
     },
     success: function(result) {
 	r = result
@@ -235,7 +238,6 @@ function refreshSelect() {
 }
 
 function changeSelect(el) {
-console.log(npcs[el.selectedIndex]);
     populateOutput(el.selectedIndex);
 }
 
