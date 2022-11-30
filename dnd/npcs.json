@@ -756,7 +756,7 @@ npc_flaws = [
 	"Specific phobia",
 	"Shameful or scandalous history",
 	"Secret crime or misdeed",
-	"Possession offorbidden lore",
+	"Possession of forbidden lore",
 	"Foolhardy bravery"
 ]
 

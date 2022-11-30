@@ -62,9 +62,10 @@
 
   <input type="button" name="generate-npc" value="Generate NPC" onclick="generateNPC();"></input><br /><br /><br />
 
-  <select id="npc-select" size="15" style="width:250px;" onchange="changeSelect(this);"></select>
+  <select id="npc-select" size="15" style="width:250px;" onchange="changeSelect(this);" onfocus="this.selectedIndex=-1;"></select>
   <button id="btn-npc-remove" onclick="removeNPC();">[ X ]</button>&nbsp;&nbsp;
-  <button id="btn-npc-export" onclick="exportToNotion();">[ > ]</button><br />
+  <button id="btn-npc-export" onclick="exportNPC();">[ > ]</button><br />
+  <div id="div-status"></div>
 </div>
 
 <div class="column-main" id="div-output">
