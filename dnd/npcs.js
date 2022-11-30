@@ -38,7 +38,12 @@ console.log(npc);
         gender: npc.gender.title,
         race: npc.race.title,
         attitude: npc.attitude,
-        content: "This is a test of only properties"
+	occupation: npc.type.title,
+        content: {
+	    paragraph: {
+		text: "block test"
+	    }
+	}
     };
     d = JSON.stringify(ob);
 console.log(d)
@@ -56,7 +61,6 @@ console.log(d)
     },
     async: false
   });
-console.log(r);
   return r;
 }
 
