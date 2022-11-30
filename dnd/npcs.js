@@ -39,11 +39,7 @@ console.log(npc);
         race: npc.race.title,
         attitude: npc.attitude,
 	occupation: npc.type.title,
-        content: {
-	    paragraph: {
-		text: "block test"
-	    }
-	}
+        content: [ "Relationship Status: " + npc.relationship, "Testing" ]
     };
     d = JSON.stringify(ob);
 console.log(d)
