@@ -34,7 +34,7 @@ function exportToNotion() {
 console.log(npcs);
   var npc = npcs[$('#npc-select').prop('selectedIndex')];
 console.log(npc);
-  var cont = "Type: " + npc.type
+  var cont = "Type: " + npc.type.title;
 console.log(cont);
   var r;
   $.post({
@@ -46,7 +46,7 @@ console.log(cont);
         gender: npc.gender.title,
         race: npc.race.title,
         attitude: npc.attitude,
-        content: cont,
+        content: cont
     },
     success: function(result) {
 	r = result
