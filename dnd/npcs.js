@@ -46,7 +46,7 @@ console.log(cont);
         gender: npc.gender.title,
         race: npc.race.title,
         attitude: npc.attitude,
-        content: cont
+        content: "This is a test of only properties"
     },
     success: function(result) {
 	r = result
