@@ -13,6 +13,7 @@
 	    this.value = getCookie(this.name);
 	});
 	$("input[type=checkbox]").each(function() {
+console.log(this.name + ': ' + getCookie(this.name));
 	    this.checked = getCookie(this.name);
 	});
     }
