@@ -5,8 +5,8 @@
 var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' ];
 var encounter = {};
 var combatants = [];
-var opt_show_monster_name = getCookie("show-monster-name")
-var opt_show_monster_hp = getCookie("show-monster-hp");
+if (getCookie("show-monster-name") == "true") { var opt_show_monster_name = true } else { var opt_show_monster_name = false }
+if (getCookie("show-monster-hp") == "true") { var opt_show_monster_hp = true } else { var opt_show_monster_hp = false }
 var view = 0;
 
 window.addEventListener("load", setup, false);
