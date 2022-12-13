@@ -14,7 +14,7 @@
 	});
 	$("input[type=checkbox]").each(function() {
 console.log(this.name + ': ' + getCookie(this.name));
-	    this.checked = getCookie(this.name);
+	    if (getCookie(this.name) == "true") { this.checked = true; }
 	});
     }
     function save() {
