@@ -12,10 +12,16 @@
 	$("input[type=text]").each(function() {
 	    this.value = getCookie(this.name);
 	});
+	$("input[type=checkbox]").each(function() {
+	    this.checked = Boolean(getCookie(this.name));
+	});
     }
     function save() {
 	$("input[type=text]").each(function() {
 	    setCookie(this.name, this.value, 365);
+	});
+	$("input[type=checkbox]").each(function() {
+	    setCookie(this.name, String(this.checked), 365);
 	});
 	$("#div-output").html("Settings saved!");
 	setTimeout( function() { $("#div-output").html(""); }, 5000);
@@ -27,8 +33,14 @@
 <header id="header"></header>
 
 <div class="column-main" id="div-settings">
+  <h2>NPCs:</h2>
   <label for="notion-key">Notion API Key:</label>
-  <input type="text" name="notion-key" style="width:400px;"></input><br /><br /><br />
+  <input type="text" name="notion-key" style="width:400px;"></input><br /><br />
+  <h2>Initiative:</h2>
+  <label for="show-monster-name">Show Monster Name:</label>
+  <input type="checkbox" name="show-monster-name"></input><br /><br />
+  <label for="show-monster-hp">Show Monster HP:</label>
+  <input type="checkbox" name="show-monster-hp"></input><br /><br />
 
   <input type="button" name="save" value="Save Settings" onclick="save();"></input>
 </div>

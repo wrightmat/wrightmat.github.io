@@ -5,10 +5,26 @@
 var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' ];
 var encounter = {};
 var combatants = [];
-var opt_show_monster_name = false;
-var opt_show_monster_hp = false;
+var opt_show_monster_name = getCookie("show-monster-name")
+var opt_show_monster_hp = getCookie("show-monster-hp");
+var view = 0;
 
-function init() {
+window.addEventListener("load", setup, false);
+
+function setup() {
+console.log(opt_show_monster_name);
+console.log(opt_show_monster_hp);
+  params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+  });
+  if (params.view == "DM") { view = 1; }
+  if (view == 0) {
+    $('#header').css({ visibility: 'hidden' })
+    $('#div-settings').css({ visibility: 'hidden' })
+  } else {
+    navbar();
+  }
+
   encounter = getFromDDB("encounter", "54d34b6e-393a-4791-9ece-593b9c5745b1");
 console.log(encounter);
   combatants = buildCombatants();
@@ -101,4 +117,9 @@ function populateOutput() {
     if (encounter.turnNum == index + 1) { var cls = ' class="combatant-current"' } else { var cls = ' class="combatant"' }
     o.append('<div id="' + (index + 1) + '"' + vis + cls + '>' + item.initiative + ': ' + t + hp + '</div>');
   });
+}
+
+function updateOption(el) {
+  opt_show_monster_name = document.getElementById('opt_show_monster_name').checked;
+  opt_show_monster_hp = document.getElementById('opt_show_monster_hp').checked;
 }
