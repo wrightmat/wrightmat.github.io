@@ -22,6 +22,8 @@
 	});
 	$("input[type=checkbox]").each(function() {
 	    setCookie(this.name, this.checked, 365);
+console.log(this.name + ': ' + this.checked);
+console.log(getCookie(this.name));
 	});
 	$("#div-output").html("Settings saved!");
 	setTimeout( function() { $("#div-output").html(""); }, 5000);
