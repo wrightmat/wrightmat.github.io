@@ -13,7 +13,7 @@
 	    this.value = getCookie(this.name);
 	});
 	$("input[type=checkbox]").each(function() {
-	    this.checked = Boolean(getCookie(this.name));
+	    this.checked = getCookie(this.name);
 	});
     }
     function save() {
@@ -21,7 +21,7 @@
 	    setCookie(this.name, this.value, 365);
 	});
 	$("input[type=checkbox]").each(function() {
-	    setCookie(this.name, String(this.checked), 365);
+	    setCookie(this.name, this.checked, 365);
 	});
 	$("#div-output").html("Settings saved!");
 	setTimeout( function() { $("#div-output").html(""); }, 5000);
