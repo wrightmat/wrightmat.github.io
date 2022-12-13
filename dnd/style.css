@@ -38,6 +38,9 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .dice-ability-button:active { background: #595959; }
 .dice-ability-label { border: 1px solid black; border-radius: 5px 5px 0px 0px; float: right; height: 62%; width: 98%; padding-top: 8px; text-align: center; font-size: 250%; }
 
+.combatant { border: 1px solid black; padding: 10px; margin: 10px; border-radius: 5px 5px 5px 5px; height: 30px; width: 400px; }
+.combatant-current { border: 1px solid black; padding: 10px; margin: 10px; border-radius: 5px 5px 5px 5px; height: 30px; width: 400px; font-weight: bold; background-color: #ccc; }
+
 
 /* ------------------------------------------------------------------------- */
 /* Sections */
