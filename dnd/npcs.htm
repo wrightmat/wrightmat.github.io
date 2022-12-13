@@ -18,7 +18,7 @@
 <body onLoad="init();navbar();">
 <header id="header"></header>
 
-<div class="column-main" id="div-settings">
+<div class="column-main" id="div-settings" style="width:40%">
   <label for="npc-location">NPC Location:</label>
   <select name="npc-location" id="npc-location">
     <option id="eberron" value="eberron">General Eberron</option>
@@ -68,7 +68,15 @@
   <div id="div-status"></div>
 </div>
 
-<div class="column-main" id="div-output">
+<div class="column-main" id="div-output" style="width:60%">
+  <div id="div-format">
+    <select name="npc-format" id="npc-format" onchange="changeFormat(this);">
+    <option id="table" value="table">Table</option>
+    <option id="markdown" value="markdown">Markdown</option>
+    <option id="notion" value="notion">Notion Blocks</option>
+    <option id="json" value="json">JSON</option>
+    </select><br />
+  </div>
   <div id="div-npc">
     <table id="tbl-npc"><tbody></tbody></table>
   </div><br /><br />

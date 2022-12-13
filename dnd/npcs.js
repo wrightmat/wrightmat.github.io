@@ -1,5 +1,7 @@
 var npcs = [];
 var align_selected = [];
+var page;
+var blocks = [];
 
 function init() {
     // populate npc choices from json data
@@ -38,7 +40,6 @@ function exportToNotion(npc) {
         race: npc.race.title,
         attitude: npc.attitude,
 	occupation: npc.type.title,
-        //content: ""
   };
   d = JSON.stringify(ob);
   pageId = notionCreatePage(d);
@@ -63,10 +64,15 @@ function notionCreatePage(d) {
   return r
 }
 
-function notionAppendBlock(page) {
+function notionAppendBlock(p, b) {
   var r
+  var d = new Object();
+  d.pageId = p;
+  d.blocks = b;
+  d = JSON.stringify(d);
+
   $.post({
-    url: "https://eohhd403iw991pg.m.pipedream.net",
+    url: "https://eowhfyaadh1pn3s.m.pipedream.net",
     headers: { 'Authorization': 'Bearer ' + getCookie("notion-key") },
     contentType: "application/json",
     data: d,
@@ -211,7 +217,7 @@ function generateNPC() {
     hp.value = type.hp[0];
     hp.roll = type.hp[1];
 
-    var npc = [];
+    var npc = new Object();
     npc.location = $('#npc-location').find(':selected').val();
     npc.name = name;
     npc.race = race;
@@ -247,19 +253,30 @@ function generateNPC() {
     npc.reactions = type.reactions;
     npc.description = type.description;
     npcs.push(npc);
-    populateOutputFormatted(npcs[npcs.length-1]);
-    refreshSelect();
+    populateOutput(0, npcs[npcs.length-1]);
+    refreshSelect(npcs.length-1);
 }
 
-function refreshSelect() {
+function refreshSelect(sel) {
+    page = "";
     $('#npc-select').empty();
     for (let i = 0; i < npcs.length; i++) {
 	$('#npc-select').append('<option value="">' + npcs[i].name + ' (' + npcs[i].race.title + ' ' + npcs[i].type.title + ')</option>');
     }
+    if (sel >= 0) {
+	$('#npc-select option')[sel].selected = true;
+    }
 }
 
 function changeSelect(el) {
-    populateOutputFormatted(npcs[el.selectedIndex]);
+    populateOutput(0, npcs[el.selectedIndex]);
+}
+
+function changeFormat(el) {
+    var sel = $('#npc-select').prop('selectedIndex');
+    if (sel >= 0) {
+	populateOutput(el.selectedIndex, npcs[sel]);
+    }
 }
 
 function removeNPC() {
@@ -276,37 +293,107 @@ function exportNPC() {
 	var sts_1 = "<p>Creating new Notion page for '" + npc.name + "'...</p>";
 	$("#div-status").append(sts_1);
 	// Create new Notion page
-	var pid = exportToNotion(npc);
-	var sts_2 = "<p>Notion page created with id " + pid + "</p>";
+	var pageId = exportToNotion(npc);
+	page = pageId;
+	var sts_2 = "<p>Notion page created with id " + pageId + "</p>";
 	$("#div-status").append(sts_2);
 	// Format text and copy to clipboard so it can be pasted into Notion.
 	// This won't be needed in the future when we can use the Notion API to add blocks to the new page, but there's an error in Pipedream.
-	populateOutputNotion(npc);
-	var sts_3 = "<p>Copied to clipboard - ready to paste into Notion!</p>";
+	$("#npc-format").prop("selectedIndex", 2).change();
+	notionAppendBlock(pageId, blocks);
+	var sts_3 = "<p>Notion blocks appended.</p>";
 	$("#div-status").append(sts_3);
 	setTimeout( function() { $("#div-status").html(""); }, 10000);
     }
 }
 
-function outputLine(id, header, cell, suppl) {
-    var updated = false;
-    $('#tbl-npc tr').each(function() {
-	if (id !== "" && id == this.id) {
-	    updated = true;
-	    if (header !== "") { $(this).find('th').text(header); }
-	    if (cell !== "") { $(this).find('td:eq(0)').text(cell); }
-	    $(this).find('td:eq(1)').html(replaceText($(this).find('td:eq(1)').attr("id"), cell));
+function outputLine(type, id, header, cell, suppl) {
+    // type: 0 = table, 1 = markdown, 2 = notion blocks
+    var header = header || "";
+    if (type == 0) {
+	var updated = false;
+	$('#tbl-npc tr').each(function() {
+	    if (id !== "" && id == this.id) {
+		updated = true;
+		if (header !== "") { $(this).find('th').text(header); }
+		if (cell !== "") { $(this).find('td:eq(0)').text(cell); }
+		$(this).find('td:eq(1)').html(replaceText($(this).find('td:eq(1)').attr("id"), cell));
+	    }
+	})
+	if (!updated) {
+	    var line = ""
+	    if (typeof suppl == "undefined") { suppl = "" }
+	    if (id == "") {
+		line = '<tr><th>' + header +'</th><td>&nbsp;</td></tr>';
+	    } else {
+		line = '<tr id="' + id + '"><th>' + header + '</th><td id="' + id + '">' + cell + '</td><td id="' + suppl + '">' + replaceText(suppl, cell) + '</td></tr>';
+	    }
+	    $('#tbl-npc').append(line);
 	}
-    })
-    if (!updated) {
-	var line = ""
-	if (typeof suppl == "undefined") { suppl = "" }
+    } else if (type == 1) {
+    	var line = "" 
 	if (id == "") {
-	    line = '<tr><th></th><td>&nbsp;</td></tr>';
+	    if (header != "") { header = '**' + header + '**' }
+	    line = header + '<br />';
 	} else {
-	    line = '<tr id="' + id + '"><th>' + header + '</th><td id="' + id + '">' + cell + '</td><td id="' + suppl + '">' + replaceText(suppl, cell) + '</td></tr>';
+	    if (header != "") {
+	    	line = '**' + header + '**: ' + cell + '<br />';
+	    } else {
+		line = cell + '</br />';
+	    }
 	}
+	$('#div-npc').append(line);
+    } else if (type == 2) {
+	var block = new Object();
+	var rtx = new Object();
+	var rtx_array = []
+	var text_bold = new Object();
+	var text_reg = new Object();
+
+	text_bold.type = 'text';
+	text_bold.annotations = {};
+	text_bold.annotations.bold = true;
+	text_bold.text = '{ content: "' + header + ': " }, annotations: { bold: true }';
+	text_bold_content = new Object();
+	if (header != "") { header += ': ' }
+	text_bold_content.content = header || "";
+	text_bold.text = text_bold_content;
+
+	text_reg.type = 'text';
+	text_reg_content = new Object();
+	var c = cell || "";
+	text_reg_content.content = String(c);
+	text_reg.text = text_reg_content;
+
+	rtx_array.push(text_bold);
+	rtx_array.push(text_reg);
+	rtx.rich_text = rtx_array;
+
+	block.object = 'block';
+	block.type = 'paragraph';
+	block.paragraph = rtx;
+
+	blocks.push(block);
+	$('#div-npc').append(JSON.stringify(block));
+    }
+}
+
+function outputStats(type, stats) {
+    var line = ""
+    var stat_names = [ "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" ]
+    var stat_abbr = [ "STR", "DEX", "CON", "INT", "WIS", "CHA" ]
+    if (type == 0) {
+	line += '<tr><th></th><td>';
+	stats.forEach(function (item, index) {
+	    line += "<iframe src='dice.htm?ability=" + item + "&pad=false&label=" + stat_names[index] + "' style='width:110px;height:130px;border:0px;'></iframe>";
+	});
+	line += '</td></tr>';
 	$('#tbl-npc').append(line);
+    } else if (type == 1) {
+	line = stat_abbr[0] + ": " + stats[0] + ", " + stat_abbr[1] + ": " + stats[1] + ", " + stat_abbr[2] + ": " + stats[2] + ", " + stat_abbr[3] + ": " + stats[3] + ", " + stat_abbr[4] + ": " + stats[4] + ", " + stat_abbr[5] + ": " + stats[5] + "<br />"
+	$('#div-npc').append(line);
+    } else if (type == 2) {
+
     }
 }
 
@@ -320,74 +407,81 @@ function replaceText(suppl, txt, char = "^") {
     return replaced;
 }
 
-function populateOutputFormatted(npc) {
-    $('#div-npc').html('<table id="tbl-npc"><tbody></tbody></table>');
-    outputLine("name", "Name", npc.name);
-    outputLine("race", "Race", npc.race.title);
-    outputLine("type", "Type", npc.type.title);
-    outputLine("");
-    outputLine("alignment", "Alignment", npc.alignment.toUpperCase());
-    outputLine("attitude", "Initial Attitude", npc.attitude);
-    outputLine("gender", "Gender", npc.gender.title);
-    outputLine("relationship", "Relationship Status", npc.relationship);
-    outputLine("orientation", "Sexual Orientation", npc.orientation);
-    outputLine("");
-    outputLine("age.age", "Age", npc.age.age, "^ (" + npc.age.group + ")");
-    outputLine("height", "Height", npc.height, "^ in.");
-    outputLine("weight", "Weight", npc.weight, "^ lbs.");
-    outputLine("eyes", "Eyes", npc.eyes);
-    outputLine("hair", "Hair", npc.hair);
-    outputLine("skin", "Skin", npc.skin);
-    outputLine("");
-    outputLine("appearance", "Appearance", npc.appearance);
-    outputLine("talent", "Talents", npc.talent);
-    outputLine("bond", "Bonds", npc.bond);
-    outputLine("flaw", "Flaws", npc.flaw);
-    outputLine("ideal", "Ideals", npc.ideal);
-    outputLine("");
-    outputLine("interaction_trait", "Interaction Traits", npc.interaction_trait);
-    outputLine("mannerism", "Mannerisms", npc.mannerism);
-    outputLine("saying", "Saying", npc.saying);
-    outputLine("");
-    outputLine("ac", "AC", npc.ac);
-    outputLine("hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
-    outputLine("speed", "Speed", npc.speed, "^ ft.");
-    var output = "<br /><b>Stats:</b><br />";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[0] + "&pad=false&label=Strength' style='width:110px;height:130px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[1] + "&pad=false&label=Dexterity' style='width:110px;height:130px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[2] + "&pad=false&label=Constitution' style='width:110px;height:130px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[3] + "&pad=false&label=Intelligence' style='width:110px;height:130px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[4] + "&pad=false&label=Wisdom' style='width:110px;height:130px;border:0px;'></iframe>";
-    output += "<iframe src='dice.htm?ability=" + npc.stats[5] + "&pad=false&label=Charisma' style='width:110px;height:130px;border:0px;'></iframe><br />";
-    if (npc.type.saves !== undefined) {
-	output += "<b>Saving Throws</b>: " + npc.type.saves + "<br />";
+function populateOutput(type, npc) {
+    if (type == 0) {
+	$('#div-npc').html('<table id="tbl-npc"><tbody></tbody></table>');
+    } else if (type >= 1) {
+	$('#div-npc').html('');
     }
-    if (npc.type.skills !== undefined) {
-	output += "<b>Skills</b>: " + npc.type.skills + "<br />";
-    }
-    output += "<b>CR</b>: " + npc.type.cr + "<br /><br />";
-    if (npc.type.abilities !== undefined && npc.type.abilities.length > 0) {
-	for (let i = 0; i < npc.type.abilities.length; i++) {
-	    output += npc.type.abilities[i] + "<br /><br />";
+    if (type == 3) {
+	document.getElementById("div-npc").innerHTML = JSON.stringify(npc);
+    } else {
+	outputLine(type, "name", "Name", npc.name);
+	outputLine(type, "race", "Race", npc.race.title);
+	outputLine(type, "type", "Type", npc.type.title);
+	outputLine(type, "");
+	outputLine(type, "alignment", "Alignment", npc.alignment.toUpperCase());
+	outputLine(type, "attitude", "Initial Attitude", npc.attitude);
+	outputLine(type, "gender", "Gender", npc.gender.title);
+	outputLine(type, "relationship", "Relationship Status", npc.relationship);
+	outputLine(type, "orientation", "Sexual Orientation", npc.orientation);
+	outputLine(type, "");
+	outputLine(type, "age.age", "Age", npc.age.age, "^ (" + npc.age.group + ")");
+	outputLine(type, "height", "Height", npc.height, "^ in.");
+	outputLine(type, "weight", "Weight", npc.weight, "^ lbs.");
+	outputLine(type, "eyes", "Eyes", npc.eyes);
+	outputLine(type, "hair", "Hair", npc.hair);
+	outputLine(type, "skin", "Skin", npc.skin);
+	outputLine(type, "");
+	outputLine(type, "appearance", "Appearance", npc.appearance);
+	outputLine(type, "talent", "Talents", npc.talent);
+	outputLine(type, "bond", "Bonds", npc.bond);
+	outputLine(type, "flaw", "Flaws", npc.flaw);
+	outputLine(type, "ideal", "Ideals", npc.ideal);
+	outputLine(type, "");
+	outputLine(type, "interaction_trait", "Interaction Traits", npc.interaction_trait);
+	outputLine(type, "mannerism", "Mannerisms", npc.mannerism);
+	outputLine(type, "saying", "Saying", npc.saying);
+	outputLine(type, "");
+	outputLine(type, "ac", "AC", npc.ac);
+	outputLine(type, "hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
+	outputLine(type, "speed", "Speed", npc.speed, "^ ft.");
+	outputLine(type, "");
+	outputLine(type, "", "Stats");
+	outputStats(type, npc.stats);
+	outputLine(type, "");
+	if (npc.type.saves !== undefined) {
+	    outputLine(type, "saves", "Saving Throws", npc.type.saves);
 	}
-    }
-    if (npc.type.actions !== undefined && npc.type.actions.length > 0) {
-	output += "<b>Actions</b>:<br />";
-	for (let i = 0; i < npc.type.actions.length; i++) {
-	    output += npc.type.actions[i] + "<br /><br />";
+	if (npc.type.skills !== undefined) {
+	    outputLine(type, "skills", "Skills", npc.type.skills);
 	}
-    }
-    if (npc.type.reactions !== undefined && npc.type.reactions.length > 0) {
-	output += "<b>Reactions</b>:<br />";
-	for (let i = 0; i < npc.type.reactions.length; i++) {
-	    output += npc.type.reactions[i] + "<br />";
+	outputLine(type, "cr", "CR", npc.type.cr);
+	outputLine(type, "");
+	if (npc.type.abilities !== undefined && npc.type.abilities.length > 0) {
+	    outputLine(type, "", "Abilities");
+	    for (let i = 0; i < npc.type.abilities.length; i++) {
+		outputLine(type, "ability_" + i, "", npc.type.abilities[i]);
+	    }
 	}
+	if (npc.type.actions !== undefined && npc.type.actions.length > 0) {
+	    outputLine(type, "", "Actions");
+	    for (let i = 0; i < npc.type.actions.length; i++) {
+		outputLine(type, "action_" + i, "", npc.type.actions[i]);
+	    }
+	}
+	if (npc.type.reactions !== undefined && npc.type.reactions.length > 0) {
+	    outputLine(type, "", "Reactions");
+	    for (let i = 0; i < npc.type.reactions.length; i++) {
+		outputLine(type, "reaction_" + i, "", npc.type.reactions[i]);
+	    }
+	}
+	outputLine(type, "");
+	outputLine(type, "description", "Description", npc.type.description);
     }
-    output += "<b>Description</b>: " + npc.type.description + "<br /><br />";
-    $('#div-npc').append(output);
 }
 
-function populateOutputNotion(npc) {
+function populateOutputMarkdown(npc) {
     var output = "";
     $('#div-npc').html('');
     output += "**Alignment**: " + npc.alignment.toUpperCase() + "<br />"
@@ -446,9 +540,6 @@ function populateOutputNotion(npc) {
 
     // Copy text to the clipboard so we can paste into Notion
     navigator.clipboard.writeText(document.getElementById('div-npc').innerText);
-
-    // Change back to formatted
-    //populateOutputFormatted(npc)
 }
 
 function exportNPCs() {
