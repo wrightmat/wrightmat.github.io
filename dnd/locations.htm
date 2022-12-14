@@ -39,13 +39,17 @@
     </div>
   </div><br />
   <div class="form-group row">
-    <select id="select-groups" class="form-control" size="13" onChange="selectGroup(this);" onDblClick="addGroup(this);"></select>
+    <select id="select-groups" class="form-control" size="10" onChange="selectGroup(this);" onDblClick="addGroup(this);"></select>
   </div><br />
+  <div class="form-group row">
+    <label for="search-items" class="col-sm-4 col-form-label">Search Items:</label>
+    <div class="col-sm-8"><input type="text" class="form-control" name="search-items" onchange="rebuildSelectByName(this.value);"></input></div>
+  </div>
   <div class="form-group row">
     <select id="select-items" class="form-control" size="12" onChange="selectItem(this);" onDblClick="addItem(this);"></select>
   </div><br />
   <div class="form-group row">
-    <select id="select-services" class="form-control" size="8" onChange="selectService(this);" onDblClick="addService(this);"></select>
+    <select id="select-services" class="form-control" size="10" onChange="selectService(this);" onDblClick="addService(this);"></select>
   </div>
 </div>
 
