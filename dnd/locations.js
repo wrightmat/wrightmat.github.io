@@ -4,7 +4,10 @@ var groups = {};
 var services = {};
 var item_selected;
 
+window.addEventListener("load", init, false);
+
 function init() {
+  navbar();
   var i = 0;
   var arr_cat = [];
   var json_equip;
@@ -181,7 +184,7 @@ function generatePreset() {
   var items = {};
   var sel = $('#preset-location option:selected').attr('id');
   var sel_index = $('#preset-location').prop('selectedIndex');
-  $('#div-output').html("<table id='items-table' width='1000px;'><tbody><tr><th width='140px;'>Name</th><th width='180px;'>Category</th><th width='60px;'>Cost</th><th width='600px;'>Description</th><th width='20px;'></th></tr></tbody></table>");
+  $('#div-output').html('<table id="items-table" class="table table-striped"><tbody><tr><th>Name</th><th>Category</th><th>Cost</th><th>Description</th><th></th></tr></tbody></table>');
 
   if (sel == "general-store") {
     var e_items = filterEquipment(['adventuring-gear','ammunition','tools','potion']);
@@ -206,8 +209,7 @@ function generatePreset() {
     }
     for (const [key, value] of Object.entries(s_items)) {
       items[i] = value;
-      i += 1;
-      var cost = "";
+      i += 1;  var cost = "";
       if (value["cost"] != undefined) { 
         cost = value["cost"]["quantity"] + ' ' + value["cost"]["unit"]
         if (value["cost"]["per"] != undefined) { cost += " per " + value["cost"]["per"] }
@@ -217,8 +219,7 @@ function generatePreset() {
     if (e_items != undefined) {
       for (let j = i; j < (10 - Object.keys(s_items).length + i); j++) {
         it = e_items[getRandomInt(0, Object.keys(e_items).length-1)];
-        items[j] = it;
-        var cost = "";
+        items[j] = it;  var cost = "";
         if (it["cost"] != undefined) { 
           cost = it["cost"]["quantity"] + ' ' + it["cost"]["unit"]
           if (it["cost"]["per"] != undefined) { cost += " per " + it["cost"]["per"] }
