@@ -11,15 +11,17 @@ function setup() {
   params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
   });
-  if (params.view == "DM") { view = 1; }
-  if (view == 0) {
+  if ( params.view == "DM" ) { view = 1; }
+  if ( view == 0 ) {
     $('#header').css({ visibility: 'hidden' })
     $('#div-settings').css({ visibility: 'hidden' })
   } else { navbar(); }
-  encounter = getFromDDB("encounter", getCookie("encounter-id"));
-  combatants = buildCombatants();
-  populateOutput();
-  setInterval(refresh, 60000);  // start the refresh at every 60 seconds
+  if ( params.id ) {
+    encounter = getFromDDB("encounter", params.id);
+    combatants = buildCombatants();
+    populateOutput();
+    setInterval(refresh, 60000);  // start the refresh at every 60 seconds
+  }
 }
 
 function refresh() {
