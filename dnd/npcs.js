@@ -484,67 +484,6 @@ function populateOutput(type, npc) {
     }
 }
 
-function populateOutputMarkdown(npc) {
-    var output = "";
-    $('#div-npc').html('');
-    output += "**Alignment**: " + npc.alignment.toUpperCase() + "<br />"
-    output += "**Initial Attitude**: " + npc.attitude + "<br />"
-    output += "**Relationship Status**: " + npc.relationship + "<br />"
-    output += "**Sexual Orientation**: " + npc.orientation + "<br />"
-    output += "**Age**: " + npc.age.age + " (" + npc.age.group + ")<br />"
-    output += "**Height**: " + Math.floor(npc.height / 12) + " ft. " + npc.height % 12 + " in. (" + npc.height + " in.)<br />"
-    output += "**Weight**: " + npc.weight + " lbs.<br />"
-    output += "**Eyes**: " + npc.eyes + "<br />"
-    output += "**Hair**: " + npc.hair + "<br />"
-    output += "**Skin**: " + npc.skin + "<br />"
-    output += "**Appearance**: " + npc.appearance + "<br />"
-    output += "<br />"
-    output += "**Talent**: " + npc.talent + "<br />"
-    output += "**Bond**: " + npc.bond + "<br />"
-    output += "**Flaw**: " + npc.flaw + "<br />"
-    output += "**Ideal**: " + npc.ideal + "<br />"
-    output += "<br />"
-    output += "**Interaction Trait**: " + npc.interaction_trait + "<br />"
-    output += "**Mannerisms**: " + npc.mannerism + "<br />"
-    output += "**Saying**: " + npc.saying + "<br />"
-    output += "<br />"
-    output += "**AC**: " + npc.ac + "<br />"
-    output += "**HP**: " + npc.hp.value + " (" + npc.hp.roll + ")<br />"
-    output += "**Speed**: " + npc.speed + " ft.<br />"
-    output += "**Stats**: STR " + npc.stats[0] + ", DEX " + npc.stats[1] + ", CON " + npc.stats[2] + ", INT " + npc.stats[3] + ", WIS " + npc.stats[4] + ", CHA " + npc.stats[5] + "<br />"
-    if (npc.type.saves !== undefined) {
-	output += "**Saving Throws**: " + npc.type.saves + "<br />";
-    }
-    if (npc.type.skills !== undefined) {
-	output += "**Skills**: " + npc.type.skills + "<br />";
-    }
-    output += "**CR**: " + npc.type.cr + "<br />";
-    output += "<br />"
-    if (npc.type.abilities !== undefined && npc.type.abilities.length > 0) {
-	for (let i = 0; i < npc.type.abilities.length; i++) {
-	    output +=  npc.type.abilities[i] + "<br /><br />";
-	}
-    }
-    if (npc.type.actions !== undefined && npc.type.actions.length > 0) {
-	output += "**Actions**:<br />";
-	for (let i = 0; i < npc.type.actions.length; i++) {
-	    output += npc.type.actions[i] + "<br /><br />";
-	}
-    }
-    if (npc.type.reactions !== undefined && npc.type.reactions.length > 0) {
-	output += "**Reactions**:<br />";
-	for (let i = 0; i < npc.type.reactions.length; i++) {
-	    output += npc.type.reactions[i] + "<br /><br />";
-	}
-    }
-    output += "<br />";
-    output += "**Description**: " + npc.type.description + "<br />";
-    $('#div-npc').append(output);
-
-    // Copy text to the clipboard so we can paste into Notion
-    navigator.clipboard.writeText(document.getElementById('div-npc').innerText);
-}
-
 function exportNPCs() {
     var title = prompt("Enter a filename (.json will be added)", "npcs");
     if (title !== null) {
@@ -563,7 +502,6 @@ $(document).on("click", "#tbl-alignment td", function() {
 	    align_selected.push($(this).attr("id"));
 	}
     }
-    console.log(align_selected);
 });
 
 $(document).on("dblclick", "#tbl-npc td", function() {
@@ -582,8 +520,7 @@ $(document).on("dblclick", "#tbl-npc td", function() {
 	    }
 	    var td_text_new = prompt("Enter new value:", td_text);
 	    if (td_text_new != null) {
-		outputLine($(this).attr("id"), "", td_text_new);
-		//$(this).text(td_text_new);
+		outputLine(0, $(this).attr("id"), "", td_text_new);
 		if (typeof npcs[0][id][id_2] !== "undefined") {
 		    npcs[0][id][id_2] = $(this).text();
 		} else {
