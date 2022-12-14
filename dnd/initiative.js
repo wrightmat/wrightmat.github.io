@@ -150,22 +150,23 @@ function populateOutput() {
     if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
     if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
     if ( item.type == "Player" || opt_show_monster_hp ) { hp = item.currentHitPoints + ' / ' + item.maximumHitPoints } else { var hp = '' }
-    if ( item.type == "Player" ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="80" width="80" class="rounded" /> ' } else { var img = '' }
-    if ( item.type == "Player" ) {
-      var det = '</h4> <p class="text-muted">AC: ' + item.ac + spd + '</p>';
+    if ( item.type == "Player" || opt_show_monster_img ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="80" width="80" class="rounded" /> ' } else { var img = '' }
+    if ( item.type == "Player" || opt_show_monster_details ) {
+      var det = '<p class="text-muted">AC: ' + item.ac;
+      if ( item.speeds !== undefined ) {
+        det += ', Speed: ' + item.speeds.walk + ' ft.';
+        if (item.speeds.fly > 0) { det += ', Fly ' + item.speeds.fly + ' ft.' }
+        if (item.speeds.burrow > 0) { det += ', Burrow ' + item.speeds.burrow + ' ft.' }
+        if (item.speeds.swim > 0) { det += ', Swim ' + item.speeds.swim + ' ft.' }
+        if (item.speeds.climb > 0) { det += ', Climb ' + item.speeds.climb + ' ft.' }
+      }
       if ( item.cr ) { det += ', CR ' + item.cr }
-    }
+      det += '</p>';
+    } else { var det = "" }
     if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 2rem; color: blue;"></i>' } else { var insp = '' }
-    if ( item.speeds !== undefined ) {
-      var spd = ', Speed: ' + item.speeds.walk + ' ft.';
-      if (item.speeds.fly > 0) { spd += ', Fly ' + item.speeds.fly + ' ft.' }
-      if (item.speeds.burrow > 0) { spd += ', Burrow ' + item.speeds.burrow + ' ft.' }
-      if (item.speeds.swim > 0) { spd += ', Swim ' + item.speeds.swim + ' ft.' }
-      if (item.speeds.climb > 0) { spd += ', Climb ' + item.speeds.climb + ' ft.' }
-    }
     if ( encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
     o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h3> ' + item.initiative + ' </h3></td>';
-    o += '<td>' + img + '</td> <td><h4> ' + t + insp + '</td>';
+    o += '<td>' + img + '</td> <td><h4> ' + t + insp + '</h4>' + det + '</td>';
     o += '<td></td>';  // conditions (including bloodied)
     o += '<td><h4> ' + hp + ' </h4></td></tr>';
     //<i class="bi-droplet-fill" style="font-size: 1.5rem; color: red;"></i>		// bloodied
