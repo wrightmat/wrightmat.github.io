@@ -188,7 +188,7 @@ function generateDays() {
     var enc_level = (levels.reduce((a, b) => a + b) / players);
   } else { var enc_level = 1; }
 
-  $('#days-div').html("<table id='days-table'><tbody><tr><th>Day</th><th>Miles</th><th>Combat</th><th>Weather</th></tr></tbody></table>");
+  $('#days-div').html('<table id="days-table" class="table table-striped"><tbody><tr><th>Day</th><th>Miles</th><th>Combat</th><th>Weather</th></tr></tbody></table>');
   for (let i = 0; i < $('#travel-days').val(); i++) {
     var days = i + 1;
     var t_combat_val = rollDice("1d20");

@@ -1,99 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>5e Travel Calculator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" type="text/css" href="style.css">
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-<script type="text/javascript" src="common.js"></script>
-<script type="text/javascript" src="travel.js"></script>
+  <title>5e Travel Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="travel.js"></script>
 </head>
 
 <body onLoad="init();navbar();">
 <header id="header"></header>
 
-<div class="column-main" id="div-settings">
-  <label for="travel-means">Means of Travel:</label>
-  <select name="travel-means" id="travel-means" onChange="$('#travel-hours').val($('#travel-means').val());calcDays();">
-    <option id="1" value="8">Custom</option>
-    <option id="3" value="8" selected>On Foot</option>
-    <option id="6" value="8">By Horse</option>
-    <option id="7" value="8">By Magebred Coach</option>
-    <option id="10" value="24">By Sailing Ship</option>
-    <option id="12" value="24">By Elemental Galleon</option>
-    <option id="20" value="24">By Airship</option>
-    <option id="30" value="24">By Lightning Rail</option>
-  </select><br /><br />
-
-  <label for="travel-pace">Travel Pace:</label>
-  <select name="travel-pace" id="travel-pace" onChange="calcDays();">
-    <option id="1.25" value="1.25">Fast</option>
-    <option id="1" value="1" selected>Normal</option>
-    <option id= "0.75" value="0.75">Slow</option>
-  </select><div id="travel-pace-warning"></div><br />
-
-  <label for="travel-environ">Travel Environment:</label>
-  <select name="travel-environ" id="travel-environ">
-    <option id="arctic" value="arctic_xge">Arctic</option>
-    <option id="coastal" value="coastal_xge">Coastal</option>
-    <option id="desert" value="desert_xge">Desert</option>
-    <option id="forest" value="forest_xge">Forest</option>
-    <option id="grassland" value="grassland_xge" selected>Grassland</option>
-    <option id="hill" value="hill_xge">Hill</option>
-    <option id="mountain" value="mountain_xge">Mountain</option>
-    <option id="open-water" value="open%20water_gos">Open Water</option>
-    <option id="swamp" value="swamp_xge">Swamp</option>
-    <option id="underdark" value="underdark_xge">Underdark</option>
-    <option id="underwater" value="underwater_xge">Underwater</option>
-    <option id="urban" value="urban_xge">Urban</option>
-  </select><br /><br />
-
-  <label for="travel-speed">Travel Speed (miles/hour):</label>
-  <input type="text" name="travel-speed" id="travel-speed" onChange="calc_days();"></input><br /><br />
-
-  <label for="travel-hours">Hours of Travel:</label>
-  <input type="text" name="travel-hours" id="travel-hours" onChange="calcDays();" value="8"></input><div id="travel-hours-warning"></div><br /><br />
-
-  <label for="travel-distance">Travel Distance (miles):</label>
-  <input type="text" name="travel-distance" id="travel-distance" onChange="calcDays();"></input></br /><br />
-
-  <label for="travel-days">Days of Travel:</label>
-  <input type="text" name="travel-days" id="travel-days" onChange="checkDays();" class="required"></input><br /><br /><br />
-
-  <label for="travel-weather">Generate Weather?</label>
-  <input type="checkbox" name="travel-weather" id="travel-weather" onChange="checkWeather();"></input><br /><br />
-
-  <label for="travel-season">Travel Season:</label>
-  <select name="travel-season" id="travel-season">
-    <option id="spring" value="spring">Spring</option>
-    <option id="summer" value="summer">Summer</option>
-    <option id="summer" value="autumn">Autumn</option>
-    <option id="winter" value="winter">Winter</option>
-  </select><br /><br />
-
-  <label for="travel-weather-days">Re-roll every number of days:</label>
-  <input type="text" name="travel-weather-days" id="travel-weather-days" value="3"></input><br /><br /><br />
-
-  <label for="travel-costs">Calculate Costs?</label>
-  <input type="checkbox" name="travel-costs" id="travel-costs" onChange="checkCosts();" checked></input><br /><br />
-
-  <label for="travel-class">Travel Class:</label>
-  <select name="travel-class" id="travel-class">
-    <option id="na" value="na">n/a</option>
-    <option id="first" value="first" selected>First Class</option>
-    <option id="second" value="second">Second Class</option>
-    <option id="steerage" value="steerage">Steerage</option>
-  </select><br /><br />
-
-  <label for="travel-cost-players">Number of players:</label>
-  <input type="text" name="travel-cost-players" id="travel-cost-players"></input><br /><br /><br />
-
-  <input type="button" name="generate-days" id="generate-days" onClick="generateDays();" value="Generate Days"></input><br /><br />
+<div class="container-fluid" id="div-settings" style="float:left;width:45%;">
+  <div class="form-group row">
+    <label for="travel-means" class="col-sm-2 col-form-label">Travel Means:</label>
+    <div class="col-sm-10">
+      <select name="travel-means" class="form-control" id="travel-means" onChange="$('#travel-hours').val($('#travel-means').val());calcDays();">
+      <option id="1" value="8">Custom</option>
+      <option id="3" value="8" selected>On Foot</option>
+      <option id="6" value="8">By Horse</option>
+      <option id="7" value="8">By Magebred Coach</option>
+      <option id="10" value="24">By Sailing Ship</option>
+      <option id="12" value="24">By Elemental Galleon</option>
+      <option id="20" value="24">By Airship</option>
+      <option id="30" value="24">By Lightning Rail</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-pace" class="col-sm-2 col-form-label">Travel Pace:</label>
+    <div class="col-sm-10">
+      <select name="travel-pace" class="form-control" id="travel-pace" onChange="calcDays();">
+      <option id="1.25" value="1.25">Fast</option>
+      <option id="1" value="1" selected>Normal</option>
+      <option id= "0.75" value="0.75">Slow</option>
+      </select><div id="travel-pace-warning"></div><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-environ" class="col-sm-2 col-form-label">Environment:</label>
+    <div class="col-sm-10">
+      <select name="travel-environ" class="form-control" id="travel-environ">
+      <option id="arctic" value="arctic_xge">Arctic</option>
+      <option id="coastal" value="coastal_xge">Coastal</option>
+      <option id="desert" value="desert_xge">Desert</option>
+      <option id="forest" value="forest_xge">Forest</option>
+      <option id="grassland" value="grassland_xge" selected>Grassland</option>
+      <option id="hill" value="hill_xge">Hill</option>
+      <option id="mountain" value="mountain_xge">Mountain</option>
+      <option id="open-water" value="open%20water_gos">Open Water</option>
+      <option id="swamp" value="swamp_xge">Swamp</option>
+      <option id="underdark" value="underdark_xge">Underdark</option>
+      <option id="underwater" value="underwater_xge">Underwater</option>
+      <option id="urban" value="urban_xge">Urban</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-speed" class="col-sm-2 col-form-label">Travel Speed (miles/hour):</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" name="travel-speed" id="travel-speed" onChange="calc_days();"></input><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-hours" class="col-sm-2 col-form-label">Hours of Travel:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" name="travel-hours" id="travel-hours" onChange="calcDays();" value="8"></input>
+      <div id="travel-hours-warning"></div><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-distance" class="col-sm-2 col-form-label">Travel Distance (miles):</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" name="travel-distance" id="travel-distance" onChange="calcDays();"></input></br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-days" class="col-sm-2 col-form-label">Days of Travel:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" name="travel-days" id="travel-days" onChange="checkDays();" class="required"></input><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-weather" class="col-sm-2 col-form-label">Generate Weather?</label>
+    <div class="col-sm-10">
+      <input type="checkbox" class="form-check-input" name="travel-weather" id="travel-weather" onChange="checkWeather();"></input><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-season" class="col-sm-2 col-form-label">Travel Season:</label>
+    <div class="col-sm-10">
+      <select name="travel-season" class="form-control" id="travel-season">
+      <option id="spring" value="spring">Spring</option>
+      <option id="summer" value="summer">Summer</option>
+      <option id="summer" value="autumn">Autumn</option>
+      <option id="winter" value="winter">Winter</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-weather-days" class="col-sm-2 col-form-label">Re-roll every number of days:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" name="travel-weather-days" id="travel-weather-days" value="3"></input><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-costs" class="col-sm-2 col-form-label">Calculate Costs?</label>
+    <div class="col-sm-10">
+      <input type="checkbox" class="form-check-input" name="travel-costs" id="travel-costs" onChange="checkCosts();" checked></input><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-class" class="col-sm-2 col-form-label">Travel Class:</label>
+    <div class="col-sm-10">
+      <select name="travel-class" class="form-control" id="travel-class">
+      <option id="na" value="na">n/a</option>
+      <option id="first" value="first" selected>First Class</option>
+      <option id="second" value="second">Second Class</option>
+      <option id="steerage" value="steerage">Steerage</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="travel-cost-players" class="col-sm-2 col-form-label">Number of players:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" name="travel-cost-players" id="travel-cost-players"></input><br />
+    </div>
+  </div><br /><br />
+  <input type="button" class="btn btn-primary" name="generate-days" id="generate-days" onClick="generateDays();" value="Generate Days"></input>
 </div>
 
-<div class="column-main" id="div-output">
-  <div id="days-div"></div><br /><br />
+<div class="container-fluid" id="div-output" style="float:right;padding:20px;width:50%;">
+  <div id="days-div"></div>
+  <br /><br />
   <div id="costs-div"></div>
 </div>
 
