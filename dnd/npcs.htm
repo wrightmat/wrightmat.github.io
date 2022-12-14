@@ -3,7 +3,8 @@
 <head>
   <title>5e NPC Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
   <script type="text/javascript" src="file_saver.min.js"></script>
@@ -15,68 +16,94 @@
   <script type="text/javascript" src="npcs_sayings.json"></script>
 </head>
 
-<body onLoad="init();navbar();">
+<body>
 <header id="header"></header>
 
-<div class="column-main" id="div-settings" style="width:40%">
-  <label for="npc-location">NPC Location:</label>
-  <select name="npc-location" id="npc-location">
-    <option id="eberron" value="eberron">General Eberron</option>
-    <option id="space" value="space">General Siberspace</option>
-  </select><br /><br /><br />
-
-  <label for="npc-race">NPC Race:</label>
-  <select name="npc-race" id="npc-race">
-    <option id="random" value="random">Random</option>
-  </select><br /><br />
-
-  <label for="npc-type">NPC Type:</label>
-  <select name="npc-type" id="npc-type">
-    <option id="random" value="random">Random</option>
-  </select><br /><br />
-
-  <label for="npc-gender">NPC Gender:</label>
-  <select name="npc-gender" id="npc-gender">
-    <option id="random" value="random">Random</option>
-  </select><br /><br />
-
-  <label for="npc-alignment">NPC Alignment:</label>
-  <select name="npc-alignment" id="npc-alignment" onchange="changeAlignment();">
-    <option id="random" value="random">Random</option>
-    <option id="lg" value="lg">LG (Lawful Good)</option>
-    <option id="ln" value="ln">LN (Lawful Neutral)</option>
-    <option id="le" value="le">LE (Lawful Evil)</option>
-    <option id="ng" value="ng">NG (Neutral Good)</option>
-    <option id="nn" value="nn">NN (True Neutral)</option>
-    <option id="ne" value="ne">NE (Neutral Evil)</option>
-    <option id="cg" value="cg">CG (Chaotic Good)</option>
-    <option id="cn" value="cn">CN (Chaotic Neutral)</option>
-    <option id="ce" value="ce">CE (Chaotic Evil)</option>
-  </select><br /><br />
-  <div id="div-alignment"><table id="tbl-alignment" class="table-pointer"><tbody>
-    <tr><th></th><th width="40">Good</th><th width="40">Neutral</th><th width="40">Evil</th></tr>
-    <tr><th height="40">Lawful</th><td id="lg">LG</td><td id="ln">LN</td><td id="le">LE</td></tr>
-    <tr><th height="40">Neutral</th><td id="ng">NG</td><td id="nn">NN</td><td id="ne">NE</td></tr>
-    <tr><th height="40">Chaotic</th><td id="cg">CG</td><td id="cn">CN</td><td id="ce">CE</td></tr>
-  </tbody></table></div><br /><br />
-
-  <input type="button" name="generate-npc" value="Generate NPC" onclick="generateNPC();"></input><br /><br /><br />
-
-  <select id="npc-select" size="15" style="width:250px;" onchange="changeSelect(this);" onfocus="this.selectedIndex=-1;"></select>
-  <button id="btn-npc-remove" onclick="removeNPC();">[ X ]</button>&nbsp;&nbsp;
-  <button id="btn-npc-export" onclick="exportNPC();">[ > ]</button><br />
-  <div id="div-status"></div>
+<div class="container-fluid" id="div-settings" style="float:left;width:40%;">
+  <div class="form-group row">
+    <label for="npc-location" class="col-sm-2 col-form-label">NPC Location:</label>
+    <div class="col-sm-10">
+      <select name="npc-location" class="form-control" id="npc-location">
+      <option id="eberron" value="eberron">General Eberron</option>
+      <option id="space" value="space">General Siberspace</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="npc-race" class="col-sm-2 col-form-label">NPC Race:</label>
+    <div class="col-sm-10">
+      <select name="npc-race" class="form-control" id="npc-race">
+      <option id="random" value="random">Random</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="npc-type" class="col-sm-2 col-form-label">NPC Type:</label>
+    <div class="col-sm-10">
+      <select name="npc-type" class="form-control" id="npc-type">
+      <option id="random" value="random">Random</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="npc-gender" class="col-sm-2 col-form-label">NPC Gender:</label>
+    <div class="col-sm-10">
+      <select name="npc-gender" class="form-control" id="npc-gender">
+      <option id="random" value="random">Random</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="npc-alignment" class="col-sm-2 col-form-label">NPC Alignment:</label>
+    <div class="col-sm-10">
+      <select name="npc-alignment" class="form-control" id="npc-alignment" onchange="changeAlignment();">
+      <option id="random" value="random">Random</option>
+      <option id="lg" value="lg">LG (Lawful Good)</option>
+      <option id="ln" value="ln">LN (Lawful Neutral)</option>
+      <option id="le" value="le">LE (Lawful Evil)</option>
+      <option id="ng" value="ng">NG (Neutral Good)</option>
+      <option id="nn" value="nn">NN (True Neutral)</option>
+      <option id="ne" value="ne">NE (Neutral Evil)</option>
+      <option id="cg" value="cg">CG (Chaotic Good)</option>
+      <option id="cn" value="cn">CN (Chaotic Neutral)</option>
+      <option id="ce" value="ce">CE (Chaotic Evil)</option>
+      </select><br />
+    </div>
+  </div>
+  <div id="div-alignment">
+    <table id="tbl-alignment" class="table-selector"><tbody>
+      <tr><th></th><th width="40">Good</th><th width="40">Neutral</th><th width="40">Evil</th></tr>
+      <tr><th height="40">Lawful</th><td id="lg">LG</td><td id="ln">LN</td><td id="le">LE</td></tr>
+      <tr><th height="40">Neutral</th><td id="ng">NG</td><td id="nn">NN</td><td id="ne">NE</td></tr>
+      <tr><th height="40">Chaotic</th><td id="cg">CG</td><td id="cn">CN</td><td id="ce">CE</td></tr>
+    </tbody></table><br /><br />
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-2">
+      <input type="button" class="btn btn-primary" name="generate-npc" value="Generate NPC" onclick="generateNPC();"></input>
+    </div>
+    <div id="div-status" class="col-sm-6"></div>
+    <div id="div-format" class="col-sm-4">
+      <select name="npc-format" class="form-control" id="npc-format" onchange="changeFormat(this);">
+      <option id="table" value="table">Table</option>
+      <option id="markdown" value="markdown">Markdown</option>
+      <option id="notion" value="notion">Notion Blocks</option>
+      <option id="json" value="json">JSON</option>
+      </select><br />
+    </div>
+  </div>
+  <div class="form-group row">
+    <div class="col-sm-2">
+      <button id="btn-npc-remove" class="btn btn-danger" style="width:50px;" onclick="removeNPC();" title="Delete Row"> X </button><br /><br />
+      <button id="btn-npc-export" class="btn btn-info" style="width:50px;" onclick="exportNPC();" title="Export Row to Notion"> > </button><br />
+    </div>
+    <div class="col-sm-10">
+      <select id="npc-select" class="form-control" size="12" onchange="changeSelect(this);" onfocus="this.selectedIndex=-1;"></select>
+    </div>
+  </div>
 </div>
 
-<div class="column-main" id="div-output" style="width:60%">
-  <div id="div-format">
-    <select name="npc-format" id="npc-format" onchange="changeFormat(this);">
-    <option id="table" value="table">Table</option>
-    <option id="markdown" value="markdown">Markdown</option>
-    <option id="notion" value="notion">Notion Blocks</option>
-    <option id="json" value="json">JSON</option>
-    </select><br />
-  </div>
+<div class="container-fluid" id="div-output" style="float:right;width:60%;">
   <div id="div-npc">
     <table id="tbl-npc"><tbody></tbody></table>
   </div><br /><br />

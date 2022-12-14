@@ -1,8 +1,10 @@
 var players = 0;
 var player_selected;
 
+window.addEventListener("load", init, false);
 
 function init() {
+  navbar();
   calcDays();
   checkWeather();
   checkCosts();

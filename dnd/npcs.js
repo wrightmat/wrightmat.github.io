@@ -3,7 +3,10 @@ var align_selected = [];
 var page;
 var blocks = [];
 
+window.addEventListener("load", init, false);
+
 function init() {
+    navbar();
     // populate npc choices from json data
     npc_locations.forEach(function (item) {
 	if (typeof item == "string") {
