@@ -28,8 +28,8 @@
       $("input[type=checkbox]").each(function() {
 	setCookie(this.name, this.checked, 365);
       });
-      $("#div-output").html("Settings saved!");
-      setTimeout( function() { $("#div-output").html(""); }, 5000);
+      $("#btn-save").addClass('btn-success').removeClass('btn-primary');
+      setTimeout( function() { $("#btn-save").addClass('btn-primary').removeClass('btn-success'); }, 3000);
     }
   </script>
 </head>
@@ -76,7 +76,7 @@
       <input type="checkbox" class="form-check-input" name="show-monster-details"></input><br /><br />
     </div>
   </div><br />
-  <input type="button" class="btn btn-primary" name="save" value="Save Settings" onclick="save();"></input>
+  <input type="button" class="btn btn-primary" id="btn-save" value="Save Settings" onclick="save();"></input>
 </div>
 
 </body>
