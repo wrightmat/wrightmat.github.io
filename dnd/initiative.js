@@ -24,11 +24,13 @@ function setup() {
   encounter = getFromDDB("encounter", "54d34b6e-393a-4791-9ece-593b9c5745b1");
   combatants = buildCombatants();
   populateOutput();
+  setInterval(refresh, 60000);  // start the refresh at every 60 seconds
 }
 
 function refresh() {
   combatants = buildCombatants();
   populateOutput();
+  setInterval(refresh, 30000);  // refresh every 30 seconds routinely
 }
 
 function getFromDDB(type, id) {
@@ -60,8 +62,7 @@ function getFromDDB(type, id) {
 }
 
 function buildCombatants() {
-  var i = 0;
-  var c = [];
+  var i = 0; var c = [];
   encounter.players.forEach(function (item, index) {
     if (item.initiative > 0) {
       item.active = true
