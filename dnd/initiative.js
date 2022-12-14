@@ -1,5 +1,3 @@
-// Have option to show monster and character (separately) images. Character image in decorations.avatarUrl. Monster image in avatarUrl (with an extra .com for some reason), but need to do more digging for the generic creature type version (typeId is creature type?)
-
 var crs = [ '-', '0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30' ]
 var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
 var encounter = {};
@@ -23,17 +21,18 @@ function setup() {
   } else {
     navbar();
   }
-
   encounter = getFromDDB("encounter", "54d34b6e-393a-4791-9ece-593b9c5745b1");
-console.log(encounter);
   combatants = buildCombatants();
-console.log(combatants);
+  populateOutput();
+}
+
+function refresh() {
+  combatants = buildCombatants();
   populateOutput();
 }
 
 function getFromDDB(type, id) {
-  var r;
-  var u;
+  var r; var u;
   var d = new Object();
   d.id = id;
 
@@ -67,28 +66,27 @@ function buildCombatants() {
     if (item.initiative > 0) {
       item.active = true
       char = getFromDDB("character", item.id);
-      var ac = 0;
-      var levels = 0;
+      var ac = 0; var levels = 0;
       var speeds = char.race.weightSpeeds.normal;
       var dex_score = char.stats[1].value;
       var con_score = char.stats[2].value;
       char.classes.forEach(function (it, ind) { levels += it.level });
       char.modifiers.feat.forEach(function (it, ind) {
-	if (it.entityTypeId == 1472902489 && it.entityId == 2) { dex_score += it.fixedValue }
-	if (it.entityTypeId == 1472902489 && it.entityId == 3) { con_score += it.fixedValue }
+	if ( it.entityTypeId == 1472902489 && it.entityId == 2 ) { dex_score += it.fixedValue }
+	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
       });
       char.modifiers.race.forEach(function (it, ind) {
-	if (it.entityTypeId == 1472902489 && it.entityId == 3) { con_score += it.fixedValue }
-	if (it.subType == 'innate-speed-flying') { speeds.fly = speeds.walk }
+	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
+	if ( it.subType == 'innate-speed-flying' ) { speeds.fly = speeds.walk }
       });
       char.modifiers.class.forEach(function (it, ind) {
-	if (it.subType == 'speed') { speeds.walk += it.value }
+	if ( it.subType == 'speed' ) { speeds.walk += it.value }
       });
       char.classes.forEach(function (it, ind) {
-	if (it.entityTypeId == 12168134 && it.id == 52) { ac = 0; }
+	if ( it.entityTypeId == 12168134 && it.id == 52 ) { ac = 0; }
       });
       char.inventory.forEach(function (it, ind) {
-	if (it.definition.armorClass) { ac += it.definition.armorClass; }
+	if ( it.definition.armorClass ) { ac += it.definition.armorClass; }
       });
       var dex_mod = Math.floor((dex_score - 10) / 2);
       var con_mod = Math.floor((con_score - 10) / 2);
@@ -118,19 +116,18 @@ function buildCombatants() {
       item.active = true;
       item.speeds = {}
       mons = getFromDDB("monster", item.id);
-console.log(mons);
       mons.movements.forEach(function (it, ind) {
-	if (it.movementId == 1) { item.speeds.walk = it.speed; }
-	if (it.movementId == 2) { item.speeds.burrow = it.speed; }
-	if (it.movementId == 3) { item.speeds.climb = it.speed; }
-	if (it.movementId == 4) { item.speeds.fly = it.speed; }
-	if (it.movementId == 5) { item.speeds.swim = it.speed; }
+	if ( it.movementId == 1 ) { item.speeds.walk = it.speed; }
+	if ( it.movementId == 2 ) { item.speeds.burrow = it.speed; }
+	if ( it.movementId == 3 ) { item.speeds.climb = it.speed; }
+	if ( it.movementId == 4 ) { item.speeds.fly = it.speed; }
+	if ( it.movementId == 5 ) { item.speeds.swim = it.speed; }
       });
       item.ac = mons.armorClass;
       item.cr = crs[mons.challengeRatingId];
       item.avatarUrl = mons.avatarUrl;
       item.passivePerception = mons.passivePerception;
-      if (item.currentHitPoints < (item.maximumHitPoints / 2)) { item.bloodied = true } else { item.bloodied = false }
+      if (item.currentHitPoints < ( item.maximumHitPoints / 2 )) { item.bloodied = true } else { item.bloodied = false }
     } else {
       item.active = false
     }
@@ -144,40 +141,69 @@ console.log(mons);
 
 function populateOutput() {
   var d = $('#div-output');
-  d.html('');
   var o = '<table class="table"><tr><th>Initiative</th><th></th><th></th><th></th></tr>';
   combatants.forEach(function (item, index) {
     if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
     if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
-    if ( item.type == "Player" || opt_show_monster_hp ) { hp = item.currentHitPoints + ' / ' + item.maximumHitPoints } else { var hp = '' }
+    if ( item.type == "Player" || opt_show_monster_hp ) {
+      if ( item.type == "Player" && item.currentHitPoints == 0 && item.deathSaves ) {   // Death saves
+	var hp = ""
+	for ( let i = 0; i < item.deathSaves.successCount; i++ ) {
+	  hp += '<i class="bi-circle-fill" style="font-size: 1.5rem; color: green;"></i>';
+	}
+	for ( let i = 0; i < (3 - item.deathSaves.successCount); i++ ) {
+	  hp += '<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>';
+	}
+	hp += '<br />';
+	for ( let i = 0; i < item.deathSaves.failCount; i++ ) {
+	  hp += '<i class="bi-circle-fill" style="font-size: 1.5rem; color: red;"></i>';
+	}
+	for ( let i = 0; i < (3 - item.deathSaves.failCount); i++ ) {
+	  hp += '<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>';
+	}
+      } else {
+	var hp = item.currentHitPoints + ' / ' + item.maximumHitPoints
+      }
+    } else { var hp = '' }
     if ( item.type == "Player" || opt_show_monster_img ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="80" width="80" class="rounded" /> ' } else { var img = '' }
     if ( item.type == "Player" || opt_show_monster_details ) {
       var det = '<p class="text-muted">AC: ' + item.ac;
       if ( item.speeds !== undefined ) {
         det += ', Speed: ' + item.speeds.walk + ' ft.';
-        if (item.speeds.fly > 0) { det += ', Fly ' + item.speeds.fly + ' ft.' }
-        if (item.speeds.burrow > 0) { det += ', Burrow ' + item.speeds.burrow + ' ft.' }
-        if (item.speeds.swim > 0) { det += ', Swim ' + item.speeds.swim + ' ft.' }
-        if (item.speeds.climb > 0) { det += ', Climb ' + item.speeds.climb + ' ft.' }
+        if ( item.speeds.fly > 0 ) { det += ', Fly ' + item.speeds.fly + ' ft.' }
+        if ( item.speeds.burrow > 0 ) { det += ', Burrow ' + item.speeds.burrow + ' ft.' }
+        if ( item.speeds.swim > 0 ) { det += ', Swim ' + item.speeds.swim + ' ft.' }
+        if ( item.speeds.climb > 0 ) { det += ', Climb ' + item.speeds.climb + ' ft.' }
       }
       if ( item.cr ) { det += ', CR ' + item.cr }
       det += '</p>';
-    } else { var det = "" }
-    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 2rem; color: blue;"></i>' } else { var insp = '' }
+    } else { var det = '' }
+    var cond = ''
+    if ( item.bloodied ) {
+      cond += '<i class="bi-droplet-fill" style="font-size: 1.5rem; color: red;" title="Bloodied"></i>';
+    }
+    if ( item.conditions && item.conditions.length > 0 ) {
+      item.conditions.forEach(function (it, ind) {
+	if ( it.id == 1 ) { cond += '<i class="bi-eye-slash-fill" style="font-size: 1.5rem; color: black;" title="Blinded"></i>' }
+	if ( it.id == 2 ) { cond += '<i class="bi-c-circle" style="font-size: 1.5rem; color: black;" title="Charmed"></i>' }
+	if ( it.id == 3 ) { cond += '<i class="bi-ear" style="font-size: 1.5rem; color: black;" title="Deafened"></i>' }
+	if ( it.id == 5 ) { cond += '<i class="bi-person-fill-exclamation" style="font-size: 1.5rem; color: black;" title="Frightened"></i>' }
+	if ( it.id == 6 ) { cond += '<i class="bi-hurricane" style="font-size: 1.5rem; color: black;" title="Grappled"></i>' }
+	if ( it.id == 7 ) { cond += '<i class="bi-person-fill-x" style="font-size: 1.5rem; color: black;" title="Incapacitated"></i>' }
+	if ( it.id == 8 ) { cond += '<i class="bi-dash-square-dotted" style="font-size: 1.5rem; color: black;" title="Invisible"></i>' }
+	if ( it.id == 13 ) { cond += '<i class="bi-r-square" style="font-size: 1.5rem; color: black;" title="Restrained"></i>' }
+	if ( it.id == 15 ) { cond += '<i class="bi-emoji-dizzy" style="font-size: 1.5rem; color: black;" title="Unconscious"></i>' }
+      });
+    }
+    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 2rem; color: blue;" title="Inspiration!"></i>' } else { var insp = '' }
     if ( encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
     o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h3> ' + item.initiative + ' </h3></td>';
     o += '<td>' + img + '</td> <td><h4> ' + t + insp + '</h4>' + det + '</td>';
-    o += '<td></td>';  // conditions (including bloodied)
+    o += '<td>' + cond + '</td>';
     o += '<td><h4> ' + hp + ' </h4></td></tr>';
-    //<i class="bi-droplet-fill" style="font-size: 1.5rem; color: red;"></i>		// bloodied
-    //<i class="bi-bootstrap-reboot" style="font-size: 1.5rem; color: black;"></i>	// restrained
-    //<i class="bi-eye-slash-fill" style="font-size: 1.5rem; color: black;"></i>	// blinded
-    //<i class="bi-circle-fill" style="font-size: 1.5rem; color: red;"></i>		// death saves (in place of HP)
-    //<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>
-    //<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>
   });
   o += '</table>';
-  d.append(o);
+  d.html(''); d.append(o);
 }
 
 function updateOption(el) {
