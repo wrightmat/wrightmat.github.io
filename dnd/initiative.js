@@ -1,7 +1,6 @@
 var crs = [ '-', '0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30' ]
 var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
-var encounter = {};
-var combatants = [];
+var encounter = {};  var combatants = [];
 if (getCookie("show-monster-hp") == "true") { var opt_show_monster_hp = true } else { var opt_show_monster_hp = false }
 if (getCookie("show-monster-img") == "true") { var opt_show_monster_img = true } else { var opt_show_monster_img = false }
 if (getCookie("show-monster-name") == "true") { var opt_show_monster_name = true } else { var opt_show_monster_name = false }
@@ -18,9 +17,7 @@ function setup() {
   if (view == 0) {
     $('#header').css({ visibility: 'hidden' })
     $('#div-settings').css({ visibility: 'hidden' })
-  } else {
-    navbar();
-  }
+  } else { navbar(); }
   encounter = getFromDDB("encounter", "54d34b6e-393a-4791-9ece-593b9c5745b1");
   combatants = buildCombatants();
   populateOutput();
