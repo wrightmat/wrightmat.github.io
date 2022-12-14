@@ -1,19 +1,18 @@
-// Look up character death saves if hp = 0 (in character json as deathSaves)
-// Could look up conditions for each character (conditions array in json) - but this might also be too taxing on the endpoint. Maybe have a toggle or something.
 // Have option to show monster and character (separately) images. Character image in decorations.avatarUrl. Monster image in avatarUrl (with an extra .com for some reason), but need to do more digging for the generic creature type version (typeId is creature type?)
 
-var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M' ];
+var crs = [ '-', '0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30' ]
+var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
 var encounter = {};
 var combatants = [];
-if (getCookie("show-monster-name") == "true") { var opt_show_monster_name = true } else { var opt_show_monster_name = false }
 if (getCookie("show-monster-hp") == "true") { var opt_show_monster_hp = true } else { var opt_show_monster_hp = false }
+if (getCookie("show-monster-img") == "true") { var opt_show_monster_img = true } else { var opt_show_monster_img = false }
+if (getCookie("show-monster-name") == "true") { var opt_show_monster_name = true } else { var opt_show_monster_name = false }
+if (getCookie("show-monster-details") == "true") { var opt_show_monster_details = true } else { var opt_show_monster_details = false }
 var view = 0;
 
 window.addEventListener("load", setup, false);
 
 function setup() {
-console.log(opt_show_monster_name);
-console.log(opt_show_monster_hp);
   params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
   });
@@ -68,16 +67,33 @@ function buildCombatants() {
     if (item.initiative > 0) {
       item.active = true
       char = getFromDDB("character", item.id);
+      var ac = 0;
       var levels = 0;
+      var speeds = char.race.weightSpeeds.normal;
+      var dex_score = char.stats[1].value;
       var con_score = char.stats[2].value;
       char.classes.forEach(function (it, ind) { levels += it.level });
       char.modifiers.feat.forEach(function (it, ind) {
+	if (it.entityTypeId == 1472902489 && it.entityId == 2) { dex_score += it.fixedValue }
 	if (it.entityTypeId == 1472902489 && it.entityId == 3) { con_score += it.fixedValue }
       });
       char.modifiers.race.forEach(function (it, ind) {
 	if (it.entityTypeId == 1472902489 && it.entityId == 3) { con_score += it.fixedValue }
+	if (it.subType == 'innate-speed-flying') { speeds.fly = speeds.walk }
       });
+      char.modifiers.class.forEach(function (it, ind) {
+	if (it.subType == 'speed') { speeds.walk += it.value }
+      });
+      char.classes.forEach(function (it, ind) {
+	if (it.entityTypeId == 12168134 && it.id == 52) { ac = 0; }
+      });
+      char.inventory.forEach(function (it, ind) {
+	if (it.definition.armorClass) { ac += it.definition.armorClass; }
+      });
+      var dex_mod = Math.floor((dex_score - 10) / 2);
       var con_mod = Math.floor((con_score - 10) / 2);
+      if (ac == 0) { item.ac = 10 + dex_mod + con_mod } else { item.ac = ac + dex_mod }
+      item.speeds = speeds;
       item.maximumHitPoints = char.baseHitPoints + (levels * con_mod) + char.temporaryHitPoints;
       item.currentHitPoints = item.maximumHitPoints - char.removedHitPoints;
       item.removedHitPoints = char.removedHitPoints;
@@ -87,7 +103,8 @@ function buildCombatants() {
       item.conditions = char.conditions;
       item.deathSaves = char.deathSaves;
       item.inspiration = char.inspiration;
-      item.portraitAvatarUrl = char.classes[0].definition.portraitAvatarUrl;
+      item.avatarGenericUrl = char.classes[0].definition.portraitAvatarUrl;
+      if (item.currentHitPoints < (item.maximumHitPoints / 2)) { item.bloodied = true } else { item.bloodied = false }
     } else {
       item.active = false
     }
@@ -97,7 +114,26 @@ function buildCombatants() {
     i += 1;
   });
   encounter.monsters.forEach(function (item, index) {
-    if (item.initiative > 0) { item.active = true } else { item.active = false }
+    if (item.initiative > 0) {
+      item.active = true;
+      item.speeds = {}
+      mons = getFromDDB("monster", item.id);
+console.log(mons);
+      mons.movements.forEach(function (it, ind) {
+	if (it.movementId == 1) { item.speeds.walk = it.speed; }
+	if (it.movementId == 2) { item.speeds.burrow = it.speed; }
+	if (it.movementId == 3) { item.speeds.climb = it.speed; }
+	if (it.movementId == 4) { item.speeds.fly = it.speed; }
+	if (it.movementId == 5) { item.speeds.swim = it.speed; }
+      });
+      item.ac = mons.armorClass;
+      item.cr = crs[mons.challengeRatingId];
+      item.avatarUrl = mons.avatarUrl;
+      item.passivePerception = mons.passivePerception;
+      if (item.currentHitPoints < (item.maximumHitPoints / 2)) { item.bloodied = true } else { item.bloodied = false }
+    } else {
+      item.active = false
+    }
     item.index = index;
     item.type = "Monster";
     c[i] = item;
@@ -107,16 +143,40 @@ function buildCombatants() {
 }
 
 function populateOutput() {
-  var vis = "";
-  var o = $('#div-output');
+  var d = $('#div-output');
+  d.html('');
+  var o = '<table class="table"><tr><th>Initiative</th><th></th><th></th><th></th></tr>';
   combatants.forEach(function (item, index) {
-    var hp = "";
-    if (item.type == "Player" || opt_show_monster_name) { var t = item.name; } else { var t = item.type + ' ' + letters[item.index]; }
-    if (item.type == "Player" || opt_show_monster_hp) { hp = ' (' + item.currentHitPoints + '/' + item.maximumHitPoints + ')' }
-    if (item.initiative == 0) { vis = ' style="visibility:hidden;"' }
-    if (encounter.turnNum == index + 1) { var cls = ' class="combatant-current"' } else { var cls = ' class="combatant"' }
-    o.append('<div id="' + (index + 1) + '"' + vis + cls + '>' + item.initiative + ': ' + t + hp + '</div>');
+    if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
+    if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
+    if ( item.type == "Player" || opt_show_monster_hp ) { hp = item.currentHitPoints + ' / ' + item.maximumHitPoints } else { var hp = '' }
+    if ( item.type == "Player" ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="80" width="80" class="rounded" /> ' } else { var img = '' }
+    if ( item.type == "Player" ) {
+      var det = '</h4> <p class="text-muted">AC: ' + item.ac + spd + '</p>';
+      if ( item.cr ) { det += ', CR ' + item.cr }
+    }
+    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 2rem; color: blue;"></i>' } else { var insp = '' }
+    if ( item.speeds !== undefined ) {
+      var spd = ', Speed: ' + item.speeds.walk + ' ft.';
+      if (item.speeds.fly > 0) { spd += ', Fly ' + item.speeds.fly + ' ft.' }
+      if (item.speeds.burrow > 0) { spd += ', Burrow ' + item.speeds.burrow + ' ft.' }
+      if (item.speeds.swim > 0) { spd += ', Swim ' + item.speeds.swim + ' ft.' }
+      if (item.speeds.climb > 0) { spd += ', Climb ' + item.speeds.climb + ' ft.' }
+    }
+    if ( encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
+    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h3> ' + item.initiative + ' </h3></td>';
+    o += '<td>' + img + '</td> <td><h4> ' + t + insp + '</td>';
+    o += '<td></td>';  // conditions (including bloodied)
+    o += '<td><h4> ' + hp + ' </h4></td></tr>';
+    //<i class="bi-droplet-fill" style="font-size: 1.5rem; color: red;"></i>		// bloodied
+    //<i class="bi-bootstrap-reboot" style="font-size: 1.5rem; color: black;"></i>	// restrained
+    //<i class="bi-eye-slash-fill" style="font-size: 1.5rem; color: black;"></i>	// blinded
+    //<i class="bi-circle-fill" style="font-size: 1.5rem; color: red;"></i>		// death saves (in place of HP)
+    //<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>
+    //<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>
   });
+  o += '</table>';
+  d.append(o);
 }
 
 function updateOption(el) {

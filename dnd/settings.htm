@@ -13,7 +13,6 @@
 	    this.value = getCookie(this.name);
 	});
 	$("input[type=checkbox]").each(function() {
-console.log(this.name + ': ' + getCookie(this.name));
 	    if (getCookie(this.name) == "true") { this.checked = true; }
 	});
     }
@@ -23,8 +22,6 @@ console.log(this.name + ': ' + getCookie(this.name));
 	});
 	$("input[type=checkbox]").each(function() {
 	    setCookie(this.name, this.checked, 365);
-console.log(this.name + ': ' + this.checked);
-console.log(getCookie(this.name));
 	});
 	$("#div-output").html("Settings saved!");
 	setTimeout( function() { $("#div-output").html(""); }, 5000);
@@ -44,6 +41,10 @@ console.log(getCookie(this.name));
   <input type="checkbox" name="show-monster-name"></input><br /><br />
   <label for="show-monster-hp">Show Monster HP:</label>
   <input type="checkbox" name="show-monster-hp"></input><br /><br />
+  <label for="show-monster-img">Show Monster Image:</label>
+  <input type="checkbox" name="show-monster-img"></input><br /><br />
+  <label for="show-monster-details">Show Monster Details:</label>
+  <input type="checkbox" name="show-monster-details"></input><br /><br />
 
   <input type="button" name="save" value="Save Settings" onclick="save();"></input>
 </div>
