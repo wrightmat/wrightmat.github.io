@@ -50,12 +50,8 @@ function getFromDDB(type, id) {
     url: u,
     contentType: "application/json",
     data: d,
-    success: function(result) {
-	r = result
-    },
-    error: function(xhr, error) {
-	console.log(xhr)
-    },
+    success: function(result) { r = result },
+    error: function(xhr, error) { console.log(xhr) },
     async: false
   });
   return r;
@@ -68,30 +64,34 @@ function buildCombatants() {
       item.active = true
       char = getFromDDB("character", item.id);
       var ac = 0; var levels = 0;
+      var ac_add_dex = true;
       var speeds = char.race.weightSpeeds.normal;
       var dex_score = char.stats[1].value;
       var con_score = char.stats[2].value;
       char.classes.forEach(function (it, ind) { levels += it.level });
+      char.classes.forEach(function (it, ind) {
+	if ( it.entityTypeId == 12168134 && it.id == 52 ) { ac = 0; }  // unarmored defense
+      });
       char.modifiers.feat.forEach(function (it, ind) {
 	if ( it.entityTypeId == 1472902489 && it.entityId == 2 ) { dex_score += it.fixedValue }
 	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
       });
       char.modifiers.race.forEach(function (it, ind) {
 	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
+	if ( it.subType == 'armor-class' ) { ac += it.value }
 	if ( it.subType == 'innate-speed-flying' ) { speeds.fly = speeds.walk }
       });
       char.modifiers.class.forEach(function (it, ind) {
 	if ( it.subType == 'speed' ) { speeds.walk += it.value }
-      });
-      char.classes.forEach(function (it, ind) {
-	if ( it.entityTypeId == 12168134 && it.id == 52 ) { ac = 0; }
+	if ( it.subType == 'innate-speed-swimming' ) { speeds.swim += it.value }
       });
       char.inventory.forEach(function (it, ind) {
-	if ( it.definition.armorClass ) { ac += it.definition.armorClass; }
+	if ( it.definition.armorClass && it.equipped ) { ac += it.definition.armorClass; }
+	if ( it.definition.baseArmorName && it.equipped && it.definition.baseArmorName == "Shield" ) { ac_add_dex = false; }
       });
       var dex_mod = Math.floor((dex_score - 10) / 2);
       var con_mod = Math.floor((con_score - 10) / 2);
-      if (ac == 0) { item.ac = 10 + dex_mod + con_mod } else { item.ac = ac + dex_mod }
+      if (ac == 0) { item.ac = 10 + dex_mod + con_mod } else if ( ac_add_dex ) { item.ac = ac + dex_mod } else { item.ac = ac }
       item.speeds = speeds;
       item.maximumHitPoints = char.baseHitPoints + (levels * con_mod) + char.temporaryHitPoints;
       item.currentHitPoints = item.maximumHitPoints - char.removedHitPoints;
@@ -155,28 +155,35 @@ function populateOutput() {
     if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
     if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
     if ( item.type == "Player" || opt_show_monster_hp ) {
-      if ( item.type == "Player" && item.currentHitPoints == 0 && item.deathSaves ) {   // Death saves
-	var hp = ""
-	for ( let i = 0; i < item.deathSaves.successCount; i++ ) {
-	  hp += '<i class="bi-circle-fill" style="font-size: 1.5rem; color: green;"></i>';
-	}
-	for ( let i = 0; i < (3 - item.deathSaves.successCount); i++ ) {
-	  hp += '<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>';
-	}
-	hp += '<br />';
-	for ( let i = 0; i < item.deathSaves.failCount; i++ ) {
-	  hp += '<i class="bi-circle-fill" style="font-size: 1.5rem; color: red;"></i>';
-	}
-	for ( let i = 0; i < (3 - item.deathSaves.failCount); i++ ) {
-	  hp += '<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>';
+      if ( item.type == "Player" && item.currentHitPoints == 0 ) {   // Death saves
+	var hp = '';
+	if ( item.deathSaves ) {
+	  for ( let i = 0; i < item.deathSaves.successCount; i++ ) {
+	    hp += '<i class="bi-circle-fill" style="font-size: 1.5rem; color: green;"></i>';
+	  }
+	  for ( let i = 0; i < (3 - item.deathSaves.successCount); i++ ) {
+	    hp += '<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>';
+	  }
+	  hp += '<br />';
+	  for ( let i = 0; i < item.deathSaves.failCount; i++ ) {
+	    hp += '<i class="bi-circle-fill" style="font-size: 1.5rem; color: red;"></i>';
+	  }
+	  for ( let i = 0; i < (3 - item.deathSaves.failCount); i++ ) {
+	    hp += '<i class="bi-circle" style="font-size: 1.5rem; color: black;"></i>';
+	  }
 	}
       } else {
 	var hp = item.currentHitPoints + ' / ' + item.maximumHitPoints
       }
     } else { var hp = '' }
-    if ( item.type == "Player" || opt_show_monster_img ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="70" width="70" class="rounded" /> ' } else { var img = '' }
+    if ( item.type == "Player" || opt_show_monster_img ) {
+      if (item.avatarUrl || item.avatarGenericUrl) {
+	var img = '<img src="' + ( item.avatarUrl || item.avatarGenericUrl ) + '" height="70" width="70" class="rounded" /> '
+      } else { var img = '' }
+    } else { var img = '' }
     if ( item.type == "Player" || opt_show_monster_details ) {
-      var det = '<p class="text-muted">AC: ' + item.ac;
+      var det = '<p class="text-muted">';
+      if ( item.ac ) { det += 'AC: ' + item.ac; }
       if ( item.speeds !== undefined ) {
         det += ', Speed: ' + item.speeds.walk + ' ft.';
         if ( item.speeds.fly > 0 ) { det += ', Fly ' + item.speeds.fly + ' ft.' }
@@ -204,9 +211,9 @@ function populateOutput() {
 	if ( it.id == 15 ) { cond += '<i class="bi-emoji-dizzy" style="font-size: 1.5rem; color: black;" title="Unconscious"></i>' }
       });
     }
-    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 2rem; color: blue;" title="Inspiration!"></i>' } else { var insp = '' }
+    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 1.5rem; color: blue;" title="Inspiration!"></i>' } else { var insp = '' }
     if ( encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
-    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h4> ' + item.initiative + ' </h4></td>';
+    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h4> ' + (item.initiative || '') + ' </h4></td>';
     o += '<td>' + img + '</td>';
     o += '<td><h5> ' + t + insp + '</h5>' + det + '</td>';
     o += '<td>' + cond + '</td>';
