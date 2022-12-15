@@ -20,14 +20,17 @@ function setup() {
     encounter = getFromDDB("encounter", params.id);
     combatants = buildCombatants();
     populateOutput();
-    setInterval(refresh, 60000);  // start the refresh at every 60 seconds
+    setInterval(refresh, 120000);  // start the refreshing after 2 minutes (120 seconds)
+  } else {
+    var d = $('#div-output').append('Pass encounter id from D&D Beyond as parameter (?id=) to show encounter information');
   }
 }
 
 function refresh() {
   combatants = buildCombatants();
   populateOutput();
-  setInterval(refresh, 30000);  // refresh every 30 seconds routinely
+  console.log("Display refreshed " + new Date());
+  setInterval(refresh, 60000);  // refresh every 60 seconds routinely
 }
 
 function getFromDDB(type, id) {
@@ -139,7 +142,7 @@ function buildCombatants() {
 
 function populateOutput() {
   var d = $('#div-output');
-  var o = '<table class="table"><tr><th>Initiative</th><th></th><th></th><th></th></tr>';
+  var o = '<table class="table"><tr><th colspan="2">Initiative &nbsp; <a href="#" onclick="refresh();"><i class="bi-arrow-clockwise" style="font-size: 1.2rem;" title="Refresh"></i></a></th><th></th><th></th></tr>';
   combatants.forEach(function (item, index) {
     if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
     if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
@@ -163,7 +166,7 @@ function populateOutput() {
 	var hp = item.currentHitPoints + ' / ' + item.maximumHitPoints
       }
     } else { var hp = '' }
-    if ( item.type == "Player" || opt_show_monster_img ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="80" width="80" class="rounded" /> ' } else { var img = '' }
+    if ( item.type == "Player" || opt_show_monster_img ) { var img = '<img src="' + (item.avatarUrl || item.avatarGenericUrl) + '" height="70" width="70" class="rounded" /> ' } else { var img = '' }
     if ( item.type == "Player" || opt_show_monster_details ) {
       var det = '<p class="text-muted">AC: ' + item.ac;
       if ( item.speeds !== undefined ) {
@@ -195,10 +198,11 @@ function populateOutput() {
     }
     if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 2rem; color: blue;" title="Inspiration!"></i>' } else { var insp = '' }
     if ( encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
-    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h3> ' + item.initiative + ' </h3></td>';
-    o += '<td>' + img + '</td> <td><h4> ' + t + insp + '</h4>' + det + '</td>';
+    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h4> ' + item.initiative + ' </h4></td>';
+    o += '<td>' + img + '</td>';
+    o += '<td><h5> ' + t + insp + '</h5>' + det + '</td>';
     o += '<td>' + cond + '</td>';
-    o += '<td><h4> ' + hp + ' </h4></td></tr>';
+    o += '<td><h5> ' + hp + ' </h5></td></tr>';
   });
   o += '</table>';
   d.html(''); d.append(o);
