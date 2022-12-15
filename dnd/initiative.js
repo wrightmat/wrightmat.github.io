@@ -140,9 +140,17 @@ function buildCombatants() {
   return c.sort(({initiative:a}, {initiative:b}) => b-a);
 }
 
+function toggleFullscreen() {
+  if (!window.screenTop && !window.screenY) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+
 function populateOutput() {
   var d = $('#div-output');
-  var o = '<table class="table"><tr><th colspan="2">Initiative &nbsp; <a href="#" onclick="refresh();"><i class="bi-arrow-clockwise" style="font-size: 1.2rem;" title="Refresh"></i></a></th><th></th><th></th><th style="text-align:right;"><a href="#" onclick="document.documentElement.requestFullscreen();"><i class="bi-window-fullscreen" style="font-size: 1.2rem;" title="Fullscreen"></i></a></th></tr>';
+  var o = '<table class="table"><tr><th colspan="2">Initiative &nbsp; <a href="#" onclick="refresh();"><i class="bi-arrow-clockwise" style="font-size: 1.2rem;" title="Refresh"></i></a></th><th></th><th></th><th style="text-align:right;"><a href="#" onclick="toggleFullscreen();"><i class="bi-window-fullscreen" style="font-size: 1.2rem;" title="Fullscreen"></i></a></th></tr>';
   combatants.forEach(function (item, index) {
     if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
     if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
