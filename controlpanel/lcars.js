@@ -34,7 +34,6 @@ function init() {  // if the auth token is saved, then go ahead and start loadin
 
 //--- Called once the auth token is loaded
 async function loadAuth(file) {
-    updateLCARS("tan", "LCARS INITIALIZING...")
     let text = await file.text();
     window.auth = text;
     setCookie('smartthings-auth', text, 365);
@@ -42,6 +41,7 @@ async function loadAuth(file) {
 }
 
 function getLocation() {
+    updateLCARS("tan", "LCARS INITIALIZING...")
     $.ajax({
         url: "https://api.smartthings.com/v1/locations",
         type: "GET",
