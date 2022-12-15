@@ -14,87 +14,57 @@ const groups = {
 const fav_menu_left = ['Hubs','5b7dd0c0-3053-42f1-a63f-b674d3370a6f','c047215e-c82d-4461-8167-da3455b47048','Presence','Doorbell']
 const fav_menu_right = ['Living Room','Office','Front Door','Back Door','Kitchen','Bathroom','Bedroom']
 const fav_scenes = ['57012c94-fa9b-45ff-a60d-8a51aaf98cb0','5aba48fd-e5b1-4a95-a89f-4037e283cb27','8842352f-8123-4728-a5ee-bf038f7f9b0f']
-var auth
-var loc
-var rooms
-var rooms_array = []
-var scenes
-var devices
-var devicePreferences
+var auth;
+var loc;
+var rooms;
+var rooms_array = [];
+var scenes;
+var devices;
+var devicePreferences;
+var weatherForecast;
+var alerts = [];
 
-
-//--- Helper Functions
-function jsonConcat(o1, o2) {
-    for (var key in o2) {
-	o1[key] = o2[key];
-    }
-    return o1;
+window.addEventListener("load", init, false);
+function init() {  // if the auth token is saved, then go ahead and start loading
+  if ( getCookie('smartthings-auth') ) {
+    window.auth =  getCookie('smartthings-auth');
+    getLocation();
+  }
 }
-
-function right(str, chr) {
-    return newstr = str.substr(str.length - chr, str.length)
-}
-
-function arrayContains(arr, val, ret = 'value') {
-    var val = val.toLowerCase()
-    for (i = 0; i < arr.length; ++i) {
-        var arri = arr[i].toLowerCase()
-	if (arri.indexOf(val) >= 0) {
-	    if (ret == 'index') { return i; break; } else { return arr[i]; break; }
-	}
-    }
-}
-
-function stardate() {
-    var StardateOrigin = new Date("July 15, 1987 00:00:00");
-    var StardateToday = new Date();
-    var stardate = StardateToday.getTime() - StardateOrigin.getTime();
-    stardate = stardate / (1000 * 60 * 60 * 24 * 0.036525);
-    stardate = Math.floor(stardate + 410000);
-    stardate = stardate / 10
-    return stardate;
-}
-
-
-//--- On Ready
-$(document).ready(function() {
-    //
-});
-
 
 //--- Called once the auth token is loaded
 async function loadAuth(file) {
-    $('#title-right').text("LCARS INITIALIZING...")
+    updateLCARS("tan", "LCARS INITIALIZING...")
     let text = await file.text();
     window.auth = text;
+    setCookie('smartthings-auth', text, 365);
+    getLocation();
+}
 
+function getLocation() {
     $.ajax({
         url: "https://api.smartthings.com/v1/locations",
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
+        success: function(result) {
 	    getDevices(result.items[0].locationId)
-	    setTimeout(function(){
-		refreshDisplay()
-	    }, 3000); // Wait 3 seconds to refresh display so the devices are returned
+	    setTimeout( function() { refreshDisplay() }, 3000); // Wait 3 seconds to refresh display so the devices are returned
         },
-	error: function(xhr, error){
-            console.log(xhr)
-	    $('#title-right').text("LCARS FAILURE " + xhr["status"])
+	error: function(xhr, error) {
+            console.log(xhr);
+	    updateLCARS("red-damask", "LCARS FAILURE " + xhr["status"]);
  	}
-    })
-
+    });
+    weatherForecast = getWeatherForecast();
 }
 
-
-//---- Everything else
 function getDevices(locationId) {
     $.ajax({
         url: "https://api.smartthings.com/v1/locations/" + locationId,
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
-	    window.loc = result
+        success: function(result) {
+	    window.loc = result;
         }
     })
     // Current mode (and all modes) is apparently available, but not documented
@@ -102,91 +72,95 @@ function getDevices(locationId) {
         url: "https://api.smartthings.com/v1/locations/" + locationId + "/modes/current",
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
-	    delete result["name"]  // conflicting key
-	    window.loc = jsonConcat(window.loc, result)
-	    console.log(window.loc)  // loc object now contains both location name and current mode (label)
+        success: function(result) {
+	    delete result.name;  // conflicting key
+	    window.loc = jsonConcat(window.loc, result);
+	    //console.log(window.loc)  // loc object now contains both location name and current mode (label)
         }
     })
     $.ajax({
         url: "https://api.smartthings.com/v1/locations/" + locationId + "/rooms",
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
-	    window.rooms = result["items"]
+        success: function(result) {
+	    window.rooms = result.items;
 	    Object.keys(window.rooms).forEach(function(key) {
 		var value = window.rooms[key];
-		rooms_array.push(value["roomId"])
+		rooms_array.push(value.roomId);
 	    });
-	    console.log(window.rooms)
         }
     })
     $.ajax({
         url: "https://api.smartthings.com/v1/scenes",
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
-	    window.scenes = result["items"]
-	    console.log(window.scenes)
-        }, async:false
+        success: function(result) {
+	    window.scenes = result.items;
+        }, async: false
     })
     $.ajax({
         url: "https://api.smartthings.com/v1/devices",
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
-	    window.devices = result["items"]
-	    console.log(window.devices)
-        }, async:false
+        success: function(result) {
+	    window.devices = result.items;
+        }, async: false
     })
     $.ajax({
         url: "https://api.smartthings.com/v1/devicepreferences",
         type: "GET",
 	headers: { 'Authorization': 'Bearer ' + window.auth },
-        success: function(result){
-	    window.devicePreferences = result["items"]
-	    console.log(window.devicePreferences)
+        success: function(result) {
+	    window.devicePreferences = result.items;
         }
     })
-    console.log("Devices refreshed " + new Date())
-    setTimeout(function(){
-	getDevices(loc["locationId"])
-    }, 600000);
+    console.log("Devices refreshed " + new Date());
+    setTimeout( function() { getDevices(loc.locationId) }, 600000);
+}
+
+function getWeatherForecast() {
+    var r_text;
+    $.ajax({
+        url: "https://api.weather.gov/gridpoints/LSX/18,86/forecast",
+        type: "GET",
+        success: function(result) { r_text = result; },
+	error: function(xhr, error) { console.log(xhr); },
+	async: false
+    });
+    return r_text;
 }
 
 function getDevice(id) {
-    var returnResult = []
-
+    var returnResult = [];
     for (var i = 0; i < window.devices.length; i++) {
 	if (window.devices[i].deviceId == id) {
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/devices/" + window.devices[i].deviceId,
 	        type: "GET",
 		headers: { 'Authorization': 'Bearer ' + window.auth },
-	        success: function(result){
-		    returnResult = jsonConcat(returnResult, result)
-	        }, async:false
+	        success: function(result) {
+		    returnResult = jsonConcat(returnResult, result);
+	        }, async: false
 	    })
 
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/devices/" + window.devices[i].deviceId + "/status",
 	        type: "GET",
 		headers: { 'Authorization': 'Bearer ' + window.auth },
-	        success: function(result){
-		    returnResult = jsonConcat(returnResult, result)
-	        }, async:false
+	        success: function(result) {
+		    returnResult = jsonConcat(returnResult, result);
+	        }, async: false
 	    })
 
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/devices/" + window.devices[i].deviceId + "/health",
 	        type: "GET",
 		headers: { 'Authorization': 'Bearer ' + window.auth },
-	        success: function(result){
-		    returnResult = jsonConcat(returnResult, result)
-	        }, async:false
+	        success: function(result) {
+		    returnResult = jsonConcat(returnResult, result);
+	        }, async: false
 	    })
-	    return returnResult
-
+	    return returnResult;
 	}
     }
 }
@@ -194,7 +168,7 @@ function getDevice(id) {
 function getScene(id) {
     for (var i = 0; i < window.scenes.length; i++) {
 	if (window.scenes[i].sceneId == id) {
-	    return window.scenes[i]
+	    return window.scenes[i];
 	}
     }
 }
@@ -202,15 +176,14 @@ function getScene(id) {
 function commandDevice(id) {
     for (var i = 0; i < window.devices.length; i++) {
 	if (window.devices[i].deviceId == id) {
-	    var deviceInfo = getDeviceInfo(window.devices[i].deviceId)
-	    var capability = deviceInfo[4]
-	    if (capability == "switch") {
+	    var deviceInfo = getDeviceInfo(window.devices[i].deviceId);
+	    var capability = deviceInfo[4];
+	    if ( capability == "switch" ) {
 		if (deviceInfo[5] == 1) { var command = "off" } else { var command = "on" }
 	    } else if (capability == "lock") {
 		if (deviceInfo[5] == 1) { var command = "lock" } else { var command = "unlock" }
 	    }
-
-	    if (capability && command) {
+	    if ( capability && command ) {
 		$.ajax({
 	            url: 'https://api.smartthings.com/v1/devices/' + window.devices[i].deviceId + '/commands',
 	            type: 'POST',
@@ -219,7 +192,6 @@ function commandDevice(id) {
 	            success: function(result) { return result }
 		})
 	    } else { console.log("can't execute command on " + id + ", no capability or command given") }
-
 	}
     }
 }
@@ -227,16 +199,12 @@ function commandDevice(id) {
 function executeScene(id) {
     for (var i = 0; i < window.scenes.length; i++) {
 	if (window.scenes[i].sceneId == id) {
-
 	    $.ajax({
 	        url: "https://api.smartthings.com/v1/scenes/" + window.scenes[i].sceneId + "/execute",
 	        type: "POST",
 		headers: { 'Authorization': 'Bearer ' + window.auth },
-	        success: function(result) {
-		    return result
-	        }
-	    })
-
+	        success: function(result) { return result; }
+	    });
 	}
     }
 }
@@ -244,10 +212,12 @@ function executeScene(id) {
 function getColor(colorType, colorValue) {
     if (colorType == "battery") {
 	if (colorValue <= 30) {
-	    var color = "lcars-red-alert-bg"
+	    var color = "lcars-red-alert-bg";
 	} else if (colorValue <= 60) {
-	    var color = "lcars-red-damask-bg"
-	} else { var color = "lcars-tan-bg" }
+	    var color = "lcars-red-damask-bg";
+	} else {
+	    var color = "lcars-tan-bg";
+	}
     } else if (colorType == "type") {
 	switch(colorValue) {
 	    case "weather": var color = "lcars-periwinkle-bg"; break;
@@ -263,10 +233,10 @@ function getColor(colorType, colorValue) {
 	    case "presence": var color = "lcars-husk-bg"; break;
 	    case "device": var color = "lcars-husk-bg"; break;
 	    case "location": var color = "lcars-husk-bg"; break;
-	    default: var color = "lcars-cosmic-bg"
+	    default: var color = "lcars-neon-carrot-bg";
 	}
     }
-    return color
+    return color;
 }
 
 function getIcon(iconType, iconValue) {
@@ -278,7 +248,7 @@ function getIcon(iconType, iconValue) {
 	    case 4:  var icon = "cloud-lightning"; break;
 	    case 5:  var icon = "cloud-rain"; break;
 	    case 6:  var icon = "cloud-snow"; break;
-	    default: var icon = "cloud-off"
+	    default: var icon = "cloud-off";
 	}
     } else if (iconType == "type") {
 	switch(iconValue) {
@@ -294,101 +264,101 @@ function getIcon(iconType, iconValue) {
 	    case "presence": var icon = "smartphone"; break;
 	    case "device": var icon = "hard-drive"; break;
 	    case "location": var icon = "map-pin"; break;
-	    default: var icon = "help-circle"
+	    default: var icon = "help-circle";
 	}
     }
-    return icon
+    return icon;
 }
 
 function getGroupInfo(group) {
-    var id
-    var label
-    var state = 1
-    var type
-    var capability
-    var status
-    var level = 100
-    var value
-    var text
-    var room
+    var id;
+    var label;
+    var state = 1;
+    var type;
+    var capability;
+    var status;
+    var level = 100;
+    var value;
+    var text;
+    var room;
 
     for (var i = 0; i < groups[group].length; i++) {
 	var deviceInfo = getDeviceInfo(groups[group][i])
 	// Info associated with device control is derived from first device in group
 	if (i == 0) {
-	    var id = deviceInfo[0]
-	    var label = group
-	    var type = deviceInfo[3]
-	    var capability = deviceInfo[4]
-	    var status = deviceInfo[5]
-	    var value = deviceInfo[7]
-	    var room = deviceInfo[9]
+	    var id = deviceInfo[0];
+	    var label = group;
+	    var type = deviceInfo[3];
+	    var capability = deviceInfo[4];
+	    var status = deviceInfo[5];
+	    var value = deviceInfo[7];
+	    var room = deviceInfo[9];
 	}
 	// Info associated with status is aggregated from all devices in group
 	if (typeof deviceInfo[8] !== null && deviceInfo[8] !== undefined) {
 	    if (typeof text !== null && text !== undefined) {
-		var text = text + ', ' + deviceInfo[1] + ': ' + deviceInfo[8]
+		var text = text + ', ' + deviceInfo[1] + ': ' + deviceInfo[8];
 	    } else {
-		var text = deviceInfo[1] + ': ' + deviceInfo[8]
+		var text = deviceInfo[1] + ': ' + deviceInfo[8];
 	    }
 	}
 	if (typeof deviceInfo[6] === "number" && deviceInfo[6] !== null && deviceInfo[6] !== undefined) {
-	    var level = Math.min(level, deviceInfo[6])
+	    var level = Math.min(level, deviceInfo[6]);
 	}
 	if (typeof deviceInfo[2] === "number" && deviceInfo[2] !== null && deviceInfo[2] !== undefined) {
-	    var state = Math.min(state, deviceInfo[2]) // If anything is down, the whole group is down
+	    var state = Math.min(state, deviceInfo[2]);  // If anything is down, the whole group is down
 	}
     }
 
-    return [id, label, state, type, capability, status, level, value, text, room]
+    return [id, label, state, type, capability, status, level, value, text, room];
 }
 
 function getDeviceInfo(deviceId) {
-    var id
-    var label
-    var state = 0
-    var type
-    var capability
-    var status = 0
-    var level = 0
-    var value
-    var text
-    var room = 0
-    var device = getDevice(deviceId)
+    var id;
+    var label;
+    var state = 0;
+    var type;
+    var capability;
+    var status = 0;
+    var level = 0;
+    var value;
+    var text;
+    var room = 0;
+    var device = getDevice(deviceId);
 
     if (device) {
-	var id = device["deviceId"]
-	var label = device["label"]
-	if (device.hasOwnProperty('state')) {
-	     if (device["state"] == "ONLINE") { var state = 1 }
+	var id = device.deviceId;
+	var label = device.label;
+	if ( device.hasOwnProperty('state') ) {
+	    if ( device.state == "ONLINE" ) { var state = 1 }
 	} else { var state = 9 }  // Unknown state
 
 	if (device["components"].hasOwnProperty('main')) {
-	    var main = device["components"]["main"]
-	    var components = Object.keys(device["components"]["main"])
-	    var weather = arrayContains(components, "weatherSummary")
-	    var humidity = arrayContains(components, "relativeHumidityMeasurement")
-	    var temperature = arrayContains(components, "temperatureMeasurement")
-	    var thermostat = arrayContains(components, "thermostatMode")
-	    var setpoint = arrayContains(components, "thermostatHeatingSetpoint")
-	    var contact = arrayContains(components, "contactSensor")
-	    var motion = arrayContains(components, "motionSensor")
-	    var button = arrayContains(components, "button")
-	    var lock = arrayContains(components, "lock")
-	    var light = arrayContains(components, "light")
-	    var level = arrayContains(components, "switchLevel")
-	    var colorctrl = arrayContains(components, "colorControl")
-	    var colortemp = arrayContains(components, "colorTemperature")
-	    var outlet = arrayContains(components, "outlet")
-	    var power = arrayContains(components, "powerMeter")
-	    var swtch = arrayContains(components, "switch")
-	    var smoke = arrayContains(components, "smokeDetector")
-	    var water = arrayContains(components, "waterSensor")
-	    var presence = arrayContains(components, "presenceSensor")
-	    var battery = arrayContains(components, "battery")
-	    var bridge = arrayContains(components, "bridge")
+	    var main = device.components.main;
+	    var components = Object.keys(device.components.main);
+	    var weather = arrayContains(components, "weatherSummary");
+	    var humidity = arrayContains(components, "relativeHumidityMeasurement");
+	    var temperature = arrayContains(components, "temperatureMeasurement");
+	    var thermostat = arrayContains(components, "thermostatMode");
+	    var setpoint = arrayContains(components, "thermostatHeatingSetpoint");
+	    var contact = arrayContains(components, "contactSensor");
+	    var motion = arrayContains(components, "motionSensor");
+	    var button = arrayContains(components, "button");
+	    var lock = arrayContains(components, "lock");
+	    var light = arrayContains(components, "light");
+	    var level = arrayContains(components, "switchLevel");
+	    var colorctrl = arrayContains(components, "colorControl");
+	    var colortemp = arrayContains(components, "colorTemperature");
+	    var outlet = arrayContains(components, "outlet");
+	    var power = arrayContains(components, "powerMeter");
+	    var swtch = arrayContains(components, "switch");
+	    var smoke = arrayContains(components, "smokeDetector");
+	    var water = arrayContains(components, "waterSensor");
+	    var presence = arrayContains(components, "presenceSensor");
+	    var battery = arrayContains(components, "battery");
+	    var bridge = arrayContains(components, "bridge");
 	    if (weather) {
-		var type = "weather"
+		var type = "weather";
 		switch(main[weather]["weather"]["value"]) {
 		    case "Clear":   var status = 1; break;
 		    case "Sunny":   var status = 2; break;
@@ -396,7 +366,7 @@ function getDeviceInfo(deviceId) {
 		    case "Storm":   var status = 4; break;
 		    case "Rain":    var status = 5; break;
 		    case "Snow":    var status = 6; break;
-		    default:        var status = 0
+		    default:        var status = 0;
 		}
 		var text = main[weather]["weather"]["value"]
 		var value = Math.round(main[temperature]["temperature"]["value"]) + '°' + main[temperature]["temperature"]["unit"]
@@ -426,7 +396,7 @@ function getDeviceInfo(deviceId) {
 		var capability = "switch"
 		var text = main[outlet]["switch"]["value"]
 		if (main[outlet]["switch"]["value"] == "on") { var status = 1 }
-	    } else if (swtch) {
+	    } else if (swtch && main[swtch]["switch"]) {
 		var type = "switch"
 		var capability = "switch"
 		var text = main[swtch]["switch"]["value"]
@@ -442,11 +412,11 @@ function getDeviceInfo(deviceId) {
 		var text = main[presence]["presence"]["value"]
 		if (main[presence]["presence"]["value"] == "present") { var status = 1 }
 	    } else if (bridge) {
-		var type = "device"
-		var text = device["state"]
+		var type = "device";
+		var text = device.state;
 	    } else {  // Unknown
-		var type = device["type"]
-		var text = device["name"]
+		var type = device.type;
+		var text = device.name;
 	    }
 	    if (button) {
 		if (!!main[button]["button"]["value"]) {
@@ -494,76 +464,99 @@ function getDeviceInfo(deviceId) {
 	    } else if (battery) {
 		var level = main[battery]["battery"]["value"]
 	    }
+	    if (weather) {  // we want this at the end of the output, so we do a separate check
+		weatherForecast.properties.periods.forEach(function (item, index) {
+		    if ( item.isDaytime == false && item.temperature < 15 && item.number <= 6 ) {  // 6 periods is 3 nights
+			var dateParts = item.startTime.match(/(\d+)-(\d+)-(\d+)/);
+			text += '. Freeze warning on ' + dateParts[0] + ' with temperature of ' + item.temperature + '°' + item.temperatureUnit;
+			updateLCARS('bahama-blue', 'Blue Alert');
+			alerts.push('blue');
+		    }
+		});
+	    }
 	} else {  // Hub (no components)
-	    var type = "device"
-	    var text = device["state"]
+	    var type = "device";
+	    var text = device.state;
+	    if (device.state == 0) {  // Hub is down! Red alert!
+		updateLCARS('red-alert', 'Red Alert');
+		alerts.push('red');
+	    }
 	}
 
 	if (device.hasOwnProperty('roomId')) { 
-	    var room = arrayContains(window.rooms_array, device["roomId"], 'index') + 1
+	    var room = arrayContains(window.rooms_array, device["roomId"], 'index') + 1;
 	}
     } else if (window.loc["locationId"] === deviceId) {  // Location (no device)
-	var type = "location"
-	var id = window.loc["locationId"]
-	var label = window.loc["label"]
-	var value = window.loc["name"]
-	var text = window.loc["label"]
-	var state = 1
+	var type = "location";
+	var id = window.loc.locationId;
+	var label = window.loc.label;
+	var value = window.loc.name;
+	var text = window.loc.label;
+	var state = 1;
     }
 
     return [id, label, state, type, capability, status, level, value, text, room]
 }
 
+function updateLCARS(color = "tan", text = "LCARS ACCESS") {
+    $('div[class*="-bg"]').each(function() {
+	$(this).removeClass('div[class*="-bg"]').addClass('lcars-' + color + '-bg');
+    });
+    if ( text ) { $('#title-right').text(text); }
+}
+
 function refreshDisplay() {
-    clearDisplay()
-    rebuildDisplay()
+    clearDisplay();
+    rebuildDisplay();
 }
 
 function clearDisplay() {
     // Clear existing content - jquery selector doesn't work for some reason
-    document.getElementById('title-left').innerHTML = ""
-    document.getElementById('left-menu').innerHTML = ""
-    document.getElementById('right-menu').innerHTML = ""
+    $('#title-left').html('');
+    $('#left-menu').html('');
+    $('#right-menu').html('');
     $(document).off('click')  // Unregister click events so we don't get multiple
 }
 
 function rebuildDisplay() {
     // Top bars
-    var now = new Date()
-    var now_formatted = now.getFullYear() + "-" + right("00"+(now.getMonth() + 1),2) + "-" + right("00"+now.getDate(),2) + " " + now.toTimeString().substr(0,5)
-    $('#title-left').text(now_formatted)
-    $('#title-left-btm').text(stardate())
-    if (window.auth) { $('#title-right').text("LCARS ACCESS") } else { $('#title-right').text("LCARS UNINITIALIZED") }
+    var now = new Date();
+    var now_formatted = now.getFullYear() + "-" + right("00"+(now.getMonth() + 1),2) + "-" + right("00"+now.getDate(),2) + " " + now.toTimeString().substr(0,5);
+    $('#title-left').text(now_formatted);
+    $('#title-left-btm').text(stardate());
+    if ( window.auth ) {
+	updateLCARS("tan", "LCARS ACCESS")
+    } else {
+	updateLCARS("tan", "LCARS UNINITIALIZED")
+    }
 
     // left side - favorite devices and scenes/routines
     for (var i = 0; i < fav_menu_left.length; i++) {
 	if (fav_menu_left[i].length == 36 && fav_menu_left[i].indexOf("-") == 8) {
 	    var deviceInfo = getDeviceInfo(fav_menu_left[i])
 	} else { var deviceInfo = getGroupInfo(fav_menu_left[i]) }
-	if (deviceInfo) {
-	    if (deviceInfo[3] == "weather") { var icon = getIcon("weather", deviceInfo[3]) } else { var icon = getIcon("type", deviceInfo[5]) }
+	if ( deviceInfo ) {
+	    if ( deviceInfo[3] == "weather" ) { var icon = getIcon("weather", deviceInfo[3]) } else { var icon = getIcon("type", deviceInfo[5]) }
 	    var color = getColor("type", deviceInfo[3])
-	    if (deviceInfo[2] !== null && deviceInfo[2] !== undefined) {
-		if (deviceInfo[2] == 0) { var element = ' lcars-red-alert-bg">' } else { var element = '">' }
+	    if ( deviceInfo[2] !== null && deviceInfo[2] !== undefined ) {
+		if ( deviceInfo[2] == 0 ) { var element = ' lcars-red-alert-bg">' } else { var element = '">' }
 	    } else { element = '">' }
 	    if (deviceInfo[7]) { var element = element + deviceInfo[7] } else { var element = element + deviceInfo[2] + deviceInfo[9] + deviceInfo[5] }
 	    $('<div id="' + deviceInfo[0] + '" title="' + deviceInfo[1] + '" class="lcars-row"><div class="lcars-element left-rounded button ' + color + '"></div><div class="lcars-element button lcars-u-2 ' + color + '">' + deviceInfo[1] + '</div><div class="lcars-element button ' + color + '"><div class="lcars-element-addition' + element + '</div></div><div class="lcars-text-box small full-centered lcars-u-3">' + deviceInfo[8] + '</div><div class="lcars-element lcars-black-bg"></div></div>').appendTo("#left-menu")
 	    $(document).on('click', '#'+deviceInfo[0], function() {
-		console.log(getDevice(this.id))
-		commandDevice(this.id)
-		refreshDisplay()
+		commandDevice(this.id);
+		refreshDisplay();
 	    })
 	}
     }
-    $('<div id="left-menu-spacer" class="lcars-row lcars-vu-1"></div><div id="left-menu-scenes" class="lcars-row"></div>').appendTo("#left-menu")
+    $('<div id="left-menu-spacer" class="lcars-row lcars-vu-1"></div><div id="left-menu-scenes" class="lcars-row"></div>').appendTo("#left-menu");
     for (var i = 0; i < fav_scenes.length; i++) {
-	var scene = getScene(fav_scenes[i])
-	if (scene) {
-	    $('<div id="'+scene["sceneId"]+'" class="lcars-element rounded button">'+scene["sceneName"]+'</div>').appendTo("#left-menu-scenes")
+	var scene = getScene(fav_scenes[i]);
+	if ( scene ) {
+	    $('<div id="' + scene["sceneId"] + '" class="lcars-element rounded button">' + scene["sceneName"] + '</div>').appendTo("#left-menu-scenes");
 	    $(document).on('click', '#'+scene["sceneId"], function() {
-		console.log(scene)
-		executeScene(this.id)
-		refreshDisplay()
+		executeScene(this.id);
+		refreshDisplay();
 	    })
 	}
     }
@@ -571,32 +564,29 @@ function rebuildDisplay() {
     // right side - only devices
     for (var i = 0; i < fav_menu_right.length; i++) {
 	if (fav_menu_right[i].length == 36 && fav_menu_right[i].indexOf("-") == 8) {
-	    var deviceInfo = getDeviceInfo(fav_menu_right[i])
+	    var deviceInfo = getDeviceInfo(fav_menu_right[i]);
 	} else { var deviceInfo = getGroupInfo(fav_menu_right[i]) }
-	if (deviceInfo) {
-	    if (deviceInfo[3] == "weather") { var icon = getIcon("weather", deviceInfo[3]) } else { var icon = getIcon("type", deviceInfo[3]) }
+	if ( deviceInfo ) {
+	    if ( deviceInfo[3] == "weather" ) { var icon = getIcon("weather", deviceInfo[3]) } else { var icon = getIcon("type", deviceInfo[3]) }
 	    var color = getColor("type", deviceInfo[3])
 	    var color_battery = getColor("battery", deviceInfo[6])
-	    if (deviceInfo[2] !== null && deviceInfo[2] !== undefined) {
-		if (deviceInfo[2] == 0) { var element = ' lcars-red-alert-bg">' } else { var element = '">' }
+	    if ( deviceInfo[2] !== null && deviceInfo[2] !== undefined ) {
+		if ( deviceInfo[2] == 0 ) { var element = ' lcars-red-alert-bg">' } else { var element = '">' }
 	    } else { element = '">' }
-	    if (deviceInfo[7]) { var element = element + deviceInfo[7] } else { var element = element + deviceInfo[2] + deviceInfo[9] + deviceInfo[5] }
-	    if (deviceInfo[5] == 1) {
+	    if ( deviceInfo[7] ) { var element = element + deviceInfo[7] } else { var element = element + deviceInfo[2] + deviceInfo[9] + deviceInfo[5] }
+	    if ( deviceInfo[5] == 1 ) {
 		var indicator = '<div class="lcars-element right-rounded button ' + getColor("type", deviceInfo[3]) + '"></div>'
 	    } else { var indicator = '<div class="lcars-element right-rounded button lcars-gray-bg"></div>' }
 	    $('<div id="' + deviceInfo[0] + '" title="' + deviceInfo[1] + '" class="lcars-row"><div class="lcars-element button ' + color_battery + '" title="' + deviceInfo[6] + '"></div><div class="lcars-element button ' + color + '"><div class="lcars-element-addition' + element + '</div></div><div class="lcars-element button lcars-u-2 ' + color + '">' + deviceInfo[1] + '</div><div class="lcars-text-box small full-centered lcars-u-3">' + deviceInfo[8] + '</div>' + indicator + '</div>').appendTo("#right-menu")
 	    // If device is present more than once, then the onclick will be added more than once and cause devices to turn on and then off.
 	    // TODO: Check if the onclick is already registered and don't add another?
 	    $(document).on('click', '#'+deviceInfo[0], function() {
-		console.log(getDevice(this.id))
-		commandDevice(this.id)
-		refreshDisplay()
+		commandDevice(this.id);
+		refreshDisplay();
 	    })
 	}
     }
 
-    console.log("Display refreshed " + new Date())
-    setTimeout(function(){
-	refreshDisplay()
-    }, 30000); // Every 30 seconds
+    console.log("Display refreshed " + new Date());
+    setTimeout( function() { refreshDisplay() }, 30000 ); // Every 30 seconds
 }
