@@ -23,7 +23,7 @@ data_critical_effect = [
         subtitle: "10% of crew are incapacitated",
         description: "10% of crew are incapacitated",
         bullets: [
-            "Brave crew risk their lives to keep damaged systems operating. Describe the danger they face. If the Crisis is not resolved by the end of the next round, 10% of the ship’s maximum crew are incapacitated. Half these crewmen are dead or permanently disabled, and the other half return to duty in a week"
+            "Brave crew risk their lives to keep damaged systems operating. Describe the danger they face. If the crisis is not resolved by the end of the next round, 10% of the ship’s maximum crew are incapacitated. Half these crewmen are dead or permanently disabled, and the other half return to duty in a week"
         ]
     },
     {
@@ -62,7 +62,7 @@ data_critical_effect = [
         subtitle: "Crew are knocked prone and take damage",
         description: "Unsecured crew are knocked prone and take 2d6 falling (bludgeoning) damage",
         bullets: [
-            "All crewman not otherwise secured (Spelljammer is considered secured) must make a DC 14 Dexterity saving throw or be knocked prone and dealt 2d6 falling damage. On a critical failure, a crewman on the outside of the ship or in an area with an open hull is thrown overboard."
+            "All crewman not otherwise secured (Pilot is considered secured) must make a DC 14 Dexterity saving throw or be knocked prone and dealt 2d6 falling damage. On a critical failure, a crewman on the outside of the ship or in an area with an open hull is thrown overboard."
         ]
     },
     {
