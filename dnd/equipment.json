@@ -291,7 +291,7 @@
 			"name": "Very Rare"
 		},
 		"cost": {
-			"random": "1d8x25",
+			"random": "1d8x50",
 			"unit": "gp"
 		},
 		"weight": 1,
@@ -316,7 +316,7 @@
 			"name": "Very Rare"
 		},
 		"cost": {
-			"random": "4d4x100",
+			"random": "4d8x100",
 			"unit": "gp"
 		},
 		"weight": 1,
@@ -341,7 +341,7 @@
 			"name": "Very Rare"
 		},
 		"cost": {
-			"random": "4d8x150",
+			"random": "8d8x200",
 			"unit": "gp"
 		},
 		"weight": 1,
