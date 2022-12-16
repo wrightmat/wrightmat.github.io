@@ -300,8 +300,6 @@ function exportNPC() {
 	page = pageId;
 	var sts_2 = "<p>Notion page created with id " + pageId + "</p>";
 	$("#div-status").append(sts_2);
-	// Format text and copy to clipboard so it can be pasted into Notion.
-	// This won't be needed in the future when we can use the Notion API to add blocks to the new page, but there's an error in Pipedream.
 	$("#npc-format").prop("selectedIndex", 2).change();
 	notionAppendBlock(pageId, blocks);
 	var sts_3 = "<p>Notion blocks appended.</p>";
