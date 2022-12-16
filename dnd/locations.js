@@ -242,8 +242,19 @@ function generatePreset() {
 function addItem(el) {
   var cost = "";
   var item = getEquipment(el.options[el.selectedIndex].id);
-  if ( item.cost != undefined ) {
-    cost = item.cost.quantity + ' ' + item.cost.unit;
+  if ( item.cost ) {
+    if ( item.cost.quantity ) {
+      cost = item.cost.quantity + ' ' + item.cost.unit;
+    } else if ( item.cost.random ) {
+      var roll = rollDice(item.cost.random);
+      if ( roll > 100 ) {  // if price is greater than 100, then round to the nearest 10
+	cost = (Math.ceil(roll / 10) * 10) + ' gp';
+      } else if ( roll > 10 ) {  // if price is between 10 and 100, then round to the nearest 5
+	cost = (Math.ceil(roll / 5) * 5) + ' gp';
+      } else {
+	cost = roll + ' gp';
+      }
+    }
   } else {
     if ( item.rarity ) {
       // random gold amounts based on rarity (from the DMG), rounded to the nearest 10 gp
