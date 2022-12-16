@@ -4,10 +4,8 @@ var services = [];
 var item_selected;
 
 window.addEventListener("load", init, false);
-
 function init() {
   navbar();
-
   populateGroups();
   populateEquipment();
   alphabetizeSelectList($('#select-items'));
@@ -18,7 +16,7 @@ function init() {
 function populateGroups() {
   groups = getAPI("equipment-categories")['results']
   groups.forEach(function (item, index) {
-    $('#select-groups').append('<option id="' + item.index + '" value="' + item.url +'">' + item.name +'</option>');
+    $('#select-groups').append('<option id="' + item.index + '" value="' + item.index +'">' + item.name +'</option>');
   });
 }
 
@@ -27,7 +25,7 @@ function populateEquipment() {
   groups.forEach(function (item, index) {
     var categories = getAPI("equipment-categories/" + item.index)['equipment']
     categories.forEach(function (it, ind) {
-      $('#select-items').append('<option id="' + it.index + '" value="' + it.url +'">' + it.name +'</option>');
+      $('#select-items').append('<option id="' + it.index + '" value="' + it.index +'">' + it.name +'</option>');
       $.ajax({   // asynchronously populate the equipment items (so the page doesn't hang while everything loads)
 	url: "https://www.dnd5eapi.co" + it.url,
 	success: function(result) { equipment.push(result); },
@@ -39,7 +37,7 @@ function populateEquipment() {
   // Non-API (Eberron-specific, custom) content
   var json_equip = getLocal("equipment.json");
   json_equip.forEach(function (item, index) {
-    $('#select-items').append('<option id="' + item.index + '" value="' + item.url +'">' + item.name +'</option>');
+    $('#select-items').append('<option id="' + item.index + '" value="' + item.index +'">' + item.name +'</option>');
     equipment.push(item);
   });
 }
@@ -111,7 +109,7 @@ function rebuildSelectByGroup(group) {
   $('#select-items option').remove();
   equipment.forEach(function (item, index) {
     if ( ( item.equipment_category && item.equipment_category.index == group.index ) || ( item.gear_category && item.gear_category.index == group.index ) || ( item.armor_category == group.name ) || ( item.armor_category+'s' == group.name ) || ( item.armor_category + ' Armor' == group.name ) || ( item.tool_category == group.name ) || ( item.tool_category && item.tool_category+'s' == group.name ) || ( item.vehicle_category == group.name ) || ( item.weapon_category + ' Weapons' == group.name ) || ( item.weapon_range + ' Weapons' == group.name ) || ( item.category_range + ' Weapons' == group.name ) ) {
-      $('#select-items').append('<option id="' + item.index + '" value="' + item.url +'">' + item.name + '</option>');
+      $('#select-items').append('<option id="' + item.index + '" value="' + item.index +'">' + item.name + '</option>');
     }
   });
   alphabetizeSelectList($('#select-items'))
@@ -121,7 +119,7 @@ function rebuildSelectByName(name) {
   $('#select-items option').remove();
   equipment.forEach(function (item, index) {
     if ( item.name.toLowerCase().includes(name.toLowerCase()) ) {
-      $('#select-items').append('<option id="' + item.index + '" value="' + item.url +'">' + item.name + '</option>');
+      $('#select-items').append('<option id="' + item.index + '" value="' + item.index +'">' + item.name + '</option>');
     }
   });
   alphabetizeSelectList($('#select-items'))

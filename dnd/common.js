@@ -54,11 +54,13 @@ function getCookie(cname) {
 function rollDice(dice, sum=true) {
   var arr = [];
   var d = dice.indexOf("d");
-  var die = dice.substring(d+1, dice.length);
+  var x = dice.indexOf("x");
   var num = dice.substring(0, d) || 1;
+  if ( x >= 0 ) { var die = dice.substring(d+1, x); } else { var die = dice.substring(d+1, dice.length); }
+  if ( x >= 0 ) { var mult = dice.substring(x+1, dice.length) } else { var mult = 1 };
   if (parseInt(d) == 0) { d = 1; }
   for (let i = 0; i < num; i++) {
-    arr.push(getRandomInt(d, die));
+    arr.push(getRandomInt(d, die) * mult);
   }
   if (sum) {
     return arr.reduce((a, b) => a + b);
