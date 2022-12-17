@@ -1,6 +1,6 @@
 var crs = [ '-', '0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30' ]
 var letters = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
-var encounter = {};  var combatants = []; var view = 0;
+var data = {};  var combatants = []; var view = 0;
 if ( getCookie("show-monster-hp") == "true" ) { var opt_show_monster_hp = true } else { var opt_show_monster_hp = false }
 if ( getCookie("show-monster-img") == "true" ) { var opt_show_monster_img = true } else { var opt_show_monster_img = false }
 if ( getCookie("show-monster-name") == "true" ) { var opt_show_monster_name = true } else { var opt_show_monster_name = false }
@@ -17,7 +17,7 @@ function setup() {
     $('#div-settings').css({ visibility: 'hidden' })
   } else { navbar(); }
   if ( params.id ) {
-    encounter = getFromDDB("encounter", params.id);
+    data = getEncounter(params.id);
     combatants = buildCombatants();
     populateOutput();
     setInterval(refresh, 120000);  // start the refreshing after 2 minutes (120 seconds)
@@ -27,25 +27,18 @@ function setup() {
 }
 
 function refresh() {
+  data = getEncounter(params.id);
   combatants = buildCombatants();
   populateOutput();
   console.log("Display refreshed " + new Date());
   setInterval(refresh, 60000);  // refresh every 60 seconds routinely
 }
 
-function getFromDDB(type, id) {
+function getEncounter(id) {
   var r; var u;
   var d = new Object();
   d.id = id;
-
-  if (type == "monster") {
-    u = "https://eogz05cvn9wh74f.m.pipedream.net"
-  } else if (type == "character") {
-    u = "https://eo3ofofdoqq9rgh.m.pipedream.net"
-  } else { // encounter
-    u = "https://eozorsz5jeuanh9.m.pipedream.net"
-  }
-
+  u = "https://eo6y2r7umlyx3oq.m.pipedream.net";
   $.get({
     url: u,
     contentType: "application/json",
@@ -59,12 +52,13 @@ function getFromDDB(type, id) {
 
 function buildCombatants() {
   var i = 0; var c = [];
-  encounter.players.forEach(function (item, index) {
-    if (item.initiative > 0) {
+  data.encounter.players.forEach(function (item, index) {
+    var char = data.combatants.find(({id}) => id == item.id);
+    if (item.initiative > 0 && char) {
       item.active = true
-      char = getFromDDB("character", item.id);
+      var item = { ...char, ...item };
       var ac = 0; var levels = 0;
-      var ac_add_dex = true;
+      var ac_add_dex = true; var ac_unarmored = true;
       var speeds = char.race.weightSpeeds.normal;
       var dex_score = char.stats[1].value;
       var con_score = char.stats[2].value;
@@ -77,21 +71,27 @@ function buildCombatants() {
 	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
       });
       char.modifiers.race.forEach(function (it, ind) {
+	if ( it.entityTypeId == 1472902489 && it.entityId == 2 ) { dex_score += it.fixedValue }
 	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
 	if ( it.subType == 'armor-class' ) { ac += it.value }
 	if ( it.subType == 'innate-speed-flying' ) { speeds.fly = speeds.walk }
       });
       char.modifiers.class.forEach(function (it, ind) {
+	if ( it.entityTypeId == 1472902489 && it.entityId == 2 ) { dex_score += it.fixedValue }
+	if ( it.entityTypeId == 1472902489 && it.entityId == 3 ) { con_score += it.fixedValue }
 	if ( it.subType == 'speed' ) { speeds.walk += it.value }
 	if ( it.subType == 'innate-speed-swimming' ) { speeds.swim += it.value }
       });
       char.inventory.forEach(function (it, ind) {
-	if ( it.definition.armorClass && it.equipped ) { ac += it.definition.armorClass; }
-	if ( it.definition.baseArmorName && it.equipped && it.definition.baseArmorName == "Shield" ) { ac_add_dex = false; }
+	if ( it.definition.armorClass && it.equipped ) {
+	  ac += it.definition.armorClass;
+	  ac_unarmored = false;
+	  if ( it.definition.baseArmorName && it.definition.baseArmorName == "Shield" ) { ac_add_dex = false; }
+	}
       });
       var dex_mod = Math.floor((dex_score - 10) / 2);
       var con_mod = Math.floor((con_score - 10) / 2);
-      if (ac == 0) { item.ac = 10 + dex_mod + con_mod } else if ( ac_add_dex ) { item.ac = ac + dex_mod } else { item.ac = ac }
+      if ( ac_unarmored ) { item.ac = 10 + dex_mod + con_mod } else if ( ac_add_dex ) { item.ac = ac + dex_mod } else { item.ac = ac }
       item.speeds = speeds;
       item.maximumHitPoints = char.baseHitPoints + (levels * con_mod) + char.temporaryHitPoints;
       item.currentHitPoints = item.maximumHitPoints - char.removedHitPoints;
@@ -112,11 +112,12 @@ function buildCombatants() {
     c[i] = item;
     i += 1;
   });
-  encounter.monsters.forEach(function (item, index) {
+  data.encounter.monsters.forEach(function (item, index) {
     if (item.initiative > 0) {
       item.active = true;
       item.speeds = {}
-      mons = getFromDDB("monster", item.id);
+      var mons = data.combatants.find(({id}) => id === item.id);
+      var item = { ...mons, ...item };
       mons.movements.forEach(function (it, ind) {
 	if ( it.movementId == 1 ) { item.speeds.walk = it.speed; }
 	if ( it.movementId == 2 ) { item.speeds.burrow = it.speed; }
@@ -140,17 +141,9 @@ function buildCombatants() {
   return c.sort(({initiative:a}, {initiative:b}) => b-a);
 }
 
-function toggleFullscreen() {
-  if (!window.screenTop && !window.screenY) {
-    document.documentElement.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-}
-
 function populateOutput() {
   var d = $('#div-output');
-  var o = '<table class="table"><tr><th colspan="2">Initiative &nbsp; <a href="#" onclick="refresh();"><i class="bi-arrow-clockwise" style="font-size: 1.2rem;" title="Refresh"></i></a></th><th></th><th></th><th style="text-align:right;"><a href="#" onclick="toggleFullscreen();"><i class="bi-window-fullscreen" style="font-size: 1.2rem;" title="Fullscreen"></i></a></th></tr>';
+  var o = '<table class="table"><tr><th colspan="2">Initiative &nbsp; <a href="#" onclick="refresh();"><i class="bi-arrow-clockwise" style="font-size: 1.2rem;" title="Refresh"></i></a></th><th>Round: ' + data.encounter.roundNum + '</th><th></th><th style="text-align:right;"><a href="#" onclick="toggleFullscreen();"><i class="bi-window-fullscreen" style="font-size: 1.2rem;" title="Fullscreen"></i></a></th></tr>';
   combatants.forEach(function (item, index) {
     if ( item.initiative == 0 ) { var vis = ' style="visibility:hidden"' } else { var vis = '' }
     if ( item.type == "Player" || opt_show_monster_name ) { var t = item.name } else { var t = item.type + ' ' + letters[item.index] }
@@ -211,9 +204,9 @@ function populateOutput() {
 	if ( it.id == 15 ) { cond += '<i class="bi-emoji-dizzy" style="font-size: 1.5rem; color: black;" title="Unconscious"></i>' }
       });
     }
-    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 1.5rem; color: blue;" title="Inspiration!"></i>' } else { var insp = '' }
-    if ( encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
-    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h4> ' + (item.initiative || '') + ' </h4></td>';
+    if ( item.inspiration ) { var insp = '<i class="bi-stars" style="font-size: 1.2rem; color: blue;" title="Inspiration!"></i>' } else { var insp = '' }
+    if ( data.encounter.turnNum == index + 1 ) { var cls = ' class="table-success"' } else { var cls = ' class="table"' }
+    o += '<tr id="' + (index + 1) + '"' + cls + vis + '><td><h4> ' + ( item.initiative || '' ) + ' </h4></td>';
     o += '<td>' + img + '</td>';
     o += '<td><h5> ' + t + insp + '</h5>' + det + '</td>';
     o += '<td>' + cond + '</td>';
@@ -223,7 +216,10 @@ function populateOutput() {
   d.html(''); d.append(o);
 }
 
-function updateOption(el) {
-  opt_show_monster_name = document.getElementById('opt_show_monster_name').checked;
-  opt_show_monster_hp = document.getElementById('opt_show_monster_hp').checked;
+function toggleFullscreen() {
+  if (!window.screenTop && !window.screenY) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
 }
