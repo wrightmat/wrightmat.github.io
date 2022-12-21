@@ -63,7 +63,7 @@ function getPropertyById(id, prop) {
 
 function markLocations() {
   var sharnId = 'a163218b-68f5-4114-a5b7-2a5274ac53f7';
-  console.log(locations);
+  //console.log(locations);
   locations.forEach(function (item, index) {
     var latlng = JSON.parse(item.properties.LatLng.rich_text[0].plain_text);
     if ( item.properties.Current.checkbox && latlng ) {  // Mark the players' location on the map
