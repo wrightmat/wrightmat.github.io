@@ -477,7 +477,7 @@ function getDeviceInfo(deviceId) {
 		});
 	      } else {
 		// weatherForecast being null means no response sent, so the weather service is down
-		text += '. Weather forecast unavailable.';
+		text += '.&nbsp;<span style="color:#d64;"> Weather forecast unavailable.</span>';
 	      }
 	    }
 	} else {  // Hub (no components)
