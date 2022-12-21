@@ -464,15 +464,21 @@ function getDeviceInfo(deviceId) {
 	    } else if (battery) {
 		var level = main[battery]["battery"]["value"]
 	    }
-	    if (weather) {  // we want this at the end of the output, so we do a separate check
+	    if ( weather ) {  // we want this at the end of the output, so we do a separate check
+	      if ( weatherForecast) {
 		weatherForecast.properties.periods.forEach(function (item, index) {
-		    if ( item.isDaytime == false && item.temperature < 15 && item.number <= 6 ) {  // 6 periods is 3 nights
+		    if ( item.isDaytime == false && item.temperature <= 15 && item.number <= 6 ) {  // 6 periods is 3 nights
 			var dateParts = item.startTime.match(/(\d+)-(\d+)-(\d+)/);
 			text += '. Freeze warning on ' + dateParts[0] + ' with temperature of ' + item.temperature + '°' + item.temperatureUnit;
 			updateLCARS('bahama-blue', 'Blue Alert');
 			alerts.push('blue');
 		    }
+		    // look into other helpful forecast things that could be added (extreme heat, storms, etc.)
 		});
+	      } else {
+		// weatherForecast being null means no response sent, so the weather service is down
+		text += '. Weather forecast unavailable.';
+	      }
 	    }
 	} else {  // Hub (no components)
 	    var type = "device";
