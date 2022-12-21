@@ -99,11 +99,11 @@ function navbar() {
   navbar += ' <li><a href="quickref.htm" target="_blank"> Quick Reference </a></li> ';
   navbar += ' <li><a href="quickref_sj.htm" target="_blank"> Quick Reference (Spelljammer) </a></li> ';
   navbar += ' <li> &#9679; </li> ';
+  navbar += ' <li><a href="maps.htm"> Maps </a></li> ';
   navbar += ' <li><a href="travel.htm"> Travel Calculator </a></li> ';
   navbar += ' <li><a href="npcs.htm"> NPC Generator </a></li> ';
   navbar += ' <li><a href="initiative.htm?view=DM"> Initiative Tracker </a></li> ';
   navbar += ' <li><a href="locations.htm"> Location Builder </a></li> ';
-  navbar += ' <li><a href="hex.htm?view=DM"> Hex Mapper </a></li> ';
   navbar += '</ul></nav><br /><br />';
   if( window.location.pathname.includes("settings.htm") ) {
     navbar += ' <div style="position:absolute;left:10px;top:-4px;"><a href="#" onclick="history.back()"> <i class="bi-caret-left-fill" style="font-size: 1.5rem;color:black;" title="Back"></i> </a></div> ';
