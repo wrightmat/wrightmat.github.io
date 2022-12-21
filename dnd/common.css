@@ -22,6 +22,19 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .dice-ability-button:active { background: #595959; }
 .dice-ability-label { border: 1px solid black; border-radius: 5px 5px 0px 0px; float: right; height: 62%; width: 98%; padding-top: 8px; text-align: center; font-size: 250%; }
 
+.leaflet-icon-null { background:grey; opacity: 0.1; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon-5 { background:darkred; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon-4 { background:firebrick; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon-3 { background:red; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon-2 { background:orange; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon-1 { background:yellow; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon0 { background:white; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon1 { background:green; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon2 { background:teal; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon3 { background:blue; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon4 { background:indigo; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon5 { background:darkviolet; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+
 /* ------------------------------------------------------------------------- */
 /* Sections */
 /* ------------------------------------------------------------------------- */
