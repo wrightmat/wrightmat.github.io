@@ -1,5 +1,5 @@
 var map, locations;
-var players, villages, towns, cities, capitals, forts, ruins, sites, areas;
+var players, villages, towns, cities, capitals, forts, ruins, sites, areas, hexes;
 var markerIcon0 = L.divIcon({ className: 'leaflet-icon0' })
 var markerIcon1 = L.divIcon({ className: 'leaflet-icon1' })
 var markerIcon2 = L.divIcon({ className: 'leaflet-icon2' })
@@ -19,6 +19,7 @@ function init() {
   map = createMap();
   locations = getNotionLocations();
   markLocations();
+  //drawGrid(50, 50);
 }
 
 function findCenter(arr) {
@@ -112,6 +113,28 @@ function markLocations() {
   });
 }
 
+const r = 0.6;
+const a = 2 * Math.PI / 6;
+function drawGrid(width, height) {
+  for (let y = r, j = 0; y + r * Math.sin(a) < height; y += 2 ** ((j + 1) % 2) * r * Math.sin(a), j = 0) {
+    for (let x = r; x + r * (1 + Math.cos(a)) < width; x += r * (1 + Math.cos(a)), y += (-1) ** j++ * r * Math.sin(a)) {
+      drawHexagon(x, y);
+    }
+  }
+}
+
+function drawHexagon(lat, lng) {
+  var latlngs = [];
+  for (var i = 0; i < 6; i++) {
+    latlngs.push([lat + r * Math.cos(a * i), lng + r * Math.sin(a * i)]);
+  }
+  var polygon = L.polygon(latlngs, { color: '#ccc', opacity: 0.2 }).addTo(hexes);
+  polygon.on('click', function(e) {
+    //console.log([e.latlng.lat, e.latlng.lng]);  // actual click location
+    console.log([e.target.getCenter().lat, e.target.getCenter().lng]);  // center of polygon clicked in
+  });
+}
+
 function createMap(type = 'eberron') {
   if ( type == "mournland" ) {
 
@@ -159,6 +182,7 @@ function createMap(type = 'eberron') {
       console.log(JSON.stringify(arr_latlng));
     });
     eberronmap.on('contextmenu', function(e) { arr_latlng = []; console.log("cleared"); });
+
     players = L.layerGroup();
     eberronmap.addLayer(players);
     villages = L.layerGroup();
@@ -176,6 +200,8 @@ function createMap(type = 'eberron') {
     sites = L.layerGroup();
     eberronmap.addLayer(sites);
     areas = L.layerGroup();
+    hexes = L.layerGroup();
+
     var baseMaps = {
       "Full Map": fullmap
     };
@@ -188,7 +214,8 @@ function createMap(type = 'eberron') {
       "Castles/Forts": forts,
       "Ruins": ruins,
       "Sites": sites,
-      "Areas": areas
+      "Areas": areas,
+      "Hexes": hexes
     };
     var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(eberronmap);
     return eberronmap;
