@@ -29,9 +29,9 @@ function init() {  // if the auth token is saved, then go ahead and start loadin
   if ( getCookie('smartthings-auth') || window.auth ) {
     getLocationId();
     getWeather();
-    setInterval(refreshAll, 15000 ); // every 15 seconds
-    setInterval(updateDevices, 30000); // every 30 seconds
-    setInterval(getWeather, 7200000); // every 2 hours
+    setInterval(refreshAll, 15000 );     // every 15 seconds
+    setInterval(updateDevices, 30000);   // every 30 seconds
+    setInterval(getWeather, 7200000);    // every 2 hours
     setInterval(getLocations, 43200000); // every 12 hours
   }
 }
@@ -402,7 +402,8 @@ function getDeviceInfo(deviceId) {
 		    // look into other helpful forecast things that could be added (extreme heat, storms, etc.)
 		});
 		if ( forecastText == "" ) { forecastText = weather.description; }
-		info.text += '. ' + forecastText;
+		info.text += '. ' + forecastText.substring(0, 40);
+		if ( forecastText.length > 40 ) { info.text += '...' } 
 	      } else {
 		// weather being null means no response sent, so the weather service is down
 		info.text += '.&nbsp;<span style="color:#d64;"> Weather forecast unavailable.</span>';
