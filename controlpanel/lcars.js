@@ -401,9 +401,9 @@ function getDeviceInfo(deviceId) {
 		    }
 		    // look into other helpful forecast things that could be added (extreme heat, storms, etc.)
 		});
-		if ( forecastText == "" ) { forecastText = weather.description; }
-		info.text += '. ' + forecastText.substring(0, 40);
-		if ( forecastText.length > 40 ) { info.text += '...' } 
+		if ( forecastText == "" ) { forecastText = weather.description.replace("temperatures", "temps"); }
+		info.text += '. ' + forecastText.substring(0, 35);
+		if ( forecastText.length > 35 ) { info.text += '...' } 
 	      } else {
 		// weather being null means no response sent, so the weather service is down
 		info.text += '.&nbsp;<span style="color:#d64;"> Weather forecast unavailable.</span>';
