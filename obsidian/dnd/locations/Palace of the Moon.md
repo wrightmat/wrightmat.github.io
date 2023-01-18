@@ -1,0 +1,3 @@
+#location [[Rhaan (Thelanis)]]
+
+The grandest city in the Moonlit Vale is the Palace of the Moon. Its towers are built into the trunks of four vast trees, each one reflecting the influence of a particular season. The Summer Tree is in full bloom, while the Winter Tree is withered and bare. The four seasons are factions among the fey of the Moon Court, and those who dwell within the palace live within the tree of their season. The palace is full of endless intrigues, and envoys negotiate alliances with the feyspires and the anchor barons. To mortals, many of these intrigues would seem trivial and strange, but for the fey, they determine the ruling season, which sets the tone for the layer.
