@@ -98,36 +98,37 @@ Roll once on the random encounter table when the players arrive. Any of these cr
 
 The gate is inactive, and any sort of check will reveal that it can’t be activated from this side - it must be a gate to somewhere else where it can be activated from the other side (this is an allusion to *Convergence Manifesto 7: The Silvered Edge of Twilight*, in case that’s run at a later time, otherwise it’s just flavor).
 
+![https://wrightmat.github.io/obsidian/img/twilight-gate.png](https://wrightmat.github.io/obsidian/img/twilight-gate.png)
+
 ### **The Broken Land**
 
 > You find yourself in a volcanically active region filled with high mountains and lava plains. You are shaken by near constant eruptions, and you can make out fire and earth elementals dancing in the distance, among other creatures.
-> 
 
  Roll once on the random encounter table when the players arrive, and again for every hour spent there.
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d8](https://wrightmat.github.io/dnd/dice.htm?roll=d8)
+`dice: [[Olarune, The Sentinel#^random-broken-land]]`
 
 | d8 | Random Encounter |
 | --- | --- |
-| 1 | 1d3 Allosaurus |
-| 2 | 1d3 Ankylosaurus |
-| 3 | 1 Brontosaurus |
-| 4 | 1 Stegosaurus |
-| 5 | 1 Triceratops |
-| 6 | 1d4 Azer |
-| 7 | 1 Earth Elemental |
-| 8 | 1 Fire Elemental |
+| 1 | `encounter: 1d3: Allosaurus` |
+| 2 | `encounter: 1d3: Ankylosaurus` |
+| 3 | `encounter: 1: Brontosaurus` |
+| 4 | `encounter: 1: Stegosaurus` |
+| 5 | `encounter: 1: Triceratops` |
+| 6 | `encounter: 1d4: Azer` |
+| 7 | `encounter: 1: Earth Elemental` |
+| 8 | `encounter: 1: Fire Elemental` |
+^random-broken-land
 
 ### **The Endless Ocean**
 
 > You stand on the sandy coast of what appears to be an endless ocean. The water teems with life, from a vast array of fish and aquatic beasts (some of which you recognize and many of which you don’t) to water itself that appears to move by magical means. A variety of small islands dot the horizon, but it’s difficult to tell whether they’re real or a figment of your imagination.
-> 
 
 When the players arrive, there are 1d6 islands in the water, and each is 1d6 miles away from the shore. Roll on the random island table below (re-rolling any duplicates) and describe each of the islands to the players. Any portal islands (3-8) interacted with will lead directly to the appropriate area of Olarune (jump to that section), while the whirlpool (1) will lead to a random Eberron ocean (just pick one) if the players fail a DC 15 Dexterity save to not be pulled in (if they are pulled in, the portal remains for a minute, so they can just swim back into it). Players can hold their breath while underwater for 1+Con (minimum of 30 seconds) minutes, and can swim an average of 2 mph, rolling a Constitution saving throw (DC 10) for each hour spent swimming (with failure resulting in one level of exhaustion for the character).
 
 **Totems** are beasts that are beyond the tactical scale… creatures that can be measured in miles. The gnome explorer Tasker tells a tale of finding an island in the Endless Ocean that turned out to be an enormous turtle; another of his stories deals with a pack of lycanthropes living in the fur of a massive roaming wolf. Such totems aren’t natural creatures and don’t need to eat or excrete. Their origins and purpose are unsolved mysteries, but most sages believe that they are immortal spirits projected by the plane itself. Some claim that the totems are connected to all creatures cast in their image. Others believe that the totems are sources of primal power, that barbarians, shifters, and druids can receive power and guidance from them. All that is known for sure is that they’re immune to common spells, and to date there are no accounts of anyone successfully harming or communicating with a totem.
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d8](https://wrightmat.github.io/dnd/dice.htm?roll=d8)
+`dice: [[Olarune, The Sentinel#^random-island-endless-ocean]]`
 
 | d8 | Random Island/Portal |
 | --- | --- |
@@ -139,19 +140,21 @@ When the players arrive, there are 1d6 islands in the water, and each is 1d6 mil
 | 6 | A swampy island covered with fungus that leads the party to The Rot. |
 | 7 | A desiccated island with stone ruins atop it that transports the party to Titan’s Folly |
 | 8 | A pristine plain with a few prancing animals and three small buildings, which transport the party back to their ship’s landing site |
+^random-island-endless-ocean
 
 If the players don’t have their ship, they’ll need to swim to get to any islands. Use the swimming rules above, and also roll a d20 for each hour in the water to determine random encounters, with one happening on a 19 or 20 - then roll on the table below for the monster(s). Underwater Combat rules are in the PHB, page 198.
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d6](https://wrightmat.github.io/dnd/dice.htm?roll=d6)
+`dice: [[Olarune, The Sentinel#^random-encounter-endless-ocean]]`
 
 | d6 | Random Encounter |
 | --- | --- |
-| 1 | 1 Plesiosaurus |
-| 2 | 1 Water Elemental |
-| 3 | 1d3 Water Weirds |
-| 4 | 1d4 Sahuagin Priestesses |
-| 5 | 1d3 Giant Sharks |
-| 6 | 1 Aboleth |
+| 1 | `encounter: 1: Plesiosaurus` |
+| 2 | `encounter: 1:  Water Elemental` |
+| 3 | `encounter: 1d3: Water Weirds` |
+| 4 | `encounter: 1d4: Sahuagin Priestess` |
+| 5 | `encounter: 1d3: Giant Shark` |
+| 6 | `encounter: 1: Aboleth` |
+^random-encounter-endless-ocean
 
 ### **The First Storm**
 
