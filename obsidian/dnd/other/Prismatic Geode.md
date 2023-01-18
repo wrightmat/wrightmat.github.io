@@ -11,3 +11,5 @@ This split geode shimmers with a rainbow of colors. Most attuned to the arcane f
 **Spells**. While holding this geode, you can use an action to expend 1 or more of its charges to cast one of the following spells from it, with a spell save DC of 18 and spell attack bonus of +10: cone of cold (5 charges), fireball (Sth-level version, 5 charges), prismatic spray (7 charges), wall of light (5 charges), prismatic wall (9 charges). lightning bolt (5th-level version, 5 charges), pulse wave (3 charge), Melf's Acid Arrows (2 charge), or wall of force (5 charges).
 
 **Elemental Adaptation**. When you take damage from a source you are resistant to through the geode, you can expend your reaction and 5 charges to become immune to that damage type until the start of your next turn. If you do so, roll a d20. On a 1, the geode shatters.
+
+![https://wrightmat.github.io/obsidian/img/prismatic-geode.png](https://wrightmat.github.io/obsidian/img/prismatic-geode.png)
