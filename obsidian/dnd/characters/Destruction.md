@@ -1,7 +1,7 @@
 #npc 
 
-Gender: Male
-Race: Endless
+Gender:: Male
+Race:: Endless
 
 Destruction is often depicted as a very tall, muscular, red-haired, bearded man. He has taken to wearing his hair in a ponytail.
 

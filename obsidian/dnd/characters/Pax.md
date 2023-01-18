@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Non-Binary
-Occupation: Noble (Liege)
-Race: Eladrin (Autumn)
+Gender:: Non-Binary
+Occupation:: Noble (Liege)
+Race:: Eladrin (Autumn)
 
 Pax is an Autumn Eladrin with skin the color of fresh fallen leaves and a voice like honey in warm tea. They had a brief tryst with Bystan several years ago.
 

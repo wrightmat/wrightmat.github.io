@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![aryth.png](Aryth%20(Dolurrh)%20d9b4d9bf09094a9598496daa477c85d1/aryth.png)
+![https://wrightmat.github.io/obsidian/img/aryth.png](https://wrightmat.github.io/obsidian/img/aryth.png)
 
 **Universal Properties**
 

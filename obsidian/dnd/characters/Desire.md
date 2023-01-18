@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Gender-fluid
-Occupation: Brothel-Keeper
-Race: Endless
+Gender:: Gender-fluid
+Occupation:: Brothel-Keeper
+Race:: Endless
 
 The anthropomorphic personification of wanting, craving, lust, and attraction, Desire blends in effortlessly with whatever environment they find themselves in.
 

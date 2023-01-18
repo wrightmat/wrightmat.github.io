@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![therendor.png](Therendor%20(Syrania)%208f7b922d741244d7a324ff6460b445ea/therendor.png)
+![https://wrightmat.github.io/obsidian/img/therendor.png](https://wrightmat.github.io/obsidian/img/therendor.png)
 
 **Universal Properties**
 

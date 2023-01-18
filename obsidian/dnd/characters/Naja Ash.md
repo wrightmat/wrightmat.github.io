@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Sculptor
-Race: Dao
+Gender:: Female
+Occupation:: Sculptor
+Race:: Dao
 
 Naja Ash sculpts fire, producing masterful artifacts and tools that channel or produce flame. She creates the majority of the azer, and she can create other elemental creatures, constructs, or unique blends between the two concepts. She’s the foremost expert on elemental binding in the multiverse, though it would take a great deal to convince her to share her knowledge with mortals.
 

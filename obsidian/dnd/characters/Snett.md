@@ -1,8 +1,9 @@
 #npc [[Tu'narath]]
 
-Gender: Male
-Occupation: Commissary Attendant
-Race: Kobold (Irsvern)
+Attitude:: Friendly
+Gender:: Male
+Occupation:: Commissary Attendant
+Race:: Kobold (Irsvern)
 
 Snett is a winged Kobold who only works at the Commissary in order to be closer to the Amethyst Gem Dragon. He often wears a long coat that covers his wings.
 

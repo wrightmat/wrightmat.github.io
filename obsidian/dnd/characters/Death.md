@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Gatekeeper
-Race: Endless
+Gender:: Female
+Occupation:: Gatekeeper
+Race:: Endless
 
 > I'm not merciful or blessed. I'm just me. I've got a job to do and I do it.... When the first living thing existed, I was there. Waiting. When the last living thing dies, my job will be finished. I'll put the chairs on the tables, turn out the lights, and lock the universe behind me when I leave.
 > 

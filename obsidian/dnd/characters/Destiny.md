@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Male
-Occupation: Bookkeeper
-Race: Endless
+Gender:: Male
+Occupation:: Bookkeeper
+Race:: Endless
 
 Destiny, the oldest of the Endless, appears as a man with a hooded cloak of an indeterminate color of brown, gray, and sometimes purple. He's the tallest of the Endless, smells of dust and the libraries of night, leaves no footprints, and casts no shadow.
 

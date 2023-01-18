@@ -4,55 +4,56 @@ There are countless islands on the edge of the Sea of Chaos, varying dramaticall
 
 Roll on each of the random tables below at random intervals, in order to change up the weather, inhabitants, and the features found on the Islands.
 
+Climate: `dice: [[The Shifting Islands#^weather-climate]]`
+Wind: `dice: [[The Shifting Islands#^weather-wind]]`
+Precipitation: `dice: [[The Shifting Islands#^weather-precip]]`
+Inhabitants: `dice: [[The Shifting Islands#^inhabitants]]`
+Features: `dice: [[The Shifting Islands#^features]]`
+
 ### Random Tables
 
 **Weather**
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d20](https://wrightmat.github.io/dnd/dice.htm?roll=d20)
-
-| d20 | Climate |
+| dice: 1d20 | Climate |
 | --- | --- |
 | 1-14 | Temperate |
 | 15-17 | Frigid |
 | 18-20 | Hot |
+^weather-climate
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d20](https://wrightmat.github.io/dnd/dice.htm?roll=d20)
-
-| d20 | Wind |
+| dice: 1d20 | Wind |
 | --- | --- |
 | 1-12 | None |
 | 13-17 | Light |
 | 18-20 | Strong |
+^weather-wind
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d20](https://wrightmat.github.io/dnd/dice.htm?roll=d20)
-
-| d20 | Precipitation |
+| dice: 1d20 | Precipitation |
 | --- | --- |
 | 1-12 | None |
 | 13-17 | Light rain or light snowfall |
 | 18-20 | Heavy rai n or heavy snowfall |
+^weather-precip
 
 **Inhabitants**
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d8](https://wrightmat.github.io/dnd/dice.htm?roll=d8)
-
-| d8 | Inhabitants |
+| dice: 1d8 | Inhabitants |
 | --- | --- |
 | 1-2 | Several cities populated entirely by talking owlbears and griffons. |
 | 3-4 | A large clan of chimeras where each one has a different arrangement of heads. |
 | 5-6 | Conflicting tribes of changelings and doppelgangers who worship The Traveler, but in slightly different (and therefore blasphemous!) ways. |
 | 7-8 | A plateau covered in what appears to be random objects (chairs, chests, etc.) but in actuality is a city of mimics! |
+^inhabitants
 
 **Features** / **Encounters**
 
-[https://wrightmat.github.io/dnd/dice.htm?roll=d8](https://wrightmat.github.io/dnd/dice.htm?roll=d8)
-
-| d8 | Encounter |
+| dice: 1d8 | Encounter |
 | --- | --- |
 | 1-2 | 3 Faces carved into a mountainside or cliff. They speak riddles to the group if approached. |
 | 3-4 | Intact obelisk etched with religious iconography of The Traveler. It reveals itself as a Mimic if touched. |
 | 5-6 | A substantial temple to The Traveler is the only prominent feature, and if the players are able to navigate the inside then they might find The Architect. |
 | 7-8 | Giant crystal shard protruding from the ground. The crystal glows brighter any time it’s stuck by lightning. |
+^features
 
 ### The Temple of the Traveler
 

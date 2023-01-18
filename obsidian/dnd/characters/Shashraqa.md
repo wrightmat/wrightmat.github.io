@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Aristocrat
-Race: Efreeti
+Gender:: Female
+Occupation:: Aristocrat
+Race:: Efreeti
 
 Pasha Shashraqa of Firefall stands just below Ashalar in the social order and is determined to unseat her rival. She is cultivating the friendship of several dragons. She considers herself to be a connoisseur of art, and could take an interest in the work of an artistic adventurer.
 

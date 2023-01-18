@@ -1,8 +1,8 @@
 #npc [[Tu'narath]]
 
-Gender: Non-binary
-Occupation: Miltary Commander
-Race: Astral Elf
+Gender:: Non-Binary
+Occupation:: Miltary Commander
+Race:: Astral Elf
 
 Despite their extravagant showboating, Saerthe Abizin (pronounced SAIR-th ah-bih-ZEEN) remains as mysterious as the isle of Nimbral from which they hail. Although relatively inexperienced in comparison to some of the other instructors at the academy, Saerthe is an experienced spelljammer. Their eyes shimmer like pools of quicksilver, allowing them to see magical auras.
 

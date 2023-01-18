@@ -1,8 +1,8 @@
 #npc [[Tu'narath]]
 
-Gender: Male
-Occupation: Quartermaster
-Race: Autognome
+Gender:: Male
+Occupation:: Quartermaster
+Race:: Autognome
 
 Mister Blip is an odd but well-loved member of the Military Academy. During a ship attack some years ago, the autognome’s creator was slain and his memories were lost. With no purpose to speak of, Mister Blip wandered aimlessly, and eventually encountered Tarto in her travels. The hadozee invited the autognome to the Ring of Siberys, and he’s been there ever since.
 

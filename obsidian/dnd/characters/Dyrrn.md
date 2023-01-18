@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Non-Gendered
-Occupation: Daelkyr Lord
-Race: Daelkyr
+Gender:: Non-Gendered
+Occupation:: Daelkyr Lord
+Race:: Daelkyr
 
 Dyrrn the Corruptor is considered to be the most powerful of the Daelkyr.
 

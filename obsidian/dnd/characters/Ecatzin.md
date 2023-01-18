@@ -1,8 +1,8 @@
 #npc [[Tu'narath]]
 
-Gender: Female
-Occupation: Monastery Attendant
-Race: Couatl
+Gender:: Female
+Occupation:: Monastery Attendant
+Race:: Couatl
 
 Ecatzin is a rainbow-winged serpent with silver scales who lives at the monastery. From here, she observes the Zertherun IV monastery vessel on Kythri, the Draconic Prophesy of Argonnesson, and the Silver Flame of Thrane.
 

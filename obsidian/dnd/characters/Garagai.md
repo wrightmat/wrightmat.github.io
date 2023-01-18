@@ -1,7 +1,7 @@
 #npc 
 
-Gender: Male
-Race: Giant (Frost)
+Gender:: Male
+Race:: Giant (Frost)
 
 Garagai is a Frost Giant who has laid claim to the Frozen Sea.
 

@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![barrakas.png](Barrakas%20(Irian)%20019e6b2cac6845638ceb9f9465eefcff/barrakas.png)
+![https://wrightmat.github.io/obsidian/img/barrakas.png](https://wrightmat.github.io/obsidian/img/barrakas.png)
 
 **Universal Properties**
 

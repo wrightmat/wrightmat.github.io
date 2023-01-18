@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![nymm.png](Nymm%20(Daanvi)%202173fc93425d4876b74b0865518a2f20/nymm.png)
+![https://wrightmat.github.io/obsidian/img/nymm.png](https://wrightmat.github.io/obsidian/img/nymm.png)
 
 **Universal Properties**
 

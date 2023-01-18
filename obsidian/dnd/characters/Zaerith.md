@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Male
-Occupation: Great Githzerai
-Race: Gith (Githzerai)
+Gender:: Male
+Occupation:: Great Githzerai
+Race:: Gith (Githzerai)
 
 The leader of the githzerai monastery is known as The Great Githzerai and the post is currently held by a man named Zaerith.
 

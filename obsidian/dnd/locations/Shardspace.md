@@ -1,5 +1,18 @@
 #location [[Astral Sea]]
 
+```leaflet
+id: shardspace-map
+image: https://wrightmat.github.io/obsidian/img/Shardspace.png
+height: 500px
+lat: 50
+long: 30
+minZoom: 1
+maxZoom: 7
+defaultZoom: 6
+unit: miles
+scale: 1
+```
+
 Shardspace (also sometimes called Siberspace) is a particularly named wildspace, the empty vacuum between astronomical bodies, inside the world of Eberron. The githyanki, from the second age of Eberron, call it Siberspace, while Aleithilithos, from the original age of Eberron, calls it Shardspace.
 
 The only planet located in Shardspace is Eberron, but that planet rotates around a sun, and has 12 moons that orbit it. There’s also one extraplanetary moon that orbited Eberron at one point.

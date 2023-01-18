@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Throne of Life
-Race: Angel
+Gender:: Female
+Occupation:: Throne of Life
+Race:: Angel
 
 Nanvia is an angel of Syrania, and the celestial ancestor of Onme. They should be member of the University, probably a Throne, but could do a lower tier.
 

@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female?
-Occupation: Archivist
-Race: Quori
+Gender:: Female
+Occupation:: Archivist
+Race:: Quori
 
 Ashana, Astra’s patron hashalaq Quori, is an archivist with the Archive of Dreams on Dal Quor. She focuses on archival of dreams and nightmares that relate to music.
 

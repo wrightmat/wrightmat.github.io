@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![eyre.png](Eyre%20(Fernia)%20082efa6b38094e10ad24413f0402870a/eyre.png)
+![https://wrightmat.github.io/obsidian/img/eyre.png](https://wrightmat.github.io/obsidian/img/eyre.png)
 
 **Universal Properties**
 

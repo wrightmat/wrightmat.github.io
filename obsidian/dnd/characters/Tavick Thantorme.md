@@ -1,9 +1,9 @@
 #dmpc 
 
-Attitude: Helpful
-Gender: Male
-Occupation: Companion-At-Arms
-Race: Human
+Attitude:: Helpful
+Gender:: Male
+Occupation:: Companion-At-Arms
+Race:: Human
 
 Trevick Thantorme is a traumatized soldier with the title of Companion-At-Arms. He experienced the attack on the Cathedral of the Silver Flame by the Tarnished Templar, and then reluctantly accompanied our party to take her on.
 

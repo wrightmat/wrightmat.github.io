@@ -1,9 +1,9 @@
 #dmpc
 
-Attitude: Helpful
-Gender: Female
-Occupation: Bard / Druid
-Race: Gnome
+Attitude:: Helpful
+Gender:: Female
+Occupation:: Bard / Druid
+Race:: Gnome
 
 Ridara is a veteran adventurer and stonesinger from the island of Lorghalen. She was convinced to come along with the party in order to keep the elementals used on their ship in line.
 

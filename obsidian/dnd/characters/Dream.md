@@ -1,7 +1,7 @@
 #npc 
 
-Gender: Male
-Race: Endless
+Gender:: Male
+Race:: Endless
 
 Dream, also known as The Dreaming Dark or il-Lashtavar, is one of the Endless. While il-Lashtavar is in reality the name of a place, and changes with the new age, this is not known to those who follow The Dreaming Dark.
 

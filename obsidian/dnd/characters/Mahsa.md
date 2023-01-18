@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Noble (Lady)
-Race: Eladrin (Autumn)
+Gender:: Female
+Occupation:: Noble (Lady)
+Race:: Eladrin (Autumn)
 
 Mahsa is a member of the Autumn Court, and Baron Selene’s current occult advisor. She allied herself with Selene in order to hold on to power and get a position in her court after she ascended to the throne. The Autumn Court previously held the throne at the Palace of the Moon, and Mahsa served as advisor to that Baron as well.
 

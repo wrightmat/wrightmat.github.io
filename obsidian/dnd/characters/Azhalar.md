@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Male
-Occupation: Sultan of High Hearth
-Race: Efreeti
+Gender:: Male
+Occupation:: Sultan of High Hearth
+Race:: Efreeti
 
 Sultan Azhalar of High Hearth stands at the top of the social order. He has assembled the grandest armies and enjoys displays of martial might, including exotic engines of war. His galas often involve gladiatorial matches or grand war games.
 

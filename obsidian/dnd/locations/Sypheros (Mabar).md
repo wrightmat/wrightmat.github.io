@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![sypheros.png](Sypheros%20(Mabar)%20f68d097a5a724427a4254339f38d2ba4/sypheros.png)
+![https://wrightmat.github.io/obsidian/img/sypheros.png](https://wrightmat.github.io/obsidian/img/sypheros.png)
 
 **Universal Properties**
 

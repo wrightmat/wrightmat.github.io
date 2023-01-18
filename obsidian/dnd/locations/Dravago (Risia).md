@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![dravago.png](Dravago%20(Risia)%20ca04612e0bc94b129d80689bdc6095ff/dravago.png)
+![https://wrightmat.github.io/obsidian/img/dravago.png](https://wrightmat.github.io/obsidian/img/dravago.png)
 
 **Universal Properties**
 

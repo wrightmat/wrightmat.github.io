@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Non-Gendered
-Occupation: Prince of Slime
-Race: Daelkyr
+Gender:: Non-Gendered
+Occupation:: Daelkyr Lord
+Race:: Daelkyr
 
 The Prince of Slime is the daelkyr lord of slime and ooze.
 

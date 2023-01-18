@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![lharvion.png](Lharvion%20(Xoriat)%201a7de74d44be47e5ac1c090e25db24a7/lharvion.png)
+![https://wrightmat.github.io/obsidian/img/lharvion.png](https://wrightmat.github.io/obsidian/img/lharvion.png)
 
 **Universal Properties**
 

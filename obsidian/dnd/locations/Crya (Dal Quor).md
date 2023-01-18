@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![crya.png](Crya%20(Dal%20Quor)%209d9672c5b34e4781a1b7a05d15ee4060/crya.png)
+![https://wrightmat.github.io/obsidian/img/crya.png](https://wrightmat.github.io/obsidian/img/crya.png)
 
 **Universal Properties**
 

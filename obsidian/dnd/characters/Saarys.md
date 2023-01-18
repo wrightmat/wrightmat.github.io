@@ -1,8 +1,9 @@
 #npc [[Tu'narath]]
 
-Gender: Female
-Occupation: Assistant to the Commissar
-Race: Gith (Githzerai)
+Attitude:: Friendly
+Gender:: Female
+Occupation:: Assistant to the Commissar
+Race:: Gith (Githzerai)
 
 Saarys, Female Githzerai Monk, is the assistant to Zetch’r’r, the Commissar of the city.
 

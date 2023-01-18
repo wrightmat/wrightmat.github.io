@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![vult.png](Vult%20(Shavarath)%20e8afc1edf7ac4d0b8d5ff91858412cfe/vult.png)
+![https://wrightmat.github.io/obsidian/img/vult.png](https://wrightmat.github.io/obsidian/img/vult.png)
 
 **Universal Properties**
 

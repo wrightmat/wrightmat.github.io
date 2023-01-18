@@ -1,0 +1,129 @@
+#adventure [[Zarantryr (Kythri)]] [[The Architect]]
+
+> As you descend, you see that a great chaotic sea covers the entirety of the moon, utterly unstable with landscapes taking shape only to boil away within moments.
+> In the distance, at the edges of the sea, you can see some islands that linger. As you focus on one, you see its environment transition from a jungle, to a desert, to a blizzard, and finally to a sandstorm. Large fauna that blend features of two or more beasts, such as owlbears, griffons, and chimeras, dot the island. Smaller fauna, such as wolves, seem to morph with the environment - from a wolf, to a jackal, to an arctic wolf.
+> One island in the sea is by far the largest, occupied by frog-like creatures, and dotted with architecture that also appears to be shifting over time.
+> A clearly artificial vessel can be seen floating off in its own area of the Sea of Chaos, and it seems unusually stable given the rest of the moon's behavior. For the duration of the time it takes to reach the surface, you don't see the vessel change once.
+
+Upon entering the moon, roll a d6 to determine the dominant slaad culture at the time. This will effect what happens when the party arrives (below) as well as the appearance and attitude of the primary city, Cornerstone. If the players hang around too long, or complete an adventure, roll again.
+
+`dice:[[Zarantyr, the Storm Moon#^slaad-culture]]`
+
+### Random Culture
+
+| dice: 1d6 | Culture |
+| --- | --- |
+| 1 | The Grand Concordance of Iron is a ruthless regime that intends to subjugate all slaadi, and then, the entire multiverse. It’s a strict caste system in which the death slaadi are cruel tyrants and all slaadi serve in the military. |
+| 2 | The Enlightened Lyceum League is a democratic society of scholars and philosophers. They believe in finding a peaceful solution to every problem and a logical answer to every question. |
+| 3 | The Final Regency asserts that the Sovereigns have abandoned reality and ordered the slaadi of the Regency to rule the multiverse in their stead until they return. They are fanatically devoted to a slaad-based version of the Sovereign Host and are offended by all inaccurate representations. |
+| 4 | The Glorious Union of Flesh asserts that slaadi are the ultimate evolution of life and seek to grant all other humanoids the gift of slaadhood through the chaos phage. They don’t accept the idea that slaad numbers will always remain constant; clearly previous slaad cultures just weren’t doing it properly. |
+| 5 | The Confluence of Reality believes that every civilization has something worth emulating, and studies other cultures to find these things. In a Confluence community, you could find slaadi eating Aundairian crepes, playing an Aereni form of Conqueror, and debating the finer points of Daanvi law. |
+| 6 | The Republic of B’ob is ruled by a red slaad who makes up new laws whenever he feels like it. Why is B’ob in charge? Well, that was the first rule he made, and the only one he hasn’t changed. And he’s B’ob! Who else would be in charge? |
+^slaad-culture
+
+### **1. The Rogue Generals**
+
+Two death slaadi generals approach the ship, asking for the characters’ help. The Grand Concordance of Iron has been attempting to bring the rogue githzerai into the fold, but they’ve resisted. The Concordance leaders have run out of patience, and will be destroying the githzerai monastery ship tonight if they ignore their final offer. These generals don’t want that to happen, and would prefer a peaceful solution to bring the githzerai into the Concordance. The players should decide how to handle the dilemma: help the rogue slaadi generals come up with a peaceful solution, approach the githzerai with a warning and opportunity for evacuation, take on the Concordance by stealth or force, or some other solution entirely?
+
+### **2. Studying the Storm**
+
+A scholar from The Enlightened Lyceum League contacts the ship and asks to come aboard, explaining that they need help with a problem. The representative of the League will explain that a great Storm Elemental has recently been found, and the Lyceum needs more information on it. The League would like to pay the crew to approach the Storm Elemental and take readings with a device they will give them. It is entirely up to the crew what they do after the readings are taken, and while the League would prefer a peaceful solution to this problem (capturing it or talking it down or something), they also understand the threat the elemental serves to the slaadi in the League and would be okay if it went away.
+
+Could connect this Storm Elemental to Windsor and his Path of the Storm Herald if they encounter this.
+
+[https://www.dndbeyond.com/monsters/819191-storm-elemental](https://www.dndbeyond.com/monsters/819191-storm-elemental)
+
+### **3. Cards of Chaos**
+
+A green slaadi priest from The Final Regency appears on the ship, and offers for the players to draw from their most holy Cards of Chaos. Each player must declare the number of cards they intend to draw, do so, and then live by the consequences of whatever the card means (which the priest will explain).
+
+### **4. Terror at Sea**
+
+While exploring the Sea of Chaos, a blue or red slaadi from the Union of Flesh slips aboard the ship. It infects or implants a few passengers, doing its best to hide. Can the adventurers defeat this lurking threat before it’s too late? Or will a wave of newborn slaadi take over the ship?
+
+### **5. Superstars**
+
+A gray slaad reveals its presence to the adventurers. It’s from the Confluence of Reality and wants to bring the adventurers to Cornerstone to represent their cultures. What could go wrong? Well, while the Confluence is usually peaceful, this time it wants the adventurers to represent their culture in a massive extraplanar gladiatorial match. Can they defeat champions from across Eberron and the other planes?
+
+Each player has a “Crowd Score” that gives them bonuses (both to hits and damage) as it accumulates. This encourages the players to do interesting things and describe them in a fun way. Each time a player does so, ask for a Performance check (or another appropriate skill based on what they’re doing). On a 1-4: -1 to Crowd Score, 11-18: +1 to Crowd Score, 18+: +2 to Crowd Score. The first roll should come when they enter the arena, describing how they do so and pump up the crowd. After that, any action, movement, or bonus action could call for a new roll if described interestingly.
+
+| Crowd Score | Proficiency |
+| --- | --- |
+| 5 | +1 |
+| 10 | +2 |
+| 20 | +3 |
+| 30 | +4 |
+| 40 | +5 |
+
+The arena has Lair Actions that occur on initiative 20, injecting some chaos into the fight as it progresses. Roll on the table below.
+
+[https://wrightmat.github.io/dnd/dice.htm?roll=d6](https://wrightmat.github.io/dnd/dice.htm?roll=d6)
+
+| d6 | Lair Action |
+| --- | --- |
+| 1 | Grasping roots and vines erupt in a 20-foot radius centered on a player. That area becomes difficult terrain, and each creature there must succeed on a DC 15 Strength saving throw or be restrained by the roots and vines. |
+| 2 | A trap door opens under one of the players. The player must succeed on a DC 15 Dexterity saving throw, or fall into a pit below, taking 2d6 fall (bludgeoning) damage. A DC 15 Athletics check can be used to climb out of the pit on their next turn. |
+| 3 | A Chain Devil on a 60 ft chain appears in the arena, remaining for 1d4 rounds before it gets pulled back in to the door from which it came. The Chain Devil acts on the Lair Action initiative rather than rolling a new Lair Action while he remains in the arena.
+Chain: Melee Weapon Attack: +8 to hit, reach 10 ft., one target. Hit: 11 (2d6 + 4) slashing damage. The target is Grappled (escape DC 14) if the devil isn't already Grappling a creature. Until this grapple ends, the target is Restrained and takes 7 (2d6) piercing damage at the start of each of its turns. |
+| 4 | Spectators begin throwing things in to the arena, but the items are continually in flux and turning into new things. Each player should roll 1d20 (pure luck check) - on 1-8, they take 2d8 bludgeoning damage from a large thrown object, on 9-16 they take 1d8 bludgeoning damage from a small thrown object, on 17 or more, they restore 4d4 hit points from a thrown healing potion. |
+| 5 |  |
+| 6 |  |
+
+Enemies appear in phases and waves. The first phase are easier enemies in larger numbers, while the second phase are more difficult enemies with fewer in the wave. Roll in the tables below for each wave (and add more waves if needed). After the second (or final of your choice) wave, the grey slaad who recruited the party, who is actually a Death Slaad, takes on the party himself.
+
+[https://wrightmat.github.io/dnd/dice.htm?roll=d6](https://wrightmat.github.io/dnd/dice.htm?roll=d6)
+
+| d6 | Wave 1 |
+| --- | --- |
+| 1 | 1d12 Quasit (CR 1) |
+| 2 | 1d12 Hippogriffs (CR 1) |
+| 3 | 1d10 Griffons (CR 2) |
+| 4 | 1d8 Centaurs (CR 2) |
+| 5 | 1d4 Wild Mange (CR 4) |
+| 6 | 1d3 Red Slaadi (CR 5) |
+
+[https://wrightmat.github.io/dnd/dice.htm?roll=d6](https://wrightmat.github.io/dnd/dice.htm?roll=d6)
+
+| d6 | Wave 2 |
+| --- | --- |
+| 1 | 1d3 Red Slaadi CR 5) + 1 Mimic (CR 2) of a unique shape |
+| 2 | 1d8 Mimics (CR 2) + 1d4 Large Mimics (CR 4) all of a unique shape |
+| 3 | 1d8 Manticore (CR 3) |
+| 4 | 1d8 Owlbears (CR 3) |
+| 5 | 1d4 Chimeras (CR 6) |
+| 6 | 1 Blue Slaad (CR 7) |
+
+[https://angrygolem-games.com/monster-manual/letter-d/death-slaad-5e-stats/](https://angrygolem-games.com/monster-manual/letter-d/death-slaad-5e-stats/)
+
+### **6. Because B’ob Says**
+
+Every so often, on a random cadence, roll a d20. The result is the new law that B’ob has enacted, which he will gleefully announce to everyone on the plane. If any rule is broken, roll on the Wild Magic table to determine the resulting “punishment”. If a 1-5 is rolled on the first roll, then re-roll.
+
+`dice: [[Zarantyr, the Storm Moon#^bob-laws]]`
+
+| dice: 1d20 | New Law |
+| --- | --- |
+| 1-5 | Let’s start fresh! All previous laws are now gone. |
+| 6-7 | No one is allowed to concentrate on anything. Just let your mind roam free! |
+| 8-9 | Slow it down! Everyone's speed is reduced by half. |
+| 10-11 | Everyone needs a friend! You all get an animal companion, like it or not. |
+| 12 | B’ob demands offerings! Everyone must give me one item, preferably magical. The better it is, the happier I’ll be! |
+| 13 | Belching at the table is considered the sign of a good meal and a compliment to the chef. |
+| 14 | Common? How boring. Everyone speak something else! Common is outlawed! |
+| 15 | Everyone has a weakness! Take your best stat and drop it down to one. |
+| 16 | All are required to travel in pairs, specifically with one riding on top the other's shoulders. |
+| 17 | I only like how slaadi look - why are there suddenly so many other funny looking people here?! Everyone should look like a slaad! [magic users become green, fighters/barbarians/monks become red, and all others become blue] |
+| 18 | `dice:[[Zarantyr, the Storm Moon#^bob-colors]]` is now decreed to be a traitorous color. All caught wearing it are charged with treason. |
+| 19 | Height now dictates social status. Stilts and hats count! |
+| 20 | The Greeting of B’ob shall be used by all! This is a 3-minute ritual of different handshakes and dances. Messing up a step means you have to start over. There will, of course, be classes available. |
+^bob-laws
+
+| d6 | Color |
+| --- | --- |
+| 1 | Red |
+| 2 | Orange |
+| 3 | Yellow |
+| 4 | Green |
+| 5 | Blue |
+| 6 | Purple |
+^bob-colors

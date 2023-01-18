@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Architect
-Race: Celestial
+Gender:: Female
+Occupation:: Architect
+Race:: Celestial
 
 The Dawn Empress is the leader of the Amaranthine City in Irian.
 

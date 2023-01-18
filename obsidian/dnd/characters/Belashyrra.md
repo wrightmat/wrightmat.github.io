@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Non-Gendered
-Occupation: Daelkyr Lord
-Race: Daelkyr
+Gender:: Non-Gendered
+Occupation:: Daelkyr Lord
+Race:: Daelkyr
 
 Belashyrra is the Lord of Eyes, and resides in the Unseen Citadel.
 

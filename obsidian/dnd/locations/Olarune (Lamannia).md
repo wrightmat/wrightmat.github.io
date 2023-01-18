@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![olarune.png](Olarune%20(Lamannia)%209ca0e4a049c947bda1d570298ab9f4cf/olarune.png)
+![https://wrightmat.github.io/obsidian/img/olarune.png](https://wrightmat.github.io/obsidian/img/olarune.png)
 
 **Universal Properties**
 

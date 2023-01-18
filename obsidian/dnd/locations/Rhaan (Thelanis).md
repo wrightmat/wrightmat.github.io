@@ -1,6 +1,6 @@
 #location [[Shardspace]]
 
-![rhaan.png](Rhaan%20(Thelanis)%206e47256c92cc4b78af4c9dc3504d002a/rhaan.png)
+![https://wrightmat.github.io/obsidian/img/rhaan.png](https://wrightmat.github.io/obsidian/img/rhaan.png)
 
 **Universal Properties**
 

@@ -1,8 +1,8 @@
 #npc 
 
-Gender: Female
-Occupation: Bartender
-Race: Angel
+Gender:: Female
+Occupation:: Bartender
+Race:: Angel
 
 The angelic barkeep Ashe offers warm drinks around the fireplace at First Hearth, from which the inn takes its name.
 
