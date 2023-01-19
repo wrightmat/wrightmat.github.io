@@ -4,7 +4,7 @@ ac: 13
 modifier: 1
 level: 8
 ---
-#pc
+#pc [[Alex]]
 
 Alignment:: Chaotic Good
 Class:: Sorcerer (Aberrant Mind)
@@ -26,3 +26,29 @@ His psychic powers as a Kalashtar also began to expand farther than he thought p
 At some point Astra traveled from Sarlona to Khorvaire, which he accomplished via the ports of Ohr Kaluun in the east. The islands of Ohr Kaluun have smuggler ports that can get desperate Sarlonans to western Khorvaire, but getting there requires going through the Corvagura Province, which is the most populated Riedran territory.
 
 6 years later, Astra now roams the country with his violin and a carefree smile. They perform their “music” to countless people and thrive off of all the validation and attention it garners them. After all, running away from his problems and maintaining his persona is all he has left. The show must go on!
+
+```timeline
++ 999 YK, Aryth
++ Left Eberron for Wildspace
++ Aboard the New Dawn "Shardjammer" ship
+
++ 999 YK, Zarantyr
++ Officially started dating Windsor
++ During their 9 months around the world
+
++ 998 YK, Sypheros
++ First date with Windsor
++ Across Sharn
+
++ 998 YK, Nymm
++ Joined up with the party
++ Delethorn, Eldeen Reaches
+
++ ~ 992 YK
++ Traveled from Sarlona to Khorvaire
++ Via the ports of Ohr Kaluun
+
++ ~970 YK
++ Born
++ Adar, Sarlona
+```

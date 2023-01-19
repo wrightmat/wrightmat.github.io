@@ -1,4 +1,4 @@
-#npc 
+#npc #pc [[Claire]]
 
 Gender:: Female
 Occupation:: Thief

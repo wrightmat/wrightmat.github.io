@@ -4,7 +4,7 @@ ac: 14
 modifier: 4
 level: 8
 ---
-#pc 
+#pc [[Jolene Harper]]
 
 Alignment:: Chaotic Neutral
 Class:: Bard (College of Eloquence) / Warlock (Celestial)

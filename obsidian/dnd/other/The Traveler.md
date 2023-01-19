@@ -1,4 +1,4 @@
-#lore [[Zarantyr, the Storm Moon]]
+#lore [[1. Zarantyr, the Storm Moon]]
 
 The Traveler, titled "The Sovereign of Chaos and Change" and in some lands known as the Giver of Gifts, is a chaotic neutral or unaligned deity of the Dark Six. The Traveler presides over the portfolios of chaos, deception, evolution, invention, and transformation; or influences the areas of change, cunning, deception, and innovation; or oversees the provinces of change and chaos. It has an aspect as a god of artifice and artificers. Followers of the god are known as Travelers.
 

@@ -1,4 +1,4 @@
-#lore [[Zarantyr, the Storm Moon]]
+#lore [[1. Zarantyr, the Storm Moon]]
 
 **Red slaadi** are vicious combatants that quickly attack other creatures. Ruthless in numbers, they surround, torment, and slaughter smaller groups. Red slaadi have few forehead tattoos, denoting low status.
 Red slaadi have a gland under each claw that, when it hits an opponent, may imperceptibly inject an egg-pellet into the opponent’s body (on a failed DC 14 Constitution saving throw). The slaad can also inject the pellet at will into an unconscious opponent. The egg-pellet slowly moves through the unwitting victim’s body (over three months) until it reaches the chest cavity, where it would devour the host's insides from within before emerging as a blue slaad tadpole (or, if it has the ability to cast spells of 3rd level or higher, a green slaad tadpole).
