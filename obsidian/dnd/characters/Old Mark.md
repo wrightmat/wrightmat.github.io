@@ -1,0 +1,9 @@
+#npc 
+
+Gender:: Male
+Occupation:: Groundskeeper
+Race:: Elf
+
+Old Mark (LG male elf Paladin) is the groundskeeper of the Arcane Congress, a polite and extremely deferential man with shaky hands and an endless stream of warm remarks and non-judgmental support. The more anxious students love him and he often has a small following as he wanders through the Congress with his clippers, tending to trees and singing old songs. Mark is an avowed pacifist and never retaliates even when the richer and snootier students spit upon him or the other servants push their worst chores onto him. He works happily for hours and hours well in to the night, in fact if one watches carefully, he seems to try to avoid going to sleep.
+
+Groundskeeper Mark is better known to history as Marianus the Purging Flame, one of the original Council of Deacons who planned and approved the Silver Crusade (now known as the lycanthrope purge), he fought on the front lines for years, slaughtering monster after monster, until the wildheart was sealed again. During the victory celebration the official history is he was savagely killed by a lurking wererat, the truth is he simply wandered off (the church being too embarrassed to admit they lost a paladin of his caliber). The horrors he saw, the horrors he committed, it broke something in him and the Deacon Marianus became the migrant worker Mark. Now years later he has settled in to his roll in the Arcane Congress living a pious and humble life beset every night by the horrors of war. Marius has sworn to remain “Mark” for the rest of his remaining few years, but his oaths as a paladin are older and deeper, if something truly terrible were to occur, if the forces of darkness assaulted the Arcane Congress, then they might just meet a paladin shrouded in silver flame.

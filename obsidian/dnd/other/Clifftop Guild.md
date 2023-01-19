@@ -1,4 +1,6 @@
-#organization #guild 
+#organization #guild [[Prism]]
+
+![https://wrightmat.github.io/obsidian/img/clifftop.png](https://wrightmat.github.io/obsidian/img/clifftop.png)
 
 The Clifftop Adventurers' Guild is a guild for explorers and professional adventurers based out of the Clifftop district of Sharn. The Guild has a reputation for reliability and integrity, and has a strong rivalry with the less-reputable Deathsgate Adventurer's Guild.
 
@@ -51,5 +53,3 @@ Typically, an adventuring group has no particular contact within the larger guil
 8	A grouchy employee who keeps the guildhall clean and cares for its guests while quietly complaining about how adventurers should “grow up,” get a “real job,” and contribute to society
 9	A kindly mentor who loves to tell stories of past exploits in front of the guildhall fireplace
 10	A sad, older adventurer who tells cautionary tales in the vain hope that younger members avoid making the same mistakes
-
-![Untitled](Clifftop%20Guild%200ce47102503044dc96985e69710858c2/Untitled.png)

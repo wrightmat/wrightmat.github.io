@@ -1,4 +1,4 @@
-#organization #religion 
+#organization #religion [[Onme Nanvia Donverou]]
 
 The Church of the Silver Flame is the state religion of Thrane. The followers of the religion are called the Purified. The church is broadly divided into three orders - the Order of Ministers, the Order of Templars, and the Order of Friars. The church is led by the Keeper of the Flame and the Council of Cardinals, and includes several secretive groups like Miron's Tears and The Argentum.
 

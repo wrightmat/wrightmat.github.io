@@ -1,4 +1,4 @@
-#organization #guild
+#organization #guild [[Adara Bristalfyr]]
 
 The Circle of Song is a loosely organized society of bards that exists throughout the nations of Khorvaire. It is open to any bard who wishes to join, except for those who have committed a crime against another bard of the Circle. However, only select bards are actually members - others may either not know of the circle or have chosen not to join. The circle is quite secretive, and its meeting places are hidden or disguised.
 
