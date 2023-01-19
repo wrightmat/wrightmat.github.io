@@ -1,4 +1,4 @@
-#npc
+#npc [[Dragonroost]]
 
 Attitude:: Friendly
 Gender:: Female

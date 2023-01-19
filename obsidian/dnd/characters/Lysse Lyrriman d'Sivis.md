@@ -1,4 +1,4 @@
-#npc 
+#npc [[Korranberg]]
 
 Attitude:: Helpful
 Gender:: Female

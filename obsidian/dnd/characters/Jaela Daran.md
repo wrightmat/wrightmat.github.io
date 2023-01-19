@@ -1,4 +1,4 @@
-#npc 
+#npc [[Flamekeep]]
 
 Attitude:: Helpful
 Gender:: Female

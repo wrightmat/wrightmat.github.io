@@ -1,0 +1,7 @@
+#lore 
+
+When the Prince of Summer was betrayed by his lover, his heart froze and he became the Prince of Frost. So bitter was he that he tore the sun from the sky, swearing that there should be no light in the vale while there was no light in his heart. None of the lords of the court challenged him. Some remained silent out of fear, but most found that they preferred to live in moonlight, and so the Moon Court found its name.
+
+But there was a gnome who loved to dance under the sun and sought a respite from the somber shadows. She went to the prince’s palace of frozen tears, and found the doors frozen shut. She sang a happy song, and caught the notes as they rose to the sky, carrying her to the highest tower. The prince’s servants barred her path, but the gnome danced with them and melted their frozen hearts. She found the prince on his glittering throne, and begged for him to return the sun. The Prince challenged the gnome to dance for him, to maintain her high spirits while he spoke of every tragedy of the past and of those yet to come. The Prince was certain her heart would freeze as his had, but the gnome held fast to her hope and her light.
+
+At last the Prince relented, telling her: You shall be the Prince of Joy, keeper of the summer sun. But you must keep it within your own tower until all of the lords of the Moon Court ask for its return. And you must keep joy bright in your heart, for if it ever fades, the sun will fade with it.

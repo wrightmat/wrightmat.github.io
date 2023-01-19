@@ -1,4 +1,4 @@
-#npc
+#npc [[Trolanport]]
 
 Attitude:: Unfriendly
 Gender:: Male

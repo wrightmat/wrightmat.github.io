@@ -1,4 +1,4 @@
-#organization #druidic 
+#organization #druidic [[Rhak Mohani]]
 
 The Gatekeepers are a druidic sect dedicated to keeping Eberron free of "unnatural" external influences, and this order has battled extraplanar invasions and aberrations for centuries. The Gatekeepers are the oldest druidic tradition on the continent of Khorvaire, having descended from the followers of Vvaraak, a black dragon that taught orcs in the Shadow Marches the secrets to the natural world 15,000 years ago.
 

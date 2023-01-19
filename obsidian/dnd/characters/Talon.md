@@ -1,9 +1,9 @@
-# Talon
+#npc [[Fairhaven]]
 
-Attitude: Indifferent
-Gender: Female
-Occupation: Adventurer
-Race: Shifter
+Attitude:: Indifferent
+Gender:: Female
+Occupation:: Adventurer
+Race:: Shifter
 
 After meeting on the Orien Express, Talon has arrived in her destination of Fairhaven, Aundair. She joined the Wayfinder Foundation.
 

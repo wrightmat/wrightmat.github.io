@@ -1,4 +1,4 @@
-#organization #dragonmarks 
+#organization #dragonmarks [[Jorlanna d'Cannith]] [[Elaydren d’Vown]] [[Lei d'Cannith]]
 
 Cannith West is the branch of House Cannith led by Jorlanna d'Cannith and based out of Fairhaven, Aundair. It has a presence in Aundair and the Eldeen Reaches, and strong ties with the other dragonmarked houses through the Twelve. Jorlanna seeks to lead her branch into having stronger ties with the Five Nations and the other dragonmarked houses.
 

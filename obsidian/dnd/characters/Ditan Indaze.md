@@ -1,4 +1,4 @@
-#npc
+#npc [[Delethorn]]
 
 Attitude:: Unfriendly
 Gender:: Male

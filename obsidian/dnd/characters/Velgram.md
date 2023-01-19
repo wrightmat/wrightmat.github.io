@@ -8,8 +8,7 @@ Race:: Half-Orc
 Velgram is the Bosun, the ship's officer in charge of equipment and the crew, of the *Golden Dragon* galleon. He is a veteran adventurer and long-time member of the Clifftop Adventurers’ Guild from his time in Sharn many years ago.
 
 **Played By**: Rob Zombie
-
-![IMG_2820.png](Velgram%206930aba029564fd18cf708ffd261ff15/IMG_2820.png)
+![https://wrightmat.github.io/obsidian/img/velgram.png](https://wrightmat.github.io/obsidian/img/velgram.png)
 
 **Alignment**: LG
 **Initial Attitude**: Indifferent

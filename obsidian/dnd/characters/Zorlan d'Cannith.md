@@ -1,8 +1,8 @@
-# Zorlan d'Cannith
+#npc [[Korth]]
 
-Gender: Male
-Occupation: Baron
-Race: Human
+Gender:: Male
+Occupation:: Baron
+Race:: Human
 
 Zorlan d'Cannith is a baron of House Cannith. He governs Cannith East from Korth, in Karrnath. His territories include Karrnath, the Mror Holds, Talenta Plains, Lhazaar Principalities, and Q'barra.
 He is a trusted advisor to the Gorgon, thanks to his financial skill and knack for making a profit.

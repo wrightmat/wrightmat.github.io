@@ -1,4 +1,4 @@
-#npc
+#npc [[Arcanix]]
 
 Gender:: Male
 Occupation:: Lord Mayor

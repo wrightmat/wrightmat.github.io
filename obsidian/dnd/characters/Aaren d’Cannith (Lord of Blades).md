@@ -1,4 +1,4 @@
-#npc 
+#npc [[Mournland]]
 
 Gender:: Male
 Occupation:: Lord of Blades

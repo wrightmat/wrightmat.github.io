@@ -1,3 +1,3 @@
-#organization #guild 
+#organization #guild [[Talon]]
 
 The Wayfinder Foundation is an exclusive adventurer's guild that sponsors expeditions to dangerous and exotic locations across Eberron. Membership in the Wayfinder Foundation is invitation-only and consists of highly experienced adventurers and explorers. The Foundation was founded by legendary explorer and hunter Lord Boroman ir'Dayne after a wasting curse prevented him from continuing his adventures. The Foundation has guildhalls across Khorvaire, but its most important ones are its hall in Stormreach, known as the Nest, and its headquarters in Fairhaven. The Foundation is managed by a council known as the Wayfinder Enclave, but Boroman himself has the final say.

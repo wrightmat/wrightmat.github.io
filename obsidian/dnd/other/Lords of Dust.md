@@ -1,4 +1,4 @@
-#organization 
+#organization [[Zathara]]
 
 Within the Demon Wastes, the remaining rakshasa made plans to free their trapped rajahs. They formed a secret society which they called the Lords of Dust. Led by the Bleak Congress, the rakshasas of the Lords of Dust organized their other Khyber-spawned brethren and led them to infiltrate the rest of the world. The goals of most of the Lords of Dust are to gain revenge on their age old enemies: the dragons and the couatls, and their descendants, especially the Church of the Silver Flame. However, some rakshasa's only goals are to gain power for themselves.
 

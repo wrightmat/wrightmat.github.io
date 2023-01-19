@@ -1,4 +1,4 @@
-#npc 
+#npc [[Mournland]]
 
 Attitude:: Indifferent
 Gender:: Male

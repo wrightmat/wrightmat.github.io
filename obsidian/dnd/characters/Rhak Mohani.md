@@ -1,4 +1,4 @@
-#npc
+#npc [[Niern]]
 
 Attitude:: Friendly
 Gender:: Male

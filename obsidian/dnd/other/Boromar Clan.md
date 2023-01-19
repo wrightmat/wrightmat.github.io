@@ -1,4 +1,4 @@
-#organization #criminal
+#organization #criminal [[Violet Boromar]]
 
 The Boromar Clan is a halfling family that is the most powerful criminal organization in Sharn.
 

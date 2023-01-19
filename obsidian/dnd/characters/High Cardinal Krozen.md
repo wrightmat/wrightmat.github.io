@@ -1,4 +1,4 @@
-#npc 
+#npc [[Flamekeep]]
 
 Gender:: Male
 Occupation:: High Cardinal of Thrane

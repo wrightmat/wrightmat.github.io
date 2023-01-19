@@ -1,9 +1,9 @@
-# Ythana Morr
+#npc [[Sharn]]
 
-Attitude: Indifferent
-Gender: Female
-Occupation: Archierophant (Cleric)
-Race: Human
+Attitude:: Indifferent
+Gender:: Female
+Occupation:: Archierophant (Cleric)
+Race:: Human
 
 The priestess is a tall, stern woman who wears full plate armor as part of her mostly ceremonial vestments. Her silvery-gray hair surrounds an unlined face and her eyes still shine bright with the zeal of youth.
 

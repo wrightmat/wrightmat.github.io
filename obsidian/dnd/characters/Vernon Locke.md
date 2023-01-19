@@ -1,9 +1,9 @@
-# Vernon Locke
+#npc [[Sharn]]
 
-Attitude: Helpful
-Gender: Male
-Occupation: Art Restorer
-Race: Human
+Attitude:: Helpful
+Gender:: Male
+Occupation:: Art Restorer
+Race:: Human
 
 Windor’s father.
 

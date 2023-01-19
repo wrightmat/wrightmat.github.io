@@ -1,4 +1,4 @@
-#npc
+#npc [[Cogs, Upper (The Depths)]]
 
 Attitude:: Helpful
 Gender:: Male

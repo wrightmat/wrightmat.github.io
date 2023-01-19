@@ -1,4 +1,4 @@
-#NPCs
+
 
 - [[Acolyte]]
 - [[Archmage]]

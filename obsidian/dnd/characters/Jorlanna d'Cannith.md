@@ -1,4 +1,4 @@
-#npc 
+#npc [[Fairhaven]]
 
 Gender:: Female
 Occupation:: Baron

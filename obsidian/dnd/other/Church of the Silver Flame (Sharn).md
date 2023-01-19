@@ -1,4 +1,4 @@
-#organization #religion 
+#organization #religion [[Ythana Morr]]
 
 The Church of the Silver Flame in Sharn, while officially the same as the Church in Thrane, actually operates almost entirely independently. The Sharn branch is separate from the Thrane hierarchy, and “Archierophant” is a Brelish title.
 

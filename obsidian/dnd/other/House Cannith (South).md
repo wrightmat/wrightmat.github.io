@@ -1,4 +1,4 @@
-#organization #dragonmarks [[Prism]]
+#organization #dragonmarks [[Prism]] [[Merrix d'Cannith]] [[Elaydren d’Vown]] [[Lei d'Cannith]]
 
 Cannith South is the branch of House Cannith led by Merrix d'Cannith and based out of Breland.
 

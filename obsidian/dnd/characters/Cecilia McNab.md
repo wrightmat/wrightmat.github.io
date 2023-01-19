@@ -1,4 +1,4 @@
-#npc
+#npc [[Sharn]]
 
 Attitude:: Helpful
 Gender:: Female
