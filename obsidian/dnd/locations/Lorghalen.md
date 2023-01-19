@@ -1,7 +1,4 @@
-# Lorghalen
-
-Current: No
-Type: Region
+#location #region [[Lhazaar Principalities]]
 
 Exploring the island, the gnomes found that it was poised on the edge of Lamannia. The land was bountiful, fresh water was plentiful, and much of the island was alive. Lorghalen has the most intense concentration of elementals found beyond the wild zones of Sarlona. Stones roll of their own accord. The earth rumbles. What seems to be a peaceful pond might unexpectedly move to a new location. Most of the elementals of Lorghalen are spirits of earth and water, but there are storms that follow paths of their own choosing and pits of endless fire. These elementals are creatures of Lamannia, pure and inhuman; there are no dao or marids here.
 

@@ -1,4 +1,4 @@
-#location 
+#location [[Flamekeep]]
 
 The Cathedral rests atop the highest tier of the city, an indomitable bastion and source of great inspiration for the Silver Flame worshipers who call the city home. The Cathedral has white alabaster walls supported by massive flying buttresses and fitted with dozens of tall, stained glass windows set in ornate, wrought-iron frames.
 

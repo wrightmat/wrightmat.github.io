@@ -1,4 +1,4 @@
-#location #region
+#location #region [[Sarlona]]
 
 Adar is the mountainous region in southeast of Sarlona. It is inhabited mostly by humans (including the kalashtar), though there is a prominent contingent of blue dragons on the uppermost peaks.
 

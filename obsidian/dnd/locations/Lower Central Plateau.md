@@ -1,13 +1,8 @@
-# Lower Central Plateau
-
-Current: No
-LatLng: [[-10.401378, -11.074219],[-15.749963, -2.8125],[-26.352498, -11.821289],[-24.607069, -20.170898]]
-Type: District
+#location #district [[Sharn]]
 
 Central Plateau is the heart of Sharn. Its top levels include the seat of the city’s government and its bustling finance districts. Its middle levels host the enclaves of the dragonmarked houses (which some describe as the real government of the city) and embassies of the other nations of Khorvaire. Its location makes its residential neighborhoods highly desirable and its marketplace perhaps the busiest in the city.
 
 ### **Lower Central Plateau**
-
 Character: Artistic and eccentric downtown
 
 The Lower Central ward seems to exist in blissful ignorance of the power struggles raging above it. A hotbed of cutting-edge artistic expression and unusual ideologies, Lower Central serves as a counter-cultural contrast to Sharn’s busy downtown.
@@ -15,7 +10,6 @@ The Lower Central ward seems to exist in blissful ignorance of the power struggl
 **Boldrei’s Hearth** (Inn district)
 
 > Hotels, inns, and rooms for rent seem to be everywhere in this district.
-> 
 
 Boldrei’s Hearth holds the Central Plateau’s largest concentration of hotels, inns, and other forms of lodging. It doesn’t offer the elite hotels that are found in Highest Towers, Platinum Heights, and Ambassador Towers, but a great number of very comfortable rooms are available.
 

@@ -1,12 +1,8 @@
-# Mror Holds
-
-Current: No
-Type: Region
+#location #region [[Khorvaire]]
 
 The Mror Holds are known as the homeland of the dwarves. Not only is the Mror Holds one of the few dwarven lands in Khorvaire, but it is estimated that no fewer than 455,000 dwarves live there; many more than any other known location. However, the dwarves aren't the only inhabitants of the mountainous region.
 
 The Mror Holds population consists mostly of twelve dwarven clans formed from the original exiled leaders. These clans are:
-
 - Mroranon
 - Doldarun
 - Droranath
@@ -24,7 +20,6 @@ The Mror Holds population consists mostly of twelve dwarven clans formed from th
 Clan Noldrun has since been destroyed. Since 106 YK, Clan Kundarak has been House Kundarak and like all dragonmarked houses, has remained neutral and participates in the Iron Council of Clans only as observers, though they still govern their ancestral estates of Kundarakhold.
 
 Influential Groups:
-
 - House Kundarak
 - House Orien
 - House Sivis

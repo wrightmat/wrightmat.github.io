@@ -1,7 +1,4 @@
-# The Nightwood
-
-Current: No
-Type: Area
+#location [[Karrnath]]
 
 This massive forest has close ties to the Plane of Mabar. Monsters sometimes slip out of the Nightwood to threaten the surrounding regions. Criminals and fugitives who flee into the Nightwood find the dangers within deadlier than any Karrnathi executioner.
 

@@ -1,9 +1,7 @@
-# Dragonroost
-
-Current: No
-LatLng: [10.595821, -27.015381]
-Renown: 1
-Type: Town
+---
+renown: 1
+---
+#location #town [[Zilargo]]
 
 Dragonroost is the largest town in the otherwise docile, rolling plains of northern Zilargo. While the occasional Dhakaani ruin dots the countryside, the gnomish resistance prevented them from heavily settling the area. The area was amongst the first to collapse from the Xoriat invasion, with gnomes sweeping in after retreating Dhakaani forces to devour the knowledge left behind.
 

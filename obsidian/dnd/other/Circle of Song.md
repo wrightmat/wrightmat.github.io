@@ -1,0 +1,5 @@
+#organization #guild
+
+The Circle of Song is a loosely organized society of bards that exists throughout the nations of Khorvaire. It is open to any bard who wishes to join, except for those who have committed a crime against another bard of the Circle. However, only select bards are actually members - others may either not know of the circle or have chosen not to join. The circle is quite secretive, and its meeting places are hidden or disguised.
+
+The meeting places of the circle are known as Circle outposts, and frequently take the form of existing inns or taverns, with Circle members hidden in plain sight as customers or entertainers. At Circle outposts, there is an expectation that Circle members put aside any personal animosities - the outposts are treated as safe, neutral ground. This rule is taken very seriously, and as a result even mortal enemies can interact in a friendly manner at Circle outposts. Though the outposts are kept secret, members often hide clues to their locations in song, rewarding those who think to look closely at their lyrics.

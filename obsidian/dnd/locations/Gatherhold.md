@@ -1,13 +1,9 @@
-# Gatherhold
-
-Current: No
-LatLng: [20.11784, -8.404541]
-Renown: 1
-Type: Town
+---
+renown: 1
+---
+#location #town [[Talenta Plains]]
 
 Gatherhold is a large town, and the largest settlement, in the Talenta Plains. Built into rocky outcroppings on the eastern shore of Lake Cyre, it is shared by all the tribes of halflings as a place to trade, hold celebrations and festivals, and have tribal councils. House Ghallanda has its headquarters there and maintains the town. House Orien maintains a lightning rail line that passes through the town and used to continue on into Metrol, before the Day of Mourning.
-
-[https://wrightmat.github.io/dnd/dice.htm?roll=d8](https://wrightmat.github.io/dnd/dice.htm?roll=d8)
 
 | d8 | Rumors / Information |
 | --- | --- |
@@ -31,7 +27,6 @@ This Gold Dragon Inn is way more opulent than any other across Khorvaire, as itâ
 The Grand Skysight market is a shopping district in the south of Gatherhold. Many local traders from all across the Talenta Plains come here to sell wares to travelers, barter for goods with other traders, and learn about recent events from distant corners of the plains. If you want to give your players information that they missed earlier in this encounter series or foreshadow upcoming conflicts in future arcs of your campaign, this market is a perfect place to do so.
 
 There are untold dozens of market stalls selling various goods here. A few of them are selling:
-
 - Silver jewelry
 - Occult instruments and scrolls
 - Herbal remedies

@@ -1,14 +1,11 @@
-# Lakeside
-
-Current: No
-LatLng: [31.690782, -2.219238]
-Renown: -1
-Type: Town
+---
+renown: -1
+---
+#location #town [[Karrnath]]
 
 Lakeside is a small town in eastern Karrnath between the Icetop Mountains and Lake Dark. It is currently almost entirely abandoned, save for a few farmers and a single individual running the Assembly Hall. The only building lit up at night is the alchemy shop.
 
 > You come upon a small village that has clearly seen better days. Mostly abandoned and dead fields line the perimeter of the village, but a few of them contain hearty looking crops. Four larger buildings stand in the corners of the village, but only one of them has dim light emanating from it. Another appears to be a gathering hall of some sort, one is adjacent to a dock jutting out into a dark lake, and one is an old fort.
-> 
 
 **Arend’s Alchemy**: The largest shop in the town is an alchemy shop with a large wooden sign hanging from it.
 

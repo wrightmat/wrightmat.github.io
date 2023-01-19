@@ -1,4 +1,4 @@
-#location #continent
+#location #continent [[Eberron]]
 
 The continent of the Elves, and led by the Undying Court.
 

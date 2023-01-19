@@ -1,4 +1,4 @@
-#location #district 
+#location #district [[Sharn]]
 
 The Cliffside ward makes up the lower edge of Dura, built on and into the cliffs that drop toward the river. This waterfront district, full of businesses that cater to the sailors who pass through Sharn’s port, can be a rough and tumble place. Legitimate services can be found here — ships need supplies and repairs, goods need to be stored, captains need a place to hire a crew, and sailors need a bed on dry land to sleep in once in a while — but other businesses spring up simply to meet demand.
 

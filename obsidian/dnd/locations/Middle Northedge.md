@@ -1,15 +1,10 @@
-# Middle Northedge
-
-Current: No
-LatLng: [[57.75107598132104,-0.8349609375000001],[52.1874047455997,7.207031250000001],[51.42661449707482,0.5712890625000001],[55.801280971180454,-3.7792968750000004]]
-Type: District
+#location #district [[Sharn]]
 
 Northedge, one of the quietest regions within Sharn, is a residential quarter. Most of its inhabitants are crafters and commoners, people who make an honest living within the great city. As a result, it is an uncommon destination for adventurers. However, a variety of tradesfolk and artisans work out of their Northedge homes, and it is possible that a party will be recommended to one of the Northedge specialists.
 
 In addition, if an adventurer wants to take up residence within Sharn, the prices in Northedge are quite reasonable. Finally, while Northedge is known as a peaceful region, this calm facade can make an excellent cover for sinister activities. In other words, Northedge makes a perfect hiding place for a master villain, a nefarious cult, or a cunning spy.
 
 ### **Middle Northedge**
-
 Character: Peaceful residential area, home to skilled crafters and successful merchants.
 
 Middle Northedge is a peaceful residential ward, featuring some of the finest average housing in the city. The inhabitants are successful, hardworking folk, and the streets are clean and quiet. Much of the dwarf population of the city lives in this ward.
@@ -17,7 +12,6 @@ Middle Northedge is a peaceful residential ward, featuring some of the finest av
 **Holdfast** (Dwarf neighborhood)
 
 > Dwarves fill streets of Holdfast, though few have the accent or wear the clothing of the Mror Holds. The ringing of anvils and song of steel on steel can be heard rising from the smithies in the center to the district, and masons pass by with cartloads of stone. The people seem to be very industrious, and reasonably well off.
-> 
 
 When King Galifar I’s son, Karrn, invaded the Mror Holds, the dwarf nation was in a state of anarchy and constant clan warfare. Despite the barbaric state of their realm, the dwarves were natural miners and stonemasons with an innate talent for building fortifications. When King Galifar decided to rebuild the city of Sharn, he brought in a force of dwarf engineers and laborers from the Mror Holds. Dwarf hands played an important role in the rebirth of Sharn, and as the city grew it developed a sizeable dwarf population. Over the centuries, many dwarves spread across the city, abandoning their ancient roots. But other families remained together, forming a strong dwarf community. In time, they settled in the district they named Holdfast.
 Dwarves comprise almost 90% of the population of Holdfast; the rest of the population is fairly evenly divided between gnomes, humans, and halflings. Most recent immigrants from the Mror Holds live in Highhold in Upper Dura; the dwarves of Holdfast are descended from the dwarves that came to rebuild Sharn in the earliest days of King Galifar’s rule, and they have no strong attachment to the Mror Holds or its traditions. They are, however, extremely loyal to one another. A dwarf born in Holdfast has a thousand friends, and can always find shelter or a meal. Of course, this is a double-edged sword, and old friends or family may ask for help with gambling debts, the Boromar Clan, or any number of other possible reasons.

@@ -1,12 +1,9 @@
-# Flamekeep
-
-Current: No
-LatLng: [28.72913, -19.610596]
-Renown: 4
-Type: Capital
+---
+renown: 4
+---
+#location #capital [[Thrane]]
 
 > From afar, Flamekeep resembles a gigantic fortress enclosed by high walls, its buildings perched atop a rocky plinth surrounded on all sides by a water-filled crevasse. Deep within this crevasse sits the city's bustling harbor and more crowded districts. The magnificent Cathedral of the Silver Flame, its white alabaster walls agleam, surmounts the rocky plinth - a glorious beacon visible for miles in every direction. West of the Cathedral rise the slender spires of Thalingard, the ancestral home of Thrane's kings. Unlike the Cathedral, the royal palace is sculpted from gray rock and looks somewhat glum by comparison. To the east of the Cathedral lies a relatively simple stone Temple of the Sovereign Host. Lightning Rail stations, an academic district, and a commercial district dot the areas around the Cathedral.
-> 
 
 [Cathedral of the Silver Flame](Cathedral%20of%20the%20Silver%20Flame%202bff93b88eed421296e560649d80d7d4.md)
 
@@ -22,7 +19,6 @@ Thalingard serves as the primary residence for Thrane's royal regent, Diani ir'W
 **Great Library**: A Great Library is located in a smaller academic district located northeast of the Cathedral.
 
 > A great silence hangs over the chamber, and you can smell incense burning in braziers hanging from the walls. A large round desk sits in the center of the room, with a gnome librarian sitting barely visible behind it. The entire large chamber is lined with bookshelves from floor to a second-floor ceiling.
-> 
 
 The gnome behind the circulation desk is named Aritrix. He can answer basic questions, but speaks tersely and in a hushed voice.
 
@@ -38,7 +34,6 @@ A DC 10 Investigation check reveals that a few books in this subject area are mi
 **Great Library 2nd Floor**
 
 > The silence here is almost deafening. On the ceiling is a phrase written in several different languages, it simply reads: "quiet.”
-> 
 
 If anyone reads it aloud or speaks, they'll trigger a magical trap. +6 to hit against one target, 5 (2d10) force damage. A spell or other effect that can sense the presence of magic, such as detect magic, reveals an aura of divination magic around the phrase. A successful dispel magic (DC 13) cast on the phrase destroys the trap.
 
@@ -53,8 +48,7 @@ The upstairs area can contain any number of books for other adventure hooks or g
 **The Daughter and Sister**
 
 > You make your way to the commercial district, and enter a shabby gypsum general store with a thatched roof and see that inside, the spacious building is very tidy. You notice a monkey that follows you and tries to hand you merchandise. The store's shopkeep is currently reading some letter intently.
-The shopkeep raises a hand with a wave while you look around. She introduces herself as Scarletta West, the assistant manager of the General Store, and says you look like you could really use a new weapon. Scarletta dresses like she is true royalty.
-> 
+> The shopkeep raises a hand with a wave while you look around. She introduces herself as Scarletta West, the assistant manager of the General Store, and says you look like you could really use a new weapon. Scarletta dresses like she is true royalty.
 
 [https://eigengrausgenerator.com/?seed=icyweehornedtoadzealousgregariouszorilla](https://eigengrausgenerator.com/?seed=icyweehornedtoadzealousgregariouszorilla)
 
@@ -72,4 +66,4 @@ The distances, times, and costs (first class passage) involved in traveling the 
 | Wroat | +1290 miles | +43 hours | +645 gp |
 | Sharn | +450 miles | +15 hours | +225 gp |
 
-![Flamekeep.png](Flamekeep%200c10fde6df02438d893c3735d7cece40/Flamekeep.png)
+![https://wrightmat.github.io/obsidian/img/flamekeep.png](https://wrightmat.github.io/obsidian/img/flamekeep.png)

@@ -1,8 +1,4 @@
-# Lower Dura
-
-Current: No
-LatLng: [[-37.335224359306395,-22.412109375000004],[-34.99400375757576,-19.731445312500004],[-27.527758206861897,-23.291015625000004],[-19.43551433909781,-21.972656250000004],[-8.102738577783168,-15.556640625000002],[0.7909904981540058,-6.635742187500001],[2.2406396093827334,-22.719726562500004],[-7.18810087117902,-25.488281250000004],[-29.726222319395504,-28.344726562500004]]
-Type: District
+#location #district [[Sharn]]
 
 Dura, one of the largest and oldest quarter of Sharn, rises from the ruins Shaarat and the Old Sharn that fell at the end of the War of the Mark. But as Sharn has grown over the centuries since that terrible conflict, Dura has been left behind. Today, many consider it a blight on the city, riddled as it is with poverty and crime. Dura is home to the majority of the lower classes of Sharn, and Lower Dura is generally considered to be little better than the Cogs.
 
@@ -11,7 +7,6 @@ Nonetheless, Dura is the gateway to the Dagger River. Cargo passes from Cliffsid
 The Race of Eight Winds has a major impact on the culture of this quarter. Residents born and raised in Dura are likely to be quite passionate about the race, and outsiders who settle in one of the districts of Dura would be wise to smile and nod when the subject comes up. As the time of the race draws near, Callestan and Hareth’s Folly become a hotbed of arguments and brawls.
 
 ### **Lower Dura**
-
 Character: Miserable and dangerous, this ward is hotbed of crime and violence.
 
 Once the heart of Sharn, Lower Dura has slowly decayed as the rest of the city moved higher into the sky. Now it is a dark and dangerous place. Precarious and the Stores play important roles in the economy of the city, but the other districts have largely been left to fester and rot. Today, Lower Dura is home to the miserable poor. The Sharn Watch rarely risks patrolling Lower Dura, and the ward has become a center for criminal activities. The inhabitants of the ward may be shielded by gang allegiances, ties to one of the major criminal organizations, or the simple fact of having nothing to steal, but adventurers had best tread lightly and keep weapons near at hand when venturing here. Street violence occurs on a regular basis, amateur and professional cutpurses abound, and the Sharn Watch won't do much to help. A drawn blade and a successful DC 15 Intimidate check made when entering the district keep most of the rabble away—of course, the more dangerous criminals may see this as challenge and a promise of worthy loot.

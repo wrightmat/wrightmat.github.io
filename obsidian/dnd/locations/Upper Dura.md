@@ -1,8 +1,4 @@
-# Upper Dura
-
-Current: No
-LatLng: [[81.50529869762795,-4.746093750000001],[81.66605710511882,-20.434570312500004],[80.53207112232734,-23.73046875],[75.92019869621039,-27.597656250000004],[73.89811065820952,-23.73046875],[74.44935750063425,-19.775390625],[77.5041191797399,-20.170898437500004],[79.08846164655658,-14.897460937500002]]
-Type: District
+#location #district [[Sharn]]
 
 Dura, one of the largest and oldest quarter of Sharn, rises from the ruins Shaarat and the Old Sharn that fell at the end of the War of the Mark. But as Sharn has grown over the centuries since that terrible conflict, Dura has been left behind. Today, many consider it a blight on the city, riddled as it is with poverty and crime. Dura is home to the majority of the lower classes of Sharn, and Lower Dura is generally considered to be little better than the Cogs.
 
@@ -11,7 +7,6 @@ Nonetheless, Dura is the gateway to the Dagger River. Cargo passes from Cliffsid
 The Race of Eight Winds has a major impact on the culture of this quarter. Residents born and raised in Dura are likely to be quite passionate about the race, and outsiders who settle in one of the districts of Dura would be wise to smile and nod when the subject comes up. As the time of the race draws near, Callestan and Hareth’s Folly become a hotbed of arguments and brawls.
 
 ### **Upper Dura**
-
 Character: Crowded and bustling. This is not a wealthy ward, but the people are surviving, and some are clearly doing quite well for themselves. While there are a few upscale businesses, the merchants are clearly used to dealing with adventurers and others of questionable character.
 
 Physically and economically, Upper Dura has little in common with the slums and tenements that lie below it. The upper towers were erected over the past few centuries, and the stonework reflects the prosperity of Breland and the city. If the ward is not as fancy or prestigious as Central Plateau or Northedge, at least the streets are clean and in good repair. However, while many of the people of Upper Dura are successful merchants or crafters, there is a seedy edge to the ward. Beggars can be found throughout the ward, flaunting their afflictions and misfortunes in hopes of earning pity and coppers. Dreamlily dens and other forms of high-class crime can be found in the shadows. The people are comfortable with strangers and others of questionable character—so adventurers are made welcome.
@@ -19,12 +14,10 @@ Physically and economically, Upper Dura has little in common with the slums and 
 **Clifftop** (Adventurer’s quarter)
 
 > The towers of this district are drab gray granite, but the crowds that fill the streets are quite colorful. People of all races and cultures can be seen. An Aundairian wizard compares notes with a kalashtar monk in the shade of a tavern, while across the street a Lhazaar privateer and a Valenar elf compare blades. Clifftop is a fairly dingy district— but it attracts an interesting crowd.
-> 
 
 This district attracts those willing to devote sword, spells, or skills to risky but profitable endeavors. Anyone looking for a discreet bodyguard, a mercenary soldier, or a guide to the wilds of Xen drik can find what they need in Clifftop. Adventurers looking for a patron may find one here.
 Clifftop is a curious blend of wealth and poverty. Most of the businesses in the district are serviceable, but not exceptional, providing for the needs of the adventurer who rarely has more than a few pieces of gold in his purse. It also provides services for the lucky explorer or privateer who has returned home with gold to spare, with commercial spellcasters, shops selling used wands and old mageworked weapons, and other exotic goods readily available. While similar in many ways to the Deathsgate district, Clifftop has a better and generally well-deserved reputation.
-The district provides a number of services adventurers may find useful. A wide variety of hirelings can be found here, and all of them are used to putting up with the odd demands of adventurers. Likewise, as adventurers have a way of getting
-into trouble with the law, there are a considerable number of barristers and advocates in the district. The pawnshops of Clifftop offer 45% of value for almost any sorts of goods, except those that are obviously stolen; fences that deal in stolen goods must be found in the lower levels of Dura.
+The district provides a number of services adventurers may find useful. A wide variety of hirelings can be found here, and all of them are used to putting up with the odd demands of adventurers. Likewise, as adventurers have a way of getting into trouble with the law, there are a considerable number of barristers and advocates in the district. The pawnshops of Clifftop offer 45% of value for almost any sorts of goods, except those that are obviously stolen; fences that deal in stolen goods must be found in the lower levels of Dura.
 
 **The Augury**: This shop, located in the section of Clifftop known as the mystic market, features a circle of magewrights who possess the ability to cast divinatory spells, including augury, clairaudience/clairvoyance, detect magic, detect scrying, divination, identify, locate creature, locate object, and scrying.
 The master magewright of The Augury is a 334- year-old elf named Kestia (N female elf magewright 18). A child of House Phiarlan, Kestia was expelled from the house after she developed an aberrant dragonmark. However, her mystical powers exceed even the wizards of the Esoteric Order of Aureon. She can contact other plane and imbue with spell ability, allowing her to sell the power to cast a particular spell (albeit once). Her other talents include permanency, sending, and false vision; she occasionally sells permanent alarms, and she herself has permanent arcane sight and tongues.
@@ -59,7 +52,6 @@ In addition to the powers of their dragonmarks, these guides can provide invalua
 **Daggerwatch** (Garrison)
 
 > This may be the cleanest and quietest district in Dura. The walls of the towers are heavily reinforced, as if to withstand siege weaponry. The streets are filled with guards of the Watch, both patrols and off-duty guards; it looks like a bad place to start a fight.
-> 
 
 Dura is easily the most dangerous quarter of the city, and during the Last War riots and other forms of unrest were a constant concern. Plus, the Race of the Eight Winds usually results in various forms of crime and vandalism. As a result, Daggerwatch has the largest concentration of the City Watch in Sharn. Many low-ranking city officials, including judges and tax collectors, make their homes in Daggerwatch and rely on the presence of the Watch to protect them from vengeful citizens.
 
@@ -72,7 +64,6 @@ Dura is easily the most dangerous quarter of the city, and during the Last War r
 **Highhold** (Dwarf neighborhood)
 
 > The architecture is sturdy, functional stone, though the scale is slightly too small for most humans. While there is luxury to be found here, the citizens of Holdfast put work before play.
-> 
 
 When House Kundarak first established itself in Sharn, the dwarf immigrants who came with the house sought to make their mark on the city. While dwarf engineers had played a significant role in the construction of Sharn, the city was designed for humans. Holdfast is the first district to be built by dwarves for dwarves, and their touch is evident throughout the district. While the dwarves appreciate luxury and comfort, they are also concerned with defense and durability, and the buildings of Holdfast are among of the strongest and most defensible in the city.
 Dwarves make up the majority of the population in Holdfast—both recent immigrants from the Mror Holds and those whose families have lived in Sharn for generations. The inns and taverns serve strong Mror ale and stonebreaker mead, and most of the buildings and furnishings are built to dwarven proportions. Beyond the dwarves, there are a considerable number of gnomes in the district, reflecting the strong economic ties between House Sivis and House Kundarak.
@@ -85,7 +76,6 @@ Businesses in Holdfast include a branch of the Kundarak Bank and a Sivis message
 **Highwater** (Average residential)
 
 > Quiet streets wind around townhouse towers in a relatively safe environment.
-> 
 
 Highwater is the finest residential district in Dura, thought the accommodations are considerably smaller and plainer than those of Middle Northedge, let alone any of the other upper wards. But the prices are reasonable, the stonework is solid, the views are exceptional, and the streets are fairly safe—for Dura.
 
@@ -94,7 +84,6 @@ Highwater is the finest residential district in Dura, thought the accommodations
 **Hope’s Peak** (Temple district)
 
 > Many of the towers in this district are built from blocks of white stone flecked with spots of gold, and when the sunlight falls on Hope’s Peak it seems to glow and burn.
-> 
 
 Hope’s Peak is the most recent temple district constructed in Sharn, and many of the shrines were relocated from the lower levels of Dura. The most important building is the Citadel of the Sun, but the main temples of the Sovereign Host and the Silver Flame draw worshippers from the depths of Dura. While most of the priests of the region are devout enough, this is Dura, and pragmatism abounds. If a party of adventurers knows who to talk to and how to approach them, divine miracles can be bought outright. With luck and hard work, divine spellcasting services of up to 4th level can be purchased.
 
@@ -106,7 +95,6 @@ This large and beautiful temple's tower rises far above the other districts of U
 **Overlook** (Apartment townhomes)
 
 > The spires of over a dozen identical towers rise to the sky. While the towers are drab gray granite, bits of color are scattered about— an occasional window of stained glass, a small hanging garden, a tapestry of Riedran design.
-> 
 
 Built with the fortune of the ir’Tain family, Overlook is one of the largest residential districts in Sharn. The remarkably bland stonework creates a vast, gray vista that can be disconcerting. The ir’Tains were interested in getting the most for their gold, however, and aesthetics were not a concern. While the townhouse apartments in Overlook are not as pleasant as those in Lower Northedge, they are inexpensive and far safer than the wards that lie below. Plus, the area offers breathtaking views of the Dagger River and the surrounding countryside.
 Over the centuries, Overlook has developed a significant Adaran and kalashtar community, and the district draws most of the kalashtar who come to Sharn. A variety of businesses catering to the Adarans hide in the depths of Overlook: a crystal worker, a school of meditation and martial arts, a tailor specializing in Adaran fashions, and a few restaurants serving Adaran cuisine. Few people outside the community know about these places.
@@ -114,16 +102,15 @@ There are no inns in Overlook, but the Adarans take care of their own. Kalashtar
 While the Adarans add exotic color to Overlook, they only account for a third of the population of the district. Most of the other inhabitants are humans, halflings, and dwarves who work in Upper or Middle Dura.
 
 **The Gathering Light**: The Adarans and kalashtar are concentrated on the northern edge of Overlook. Adaran citizens have pooled their resources to rent a large hall, the Gathering Light, that serves as an anchor for the community. During the day, the hall functions as a school, where people come to study kalashtar martial arts and meditation techniques. In the evenings, the people gather to celebrate their heritage. Activities at the gatherings vary considerably. Some nights song, dance, or other forms of art play a dominate role, while other nights involve serious discussions of philosophy, metaphysics, or current events.
-Selkatari (LN female kalashtar monk 7) oversees martial training and monastic discipline at the Gathering Light, while Hanamelk (LG male kalashtar expert 5/psion [seer] 3) serves as the resident scholar and sage. These two also work together to protect the community from crime and violence, using diplomacy when possible and force when reason fails.
+Selkatari (LN female kalashtar monk 7) oversees martial training and monastic discipline at the Gathering Light, while Hanamelk (LG male kalashtar) serves as the resident scholar and sage. These two also work together to protect the community from crime and violence, using diplomacy when possible and force when reason fails.
 
 **Hilatashka**: Hidden away in the shadows of one of the gray towers, the Hilatashka restaurant serves Adaran cuisine. Meals are reasonably priced, around 6 cp per person, but the quality is exceptional. Providing vegetarian fare that mostly consists of cold dishes and soups prepared with a range of subtle spices. Kalashtar have an exceptionally well-developed sense of taste, and it can take some time for members of other races to learn to appreciate the delicate blends of spices and herbs used in Adaran meals.
 
-**The Shrine of il-Yannah**: The kalashtar-constructed shrine of il-Yannah, the Path of Light, occupies a small parapet at the top of a tall tower. From the breathtaking views to the Sarlonan incense that scents the air, the shrine radiates a calm, otherworldly peace. Tapestries with intricate, labyrinthine patterns cover the walls and floor, adding to the exotic nature of the place. The enlightened Havakhad (LG male kalashtar psion [seer] 12), a powerful psion whose frail body is beginning to fail, tends the shrine and rarely wanders far from this location. Havakhad gladly offers advice and spiritual guidance to any follower of the Light who comes to meditate at the shrine, and he sometimes uses precognition on behalf of those he considers to be champions.
+**The Shrine of il-Yannah**: The kalashtar-constructed shrine of il-Yannah, the Path of Light, occupies a small parapet at the top of a tall tower. From the breathtaking views to the Sarlonan incense that scents the air, the shrine radiates a calm, otherworldly peace. Tapestries with intricate, labyrinthine patterns cover the walls and floor, adding to the exotic nature of the place. The enlightened Havakhad (LG male kalashtar), a powerful psion whose frail body is beginning to fail, tends the shrine and rarely wanders far from this location. Havakhad gladly offers advice and spiritual guidance to any follower of the Light who comes to meditate at the shrine, and he sometimes uses precognition on behalf of those he considers to be champions.
 
 **Redstone** (Shops)
 
 > Handsome towers of red marble and granite packed with various shops and crafters offer a seemingly endless array of goods. The brick hanging streets are filled with milling customers and the occasional unfortunate begging for copper and silver.
-> 
 
 One of the newer districts, Redstone is less than two hundred years old and many of the respectable crafters from the Bazaar of Middle Dura have moved here in recent years. The architects sought to overcome the negative perceptions of Dura, and the stonework is beautiful. Much of it was crafted using red marble from Rose Quarry, once a thriving Cyran supplier which now lies in ruins in Darguun. The rest of the towers consist of red granite and brick. With a host of subtle variations in shade, the towers present a striking sight, especially in the light of the setting sun.
 Redstone has grown into one of the largest centers for commerce in the city, nearly twice the size of Granite Halls. Almost any sort of honest trade can be found in Redstone, from bakers to wigmakers. There are two banks in Redstone, including a Kundarak enclave and the smaller Lorrean Bank, a family business belonging to one of the sixty great families of Sharn. The district also contains workhouses that draw on the population of Overlook, including a glassworks and a textile factory.

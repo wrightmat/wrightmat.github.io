@@ -1,8 +1,4 @@
-# Vulyar
-
-Current: No
-LatLng: [26.273714, -6.899414]
-Type: Town
+#location #town [[Karrnath]]
 
 Vulyar is a large town in southern Karrnath. It lies on the lightning rail route between Vedykar and Irontown.
 

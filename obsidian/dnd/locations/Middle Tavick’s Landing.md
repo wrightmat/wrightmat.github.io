@@ -1,15 +1,10 @@
-# Middle Tavick’s Landing
-
-Current: No
-LatLng: [[49.66762782262194,8.657226562500002],[47.48751300895658,0.48339843750000006],[43.51668853502909,-0.7910156250000001],[38.71980474264239,2.4609375000000004],[32.7688004848817,-2.0214843750000004],[32.02670629333614,-14.897460937500002],[36.66841891894786,-20.039062500000004],[35.24561909420681,-23.510742187500004],[30.259067203213018,-18.149414062500004],[29.76437737516313,-2.7685546875000004],[37.09023980307208,10.019531250000002],[43.13306116240615,9.931640625000002],[46.76996843356982,10.898437500000002]]
-Type: District
+#location #district [[Sharn]]
 
 For most travelers, Tavick’s Landing is the gateway to Sharn. The Orien lightning rail station at Terminus brings in hundreds of travelers each day, and many more arrive via the Old Road at Wroann’s Gate. In many ways, Tavick’s Landing is the most eclectic quarter of Sharn, blending residential areas with commercial and entertainment districts that cater to the traders, travelers, and tourists who pass through the city. During the Last War, foreigners were carefully monitored as they entered the city, and even today the effects of the war can still be felt. An entire district in Lower Tavick’s Landing has been converted to house Cyran refugees and other people dislocated by the war.
 
 Commander lyanna ir’Talan has been purging corrupt officers from the Tavick’s garrison of the Sharn Watch in recent years. As a result, members of Tavick’s allotment of the City Watch are the most likely to be helpful to adventurers, and least likely to take bribes or practice extortion.
 
 ### **Middle Tavick's Landing**
-
 Character: An eclectic blend of businesses and residences catering to people from all levels of society.
 
 Middle Tavick’s Landing has something for everyone. It is a crossroads for travelers, traders, and explorers, and includes a host of inns, taverns, shops, and reasonably priced residences. With a few notable exceptions—namely, the Graywall district— the people of Middle Tavick’s Landing are generally friendly and welcoming toward outsiders, quite unlike their counterparts in the upper ward.
@@ -17,7 +12,6 @@ Middle Tavick’s Landing has something for everyone. It is a crossroads for tra
 **Cornerstone** (Tavern district)
 
 > The streets are full of noise and laughter, as people stagger into and out of the many inns and taverns of the district. A large arena occupies the center of Cornerstone, and occasionally a ragged cheer rises up from the amphitheater.
-> 
 
 For those people who want a slightly more respectable level of entertainment than that offered in Dragoneyes, Cornerstone offers a host of inns and taverns— they may not be the best in Sharn, but prices are cheap and a few at least have good food and comfortable beds. The district has a strong interest in sporting events; quite a few windchases are based in Cornerstone, and there is always activity at the great arena. While the large gambling halls are located in Dragoneyes, there are always people (mostly aligned with the Boromar Clan) taking bets in taverns and at the arenas, and a character who wishes to place a few silvers at risk will have no trouble finding a taker.
 

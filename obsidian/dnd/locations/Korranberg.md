@@ -1,13 +1,8 @@
-# Korranberg
+#location #city [[Zilargo]]
 
-Current: No
-LatLng: [4.171115, -24.543457]
-Type: City
+Korranberg is the city of truth and knowledge, its library the best collection of knowledge outside of Argonessen. House Sivis calls Korranberg home, maintaining its largest enclave in the city. The Korranberg Chronicle is produced here, independently owned by the Jarell clan.
 
-![Korranberg_Map_998YK.jpg](Korranberg%20e3893ca3274c4ea58ec943395eeef9fc/Korranberg_Map_998YK.jpg)
-
-Korranberg is the city of truth and knowledge, its library the best collection of knowledge outside of Argonessen. House
-Sivis calls Korranberg home, maintaining its largest enclave in the city. The Korranberg Chronicle is produced here, independently owned by the Jarell clan.
+![https://wrightmat.github.io/obsidian/img/korranberg.jpg](https://wrightmat.github.io/obsidian/img/korranberg.jpg)
 
 **The Library of Korranberg**
 
@@ -36,8 +31,7 @@ administrators, or any other number of positions that can be found at an institu
 
 Like everything else in Zilargo, the Library is enmeshed in intrigue and schemes of the gnomes. The title of high councilor (currently held by Alina Alrene ir’Korran) is reserved for a member of the ir'Korran clan, but the many descendants of Dorius constantly vie for the title. On a more basic level, while the colleges are well-to-do, resources are still fundamentally limited and are thus contested.
 
-A lower stakes but very serious matter is the annual competition between the colleges, held during the Zarantyr
-break. Each college selects a team of nine individuals to compete for four weekends in a series of challenges. Positions on these teams are highly coveted, and are selected by the head of each school. Contestants spend the week preparing by trying to spy what the challenges might be and studying past years events. Drystone was on a twelve year winning streak until last year's upset to Balinor's Horn.
+A lower stakes but very serious matter is the annual competition between the colleges, held during the Zarantyr break. Each college selects a team of nine individuals to compete for four weekends in a series of challenges. Positions on these teams are highly coveted, and are selected by the head of each school. Contestants spend the week preparing by trying to spy what the challenges might be and studying past years events. Drystone was on a twelve year winning streak until last year's upset to Balinor's Horn.
 
 **Korranberg Press**
 
@@ -62,4 +56,3 @@ Known publicly as the wing of the Library of Korranberg with the most secretive 
 The Trust is a national, non-military organization charged with the safety and security of Zilargo. The Trust acts as a secret police force in Zilargo and among gnomes abroad in Khorvaire.
 
 > Trust that we will always look after the needs of our great family, and that we need your aid as much as you need ours.
->

@@ -1,7 +1,4 @@
-# Karrnath
-
-Current: No
-Type: Region
+#location #region [[Khorvaire]]
 
 Karrnath is a nation of Khorvaire. It was founded by Karrn the Conqueror over two thousand years ago, and is known as "the birthplace of kings". It is proud of its martial heritage and being the oldest of the Five Nations. The nation is particularly noted for its widespread use of undead soldiers during the Last War and the ruthless dictatorship of its monarch.
 

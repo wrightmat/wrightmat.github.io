@@ -1,15 +1,10 @@
-# Upper Northedge
-
-Current: No
-LatLng: [[80.9699040331494,-0.9228515625000001],[79.56054626376367,7.734375000000001],[79.02171239525758,1.5380859375000002],[80.23850054635395,-3.7792968750000004]]
-Type: District
+#location #district [[Sharn]]
 
 Northedge, one of the quietest regions within Sharn, is a residential quarter. Most of its inhabitants are crafters and commoners, people who make an honest living within the great city. As a result, it is an uncommon destination for adventurers. However, a variety of tradesfolk and artisans work out of their Northedge homes, and it is possible that a party will be recommended to one of the Northedge specialists.
 
 In addition, if an adventurer wants to take up residence within Sharn, the prices in Northedge are quite reasonable. Finally, while Northedge is known as a peaceful region, this calm facade can make an excellent cover for sinister activities. In other words, Northedge makes a perfect hiding place for a master villain, a nefarious cult, or a cunning spy.
 
 ### **Upper Northedge**
-
 Character: Wealthy, but not ostentatious. Calm and peaceful.
 
 Upper Northedge is home to those who have the wealth to purchase a manor in the clouds, but who wish to avoid the bustle of Upper Central. This ward also houses the majority of Sharn’s population of elves.
@@ -17,7 +12,6 @@ Upper Northedge is home to those who have the wealth to purchase a manor in the 
 **Shae Lias** (Elf neighborhood)
 
 > The district is filled with beautifully sculpted statues of long-dead elves. Densewood warriors stand guard at the gates of townhouses, while statues of priests and honored elders are spread throughout plazas and open-air orchards. The residents move quietly among these statues of the dead, carrying out their daily activities with silent grace.
-> 
 
 While naturalized elves can be found throughout Sharn, Shae Lias is a bastion for the values and traditions of the elves of Aerenal. Orchard balconies ring the neighborhood; the restaurants of the district own some of these, while others are open to the public for purposes of meditation and reflection. In addition to serving as a residential district for Aerenal expatriates, it is a source for a wide range of elven craftwork, woodwork, and furniture. The district also includes a handful of more exotic establishments, a few of which are outlined below.
 
@@ -25,8 +19,7 @@ While naturalized elves can be found throughout Sharn, Shae Lias is a bastion fo
 
 **The House of Repose**: The elves of Aerenal know more about caring for the dead than any other culture on Eberron, and the embalmers and crypt builders of the House of Repose have served many of the wealthiest families in Sharn. Many of the crypts, tombs, and shrines in the City of the Dead are the work of these elf artisans.
 
-**The Oaks**: Known as one of the finest restaurants in the city, the Oaks rests on one of the vast balconies of the Nowen Tower. Patrons dine in an elaborate, two-story open-air pavilion, surrounded by the living trees from which the restaurant takes its name. The Oaks specializes in exotic Aerenal cuisine, but also serves a variety of traditional Brelish dishes, including pepper cider and spiced daggertrout. The owner, Maza Thadian (LN female elf commoner 17), has served as head chef for over 300 years, and is respected throughout the district for her wisdom and common sense. Six years ago,
-Maza assumed the position of Councilor for Upper Northedge, and today she leaves most of the restaurant work to her sons, Meryn and Malys; however, she can still be coaxed to perform her culinary miracles for special patrons.
+**The Oaks**: Known as one of the finest restaurants in the city, the Oaks rests on one of the vast balconies of the Nowen Tower. Patrons dine in an elaborate, two-story open-air pavilion, surrounded by the living trees from which the restaurant takes its name. The Oaks specializes in exotic Aerenal cuisine, but also serves a variety of traditional Brelish dishes, including pepper cider and spiced daggertrout. The owner, Maza Thadian (LN female elf commoner 17), has served as head chef for over 300 years, and is respected throughout the district for her wisdom and common sense. Six years ago, Maza assumed the position of Councilor for Upper Northedge, and today she leaves most of the restaurant work to her sons, Meryn and Malys; however, she can still be coaxed to perform her culinary miracles for special patrons.
 
 **Nightshade**: Part apothecary, part tavern, Nightshade caters to those who wish to explore the mysteries of death. Some of its patrons are necromancers or devout followers of the Undying Court, while others are jaded youths or thrill-seeking aristocrats. In addition to the traditional funerary dishes of Aerenal, Nightshade serves beverages tainted with weak poisons designed to bring the diner to the edge of death. It is unusual for a client to actually die; the servers are trained in resuscitation and keep antitoxin on hand. But accidents do happen.
 
@@ -41,7 +34,6 @@ permanent or temporary.
 **Crystal Bridge** (Wealthy residential)
 
 > Manors and mansions surround penthouse towers, the sheer size of these estates hinting at the wealth of the residents within. Walls and bridges are covered with thick panels of glass and crysteel, causing a brilliant kaleidoscope of color when sunlight strikes the towers.
-> 
 
 While many of the most influential citizens of Sharn prefer to live in Upper Central, closer to the center of government and trade, Crystal Bridge is home to many of Sharn’s wealthiest denizens. A number of dragonmarked heirs maintain private residences in Crystal Bridge or Oak Towers, along with Brelish aristocrats and merchant princes. Crystal Towers is a quiet, peaceful district, and many of its inhabitants employ private guards to ensure that it remains peaceful.
 Notable inhabitants of Crystal Bridge include:
@@ -51,7 +43,6 @@ Ilia Merith (LG female human aristocrat 3/ expert 3), amember of Sharn’s upper
 **Oak Towers** (Wealthy residential)
 
 > The smooth lines of elven architecture can be seen throughout this district, and most of the towers are formed of polished densewood. Manors and palatial estates line the wide avenues, and private gardens can be seen stretching out on walled balconies.
-> 
 
 Like Crystal Bridge, Oak Towers is a peaceful neighborhood that is home to many of Sharn’s wealthiest citizens. The elven influence of Shae Lias is clearly visible in the architecture of the district, and much of the population is made up of elves and half-elves. Between the Sharn City Watch, private guards, and the magical wards employed by many of the households, Oak Towers remains a quiet and peaceful district.
 

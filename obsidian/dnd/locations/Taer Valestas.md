@@ -1,11 +1,6 @@
-# Taer Valestas
-
-Current: No
-LatLng: [10.628216, -4.581299]
-Type: Capital
+#location #capital [[Valenar]]
 
 > The City of Thorns is built on two high hills which host the best neighborhoods in the city and the oldest parts of Taer Valaestas. Kalori'Cor, the Granite Hill, is the more eastern of the two and the more residential with shops, a large market, and a green park of memorials and gardens. Opposite Kalori'Cor is its twin Taedas'Cor, the Cedar Hill, which holds the War Leader's Darkwood Keep and the holy House of Spirits giving it both the political and spiritual anchor of the city. Between the two hills is Rose Valley, called Bali os Vyri in Elven, which is where foreigners of power and influence dwell including the dragonmarked houses of Lyrandar and Medani. For most who visit Taer Valaestas, however, all they see of the great city is the least of the mynas: the utilitarian and darkened Thornshadow. This is the realm of foreigners begging for refuge, the rude taverns that travelers demand, and the homes of those outsiders who live next to the Tairnadal but not among them.
-> 
 
 The streets of Taer Valaestas are wide, and the buildings within the walls are spaced far apart. If you are used to the urban chaos of Sharn, you may find the open space disturbing; the space within the walls could easily support ten times its current population if it was fully built out. But the Tairnadal prize mobility. The streets are wide enough for warbands to move freely, and the narrowest alley is still broad enough to allow the comfortable passage of a horse and rider. After the space, you'll likely be struck by the greenery. Taer Valaestas was founded by a druid, who set his city at the heart of a manifest zone to Lamannia; it is this magic that sustains the great wall of thorns. It also encourages the growth of other plants, and the streets of Taer Valaestas are lined with grasses and wildflowers. These add color to the city and serve as provender for the Valenar horses -the magic of the manifest zone restores them at a remarkable rate. Many of the buildings within the city have rooftop gardens; despite the relatively small space, the energies of Lamannia allow these urban farmers to produce a surprising yield over the course of a year. The scent of the flowers helps conceal the smell of horse manure, but this remains a constant threat for pedestrians; if you are wearing footwear of any quality, you would be wise to watch your step.
 

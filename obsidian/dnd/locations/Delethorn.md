@@ -1,7 +1,7 @@
 ---
 renown: 4
 ---
-#location #town [[Gelel]]
+#location #town [[Eldeen Reaches]]
 
 Delethorn is a small town in the central Eldeen Reaches, on the shores of Lake Galifar. House Vadalis has an enclave in the town, and is a major influence. The town is a regular source of commerce with the other nations of Khorvaire.
 
@@ -9,7 +9,7 @@ Delethorn is a small town in the central Eldeen Reaches, on the shores of Lake G
 
 This is the town the party starts their adventures in.
 
-![Delethorn.jpg](Delethorn%20d88cbd7174534de3a7e4214f5aa0ae65/Delethorn.jpg)
+![https://wrightmat.github.io/obsidian/img/delethorn.jpg](https://wrightmat.github.io/obsidian/img/delethorn.jpg)
 
 **1: Docks and Stables.** Mark of Storm and Mark of Handling over the door. A small galleon (water elemental-bound vessel) is available at the docks, and a small stable has a number of horses which can be bought or rented. Run by Ditan Indaze.
 

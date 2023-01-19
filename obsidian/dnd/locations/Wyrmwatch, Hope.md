@@ -1,8 +1,4 @@
-# Wyrmwatch, Hope
-
-Current: No
-LatLng: [15.36895, 0.054932]
-Type: Village
+#location #village [[Q’barra]]
 
 Refugees of the Last War have found themselves in a region known as Hope located in the southwest of Q'barra. Here, Elder Nevillom, a veteran of the Last War, acts as nominal leader over the community of refugees. Wyrmwatch is the most established city of this area, having existed for about three years.
 

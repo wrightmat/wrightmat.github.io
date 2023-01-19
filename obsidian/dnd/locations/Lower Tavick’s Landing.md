@@ -1,15 +1,10 @@
-# Lower Tavick’s Landing
-
-Current: No
-LatLng: [[-15.749962572748768,6.284179687500001],[-18.60460138845525,-1.4501953125000002],[-24.287026865376436,-3.2958984375000004],[-29.45873118535533,-0.087890625],[-35.99578538642033,-4.130859375000001],[-36.80928470205939,-17.270507812500004],[-35.13787911963419,-19.687500000000004],[-37.54457732085583,-22.236328125000004],[-39.30029918615028,-13.842773437500002],[-36.06686213257887,4.350585937500001],[-30.637912028341123,8.217773437500002]]
-Type: District
+#location #district [[Sharn]]
 
 For most travelers, Tavick’s Landing is the gateway to Sharn. The Orien lightning rail station at Terminus brings in hundreds of travelers each day, and many more arrive via the Old Road at Wroann’s Gate. In many ways, Tavick’s Landing is the most eclectic quarter of Sharn, blending residential areas with commercial and entertainment districts that cater to the traders, travelers, and tourists who pass through the city. During the Last War, foreigners were carefully monitored as they entered the city, and even today the effects of the war can still be felt. An entire district in Lower Tavick’s Landing has been converted to house Cyran refugees and other people dislocated by the war.
 
 Commander lyanna ir’Talan has been purging corrupt officers from the Tavick’s garrison of the Sharn Watch in recent years. As a result, members of Tavick’s allotment of the City Watch are the most likely to be helpful to adventurers, and least likely to take bribes or practice extortion.
 
 ### **Lower Tavick’s Landing**
-
 Character: The gateway to Sharn, this ward is a constant flurry of noise and activity.
 
 Anyone who comes to Sharn by land comes through Lower Tavick’s Landing. The Orien lightning rail comes through Terminus, while the Old Road ends at Wroann’s Gate. Most travelers use a lift or skycoach to travel to the upper wards as quickly as possible. While not as dangerous as Lower Dura, Lower Tavick’s Landing is a rough ward, and it caters to workers from the Cogs, teamsters, and other tough folk. During the Last War many foreign nationals were detained in Lower Tavick’s Landing, and today High Walls provides housing for refugees from Cyre and other shattered communities. The Sharn Watch and the Guardians of the Gate do their best to maintain order in the district, but their resources are stretched thin, and adventurers who leave the gate districts and visit Dragoneyes, High Walls, or Cogsgate would be wise to keep weapons to hand. House Orien has a strong presence in Lower Tavick’s Landing, and Orien heirs, laborers, and teamsters can be found in many of the districts. House Lyrandar and House Deneith are also well represented, arranging matters of trade, transport, and security.

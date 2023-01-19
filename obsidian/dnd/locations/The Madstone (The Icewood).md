@@ -1,9 +1,7 @@
-# The Madstone (The Icewood)
-
-Current: No
-LatLng: [35.245619, -3.713379]
-Renown: 0
-Type: Site
+---
+renown: 0
+---
+#location [[Karrnath]]
 
 For each day that the players are within 100 miles of the Madstone, they’ll have to roll a DC 12 Wisdom saving throw, with any player having Rage (Barbarians) getting disadvantage. On their first failure, they start to hear mad prophetic rantings in the back of their mind, and are drawn (but not forced) further in to The Icewood. On a second failure, the player is forced into a Rage and must move further in to The Icewood (toward the Madstone), and will attack anyone who tries to stop them. On a third failure, they will continue attacking anyone they see until killed or incapacitated.
 

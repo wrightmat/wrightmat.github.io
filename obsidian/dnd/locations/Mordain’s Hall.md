@@ -1,9 +1,7 @@
-# Mordain’s Hall
-
-Current: No
-LatLng: [24.156778, -49.064941]
-Renown: 0
-Type: Castle/Fort
+---
+renown: 0
+---
+#location #castle/fort [[Droaam]]
 
 Home to Mordain the Fleshweaver, Mordain’s Hall lies in the northwest of Droaam, a day’s travel from the border of the Shadow Marches and the Byeshk Mountains. The area includes the Tower of Mordain, the village of Blackroot, the surrounding forest, (called the KhreshtRhyyl, or “Forest of Flesh”), and village of Dolurrh’s Dawn.
 

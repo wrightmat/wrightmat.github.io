@@ -1,9 +1,7 @@
-# Pylas Talaear
-
-Current: No
-LatLng: [-17.735793, -15.318319]
-Renown: 0
-Type: Town
+---
+renown: 0
+---
+#location #town [[Aerenal]]
 
 Pylas Talaear is a port city in Aerenal. It is the main port used by outsiders wishing to trade with Aerenal, and most foreigners never see any other part of the country. The city is largely devoid of Undying, and the citizens are somewhat more tolerant towards foreigners than the rest of Aerenal. Every dragonmarked house has an outpost here, with the exception of House Orien (presumably, this is because a house specializing in overland transport has no business in a foreign port city). Besides the dragonmarked houses, Pylas Talaear has many markets that offer various Aereni goods, and a University.
 

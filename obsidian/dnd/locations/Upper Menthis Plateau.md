@@ -1,13 +1,8 @@
-# Upper Menthis Plateau
-
-Current: No
-LatLng: [[75.320025, -15.732422],[76.079668, -4.394531],[74.283563, -1.669922],[73.738905, -14.897461]]
-Type: District
+#location #district [[Sharn]]
 
 The Menthis Plateau is the hub of Sharn’s entertainment industry, as well as its most diverse ethnic quarter and the seat of Morgrave University. Its districts include Den’iyas (also called Little Zilargo because of its large gnome population), Everbright (the city’s only magic district), and two theater districts, Torchfire and Smoky Towers. Like the Central Plateau, its location allows it to draw visitors from all over the city to sample its entertainment offerings, and it also draws tourists from across the Five Nations.
 
 ### **Upper Menthis Plateau**
-
 Character: Wealthy and educated, strongly influenced by the presence of Morgrave University.
 
 Morgrave University might not be the most prestigious university in the Five Nations, but it is the largest educational institution in Sharn. The University strongly influences the character of the Upper Menthis ward, drawing academics, scribes, sages, and students from all over Breland and beyond. A diverse mix of races and national origins populate
@@ -16,7 +11,6 @@ Upper Menthis. In addition to the University, Upper Menthis’s role as the crow
 **Den’iyas** (Gnome neighborhood)
 
 > The buildings here, from quiet and neat little townhomes to shops and services of all kinds, are scaled for the district's gnome inhabitants.
-> 
 
 Den’iyas is known as the gnome neighborhood of Sharn, though barely ten percent of the city’s gnome population lives in this district. Few people of other races call it home, and its gnome residents cleave to their traditional customs unlike their more integrated brethren in the rest of the city. There are usually a dozen subtle power struggles going on
 between the major families of Den’iyas, and even the most innocuous event could be part of some elaborate intrigue. Information of all types can be acquired here, but those with secrets must be careful around the inquisitive gnomes, lest they become the object of blackmail, curiosity, or deceit.
@@ -29,28 +23,24 @@ The Khavish Players present more contemporary and widely appealing acts than the
 **Ivy Towers** (Average residential)
 
 > Orderly collections of townhouses ring the towers of this quiet district. Children play in the streets and couples stroll arm in arm.
-> 
 
 Ivy Towers is a generally unremarkable residential district, notable only because a significant number of professors at Morgrave University make their homes here.
 
 **Platinate** (Wealthy residential)
 
 > The townhomes in this district are large and well kept, clearly displaying the wealth of their occupants. Servants move about on the business of their employers, and guards can be seen posted at many of the doors.
-> 
 
 Platinate, among Sharn’s most desirable residential districts, isn’t as exclusive as Mithral Tower in Upper Central, but certainly compares to Oak Towers and Crystal Bridge in Upper Northedge. Morgrave University produces few scholars wealthy enough to live in Platinate, but some retired explorers who struck it rich selling artifacts from Xen’drik settled in this district to remain close to the University. There are just enough eccentric collectors of antiquities and retired adventurers to give Platinate a quirky character that distinguishes it from similar districts.
 
 **Seventh Tower** (Fine shops)
 
 > Stores, restaurants, hotels, and a few townhomes in this prosperous neighborhood appear high-priced and lavish.
-> 
 
 Named for its most prominent architectural feature, Seventh Tower holds the distinction of being the finest shopping district in Menthis Plateau. A number of rare book dealers and antiquities shops set it apart from similar districts, such as Platinum Heights in Upper Central.
 
 **Galdin’s Garden**: By general consensus, one of the finest restaurants in Sharn is Galdin’s Garden. An elegant setting for a fine meal situated at the top of Seventh Tower, a garden of exotic and fragrant flowers, particularly roses and orchids, surrounds the establishment. Both indoor and outdoor seating is available, and some of the tables offer views of the distant ocean to the south on (the relatively rare) clear days. The menu consists of spicy Brelish offerings, while the wine list includes the best vintages from the Eldeen Reaches and Aundair.
 
-**Little Xen’drik**: The top level of Thurias Tower gained the appellation of Little Xen’drik because of the six antiquities dealers there. The dealers maintain a tremendous rivalry, each sponsoring expeditions to Xen’drik and offering the
-finest gold of the realm for items brought back from that far-away land.
+**Little Xen’drik**: The top level of Thurias Tower gained the appellation of Little Xen’drik because of the six antiquities dealers there. The dealers maintain a tremendous rivalry, each sponsoring expeditions to Xen’drik and offering the finest gold of the realm for items brought back from that far-away land.
 Jaster Mekdall (N male elf expert 3/wizard 2) owns the Mekdall Gallery. He is gloomy and frequently moans about being cheated by his customers, but he charges decent prices.
 Haga Wissel (NE female human expert 2/rogue 4) owns Echoes of the Past. She is cheerful and friendly but extremely hard-nosed about prices. She has been accused of having connections to House Tarkanan and even paying burglars to steal items from other collectors.
 Kidro Osanak (N male gnome expert 8) owns Window on Yesterday. A wizened old gnome, Kidro harbors a deep resentment toward Haga Wissel, and though he can’t prove it, believes that she has stolen items from his shop. One of the only dealers in Little Xen’drik with more interest in the historical knowledge contained in his treasures than in their monetary worth, Kidro often sponsors the most challenging expeditions.
@@ -61,7 +51,6 @@ Reina’s twin sister, Fista Doiran (NG female human expert 8) owns the Doiran G
 **University District** (University)
 
 > Students carrying armloads of scrolls and books hustle to classes, while others sit or stand in circles, discussing the day’s lessons.
-> 
 
 The home of Morgrave University, the University District is dedicated to the pursuit of knowledge— while making as much profit as possible. From Morgrave itself to the businesses that have sprung up around it, love of learning coexists with love of earning and the two feed happily off each other. If scholarly interest can lead to great profit, or thirst for gold to historical discovery, then the residents of the University District are doubly satisfied.
 

@@ -1,13 +1,8 @@
-# Middle Central Plateau
-
-Current: No
-LatLng: [[53.225768, -8.833008],[49.837982, -0.439453],[41.967659, -10.50293],[43.834527, -18.193359]]
-Type: District
+#location #district [[Sharn]]
 
 Central Plateau is the heart of Sharn. Its top levels include the seat of the city’s government and its bustling finance districts. Its middle levels host the enclaves of the dragonmarked houses (which some describe as the real government of the city) and embassies of the other nations of Khorvaire. Its location makes its residential neighborhoods highly desirable and its marketplace perhaps the busiest in the city.
 
 ### Middle Central Plateau
-
 Character: Bustling and fast-paced downtown.
 
 The home of Sharn’s dragonmarked families and an abundance of foreign ambassadors, the Middle Central ward rivals its upper neighbor as a seat of power in the city. In fact, that rivalry is quite literal, as Councilor Senso is a bitter personal rival of Councilor Tomollan of Upper Central. Middle Central lacks the wealth of the upper ward, but makes up for it in political connections across Khorvaire.
@@ -15,7 +10,6 @@ The home of Sharn’s dragonmarked families and an abundance of foreign ambassad
 **Ambassador Towers** (Embassy district)
 
 > The flags of most of Khorvaire’s nations fly in this district, hanging in front of monumental embassy blocks. The crowds include people of all races and many different ethnic backgrounds.
-> 
 
 Ambassador Towers, Sharn’s embassy district, is home to embassies and consulates from eleven foreign nations: Aundair, Cyre, Karrnath, the Lhazaar Principalities, the Mror Holds, the Talenta Plains, Thrane, Valenar, Zilargo, Aerenal, and Riedra. A single consul or ambassador heads each embassy. The rest of the embassy staff consists of bureaucrats and
 clerks as well as diplomats, negotiators, and spies. In the minds of Khorvaire’s diplomatic community, the Last War might not be over—a few years of peace could be nothing more than a brief hiatus from a conflict that lasted a century, and hostilities could erupt again at any moment. Best to be prepared.

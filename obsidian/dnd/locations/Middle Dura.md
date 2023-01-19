@@ -1,8 +1,4 @@
-# Middle Dura
-
-Current: No
-LatLng: [[59.489726035537075,-4.702148437500001],[60.21799073323445,-20.302734375000004],[46.164614496897094,-27.861328125],[35.71083783530009,-23.686523437500004],[36.73888412439431,-19.863281250000004],[46.649436163350245,-20.346679687500004],[51.01375465718821,-14.853515625000002],[55.677584411089526,-12.216796875000002]]
-Type: District
+#location #district [[Sharn]]
 
 Dura, one of the largest and oldest quarter of Sharn, rises from the ruins Shaarat and the Old Sharn that fell at the end of the War of the Mark. But as Sharn has grown over the centuries since that terrible conflict, Dura has been left behind. Today, many consider it a blight on the city, riddled as it is with poverty and crime. Dura is home to the majority of the lower classes of Sharn, and Lower Dura is generally considered to be little better than the Cogs.
 
@@ -11,7 +7,6 @@ Nonetheless, Dura is the gateway to the Dagger River. Cargo passes from Cliffsid
 The Race of Eight Winds has a major impact on the culture of this quarter. Residents born and raised in Dura are likely to be quite passionate about the race, and outsiders who settle in one of the districts of Dura would be wise to smile and nod when the subject comes up. As the time of the race draws near, Callestan and Hareth’s Folly become a hotbed of arguments and brawls.
 
 ### **Middle Dura**
-
 Character: Lower class ward split between commercial and residential districts; it is the border to the dangerous districts that lie below.
 
 The stones in this old district have been worn smooth by the passage of time. There is a definite scent of danger in the air. The Sharn Watch patrols this ward, and these guards are always ready for trouble—though the crime lords often use bribes to ensure that the Watch is nowhere to be seen when certain activities take place. Nonetheless, Middle Dura is certainly safer than the ward that lies below. The Bazaar, the largest market in the city, can be found here, and the taverns and inns of Dura are a common destination for folk who don’t have many coins to rub together.
@@ -19,7 +14,6 @@ The stones in this old district have been worn smooth by the passage of time. Th
 **The Bazaar** (Marketplace and shops)
 
 > The crowd and noise of this district are overwhelming. In addition to the shops and stalls, the streets are full of people offering questionable goods and deals; it seems like everyone has something to sell. The Watch maintains a strong presence in the Bazaar, but they are more concerned with preventing riots than in stopping trade of illegal goods.
-> 
 
 The Bazaar of Dura, the largest commercial district in Sharn, sprawls out across a dozen towers. The towers around the edges are devoted to shops and services. Almost anything can be found in this district, though the quality of any particular item or service cannot be guaranteed. At the center of the district, the open market from which the district takes its name presents a labyrinth of shops, tents, and makeshift stalls set up in the middle of the street. A marketplace permit costs only 3 cp, though many people try to avoid even this paltry sum. However, guards who catch such shirkers usually extort far larger sums in exchange for a pass.
 Of the four markets of Sharn, the Bazaar has the highest concentration of criminal activity—illegal services and trades, as well as pickpockets, bullies, and con artists. These services are not as obvious as they are in Lower Dura or the Cogs, and quality and prices are not as good, but shopping here is generally safer than venturing to the lawless lower ward. The cost of illegal services should be increased by 25%. The Boromar Clan controls most of the illegal activities, but Daask has been pressing up from below, and those seeking services may be caught in the middle.

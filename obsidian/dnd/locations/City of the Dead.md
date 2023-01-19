@@ -1,4 +1,4 @@
-#location #district 
+#location #district [[Sharn]]
 
 Character: Clifftop tombs and shrines for the dead.
 
@@ -20,7 +20,6 @@ The current Warden, Gaia Sotharr, is young and idealistic, and she is locked in 
 
 Halden’s Tomb is the tomb district overlooking Tavick’s Landing on the eastern edge of the city.
 
-**Halden’s Tomb**: This district is named for the incredibly ancient mausoleum of Gareth Halden, a great hero of the War of the Mark. His tomb naturally predates most of the buildings of modern Sharn, and has been thoroughly cleaned out by
-tomb robbers, but it still stands in silent monument to the ancient glory of the first period of human inhabitation of the city.
+**Halden’s Tomb**: This district is named for the incredibly ancient mausoleum of Gareth Halden, a great hero of the War of the Mark. His tomb naturally predates most of the buildings of modern Sharn, and has been thoroughly cleaned out by tomb robbers, but it still stands in silent monument to the ancient glory of the first period of human inhabitation of the city.
 
 **The Mausoleum of Gath**: This is not a mausoleum at all, but rather a temple dedicated to the Keeper. Its cleric is a lich called Gath, who built it centuries ago. Gath does not reside here or stay here for long, but visits often enough that any who want to talk (rather than intend to fight) seem to manage to find him here. Most of the time, he haunts various hideouts around the necropolis, mentoring other would-be necromancers and clerics of the Keeper and practicing his dark rites in other mausoleum-temples.

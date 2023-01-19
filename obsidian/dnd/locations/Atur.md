@@ -1,4 +1,4 @@
-#location #city
+#location #city [[Karrnath]]
 
 Atur, also called the City of Night, is a large city in central Karrnath, south of the Karrn River between the Ashen Spires on the east and the Nightwood on the west. Adherents of the Blood of Vol faith make up a significant amount of the population.
 

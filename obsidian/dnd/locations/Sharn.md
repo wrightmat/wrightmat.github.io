@@ -1,15 +1,21 @@
-# Sharn
+---
+renown: 1
+---
+#location #city [[Breland]]
 
-Current: No
-LatLng: [7.318882, -40.770264]
-Renown: 1
-Type: City
-
-![Sharn - Lower Wards.png](Sharn%20a163218b68f54114a5b72a5274ac53f7/Sharn_-_Lower_Wards.png)
-
-![Sharn - Middle Wards.png](Sharn%20a163218b68f54114a5b72a5274ac53f7/Sharn_-_Middle_Wards.png)
-
-![Sharn - Upper Wards.png](Sharn%20a163218b68f54114a5b72a5274ac53f7/Sharn_-_Upper_Wards.png)
+```leaflet
+id: sharn-map
+tileServer: https://eberronmap.johnarcadian.com/worldbin/sharncityoftowers/{z}/{x}/{y}.jpg
+height: 500px
+lat: -10
+long: 1
+minZoom: 1
+maxZoom: 7
+defaultZoom: 2
+unit: miles
+scale: 3.233
+osmLayer: false
+```
 
 Sharn is the most populous city in all of Khorvaire, and arguably all of Eberron. The city literally towers atop a cliff above the mouth of the Dagger River in southern Breland. Sharn is known as the City of Towers, but has also been called many other names, including the City of Knives, the City of Lost Souls, the City of a Thousand Eyes, the Gateway to Xen'drik, and the Gateway to Perdition.
 

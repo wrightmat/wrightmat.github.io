@@ -1,9 +1,7 @@
-# Sterngate
-
-Current: No
-LatLng: [12.843938, -24.719238]
-Renown: 0
-Type: Castle/Fort
+---
+renown: 0
+---
+#location #castle/fort [[Darguun]]
 
 Sterngate is a fortress in Breland standing at the entrance to Marguul Pass and guarding the border against the goblin nation of Darguun. A lightning rail runs through Sterngate, connecting to Starilaskur to the north and Zolanberg to the south.
 

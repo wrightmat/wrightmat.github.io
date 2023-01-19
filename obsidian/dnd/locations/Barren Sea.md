@@ -1,4 +1,4 @@
-#location #region 
+#location #region [[Eberron]]
 
 The Barren Sea is the ocean between western Khorvaire and eastern Sarlona. The sea is named for its apparent lack of sea life. Major ports that border the Barren Sea include Dar Jin (Sarlona) and Zarash'ak (Shadow Marches).
 

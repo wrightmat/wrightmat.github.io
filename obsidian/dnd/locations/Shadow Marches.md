@@ -1,7 +1,4 @@
-# Shadow Marches
-
-Current: No
-Type: Region
+#location #region [[Khorvaire]]
 
 The Shadow Marches are little more than fetid backwater swamps where Orcs have lived for thousands of years. Still, a glimmer of civilization lingers here, if one has enough tenacity and endurance to seek it out.
 

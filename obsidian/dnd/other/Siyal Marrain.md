@@ -1,0 +1,7 @@
+#organization #druidic 
+
+The Siyal Marrain, or Horse Watchers (in the common Galifaran tongue), are a Valenaran druidic order charged with keeping the Valenaran steeds, believed by the elves to be the descendants of elven warriors who fought against the Su'lat League to free the elven people from slavery, but were cursed to remain in the equine forms they had taken to carry their comrades into battle.
+
+The druids of the Valenar serve two roles. Firstly, they are charged with preserving the bloodline of the elven horses. The druids protect the breeding grounds, tend to injured horses, and help raise the young. These blood guardians mingle with the herd using wild shape and speak with animals, forging the bond between horse and elf from the beginnings of the horses' lives. They also help to match elf and rider, working to forge the bond between rider and mount, which is considered sacred. Beyond this, the Siyal Marrain are warriors. Just as their ancestors fought the giants with lightning and flame, the druids of the modern day may ride with a warband, turning the power of nature against their enemies.
+
+House Vadalis would love nothing better than to obtain some of the Valenaran steeds from the elves for interbreeding with their own stock. The Siyal Marrain are a formidable barrier to that objective, believing that such a thing happening would bring the greatest dishonor on them and the horses, whom they consider to be their brothers.

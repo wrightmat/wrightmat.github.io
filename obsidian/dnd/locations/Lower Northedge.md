@@ -1,15 +1,10 @@
-# Lower Northedge
-
-Current: No
-LatLng: [[-2.293202420439215,-2.9927327640633243],[-11.488509965289026,5.312931298436676],[-13.205594372527138,-1.3667562015633241],[-6.367580650914545,-5.805232764063325]]
-Type: District
+#location #district [[Sharn]]
 
 Northedge, one of the quietest regions within Sharn, is a residential quarter. Most of its inhabitants are crafters and commoners, people who make an honest living within the great city. As a result, it is an uncommon destination for adventurers. However, a variety of tradesfolk and artisans work out of their Northedge homes, and it is possible that a party will be recommended to one of the Northedge specialists.
 
 In addition, if an adventurer wants to take up residence within Sharn, the prices in Northedge are quite reasonable. Finally, while Northedge is known as a peaceful region, this calm facade can make an excellent cover for sinister activities. In other words, Northedge makes a perfect hiding place for a master villain, a nefarious cult, or a cunning spy.
 
 ### **Lower Northedge**
-
 Character: A quiet residential area containing a few workhouses.
 
 Lower Northedge is home to the hardworking laborers of Sharn—generally decent folk who believe in an honest day’s work and can afford to stay out of Lower Dura. The people of Lower Northedge don’t look for trouble, and they don’t like it coming to their towers. The ward is relatively simple in structure and design, but it has been kept in good condition over the centuries and is a pleasant enough place to live. While it is largely residential, it includes a number of small workhouses and simple schools, along with North Market.
@@ -17,7 +12,6 @@ Lower Northedge is home to the hardworking laborers of Sharn—generally decent 
 **North Market** (Marketplace)
 
 > North Market is one of the oldest business districts in Sharn. The cobblestone streets have been repaved time and again, and the walls of the towers are worn smooth with age. People always fill the streets, but there is less noise and bustle than one might expect from such a crowd; the locals are surprisingly patient and polite.
-> 
 
 The open market of this district is one of the oldest in Sharn. In addition to local residents, crafters from the regions around Sharn come to sell their wares at the open market, and Far and Sar are excellent times to purchase textiles and other crafted goods. A marketplace permit costs 3 sp. Most of the businesses and merchants in the district follow solid, simple trades: blacksmiths, brewers, carpenters, and tailors who produce sturdy clothes for the lower classes. However, Lower Northedge is home to a significant portion of Sharn’s shifter population, and there are a few exotic trades and restaurants catering to the shifting folk, including an apothecary who specializes in the proper care of fangs and claws.
 In addition to the private businesses, there area number of workhouses in North Market, primarily textile factories. The district also contains a small temple to the Sovereign Host, which primarily honors Kol Korran and Onatar.

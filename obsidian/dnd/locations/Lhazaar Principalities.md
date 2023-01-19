@@ -1,6 +1,3 @@
-# Lhazaar Principalities
-
-Current: No
-Type: Region
+#location #region [[Khorvaire]]
 
 The Lhazaar Principalities is a country comprising a strip of land and a collection of islands on the northeastern coast of Khorvaire. Pirates, sea barons, merchant traders and all with a love of the water find their home there. With a history that is equal part piracy and seafaring trade the Principalities have remained a separate entity from the Kingdom of Galifar even during the years they pledged allegiance to the crown. Now, with the nation of Galifar officially shattered, the Lhazaar Principalities have formed a loose confederacy of states each ruled by their own sea prince living a life where might makes right and the person with the most and biggest ships rules the sea.

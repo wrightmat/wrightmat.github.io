@@ -1,13 +1,8 @@
-# Middle Menthis Plateau
-
-Current: No
-LatLng: [[39.707187, -15.249023],[41.869561, -3.779297],[36.456636, -2.329102],[34.885931, -14.018555]]
-Type: District
+#location #district [[Sharn]]
 
 The Menthis Plateau is the hub of Sharn’s entertainment industry, as well as its most diverse ethnic quarter and the seat of Morgrave University. Its districts include Den’iyas (also called Little Zilargo because of its large gnome population), Everbright (the city’s only magic district), and two theater districts, Torchfire and Smoky Towers. Like the Central Plateau, its location allows it to draw visitors from all over the city to sample its entertainment offerings, and it also draws tourists from across the Five Nations.
 
 ### **Middle Menthis Plateau**
-
 Character: Racially, ethnically, and economically diverse downtown area.
 
 Middle Menthis is quite possibly Sharn’s most diverse ward, representing a true melting pot of different races, ethnic and national origins, economic classes, and social statuses. Small communities of human immigrants from the Lhazaar Principalities (in Warden Towers), the Shadow Marches (in Cassan Bridge), and Cyre (in Smoky Towers), in addition to the large halfling community in Little Plains and the students of Morgrave University, drawn from across Khorvaire, contribute to this diversity. Together, these many communities of immigrants make Middle Menthis an excellent place to find crafts and services that are particular to certain peoples and nations.
@@ -15,14 +10,12 @@ Middle Menthis is quite possibly Sharn’s most diverse ward, representing a tru
 **Cassan Bridge** (Shops)
 
 > Citizens rush by with their arms full of packages in this shop district. There is a definite foreign element to some of the architecture and the goods for sale, not to mention the people.
-> 
 
 Cassan Bridge is a fairly unremarkable shopping district, unique only in the small community of human immigrants from the Shadow Marches who make their homes and livings here. Several importers bring Marcher crafts into Sharn, and specialty groceries carry ingredients favored in Marcher cooking. Although no buildings need be built on stilts in Middle Menthis, some of the architecture of Cassan Bridge echoes the styles of the Marches as well.
 
 **Everbright** (Magic district)
 
 > Everbright lanterns keep the towers here well illuminated, and other magical effects are visible everywhere—from soarsleds carrying people through the air to constructs following their masters as they visit different shops
-> 
 
 Everbright might not be home to the majority of Sharn’s magic item dealers and spellcasters for hire, but it certainly can boast the largest concentration of them in any one district. While magic item dealers in the Central Plateau cater to wealthy collectors, those in Everbright tend to keep a more practical focus, selling items to the people who are most likely to actually use them—adventurers. For this reason, dealers in Everbright are far more willing to buy (and likely to sell) items that are not fully charged or are otherwise partially used up. Similarly, Everbright is the best place to find spellcasters for hire who are 10th level or above—whose talents are rare and in significant demand in Sharn.
 While the spellcasters and dealers of Everbright are accustomed to trading with adventurers, they are also (for the most part) law-abiding citizens. Characters who need spells cast with no questions asked are better advised to seek out spellcasters affiliated with Sharn’s criminal gangs rather than walking into a spellcaster’s office in Everbright.

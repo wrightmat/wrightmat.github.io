@@ -1,7 +1,7 @@
 ---
 renown: 3
 ---
-#location #village
+#location #village [[Aundair]]
 
 > As you soar upward, you see four castles, each floating on a rocky island thousands of feet above the verdant fields of Aundair. Each castle is a crazy-quilt of different architectural styles, each more outlandish than the last. Periodic flashes of light illuminate the windows, and every so often a gout of flame or eldritch energy bursts forth from a door or chimney.
 

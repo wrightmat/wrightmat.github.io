@@ -1,9 +1,7 @@
-# Passage
-
-Current: No
-LatLng: [27.215556, -29.992676]
-Renown: 1
-Type: City
+---
+renown: 1
+---
+#location #city [[Aundair]]
 
 A center for trade and commerce, the city features a large House Orien enclave named Journey's Home. Almost any trade good in western Aundair passes through Passage. Passage also features a large lightning rail maintenance and repair facility.
 
@@ -38,7 +36,6 @@ A smaller building in the back of the district, called Bound and Determined, hou
 **Journey’s Home**
 
 > A large desk takes up the majority of the room, with two people standing behind separate signs of “Courier’s Guild” and “Transportation Guild”. An all-glass door behind the Transportation side of the desk reveals a well-apportioned office of Kwanti d'Orien (head of House Orien) who is currently away. Standing behind that side of the desk is a human woman with a nametag that reads “Hazel”. As you take this all in, an older human male hurries into the room and settles in behind the desk on the “Courier’s” side. He addresses the group - “You, Templar, you might be interested in a letter I just received”.
-> 
 
 Via the letter that Rikard d’Orien has just received, the Church of the Silver Flame has sent out word that the Tarnished have recently become more organized under the leadership of someone known as the Tarnished Templar. The church is concerned about their numbers growing so quickly.
 

@@ -1,12 +1,9 @@
-# Trolanport
-
-Current: Yes
-LatLng: [5.834616, -31.871338]
-Renown: 4
-Type: Capital
+---
+renown: 4
+---
+#location #capital [[Zilargo]]
 
 > You come upon a city of canals, flooded thoroughfares, bridges, and docks. It's clear from the sheer number of partially completed ships lining the docks all along the coast that ship building is a major industry here. There are also a number of gnome businesses, including alchemical shops, dragonshard shops, and other industry centered around elemental binding. Houses Kundarak, Sivis, and Cannith all maintain enclaves here.
-> 
 
 Trolanport is a capital city of canals and commerce. While Sharn may be the largest city in the continent, Trolanport nearly matches it for the sheer volume of economic activity
 

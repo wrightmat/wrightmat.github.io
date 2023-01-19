@@ -1,13 +1,8 @@
-# Lower Menthis Plateau
-
-Current: No
-LatLng: [[-28.960089, -17.841797],[-26.509905, -5.712891],[-32.546813, -4.350586],[-34.016242, -16.259766]]
-Type: District
+#location #district [[Sharn]]
 
 The Menthis Plateau is the hub of Sharn’s entertainment industry, as well as its most diverse ethnic quarter and the seat of Morgrave University. Its districts include Den’iyas (also called Little Zilargo because of its large gnome population), Everbright (the city’s only magic district), and two theater districts, Torchfire and Smoky Towers. Like the Central Plateau, its location allows it to draw visitors from all over the city to sample its entertainment offerings, and it also draws tourists from across the Five Nations.
 
 ### **Lower Menthis Plateau**
-
 Character: Rowdy entertainment district.
 
 The lower ward of Menthis Plateau perhaps best meets the stereotype of a metropolitan entertainment district. Its streets are crowded night and day, its buildings huddle dark and close together, and its offerings are lurid and often risqué. The only exceptions are the two residential districts, which are comparatively quiet places that give the City Watch little trouble.
@@ -15,14 +10,12 @@ The lower ward of Menthis Plateau perhaps best meets the stereotype of a metropo
 **Center Bridge** (Average residential)
 
 > Orderly collections of townhouses ring the towers of this district.
-> 
 
 Center Bridge tries to be a quiet residential district, but with Torchfire and Firelight on one side and Downstairs on the other it can’t help but smolder with seedy activity. Its residents include a number of people associated with Morgrave University, since it is located directly below the University District and it offers much cheaper housing than can be found in the ward above. In fact, groups of students share inexpensive housing here, so close to the illicit pleasures of Lower Menthis, and are responsible for much of the rowdiness that sometimes disturbs the peace of Center Bridge.
 
 **Downstairs** (Tavern district)
 
 > By night, inebriated revelers stumble forth into the crowded streets from dozens of taverns. By day, this district is a virtual ghost town, with only cleaning crews, delivery personnel, and the occasional determined drunk livening up the scene.
-> 
 
 Situated on the western end of the plateau, separated from Torchfire and Firelight by the residential neighborhood of Center Bridge, Downstairs is nevertheless a rowdy district. Most of its businesses are taverns rather than fine restaurants (though there are exceptions), and drunken revels are the norm every night. Carousers finished with an evening at the theater in Torchfire or even the upper wards, or fresh from different kinds of activities in Firelight, come Downstairs to cap off the night.
 
