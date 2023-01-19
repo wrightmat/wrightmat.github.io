@@ -1,0 +1,6 @@
+# Droaam
+
+Current: No
+Type: Region
+
+Droaam is a nation ruled by monsters, established by the Daughters of Sora Kell in 986 YK. Few of the civilized races dare to test its borders. Their connection with the rest of Khorvaire is limited to a single House Orien roadway that passes through Graywall and into the Great Crag, and a beneficial business relationship with House Tharashk, who set up mercenary contracts between the inhabitants of Droaam and the outside world. Recently, the House has acquired permission to mine in Droaam, and they have begun exploitation of the nation's vast byeshk mines and Eberron dragonshard fields.
