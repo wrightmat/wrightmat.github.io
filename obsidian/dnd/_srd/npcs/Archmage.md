@@ -49,4 +49,4 @@ Cantrips (at will): *fire bolt*, *light*, *mage hand*, *prestidigitation*, *shoc
 An archmage typically has one or more apprentice mages, and an archmage's abode has numerous magical wards and guardians to discourage interlopers.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

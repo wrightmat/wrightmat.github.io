@@ -38,4 +38,4 @@ Cantrips (at will): *light*, *sacred flame*, *thaumaturgy*
 A priest typically has one or more acolytes to help with religious ceremonies and other sacred duties.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

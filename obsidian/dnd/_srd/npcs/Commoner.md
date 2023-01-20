@@ -25,4 +25,4 @@
 **Commoners** include peasants, serfs, slaves, servants, pilgrims, merchants, artisans, and hermits.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

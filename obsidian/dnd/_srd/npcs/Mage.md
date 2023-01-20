@@ -38,4 +38,4 @@ Cantrips (at will): *fire bolt*, *light*, *mage hand*, *prestidigitation*
 **Mages** spend their lives in the study and practice of magic. Good-aligned mages offer counsel to nobles and others in power, while evil mages dwell in isolated sites to perform unspeakable experiments without interference.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

@@ -4,7 +4,7 @@ ac: 15
 modifier: 1
 level: 7
 ---
-#npc #pc [[Jolene Harper]]
+#npc #pc [[Jolene Harper]] [[Eyre (Fernia)]]
 
 Alignment:: Chaotic Good
 Class:: Artificer (Armorer)

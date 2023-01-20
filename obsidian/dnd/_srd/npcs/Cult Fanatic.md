@@ -37,4 +37,4 @@ Cantrips (at will): *light*, *sacred flame*, *thaumaturgy*
 **Fanatics** are often part of a cult's leadership, using their charisma and dogma to influence and prey on those of weak will. Most are interested in personal power above all else.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

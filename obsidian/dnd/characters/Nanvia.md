@@ -1,10 +1,10 @@
-#npc 
+#npc [[Therendor (Syrania)]]
 
 Gender:: Female
 Occupation:: Throne of Life
 Race:: Angel
 
-Nanvia is an angel of Syrania, and the celestial ancestor of Onme. They should be member of the University, probably a Throne, but could do a lower tier.
+Nanvia is an angel of Syrania, and the celestial ancestor of [[Onme Nanvia Donverou]]. They should be member of the University, probably a Throne, but could do a lower tier.
 
 Confirmed with Sara that she thinks her ancestor would be of the Life domain, and from Syrania.
 

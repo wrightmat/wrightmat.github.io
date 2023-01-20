@@ -1,6 +1,4 @@
-# Staff of the Gatekeeper
-
-Link: https://www.dndbeyond.com/magic-items/5239713-staff-of-the-gatekeeper
+#item [[1-10. Gatekeeper Seal]]
 
 This staff is made of one large bone. Its head is carved and painted into the visage of the black dragon Vvaraak. The dragon’s eyes glow with a purple light whenever the staff is within 150 feet of an aberration.
 
@@ -11,3 +9,5 @@ This staff can be wielded as a magic quarterstaff. It has 10 charges, If you exp
 **Tool of Healing**. While holding this staff, you can use an action to expend 1 or more of its charges to cast one of the following spells from it, using your spell save DC and spellcasting ability modifier: ***[cure wounds](https://www.dndbeyond.com/spells/cure-wounds)*** (1 charge per spell level, up to 4th), ***[lesser restoration](https://www.dndbeyond.com/spells/lesser-restoration)*** (2 charges), or ***[mass cure wounds](https://www.dndbeyond.com/spells/mass-cure-wounds)*** (5 charges).
 
 **Tool of Hunting**. When you hit with a melee attack using this staff, you can expend up to 2 of its charges. For each charge you expend, the target takes an extra 1d6 force damage.
+
+https://www.dndbeyond.com/magic-items/5239713-staff-of-the-gatekeeper

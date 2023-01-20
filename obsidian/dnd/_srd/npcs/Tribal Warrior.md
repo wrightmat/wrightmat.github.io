@@ -27,4 +27,4 @@
 **Tribal warriors** live beyond civilization, most often subsisting on fishing and hunting. Each tribe acts in accordance with the wishes of its chief, who is the greatest or oldest warrior of the tribe or a tribe member blessed by the gods.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

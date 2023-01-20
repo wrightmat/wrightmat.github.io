@@ -1,11 +1,8 @@
-# Spellwurm
-
-Type: Symbiont
+#item #symbiont
 
 *Wondrous Item, Very Rare, Requires Attunement*
 
 > A thick, purplish snake undulates forward, about as long and thick as a humanoid arm. Where a head would surmount a natural serpent, you see a nest of five finger-length tentacles surrounding a horribly humanlike mouth.
-> 
 
 **Attunement**
 

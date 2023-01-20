@@ -1,11 +1,8 @@
-# Stormstalk
-
-Type: Symbiont
+#item #symbiont 
 
 *Wondrous Item, Very Rare, Requires Attunement*
 
 > A wriggling snake reveals a single overly large eye dancing with static discharge. The creature has no mouth or other features, only a white eye staring at you.
-> 
 
 **Attunement**
 

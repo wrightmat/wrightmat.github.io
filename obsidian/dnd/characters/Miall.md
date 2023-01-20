@@ -1,4 +1,4 @@
-#npc
+#npc [[Thunder Sea]]
 
 Attitude:: Friendly
 Gender:: Female

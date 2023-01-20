@@ -54,7 +54,6 @@
 - [[Decanter of Endless Water]]
 - [[Deck of Illusions]]
 - [[Deck of Many Things]]
-- [[Defender]]
 - [[Demon Armor]]
 - [[Dimensional Shackles]]
 - [[Dragon Scale Mail]]

@@ -32,4 +32,4 @@ Cantrips (at will): *light*, *sacred flame*, *thaumaturgy*
 **Acolytes** are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

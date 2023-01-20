@@ -41,4 +41,4 @@ In addition to managing a crew of selfish malcontents, the **pirate captain** is
 More than treasure, a bandit captain or pirate captain craves infamy. A prisoner who appeals to the captain's vanity or ego is more likely to be treated fairly than a prisoner who does not or claims not to know anything of the captain's colorful reputation.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

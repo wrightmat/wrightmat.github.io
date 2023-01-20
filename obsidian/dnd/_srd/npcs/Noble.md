@@ -33,4 +33,4 @@
 The noble's statistics can also be used to represent **courtiers** who aren't of noble birth.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

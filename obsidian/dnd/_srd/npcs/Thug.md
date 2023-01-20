@@ -33,4 +33,4 @@
 **Thugs** are ruthless enforcers skilled at intimidation and violence. They work for money and have few scruples.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

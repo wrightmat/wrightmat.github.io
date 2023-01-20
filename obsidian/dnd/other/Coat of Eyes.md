@@ -1,4 +1,4 @@
-#item
+#item [[2-08. Shardjammer Finding Khyber Shards]]
 
 *Armor (studded leather), very rare (requires attunement)*
 Weight:: 15 lbs

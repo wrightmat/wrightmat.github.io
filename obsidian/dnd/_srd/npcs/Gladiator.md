@@ -41,4 +41,4 @@
 **Gladiators** battle for the entertainment of raucous crowds. Some gladiators are brutal pit fighters who treat each match as a life-or-death struggle, while others are professional duelists who command huge fees but rarely fight to the death.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

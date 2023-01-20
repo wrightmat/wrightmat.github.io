@@ -1,4 +1,4 @@
-#npc 
+#npc [[Lharvion (Xoriat)]]
 
 Gender:: Non-Gendered
 Occupation:: Daelkyr Lord

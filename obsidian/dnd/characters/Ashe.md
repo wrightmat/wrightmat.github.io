@@ -1,4 +1,4 @@
-#npc 
+#npc [[Therendor (Syrania)]]
 
 Gender:: Female
 Occupation:: Bartender

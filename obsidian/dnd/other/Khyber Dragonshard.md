@@ -1,4 +1,4 @@
-#item 
+#item [[2-08. Shardjammer Finding Khyber Shards]]
 
 Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.
 

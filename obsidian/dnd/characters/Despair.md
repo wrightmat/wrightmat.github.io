@@ -1,4 +1,4 @@
-#npc 
+#npc [[Sypheros (Mabar)]]
 
 Gender:: Female
 Race:: Endless

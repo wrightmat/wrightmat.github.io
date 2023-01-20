@@ -1,4 +1,4 @@
-#npc 
+#npc [[Dravago (Risia)]]
 
 Gender:: Male
 Race:: Giant (Frost)

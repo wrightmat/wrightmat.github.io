@@ -29,4 +29,4 @@
 **Pirates** are bandits of the high seas. They might be freebooters interested only in treasure and murder, or they might be privateers sanctioned by the crown to attack and plunder an enemy nation's vessels.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

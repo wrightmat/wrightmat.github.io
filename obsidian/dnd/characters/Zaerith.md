@@ -1,4 +1,4 @@
-#npc 
+#npc [[Zarantryr (Kythri)]]
 
 Gender:: Male
 Occupation:: Great Githzerai

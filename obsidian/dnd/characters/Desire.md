@@ -1,4 +1,4 @@
-#npc 
+#npc [[Barrakas (Irian)]]
 
 Gender:: Gender-fluid
 Occupation:: Brothel-Keeper

@@ -1,4 +1,4 @@
-#item 
+#item [[1-09. The “Runestone” Marker]]
 
 **Tattoo Attunement.** To attune to this item, you hold the needle to your skin where you want the tattoo to appear, pressing the needle there throughout the attunement process. When the attunement is complete, the needle turns into the ink that becomes the tattoo, which appears on the skin.
 

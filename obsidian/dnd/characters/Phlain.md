@@ -1,4 +1,4 @@
-#npc 
+#npc [[Eyre (Fernia)]]
 
 Gender:: Male
 Occupation:: Aristocrat

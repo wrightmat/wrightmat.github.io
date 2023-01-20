@@ -1,11 +1,8 @@
-# Tongueworm
-
-Type: Symbiont
+#item #symbiont 
 
 *Wondrous Item, Very Rare, Requires Attunement*
 
 > This thin strand of quivering muscle takes root in your throat, its toothed maw ready to shoot out at your foes.
-> 
 
 **Attunement**
 

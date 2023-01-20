@@ -27,4 +27,4 @@
 Hailing from uncivilized lands, unpredictable **berserkers** come together in war parties and seek conflict wherever they can find it.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

@@ -1,4 +1,4 @@
-# Eberron Dragonshard
+#item
 
 Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q’barra and the distant land of Xen’drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.
 

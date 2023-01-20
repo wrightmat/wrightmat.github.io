@@ -1,11 +1,8 @@
-# Tangler
-
-Type: Symbiont
+#item #symbiont 
 
 *Wondrous Item, Very Rare, Requires Attunement*
 
 > This wormlike symbiont wraps around your arm, spitting a glob of glutinous goo to entangle your enemies.
-> 
 
 **Attunement**
 

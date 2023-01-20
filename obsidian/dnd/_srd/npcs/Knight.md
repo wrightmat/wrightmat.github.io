@@ -39,4 +39,4 @@
 **Knights** are warriors who pledge service to rulers, religious orders, and noble causes. A knight's alignment determines the extent to which a pledge is honored. Whether undertaking a quest or patrolling a realm, a knight often travels with an entourage that includes squires and hirelings who are commoners.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

@@ -1,4 +1,4 @@
-#npc 
+#npc [[Barrakas (Irian)]]
 
 Gender:: Female
 Occupation:: Architect

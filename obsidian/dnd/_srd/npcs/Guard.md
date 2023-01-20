@@ -27,4 +27,4 @@
 **Guards** include members of a city watch, sentries in a citadel or fortified town, and the bodyguards of merchants and nobles.
 
 
-[[NPCs]]
+[[_rand/NPCs]]

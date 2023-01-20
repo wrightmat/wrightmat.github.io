@@ -1,11 +1,8 @@
-# Wintercyst
-
-Type: Symbiont
+#item #symbiont 
 
 *Wondrous Item, Very Rare, Requires Attunement*
 
 > A stubby, sluglike polyp inches forward, leaving a slime trail behind it. It heaves upright, then swivels the end of its upper portion to stare with a baleful white eye.
-> 
 
 **Attunement**
 

@@ -1,4 +1,4 @@
-#npc 
+#npc [[Crya (Dal Quor)]]
 
 Gender:: Female
 Occupation:: Archivist

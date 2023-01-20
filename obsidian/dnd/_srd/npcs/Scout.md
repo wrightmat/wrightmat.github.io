@@ -33,4 +33,4 @@
 **Scouts** are skilled hunters and trackers who offer their services for a fee. Most hunt wild game, but a few work as bounty hunters, serve as guides, or provide military reconnaissance.
 
 
-[[NPCs]]
+[[_rand/NPCs]]
