@@ -4,14 +4,15 @@ ac: 13
 modifier: 1
 level: 8
 ---
-#pc [[Alex]]
+#pc [[Alex]] [[Crya (Dal Quor)]] [[Barrakas (Irian)]]
 
 Alignment:: Chaotic Good
 Class:: Sorcerer (Aberrant Mind)
 Gender:: Non-Binary
 Pronouns:: he/they
 Race:: Kalashtar
-Comments:: Planes: Dal Quor (Quori), Irian (Path of Light / Music?)
+
+### Backstory
 
 Astrashana (aka Astra of Ashana) is a Kalashtar sorcerer born and raised near the border of Adar. He has a connection to the Quori Ashana which has been passed down in his family for generations. Their mother and father, both Kalashtar, were followers of the Path of Light— with Astra’s mother even being a cleric of the faith. They grew up in a loving home that promoted kindness, empathy, light, and hope. Their patents encouraged his dreams of one day traveling the world making others smile through his performance. Astra, naturally, also believed in the Path of Light and trusted in the message of using compassion and courage to change the world for the better.
 
@@ -23,9 +24,15 @@ Astra lost faith in the Path of Light after that day. His parents were the great
 
 His psychic powers as a Kalashtar also began to expand farther than he thought possible after the incident. His right eye began to glow, along with the gashes across it, when casting spells. As if the attack by the Inspired had beyond merely a physical affect. His abilities have grown with continually increasing complexity over time.
 
+6 years later, Astra now roams the country with his violin and a carefree smile. They perform their “music” to countless people and thrive off of all the validation and attention it garners them. After all, running away from his problems and maintaining his persona is all he has left. The show must go on!
+
+### Development
+
 At some point Astra traveled from Sarlona to Khorvaire, which he accomplished via the ports of Ohr Kaluun in the east. The islands of Ohr Kaluun have smuggler ports that can get desperate Sarlonans to western Khorvaire, but getting there requires going through the Corvagura Province, which is the most populated Riedran territory.
 
-6 years later, Astra now roams the country with his violin and a carefree smile. They perform their “music” to countless people and thrive off of all the validation and attention it garners them. After all, running away from his problems and maintaining his persona is all he has left. The show must go on!
+After Astra met Windsor in Delethorn, where a group of them decided to take on a job from the desperate mayor, they started to develop a friendship that blossomed into a relationship over the next year or two. At one point in Zarantyr 999 YK, they decided to charter a boat and sail the world, where Astra showed Windsor their homeland of Adar for the first time and they confirmed their relationship.
+
+### Timeline
 
 ```timeline
 + 999 YK, Aryth
