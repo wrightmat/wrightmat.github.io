@@ -1,10 +1,4 @@
 ---
-Alignment: Lawful Good
-Class: Paladin (Oath of Redemption)
-Gender: Female
-Pronouns: she/her
-Race: Aasimar
-
 hp: 68
 ac: 21
 modifier: 2
@@ -12,11 +6,11 @@ level: 8
 ---
 #pc [[Sara Edwards]] [[Ring of Siberys]] [[Therendor (Syrania)]]
 
-**Alignment**: Lawful Good
-**Class**: Paladin (Oath of Redemption)
-**Gender**: Female
-**Pronouns**: she/her
-**Race**: Aasimar
+* **Alignment**: Lawful Good
+* **Class**: Paladin (Oath of Redemption)
+* **Gender**: Female
+* **Pronouns**: she/her
+* **Race**: Aasimar
 
 ### Backstory
 

@@ -4,14 +4,15 @@ ac: 15
 modifier: 4
 level: 8
 ---
-#pc [[Claire]]
+#pc [[Claire]] [[Rhaan (Thelanis)]] [[Aryth (Dolurrh)]]
 
-Alignment:: Chaotic Neutral
-Class:: Rogue (Phantom) / Artificer
-Gender:: Female
-Pronouns:: she/her
-Race:: Warforged
-Comments:: Planes: Thelanis (White Rabbit), Dolurrh (Celeste drawn that this plane)
+* **Alignment**:: Chaotic Neutral
+* **Class**:: Rogue (Phantom) / Artificer
+* **Gender**:: Female
+* **Pronouns**:: she/her
+* **Race**:: Warforged
+
+### Backstory
 
 Prism is a warforged who doesn’t remember much of her life, included where she was made or where she’s been for the last several years.
 
@@ -23,12 +24,18 @@ Aeren discovered the original quori Creation Forges during an expedition to Xen�
 
 Once Aeren’s experiments were complete, and he had no more use for Prism, she was set out in the world. Prism, or the consciousness in the Docent (originally a quori spirit), lay dorment as the new consciousness from Dolurrh, known as Celeste, took over. Until many years later when the original Prism consciousness re-emerged inexplicitly.
 
+### Development
+
 * In Sypheros 998 YK, Prism joined the Clifftop Adventurers’ Guild in Sharn (paying a year’s membership), and commissioned a dragonshard-powered grappling hook on a rope (like Batman).
 * In 999 YK, from Zarantyr until Sypheros, Prism spent time with Merrix in his secret lab in Sharn, learning to build things and to help the warforged of the area.
+
+### Memories
 
 > You're standing in a cold circular room, but you feel warmth emanating from whatever you're standing in front of. You aren't able to move, but looking around, you see a number of large monolithic structures with other warforged standing in front of them. You assume whatever is behind you has a similar form - a swooping organic shape, but made of stone or some similar material, with a branched top and a number of lit orbs about it. These orbs, and several circles around the floor of the room glow with an eerie yellow-green light. They cast just enough light to make out green banners bearing the symbol of a powerful bull-like creatures covered in iron plates dotting the walls around the perimeter of the room.
 
 > As you look around, your eyes land on a man with fair skin, red hair, and wearing a practical green garment with gloves and a cloak clasped with a metal piece bearing the bull symbol. He appears to be making adjustments to one of the machines across the room, but quickly finishes up there and moves toward you. You're still unable to move or speak as he tinkers with the machine you're standing in, and everything goes dark.
+
+### Timeline
 
 ```timeline
 + 999 YK, Aryth

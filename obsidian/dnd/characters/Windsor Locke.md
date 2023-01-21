@@ -4,16 +4,17 @@ ac: 13
 modifier: 1
 level: 8
 ---
-#pc [[Kerrie]]
+#pc [[Kerrie]] [[Zarantryr (Kythri)]] [[Therendor (Syrania)]]
 
-Alignment:: Lawful Good
-Class:: Barbarian (Storm Herald)
-Gender:: Male
-Pronouns:: he/him
-Race:: Human
-Comments:: Planes: Kythri/Lamannia (Storm Herald), Syrania? (The University?)
+* **Alignment**:: Lawful Good
+* **Class**:: Barbarian (Storm Herald)
+* **Gender**:: Male
+* **Pronouns**:: he/him
+* **Race**:: Human
 
-Windsor was born in Sharn, and his parents ([[Tourmaline Locke]] and [[Vernon Locke]]) still live in the Oakbridge neighborhood of the Middle Northedge district. They run an art restoration shop in North Towers (Lower Central).
+### Backstory
+
+Windsor was born in Sharn, and his parents ([Tourmaline Locke](Tourmaline%20Locke) and [Vernon Locke](Vernon%20Locke)) still live in the Oakbridge neighborhood of the Middle Northedge district. They run an art restoration shop in North Towers (Lower Central).
 
 Windsor attended school at Arcanix for 6 years, pursing the equivalent of a Masters degree, and then spent several years working at the library before setting out on his own. When Windsor met the adventuring party in 998 YK, he still held debt that he's trying to pay off, even after his parents' contribution and his working afterward.
  * Calculated Arcanix tuition as 2 gp/day x 350 days (365 days a year, minus holidays) = 700 gp per year x 6 years = 4200 gp total. Had 1400 gp left when the adventure started in Nymm 998 YK.
@@ -21,9 +22,13 @@ Windsor attended school at Arcanix for 6 years, pursing the equivalent of a Mast
 
 Windsor’s favorite bookshop is in North Towers (Lower Central) near his parents’ shop, where he would secretly purchase trashy romance novels - his guilty pleasure.
 
-Windsor and Astra went on their first date in Sharn in Sypheros 998 YK (when they returned to the city to break the news of their coming space adventures to his parents), where Windsor showed them several of his favorite places in Sharn. Astra also got a copy of a baby picture showing Windsor in a sailor outfit from Tourmaline.
+### Development
 
-Windsor and Astra officially started dating in 999 YK, during their 9 months around the world.
+* Windsor and Astra went on their first date in Sharn in Sypheros 998 YK (when they returned to the city to break the news of their coming space adventures to his parents), where Windsor showed them several of his favorite places in Sharn. Astra also got a copy of a baby picture showing Windsor in a sailor outfit from Tourmaline.
+
+* Windsor and Astra officially started dating in 999 YK, during their 9 months around the world.
+
+### Timeline
 
 ```timeline
 + 999 YK, Aryth

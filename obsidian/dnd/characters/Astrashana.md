@@ -1,10 +1,4 @@
 ---
-Alignment: Chaotic Good
-Class: Sorcerer (Aberrant Mind)
-Gender: Non-Binary
-Pronouns: he/they
-Race: Kalashtar
-
 hp: 50
 ac: 13
 modifier: 1
@@ -12,11 +6,11 @@ level: 8
 ---
 #pc [[Alex]] [[Crya (Dal Quor)]] [[Barrakas (Irian)]]
 
-**Alignment**: Chaotic Good
-**Class**: Sorcerer (Aberrant Mind)
-**Gender**: Non-Binary
-**Pronouns**: he/they
-**Race**: Kalashtar
+* **Alignment**: Chaotic Good
+* **Class**: Sorcerer (Aberrant Mind)
+* **Gender**: Non-Binary
+* **Pronouns**: he/they
+* **Race**: Kalashtar
 
 ### Backstory
 
