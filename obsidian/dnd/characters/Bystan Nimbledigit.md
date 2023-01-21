@@ -10,7 +10,8 @@ Alignment:: Chaotic Good
 Class:: Artificer (Armorer)
 Gender:: Non-Binary
 Pronouns:: any/all (usually they)
-Race:: Fire Genasi
+Race:: Genasi
+Subrace:: Fire
 Comments:: Planes: Fernia (found here by party with their father)
 
 Bystan left the party in Sypheros 998 YK in order to track down their father. They entered a manifest zone to Thelanis at Dragonroost, Zilargo, upon the recommendation of Adara.

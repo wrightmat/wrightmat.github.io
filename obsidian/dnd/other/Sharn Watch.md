@@ -1,4 +1,4 @@
-#organization #law [[Sergeant Dolom]]
+#organization #law [[Dolom]]
 
 The Sharn Watch is the overarching organization that enforces the laws of the city. The sentinels of the Watch patrol the streets of Sharn, ever vigilant for signs of unrest. Unfortunately, the Sharn Watch is riddled with corruption, from the commanding officers down to the patrols. There are a few dedicated guards who truly want to protect the innocent. But bribery runs rampant, and the watch has a way of never showing up at the same time as Daask or the Boromar clan. And aside from the general problems of greed, cowardice, and corruption, the watch commanders focus their forces on protecting the wealthy and powerful citizens of the city.
 

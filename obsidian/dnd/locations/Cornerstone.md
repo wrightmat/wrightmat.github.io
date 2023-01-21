@@ -1,6 +1,6 @@
 #location [[Zarantryr (Kythri)]]
 
-Cornerstone is the largest of the slaad cities. Its architectural style and precise layout are constantly changing, but it’s always a sprawling city that houses hundreds of thousands of slaadi. Each time the players travel to Cornerstone, roll on the Slaad Cultures table to determine which slaadi are in charge currently. The attitude of slaadi toward adventurers depends on the active culture. Regardless, Cornerstone is the best place to acquire Kythrian artifacts or magical services.
+Cornerstone is the largest of the slaad cities. Its architectural style and precise layout are constantly changing, but it’s always a sprawling city that houses hundreds of thousands of slaadi. Each time the players travel to Cornerstone, roll on the Slaad Cultures table to determine which slaadi are in charge currently. The attitude of slaadi toward adventurers depends on the active culture. Regardless, Cornerstone is the best place to acquire Kythrian artifacts (see [[Trinkets of the Planes]]) or magical services.
 
 `dice: [[Cornerstone#^slaad-culture]]`
 
@@ -18,6 +18,3 @@ Cornerstone is the largest of the slaad cities. Its architectural style and prec
 | 6 | The Republic of B’ob is ruled by a red slaad who makes up new laws whenever he feels like it. Why is B’ob in charge? Well, that was the first rule he made, and the only one he hasn’t changed. And he’s B’ob! Who else would be in charge? | A large red gem throne on which B’ob sits is the most prominent feature. A notice board has posted all of the rules currently in effect. | Uninterested in visitors, as long as the rules are followed. |
 ^slaad-culture
 
-### **Kythrian Artifacts**
-
-Materials from Kythrian manifest zones are often important components of magic items tied to transmutation or illusion; shiftweave uses fibers of plants harvested in Kythrian zones, and as noted in chapter 4, the manifest zone of Hal’kyth is a vital part of the transmutation industry of the Eternal Dominion. Items that come from Kythri may have unpredictable effects. For example, a hat of disguise from Kythri may function normally when its wearer keeps in mind exactly what they want to look like; but if they don’t consciously enforce an appearance, it slowly but continuously changes minor elements of their disguise.

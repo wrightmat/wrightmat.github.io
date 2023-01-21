@@ -72,7 +72,6 @@ The character acting as the Pilot determines the actions that the ship takes on 
 A spelljammer shares its turn with its Pilot, so the ship’s side initiative is rolled by the Pilot character, using their normal modifiers.
 
 During its turn, the spelljammer can perform all or any of the following actions:
-
 - Move up to its speed (including turning).
     - On a hex grid, each hex equates to 5 feet, and 5 feet of movement are also used to turn the ship by one face.
 - Attack with as many weapons that can be fully manned by the current number of crew members.

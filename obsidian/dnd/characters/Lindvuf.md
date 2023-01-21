@@ -1,7 +1,8 @@
 #npc [[Dravago (Risia)]]
 
 Gender:: Male
-Race:: Giant (Frost)
+Race:: Giant
+Subrace:: Frost
 
 Lindvuf is a Frost Giant who lives on the moon Dravago.
 

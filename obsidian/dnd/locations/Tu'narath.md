@@ -61,7 +61,6 @@ towers, and nearby floating fortresses can dispatch military forces to deter any
 ### **Military District**
 
 > Severe fortresses, bristling towers, training compounds, and the pride of Gith stand firmly in the Military Districts.
-> 
 
 The Military district comprises several different military sects, and each displays its achievements in statuary and bas-relief carvings adorning their walls. The sects are competitive and each tries to outdo the other in their achievements and victories. While they spend much of their time sailing the Astral Sea attempting to hunt, they sometimes return and dock at their region of the district in order to perform repairs or spread rumors at the tavern.
 

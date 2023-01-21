@@ -2,7 +2,7 @@
 
 Attitude:: Friendly
 Gender:: Male
-Occupation:: Aristocrat / Bard 2 (NG)
+Occupation:: Noble
 Race:: Human
 
 With a population of more than four thousand and growing, New Cyre has become a beacon for displaced Cyrans around the world. Oargev ir Wynarn, last prince of Cyre, serves as mayor of the town and king-in-exile for his people. Openly, Oargey praises the kindness of Breland and promises to be a good guest. Inwardly, three desires drive him. He wants to discover what really happened to his country. He wants to gain vengeance against those responsible. And he wants to rebuild his fallen nation, either in its original location or somewhere else if necessary. He has made an oath on

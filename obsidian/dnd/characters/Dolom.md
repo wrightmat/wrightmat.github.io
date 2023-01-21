@@ -2,7 +2,7 @@
 
 Attitude:: Friendly
 Gender:: Male
-Occupation:: Fighter
+Occupation:: Sergeant / Fighter
 Race:: Dwarf
 
 **Languages**: Common, Dwarven.

@@ -2,7 +2,8 @@
 
 Gender:: Female
 Occupation:: Baron
-Race:: Eladrin (Winter)
+Race:: Eladrin
+Subrace:: Winter
 
 Selene, now Baron of the Palace of the Moon, manipulated the Court in order to promote the Winter Court ahead of its time. It should have been the Summer Court that ascended to the throne, but she was able to divide and conquer its two major members, Duke Ihan and Duchesse Phoebe, as well as ally with the Autumn Court (with Lady Mahsa).
 

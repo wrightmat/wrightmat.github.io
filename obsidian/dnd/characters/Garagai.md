@@ -1,7 +1,8 @@
 #npc [[Dravago (Risia)]]
 
 Gender:: Male
-Race:: Giant (Frost)
+Race:: Giant
+Subrace:: Frost
 
 Garagai is a Frost Giant who has laid claim to the Frozen Sea.
 

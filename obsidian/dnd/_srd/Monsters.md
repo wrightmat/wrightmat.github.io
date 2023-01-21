@@ -101,7 +101,7 @@
 - [[Rust Monster]]
 - [[Rust Monster]]
 - [[Sahuagin]]
-- [[Salamander]]
+- [[_srd/monsters/Salamander]]
 - [[Satyr]]
 - [[Shadow]]
 - [[Shambling Mound]]

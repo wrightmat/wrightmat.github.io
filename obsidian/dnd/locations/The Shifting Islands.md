@@ -60,7 +60,6 @@ Features: `dice: [[The Shifting Islands#^features]]`
 A large temple to the Traveler will sometimes randomly appear on The Shifting Islands. This temple is home to an individual known as The Architect, the primary priest of The Traveler, as well as her Cabinet of Faces who speak for her. 
 
 If the players manage to make it into the temple, they will discover that The Architect is actually fleshy Prism from Mordain the Fleshweaver. She doesn’t speak, so there’s no way for them to know how she got here, but her Cabinet of Faces can answer some questions. Information they can impart:
-
 - Time is fluid in Kythri, inconsistent both with the Material Plane and within its own islands. Adventurers who spend a day in Kythri could find that a year has passed in Eberron, or they could be trapped in Kythri for a year and find that only an hour has passed when they return.
 - The Architect has been here for as long as anyone can remember.
 - The Traveler is a supreme shapeshifter and trickster, a virtuoso of deceit and craftiness, a creator of things and a bringer of knowledge.

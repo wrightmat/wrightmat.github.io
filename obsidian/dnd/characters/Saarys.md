@@ -3,7 +3,8 @@
 Attitude:: Friendly
 Gender:: Female
 Occupation:: Assistant to the Commissar
-Race:: Gith (Githzerai)
+Race:: Gith
+Subrace:: Githzerai
 
 Saarys, Female Githzerai Monk, is the assistant to Zetch’r’r, the Commissar of the city.
 

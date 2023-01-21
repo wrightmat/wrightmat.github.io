@@ -2,7 +2,7 @@
 
 Attitude:: Helpful
 Gender:: Male
-Occupation:: Baron (Cannith South)
+Occupation:: Baron
 Race:: Human
 
 Baron Merrix d'Cannith is the current head of the southern holdings of House Cannith, including the Sharn Cannith enclave in Breland. He is currently one of the most renowned and brilliant inventors in Khorvaire. He has fair skin and red hair (much like many members of House Cannith) that is shoulder length and includes a red beard.

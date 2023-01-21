@@ -2,7 +2,8 @@
 
 Gender:: Female
 Occupation:: Envoy
-Race:: Eladrin (Spring)
+Race:: Eladrin
+Subrace:: Spring
 
 Esmeray is a member of the Spring Court and Selene’s former (and jilted) lover. She is working as an agent of Destiny to set things right by taking out Celene. While Destiny presumes that ascension would then fall back to the Summer Court, as it should, maybe Esmeray has her own ambitions for elevating the Spring Court instead?
 
