@@ -6,7 +6,7 @@ level: 8
 ---
 #pc [[Kerrie]]
 
-Alignment:: Lawful  Good
+Alignment:: Lawful Good
 Class:: Barbarian (Storm Herald)
 Gender:: Male
 Pronouns:: he/him

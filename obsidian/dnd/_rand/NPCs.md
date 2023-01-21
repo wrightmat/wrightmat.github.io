@@ -17,3 +17,4 @@ LIST rows.file.link FROM #npc WHERE Occupation GROUP BY Occupation
 ```dataview
 LIST rows.file.link FROM #npc WHERE Race GROUP BY Race
 ```
+
