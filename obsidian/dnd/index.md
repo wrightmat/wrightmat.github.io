@@ -1,7 +1,7 @@
 ### Player Characters
 
-* [Adara Bristalfyr](Adara%20Bristalfyr)
-* [Astrashana](Astrashana)
-* [Onme Nanvia Donverou](Onme%20Nanvia%20Donverou)
-* [Prism](Prism)
-* [Windsor Locke](Windsor%20Locke)
+* [Adara Bristalfyr](characters/Adara%20Bristalfyr)
+* [Astrashana](characters/Astrashana)
+* [Onme Nanvia Donverou](characters/Onme%20Nanvia%20Donverou)
+* [Prism](characters/Prism)
+* [Windsor Locke](characters/Windsor%20Locke)
