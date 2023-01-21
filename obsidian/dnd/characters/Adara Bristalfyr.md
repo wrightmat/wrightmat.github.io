@@ -1,10 +1,4 @@
 ---
-Alignment: Chaotic Neutral
-Class: Bard (College of Eloquence) / Warlock (Celestial)
-Gender: Female
-Pronouns: she/her
-Race: Fairy
-
 hp: 51
 ac: 14
 modifier: 4
@@ -12,11 +6,11 @@ level: 8
 ---
 #pc [[Jolene Harper]] [[Rhaan (Thelanis)]] [[Lharvion (Xoriat)]]
 
-* **Alignment**: Chaotic Neutral
-* **Class**: Bard (College of Eloquence) / Warlock (Celestial)
-* **Gender**: Female
-* **Pronouns**: she/her
-* **Race**: Fairy
+* Alignment:: Chaotic Neutral
+* Class:: Bard (College of Eloquence) / Warlock (Celestial)
+* Gender:: Female
+* Pronouns:: she/her
+* Race:: Fairy
 
 ### Backstory
  * Born on the Rock of Bral many years ago.
