@@ -50,3 +50,5 @@ This island in the Sea of Fire is a forested clearing with a single campfire, a 
 **The First Hearth**
 
 Another campfire layer is an inn called the First Hearth, where the angelic barkeep Ashe offers warm drinks around the fireplace from which the inn takes its name. Campfire layers are safe havens, and a perfect place for travelers to rest.
+
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/qwEKSnNCjKHckoHm0bVDNYlRVfCUXiplb6rjqwRa.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/qwEKSnNCjKHckoHm0bVDNYlRVfCUXiplb6rjqwRa.png)

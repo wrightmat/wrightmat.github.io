@@ -19,11 +19,13 @@ immune to this property’s effects.
 Undead can’t recover from ennui while in Dolurrh. Whenever a living creature with 2 or more levels of ennui finishes a long rest, if it succeeds against its saving throw against Dolurrh’s Inevitable Entrapment property by 5 or more, it reduces its ennui level by 1. When a creature leaves Dolurrh, all levels of ennui are removed.
 When a creature reaches 6 levels of ennui, its will is completely broken and it can take no purposeful action; if this happens to a living creature, its physical body dies and it becomes a husk bound to Dolurrh.
 
-| Level | Effect |
-| --- | --- |
-| 1 | Disadvantage on ability checks |
-| 2 | Speed halved |
-| 3 | Disadvantage on attack rolls and saving throws |
-| 4 | Hit point maximum halved |
-| 5 | Speed reduced to 0 |
-| 6 | Death |
+| Level | Effect                                         |
+| ----- | ---------------------------------------------- |
+| 1     | Disadvantage on ability checks                 |
+| 2     | Speed halved                                   |
+| 3     | Disadvantage on attack rolls and saving throws |
+| 4     | Hit point maximum halved                       |
+| 5     | Speed reduced to 0                             |
+| 6     | Death                                          |
+
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/CaWs8Rbg2mb7S4LqTuDwM1OOV1Fq2V3usASv0CAV.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/CaWs8Rbg2mb7S4LqTuDwM1OOV1Fq2V3usASv0CAV.png)

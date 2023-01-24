@@ -22,3 +22,5 @@ The light of the Eternal Dawn strengthens the living. Darkness and disease have 
 - A living creature has advantage on saving throws against poison, disease, and fear.
 
 **Standard Time**. Time passes at the same pace as on the Material Plane, and is consistent across its layers.
+
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/ttTL57RiRcNUHwh3idRiPXC7Kx6i4tEbcufrpRSd.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/ttTL57RiRcNUHwh3idRiPXC7Kx6i4tEbcufrpRSd.png)

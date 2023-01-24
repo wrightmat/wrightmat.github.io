@@ -25,3 +25,5 @@ Even when you’re exploring someone else’s dreams, your desires and memories 
 **Extended Illusion**. When a creature casts an illusion spell with a duration of 1 minute or longer, the duration is doubled. Spells with a duration of 24 hours or more are unaffected.
 
 **Flowing Time**. For every 10 minutes that pass in Dal Quor, only 1 minute passes on the Material Plane. While sleeping for 8 hours, a creature could spend 3 days in Dal Quor.
+
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/vdjBLFTc0BUwVlTxkMBiPgDLySJC0aLZqxzKavNd.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/vdjBLFTc0BUwVlTxkMBiPgDLySJC0aLZqxzKavNd.png)

@@ -15,3 +15,5 @@ There’s a part of you that’s always been in Shavarath, a sliver of your soul
 **Bloodletting**. When a creature scores a critical hit with an attack that deals piercing, slashing, or bludgeoning damage, it can roll one of the attack’s damage dice one extra time and add it to the extra dice of the critical hit.
 
 **Flexible Time**. Time’s passage varies between Shavarath’s layers. In many, time passes at the same rate as on the Material Plane; if you spend an hour fighting in the Burning Sky, an hour passes in Eberron. But other layers move at different speeds; you can spend a month in the trenches of Nullius Terram and find that less than three days have passed in Eberron. A creature with proficiency in Arcana can determine the passage of time in their layer by succeeding on a DC 14 Intelligence (Arcana) check.
+
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/WoYth64qwGnfQoTGN8D0mZI7HBA3kXrR9ZDfj08H.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/WoYth64qwGnfQoTGN8D0mZI7HBA3kXrR9ZDfj08H.png)

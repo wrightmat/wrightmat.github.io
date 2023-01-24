@@ -44,3 +44,5 @@ For planar travelers who come to Syrania, the University is a good repository of
 The city of the angels is composed of floating towers and is ruled over by the most powerful type of angel known as a Solar. These towers have comparatively few inhabitants—not so few that they feel desolate or barren, just enough so that it always feels slow and peaceful.
 
 A permanent gate to Sharn is present in Solar City as well, and it’s guarded by a group called The Burning Host.
+
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/z6tyuZkINqevpBvMvZsSinMDsW5OnW9QnMT3vQTX.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/z6tyuZkINqevpBvMvZsSinMDsW5OnW9QnMT3vQTX.png)

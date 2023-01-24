@@ -18,3 +18,4 @@ All things change in Kythri, even time and the future. The only thing that’s t
 
 **Chaotic Time**. Time is fluid in Kythri, inconsistent both with the Material Plane and within its own islands. Adventurers who spend a day in Kythri could find that a year has passed in Eberron, or they could be trapped in Kythri for a year and find that only an hour has passed when they return.
 
+![https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/6VcxN1Cd9S4JCtdNcl2GKkRGXTH6uZQB8tUcAElq.png](https://kanka-user-assets.s3.eu-central-1.amazonaws.com/locations/6VcxN1Cd9S4JCtdNcl2GKkRGXTH6uZQB8tUcAElq.png)
