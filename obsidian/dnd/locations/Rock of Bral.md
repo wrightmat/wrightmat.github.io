@@ -2,7 +2,18 @@
 
 Bral is a city built on an asteroid. Its inhabitants, who hail from many worlds, typically refer to Bral as the Rock. There is no other place quite like it in the Astral Sea.
 
-![https://www.belloflostsouls.net/wp-content/uploads/2022/08/rock-of-bral-header-image-e1660319113739.jpg](https://www.belloflostsouls.net/wp-content/uploads/2022/08/rock-of-bral-header-image-e1660319113739.jpg)
+```leaflet
+id: rock-bral-map
+image: https://i.imgur.com/WlqV0VX.jpeg
+height: 500px
+lat: 55
+long: 45
+minZoom: 1
+maxZoom: 6
+defaultZoom: 3
+unit: miles
+scale: 1
+```
 
 ### **History**
 
@@ -27,3 +38,5 @@ General lawlessness prevails in much of the city, but that’s not to say that o
 Serious crimes, such as arson, can be reported to one of the city’s three magistrates, who preside over the Low City, the Middle City, and the High City, respectively. If the magistrate concludes that the situation warrants their attention, the Magistrate’s Watch is dispatched to investigate and take offenders into custody, if necessary. Most members of the Magistrate’s Watch use the veteran stat block.
 
 Reporting crimes is voluntary, and many folks don’t bother to do so, since the resulting investigation and legal proceedings are likely to take up too much of their time.
+
+![https://www.belloflostsouls.net/wp-content/uploads/2022/08/rock-of-bral-header-image-e1660319113739.jpg](https://www.belloflostsouls.net/wp-content/uploads/2022/08/rock-of-bral-header-image-e1660319113739.jpg)

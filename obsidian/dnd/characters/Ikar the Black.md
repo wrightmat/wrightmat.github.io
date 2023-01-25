@@ -1,3 +1,46 @@
+---
+statblock: true
+name: Ikar the Black
+size: Medium
+type: Humanoid
+subtype: (Half-Orc)
+alignment: Lawful Evil
+ac: 16
+hp: 112
+hit_dice: 15d8 + 45
+speed: 30 ft.
+stats: [20, 15, 17, 10, 14, 15]
+saves:
+  - strength: 8
+  - dexterity: 5
+  - constitution: 6
+skillsaves:
+  - athletics: 11
+  - intimidation: 5
+senses: Darkvision 60 ft., Passive Perception 12
+languages: Commmon, Orc
+cr: 6
+traits:
+  - name: Brave.
+    desc: "Ikar has advantage on saving throws against being frightened."
+  - name: Brute.
+    desc: "A melee weapon deals one extra die of its damage when Ikar hits with it (included in the attack)."
+  - name: Relentless Endurance (1/day).
+    desc: "When Ikar is reduced to 0 hit points but not killed outright, he drops to 1 hit point instead."
+  - name: Savage Attacks.
+    desc: "When Ikar scores a critical hit with a melee weapon attack, he rolls one of the weapon's damage dice one additional time and adds it to the extra damage of the critical hit."
+actions:
+  - name: Multiattack.
+    desc: "Ikar makes three melee attacks or two ranged attacks."
+  - name: Longsword.
+    desc: "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 14 (2d8 + 5) slashing damage."
+  - name: Spear.
+    desc: "Melee or Ranged Weapon Attack: +9 to hit, reach 5 ft., range 20/60 ft., one target. Hit: 12 (2d6 + 5) piercing damage or 14 (2d8 + 5) piercing damage if used with two hands to make a melee attack."
+reactions:
+  - name: Parry.
+    desc: "Ikar adds 3 to his AC against one melee attack that would hit him. To do so, Ikar must see the attacker and be wielding a melee weapon."
+---
+
 #npc [[Mournland]]
 
 Attitude:: Indifferent
@@ -20,3 +63,47 @@ Once operating out of Karrnath, Ikar the Black now operates out of a mobile camp
 While Ikar the Black may look professional, he is also ruthless. He has been known to kill "claim jumpers" or others who have gotten in the way of his Mournland operations. He frequently makes benefit of the fact that the Mournland has no laws, and thus has never been openly accused of a crime.
 
 While Ikar once had loyalties to the nation of Karrnath, those loyalties disappeared when King Kaius III made peace with the remaining nations. Since then, Ikar works with a number of people, including Kaius's enemies the Order of the Emerald Claw. However, the only creature Ikar feels loyalty to now is Empress Donata. Ikar will secretly supply Donata with supplies in her bid for power.
+
+### Stat Block
+
+```statblock
+name: Ikar the Black
+size: Medium
+type: Humanoid
+subtype: (Half-Orc)
+alignment: Lawful Evil
+ac: 16
+hp: 112
+hit_dice: 15d8 + 45
+speed: 30 ft.
+stats: [20, 15, 17, 10, 14, 15]
+saves:
+  - strength: 8
+  - dexterity: 5
+  - constitution: 6
+skillsaves:
+  - athletics: 11
+  - intimidation: 5
+senses: Darkvision 60 ft., Passive Perception 12
+languages: Commmon, Orc
+cr: 6
+traits:
+  - name: Brave.
+    desc: "Ikar has advantage on saving throws against being frightened."
+  - name: Brute.
+    desc: "A melee weapon deals one extra die of its damage when Ikar hits with it (included in the attack)."
+  - name: Relentless Endurance (1/day).
+    desc: "When Ikar is reduced to 0 hit points but not killed outright, he drops to 1 hit point instead."
+  - name: Savage Attacks.
+    desc: "When Ikar scores a critical hit with a melee weapon attack, he rolls one of the weapon's damage dice one additional time and adds it to the extra damage of the critical hit."
+actions:
+  - name: Multiattack.
+    desc: "Ikar makes three melee attacks or two ranged attacks."
+  - name: Longsword.
+    desc: "Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 14 (2d8 + 5) slashing damage."
+  - name: Spear.
+    desc: "Melee or Ranged Weapon Attack: +9 to hit, reach 5 ft., range 20/60 ft., one target. Hit: 12 (2d6 + 5) piercing damage or 14 (2d8 + 5) piercing damage if used with two hands to make a melee attack."
+reactions:
+  - name: Parry.
+    desc: "Ikar adds 3 to his AC against one melee attack that would hit him. To do so, Ikar must see the attacker and be wielding a melee weapon."
+```
