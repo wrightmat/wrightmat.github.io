@@ -31,6 +31,3 @@
 ***Heavy Crossbow***. *Ranged Weapon Attack:* +2 to hit, range 100/400 ft., one target. *Hit:* 5 (1d10) piercing damage.
 
 **Thugs** are ruthless enforcers skilled at intimidation and violence. They work for money and have few scruples.
-
-
-[[_rand/NPCs]]

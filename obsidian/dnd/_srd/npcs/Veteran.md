@@ -31,5 +31,3 @@
 ***Heavy Crossbow***. *Ranged Weapon Attack:* +3 to hit, range 100/400 ft., one target. *Hit:* 6 (1d10 + 1) piercing damage.
 
 **Veterans** are professional fighters that take up arms for pay or to protect something they believe in or value. Their ranks include soldiers retired from long service and warriors who never served anyone but themselves.
-
-[[_rand/NPCs]]

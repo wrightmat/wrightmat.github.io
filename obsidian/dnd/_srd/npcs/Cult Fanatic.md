@@ -35,6 +35,3 @@ Cantrips (at will): *light*, *sacred flame*, *thaumaturgy*
 ***Dagger***. *Melee or Ranged Weapon Attack:* +4 to hit, reach 5 ft. or range 20/60 ft., one creature. *Hit:* 4 (1d4 + 2) piercing damage.
 
 **Fanatics** are often part of a cult's leadership, using their charisma and dogma to influence and prey on those of weak will. Most are interested in personal power above all else.
-
-
-[[_rand/NPCs]]

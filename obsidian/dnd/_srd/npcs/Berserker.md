@@ -25,6 +25,3 @@
 ***Greataxe***. *Melee Weapon Attack:* +5 to hit, reach 5 ft., one target. *Hit:* 9 (1d12 + 3) slashing damage.
 
 Hailing from uncivilized lands, unpredictable **berserkers** come together in war parties and seek conflict wherever they can find it.
-
-
-[[_rand/NPCs]]

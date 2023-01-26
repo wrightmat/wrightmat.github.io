@@ -30,6 +30,3 @@ Cantrips (at will): *light*, *sacred flame*, *thaumaturgy*
 ***Club***. *Melee Weapon Attack:* +2 to hit, reach 5 ft., one target. *Hit:* 2 (1d4) bludgeoning damage.
 
 **Acolytes** are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities.
-
-
-[[_rand/NPCs]]

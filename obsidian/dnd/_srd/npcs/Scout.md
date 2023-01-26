@@ -31,6 +31,3 @@
 ***Longbow***. *Ranged Weapon Attack:* +4 to hit, ranged 150/600 ft., one target. *Hit:* 6 (1d8 + 2) piercing damage.
 
 **Scouts** are skilled hunters and trackers who offer their services for a fee. Most hunt wild game, but a few work as bounty hunters, serve as guides, or provide military reconnaissance.
-
-
-[[_rand/NPCs]]

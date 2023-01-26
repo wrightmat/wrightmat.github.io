@@ -39,6 +39,3 @@
 ***Light Crossbow***. *Ranged Weapon Attack:* +6 to hit, range 80/320 ft., one target. *Hit:* 7 (1d8 + 3) piercing damage, and the target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one.
 
 Trained in the use of poison, **assassins** are remorseless killers who work for nobles, guildmasters, sovereigns, and anyone else who can afford them.
-
-
-[[_rand/NPCs]]
