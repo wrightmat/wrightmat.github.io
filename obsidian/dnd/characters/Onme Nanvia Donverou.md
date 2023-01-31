@@ -14,8 +14,8 @@ level: 8
 
 ### Backstory
 
-* Templar of the Silver Flame.
-* Originally from Thrane (non-specific location).
+* Trained as a Templar of the Silver Flame, where she began her training at the age of 16 after being sent there from the orphanage (since she wasn't adopted).
+* Originally from Thrane, where she was raised in an orphanage in Daskaran.
 
 ### Development
 
@@ -41,7 +41,11 @@ level: 8
 + Joined up with the party
 + Delethorn, Eldeen Reaches
 
++ ~928 YK
++ Started training as a Templar of the Silver Flame
++ Flamekeep, Thrane
+
 + ~912 YK
 + Born
-+ ???
++ Location unknown, immediately abandoned at an orphanage in Daskaran, Thrane
 ```
