@@ -96,16 +96,20 @@ Manifest zones dot the Shadow Marches, where they are patrolled by the Gatekeepe
 
 ### The Temple of the Traveler
 
-A large temple to the Traveler will sometimes randomly appear on The Shifting Islands. This temple is home to an individual known as The Architect, the primary priest of The Traveler, as well as her Cabinet of Faces who speak for her. 
+A large temple to the Traveler will sometimes randomly appear on The Shifting Islands. This temple is home to an individual known as The Architect, the primary priest of The Traveler, as well as her Cabinet of Faces who speak for her.
 
-If the players manage to make it into the temple, they will discover that The Architect is actually fleshy Prism from Mordain the Fleshweaver. She doesn’t speak, so there’s no way for them to know how she got here, but her Cabinet of Faces can answer some questions. Information they can impart:
+> This temple has few permanent features: an altar at the front with an eight-pointed configuration of four crossed bones (each inscribed with runes); and tables on either side, with pieces of metal and other trinkets and raging forges next to them. Everything else is in near constant flux - from the chairs to the lighting. Robed figures stand at each of the tables and the altar.
+
+If the players manage to make it into the temple, they will discover that The Architect (the one in robes at the altar) is actually fleshy Prism from Mordain the Fleshweaver. She doesn’t speak, so there’s no way for them to know how she got here, but her Cabinet of Faces can answer some questions. Information they can impart:
 - Time is fluid in Kythri, inconsistent both with the Material Plane and within its own islands. Adventurers who spend a day in Kythri could find that a year has passed in Eberron, or they could be trapped in Kythri for a year and find that only an hour has passed when they return.
 - The Architect has been here for as long as anyone can remember.
 	- Manifest zones dot the Shadow Marches, so she could easily get to Kythri, but the Cabinet would not know the details, or even where she came from.
 	- Mordain himself worshipped The Traveler, so it would be logical for Prism's simulacrum to take on this role.
 - The Traveler is a supreme shapeshifter and trickster, a virtuoso of deceit and craftiness, a creator of things and a bringer of knowledge.
 - It is the true lord of Eberron, having walked all its roads and seen all its sights, and left them all transformed.
+- The Traveler is the patron of all those who welcome change, in body and in philosophy. Its worshipers include changelings, shifters, doppelgangers, and lycanthropes, who see it as the greatest of gods.
 - Although the Traveler is known as the Giver of Gifts, a famous proverb advises to "Beware the gifts of the Traveler". This originates in Sarlona, but every culture in which the Traveler is known has some version of it.
+- The faithful make sacrifices to the Traveler by making something and destroying it. This demonstrates their acceptance of change and transformation.
 - The Tenents of The Traveler:
     - Revealing one's true self is weakness. Instead, followers should cover themselves in disguise and deception, until not even they know the truth of themselves.
     - Nothing is permanent. Thus, followers should make sure that change helps them and hinders their rivals.

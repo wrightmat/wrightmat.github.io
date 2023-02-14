@@ -16,7 +16,6 @@ The Mror Holds population consists mostly of twelve dwarven clans formed from th
 - Soranath
 - Toldorath
 - Tordannon
-
 Clan Noldrun has since been destroyed. Since 106 YK, Clan Kundarak has been House Kundarak and like all dragonmarked houses, has remained neutral and participates in the Iron Council of Clans only as observers, though they still govern their ancestral estates of Kundarakhold.
 
 Influential Groups:
@@ -26,7 +25,7 @@ Influential Groups:
 - The Aurum
 - Jhorash'tar
 
-**Locations**
+### Locations
 
 - Frostmantle
 - Krona Peak
@@ -40,6 +39,6 @@ Influential Groups:
 - Korran's Maw
 - Mirror Lake
 
-**Adventures**
+### Adventures
 
 - The Forge of Fury, from Tales of the Yawning Portal can be set here, in a city called Khundrukar on the western edge.

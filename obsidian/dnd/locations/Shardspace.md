@@ -17,7 +17,9 @@ Shardspace (also sometimes called Siberspace) is a particularly named wildspace,
 
 The only planet located in Shardspace is Eberron, but that planet rotates around a sun, and has 12 moons that orbit it. There’s also one extraplanetary moon that orbited Eberron at one point.
 
-The 12 moons are separated from the 13th by an expansive void called “The Outer Darkness” (see “In To The Void” adventure), which is the realm of a powerful celestial known as Nyx (or Mother Night).
+The moons are separated in to "inner moons", those first six overseen by the Sovereign Host and Dark Six, and "outer moons", those last seven (plus the Outer Darkness) ruled by The Endless. While there is little practical difference between the moons/planes (unlike the inner and outer planes of the Forgotten Realms), these moons' rulers are different. The Sovereign Host are considered gods because they generally require worship in order to remain relevant. But the Endless are truly eternal and don't require worship at all - they will continue to rule the realms given to them by their mother regardless of what mortals think of them (although their realms can also continue to function without their presence).
+
+The 12 moons are separated from the 13th by an expansive void called “The Outer Darkness” (see “In To The Void” adventure), which is the realm of a powerful celestial known as Entropy (or Mother Night).
 
 Continuing through The Outer Darkness, and past Dal Quor, will eventually lead to another silvery-grey void-like space that serves as the edge of Shardspace. Traveling all the way through this silvery-grey space, and piercing a rainbow-y wall of color (Ethereal curtain) leads to the Astral Plane, right at the Rock of Bral.
 
@@ -31,21 +33,21 @@ As the players progress through their Shardspace adventure, they'll approach eac
 
 ### **Astronomical Bodies**
 
-| Moon | Appearance and Portal Color | Associated Plane | Associated Dragonmark | Distance from Eberron | Travel Time from Eberron |
-| --- | --- | --- | --- | --- | --- |
-| Zarantyr, the Storm Moon | Pearly white | Kythri | Storm | 14,300 miles | 2 days |
-| Olarune, The Sentinel | Pale orange | Lamannia | Sentinel | 22,500 miles | 3.75 days |
-| Therendor, The Healer's Moon | Pale gray | Syrania | Healing | 39,000 miles | 6.5 days |
-| Eyre, the Anvil | Silver-gray | Fernia | Making | 52,000 miles | 8.6 days |
-| Dravago, the Herder's Moon | Pale lavender | Risia | Handling | 77,500 miles | 12.9 days |
-| Nymm, the Crown or King Nymm | Pale yellow | Daanvi | Hospitality | 95,000 miles | 15.8 days |
-| Lharvion, the Eye | Dull white with black slit | Xoriat | Detection | 125,000 miles | 20.8 days |
-| Barrakas, the Lantern | Pale gray | Irian | Finding | 144,000 miles | 24 days |
-| Rhaan, the Book | Pale blue | Thelanis | Scribing | 168,000 miles | 28 days |
-| Sypheros, the Shadow | Smoky gray | Mabar | Shadow | 193,000 miles | 32 days |
-| Aryth, the Gateway | Orange-red | Dolurrh | Passage | 221,000 miles | 36.8 days |
-| Vult, the Warding Moon | Gray and pockmarked | Shavarath | Warding | 252,000 miles | 42 days |
-| Crya, the Lonely Dreamer | Deep, dark blue | Dal Quor |  | ~400,000 miles | 66.6 days |
+| Moon                         | Appearance and Portal Color | Associated Plane | Assoc. Dragonmark | Distance from Eberron | Travel Time from Eberron |
+| ---------------------------- | --------------------------- | ---------------- | ----------------- | --------------------- | ------------------------ |
+| Zarantyr, the Storm Moon     | Pearly white                | Kythri           | Storm             | 14,300 miles          | 2 days                   |
+| Olarune, The Sentinel        | Pale orange                 | Lamannia         | Sentinel          | 22,500 miles          | 3.75 days                |
+| Therendor, The Healer's Moon | Pale gray                   | Syrania          | Healing           | 39,000 miles          | 6.5 days                 |
+| Eyre, the Anvil              | Silver-gray                 | Fernia           | Making            | 52,000 miles          | 8.6 days                 |
+| Dravago, the Herder's Moon   | Pale lavender               | Risia            | Handling          | 77,500 miles          | 12.9 days                |
+| Nymm, the Crown or King Nymm | Pale yellow                 | Daanvi           | Hospitality       | 95,000 miles          | 15.8 days                |
+| Lharvion, the Eye            | Dull white with black slit  | Xoriat           | Detection         | 125,000 miles         | 20.8 days                |
+| Barrakas, the Lantern        | Pale gray                   | Irian            | Finding           | 144,000 miles         | 24 days                  |
+| Rhaan, the Book              | Pale blue                   | Thelanis         | Scribing          | 168,000 miles         | 28 days                  |
+| Sypheros, the Shadow         | Smoky gray                  | Mabar            | Shadow            | 193,000 miles         | 32 days                  |
+| Aryth, the Gateway           | Orange-red                  | Dolurrh          | Passage           | 221,000 miles         | 36.8 days                |
+| Vult, the Warding Moon       | Gray and pockmarked         | Shavarath        | Warding           | 252,000 miles         | 42 days                  |
+| Crya, the Lonely Dreamer     | Deep, dark blue             | Dal Quor         |                   | ~400,000 miles        | 66.6 days                |
 
 ### **Random Encounters**
 

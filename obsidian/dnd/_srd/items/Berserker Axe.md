@@ -1,4 +1,4 @@
-# Berserker Axe
+#item [[5. Dravago, the Herder's Moon]]
 
 *Weapon (any axe), rare (requires attunement)*
 

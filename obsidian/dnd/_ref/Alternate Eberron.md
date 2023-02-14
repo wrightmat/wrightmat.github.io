@@ -6,6 +6,10 @@ If the heroes are successful in Dal Quor, then the Quori will never pass in to E
 
 Essentially the dragons of Argonnessen continued to expand outward unchecked after the Age of Demons, rather than fully retreat to Argonnessen. Due to this, the other races develop under the dragons’ guidance, including learning magic like they taught the Giants. Each sect of dragons sees a particular race (or races) as their “children”.
 
+But possibly the Dragons aren't as good as they want everyone to believe. Some portion of them (or maybe all of them) are trying to free Khyber from the depths of Eberron, as they see her as the source of magic in the Third Age. They don't seem bothered by the prospect of freeing all of the fiends, as they have powerful magic and believe Khyber will fight on their side.
+
+A fun twist might be to have Sphinxes as the foil to the Dragons (inspired by the battle in Vox Machina). The campaign could revolve around exploring underground temples, ruins, etc. and gathering information from the Sphinxes who hide it behind riddles. Eventually, the party could learn enough to take on the Dragons and/or stop their plan to free Khyber. Since Sphinxes have powerful magic, including time travel, they might be the only ones powerful enough to take on the Dragons. Maybe they're agents of Eberron and see him as their god?
+
 ### Timeline
 
 **The Age of Demons**
@@ -188,5 +192,24 @@ The chromatic dragons rule over various regions of Khorvaire, and a number of di
 | Obsidian | Necrotic | Arstyvrax | Dolurrh (Base in Argonnesson) | Scions of Sardior | Viscous, Intelligent | Black | n/a | Underground | CN |
 | Crystal | Radiant |  | Dal Quor (Base in Argonnesson) | Scions of Sardior | Fun-loving, Mischievous | Copper | n/a | The Skies | LN |
 | Amethyst | Force | Aleithilithos | Daanvi (Base in Argonnesson) | Scions of Sardior | Detached, Peaceful | Red | n/a | Plains | NN |
+
+
+### Sphinxes
+
+| Name | Creature      | Location       | Appearance                                                               | Inspiration                    |
+| ---- | ------------- | -------------- | ------------------------------------------------------------------------ | ------------------------------ |
+|      | Androsphinx   | Thrane         | Head of a human male, body of a lion, wings of an eagle                  | Egypt, at Giza (Androsphinx)   |
+|      | Gynosphinx    | Aerenal        | Head of a human woman, haunches of a lion, wings of a bird               | Greece (Gynosphinx)            |
+|      | Criosphinx    | Zilargo        | Head of a ram, body of a lion                                            | Egypt, at Thebes (Criosphinx)  |
+|      | Hieracosphinx | Sharn          | Head of a hawk, body of a lion                                           | Egypt, at Edfu (Hieracosphinx) |
+|      | Equisphinx    | Valenar        | Head of a horse, body of a lion, wings of an eagle                       | India (Sharabha)               |
+|      | Mantisphinx   | Shadow Marches | Head of an orc, body of a lion, wings of a dragon, tail of a scorpion    | Sri Lanka (Nara-simha)         |
+|      | Cervisphinx   | Eldeen Reaches | Head of an elf, body of a deer                                           | Thailand (Nora Nair)           |
+|      | Androsphinx   | Lhazaar        | Head of an elf, body of a lion, wings of an eagle                        | Iran / Persia (Gopaitioshah)   |
+|      | Taurosphinx   | Mror Holds     | Head of a dwarf, body of a bull, wings of an eagle                       | Sumeria (Lamassu)              |
+|      | Leucosphinx   | Everice        | Head of a giant, body of a lion, white fur with dark green mane and tail | Tibet (Snow Lion)              |
+
+
+### References
 
 [https://www.worldanvil.com/w/eberron-soltar99/h/f603e2cb-988c-483f-b9a9-3cfbcbaeb582](https://www.worldanvil.com/w/eberron-soltar99/h/f603e2cb-988c-483f-b9a9-3cfbcbaeb582)

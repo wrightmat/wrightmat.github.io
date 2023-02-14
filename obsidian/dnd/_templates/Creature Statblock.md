@@ -1,5 +1,5 @@
 ---
-
+statblock: inline
 ---
 #monster 
 

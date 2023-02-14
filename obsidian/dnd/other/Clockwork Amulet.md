@@ -1,4 +1,4 @@
-#item [[1-08. Eberron Dragonshard Mines]]
+#item [[1-08. Eberron Dragonshard Mines]] [[6. Nymm, the Crown or King Nymm]]
 
 This copper amulet contains tiny interlocking gears and is powered by magic from Daanvi, a plane of perfect order. A creature that puts an ear to the amulet can hear faint ticking and whirring noises coming from within.
 

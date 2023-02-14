@@ -1,32 +1,5 @@
 ---
-statblock: true
-name: Helmed Horror
-size: Medium
-type: Construct
-alignment: Neutral
-ac: 20
-hp: 60
-hit_dice: 8d8 + 24
-speed: 30 ft., fly 30 ft.
-stats: [18, 13, 16, 10, 10, 10]
-skills:
-  - perception: 4
-damage_resistances: Bludgeoning, Piercing, and Slashing from Nonmagical Attacks that aren't Adamantine
-damage_immunities: Force, Necrotic, Poison
-condition_immunities: Blinded, Charmed, Deafened, Frightened, Paralyzed, Petrified, Poisoned, Stunned
-senses: Blindsight 60 ft. (blind beyond this radius), Passive Perception 14
-languages: understands the languages of its creator but can’t speak
-cr: 4
-traits:
-  - name: Magic Resistance.
-    desc: "The helmed horror has advantage on saving throws against spells and other magical effects."
-  - name: Spell Immunity.
-    desc: "The helmed horror is immune to three spells chosen by its creator. Typical immunities include fireball, heat metal, and lightning bolt."
-actions:
-  - name: Multiattack.
-    desc: "The helmed horror makes two longsword attacks."
-  - name: Longsword.
-    desc: "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 8 (1d8 + 4) slashing damage, or 9 (1d10 + 4) slashing damage if used with two hands."
+statblock: inline
 ---
 #monster 
 

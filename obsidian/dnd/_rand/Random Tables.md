@@ -285,14 +285,14 @@
 
 ### Players
 
-| dice: 1d6  | Player  |
-| --- | ------- |
-| 1   | Adara   |
-| 2   | Astra   |
-| 3   | Onme    |
-| 4   | Prism   |
-| 5   | Windsor |
-| 6   | `dice: [[Random Tables^random-players]]` |
+| dice: 1d6 | Player                           |
+| --------- | -------------------------------- |
+| 1         | Adara                            |
+| 2         | Astra                            |
+| 3         | Onme                             |
+| 4         | Prism                            |
+| 5         | Windsor                          |
+| 6         | DMPC (if one exists), or re-roll |
 ^random-players
 
 ### Riddles
@@ -1392,7 +1392,7 @@ Goodies are moons, rings, strange atmosphere (or no atmosphere), and other unusu
 | 99–00      | Xenophobia:           The group conceived a strong distaste for foreign people and their customs, curtailing outside contact.                                   |
 ^random-worlds-history-events
 
-### Religion Construction
+#### Religion Construction
 
 | dice: d8  | Church Structures                                                                                                                                |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1765,3 +1765,11 @@ Goodies are moons, rings, strange atmosphere (or no atmosphere), and other unusu
 | 5 | Blue |
 | 6 | Purple |
 ^random-colors
+
+| d4  | Direction |
+| --- | --------- |
+| 1   | North     |
+| 2   | East      |
+| 3   | South     |
+| 4   | West      |
+^random-directions-4

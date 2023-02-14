@@ -9,7 +9,7 @@
 - [[Armor, +1, +2, or +3]]
 - [[Armor of Invulnerability]]
 - [[Armor of Resistance]]
-- [[Armor of Vulnerability]]
+- [[_srd/items/Armor of Vulnerability]]
 - [[Arrow-Catching Shield]]
 - [[Arrow of Slaying]]
 - [[Arrow of Slaying]]

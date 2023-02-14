@@ -1,4 +1,4 @@
-# Necklace of Fireballs
+#item [[4. Life of the Party]]
 
 *Wondrous item, rare*
 

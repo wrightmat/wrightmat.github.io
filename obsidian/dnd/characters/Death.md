@@ -14,5 +14,5 @@ She has been described as "goth" in appearance and many people, both men and wom
 
 Death, to the surprise of many, is exceptionally kind, cheerful, laid-back, and compassionate. Also, despite her virtually infinite power, authority, knowledge, and influence she is shown to be extremely easygoing and humble. She prefers to dress and act casually, disliking formal dress and events, to the surprise of many who encounter her--and who they assume would be an ominous personage. Out of all the Endless, she is the most affectionate towards humanity, and she is the one who is most able to relate to humans.
 
-**Played By**: Ito Aghayere
-![https://regardmag.com/wp-content/uploads/IA-4_0321-r-1-770x550.jpg](https://regardmag.com/wp-content/uploads/IA-4_0321-r-1-770x550.jpg)
+**Played By**: Kirby Howell-Baptiste
+![https://dnm.nflximg.net/api/v6/BvVbc2Wxr2w6QuoANoSpJKEIWjQ/AAAAQSFWLRWACnr19Xy8x6eH6ULZonyYqoSopG6vpUgveZKLifGIye_JOLGL-kb_0UekHBf42XcIybm2Yjr4yiw2OcvtQgDYHSlb_ZSjW0I78hnctSiM1R1tDI4wjYaW-IngM12dreBDXmUX7M0b6qB9oylZYCk.jpg?r=edf](https://dnm.nflximg.net/api/v6/BvVbc2Wxr2w6QuoANoSpJKEIWjQ/AAAAQSFWLRWACnr19Xy8x6eH6ULZonyYqoSopG6vpUgveZKLifGIye_JOLGL-kb_0UekHBf42XcIybm2Yjr4yiw2OcvtQgDYHSlb_ZSjW0I78hnctSiM1R1tDI4wjYaW-IngM12dreBDXmUX7M0b6qB9oylZYCk.jpg?r=edf)

@@ -11,7 +11,6 @@ While none of the gith tribes get along, a well-respected man named Zetch’r’
 ### **Merchant District**
 
 > Shabby and chaotic, decaying buildings rise from a sea of tents and stalls. In the distance to the “north” is a much more respectable district which has almost a gothic beauty. Stone dragon statues dot a few larger stone buildings, and you swear you can see a gargantuan purple dragon for real behind the largest building. Less ornate stone building compose the district to the “south”, where artisans and other workers rush through the streets. A pungent stink emanates from the other side of the ring below you.
-> 
 
 The Merchant District is the commercial center in the city and one can find just about anything they could want. Merchants sell from established shops, open-air markets, or from carts along the streets. Businesses cluster together along streets set aside for trade. Kyndl street, for example, offers alchemical supplies, poisons, and ritual ingredients.
 

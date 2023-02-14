@@ -15,6 +15,6 @@ A statue of Tira Miron in Daskaran stands between the Temples of Dol Arrah and t
 
 #### Under the Flame Orphanage
 
-The most well-known orphanage in Thrane is located in Daskaran and run by a human woman named [[Vatayla]]. Although her life experiences have given her a twisted view of the Silver Flame, she still funnels many of her orphans into the church. Anyone who isn't adopted out is sent to the Cathedral of the Silver Flame to train as a Templar (and only a Templar, if Vatayla has anything to say about it, which she does) at the age of 16.
+The most well-known orphanage in Thrane is located in Daskaran and run by a human woman named [[Vatalya]]. Although her life experiences have given her a twisted view of the Silver Flame, she still funnels many of her orphans into the church. Anyone who isn't adopted out is sent to the Cathedral of the Silver Flame to train as a Templar (and only a Templar, if Vatalya has anything to say about it, which she does) at the age of 16.
 
 [[Onme Nanvia Donverou]] was raised in the orphanage after she was abandoned there by her mother [[Nanvia]] (under unknown circumstances).
