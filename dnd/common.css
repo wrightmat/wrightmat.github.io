@@ -9,7 +9,23 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .table-selector td { cursor: pointer; padding: 2px 20px; }
 .table-selector td:hover { background-color: #eee; }
 
-.card { position: relative; width: 203.2mm; height: 50.8mm; background-color: #fff; float: left; outline: 1px dashed #000; padding-left: 20px; padding-right: 20px; padding-top: 15px; }
+.card {
+  font-family: "Georgia", serif;
+  height: 2.5in; min-height: 2.5in;
+  width: 3.5in; min-width: 3.5in;
+  background-color: #fff;
+  border: 1px solid #695d39;
+  border-radius: .5em;
+  /*box-shadow: -.25em .25em .5em -.25em #000;*/
+  padding: 0px 5px 2px 5px;
+  margin-left: 10px; margin-right: 10px;
+}
+.card h4 { line-height: 0px; margin-top: 12px; margin-bottom: 5px; }
+.card img { float: right; margin: 3px -2px 0px 6px; max-width: 120px; max-height: 50px; border-radius: .5em; }
+.card .content { font-size: 10px; line-height: 0.9; text-align: justify; vertical-align: middle; }
+.card .info { font-size: 9px; line-height: 0.2; font-style: italic; padding-top: 2px; }
+.card .info input { height: 8px; }
+.card .notes { font-size: 9px; }
 
 .dice-roller { width: 100px; height: 30px; }
 .dice-button { background: black; color: white; font-weight: bold; border: 1px black; border-radius: 5px 0px 0px 5px; float: left; height: 100%; width: 62%; cursor: pointer; user-select: none; }
@@ -354,6 +370,6 @@ p:first-child {
 @media print {
     .fontsize { font-size: 10pt; }
     .iconsize { width: 36px; height: 36px;}
-    .itemsize { height: 36px; width:  33%; }
+    .itemsize { height: 36px; width: 33%; }
     .modalsize {}
 }
