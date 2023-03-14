@@ -32,8 +32,7 @@ Foundry islands are models of industry. Some are focused primarily on physical e
 
 **Deep Halls**
 
-Under the foundries, tunnels extend down below the Sea of Fire into the earth below. These are the domains of
-the dao. Like the foundries above them, each has a distinct style tied to the sensibilities of the dao who dwells there. Streams of lava and pools of fire run through the halls, along with veins of metal and minerals. While not as luxurious as the estates of the efreeti, these often showcase the wondrous creations of the dao in residence; adventurers could find a hall whose walls are decorated with a thousand swords, or a brass garden filled with cunning construct songbirds. But some dao are paranoid, and deep halls can also contain a host of powerful and deadly traps.
+Under the foundries, tunnels extend down below the Sea of Fire into the earth below. These are the domains of the dao. Like the foundries above them, each has a distinct style tied to the sensibilities of the dao who dwells there. Streams of lava and pools of fire run through the halls, along with veins of metal and minerals. While not as luxurious as the estates of the efreeti, these often showcase the wondrous creations of the dao in residence; adventurers could find a hall whose walls are decorated with a thousand swords, or a brass garden filled with cunning construct songbirds. But some dao are paranoid, and deep halls can also contain a host of powerful and deadly traps.
 
 **The Charred City**
 

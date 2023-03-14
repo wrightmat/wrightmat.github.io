@@ -4,6 +4,7 @@ Attitude:: Unfriendly
 Gender:: Male
 Occupation:: Soldier / Mercenary / Adventurer
 Race:: Human
+Class:: Fighter
 
 Daine Halar Deneith is the leader of a team of ex-Cyran soldiers turned adventurers.
 

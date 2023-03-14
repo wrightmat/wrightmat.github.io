@@ -22,7 +22,7 @@ The Draconic Prophecy is a record of things to come that has been playing out si
 
 **Eberron**, the Dragon Between, and Progenitor of the Metallic Dragons, has also been called Bahamut in other realms. He is the Progenitor of the Second Age, his magic now being the most prevalent due to the mitigated influence of Siberys. The Second Age of Eberron is known for its wide magic and prevalence of the Human race.
 
-**Khyber**, the Dragon Below, and Progenitor of the Chromatic Dragons, has also been called Tiamut in other realms. It is foretold in the Draconic Prophesy that she will be the Progenitor of the Third Age, with her magic no longer being suppressed by Siberys and Eberron. The Third Age of Eberron is prophesized to be known for high magic and arcane knowledge and the prevalence of Elves, Lizardfolk, and Dragons.
+**Khyber**, the Dragon Below, and Progenitor of the Chromatic Dragons, has also been called Tiamat in other realms. It is foretold in the Draconic Prophesy that she will be the Progenitor of the Third Age, with her magic no longer being suppressed by Siberys and Eberron. The Third Age of Eberron is prophesized to be known for high magic and arcane knowledge and the prevalence of Elves, Lizardfolk, and Dragons.
 
 ### Draconic Gods
 

@@ -16,7 +16,7 @@ Gatherhold is a large town, and the largest settlement, in the Talenta Plains. B
 | 7 | Creatures still crawl out of the mists and make their way into the plains - frequently across the lightning rail bridge heading from Metrol. Thankfully we have the Dragontails to protect Gatherhold. |
 | 8 | Re-roll, or pick one. |
 
-**Locations**
+### Locations
 
 **Gold Dragon Inn**
 
@@ -64,9 +64,7 @@ The Halflings typically worship Balinor among the Sovereign Host and are strong 
 
 In the traditional Halfling religion, both living beings, dead beings and inanimate objects such as trees had spirits that could guild them. A priest or shaman acted as an intermediary between the spiritual and material worlds. He would consult with the dead, living and dead, while in a trance induced by beating on a magic drum and performing a special kind of chanting.
 
-Talenta tradition maintains that Balinor was a great halfling hunter, so it’s essentially woven together with ancestor worship and general veneration of nature spirits.
-
-The temple is maintained by a Halfling priest named Antal.
+Talenta tradition maintains that Balinor was a great halfling hunter, so it’s essentially woven together with ancestor worship and general veneration of nature spirits. The temple is maintained by a Halfling priest named Antal.
 
 **Sari’s Scamper Shelter**
 
@@ -74,7 +72,7 @@ Sari runs the Scamper Shelter in the town of Gaterhold. She has a caring persona
 
 Scampers or scamps are a tiny form of fastieth, and can use the weasel stat block. they have nimble foreclaws and are often used as assistant animals, fetching small things or performing simple tasks.
 
-**Events**
+### Events
 
 **Autumn Equinox (Rhaan) / Winter Solstice / Spring Equinox / Summer Solstice**
 

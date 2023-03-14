@@ -25,13 +25,14 @@ Continuing through The Outer Darkness, and past Dal Quor, will eventually lead t
 
 ### Progression and Encounters
 
-As the players progress through their Shardspace adventure, they'll approach each of the moons sequentially when they choose to move forward. At any time they can decide to backtrack though, and return to any previous location. If they decide to do this, then roll a d20 for every week of travel (based on travel times from the table below, rounded up to the nearest whole week):
-* On an 18 to 20 then a random encounter occurs (see table below).
-* On a 1, they discover the headquarters of the rogue githyanki sect known as The Whisperers, [[14. Susurrus, Palace of Whispers]].
+As the players progress through their Shardspace adventure, they'll approach each of the moons sequentially when they choose to move forward.
+* Roll for a random encounter once, based on a "lower danger environment" (occurring on 20+).
+At any time they can decide to backtrack though, and return to any previous location.
+* Roll a random encounter for every week of travel, based on a "higher danger environment" (occurring on 18+, travel times from the table below rounded up to the nearest whole week).
 
 `dice: [[Shardspace#^shardspace-random-encounters]]`
 
-### **Astronomical Bodies**
+### Astronomical Bodies
 
 | Moon                         | Appearance and Portal Color | Associated Plane | Assoc. Dragonmark | Distance from Eberron | Travel Time from Eberron |
 | ---------------------------- | --------------------------- | ---------------- | ----------------- | --------------------- | ------------------------ |
@@ -49,65 +50,38 @@ As the players progress through their Shardspace adventure, they'll approach eac
 | Vult, the Warding Moon       | Gray and pockmarked         | Shavarath        | Warding           | 252,000 miles         | 42 days                  |
 | Crya, the Lonely Dreamer     | Deep, dark blue             | Dal Quor         |                   | ~400,000 miles        | 66.6 days                |
 
-### **Random Encounters**
+### Random Encounters
 
-| d100  | Encounter                                                                                                                                                   | Attitude |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 01-05 | `encounter: 1d12: Brown Scavver` swimming in a school                                                                                                       | 0        |
-| 06-10 | `encounter: 1d12: Space Eel` swimming in a school                                                                                                           | 0        |
-| 11-15 | `encounter: 1d12: Space Guppy` swimming in a school                                                                                                         | 0        |
-| 16-20 | `encounter: 1d8: Star Lancer` swimming in a school                                                                                                          | 0        |
-| 21-30 | `encounter: 1d8: Space Dolphin` swimming in a pod                                                                                                           | +2       |
-| 31-40 | `encounter: 1d8: Kindori` swimming in a pod                                                                                                                 | +2       |
-| 41-44 | `encounter: 1d4: Jammer Leech` with any hostile ones successfully attaching to the ship                                                                     | -2       |
-| 45    | `encounter: 1: Murder Comet`                                                                                                                                | - 3      |
-| 46    | `encounter: 1: Young Solar Dragon`                                                                                                                          | -1       |
-| 47    | `encounter: 1: Young Lunar Dragon`                                                                                                                          | - 2      |
-| 48    | `encounter: 1: Asteroid Spider`                                                                                                                             | - 3      |
-| 49    | `encounter: 1: Living Star`                                                                                                                                 | 0        |
-| 50-53 | `encounter: 2d10: Goon Balloon` land on the ship                                                                                                            | - 4      |
-| 54-57 | Chest containing 1d100 gp, 2d100 sp, and 3d100 cp, which is actually a `encounter: 1: Mimic` that doesn’t need to breathe air                               | -1       |
-| 58-61 | A vast tangle of driftwood, with `encounter: 1d2: Yggdrasti` hiding among it                                                                                | -2       |
-| 62-65 | `encounter: 1: Gadabout` who's badly withered but can be nursed back to health with water and a successful DC 12 Intelligence (Nature) check                | +2       |
-| 66-70 | A dust cloud reduces visibility to 60 feet for the next 8 hours, roll another encounter                                                                     | -        |
-| 71-75 | A gas cloud causes all creatures to become poisoned for the next 8 hours, roll another encounter                                                            | -        |
-| 76-80 | Field of scrap metal, 10 percent chance that `encounter: 2d6: Flying Sword, 1: Helmed Horror` hide among it                                                 | -2       |
-| 81-85 | `encounter: 2d8: Gas Spore` that don’t need to breathe air                                                                                                  | -2       |
-| 86-90 | `encounter: 1: Fractine` reflecting the ship’s appearance back                                                                                              | -4       |
-| 91-95 | `encounter: 1: Esthetic`                                                                                                                                    | -2       |
-| 96    | Sarcophagus surrounded by permanent black tentacles (as per the spell), with `encounter: 1: Eldritch Lich` inside                                           | -8       |
-| 97    | `encounter: 1: Mind Flayer Arcanist, 1: Intellect Devourer` both in magical stasis in a pod with no window. They reactivate when exposed to breathable air. | -8       |
-| 98-00 | `dice: [[Shardspace#^shardspace-ship-encounters]]`                                                                                                          |          |
+| d100  | Encounter                                                                                                                                    | Attitude     |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 01-05 | `encounter: 1d12: Brown Scavver` swimming in a school                                                                                        | `dice:2d6`   |
+| 06-10 | `encounter: 1d12: Space Eel` swimming in a school                                                                                            | `dice:2d6`   |
+| 11-15 | `encounter: 1d12: Space Guppy` swimming in a school                                                                                          | `dice:2d6`   |
+| 16-20 | `encounter: 1d8: Star Lancer` swimming in a school                                                                                           | `dice:2d6`   |
+| 21-30 | `encounter: 1d8: Space Dolphin` swimming in a pod                                                                                            | `dice:2d6+2` |
+| 31-40 | `encounter: 1d8: Kindori` swimming in a pod                                                                                                  | `dice:2d6+2` |
+| 41-44 | `encounter: 1d4: Jammer Leech` with any hostile ones successfully attaching to the ship                                                      | `dice:2d6-2` |
+| 45    | `encounter: 1: Murder Comet`                                                                                                                 | `dice:2d6-3` |
+| 46    | `encounter: 1: Young Solar Dragon`                                                                                                           | `dice:2d6-1` |
+| 47    | `encounter: 1: Young Lunar Dragon`                                                                                                           | `dice:2d6-2` |
+| 48    | `encounter: 1: Asteroid Spider`                                                                                                              | `dice:2d6-3` |
+| 49    | `encounter: 1: Living Star`                                                                                                                  | `dice:2d6`   |
+| 50-53 | `encounter: 2d10: Goon Balloon` land on the ship                                                                                             | `dice:2d6-4` |
+| 54-57 | Chest containing 1d100 gp, 2d100 sp, and 3d100 cp, which is actually a `encounter: 1: Mimic` that doesn’t need to breathe air                | `dice:2d6-1` |
+| 58-61 | A vast tangle of driftwood, with `encounter: 1d2: Yggdrasti` hiding among it                                                                 | `dice:2d6-2` |
+| 62-65 | `encounter: 1: Gadabout` who's badly withered but can be nursed back to health with water and a successful DC 12 Intelligence (Nature) check | `dice:2d6+2` |
+| 66-70 | A dust cloud reduces visibility to 60 feet for the next 8 hours, roll another encounter                                                      |              |
+| 71-75 | A gas cloud causes all creatures to become poisoned for the next 8 hours, roll another encounter                                             |              |
+| 76-80 | Field of scrap metal, 10 percent chance that `encounter: 2d6: Flying Sword, 1: Helmed Horror` hide among it                                  | `dice:2d6-2` |
+| 81-85 | `encounter: 2d8: Gas Spore` that don’t need to breathe air                                                                                   | `dice:2d6-2` |
+| 86-90 | `encounter: 1: Fractine` reflecting the ship’s appearance back                                                                               | `dice:2d6-4` |
+| 91-94 | `encounter: 1: Esthetic`                                                                                                                     | `dice:2d6-2` |
+| 95-96 | The Gorgon, the ship built by Houses Cannith and Lyrandar and captained by Lei d'Cannith (as outlined in the Eberron Space Race section of [[Shardjammer]])                                                                                                                |              |
+| 97-98 | [[14. Susurrus, Palace of Whispers]], the headquarters of the rogue githyanki sect known as The Whisperers                                   |              |
+| 99    | Sarcophagus surrounded by permanent black tentacles (as per the spell), with `encounter: 1: Eldritch Lich` inside                                           | `dice:2d6-8` |
+| 00    | `encounter: 1: Mind Flayer Arcanist, 1: Intellect Devourer` both in magical stasis bound in a giant Khyber dragonshard. They reactivate if the shard is damaged in any way. | `dice:2d6-8` |
 ^shardspace-random-encounters
 
-### Ship Encounters
-
-| d100  | Ship Encounter                                                                                                                                                                                                                                                                                                                        | Attitude |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| 01-05 | Wasp ship Solitude, captained by Naesala Daerona (astral elf archmage) and crewed by 3 helmed horrors and 3 homunculi                                                                                                                                                                                                                 | - 2      |
-| 06-10 | Living ship Eternal Glade, captained by Serissa (human dryad) and crewed by 4 centaurs and Rattlebranch (treant)                                                                                                                                                                                                                      |          |
-| 11-17 | Space galleon Mistbreaker, captained by Vael Kan (human assassin) and crewed by 1 mage, 1 acolyte, 4 spies and 10 bandits                                                                                                                                                                                                             | - 2      |
-| 18-22 | Bombard Doombellow, captained by Zos Vrek (vampirate) and crewed by 8 vampirates                                                                                                                                                                                                                                                      | - 4      |
-| 23-26 | Damselfly ship Truthseeker, captained by Rala Dhendasa (Rakshasa disguised as a human) and crewed by 6 weretigers in human form, with 2 tigers as pets                                                                                                                                                                                | - 4      |
-| 27-31 | Scorpion ship Crimson Eye, captained by Krugak son of Gruk (orc war chief) and crewed by 2 orc eyes of Gruumsh, 2 orogs and 7 orcs                                                                                                                                                                                                    | - 6      |
-| 32-38 | Hammerhead ship Valor, captained by Ethro Sunstrider (human noble) and crewed by 2 priests, 5 knights and 7 guards                                                                                                                                                                                                                    | + 1      |
-| 39-43 | Turtle ship Call of the Wild, captained by Zusk Droknaxl (lizardfolk king/queen) and crewed by 3 lizardfolk shamans and 12 lizardfolk                                                                                                                                                                                                 | - 2      |
-| 44-45 | Space galleon Everdawn, captained by Vaerius Argentrock (death knight) and crewed by 3 wights and 15 skeletons                                                                                                                                                                                                                        | - 6      |
-| 46-48 | Scorpion ship Bone Collector, captained by Faye Tangleroot (night hag) and crewed by 1 cult fanatic and 8 grimlocks, with 4 giant frogs as pets                                                                                                                                                                                       | - 6      |
-| 49-52 | Githyanki Cruiser Northwind, captained by Rak’i’th (githyanki) and crewed by 12 githyanki                                                                                                                                                                                                                                             | - 4      |
-| 53-56 | Hammerhead ship Luxury, captained by Bracknell Forest (giff) and crewed by 4 giff and 10                                                                                                                                                                                                                                              |          |
-| 57-60 | Squidship Fathomless Deep, captained by Sethek (sahuagin baron) and crewed by 2 sahuagin priestesses and 10 sahuagin                                                                                                                                                                                                                  | - 4      |
-| 61-66 | Wasp ship Problemsolver, crewed by an adventuring party that includes captain Devon Tharias (human veteran), 1 berserker, 1 priest, 1 mage and 1 spy                                                                                                                                                                                  | - 2      |
-| 67-71 | Flying fish ship Fishbait with a crew of fishers. Captained by Barask ‘One-Eyed’ (half-orc veteran) and crewed by 2 acolytes, 2 scouts and 5 commoner sailors                                                                                                                                                                         |          |
-| 72-76 | Bombard Moradin’s Hammer, captained by Argor Stonemight (dwarf gladiator) and crewed by 2 dwarf priests, 4 dwarf veterans and 5 dwarf guards                                                                                                                                                                                          |          |
-| 77-80 | Star moth Silkweaver, captained by Zarvyll Myval (drow priestess) and crewed by 1 drow mage, 2 drow elite warriors and 8 drow, with 4 giant spiders as pets                                                                                                                                                                           | - 2      |
-| 81-83 | Lamprey ship Endless Night, captained by Szatszothi (yuan-ti abomination) and crewed by 4 yuan-ti malisons and 8 cultists, with 4 giant poisonous snakes as pets                                                                                                                                                                      | - 4      |
-| 84-87 | Flying fish ship Ctha-dak’s Mandible, captained by Glak-nuk (thri-kreen mystic) and crewed by 4 thri-kreen hunters and 5 thri-kreen                                                                                                                                                                                                   | - 1      |
-| 88-92 | Damselfly ship Fortune, captained by Xzav Khel (mercane) and crewed by 2 mercanes and 5 plasmoid warriors                                                                                                                                                                                                                             | + 2      |
-| 93-96 | Shrike ship Beak of Destiny, captained by Ookel Khur (dohvar) and crewed by 2 giff shock troopers and 5 dohvars, with 5 space swine pets (used as mounts by the dohvar)                                                                                                                                                               | + 2      |
-| 97-98 | Squid ship Gallant Glee, filled with musical instruments, bottles, goblets, and other festive objects, but also a dozen humanoid corpses. The corpses are the previous victims of 11 space clowns (including captain Jovial Jek) that use their Phantasmal Form to appear as the festive objects, attacking if their ship is boarded. | - 8      |
-| 99-00 | Nightspider Conquest, crewed by 25 clockwork horrors                                                                                                                                                                                                                                                                                  | - 4      |
-^shardspace-ship-encounters
-
 ### References
+
 [https://www.reddit.com/r/Eberron/comments/xo4fwd/map_of_eberrons_moons_and_time_to_travel_both/](https://www.reddit.com/r/Eberron/comments/xo4fwd/map_of_eberrons_moons_and_time_to_travel_both/)

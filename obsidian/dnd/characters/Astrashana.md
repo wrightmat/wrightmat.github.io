@@ -4,7 +4,7 @@ ac: 13
 modifier: 1
 level: 8
 ---
-#pc [[Alex]] [[Crya (Dal Quor)]] [[Barrakas (Irian)]]
+#pc [[Alex Kelsch]] [[Crya (Dal Quor)]] [[Barrakas (Irian)]]
 
 * **Alignment**:: Chaotic Good
 * **Class**:: Sorcerer (Aberrant Mind)
@@ -24,7 +24,7 @@ Astra lost faith in the Path of Light after that day. His parents were the great
 
 His psychic powers as a Kalashtar also began to expand farther than he thought possible after the incident. His right eye began to glow, along with the gashes across it, when casting spells. As if the attack by the Inspired had beyond merely a physical affect. His abilities have grown with continually increasing complexity over time.
 
-6 years later, Astra now roams the country with his violin and a carefree smile. They perform their “music” to countless people and thrive off of all the validation and attention it garners them. After all, running away from his problems and maintaining his persona is all he has left. The show must go on!
+Six years later, Astra now roams the country with his violin and a carefree smile. They perform their “music” to countless people and thrive off of all the validation and attention it garners them. After all, running away from his problems and maintaining his persona is all he has left. The show must go on!
 
 ### Development
 

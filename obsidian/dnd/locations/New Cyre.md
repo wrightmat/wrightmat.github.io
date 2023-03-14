@@ -16,7 +16,6 @@ Building a community out of the wreckage of Cyre, New Cyre continues to attract 
 After the players return from the mine, new postings are present on the job board:
 
 > Willing to pay generously for concrete information on the whereabouts of conductor stones in the Mournland, up to 500 gold per mile of stones. - House Orien
-> 
 
 > Generous bounty awarded to any adventurers able to salvage and return warforged colossus components, specifically docent nodes or central master docents. - House Cannith
 

@@ -40,7 +40,7 @@ bonus_actions:
 
 Much like terrestrial dolphins, Space Dolphins play with ships travelling the currents of the Astral Sea and have even been known to rescue sailors who have fallen overboard. They avoid monstrous and aggressive races. 
 
-They mate for life. In packs of six!
+>They mate for life. In packs of six. Pure love.
 
 ## References
 

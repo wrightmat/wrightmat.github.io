@@ -4,7 +4,6 @@ renown: 2
 #location #city [[Aundair]]
 
 > The island of Stormhome is a long, scimitar-shaped piece of land with a narrow spine of highlands running up its center. They are not quite tall enough to be mountains, but these steep hills are enough to block the fierce winds blowing east down the Icehorn Mountains and across the waves to the island crouched against Aundair's northern shore. Built against a bluff overlooking the Bitter Sea on the island's east side is the city of Stormhome, House Lyrandar's ancestral home and principal base of operations.
-
 > The erratic weather of your trip has suddenly subsided into the most temperate you’ve ever experienced. The smell of sea air hits your nostrils as seagulls fly overhead, calling out to you. The coasts of this small island are lined with tall spire-like buildings, connected with gangways. Boats with the House Lyrandar logo crowd various piers all over the city.
 
 If the players ask about the layout of the city, read this text below:

@@ -1,4 +1,4 @@
-#druidic [[Ridara Tan Lorghalen]]
+#druidic [[Rida Tan Lorghalen]]
 
 The Lorghali produce excellent mediators, apothecaries, and farmers, but what makes them truly remarkable is their tradition of stonesinging— a form of primal magic— and their relationship with the elementals of the region. Lamannian elementals are alien creatures whose thought processes and perception of reality are quite different from the humanoids of Eberron. Rather than binding elementals, as is common throughout Khorvaire, Lorghalan stonesingers influence elementals and natural forces by communing directly with each spirit and convincing it to help. A simple stonesinging effect, such as one produced by druidcraft, is hardly more complicated than singing a few words in Primordial. More significant requests require deeper communion with the spirits, including both concentration and an expenditure of will in addition to the song— urging the spirit to comply and impressing the request onto it. (As such, stonesinging follows the same rules as other forms of spellcasting.)
 

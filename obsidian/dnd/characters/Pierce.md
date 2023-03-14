@@ -2,8 +2,9 @@
 
 Attitude:: Indifferent
 Gender:: Male
-Occupation:: Ranger / Adventurer
+Occupation:: Skirmisher / Scout / Adventurer
 Race:: Warforged
+Class:: Ranger
 
 Pierce is a warforged ranger for a team of ex-Cyran soldiers/adventures who recently escaped from Cyre and now reside in Sharn. Like most warforged, he contemplates his existence.
 

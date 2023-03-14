@@ -8,19 +8,23 @@ Districts in the city include The Furnace, Pyraculum, and Iskalat.
 
 ![Untitled](https://images.squarespace-cdn.com/content/v1/5bd88db093a6320f071b1a50/bf3cbfb8-8d65-4ca3-82cf-df946ff3e2d8/PlanarAdventuresPaizo_CityOfBrass.png?format=750w)
 
+### Iskalat
+
+In this district are the public docks, primarily used for interplanar vessels. It is a lively district with a multitude of races from across the planes and is dotted with inns and taverns.
+
 ### The Furnace
 
-**High Hearth**
+##### High Hearth
 
 Hight Hearth serves as the seat of power for the Great Sultan of the Efreet.
 
 Dark basalt was used to construct most of the structure of the palace. The basalt is so dark that it appears to drain light from the flames surrounding the city. Gold, brass, and copper were used to cover many of the towers and domes of the palace.
 
-**Red Pillar Halls**
+##### Red Pillar Halls
 
 The Red Pillar Halls serve as the court of the Sultan. Additionally, bureaucrats collect taxes, make appointments, and deal justice here. Any efreeti hoping to address their grievances here are subjected to an extensive search and need to dish out hefty bribes to make it into the building.
 
-**Flamesight Mosque**
+##### Flamesight Mosque
 
 This mosque was built to resemble a pyramid. The entire structure is made from copper that never tarnishes.
 
@@ -28,14 +32,10 @@ This mosque was built to resemble a pyramid. The entire structure is made from c
 
 The bazaars within this district offer the most diverse array of high-quality goods. Many craftsmen and traders are found in the Pyraculum, as well as artisans of many races.
 
-- Dir al-Nasr Bazaar
-- Edible Bazaar, a bazaar within the district that specialized in fruits and vegetables.[4]
-- Hayyat Suq, a clothier and tailor establishment within the district.[4]
-- Marabout Suq, a bazaar within the district where one could find preachers, books, and holy items.[4]
-- Marakish Bazaar, a bazaar within the district that was dedicated to dealing in leather goods.[4]
-- Mehara Bazaar, a bazaar within the district that specialized in camels and crafting saddles.[4]
+- Dir al-Nasar, where the dao named Vakees works.
+- Edible Bazaar, a bazaar within the district that specializes in fruits and vegetables.
+- Hayyat Suq, a clothier and tailor establishment within the district.
+- Marabout Suq, a bazaar within the district where one could find preachers, books, and holy items.
+- Marakish Bazaar, a bazaar within the district that was dedicated to dealing in leather goods.
+- Mehara Bazaar, a bazaar within the district that specialized in camels and crafting saddles.
 - Qahwa Suq, a bazaar within the district where one could find beans, coffee, and spices.
-
-### Iskalat
-
-In this district are the public docks, primarily used for interplanar vessels. It is a lively district with a multitude of races from across the planes and is dotted with inns and taverns.

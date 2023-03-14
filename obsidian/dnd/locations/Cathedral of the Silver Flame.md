@@ -6,4 +6,4 @@ The interior of the Cathedral, with its silver-inlaid black marble floors and pi
 
 In addition to housing a veritable swarm of clerics and paladins, the Cathedral is home to the offices of the cardinals and the private chambers of the Keeper of the Flame, Jaela Daran. Anyone lucky enough to be granted access might stumble upon Jaela in the halls, for she paces them often, murmuring quietly to herself. Of course, wherever Jaela goes, so too goes her ferocious pet and guardian, Skaravojen (guardian of the keeper, an ugly six-legged beast that the Cathedral guards have taken to calling a "dragonhound").
 
-[Cathedral of the Silver Flame](https://www.notion.so/Cathedral-of-the-Silver-Flame-db213f178c0c4bdd8e6d915df0878df8)
+[[1-04. Cathedral of the Silver Flame]]

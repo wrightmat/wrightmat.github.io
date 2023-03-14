@@ -111,7 +111,7 @@
 | 2 | A woodling mouse |
 | 3 | Slippers made from felled air elementals |
 | 4 | A phenomenal hat fitted with a ridiculously large pink roc feather |
-| 5 | A kraken tentacle from the Sea of Starlight used as a durable 100-foot climbing rope |
+| 5 | A kraken tentacle from the Endless Ocean used as a durable 100-foot climbing rope |
 | 6 | A small bright blue statically-charged caterpillar that spins silk of copper |
 | 7 | A beautiful scarlet dread blossom suspended under glass |
 | 8 | Three adder stones that sing with a chorus of treants when wind blows through them |

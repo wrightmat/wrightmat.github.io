@@ -5,7 +5,7 @@ renown: 4
 
 > From afar, Flamekeep resembles a gigantic fortress enclosed by high walls, its buildings perched atop a rocky plinth surrounded on all sides by a water-filled crevasse. Deep within this crevasse sits the city's bustling harbor and more crowded districts. The magnificent Cathedral of the Silver Flame, its white alabaster walls agleam, surmounts the rocky plinth - a glorious beacon visible for miles in every direction. West of the Cathedral rise the slender spires of Thalingard, the ancestral home of Thrane's kings. Unlike the Cathedral, the royal palace is sculpted from gray rock and looks somewhat glum by comparison. To the east of the Cathedral lies a relatively simple stone Temple of the Sovereign Host. Lightning Rail stations, an academic district, and a commercial district dot the areas around the Cathedral.
 
-[Cathedral of the Silver Flame](Cathedral%20of%20the%20Silver%20Flame%202bff93b88eed421296e560649d80d7d4.md)
+[[Cathedral of the Silver Flame]]
 
 **Temple of the Sovereign Host**: Temples to the Sovereign Host are traditionally made of stone, although wood suffices in poor or forested communities. They normally stand near other buildings or areas of significance, both to symbolize their importance and to make them easily accessible. Most have sloped roofs, but rarely match the magnificent sweeps of Silver Flame cathedrals. The Temple of the Sovereign Host in Flamekeep is directly east of the Cathedral.
 
