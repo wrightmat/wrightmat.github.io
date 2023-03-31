@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/barrakas.png](https://wrightmat.github.io/obsidian/img/barrakas.png)
 
-**Universal Properties**
+### Universal Properties
 
 The light of the Eternal Dawn strengthens the living. Darkness and disease have no place here, and minor injuries melt away. Irian has the following universal properties.
 

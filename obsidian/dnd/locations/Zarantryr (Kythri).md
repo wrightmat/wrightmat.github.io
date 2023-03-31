@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/zarantyr.png](https://wrightmat.github.io/obsidian/img/zarantyr.png)
 
-**Universal Properties**
+### Universal Properties
 
 All things change in Kythri, even time and the future. The only thing that’s truly reliable is that nothing’s reliable.
 

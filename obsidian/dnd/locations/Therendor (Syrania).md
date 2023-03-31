@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/therendor.png](https://wrightmat.github.io/obsidian/img/therendor.png)
 
-**Universal Properties**
+### Universal Properties
 
 Syrania encourages communication and negotiation, and grants all creatures the gift of flight. The Open Sky of Syrania is an endless void, and without flight, you could fall indefinitely; fortunately, all creatures find that they can move through the air just as naturally as walking.
 

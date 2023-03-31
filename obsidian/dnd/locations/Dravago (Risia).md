@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/dravago.png](https://wrightmat.github.io/obsidian/img/dravago.png)
 
-**Universal Properties**
+##### Universal Properties
 
 Risia is bitterly cold, and unprotected creatures quickly succumb to the deadly temperatures. Here are a few of the consistent properties of the plane.
 

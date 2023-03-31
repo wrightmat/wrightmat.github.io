@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/sypheros.png](https://wrightmat.github.io/obsidian/img/sypheros.png)
 
-**Universal Properties**
+### Universal Properties
 
 The Endless Night consumes life and light. It’s a wellspring of necrotic energy, where light is swallowed by gloom, and unprotected creatures quickly die. Mabar has the following universal properties.
 

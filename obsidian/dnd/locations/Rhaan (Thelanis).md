@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/rhaan.png](https://wrightmat.github.io/obsidian/img/rhaan.png)
 
-**Universal Properties**
+### Universal Properties
 
 Thelanis is unpredictable, and its cardinal rule is that layers follow their own stories. Consider the following properties.
 

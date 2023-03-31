@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/olarune.png](https://wrightmat.github.io/obsidian/img/olarune.png) 
 
-**Universal Properties**
+### Universal Properties
 
 Lamannia is a reflection of the natural world, intensified and exaggerated. The air is pure and clean, the water fresh and clear. Colors are impossibly vivid. It’s suffused with life—a realm in which any stone could be an earth elemental, where any tree could be awakened. Vegetation is nearly always in bloom, and beasts are almost always in the peak of health. Except for a few layers such as the Rot, Lamannia reflects the ideal state of the natural world. Here are some of the plane’s consistent properties.
 

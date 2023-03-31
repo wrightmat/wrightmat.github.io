@@ -12,4 +12,4 @@ She may appear as a tall, inhuman elven figure with perfect features and a palpa
 
 She is served by two unicorns, one black and one white. She seemingly opposes the forces of the Dreaming Dark, and knows some of the truth behind the conflict of the giants and the quori as well as the role of the dragons in Xen'drik.
 
-In stories the Queen of Dusk will provide boons to heroes, but they always have a terrible price.
+In stories, the Queen of Dusk will provide boons to heroes, but they always have a terrible price.

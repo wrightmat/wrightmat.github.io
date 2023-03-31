@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/vult.png](https://wrightmat.github.io/obsidian/img/vult.png)
 
-**Universal Properties**
+### Universal Properties
 
 There’s a part of you that’s always been in Shavarath, a sliver of your soul that’s always been at war. When you’re in Shavarath, those instincts guide you. It’s easier to strike a deadly blow, or to grit your teeth and fight on through pain or injury.
 

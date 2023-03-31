@@ -2,12 +2,13 @@
 
 ![https://wrightmat.github.io/obsidian/img/nymm.png](https://wrightmat.github.io/obsidian/img/nymm.png)
 
-**Universal Properties**
+### Universal Properties
 
 The impulse toward order affects all creatures in Daanvi. It’s impossible to knowingly lie while in Daanvi, and the effects of random chance are reduced. In Daanvi, all things are inherently reliable—remarkable fortune and bad luck are equally rare.
 
 **Plane of Truth**. A creature can’t tell a deliberate lie. It can avoid answering questions, or be evasive in its answers, as long as it remains within the boundaries of the truth.
-Impeded Illusion. When a creature casts an illusion spell that has a duration of 1 minute or longer, the duration is halved.
+
+**Impeded Illusion**. When a creature casts an illusion spell that has a duration of 1 minute or longer, the duration is halved.
 
 **The Eyes of the Law**. When a creature casts a divination spell, its range is doubled; if that spell has a duration of at least 1 minute but less than 24 hours, the duration is also doubled.
 

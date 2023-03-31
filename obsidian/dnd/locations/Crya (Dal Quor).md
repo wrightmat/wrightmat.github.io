@@ -2,13 +2,12 @@
 
 ![https://wrightmat.github.io/obsidian/img/crya.png](https://wrightmat.github.io/obsidian/img/crya.png)
 
-**Universal Properties**
+### Universal Properties
 
 Dal Quor is a place where impossible things are possible and the surroundings can change in the blink of an eye. What differentiates it from Kythri and Xoriat is that these changes are drawn from the minds of dreamers, both from the mortal subconscious and the ancient dreams of il-Lashtavar itself.
 Even when you’re exploring someone else’s dreams, your desires and memories can infect the landscape. The Shifting Dreams table provides ideas for how a dream could change.
 
 **Shifting Dreams**
-
 | d8 | Dream Event |
 | --- | --- |
 | 1 | A familiar melody can be heard throughout the area. Ask a player to describe the song. |

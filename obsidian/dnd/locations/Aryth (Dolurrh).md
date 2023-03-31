@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/aryth.png](https://wrightmat.github.io/obsidian/img/aryth.png)
 
-**Universal Properties**
+### Universal Properties
 
 Everything about Dolurrh is gray and gloomy. Even the brightest colors seem faded, the most joyful sounds seem dull. The heavy weight of ennui settles on travelers the moment they arrive, making even the simplest tasks feel challenging. And there’s a constant pull, tugging on memory and emotion, a desire to just sit down and let it all go.
 

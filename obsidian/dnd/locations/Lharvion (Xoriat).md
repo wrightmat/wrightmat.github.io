@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/lharvion.png](https://wrightmat.github.io/obsidian/img/lharvion.png)
 
-**Universal Properties**
+### Universal Properties
 
 To mortal eyes, Xoriat may seem more chaotic than Kythri. However, it’s not defined by the idea of chaos; rather, mortals don’t understand the logic that guides its changes. Additionally, Kythri’s constant change is still always natural: fire and lightning, stone and water. On the other hand, in Xoriat, a tornado might be composed of ink. Each grain in a sandstorm could be a miniature bust of Queen Aurala of Aundair, or a tiny beating heart. It’s not simply chaotic; it’s unnatural.
 

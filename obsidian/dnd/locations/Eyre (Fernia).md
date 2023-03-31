@@ -2,7 +2,7 @@
 
 ![https://wrightmat.github.io/obsidian/img/eyre.png](https://wrightmat.github.io/obsidian/img/eyre.png)
 
-**Universal Properties**
+### Universal Properties
 
 The sweltering heat of Fernia can be deadly to unprotected creatures, and it burns through mortal metabolisms. The following properties apply to the entire plane.
 
