@@ -1,8 +1,8 @@
 ---
-hp: 51
+level: 9
+hp: 54
 ac: 15
 modifier: 4
-level: 8
 ---
 #pc [[Claire]] [[Rhaan (Thelanis)]] [[Aryth (Dolurrh)]]
 

@@ -1,4 +1,4 @@
-#item [[5. Dravago, the Herder's Moon]]
+#item [[5. Dravago, the Herder]]
 
 _Weapon (any axe), rare (requires attunement)_
 

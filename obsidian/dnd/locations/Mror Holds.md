@@ -25,6 +25,8 @@ Influential Groups:
 - The Aurum
 - Jhorash'tar
 
+![https://static.wikia.nocookie.net/eberron/images/e/e6/Creilath_sharn_council.png/revision/latest?cb=20220123124957](https://static.wikia.nocookie.net/eberron/images/e/e6/Creilath_sharn_council.png/revision/latest?cb=20220123124957)
+
 ### Locations
 
 - Frostmantle

@@ -3,6 +3,7 @@ hp: 84
 ac: 18
 modifier: 2
 level: 8
+xp: 34,000
 ---
 #dmpc 
 

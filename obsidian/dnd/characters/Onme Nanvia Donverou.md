@@ -1,8 +1,8 @@
 ---
-hp: 68
+level: 9
+hp: 76
 ac: 21
 modifier: 2
-level: 8
 ---
 #pc [[Sara Edwards]] [[Ring of Siberys]] [[Therendor (Syrania)]]
 

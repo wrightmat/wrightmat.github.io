@@ -1,8 +1,8 @@
 ---
-hp: 50
-ac: 13
+level: 9
+hp: 56
+ac: 16
 modifier: 1
-level: 8
 ---
 #pc [[Alex Kelsch]] [[Crya (Dal Quor)]] [[Barrakas (Irian)]]
 

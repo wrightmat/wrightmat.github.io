@@ -26,7 +26,6 @@
 ^travel-situation
 
 * Initial attitude of any encounter can be determined by rolling 2d6 and comparing the result to the table below. Certain encounters may include initial attitude modifiers to be added or subtracted from the roll to screw it toward a more logical result (for example, a -3 for an evil creature so they're never friendly to the party)
-
 | 2d6   | Initial Attitude | Explanation                                                |
 | ----- | ---------------- | ---------------------------------------------------------- |
 | 1-3 | Hostile          | Attacks as soon as possible                                |
@@ -36,7 +35,6 @@
 ^travel-initial-attitude
 
 * Examples of modifiers based on monster or NPC alignment are below, but initial attitude modifiers could be based on other things as well.
-
 | Alignment           | Modifier |
 | ------------------- | -------- |
 | Lawful Good         | +4       |

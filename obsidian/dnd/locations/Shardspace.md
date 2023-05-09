@@ -34,21 +34,22 @@ At any time they can decide to backtrack though, and return to any previous loca
 
 ### Astronomical Bodies
 
-| Moon                         | Appearance and Portal Color | Associated Plane | Assoc. Dragonmark | Distance from Eberron | Travel Time from Eberron |
-| ---------------------------- | --------------------------- | ---------------- | ----------------- | --------------------- | ------------------------ |
-| Zarantyr, the Storm Moon     | Pearly white                | Kythri           | Storm             | 14,300 miles          | 2 days                   |
-| Olarune, The Sentinel        | Pale orange                 | Lamannia         | Sentinel          | 22,500 miles          | 3.75 days                |
-| Therendor, The Healer's Moon | Pale gray                   | Syrania          | Healing           | 39,000 miles          | 6.5 days                 |
-| Eyre, the Anvil              | Silver-gray                 | Fernia           | Making            | 52,000 miles          | 8.6 days                 |
-| Dravago, the Herder's Moon   | Pale lavender               | Risia            | Handling          | 77,500 miles          | 12.9 days                |
-| Nymm, the Crown or King Nymm | Pale yellow                 | Daanvi           | Hospitality       | 95,000 miles          | 15.8 days                |
-| Lharvion, the Eye            | Dull white with black slit  | Xoriat           | Detection         | 125,000 miles         | 20.8 days                |
-| Barrakas, the Lantern        | Pale gray                   | Irian            | Finding           | 144,000 miles         | 24 days                  |
-| Rhaan, the Book              | Pale blue                   | Thelanis         | Scribing          | 168,000 miles         | 28 days                  |
-| Sypheros, the Shadow         | Smoky gray                  | Mabar            | Shadow            | 193,000 miles         | 32 days                  |
-| Aryth, the Gateway           | Orange-red                  | Dolurrh          | Passage           | 221,000 miles         | 36.8 days                |
-| Vult, the Warding Moon       | Gray and pockmarked         | Shavarath        | Warding           | 252,000 miles         | 42 days                  |
-| Crya, the Lonely Dreamer     | Deep, dark blue             | Dal Quor         |                   | ~400,000 miles        | 66.6 days                |
+| d12 | Moon                     | Appearance and Portal Color | Associated Plane | Assoc. Dragonmark | Distance from Eberron | Travel Time from Eberron |
+| --- | ------------------------ | --------------------------- | ---------------- | ----------------- | --------------------- | ------------------------ |
+| 1   | Zarantyr, the Storm Moon | Pearly white                | Kythri           | Storm             | 14,300 miles          | 2 days                   |
+| 2   | Olarune, The Sentinel    | Pale orange                 | Lamannia         | Sentinel          | 22,500 miles          | 3.75 days                |
+| 3   | Therendor, The Healer    | Pale gray                   | Syrania          | Healing           | 39,000 miles          | 6.5 days                 |
+| 4   | Eyre, the Anvil          | Silver-gray                 | Fernia           | Making            | 52,000 miles          | 8.6 days                 |
+| 5   | Dravago, the Herder      | Pale lavender               | Risia            | Handling          | 77,500 miles          | 12.9 days                |
+| 6   | Nymm, the Crown          | Pale yellow                 | Daanvi           | Hospitality       | 95,000 miles          | 15.8 days                |
+| 7   | Lharvion, the Eye        | Dull white with black slit  | Xoriat           | Detection         | 125,000 miles         | 20.8 days                |
+| 8   | Barrakas, the Lantern    | Pale gray                   | Irian            | Finding           | 144,000 miles         | 24 days                  |
+| 9   | Rhaan, the Book          | Pale blue                   | Thelanis         | Scribing          | 168,000 miles         | 28 days                  |
+| 10  | Sypheros, the Shadow     | Smoky gray                  | Mabar            | Shadow            | 193,000 miles         | 32 days                  |
+| 11  | Aryth, the Gateway       | Orange-red                  | Dolurrh          | Passage           | 221,000 miles         | 36.8 days                |
+| 12  | Vult, the Warding Moon   | Gray and pockmarked         | Shavarath        | Warding           | 252,000 miles         | 42 days                  |
+|     | Crya, the Lonely Dreamer | Deep, dark blue             | Dal Quor         |                   | ~400,000 miles        | 66.6 days                |
+^shardshapce-astronomical-bodies
 
 ### Random Encounters
 
@@ -58,28 +59,28 @@ At any time they can decide to backtrack though, and return to any previous loca
 | 06-10 | `encounter: 1d12: Space Eel` swimming in a school                                                                                            | `dice:2d6`   |
 | 11-15 | `encounter: 1d12: Space Guppy` swimming in a school                                                                                          | `dice:2d6`   |
 | 16-20 | `encounter: 1d8: Star Lancer` swimming in a school                                                                                           | `dice:2d6`   |
-| 21-30 | `encounter: 1d8: Space Dolphin` swimming in a pod                                                                                            | `dice:2d6+2` |
-| 31-40 | `encounter: 1d8: Kindori` swimming in a pod                                                                                                  | `dice:2d6+2` |
-| 41-44 | `encounter: 1d4: Jammer Leech` with any hostile ones successfully attaching to the ship                                                      | `dice:2d6-2` |
-| 45    | `encounter: 1: Murder Comet`                                                                                                                 | `dice:2d6-3` |
-| 46    | `encounter: 1: Young Solar Dragon`                                                                                                           | `dice:2d6-1` |
-| 47    | `encounter: 1: Young Lunar Dragon`                                                                                                           | `dice:2d6-2` |
-| 48    | `encounter: 1: Asteroid Spider`                                                                                                              | `dice:2d6-3` |
-| 49    | `encounter: 1: Living Star`                                                                                                                  | `dice:2d6`   |
-| 50-53 | `encounter: 2d10: Goon Balloon` land on the ship                                                                                             | `dice:2d6-4` |
-| 54-57 | Chest containing 1d100 gp, 2d100 sp, and 3d100 cp, which is actually a `encounter: 1: Mimic` that doesn’t need to breathe air                | `dice:2d6-1` |
-| 58-61 | A vast tangle of driftwood, with `encounter: 1d2: Yggdrasti` hiding among it                                                                 | `dice:2d6-2` |
-| 62-65 | `encounter: 1: Gadabout` who's badly withered but can be nursed back to health with water and a successful DC 12 Intelligence (Nature) check | `dice:2d6+2` |
-| 66-70 | A dust cloud reduces visibility to 60 feet for the next 8 hours, roll another encounter                                                      |              |
-| 71-75 | A gas cloud causes all creatures to become poisoned for the next 8 hours, roll another encounter                                             |              |
-| 76-80 | Field of scrap metal, 10 percent chance that `encounter: 2d6: Flying Sword, 1: Helmed Horror` hide among it                                  | `dice:2d6-2` |
-| 81-85 | `encounter: 2d8: Gas Spore` that don’t need to breathe air                                                                                   | `dice:2d6-2` |
-| 86-90 | `encounter: 1: Fractine` reflecting the ship’s appearance back                                                                               | `dice:2d6-4` |
-| 91-94 | `encounter: 1: Esthetic`                                                                                                                     | `dice:2d6-2` |
-| 95-96 | The Gorgon, the ship built by Houses Cannith and Lyrandar and captained by Lei d'Cannith (as outlined in the Eberron Space Race section of [[Shardjammer]])                                                                                                                |              |
-| 97-98 | [[14. Susurrus, Palace of Whispers]], the headquarters of the rogue githyanki sect known as The Whisperers                                   |              |
-| 99    | Sarcophagus surrounded by permanent black tentacles (as per the spell), with `encounter: 1: Eldritch Lich` inside                                           | `dice:2d6-8` |
-| 00    | `encounter: 1: Mind Flayer Arcanist, 1: Intellect Devourer` both in magical stasis bound in a giant Khyber dragonshard. They reactivate if the shard is damaged in any way. | `dice:2d6-8` |
+| 21-25 | `encounter: 1d8: Space Dolphin` swimming in a pod                                                                                            | `dice:2d6+2` |
+| 26-30 | `encounter: 1d8: Kindori` swimming in a pod                                                                                                  | `dice:2d6+2` |
+| 31-34 | `encounter: 1d4: Jammer Leech` with any hostile ones successfully attaching to the ship                                                      | `dice:2d6-2` |
+| 35-38 | `encounter: 2d10: Goon Balloon` land on the ship                                                                                             | `dice:2d6-4` |
+| 39-42 | Chest containing 1d100 gp, 2d100 sp, and 3d100 cp, which is actually a `encounter: 1: Mimic` that doesn’t need to breathe air                | `dice:2d6-1` |
+| 43-46 | A vast tangle of driftwood, with `encounter: 1d2: Yggdrasti` hiding among it                                                                 | `dice:2d6-2` |
+| 47-50 | `encounter: 1: Gadabout` who's badly withered but can be nursed back to health with water and a successful DC 12 Intelligence (Nature) check | `dice:2d6+2` |
+| 51-55 | A dust cloud reduces visibility to 60 feet for the next 8 hours, roll another encounter                                                      |              |
+| 56-60 | A gas cloud causes all creatures to become poisoned for the next 8 hours, roll another encounter                                             |              |
+| 61-64 | Field of scrap metal, 10 percent chance that `encounter: 2d6: Flying Sword, 1: Helmed Horror` hide among it                                  | `dice:2d6-2` |
+| 65-68 | `encounter: 2d8: Gas Spore` that don’t need to breathe air                                                                                   | `dice:2d6-2` |
+| 69-72 | `encounter: 1: Fractine` reflecting the ship’s appearance back                                                                               | `dice:2d6-4` |
+| 73-74 | `encounter: 1: Esthetic`                                                                                                                     | `dice:2d6-2` |
+| 75-76 | `encounter: 1: Murder Comet`                                                                                                                 | `dice:2d6-3` |
+| 77-78 | `encounter: 1: Young Solar Dragon`                                                                                                           | `dice:2d6-1` |
+| 79-80 | `encounter: 1: Young Lunar Dragon`                                                                                                           | `dice:2d6-2` |
+| 81-82 | `encounter: 1: Asteroid Spider`                                                                                                              | `dice:2d6-3` |
+| 83-84 | `encounter: 1: Living Star`                                                                                                                  | `dice:2d6`   |
+| 85-90 | The Gorgon, the ship built by Houses Cannith and Lyrandar and captained by Lei d'Cannith (as outlined in the Eberron Space Race section of [[Shardjammer]]) |              |
+| 91-96 | [[14. Susurrus, Palace of Whispers]], the headquarters of the rogue githyanki sect known as The Whisperers                                   |              |
+| 97-98 | Sarcophagus surrounded by permanent black tentacles (as per the spell), with `encounter: 1: Eldritch Lich` inside                            | `dice:2d6-8` |
+| 99-00 | `encounter: 1: Mind Flayer Arcanist, 1: Intellect Devourer` both in magical stasis bound in a giant Khyber dragonshard. They reactivate if the shard is damaged in any way. | `dice:2d6-8` |
 ^shardspace-random-encounters
 
 ### References

@@ -45,7 +45,5 @@ Much like terrestrial dolphins, Space Dolphins play with ships travelling the cu
 ## References
 
 * Thor: Love and Thunder
-
 * Dolphin Delighter from _MPMM_, page 97
-
 * https://5e.tools/bestiary.html#dolphin%20delighter_mpmm
