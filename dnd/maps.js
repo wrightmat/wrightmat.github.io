@@ -17,8 +17,8 @@ window.addEventListener("load", init, false);
 function init() {
   navbar();
   map = createMap();
-  locations = getNotionLocations();
-  markLocations();
+  //locations = getNotionLocations();
+  //markLocations();
   //drawGrid(50, 50);
 }
 
@@ -38,7 +38,7 @@ function changeMap(el) {
   $('#map').html('');
   map.remove();
   map = createMap(sel);
-  markLocations();
+  //markLocations();
 }
 
 function getNotionLocations(r_async) {
@@ -138,6 +138,34 @@ function drawHexagon(lat, lng) {
 function createMap(type = 'eberron') {
   if ( type == "mournland" ) {
 
+  } else if (type == "hyrule") {
+    var fullmap = L.tileLayer("\map/{z}-{x}-{y}.png", {
+      maxZoom: 5, continuousWorld: !1, noWrap: !0
+    }),
+    map = L.map("map", { layers: [fullmap], zoomControl: !1, attributionControl: !1 }).setView([9.44906182688142, -18.105468750000004], 3);
+    var zoomControl = L.control.zoom({ position: "topright" }).addTo(map);
+    var rulerControl = L.control.ruler({
+      position: "topright",
+      lengthUnit: { factor: 92.6574, display: "feet", decimal: 0 }
+    }).addTo(map);
+    var arr_latlng = [];
+    map.on('click', function(e) {
+      arr_latlng.push([e.latlng.lat, e.latlng.lng]);
+      console.log(JSON.stringify(arr_latlng));
+    });
+    map.on('contextmenu', function(e) { arr_latlng = []; console.log("cleared"); });
+    players = L.layerGroup();
+    map.addLayer(players);
+    areas = L.layerGroup();
+    baseMaps = {
+        "Hyrule": fullmap
+    };
+    var overlayMaps = {
+      "Players Location": players,
+      "Areas": areas
+    }
+    var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+    return map;
   } else if ( type == "sharn" ) {
     var fullmap = L.tileLayer("https://eberronmap.johnarcadian.com/worldbin/sharncityoftowers/{z}/{x}/{y}.jpg", {
       maxZoom: 6, continuousWorld: !1, noWrap: !0
