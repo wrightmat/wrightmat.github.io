@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "locations/The Depths.md",
+                "file": "locations/Hyrule.md",
                 "mode": "source",
                 "source": false
               }
@@ -134,7 +134,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "locations/The Depths.md",
+                "file": "locations/Hyrule.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -151,7 +151,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "locations/The Depths.md",
+                "file": "locations/Hyrule.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -174,7 +174,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "locations/The Depths.md"
+                "file": "locations/Hyrule.md"
               }
             }
           },
@@ -216,8 +216,11 @@
   },
   "active": "d62e8a430ea3007b",
   "lastOpenFiles": [
-    "adventures/9. The Final Battle.md",
+    "locations/Hyrule Castle Town.md",
+    "locations/Hyrule.md",
+    "locations/Hyrule Castle.md",
     "locations/The Depths.md",
+    "adventures/9. The Final Battle.md",
     "locations/Kakariko Village.md",
     "other/Yiga Clan.md",
     "other/Sheikah Seekers.md",
@@ -227,7 +230,6 @@
     "other/Epona Co..md",
     "adventures/9. Door of the Sages.md",
     "locations/Underground.md",
-    "locations/Hyrule.md",
     "locations/Gerudo Region.md",
     "locations/Hebra Region.md",
     "locations/Eldin Region.md",
@@ -240,8 +242,6 @@
     "adventures/3. The Sunken Vault.md",
     "adventures/2. Well in the Woods (Dungeon).md",
     "locations/Subrosia.md",
-    "locations/Dusk Relic Chamber.md",
-    "locations/Jade Relic Chamber.md",
     "_templates",
     "_ref",
     "sessions",

@@ -4,12 +4,12 @@ Hyrule is the name of the country in which the majority of Zelda games take plac
 
 ```leaflet
 id: eberron-map
-tileServer: https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg
+tileServer: https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png
 height: 500px
 lat: -10
 long: 1
 minZoom: 1
-maxZoom: 7
+maxZoom: 4
 defaultZoom: 2
 unit: miles
 scale: 3.233
