@@ -6,9 +6,9 @@ Any NPC on the Great Plateau will inform the players of both the Poes in the Fog
 
 ### Locations
 
-- Temple of Time
-- Eastern Abbey
-- Cartography Chamber
+- [[Temple of Time]]
+- [[Eastern Abbey]]
+- [[Cartography Chamber]]
 - Forest of Spirits
 - Mount Hylia
 - River of the Dead
@@ -45,7 +45,7 @@ When the PCs enter the plateau, have them do a Perception Check. Depending on ho
 
 #### Poes in the Fog
 
-On the Great Plateau, a great fog rolls in at night, so thick that the remainder of Hyrule below the plateau can't even be seen. Both General Burlon and Father Leon will warn the party of this and that everyone stays inside at night. But they will also note that spectral figures have been seen in the fog, glowing with power. While they haven't hurt anyone yet, they ask the party to investigate and take on the spectral foes known as **Poes** (CR 4). There are four Poes, one in each of the following locations: Forest of Spirits, River of the Dead, Mount Hylia, and the Dilapidated House (forested area just south of Temple of Time).
+On the Great Plateau, a great fog rolls in at night, so thick that the remainder of Hyrule below the plateau can't even be seen. Both General Burlon and Father Leon will warn the party of this and that everyone stays inside at night. But they will also note that spectral figures have been seen in the fog, glowing with power. While they haven't hurt anyone yet, they ask the party to investigate and take on the spectral foes known as **Poes** (CR 4). There are four Poes, one in each of the following locations: Forest of Spirits, River of the Dead, Mount Hylia, and the former location of the Shrine of Resurrection.
 
 When the party returns to General Burlon or Father Leon, the results will depend on whether they have gotten the **Poe Lantern** from the Hyrule Castle Town Museum. If they have, then they will give the party 500 rupees and explain how the souls can be stored in the lantern until they find someone who wants them. If they don't have the lantern, then they will give the party 500 rupees and offer to buy each of the souls for 100 rupees each. They then explain that the souls will dissipate the next morning unless they're stored in a Poe Lantern, and that there is one at the Museum in Hyrule Castle Town.
 

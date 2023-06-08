@@ -1,13 +1,16 @@
 #location #stable [[Central Region]]
 
-Rumors about that Outskirt Stable is the least... reputable stable remaining in Hyrule. It's said that the stable only still exists due to its proximity to the Coliseum that's recently come back in to use. A strange man is often seen there at night, chatting up whoever will talk.
+>Rumors linger that Outskirt Stable is the least... reputable stable remaining in Hyrule. It's said that the stable only still exists due to its proximity to the Coliseum that's recently come back in to use. A strange man is often seen there at night, chatting up whoever will talk.
+
+The primary animal raised here is cuccos. 
 
 ### Characters
 
-- **Oniku**, proprietor of the Ourskirt Stable. She came to Central Hyrule attempting to meet a mate, but when she failed at that she settled down here and purchased the stable (too embarrased to return home).
-- **Quinton**, a Hylian male researcher who is on his way to Satori Mountain. He can tell the party the rumors about a horse known as the Lord of the Mountain, and offer the party a reward if they were able to find the horse and ride it back here (saving him a trip).
-- **Kilton**, the Monster Parts Merchant and recent reviver of the nearby Coliseum.
-- **Beedle**, the traveling merchant. He's on his way to Kara Kara Bazaar just southwest of here through the Gerudo Canyon Pass.
+- **Oniku**: older Gerudo proprietor of the Ourskirt Stable. She came to Central Hyrule attempting to meet a mate, but when she failed at that she settled down here and purchased the stable (too embarrased to return home).
+- **Canni**: older Hylian female who works at the stable, primarily tending to the cuccos.
+- **Quinton**: a Hylian male researcher who is on his way to Satori Mountain. He can tell the party the rumors about a horse known as the Lord of the Mountain, and offer the party a reward if they were able to find the horse and ride it back here (saving him a trip).
+- **Kilton**: the Monster Parts Merchant and recent reviver of the nearby Coliseum.
+- **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
 
 ### Adventures
 

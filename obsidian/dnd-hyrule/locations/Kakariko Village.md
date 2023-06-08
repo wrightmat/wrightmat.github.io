@@ -4,6 +4,8 @@ Kakariko is a settlement in the West Necluda region of Hyrule, north of the Duel
 
 >Kakariko is airily ensconced in a mountain vale, under a close sun and towering peaks. The Pillars of Levia — marked stone columns in a jeweled lake of green grass — rise far above the village, natural fortresses in the southern hills. A lively stream falls from a healthy woodland at the foot of these columns, cascading down the terraced face of the village, eventually coming to rest in a diminutive pool around a statue of the Goddess Hylia. From the west, Lantern Lake pours its waters into yet another pond from a series of many-tiered falls in the cliff-side. These two waters almost meet, but for a short expanse of land before Seeker Hall. The distinctive glow of a Great Fairy Fountain can be seen in the eastern distance. Modest fruit-bearing trees, mostly plums, are planted predominantly in front of houses and shops. Tended carefully by at least one dedicated naturalist in the village, and surrounded by cuccos running free, the buds are just opening when you arrive, yielding tender pinks, whites, and purples. Alongside the plum orchard and apple trees can be found several fields which provide Kakariko with its two most famous crops: carrots and pumpkins.
 
+The Ring Ruins, and all other debris that had hit Kakariko, are gone. The Zonai Survey Team that was headquartered out of Kakariko has disbanded, with little left to study. Although a few of the members have transitioned to a new group, known as the Sheikah Seekers. This group has a similar mission to seek out information and magical artifacts, but also understands that knowledge leads to power and too much power can be dangerous (as learned from all the recent events).
+
 ### Locations
 
 - Seeker Hall

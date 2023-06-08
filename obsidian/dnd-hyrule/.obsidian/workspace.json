@@ -8,67 +8,43 @@
         "type": "tabs",
         "children": [
           {
-            "id": "6949fc72b97267ac",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "locations/Faron Region.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "05af54e139de9a0e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "locations/Akkala Region.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "598944524425f034",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "locations/Tarrey Town.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "6369b057ccf7d026",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "locations/Gerudo Town.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "d62e8a430ea3007b",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "locations/Hyrule.md",
+                "file": "locations/Highland Stable.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e3359bd4c1c5df6c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "locations/Lakeside Stable.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "5db2570229e6d716",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "other/Hudson Construction.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -118,7 +94,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 289.5
+    "width": 284.5
   },
   "right": {
     "id": "f240dac5ef673dba",
@@ -134,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "locations/Hyrule.md",
+                "file": "other/Hudson Construction.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -151,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "locations/Hyrule.md",
+                "file": "other/Hudson Construction.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -174,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "locations/Hyrule.md"
+                "file": "other/Hudson Construction.md"
               }
             }
           },
@@ -199,7 +175,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 385.5
+    "width": 405.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -214,34 +190,34 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "d62e8a430ea3007b",
+  "active": "5db2570229e6d716",
   "lastOpenFiles": [
-    "locations/Hyrule Castle Town.md",
-    "locations/Hyrule.md",
-    "locations/Hyrule Castle.md",
-    "locations/The Depths.md",
-    "adventures/9. The Final Battle.md",
-    "locations/Kakariko Village.md",
-    "other/Yiga Clan.md",
-    "other/Sheikah Seekers.md",
-    "other/Soldiers' Guild.md",
-    "other/Deku Protectorate.md",
-    "other/Champions of Hyrule.md",
+    "locations/Lakeside Stable.md",
+    "locations/Highland Stable.md",
+    "other/Hudson Construction.md",
+    "other/Goron Mining Company.md",
     "other/Epona Co..md",
-    "adventures/9. Door of the Sages.md",
-    "locations/Underground.md",
-    "locations/Gerudo Region.md",
-    "locations/Hebra Region.md",
-    "locations/Eldin Region.md",
-    "locations/Akkala Region.md",
-    "locations/Lanayru Region.md",
-    "locations/Necluda Region.md",
-    "locations/Central Region.md",
-    "locations/Faron Region.md",
-    "adventures/3. Frozen Cave (Dungeon).md",
-    "adventures/3. The Sunken Vault.md",
-    "adventures/2. Well in the Woods (Dungeon).md",
-    "locations/Subrosia.md",
+    "locations/Kakariko Village.md",
+    "locations/Gerudo Town.md",
+    "locations/Lucky Clover Chronicle and Hyrule Postal Depot.md",
+    "locations/Goponga Village.md",
+    "locations/Ancient Waterworks.md",
+    "locations/The Depths.md",
+    "locations/Gorondia.md",
+    "other/Sheikah Seekers.md",
+    "locations/Woodland Stable.md",
+    "adventures/Untitled.md",
+    "locations/Tabantha Bridge Stable.md",
+    "locations/Serenne Stable.md",
+    "locations/Outskirt Stable.md",
+    "locations/Foothill Stable.md",
+    "locations/East Akkala Stable.md",
+    "locations/Dueling Peaks Stable.md",
+    "adventures/7. The Danger at Dusk.md",
+    "locations/Hyrule.md",
+    "adventures/7. The Meeting of the Seeker.md",
+    "adventures/7. The Screams at Dawn.md",
+    "adventures/7. The Dead at the Breach.md",
     "_templates",
     "_ref",
     "sessions",

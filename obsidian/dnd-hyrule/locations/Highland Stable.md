@@ -1,13 +1,18 @@
 #location #stable [[Faron Region]]
 
-A consistent element in many of the mini-adventures is the starting and ending location: the various stables scattered around Hyrule. Use these locations to orient the characters, as they become a familiar consistent location across the breadth of Hyrule. The stables are a place where people can go to have a drink or meal and escape the tensions of the wilds of Hyrule. With the stables’ reputation as haven, adventurers who can be discreet and behave themselves can often find employment there. The hook for each mission is generally the same: the characters were told a stable is a great place to find work, so they are there.
+The stables are a place where people can go to have a drink or meal and escape the tensions of the wilds of Hyrule. With the stables’ reputation as haven, adventurers who can be discreet and behave themselves can often find employment there.
 
->You've been told that the Highland Stable is a place where adventurers can find work and avoid the hassle associated with other places in Hyrule. In fact, the notice board outside is often full of requests for jobs. As you enter the stable, this would appear to be true. A number of nondescript indivduals are seated at tables around the establishment, but one shorter than usual Gerudo in the corner grabs your attention - after all, Gerudo in this area of the world are exceedingly rare.
+>You've been told that the Highland Stable is a place where adventurers can find work and avoid the hassle associated with other places in Hyrule. In fact, the notice board outside is often full of requests for jobs. As you enter the stable, this would appear to be true. A number of nondescript individuals are seated at tables around the establishment, but one shorter than usual Gerudo in the corner grabs your attention - after all, Gerudo in this area of the world are exceedingly rare.
+
+The primary animal tended at this stable is cows/bulls (tended by an older Haite).
 
 ### Characters
+
 - **Kopad**: The proprietor of the stable. If spoken to, he can offer the players air elixirs.
 	- Air Elixir (Pink) (200 rupees): water breathing
 - **Isofu**: A young Gerudo woman who is studying the Zonai ruins near the stable.
+- **Haite**: A middle-aged Hylian woman who tends to the cows in the pens outside.
+- **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
 
 ### Job Board
 
@@ -15,8 +20,6 @@ A consistent element in many of the mini-adventures is the starting and ending l
  - "Looking for adventure and treasure? Come see Chester at the Lurelin docks!"
 
 ### Adventures
-
-
 
 #### Path to the Sunken Vault
 

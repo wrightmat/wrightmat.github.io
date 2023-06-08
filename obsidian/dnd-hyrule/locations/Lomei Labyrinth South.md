@@ -1,0 +1,1 @@
+#location #labyrinth [[Gerudo Region]]

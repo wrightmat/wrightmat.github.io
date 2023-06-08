@@ -2,12 +2,16 @@
 
 >You've been told that the East Akkala Stable is a place where adventurers could find respite in a more laid back environment than the rigid Citadel Town. Also the food and drink are universally praised here. As you enter the stable, you see a number of people sitting around tables chatting. One table of Hylian men give you an untrusting look and immediately start whispering to each other.
 
-If the players approach anyone in the stable, they recall a tale told to them. Roll a d6 and consult the Akkala Rumors table, or pick a tale the characters haven't heard yet.
+If the players approach anyone in the stable, they recall a tale told to them. Roll a d6 and consult the Akkala Rumors table, or pick a tale the characters haven't heard yet. Outside, Kaifa tends to the massive number of sheep that she's bred at the stable over the years.
 
 ### Characters
 
-- **Sosha**: The middle-aged Hylian female who runs the Stable. She is famous for her hospitality, her cooking, and her drinks.
-- **Moras** And **Col**: Two adventurers who are sitting at a small table.
+- **Gleema**: The middle-aged Hylian female who runs the Stable. She is famous for her hospitality, her cooking, and her drinks.
+- **Moras** And **Col**: Two middle-aged male Hylian adventurers who are sitting at a small table.
+- **Kaifa**: Older Hylian female who tends sheep outside. She has been doing this for years, since she moved from the South Akkala Stable when it closed down. She calls the stable the "East Baaaaa-kkala Stable".
+- **Tenne**: Older Hylian female who works at the stable, cleaning and such.
+- **Naddon**: Goron traveler who travels across the Akkala and Eldin regions.
+- **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
 
 ### Job Board
 

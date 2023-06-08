@@ -9,6 +9,7 @@ If purchased, the party can use the Stable as a central base to use as they plea
 ### Characters
 
 * **Doza, Stable Owner**: An older Hylian male who has been running the stable for many years. He appears run down and speaks slowly.
+* **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
 
 ### Adventures
 

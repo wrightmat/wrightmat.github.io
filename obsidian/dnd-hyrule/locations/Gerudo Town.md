@@ -4,6 +4,8 @@ Gerudo Town is the main settlement of the Gerudo Desert and consequently the Ger
 
 Gerudo Town has rebuilt after the recent attack from the Gibdos and their Queen, but the entire ordeal has made Riju a bit nervous. She has decided to keep the Gerudo Shelter under the city open for emergency purposes, and has relocated much of the Gerudo guard to protect the area and train there.
 
+In order to protect the ancient holy site, Riju used her abilities to immediately return the Lightning Temple to its previous home under the sands. Little do others know that Riju commissioned a special new tunnel to be built from the end of the Gerudo Shelter under the throne room (behind a hidden door) all the way to the Lightning Temple's access, should it ever be needed in the future.
+
 ### Locations
 
 - Royal Palace

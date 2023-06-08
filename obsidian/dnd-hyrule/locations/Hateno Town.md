@@ -6,9 +6,8 @@ Found in the fairly peaceful region far to the east of Central Hyrule, Hateno wa
 
 ### Locations
 
+* [[Hateno Ancient Tech Lab]]
 - Fort Hateno
-- Hateno Ancient Tech Lab
-	- Blue Flame Furnace
 - Hateno Pasture and Granary
 - Cemetery
 - School House
@@ -44,10 +43,6 @@ Found in the fairly peaceful region far to the east of Central Hyrule, Hateno wa
 ### Adventures
 
 #### [[2. A Spirit In Need]]
-
-#### Hateno Ancient Tech Lab
-
-The Ancient Tech Lab is north of Hateno, and is run by Symin (Purah passed a few years ago). The Sheikah have gathered all of Hyrule's known literature on ancient civilizations here. If the players ever need a magical item identified, or other information about ancient tech or pre-historic magical items (medallions, Goddess spells, etc.) then they should visit an Ancient Tech Lab.
 
 #### Fort Under Siege
 

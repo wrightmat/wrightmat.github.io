@@ -8,6 +8,8 @@ The Yiga Clan has continued to stake their claim to The Depths since they initia
 
 ### Locations
 
+* [[Gorondia]]
+* 
 
 ### Adventures
 

@@ -1,0 +1,1 @@
+#location [[Great Plateau]]
