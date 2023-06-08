@@ -28,9 +28,9 @@ Lanayru is the wet and wild heart of Hyrule, and the home of the proud Zora peop
 |  6  | "The Soldiers' Guild has recently completed Akkala Citadel Town north of here. While they put on a straight face, I've heard of a lot of rumors about monster attacks. Seems like things aren't as rosey as they want people to think." (see Citadel Tunnels dungeon)                                   |
 ^lanayru-random-rumor
 
-### Random Encounters
+### Random Encounters (18+)
 
-Most of the Lanayru Region is forest, mountain, or water, in which monsters are common (random encounter on 15+).
+Most of the Lanayru Region is forest, mountain, or water, in which monsters are common. There are many paths that are safe though.
 
 |  d12  | Wilderness Encounter                              |
 |:-----:|:------------------------------------------------- |

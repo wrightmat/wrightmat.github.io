@@ -35,9 +35,9 @@ Akkala region of Hyrule has been rebuilt with a new Citadel and a city to rival 
 |  6  | "The Eldin region is west of here. The Goron people are kind and knowledgeable, so if you need any help or advise go see them in their town at the foot of Death Mountain." ([[Eldin Region]])                                                                                                                                                                                                                                                                                                   |
 ^akkala-random-rumor
 
-### Random Encounters
+### Random Encounters (18+)
 
-Most of the Akkala Region is wilderness, plains, or swamp, in which monsters are common (random encounter on 15+)_.
+Most of the Akkala Region is wilderness, plains, or swamp, in which monsters are common, but many paths and the presence of soldiers makes it slightly less dangerous.
 
 |  d12  | Wilderness Encounter                          |
 |:-----:|:--------------------------------------------- |

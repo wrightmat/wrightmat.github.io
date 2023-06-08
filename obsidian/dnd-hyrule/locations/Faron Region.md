@@ -33,9 +33,9 @@ Faron Region is a large tropical jungle area in the far southeastern part of Hyr
 | 6  | "Rumor is that the lake where Divine Beast Vah Ruta once stood is now almost entirely drained. One of my Zora friends says that his people are concerned." ([[4. Reflecting Pool (Dungeon)]]) |
 ^faron-random-rumor
 
-### Random Encounters
+### Random Encounters (15+)
 
-Most of the Faron Region is wilderness, beach, or water, in which monsters are common (random encounter on 15+).
+Most of the Faron Region is wilderness, beach, or water, in which monsters are common.
 
 |  d12  | Wilderness Encounter                               |
 |:-----:|:-------------------------------------------------- |

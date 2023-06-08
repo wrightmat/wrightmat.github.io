@@ -39,9 +39,9 @@ Central Hyrule is the central region of Hyrule Kingdom, containing the Great Pla
 | 8  | "You don't see a lot of animals or agriculture here because most of that is taken care of at Lon Lon Ranch southeast of here, or one of its nearby fields. We do get shipments of their milk though, which is delicious!" ([[Lon Lon Ranch]]) |
 ^central-random-rumor
 
-### Random Encounters
+### Random Encounters (20+)
 
-The vast majority of the Central Region is safe routes, in a low danger environment (random encounter on 20+).
+The vast majority of the Central Region is safe routes, in a low danger environment.
 
 | d12 | Wilderness Encounter                               |
 | --- | -------------------------------------------------- |

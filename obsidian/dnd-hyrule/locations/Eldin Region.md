@@ -35,9 +35,9 @@ A creature exposed to extreme heat and without access to drinkable water must su
 |  6  | "If you travel far enough west from here, you'll encounter the Hebra and Tabantha regions. They're kind of the opposite of here, cold and wet." ([[Hebra Region]])                                                                                                       |
 ^eldin-random-rumor
 
-### Random Encounters
+### Random Encounters (15+)
 
-Most of the Eldin Region is mountainous, with hot springs, volcanic vents, and winding paths, where monsters are common. There are also heavily forested regions where monsters are equally common (random encounter on 15+).
+Most of the Eldin Region is mountainous, with hot springs, volcanic vents, and winding paths, where monsters are common. There are also heavily forested regions where monsters are equally common.
 
 | d12 | Mountain Encounter               |
 |:---:|:-------------------------------- |

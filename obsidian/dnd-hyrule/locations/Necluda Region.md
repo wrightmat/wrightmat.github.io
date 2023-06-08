@@ -35,9 +35,9 @@ Necluda is a region split into three parts - West Necluda, East Necluda, and the
 |  6  | "I heard recently that an area of the Faron Woods has been dying and rotting. No one knows what's causing it, but it reeks of evil energy to me." ([[2. Well in the Woods (Dungeon)]])                                                                                                      |
 ^necluda-random-rumor
 
-### Random Encounters
+### Random Encounters (18+)
 
-The vast majority of the Necluda Region is safe routes, but in a higher danger environment (random encounter on 18+), except for near cities where it's considered a low danger environment (random encounter on 20+).
+The vast majority of the Necluda Region is safe routes, but in a higher danger environment, except for near cities where it's considered a low danger environment.
 
 | d12 | Wilderness Encounter                               |
 |:---:|:-------------------------------------------------- |

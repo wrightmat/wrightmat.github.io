@@ -16,13 +16,14 @@ scale: 3.233
 osmLayer: false
 ```
 
-### Regions
+### Locations
 
 * [[Central Region]]
+* [[Necluda Region]]
+* [[Faron Region]]
+* [[Lanayru Region]]
 * [[Akkala Region]]
 * [[Eldin Region]]
-* [[Faron Region]]
-* [[Gerudo Region]]
 * [[Hebra Region]]
-* [[Lanayru Region]]
-* [[Necluda Region]]
+* [[Gerudo Region]]
+* [[Underground]] and [[The Depths]]

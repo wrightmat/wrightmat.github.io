@@ -49,7 +49,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "locations/Serenne Stable.md",
+                "file": "locations/Gerudo Town.md",
                 "mode": "source",
                 "source": false
               }
@@ -61,7 +61,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "adventures/7. The Meeting of the Seeker.md",
+                "file": "locations/The Depths.md",
                 "mode": "source",
                 "source": false
               }
@@ -134,7 +134,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "adventures/7. The Meeting of the Seeker.md",
+                "file": "locations/The Depths.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -151,7 +151,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "adventures/7. The Meeting of the Seeker.md",
+                "file": "locations/The Depths.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -174,7 +174,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "adventures/7. The Meeting of the Seeker.md"
+                "file": "locations/The Depths.md"
               }
             }
           },
@@ -216,32 +216,32 @@
   },
   "active": "d62e8a430ea3007b",
   "lastOpenFiles": [
-    "locations/Serenne Stable.md",
-    "locations/East Akkala Stable.md",
-    "adventures/7. The Meeting of the Seeker.md",
-    "adventures/1. Hyrule Castle.md",
-    "locations/Highland Stable.md",
-    "locations/Dueling Peaks Stable.md",
-    "locations/Outskirt Stable.md",
-    "locations/Hebra Region.md",
-    "adventures/7. Great Fairy Kayasa.md",
-    "locations/Rito Village.md",
-    "adventures/7. Maze of the Elements (Dungeon).md",
-    "adventures/6. Abandoned Mine (Dungeon).md",
-    "locations/Hebra Mountains.md",
-    "locations/Tabantha Tundra.md",
-    "locations/Goron City.md",
-    "locations/Eldin Region.md",
-    "locations/Faron Region.md",
-    "adventures/6. The Lost Woods.md",
-    "adventures/6. Visit to the Witch's Hut.md",
-    "adventures/6. Temple of the Volcano God.md",
-    "locations/Korok Forest.md",
-    "locations/Great Hyrule Forest.md",
-    "locations/Death Mountain.md",
+    "adventures/9. The Final Battle.md",
+    "locations/The Depths.md",
     "locations/Kakariko Village.md",
-    "other/Deku Protectorate.md",
+    "other/Yiga Clan.md",
     "other/Sheikah Seekers.md",
+    "other/Soldiers' Guild.md",
+    "other/Deku Protectorate.md",
+    "other/Champions of Hyrule.md",
+    "other/Epona Co..md",
+    "adventures/9. Door of the Sages.md",
+    "locations/Underground.md",
+    "locations/Hyrule.md",
+    "locations/Gerudo Region.md",
+    "locations/Hebra Region.md",
+    "locations/Eldin Region.md",
+    "locations/Akkala Region.md",
+    "locations/Lanayru Region.md",
+    "locations/Necluda Region.md",
+    "locations/Central Region.md",
+    "locations/Faron Region.md",
+    "adventures/3. Frozen Cave (Dungeon).md",
+    "adventures/3. The Sunken Vault.md",
+    "adventures/2. Well in the Woods (Dungeon).md",
+    "locations/Subrosia.md",
+    "locations/Dusk Relic Chamber.md",
+    "locations/Jade Relic Chamber.md",
     "_templates",
     "_ref",
     "sessions",

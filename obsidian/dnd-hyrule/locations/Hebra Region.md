@@ -1,4 +1,4 @@
-#location #region [[Hebra Region]]
+#location #region [[Hyrule]]
 
 Hebra is a vast region covering the northwestern corner of Hyrule. The Region is very mountainous but also has vast expanses of flat terrain.
 
@@ -15,18 +15,18 @@ A creature exposed to extreme cold must succeed on a DC 10 Constitution saving t
 - [[Tabantha Tundra]]
 - [[Hebra Mountains]]
 - [[Rito Village]]
-- **Serenne Stable**
+- [[Serenne Stable]]
 
 ### Adventures
 
 * [[7. Maze of the Elements (Dungeon)]]
-* Thundra Plateau (Dungeon)
+* [[7. Thundra Plateau (Dungeon)]]
 * [[7. Great Fairy Kayasa]]
-* The Meeting of the Seeker
-* The Screams at Dawn
-* The Dead at the Breach
-* A Shock at Dinner
-* The Danger at Dusk
+* [[7. The Meeting of the Seeker]]
+* [[7. The Screams at Dawn]]
+* [[7. The Dead at the Breach]]
+* [[7. A Shock at Dinner]]
+* [[7. The Danger at Dusk]]
 
 ### Rumors
 
@@ -40,18 +40,18 @@ A creature exposed to extreme cold must succeed on a DC 10 Constitution saving t
 |  6  |      |
 ^hebra-random-rumor
 
-### Random Encounters
+### Random Encounters (15+)
 
-Most of the Hebra Region is mountainous, with cold snowy peaks surrounded by cold snowy lowlands, where monsters are common (random encounter on 15+).
+Most of the Hebra Region is mountainous, with cold snowy peaks surrounded by cold snowy lowlands, where monsters are common.
 
-| d12 | Wilderness Encounter   |
-|:---:|:---------------------- |
-|  1  | 1 **Yiga Footsoldier** |
-| 2-3 | 1d6 **Ice ChuChus**    |
-| 4-5 | 1d3 **Frost Pebblits** |
-| 6-7 | 1d8 **Ice Keese**      |
-| 8-9 | 1d3 **Black Lizalfos** |
-| 10  | 1 **Black Moblin**     |
-| 11  | 1 **Blue Hinox**       |
-| 12  | 1 **Ice Wizzrobe**     |
+| d12 | Wilderness Encounter             |
+|:---:|:-------------------------------- |
+|  1  | `encounter: 1: Yiga Footsoldier` |
+| 2-3 | `encounter: 1d6: Ice ChuChu`     |
+| 4-5 | `encounter: 1d3: Frost Pebblit`  |
+| 6-7 | `encounter: 1d8: Ice Keese`      |
+| 8-9 | `encounter: 1d3: Black Lizalfos` |
+| 10  | `encounter: 1: Black Moblin`     |
+| 11  | `encounter: 1: Blue Hinox`       |
+| 12  | `encounter: 1: Ice Wizzrobe`     |
 ^hebra-random-wilderness

@@ -14,3 +14,7 @@
 ### Adventures
 
 * [[7. The Meeting of the Seeker]]
+* [[7. The Screams at Dawn]]
+* [[7. The Dead at the Breach]]
+* [[7. A Shock at Dinner]]
+* [[7. The Danger at Dusk]]
