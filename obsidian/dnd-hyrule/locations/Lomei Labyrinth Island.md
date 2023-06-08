@@ -1,0 +1,1 @@
+#location #labyrinth [[Akkala Region]]

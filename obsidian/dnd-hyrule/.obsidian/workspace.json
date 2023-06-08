@@ -25,14 +25,50 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "locations/Lanayru Region.md",
+                "file": "locations/Akkala Region.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "598944524425f034",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "locations/Tarrey Town.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "6369b057ccf7d026",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "locations/Serenne Stable.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "d62e8a430ea3007b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "adventures/7. The Meeting of the Seeker.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -82,7 +118,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 289.5
   },
   "right": {
     "id": "f240dac5ef673dba",
@@ -98,7 +134,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "locations/Lanayru Region.md",
+                "file": "adventures/7. The Meeting of the Seeker.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +151,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "locations/Lanayru Region.md",
+                "file": "adventures/7. The Meeting of the Seeker.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +174,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "locations/Lanayru Region.md"
+                "file": "adventures/7. The Meeting of the Seeker.md"
               }
             }
           },
@@ -178,34 +214,34 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "05af54e139de9a0e",
+  "active": "d62e8a430ea3007b",
   "lastOpenFiles": [
-    "locations/Lanayru Road.md",
-    "adventures/2. Well in the Woods (Dungeon).md",
-    "locations/Lanayru Region.md",
-    "locations/Faron Region.md",
-    "locations/Zonai Ruins.md",
-    "adventures/4. Reflecting Pool (Dungeon).md",
-    "locations/Zora's Domain.md",
-    "adventures/4. Ruto Mountain Path.md",
-    "locations/Spring of Wisdom.md",
-    "locations/Spring of Courage.md",
-    "locations/Untitled.md",
-    "adventures/3. The Sunken Vault.md",
-    "adventures/3. Frozen Cave (Dungeon).md",
-    "locations/Necluda Region.md",
-    "locations/Dueling Peaks Stable.md",
-    "locations/Eventide Island.md",
-    "locations/Lurelin Village.md",
-    "adventures/3. Spring of Courage.md",
-    "locations/Akkala Region.md",
+    "locations/Serenne Stable.md",
+    "locations/East Akkala Stable.md",
+    "adventures/7. The Meeting of the Seeker.md",
+    "adventures/1. Hyrule Castle.md",
     "locations/Highland Stable.md",
-    "locations/Central Region.md",
-    "locations/Hateno Town.md",
-    "locations/Great Plateau.md",
-    "other/Epona Co..md",
+    "locations/Dueling Peaks Stable.md",
+    "locations/Outskirt Stable.md",
+    "locations/Hebra Region.md",
+    "adventures/7. Great Fairy Kayasa.md",
+    "locations/Rito Village.md",
+    "adventures/7. Maze of the Elements (Dungeon).md",
+    "adventures/6. Abandoned Mine (Dungeon).md",
+    "locations/Hebra Mountains.md",
+    "locations/Tabantha Tundra.md",
+    "locations/Goron City.md",
+    "locations/Eldin Region.md",
+    "locations/Faron Region.md",
+    "adventures/6. The Lost Woods.md",
+    "adventures/6. Visit to the Witch's Hut.md",
+    "adventures/6. Temple of the Volcano God.md",
+    "locations/Korok Forest.md",
+    "locations/Great Hyrule Forest.md",
+    "locations/Death Mountain.md",
+    "locations/Kakariko Village.md",
+    "other/Deku Protectorate.md",
     "other/Sheikah Seekers.md",
-    "other/Champions of Hyrule.md",
     "_templates",
     "_ref",
     "sessions",

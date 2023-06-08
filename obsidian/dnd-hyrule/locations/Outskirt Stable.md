@@ -2,13 +2,6 @@
 
 Rumors about that Outskirt Stable is the least... reputable stable remaining in Hyrule. It's said that the stable only still exists due to its proximity to the Coliseum that's recently come back in to use. A strange man is often seen there at night, chatting up whoever will talk.
 
-### Locations
-
-- **Kilton's Coliseum** (Ancient Coliseum Ruins)
-- **Satori Mountain**
-- Gerudo Canyon Pass
-- Sanidin Park Ruins
-
 ### Characters
 
 - **Oniku**, proprietor of the Ourskirt Stable. She came to Central Hyrule attempting to meet a mate, but when she failed at that she settled down here and purchased the stable (too embarrased to return home).
