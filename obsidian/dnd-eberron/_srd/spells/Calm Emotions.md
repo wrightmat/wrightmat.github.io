@@ -1,4 +1,4 @@
-# Calm Emotions
+#srd #spell #enchantment 
 
 *2nd-level enchantment*
 
@@ -15,6 +15,3 @@ You attempt to suppress strong emotions in a group of people. Each humanoid in a
 You can suppress any effect causing a target to be charmed or frightened. When this spell ends, any suppressed effect resumes, provided that its duration has not expired in the meantime.
 
 Alternatively, you can make a target indifferent about creatures of your choice that it is hostile toward. This indifference ends if the target is attacked or harmed by a spell or if it witnesses any of its friends being harmed. When the spell ends, the creature becomes hostile again, unless the GM rules otherwise.
-
-
-[[Spells]]

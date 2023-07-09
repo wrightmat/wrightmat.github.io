@@ -1,4 +1,4 @@
-# Control Weather
+#srd #spell #transmutation 
 
 *8th-level transmutation*
 
@@ -49,6 +49,3 @@ When you change the weather conditions, find a current condition on the followin
 | 4     | Gale          |
 | 5     | Storm         |
 |       |               |
-
-
-[[Spells]]

@@ -1,4 +1,4 @@
-# Antipathy/Sympathy
+#srd #spell #enchantment 
 
 *8th-level enchantment*
 
@@ -21,6 +21,3 @@ If the target damages or otherwise harms an affected creature, the affected crea
 ***Ending the Effect***. If an affected creature ends its turn while not within 60 feet of the target or able to see it, the creature makes a Wisdom saving throw. On a successful save, the creature is no longer affected by the target and recognizes the feeling of repugnance or attraction as magical. In addition, a creature affected by the spell is allowed another Wisdom saving throw every 24 hours while the spell persists.
 
 A creature that successfully saves against this effect is immune to it for 1 minute, after which time it can be affected again.
-
-
-[[Spells]]

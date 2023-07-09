@@ -9,10 +9,13 @@ In order to protect the ancient holy site, Riju used her abilities to immediatel
 ### Locations
 
 - Royal Palace
-- Sand-Seal Rental Shop
-- The Noble Canteen, a bar
-	- Noble Pursuit (5 rupees)
-- Starlight Memories, a jewelry shop
+- Sand-Seal Rental Shops
+	- Southeast
+	- Northwest
+- Gerudo School House (former Gerudo Shelter)
+- The Noble Canteen, a tavern
+	- Noble Pursuit (20 rp)
+- Starlight Memories Jewelry Shop
 	- Diamond Circlet (1500 rupees)
 	- Ruby Circlet (500 rupees)
 	- Sapphire Circlet (800 rupees)
@@ -29,25 +32,35 @@ In order to protect the ancient holy site, Riju used her abilities to immediatel
 - Hotel Oasis
 	- Regular bed (20 rupees)
 	- Spa service (80 rupees): grants (3) temporary hearts and (1) temporary stamina/magic
-- Fruit stand
+- General Store- Fruit Stand
 	- Voltfruit (16 rupees)
 	- Hydromelon (16 rupees)
 	- Hearty Durian (60 rupees)
-- Arrow shop
-	- Bomb Arrow x20 (600 rupees)
-	- Shock Arrow x10 (140 rupees)
-	- Ice Arrow x10 (140 rupees)
-	- Fire Arrow x10 (140 rupees)
+- General Store- Cooking Ingredients
+	- Tabantha Wheat
+	- Hylian Rice
+- General Store- Meat
+- General Store- Mushrooms
+- General Store- Weapons
 	- Arrow x5 (20 rupees)
+	- Red Monster Jelly (16 rp)
+	- White Monster Jelly (16 rp)
+	- Yellow Monster Jelly (16 rp)
+	- Bomb Flowers (40 rp)
+* Northern Ice House
 
 ### Characters
-
-* Riju, Chief of the Gerudo
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
-
-#### [[8. Great Fairy Tera]]
-
-#### The Child of Legend
-
-A Gerudo has recently given birth to a male child, as is said to happen every 100 years. Given the past history of Gerudo males, there is concern that forces of evil will attempt to steal the newborn and raise him to take his place as yet another demon king. It is up to your party to investigate some suspicious individuals with possible connections to this plot, and prevent the theft of this child.
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```

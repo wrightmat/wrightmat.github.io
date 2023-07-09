@@ -8,36 +8,36 @@
         "type": "tabs",
         "children": [
           {
-            "id": "d62e8a430ea3007b",
+            "id": "df4f52ce7948aec9",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "locations/Highland Stable.md",
+                "file": "locations/Hyrule.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "e3359bd4c1c5df6c",
+            "id": "789988458c35063b",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "locations/Lakeside Stable.md",
+                "file": "Masters of the Esoteric Arts.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "5db2570229e6d716",
+            "id": "14105c25e01ee3e3",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "other/Hudson Construction.md",
+                "file": "adventures/Regional Railroads.md",
                 "mode": "source",
                 "source": false
               }
@@ -94,7 +94,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 284.5
+    "width": 305.5
   },
   "right": {
     "id": "f240dac5ef673dba",
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "other/Hudson Construction.md",
+                "file": "adventures/Regional Railroads.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "other/Hudson Construction.md",
+                "file": "adventures/Regional Railroads.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,16 +150,8 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "other/Hudson Construction.md"
+                "file": "adventures/Regional Railroads.md"
               }
-            }
-          },
-          {
-            "id": "852bebd3cf20445e",
-            "type": "leaf",
-            "state": {
-              "type": "DICE_ROLLER_VIEW",
-              "state": {}
             }
           },
           {
@@ -169,13 +161,21 @@
               "type": "initiative-tracker-view",
               "state": {}
             }
+          },
+          {
+            "id": "ae245ee43ccd34fa",
+            "type": "leaf",
+            "state": {
+              "type": "DICE_ROLLER_VIEW",
+              "state": {}
+            }
           }
         ],
         "currentTab": 3
       }
     ],
     "direction": "horizontal",
-    "width": 405.5
+    "width": 350.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -190,42 +190,44 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "5db2570229e6d716",
+  "active": "14105c25e01ee3e3",
   "lastOpenFiles": [
-    "locations/Lakeside Stable.md",
-    "locations/Highland Stable.md",
-    "other/Hudson Construction.md",
-    "other/Goron Mining Company.md",
-    "other/Epona Co..md",
-    "locations/Kakariko Village.md",
-    "locations/Gerudo Town.md",
-    "locations/Lucky Clover Chronicle and Hyrule Postal Depot.md",
-    "locations/Goponga Village.md",
-    "locations/Ancient Waterworks.md",
-    "locations/The Depths.md",
-    "locations/Gorondia.md",
-    "other/Sheikah Seekers.md",
+    "Masters of the Esoteric Arts.md",
+    "locations/Zora's Domain.md",
+    "adventures/3. The Sunken Vault.md",
+    "sessions/Untitled.md",
     "locations/Woodland Stable.md",
-    "adventures/Untitled.md",
+    "locations/Windvane Village.md",
+    "locations/West Necluda.md",
+    "locations/Upland Zorana Tower.md",
+    "locations/Underground.md",
+    "locations/Typhlo Ruins Tower.md",
+    "locations/Tobio's Hollow.md",
+    "locations/The Depths.md",
+    "locations/Tarrey Town.md",
+    "locations/Tabantha Frontier.md",
     "locations/Tabantha Bridge Stable.md",
+    "locations/Subrosia.md",
     "locations/Serenne Stable.md",
+    "locations/Rospro Pass Tower.md",
+    "locations/Rito Village.md",
+    "locations/Rabella Wetlands Tower.md",
     "locations/Outskirt Stable.md",
-    "locations/Foothill Stable.md",
-    "locations/East Akkala Stable.md",
-    "locations/Dueling Peaks Stable.md",
-    "adventures/7. The Danger at Dusk.md",
-    "locations/Hyrule.md",
-    "adventures/7. The Meeting of the Seeker.md",
-    "adventures/7. The Screams at Dawn.md",
-    "adventures/7. The Dead at the Breach.md",
+    "locations/Necluda Sea.md",
+    "locations/Necluda Region.md",
+    "locations/Mount Lanayru.md",
+    "locations/Maku Tree Sapling.md",
+    "locations/Lurelin Village.md",
+    "_srd/spells",
+    "_srd/races",
+    "_srd/npcs",
+    "_srd/monsters",
+    "_srd/items",
+    "_srd/creatures",
+    "_srd/classes",
+    "_srd",
+    "Pasted image 20230612090647.png",
     "_templates",
-    "_ref",
-    "sessions",
-    "other",
-    "players",
-    "locations",
-    "creatures",
-    "characters",
-    "adventures"
+    "_ref"
   ]
 }

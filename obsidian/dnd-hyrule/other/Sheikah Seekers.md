@@ -1,9 +1,11 @@
 #lore #faction
 
 ![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/61/TLoZ_Series_Crest_of_the_Sheikah_Symbol.png|280](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/61/TLoZ_Series_Crest_of_the_Sheikah_Symbol.png)
-**Symbol(s)**: Eye with three triangular lashes on top and a tear drop coming down
+Symbol:: Eye with three triangular lashes on top and a tear drop coming down
+Alignment:: Lawful Good
 
-**Alignment**: Lawful Good
+Renown:: 
+Members:: 
 
 **Beliefs**:
 - One can never have too much information or magical secrets.
@@ -16,4 +18,14 @@
  - End tyrants and any leader, government, or group that grows too powerful.
  - Aid the weak, poor, and oppressed.
 
-(analogous to The Harpers)
+### Members
+
+```dataview
+table without id file.link as Employee, Occupation
+from #npc and [[Sheikah Seekers]]
+sort Occupation
+```
+
+### References
+
+* Analogous to The Harpers

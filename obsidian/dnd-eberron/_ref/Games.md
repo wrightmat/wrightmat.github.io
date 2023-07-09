@@ -24,4 +24,3 @@ While you can purchase a real Three-Dragon Ante card set, The Stygian Gambit adv
 3. Starting to the left of the dealer and continuing clockwise, each participant reveals one of their die rolls. This step is repeated twice more; on the second and third round, each participant can raise their bet before revealing their next die roll. The other participants each have three options: match the bet, raise their bet (in which case all participants must match that bet in turn), or fold, forfeiting any bet they’ve placed and dropping out of the game.
 
 4. Each participant who hasn’t folded totals their die rolls. The one with the highest total wins. The winner becomes the dealer for the next game (assuming the participant wants to keep playing).
-

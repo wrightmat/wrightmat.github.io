@@ -1,4 +1,4 @@
-# Conjure Celestial
+#srd #spell #conjuration 
 
 *7th-level conjuration*
 
@@ -17,6 +17,3 @@ The celestial is friendly to you and your companions for the duration. Roll init
 The GM has the celestial's statistics.
 
 ***At Higher Levels***. When you cast this spell using a 9th-level spell slot, you summon a celestial of challenge rating 5 or lower.
-
-
-[[Spells]]

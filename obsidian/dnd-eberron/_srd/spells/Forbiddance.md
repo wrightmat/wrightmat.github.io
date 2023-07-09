@@ -1,4 +1,4 @@
-# Forbiddance
+#srd #spell #abjuration #ritual 
 
 *6th-level abjuration (ritual)*
 
@@ -17,6 +17,3 @@ In addition, the spell damages types of creatures that you choose when you cast 
 When you cast this spell, you can designate a password. A creature that speaks the password as it enters the area takes no damage from the spell.
 
 The spell's area can't overlap with the area of another *forbiddance* spell. If you cast *forbiddance* every day for 30 days in the same location, the spell lasts until it is dispelled, and the material components are consumed on the last casting.
-
-
-[[Spells]]

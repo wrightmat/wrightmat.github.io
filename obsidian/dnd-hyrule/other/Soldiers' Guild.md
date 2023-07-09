@@ -1,9 +1,11 @@
 #lore #faction
 
 ![https://static.wikia.nocookie.net/zelda/images/c/c9/RoyalCrestHyruleFamily.png|380](https://static.wikia.nocookie.net/zelda/images/c/c9/RoyalCrestHyruleFamily.png)
-**Symbol(s)**: Bird with wings outspread, topped with a Triforce
+Symbol:: Bird with wings outspread, topped with a Triforce
+Alignment:: Lawful Good
 
-**Alignment**: Lawful Good
+Renown:: 
+Members:: 
 
 **Beliefs**:
 - Faith is the greatest weapon against evil—faith in one's god, one's friends, and one's self.
@@ -16,4 +18,6 @@
  - Identify evil power groups and creatures, and monitor their actions.
  - Only strike in retribution. Do not strike before evil is proven.
 
-(analogous to The Order of the Gauntlet)
+### References
+
+* Analogous to The Order of the Gauntlet

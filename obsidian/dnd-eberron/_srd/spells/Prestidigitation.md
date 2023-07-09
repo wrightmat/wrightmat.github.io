@@ -1,4 +1,4 @@
-# Prestidigitation
+#srd #spell #transmutation 
 
 *Transmutation cantrip*
 
@@ -20,6 +20,3 @@ This spell is a minor magical trick that novice spellcasters use for practice. Y
 - You create a nonmagical trinket or an illusory image that can fit in your hand and that lasts until the end of your next turn.
 
 If you cast this spell multiple times, you can have up to three of its non-instantaneous effects active at a time, and you can dismiss such an effect as an action.
-
-
-[[Spells]]

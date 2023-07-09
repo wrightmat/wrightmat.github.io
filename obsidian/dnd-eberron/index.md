@@ -4,4 +4,4 @@
 * [Astrashana](characters/Astrashana)
 * [Onme Nanvia Donverou](characters/Onme%20Nanvia%20Donverou)
 * [Prism](characters/Prism)
-* [Windsor Locke](characters/Windsor%20Locke)
+* [Windsor Stone](Windsor%20Stone.md)

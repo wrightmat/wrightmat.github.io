@@ -1,4 +1,4 @@
-#location [[Central Region]]
+#location [[Hyrule Field]]
 
 Located at the Ancient Tree Stump, a small tree sapling now resides here, growing out of the old stump. She has a bright and cheery personality, with rosy cheeks and a pink flower in her foliage. If investigated, the tree can be bearing 1d20 of a random type of mystical seed (changing after the players leave the area and return).
 

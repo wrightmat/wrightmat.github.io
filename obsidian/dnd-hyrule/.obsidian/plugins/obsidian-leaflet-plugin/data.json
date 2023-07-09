@@ -47,7 +47,7 @@
     },
     {
       "id": "surface-map",
-      "lastAccessed": 1686260692141,
+      "lastAccessed": 1688865432837,
       "markers": [
         {
           "id": "ID_99791b5808bb",
@@ -85,7 +85,7 @@
         },
         {
           "id": "ID_ca0a9a084b79",
-          "type": "Building/Village",
+          "type": "Lab",
           "loc": [
             1.5818302639606454,
             0.26367187500000006
@@ -272,12 +272,12 @@
         },
         {
           "id": "ID_1a09fbe9096b",
-          "type": "Building/Village",
+          "type": "Adventure",
           "loc": [
             -57.13623931917743,
             -15.029296875000002
           ],
-          "link": "Cartography Chamber",
+          "link": "1. Cartography Chamber",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -311,7 +311,7 @@
             -61.85614879566797,
             70.13671875000001
           ],
-          "link": "2. Well in the Woods (Dungeon)",
+          "link": "2. Well in the Woods Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -549,7 +549,7 @@
             -63.93737246791483,
             -2.2851562500000004
           ],
-          "link": "3. Frozen Cave (Dungeon)",
+          "link": "3. Frozen Cave Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -583,7 +583,7 @@
             -8.581021215641842,
             103.447265625
           ],
-          "link": "4. Reflecting Pool (Dungeon)",
+          "link": "4. Reflecting Pool Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -665,10 +665,10 @@
           "id": "ID_6bf99aba0b29",
           "type": "Dungeon",
           "loc": [
-            43.004647127794435,
-            113.99414062500001
+            40.3130432088809,
+            111.35742187500001
           ],
-          "link": "5. Citadel Tunnels (Dungeon)",
+          "link": "5. Citadel Tunnels Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -784,10 +784,10 @@
           "id": "ID_cba888c8596b",
           "type": "Dungeon",
           "loc": [
-            63.54855223203644,
-            54.22851562500001
+            65.83877570688918,
+            60.64453125000001
           ],
-          "link": "6. Abandoned Mine (Dungeon)",
+          "link": "6. Abandoned Mine Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -889,7 +889,7 @@
             26.82407078047018,
             -64.51171875000001
           ],
-          "link": "7. Thundra Plateau (Dungeon)",
+          "link": "7. Thundra Plateau Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -974,7 +974,7 @@
             67.23806155909902,
             -80.59570312500001
           ],
-          "link": "7. Maze of the Elements (Dungeon)",
+          "link": "7. Maze of the Elements Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1022,8 +1022,8 @@
           "id": "ID_797808194aca",
           "type": "Fountain",
           "loc": [
-            -61.48075950007598,
-            -89.296875
+            -59.31076795603884,
+            -89.912109375
           ],
           "link": "8. Great Fairy Tera",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
@@ -1042,7 +1042,7 @@
             -66.8265202749748,
             -78.13476562500001
           ],
-          "link": "8. Shrine of the Seven (Dungeon)",
+          "link": "8. Shrine of the Seven Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1110,7 +1110,7 @@
             74.6367480410086,
             157.41210937500003
           ],
-          "link": "Lomei Labyrinth Island",
+          "link": "Lomei Castle Island",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1122,12 +1122,12 @@
         },
         {
           "id": "ID_aaaba9693b9b",
-          "type": "Adventure",
+          "type": "Building/Village",
           "loc": [
-            73.70194774691717,
-            -17.666015625000004
+            73.80031816408652,
+            -17.929687500000004
           ],
-          "link": "Lomei Labyrinth North",
+          "link": "Lomei Castle North",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1144,7 +1144,7 @@
             -73.87371654457475,
             -48.77929687500001
           ],
-          "link": "Lomei Labyrinth South",
+          "link": "Lomei Castle South",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1161,7 +1161,7 @@
             -14.434680215297268,
             -63.63281250000001
           ],
-          "link": "Satori Mountain",
+          "link": "1. Lord of the Mountain",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1195,7 +1195,7 @@
             -16.55196172197251,
             -131.13281250000003
           ],
-          "link": "8. Spirit Temple (Dungeon)",
+          "link": "8. The Eighth Heroine Dungeon",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -1434,7 +1434,7 @@
             156.09375000000003
           ],
           "link": "Eventide Island",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1447,11 +1447,11 @@
           "id": "ID_68fafa992aea",
           "type": "Adventure",
           "loc": [
-            -59.80063426102869,
-            114.16992187500001
+            -45.08903556483102,
+            89.296875
           ],
           "link": "2. A Spirit In Need",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1468,7 +1468,7 @@
             89.73632812500001
           ],
           "link": "4. Ruto Mountain Path",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1485,7 +1485,7 @@
             33.92578125000001
           ],
           "link": "6. Visit to the Witch's Hut",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1502,7 +1502,7 @@
             -46.58203125000001
           ],
           "link": "7. A Shock at Dinner",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1519,7 +1519,7 @@
             -39.02343750000001
           ],
           "link": "7. The Dead at the Breach",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1536,7 +1536,7 @@
             -55.19531250000001
           ],
           "link": "7. The Screams at Dawn",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1553,7 +1553,7 @@
             -26.542968750000004
           ],
           "link": "7. The Meeting of the Seeker",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1563,14 +1563,14 @@
           "tooltip": "hover"
         },
         {
-          "id": "ID_c98b0bbbaad8",
+          "id": "ID_a9a9a8b96978",
           "type": "Adventure",
           "loc": [
-            62.79493487887009,
-            90.087890625
+            -62.308793691028036,
+            50.71289062500001
           ],
-          "link": "Death Mountain",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "link": "Tobio's Hollow",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1580,14 +1580,14 @@
           "tooltip": "hover"
         },
         {
-          "id": "ID_7a3a6b780acb",
+          "id": "ID_3b684a6ba8aa",
           "type": "Adventure",
           "loc": [
-            -36.3151251474805,
-            95.36132812500001
+            -38.68550976001201,
+            -28.125000000000004
           ],
-          "link": "Lanayru Road",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "link": "1. Kilton's Coliseum",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,
@@ -1597,14 +1597,99 @@
           "tooltip": "hover"
         },
         {
-          "id": "ID_3abb4ba9baba",
+          "id": "ID_99b96afbba59",
+          "type": "Adventure",
+          "loc": [
+            -22.75592068148639,
+            -43.41796875000001
+          ],
+          "link": "1. Sanidin Park Horse Racing",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_3bdbab197b68",
+          "type": "Adventure",
+          "loc": [
+            -51.39920565355378,
+            82.88085937500001
+          ],
+          "link": "2. Fort Under Siege",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_b8bb1a6be919",
+          "type": "Adventure",
+          "loc": [
+            61.97575096009674,
+            -84.06738281250001
+          ],
+          "link": "7. River Rapids Course",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_2bd90b19aa0b",
+          "type": "Adventure",
+          "loc": [
+            58.031372421776396,
+            -105.46875000000001
+          ],
+          "link": "7. Shield Surfing Challenge",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_48c8399ada2a",
           "type": "Building/Village",
           "loc": [
-            75.62863223279015,
-            -44.47265625000001
+            70.17020068549206,
+            -86.04492187500001
           ],
-          "link": "Tabantha Tundra",
-          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
+          "link": "Hebra Village",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_2abbb9b9f82a",
+          "type": "Adventure",
+          "loc": [
+            4.214943141390651,
+            125.50781250000001
+          ],
+          "link": "Ancient Waterworks",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
           "percent": null,

@@ -1,4 +1,4 @@
-# Arcane Hand
+#srd #spell #evocation
 
 *5th-level evocation*
 
@@ -27,6 +27,3 @@ Make a check with the hand's Strength contested by the Strength (Athletics) chec
 ***Interposing Hand***. The hand interposes itself between you and a creature you choose until you give the hand a different command. The hand moves to stay between you and the target, providing you with half cover against the target. The target can't move through the hand's space if its Strength score is less than or equal to the hand's Strength score. If its Strength score is higher than the hand's Strength score, the target can move toward you through the hand's space, but that space is difficult terrain for the target.
 
 ***At Higher Levels***. When you cast this spell using a spell slot of 6th level or higher, the damage from the clenched fist option increases by 2d8 and the damage from the grasping hand increases by 2d6 for each slot level above 5th.
-
-
-[[Spells]]

@@ -1,13 +1,22 @@
-#location #stable [[Eldin Region]]
+#location #stable [[Eldin Canyon]]
 
 The primary animal tended here is dogs, which some of the stable residents befriend in order to track down treasure.
 
-### Characters
+Primary-Purpose:: Dogs
+Region:: Eldin
 
-* **Gaile**: older male Hylian proprietor of the stable.
-* **Boldon**: Goron male who hangs out at the stable, preaching the wonders of Death Mountain and the Eldin Region generally.
-* **Dayto**: older Hylian male traveler who spends most his time at the stable, trainging and tending to the dogs.
-* **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
+### Characters
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
-
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```

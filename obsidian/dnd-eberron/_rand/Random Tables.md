@@ -2,6 +2,7 @@
 ### NPCs
 
 ##### Type
+
 | dice: 1d100 | Type           |
 | ----------- | -------------- |
 | 01-05       | Acolyte        |
@@ -27,6 +28,7 @@
 ^random-npc-type
 
 ##### Race
+
 | dice: 1d100 | Race       | Age                  | Height | Weight | Speed |
 | ----------- | ---------- | -------------------- | ------ | ------ | ----- |
 | 01-03       | Changeling | `dice: 1d[16, 100]`  |        |        |       |
@@ -47,6 +49,7 @@
 ^random-npc-race
 
 ##### Gender and Sexuality
+
 | dice: 4d8 | Gender     | Pronouns  |
 | --------- | ---------- | --------- |
 | 01-03     | Non-Binary | they/them |
@@ -73,6 +76,7 @@
 ^random-npc-relationship
 
 ##### Appearance
+
 | dice: 1d20 | Appearance                                                  |
 | ---------- | ----------------------------------------------------------- |
 | 1          | Distinctive jewelry: earrings, necklace, circlet, bracelets |
@@ -379,6 +383,7 @@
 ^random-sj-planet-shape
 
 Goodies are moons, rings, strange atmosphere (or no atmosphere), and other unusual features that can flesh out a system's planets. Roll once for each planet.
+
 | dice: 1d100 | Planet Goodies                                                  |
 | ----------- | --------------------------------------------------------------- |
 | 01-10       | Single moon. Also roll again, ignoring a second result of 01-10 |

@@ -1,20 +1,41 @@
 #location #village [[Gerudo Region]]
 
-The Kara Kara Bazaar is a small oasis in the Gerudo Desert, found on the path to Gerudo Town near the entry to the desert. It is a resting stop while exploring the hot Gerudo Desert, which has expanded considerably since the Calamity and Upheaval.
+The Kara Kara Bazaar is a small oasis in the Gerudo Desert, found on the path to Gerudo Town near the entry to the desert. It is a resting stop while exploring the hot Gerudo Desert, which has expanded considerably since the Calamity and Upheaval. In addition to the original building housing the Inn, adobe residences now dot the southeastern edge of the path to the bazaar's lake (east of the main building), and additional wooden stalls have been built along the northwestern edge of the path (east of the main building as well). A Great Fairy Fountain is also now located very near the Bazaar, at the entrance to the desert in the northeast.
 
 ### Locations
 
  - Kara Kara Bazaar Inn
+ - Boraa's Bazaar Bank
+ - Piaffe's Stable
+ - Canolo Construction
+ - Fashion Passion
+	- Desert Voe Headband (450 rupees)
+	- Desert Voe Spaulder (1,300 rupees)
+	- Desert Voe Trousers (650 rupees)
  - General Store
- - Maike's Meats
+	 - Electric Safflina (15 rp)
+	 - Hydromelon (20 rp)
+	 - Arrows (20 rp)
+ - Maike's Meats and Monster Parts
+	 - Roasted Bass (20 rp)
+	 - Seared Steak (30 rp)
+	 - Monster Tails (80 rp)
+ - Robsten's Rich Spices
+	 - Goron Spice
+	 - Rock Salt
 
 ### Characters
-
- - **Kachoo**: A Gerudo woman who manages the Kara Kara Bazaar Inn.
- - **Shaillu**: A Gerudo woman who tends the General Store. She sell clothing, arrows, and general adventuring gear.
- - **Maike**: A female Gerudo merchant who runs a store in the Kara Kara Bazaar. She sells Monster Parts and Food.
- - **Moriss**: A young Hylian male who has come here with his friend to try to get a Gerudo wife.
- - **Rowin**: A young Hylian male who has come here with his friend to try to get a Gerudo wife.
- - **Beedle**: The traveling merchant spends much of his time here.
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```

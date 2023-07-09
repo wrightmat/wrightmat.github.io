@@ -17,13 +17,8 @@ osmLayer: false
 ```
 
 ### Locations
-
-* [[Central Region]]
-* [[Necluda Region]]
-* [[Faron Region]]
-* [[Lanayru Region]]
-* [[Akkala Region]]
-* [[Eldin Region]]
-* [[Hebra Region]]
-* [[Gerudo Region]]
-* [[Underground]] and [[The Depths]]
+```dataview
+list
+from #region
+sort Recommended-Order asc
+```

@@ -16,7 +16,8 @@ scale: 3.233
 osmLayer: false
 ```
 
-### **Accents**
+### Accents
+
 -   Breland: English (various accents)
     -   Wroat/Northern: Proper British
     -   Sharn/Southern: New England (Boston/Brooklyn)

@@ -1,4 +1,4 @@
-# Control Water
+#srd #spell #transmutation 
 
 *4th-level transmutation*
 
@@ -27,6 +27,3 @@ The water level remains elevated until the spell ends or you choose a different 
 When a creature enters the vortex for the first time on a turn or starts its turn there, it must make a Strength saving throw. On a failed save, the creature takes 2d8 bludgeoning damage and is caught in the vortex until the spell ends. On a successful save, the creature takes half damage, and isn't caught in the vortex. A creature caught in the vortex can use its action to try to swim away from the vortex as described above, but has disadvantage on the Strength (Athletics) check to do so.
 
 The first time each turn that an object enters the vortex, the object takes 2d8 bludgeoning damage; this damage occurs each round it remains in the vortex.
-
-
-[[Spells]]

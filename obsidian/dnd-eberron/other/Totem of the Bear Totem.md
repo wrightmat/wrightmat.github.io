@@ -1,0 +1,13 @@
+#item 
+
+*Wondrous Item, Common*
+
+This wooden totem, carved in the shape of the Bear Totem Ursix, houses his essence as the representative of Balinor in the Three Faces of the Wild.
+
+Once per day, while raging, you have resistance to all damage except psychic damage. The spirit of the bear makes you tough enough to stand up to any punishment.
+
+Use of this totem resets after a Long Rest.
+
+*Notes: Barbarian, Combat*
+
+![https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/59c46321-f346-4707-af69-a59f1115d95d/d9rmzuh-e3a2ea19-806e-4bbd-a4e1-d9099b9ef935.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzU5YzQ2MzIxLWYzNDYtNDcwNy1hZjY5LWE1OWYxMTE1ZDk1ZFwvZDlybXp1aC1lM2EyZWExOS04MDZlLTRiYmQtYTRlMS1kOTA5OWI5ZWY5MzUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.oB_xILRywIFAJ793sWswRnBWRXX6F0iQpCHbN2XbXxc](https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/59c46321-f346-4707-af69-a59f1115d95d/d9rmzuh-e3a2ea19-806e-4bbd-a4e1-d9099b9ef935.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzU5YzQ2MzIxLWYzNDYtNDcwNy1hZjY5LWE1OWYxMTE1ZDk1ZFwvZDlybXp1aC1lM2EyZWExOS04MDZlLTRiYmQtYTRlMS1kOTA5OWI5ZWY5MzUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.oB_xILRywIFAJ793sWswRnBWRXX6F0iQpCHbN2XbXxc)

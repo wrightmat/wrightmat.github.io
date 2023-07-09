@@ -1,4 +1,4 @@
-# Find Traps
+#srd #spell #divination 
 
 *2nd-level divination*
 
@@ -15,6 +15,3 @@ You sense the presence of any trap within range that is within line of sight. A 
 This spell merely reveals that a trap is present.
 
 You don't learn the location of each trap, but you do learn the general nature of the danger posed by a trap you sense.
-
-
-[[Spells]]

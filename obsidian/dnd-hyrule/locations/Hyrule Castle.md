@@ -6,26 +6,35 @@ At the far north end of Castle Town is the castle itself. A large drawbridge ove
 
 ### Locations
 
-1. Castle Gates
-2. Observation Room
-3. First Gatehouse
-4. Guards' Chamber
-5. West Passage
-6. Second Gatehouse
-7. East Passage
-8. Dining Hall
-9. Zelda's Room and Study
-11. Sanctum (Throne Room)
-12. Library
-13. King's Study and Armory
-14. Docks
+* [[Hyrule Castle Town]]
+* Castle Gates
+* Observation Room
+* First Gatehouse
+* Guards' Chamber
+* West Passage
+* Second Gatehouse
+* East Passage
+* Dining Hall
+* Zelda's Room and Study
+* Sanctum (Throne Room)
+* Library
+* King's Study and Armory
+* Docks
 
 ![https://i.imgur.com/QuB1Ns0.jpeg](https://i.imgur.com/QuB1Ns0.jpeg)
 
 ### Characters
-
-* Captain Catoll: leader of the Hylian Guard
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where Location = this.file.name
+sort Type, Occupation, file.name
+```
 
 ### Adventures
-
-[[1. Hyrule Castle]]
+```dataview
+table without id file.link as Name, Location, Reward
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.link)
+sort Type, Location, file.name
+```

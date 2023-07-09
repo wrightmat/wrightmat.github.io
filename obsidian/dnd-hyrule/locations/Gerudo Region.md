@@ -1,31 +1,35 @@
+---
+Recommended-Order: 8
+---
+
 #location #region [[Hyrule]]
 
 The Gerudo region is made up of the Gerudo Desert and the Gerudo Highlands. It is home of the Gerudo people and the original home of the villainous Yiga Clan.
 
-All areas of the Gerudo region alternate between being extremely hot during the day and extremely cold at night.
-
-```ad-info
-title: Extreme Heat
-A creature exposed to extreme heat and without access to drinkable water must succeed on a Constitution saving throw at the end of each hour or gain one level of exhaustion. The DC is 5 for the first hour and increases by 1 for each additional hour. Creatures wearing medium or heavy armour, or who are clad in heavy clothing have disadvantage on the saving throw. Creatures with resistance or immunity to fire damage automatically succeed on the saving throw, as do creatures naturally adapted to hot climates.
-```
-
-```ad-info
-title: Extreme Cold
-A creature exposed to extreme cold must succeed on a DC 10 Constitution saving throw at the end of each hour or gain one level of exhaustion. Creatures with resistance or immunity to cold damage automatically succeed on the saving throw, as do creatures wearing cold weather gear (thick coats, gloves, and the like) and creatures naturally adapted to cold climates.
-```
+The Gerudo Desert alternates between being extremely hot during the day and extremely cold at night, while the Gerudo Highlands are always extremely cold.
 
 ### Locations
 
-- [[Kara Kara Bazaar]]
-- [[Gerudo Town]]
+* [[Gerudo Highlands]]
 - [[Gerudo Desert]]
+	- [[Kara Kara Bazaar]]
+	- [[Gerudo Town]]
+
+### Characters
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
-
-* [[8. Shrine of the Seven (Dungeon)]]
-* [[8. Shrine of Shifting Sands]]
-* [[8. Great Fairy Tera]]
-* The Child of Legend ([[Gerudo Town]])
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```
 
 ### Rumors
 
@@ -43,14 +47,14 @@ A creature exposed to extreme cold must succeed on a DC 10 Constitution saving t
 
 Most of the Gerudo Region is desert, where monsters are common.
 
-| Roll | Desert Encounter          |
-|:----:|:------------------------- |
-|  1   | 2 **Yiga Footsoldiers**   |
-| 2-3  | 1d6 **Red ChuChus**       |
-| 4-5  | 1d3 **Igneo Pebblits**    |
-| 6-7  | 1d8 **Electric Keese**    |
-| 8-9  | 1d3 **Electric Lizalfos** |
-|  10  | 1 **Black Moblin**        |
-|  12  | 1 **Electric Wizzrobe**   |
-|  11  | 1 **Molduga**             |
+| Roll | Desert Encounter                            |
+|:----:|:------------------------------------------- |
+|  1   | `encounter: 2: Yiga Footsoldier`            |
+| 2-3  | `encounter: 1d6: ChuChu` (Red and Yellow)   |
+| 4-5  | `encounter: 1d3: Pebblit` (Igneo)           |
+| 6-7  | `encounter: 1d8: Keese` (Electric)          |
+| 8-9  | `encounter: 1d3: Black Lizalfos` (Electric) |
+|  10  | `encounter: 1: Black Moblin`                |
+|  12  | `encounter: 1: Wizzrobe` (Electric)         |
+|  11  | `encounter: 1: Molduga`                     |
 ^gerudo-random-desert

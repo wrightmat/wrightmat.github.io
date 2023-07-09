@@ -1,4 +1,4 @@
-# Conjure Elemental
+#srd #spell #conjuration 
 
 *5th-level conjuration*
 
@@ -19,6 +19,3 @@ If your concentration is broken, the elemental doesn't disappear. Instead, you l
 The GM has the elemental's statistics.
 
 ***At Higher Levels***. When you cast this spell using a spell slot of 6th level or higher, the challenge rating increases by 1 for each slot level above 5th.
-
-
-[[Spells]]

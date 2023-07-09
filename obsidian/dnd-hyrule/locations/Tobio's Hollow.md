@@ -1,0 +1,9 @@
+#location [[Faron Region]]
+
+One of the few remaining accesses to the Depths of Hyrule is at Tobio's Hollow, where Link uncovered the access while saving Hyrule from the events of the Upheaval. After the Upheaval, the sky debris and islands pieces that had fallen returned to the sky, but this was a more ancient piece of Zonai ruins that belonged on the Surface, and so it remained.
+
+Immediately after the Sheikah Seekers organized, one of the first areas they claimed was Tobio's Hollow. They wanted to make sure that no one ended up down in the Depths by accident, and so they secured the area so only Seekers would be allowed in the area. Over the years, they constructed an elevator (out of some of the remaining Zonai tech) that allowed them to safely enter the Depths.
+
+As construction of the Tobio's Hollow elevator continued, the Sheikah discovered some additional cave network that had never been charted before. As they explored, they came upon a great cavern with a huge door and a number of murals on the wall, much like the mural chamber that Zelda and Link had discovered under Hyrule Castle. For this reason of course the Sheikah were cautious, but they have spent the last few decades slowly and carefully exploring these chambers - discovering additional large doors with magatama-shaped engravings on them. Knowing some of the stories of the Secret Stones that were recently uncovered, and having learned of their power, additional exploration of these doors or anything behind them has been forbidden.
+
+But many scholars among the Sheikah Seekers have studied the huge door with circular engravings in it, which has come to be named the Door of the Sages after a significant discovery that the symbols in the engravings match ancient medallions that were said to be carried by Sages. A much smaller group of Sheikah have started some limited exploration of the Depths, but much of that has stopped after a small expedition went missing....

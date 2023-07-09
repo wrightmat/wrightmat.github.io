@@ -2,13 +2,21 @@
 
 The primary animal tended here is the goat, who love the abundant grasses and Tabantha Wheat of the area.
 
-### Characters
+Primary-Purpose:: Goats
+Region:: Hebra
 
-* **Banji** (they/them): an elderly Hylian who owns and runs the stable.
-* **Chork** (he/him): elderly Hylian who works outside of the stable, mostly tending the fires.
-* **Baddek** (he/him): elderly Hylian traveler.
-* **Ena** (she/her): middle-aged Hylian female who does most of the work at the stable, both cleaning inside and tending to the goats outside.
-* **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
+### Characters
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
-
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```

@@ -1,4 +1,4 @@
-# Divine Word
+#srd #spell #evocation 
 
 *7th-level evocation*
 
@@ -16,6 +16,3 @@ You utter a divine word, imbued with the power that shaped the world at the dawn
 - 40 hit points or fewer: deafened and blinded for 10 minutes
 - 30 hit points or fewer: blinded, deafened, and stunned for 1 hour
 - 20 hit points or fewer: killed instantly Regardless of its current hit points, a celestial, an elemental, a fey, or a fiend that fails its save is forced back to its plane of origin (if it isn't there already) and can't return to your current plane for 24 hours by any means short of a *wish* spell.
-
-
-[[Spells]]

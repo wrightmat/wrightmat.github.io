@@ -1,4 +1,4 @@
-# Misty Step
+#srd #spell #conjuration 
 
 *2nd-level conjuration*
 
@@ -11,6 +11,3 @@
 **Duration:** Instantaneous
 
 Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see.
-
-
-[[Spells]]

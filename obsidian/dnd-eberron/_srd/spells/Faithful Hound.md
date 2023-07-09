@@ -1,4 +1,4 @@
-# Faithful Hound
+#srd #spell #conjuration 
 
 *4th-level conjuration*
 
@@ -15,6 +15,3 @@ You conjure a phantom watchdog in an unoccupied space that you can see within ra
 The hound is invisible to all creatures except you and can't be harmed. When a Small or larger creature comes within 30 feet of it without first speaking the password that you specify when you cast this spell, the hound starts barking loudly. The hound sees invisible creatures and can see into the Ethereal Plane. It ignores illusions.
 
 At the start of each of your turns, the hound attempts to bite one creature within 5 feet of it that is hostile to you. The hound's attack bonus is equal to your spellcasting ability modifier + your proficiency bonus. On a hit, it deals 4d8 piercing damage.
-
-
-[[Spells]]

@@ -1,4 +1,4 @@
-# Teleport
+#srd #spell #conjuration 
 
 *7th-level conjuration*
 
@@ -40,6 +40,3 @@ The destination you choose must be known to you, and it must be on the same plan
 ***Similar Area***. You and your group (or the target object) wind up in a different area that's visually or thematically similar to the target area. If you are heading for your home laboratory, for example, you might wind up in another wizard's laboratory or in an alchemical supply shop that has many of the same tools and implements as your laboratory. Generally, you appear in the closest similar place, but since the spell has no range limit, you could conceivably wind up anywhere on the plane.
 
 ***Mishap***. The spell's unpredictable magic results in a difficult journey. Each teleporting creature (or the target object) takes 3d10 force damage, and the GM rerolls on the table to see where you wind up (multiple mishaps can occur, dealing damage each time).
-
-
-[[Spells]]

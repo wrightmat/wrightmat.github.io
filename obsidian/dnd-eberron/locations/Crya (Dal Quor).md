@@ -8,6 +8,7 @@ Dal Quor is a place where impossible things are possible and the surroundings ca
 Even when you’re exploring someone else’s dreams, your desires and memories can infect the landscape. The Shifting Dreams table provides ideas for how a dream could change.
 
 **Shifting Dreams**
+
 | d8 | Dream Event |
 | --- | --- |
 | 1 | A familiar melody can be heard throughout the area. Ask a player to describe the song. |

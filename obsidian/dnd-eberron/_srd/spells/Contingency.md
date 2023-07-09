@@ -1,4 +1,4 @@
-# Contingency
+#srd #spell #evocation 
 
 *6th-level evocation*
 
@@ -15,6 +15,3 @@ Choose a spell of 5th level or lower that you can cast, that has a casting time 
 The contingent spell takes effect immediately after the circumstance is met for the first time, whether or not you want it to, and then *contingency* ends.
 
 The contingent spell takes effect only on you, even if it can normally target others. You can use only one *contingency* spell at a time. If you cast this spell again, the effect of another *contingency* spell on you ends. Also, *contingency* ends on you if its material component is ever not on your person.
-
-
-[[Spells]]

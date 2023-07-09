@@ -4,21 +4,33 @@ The Great Deku Tree can be found in the middle of Korok Forest. The Koroks who l
 
 ### Locations
 - Great Deku Tree
-- The Spore Store, a purveyor of fine goods
+- General Shoppe
+	- Hylian Rice
+	- Tabantha Wheat
+	- Apples
+- Spore Store, a purveyor of fine goods
 	- Mushrooms
 	- Arrows
+- Great Deku Tree's Navel, an inn
+	- 
 - The Witch's Hut, an alchemy and potion store
 
 ### Characters
-
-- **Great Deku Tree**
-- **Hodi**: A male Korok and the proprietor of the Spore Store.
-- **Dulea**: A female Korok and attendant to the Great Deku Tree.
-- **Molasses (Moli)**: A female human witch who runs and lives at The Witch's Hut.
-- **Syrup**: Moli's elderly mother and teacher, who still lives with her at The Witch's Hut.
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```
 
-#### The Protectorate
+### Faction: Deku Protectorate
 
 ![[Deku Protectorate]]

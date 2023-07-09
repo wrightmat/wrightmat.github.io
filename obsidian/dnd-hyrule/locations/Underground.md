@@ -1,29 +1,55 @@
+---
+Recommended-Order: 9
+---
+
 #location #region  [[Hyrule]]
 
-Underground Hyrule has been barely explored in thousands of years, and now it appears that an evil power is emanating from somewhere down there. A great series of underground caverns can be accessed from the Breach of Demise between Central Hyrule and the Hebra Region, which opens into a large central chamber.
+Underground Hyrule has been barely explored in thousands of years, and now it appears that an evil power is emanating from somewhere down there. A great series of underground caverns can be accessed from an elevator constructed at Tobio's Hollow in the Faron Region, which opens into a large central chamber.
 
 Three large stone doors fan out in three directions, each imprinted with a magatama symbol. From the entry stairwell, the left door leads to the Amber Chamber (when the Amber Relic is placed in it), the forward door leads to the Jade Chamber (when the Jade Relic is placed in it, and the right door leads to the Dusk Chamber (when the Dusk Relic is placed in it).
 
-A huge stone door, with imprints depicting the twelve elemental medallions, presumably leads deeper underground.
+A huge stone door (Door of the Sages), with imprints depicting the twelve elemental medallions, leads deeper underground. When this door is opened, a large staircase is found leading downward toward Subrosia, and then further down to The Depths.
 
 ### Locations
 
+* [[Tobio's Hollow]] (elevator to access)
 - [[Amber Relic Chamber]]
 - [[Jade Relic Chamber]]
 - [[Dusk Relic Chamber]]
 - [[Subrosia]]
-- **The Depths**
-
-### Characters
-
-- **Brother Keefe**, priest and “Keeper of the Dead” at the Breach of Demise. He spends most of his time above ground at the graveyard, but is aware that the underground area exists and could give advice to PCs on the Magatama Relics if needed.
 
 ### Adventures
-
-* [[9. Door of the Sages]]
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```
 
 ### Rumors
 
+
+
+### Collecting
+
+#### Foraging
+
+| d12   | Collectible | Qty (12) |
+| ----- | ----------- | -------- |
+| 1-4   | Bomb Flower | 4        |
+| 5-7   | Muddle Bud  | 3        |
+| 8-10  | Puffshroom  | 3        |
+| 11-12 | Fairy       | 2        |
+^underground-foraging
+
+#### Fishing
+
+| d12 | Collectible    | Qty (6) |
+| --- | -------------- | ------- |
+| 1-2 | Hyrule Bass    | 2       |
+| 3-4 | Hearty Salmon  | 2       |
+| 5-6 | Staminoka Bass | 2       |
+^underground-foraging
 
 ### Random Encounters (18+)
 

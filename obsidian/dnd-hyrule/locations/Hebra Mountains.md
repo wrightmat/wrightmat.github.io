@@ -2,40 +2,56 @@
 
 The Hebra Mountains are a very cold and mountainous area in the north of the Hebra Region with lots of peaks and summits to climb. The area also has large snow-covered slopes, making it an ideal Shield Surfing location. Despite the extreme cold, the Hebra Mountains are littered with Hot Springs; none of the remaining lakes have hazardously cold water, and the ones above ground are flanked with powerful updraft vents. 
 
+```ad-info
+title: Extreme Cold
+
+A creature exposed to extreme cold must succeed on a DC 10 Constitution saving throw at the end of each hour or gain one level of exhaustion. Creatures with resistance or immunity to cold damage automatically succeed on the saving throw, as do creatures wearing cold weather gear (thick coats, gloves, and the like) and creatures naturally adapted to cold climates.
+```
+
 ### Locations
 
-- **Selmie's Spot**
-- **Hebra Plunge**
-- **Pondo's Lodge**
+- Hebra Village (formerly Selmie's Spot)
+- Hebra Plunge
+- Hebra Trailhead Lodge
 - Sherfin's Secret Hot Spring
 - Goflam's Secret Hot Spring
+- Sturnida Hot Spring
 - Hebra Peak
 
 ### Characters
-
- - **Selmie**, a Hylian woman who lives in a cabin and has set up a Shield Surfing challenege course.
- - **Nokala**, a Rito woman who runs the river rapids challenge at Hebra Plunge.
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```
 
-#### Selmie's Spot
+### Collecting
 
-In a lone cabin in the center of Hebra Mountains range lives a Hylian woman named Selmie who has set up a Shield Surfing challenge course. Attempting the course costs 20 rupees.
-- Coldsnap Hollow
-- Hebra Tundra
-- Lake Kilsie
+##### Foraging
 
-Come up with mechanics for a Shield Surfing challenge. Probably Dexterity (or Athletics/Acrobatics) checks, with the shield breaking on a critical failure. 
+| d12 | Collectible    | Qty (12) |
+| --- | -------------- | -------- |
+| 1-3 | Wildberry      | 3        |
+| 4-6 | Cool Safflina  | 3        |
+| 7-9 | Chillshroom    | 3        |
+| 10  | Swift Violet   | 1        |
+| 11  | Hearty Truffle | 1        |
+| 12  | Fairy          | 1        |
+^hebra-mountains-foraging
 
-#### Hebra Plunge
+##### Fishing
 
-At the top of mountain above Hebra Plunge is an area known as Hebra Headspring, where a Rito woman named Nokala has set up a river rapids course. The PCs may pay 20 rupees to rent a raft an attempt the challenge, where they'll need to employ Suvival and Intelligence (Navigation) checks to avoid tipping while making it to the bottom of the course.
-- Hebra Headspring
-- Hebra Fall
-- Hebra Plunge
-
-#### Pondo's Lodge
-
-Pondo is a Hylian male who will offer to let the PCs play a snowball bowling game (aka Snowling), for a cost of 20 rupees per attempt.
-
->At the foot of the hill, we have 10, count 'em, 10 pillars or "pins." Give that snowball a good, hearty toss from the tippy-top of the hill to try and knock over all the pins you can! The ball might take a few detours on its ride down the hill, but any pins it hits when it reaches the bottom are done for! There's no cooler feeling than smashing all the pins at once! But see for yourself! Go on, have a ball!
+| d6  | Collectible    | Qty (6) |
+| --- | -------------- | ------- |
+| 1-5 | Chillfin Trout | 5       |
+| 6   | Hearty Salmon  | 1       |
+^hebra-mountains-fishing

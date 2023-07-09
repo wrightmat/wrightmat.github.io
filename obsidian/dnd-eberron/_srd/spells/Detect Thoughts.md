@@ -1,4 +1,4 @@
-# Detect Thoughts
+#srd #spell #divination 
 
 *2nd-level divination*
 
@@ -19,6 +19,3 @@ Questions verbally directed at the target creature naturally shape the course of
 You can also use this spell to detect the presence of thinking creatures you can't see. When you cast the spell or as your action during the duration, you can search for thoughts within 30 feet of you. The spell can penetrate barriers, but 2 feet of rock, 2 inches of any metal other than lead, or a thin sheet of lead blocks you. You can't detect a creature with an Intelligence of 3 or lower or one that doesn't speak any language.
 
 Once you detect the presence of a creature in this way, you can read its thoughts for the rest of the duration as described above, even if you can't see it, but it must still be within range.
-
-
-[[Spells]]

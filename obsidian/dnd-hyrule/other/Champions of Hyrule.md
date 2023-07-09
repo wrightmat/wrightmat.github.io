@@ -1,9 +1,11 @@
 #lore #faction
 
 ![https://i.imgur.com/9g0STYi.png|280](https://i.imgur.com/9g0STYi.png)
-**Symbol(s)**: A stylized sword with two heads
+Symbol:: A stylized sword with two heads
+Alignment:: Lawful Good
 
-**Alignment**: Lawful Good
+Renown:: 
+Members:: 
 
 **Beliefs**:
 - Civilization must unite against the dark forces that threaten it if it hopes to survive.
@@ -16,4 +18,14 @@
  - Eliminate any threats to established powers without hesitation.
  - Be the champions of the people, and bring honor and glory to your leaders.
 
-(analogous to The Lord's Alliance)
+### Members
+
+```dataview
+table without id file.link as Employee, Occupation
+from #npc and [[Champions of Hyrule]]
+sort Occupation
+```
+
+### References
+
+* Analogous to The Lord's Alliance

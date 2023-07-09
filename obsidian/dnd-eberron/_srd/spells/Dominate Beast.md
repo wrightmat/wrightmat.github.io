@@ -1,4 +1,4 @@
-# Dominate Beast
+#srd #spell #enchantment 
 
 *4th-level enchantment*
 
@@ -19,6 +19,3 @@ You can use your action to take total and precise control of the target. Until t
 Each time the target takes damage, it makes a new Wisdom saving throw against the spell. If the saving throw succeeds, the spell ends.
 
 ***At Higher Levels***. When you cast this spell with a 5th-level spell slot, the duration is concentration, up to 10 minutes. When you use a 6th-level spell slot, the duration is concentration, up to 1 hour. When you use a spell slot of 7th level or higher, the duration is concentration, up to 8 hours.
-
-
-[[Spells]]

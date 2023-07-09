@@ -12,8 +12,43 @@ title: Extreme Cold
 A creature exposed to extreme cold must succeed on a DC 10 Constitution saving throw at the end of each hour or gain one level of exhaustion. Creatures with resistance or immunity to cold damage automatically succeed on the saving throw, as do creatures wearing cold weather gear (thick coats, gloves, and the like) and creatures naturally adapted to cold climates.
 ```
 
-### Adventures
+### Locations
 
-* [[8. Shrine of Shifting Sands]]
-* [[8. Shrine of the Seven (Dungeon)]]
-* [[8. Great Fairy Tera]]
+- [[Kara Kara Bazaar]]
+- [[Gerudo Town]]
+- Northern Icehouse
+- Great Cliffs
+- East Gerudo Ruins
+- Palu Wasteland
+- East Barrens
+- Southern Oasis
+- Arbiter's Grounds
+- Dragon's Exile
+- Gerudo Great Skeleton
+- Toruma Dunes
+- West Barrens
+- West Gerudo Ruins
+
+### Adventures
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```
+
+### Collecting
+
+##### Foraging
+
+| d12   | Collectible       | Qty (12) |
+| ----- | ----------------- | -------- |
+| 1-2   | Hydromelon        | 2        |
+| 3-4   | Voltfruit         | 2        |
+| 5-6   | Electric Safflina | 2        |
+| 7-8   | Warm Safflina     | 2        |
+| 9-10  | Spicy Pepper      | 2        |
+| 11-12 | Palm Fruit        | 2        |
+^gerudo-desert-foraging
+
+##### No Fishing

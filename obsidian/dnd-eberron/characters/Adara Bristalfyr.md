@@ -13,6 +13,7 @@ level: 8
 * **Race**:: Fairy
 
 ### Backstory
+
  * Born on the Rock of Bral many years ago.
  * Started playing the harp in taverns to earn meals in her teens.
  * Joined bards college for formal education.

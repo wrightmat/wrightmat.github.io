@@ -1,12 +1,22 @@
-#location #stable [[Faron Region]]
+#location #stable [[Faron Grasslands]]
 
 The primary animal tended here is dondons, the large oxen-like animal that Princess Zelda discovered almost fifty years ago. A bridge has been built from the stable to the large pen across the Floria River.
 
-### Characters
+Primary-Purpose:: Dondons
+Region:: Faron
 
-* **Kampo**: older male Hylian proprietor of the stable.
-* **Cima**: older female Hylian who tends to the dondons in the large pen across the bridge from the stable proper.
-* **Beedle**: the traveling merchant. He's on his way to wherever the party should be directed next.
+### Characters
+```dataview
+table without id file.link as Name, Race, Gender, Age, Occupation, Comments
+from #npc
+where contains(Location, this.file.name)
+sort Type, Occupation, file.name
+```
 
 ### Adventures
-
+```dataview
+table without id file.link as Name, Location, Reward, Type
+from #adventure
+where contains(Location, this.file.link) or contains(Location, this.file.name) or contains(Location_General, this.file.link) or contains(Location_General, this.file.name)
+sort Type, Location, file.name
+```

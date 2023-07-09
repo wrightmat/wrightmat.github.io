@@ -8,7 +8,7 @@ image: [[https://www.dndbeyond.com/avatars/thumbnails/25814/920/1000/1000/637883
 name: Autumn Eladrin
 size: Medium
 type: Fey
-subtype: Elf
+subtype: (Elf)
 alignment: Typically Chaotic Neutral
 ac: 19
 hp: 165
