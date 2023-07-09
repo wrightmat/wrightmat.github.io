@@ -4,7 +4,7 @@ statblock: inline
 #monster [[Bokoblins]]
 
 ```statblock
-image: [[https://i.imgur.com/SNZYWGP.png]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d7/BotW_Blue_Bokoblin_Model.png]]
 name: Blue Bokoblin
 size: Small
 type: Humanoid
@@ -32,7 +32,9 @@ actions:
     desc: "Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d7/BotW_Blue_Bokoblin_Model.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d7/BotW_Blue_Bokoblin_Model.png)
+
 ### References
 
-https://www.dndbeyond.com/monsters/16907-goblin
-https://www.dndbeyond.com/monsters/16925-hobgoblin
+* https://www.dndbeyond.com/monsters/16907-goblin
+* https://www.dndbeyond.com/monsters/16925-hobgoblin

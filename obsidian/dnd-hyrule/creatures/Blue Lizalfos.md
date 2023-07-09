@@ -1,10 +1,10 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Lizalfos]]
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://cdn.wikimg.net/en/zeldawiki/images/thumb/d/d3/BotW_Blue_Lizalfos_Model.png/1200px-BotW_Blue_Lizalfos_Model.png]]
 name: Blue Lizalfos
 size: Medium
 type: Humanoid
@@ -37,6 +37,8 @@ actions:
   - name: Spit.
     desc: "Ranged Spell Attack: +4 to hit, range 30/90 ft., one target. Hit: 9 (4d4) acid damage."
 ```
+
+![https://cdn.wikimg.net/en/zeldawiki/images/thumb/d/d3/BotW_Blue_Lizalfos_Model.png/1200px-BotW_Blue_Lizalfos_Model.png|400](https://cdn.wikimg.net/en/zeldawiki/images/thumb/d/d3/BotW_Blue_Lizalfos_Model.png/1200px-BotW_Blue_Lizalfos_Model.png)
 
 #### References
 

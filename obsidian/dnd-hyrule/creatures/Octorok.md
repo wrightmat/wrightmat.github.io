@@ -4,7 +4,7 @@ statblock: inline
 #monster 
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://www.zeldadungeon.net/wiki/images/d/d3/Water-Octorok.png]]
 name: Octorok
 size: Medium
 type: Beast
@@ -43,6 +43,8 @@ A rock octorok has a burrow speed of 30 ft., tremorsense out to a range of 60 ft
 **Nimble Escape**. The octorok can take the Disengage or Hide action as a bonus action on each of its turns.
 
 This variant has a Challenge Rating of 1/2 (100 XP).
+
+![https://i.redd.it/p7ekkz13g6w71.png](https://i.redd.it/p7ekkz13g6w71.png)
 
 ### References
 

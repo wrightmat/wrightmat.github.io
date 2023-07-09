@@ -43,6 +43,8 @@ A wallmaster is able to maneuver by crawling on its five huge fingers. More ofte
 
 Wallmasters are related to floormasters, and usually bear an almost identical appearance. Unlike a floormaster, a wallmaster sticks to ceilings and walls, and almost always attacks by dropping on its victims and teleporting them away. A wallmaster lacks the more robust combat abilities of a floormaster, and most floormasters lack the ability to teleport victims.
 
+![http://www.zeldadungeon.net/wiki/images/thumb/c/c4/Wallmaster-Art.png/800px-Wallmaster-Art.png|300](http://www.zeldadungeon.net/wiki/images/thumb/c/c4/Wallmaster-Art.png/800px-Wallmaster-Art.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Wallmaster_(5e_Creature)

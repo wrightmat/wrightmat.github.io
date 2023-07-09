@@ -37,6 +37,8 @@ _**Pursuers.**_ Bubbles move around an area at their own leisure, and tend to s
 
 _**Unstable Flight.**_ A bubble's flight is powered by an unstable magic. Any disruption in this magic can cause a bubble to temporarily lose its ability to fly. While flightless, a bubble will frantically hop in the direction of its prey.
 
+![https://i.imgur.com/kQPheBP.png|200](https://i.imgur.com/kQPheBP.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Bubble_(5e_Creature)

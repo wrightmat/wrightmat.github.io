@@ -38,6 +38,8 @@ actions:
 
 The rarest variety of bubble is also arguably the most powerful. Its blue, magical flame can incapacitate foes. The cursed bubble, or blue bubble, is both fast and terrifying.
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/0/0a/TWW_Blue_Bubble_Model.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/0/0a/TWW_Blue_Bubble_Model.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Cursed_Bubble_(5e_Creature)

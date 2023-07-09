@@ -5,5 +5,8 @@
   "initiative-tracker",
   "obsidian-leaflet-plugin",
   "table-editor-obsidian",
-  "dataview"
+  "dataview",
+  "obsidian-style-settings",
+  "dbfolder",
+  "metaedit"
 ]

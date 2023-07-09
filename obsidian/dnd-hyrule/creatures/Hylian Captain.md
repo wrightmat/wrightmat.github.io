@@ -37,6 +37,8 @@ reactions:
     desc: "The captain adds 2 to its AC against one melee attack that would hit it. To do so, the captain must see the attacker and be wielding a melee weapon."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f3/HW_Hylian_Soldier_Model.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f3/HW_Hylian_Soldier_Model.png)
+
 ### References
 
 https://www.dndbeyond.com/monsters/16799-bandit-captain

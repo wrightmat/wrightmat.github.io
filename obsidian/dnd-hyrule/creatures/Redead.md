@@ -8,25 +8,43 @@ image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7e/OoT_Re
 name: Redead
 size: Medium
 type: Undead
-alignment: Neutral Evil
-ac: 8
-hp: 22
-hit_dice: 3d8 + 9
+alignment: Chaotic Evil
+ac: 7
+hp: 85
+hit_dice: 9d8 + 45
 speed: 10 ft.
-stats: [13, 7, 16, 3, 6, 5]
+stats: [18, 4, 20, 3, 8, 6]
 saves:
-  - wisdom: 2
-damage_immunities: poison
-condition_immunities: charmed, exhaustion, frightened, poisoned
-senses: blindsight 60 ft., passive Perception 8
+  - Wis: 1
+  - Cha: 0
+damage_vulnerabilities: fire, radiant
+damage_resistances: necrotic
+damage_immunities: poison; bludgeoning, piercing, and slashing from nonmagical ranged attacks
+condition_immunities: blinded, exhaustion, frightened, poisoned
+senses: truesight 30 ft., passive Perception 9
 languages: understands the languages it knew in life but can't speak
-cr: 1/4
+cr: 3
 traits:
-  - name: Undead Fortitude.
-    desc: "If damage reduces the redead to 0 hit points, it must make a Constitution saving throw with a DC of 5 + the damage taken, unless the damage is radiant or from a critical hit. On a success, the redead drops to 1 hit point instead."
-  - name: Petrifying Gaze.
-    desc: "The redead targets one creature it can see within 60 feet of it. If the target can see the redead, it must succeed on a DC 11 Wisdom saving throw against this magic or become frightened until the end of the redead's next turn. If the target fails the saving throw by 5 or more, it is also paralyzed for the same duration. A target that succeeds on the saving throw is immune to the Petrifying Gaze of all ReDeads for the next 2 hours."
+  - name: Brute.
+    desc: "A melee weapon deals one extra die of its damage when the redead hits with it (included in the attack)."
+  - name: Grappler.
+    desc: "The redead has advantage on attack rolls against any creature grappled by it."
 actions:
   - name: Bite.
-    desc: "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 8 (2d6 +1) piercing damage plus 3 (1d6) necrotic damage. If the target is a creature, it must make a DC 12 Strength saving throw or the redead remains attached to the creature and takes 8 (2d6 + 1) piercing damage plus 3 (1d6) necrotic damage on each turn until the target succeeds on the saving throw or the redead is killed."
+    desc: "Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) piercing damage, and the target is grappled (escape DC 13). Until this grapple ends, the target is restrained, and the redead can't bite another target."
+  - name: Paralyzing Shriek (Recharge 5-6).
+    desc: "A horrifying shriek echoes from the redead's face. Each creature within 30 feet of it must make a DC 12 Wisdom saving throw. The redead can designate one target within range it can see to have disadvantage on this initial saving throw. On a failed save, a target is frightened and paralyzed for 1 minute. An affected creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success."
+bonus_actions:
+  - name: Redead's Reach.
+    desc: "The redead moves up to its speed straight toward a creature frightened of it that it can see, and makes a bite attack against it if it is within reach."
 ```
+
+A vaguely humanoid-shaped monstrosity of dull color, a redead (or ReDead) is renowned for instilling such fear that its victim completely loses the capability to move. Once a victim is immobilized by terror, the redead lurches towards it with eerily slow movement. The monster's four leathery limbs all wrap around its victim at once — further immobilizing the poor creature — and the redead's blunt teeth begin to tear and devour the paralyzed victim while it still lives. The few who have survived this experience are known to retain mind-rattling nightmares of it for the rest of their days.
+
+_**Unknown Origins.**_ The origins and motivations of redead are mysterious. They are frequently found where large numbers of corpses are buried, or any area where necrotic magic flows wildly.
+
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7e/OoT_ReDead_Artwork.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7e/OoT_ReDead_Artwork.png)
+
+### References
+
+* https://www.dandwiki.com/wiki/Redead_(5e_Creature)

@@ -1,0 +1,3 @@
+
+Gender:: Male
+Race:: Goron

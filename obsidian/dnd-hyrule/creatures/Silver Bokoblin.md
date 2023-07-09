@@ -4,7 +4,7 @@ statblock: inline
 #monster [[Bokoblins]]
 
 ```statblock
-image: [[https://i.imgur.com/dxOMRGY.png]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/82/BotW_Silver_Bokoblin_Model.png]]
 name: Silver Bokoblin
 size: Small
 type: Humanoid
@@ -34,6 +34,8 @@ actions:
     desc: "Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/82/BotW_Silver_Bokoblin_Model.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/82/BotW_Silver_Bokoblin_Model.png)
+
 ### References
 
-https://www.dndbeyond.com/monsters/17160-hobgoblin-captain
+* https://www.dndbeyond.com/monsters/17160-hobgoblin-captain

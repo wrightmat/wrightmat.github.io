@@ -30,6 +30,8 @@ actions:
     desc: "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 6 (1d8 + 2) slashing damage, or 7 (1d10 + 2) slashing damage if used with two hands."
 ```
 
+![https://static.wikia.nocookie.net/dynastywarriors/images/b/bc/Hyrulean_Soldier_01_-_HW.png|200](https://static.wikia.nocookie.net/dynastywarriors/images/b/bc/Hyrulean_Soldier_01_-_HW.png)
+
 ### References
 
 https://www.dndbeyond.com/monsters/175769-soldier

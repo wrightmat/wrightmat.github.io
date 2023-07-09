@@ -41,6 +41,8 @@ Four-limbed, one-eyed carnivorous insects, tektites are well-known to jump great
 
 **Varied Habitats**. Lakes, swamps, mountains, deserts, caverns, ruins, and more are home to these highly adaptable creatures. There are few if any locations were some variety of tektite cannot be found. Their simple but powerful legs can expertly maneuver almost any terrain.
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d8/TP_Tektite_Render.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d8/TP_Tektite_Render.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Tektite_(5e_Creature)

@@ -1,10 +1,10 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Hinoxes]]
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6e/BotW_Blue_Hinox_Model.png]]
 name: Blue Hinox
 size: Huge
 type: Giant
@@ -31,6 +31,8 @@ actions:
   - name: Superbomb.
     desc: "The Hinox throws a lit bomb anywhere within a range of 60 feet. Any creature within 5 feet of where the bomb lands must succeed on a DC 18 Dexterity saving throw or take 21 (6d6) thunder damage. If the bomb is thrown more than 20 feet away from the Hinox, the creature(s) have advantage on this saving throw."
 ```
+
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6e/BotW_Blue_Hinox_Model.png](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6e/BotW_Blue_Hinox_Model.png)
 
 ### References
 

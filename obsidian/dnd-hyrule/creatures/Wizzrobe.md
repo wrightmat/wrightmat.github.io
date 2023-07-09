@@ -4,7 +4,7 @@ statblock: inline
 #monster 
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/ff/BotW_Electric_Wizzrobe_Model.png]]
 name: Wizzrobe
 size: Medium
 type: Fiend

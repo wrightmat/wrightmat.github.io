@@ -4,7 +4,7 @@ statblock: inline
 #monster [[Bokoblins]]
 
 ```statblock
-image: [[https://i.imgur.com/lDRO4Hn.png]]
+image: [[https://www.zeldadungeon.net/wiki/images/b/bf/Black-Bokoblin-Model.png]]
 name: Black Bokoblin
 size: Small
 type: Humanoid
@@ -34,6 +34,8 @@ actions:
     desc: "Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
 ```
 
+![https://www.zeldadungeon.net/wiki/images/b/bf/Black-Bokoblin-Model.png|300](https://www.zeldadungeon.net/wiki/images/b/bf/Black-Bokoblin-Model.png)
+
 ### References
 
-https://www.dndbeyond.com/monsters/17155-goblin-boss
+* https://www.dndbeyond.com/monsters/17155-goblin-boss

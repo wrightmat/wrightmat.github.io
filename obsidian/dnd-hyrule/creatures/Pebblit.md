@@ -4,7 +4,7 @@ statblock: inline
 #monster 
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/0/0c/BotW_Stone_Pebblit_Model.png]]
 name: Pebblit
 size: Small
 type: Construct
@@ -54,6 +54,8 @@ A frost pebblit is comprised of glacial rock. Frost pebblits have immunity to co
 **Frozen Body**. A creature that touches the pebblit or hits it with a melee attack while within 5 feet of it takes 5 (1d10) cold damage.
 
 **Fire Susceptibility**. If the pebblit takes fire damage, its body thaws. While its body is thawed, the pebblit's Frozen Body trait is suppressed and its slam deals no cold damage. At the start of each of the pebblit's turns while its body is thawed, roll a d6. On a 5 or higher, the pebblit freezes again.
+
+![https://static.tvtropes.org/pmwiki/pub/images/botw_pebblits.png](https://static.tvtropes.org/pmwiki/pub/images/botw_pebblits.png)
 
 ### References
 

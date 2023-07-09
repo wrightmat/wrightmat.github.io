@@ -30,6 +30,8 @@ actions:
     desc: "Ranged Weapon Attack: +3 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/c5/BotW_Bokoblin_Model.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/c5/BotW_Bokoblin_Model.png)
+
 ### References
 
 https://www.dndbeyond.com/monsters/16907-goblin

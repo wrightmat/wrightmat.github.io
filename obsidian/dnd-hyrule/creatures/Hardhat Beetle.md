@@ -31,6 +31,8 @@ actions:
 
 Found primarily in dark caves and dank ruins, hardhat beetles are inherently aggressive toward any strange creatures who enter their territory. Few foes are able to pierce their rebounding shells, which the beetles use both to protect themselves and to slam away would-be predators.
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/46/LANS_Hardhat_Beetle_Artwork.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/46/LANS_Hardhat_Beetle_Artwork.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Hardhat_Beetle_(5e_Creature)

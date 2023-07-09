@@ -1,10 +1,10 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Hinoxes]]
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://static.wikia.nocookie.net/the-legend-of-zelda-botw/images/3/3f/Hinox.jpeg]]
 name: Red Hinox
 size: Huge
 type: Giant
@@ -29,6 +29,8 @@ actions:
   - name: Throw.
     desc: "The Hinox throws a Medium or smaller creature it is grappling a distance of up to 60 feet, or a height of up to 40 feet. If thrown into a wall or other solid surface, the thrown creature takes 14 (4d6) bludgeoning damage from the impact. If thrown upward and allowed to fall, the creature takes 1d6 bludgeoning damage for every 10 feet it falls."
 ```
+
+![https://static.wikia.nocookie.net/the-legend-of-zelda-botw/images/3/3f/Hinox.jpeg](https://static.wikia.nocookie.net/the-legend-of-zelda-botw/images/3/3f/Hinox.jpeg)
 
 ### References
 

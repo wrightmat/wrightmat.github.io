@@ -50,6 +50,8 @@ An armos appears indistinguishable from a stone statue, and in fact is comprised
 
 **Constructed Nature**. An armos doesn't require air, food, drink, or sleep.
 
+![https://oyster.ignimgs.com/mediawiki/apis.ign.com/the-legend-of-zelda-skyward-sword/7/78/Armos_ss.png](https://oyster.ignimgs.com/mediawiki/apis.ign.com/the-legend-of-zelda-skyward-sword/7/78/Armos_ss.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Armos_Knight_(5e_Creature)

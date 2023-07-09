@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Moblins]]
 
 ```statblock
 image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7b/BotW_Silver_Moblin_Model.png]]
@@ -33,6 +33,8 @@ actions:
   - name: Club.
     desc: "Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 16 (2d10 + 6) bludgeoning damage."
 ```
+
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7b/BotW_Silver_Moblin_Model.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7b/BotW_Silver_Moblin_Model.png)
 
 ### References
 

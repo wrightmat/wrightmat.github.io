@@ -20,24 +20,24 @@
             }
           },
           {
-            "id": "789988458c35063b",
+            "id": "3af5682205b02ca6",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Masters of the Esoteric Arts.md",
+                "file": "characters/Aaqlet.md",
                 "mode": "source",
                 "source": false
               }
             }
           },
           {
-            "id": "14105c25e01ee3e3",
+            "id": "f45ca759be09197f",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "adventures/Regional Railroads.md",
+                "file": "sessions/Test.md",
                 "mode": "source",
                 "source": false
               }
@@ -94,7 +94,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 305.5
+    "width": 257.5
   },
   "right": {
     "id": "f240dac5ef673dba",
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "adventures/Regional Railroads.md",
+                "file": "sessions/Test.md",
                 "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +127,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "adventures/Regional Railroads.md",
+                "file": "sessions/Test.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +150,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "adventures/Regional Railroads.md"
+                "file": "sessions/Test.md"
               }
             }
           },
@@ -175,7 +175,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 350.5
+    "width": 344.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -187,37 +187,38 @@
       "command-palette:Open command palette": false,
       "initiative-tracker:Intiative Tracker Encounter Builder": false,
       "obsidian-leaflet-plugin:Open Leaflet Map": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "dbfolder:Create a new database table": false
     }
   },
-  "active": "14105c25e01ee3e3",
+  "active": "f45ca759be09197f",
   "lastOpenFiles": [
-    "Masters of the Esoteric Arts.md",
-    "locations/Zora's Domain.md",
-    "adventures/3. The Sunken Vault.md",
     "sessions/Untitled.md",
-    "locations/Woodland Stable.md",
-    "locations/Windvane Village.md",
-    "locations/West Necluda.md",
-    "locations/Upland Zorana Tower.md",
-    "locations/Underground.md",
-    "locations/Typhlo Ruins Tower.md",
-    "locations/Tobio's Hollow.md",
-    "locations/The Depths.md",
-    "locations/Tarrey Town.md",
-    "locations/Tabantha Frontier.md",
-    "locations/Tabantha Bridge Stable.md",
-    "locations/Subrosia.md",
-    "locations/Serenne Stable.md",
-    "locations/Rospro Pass Tower.md",
-    "locations/Rito Village.md",
-    "locations/Rabella Wetlands Tower.md",
-    "locations/Outskirt Stable.md",
-    "locations/Necluda Sea.md",
-    "locations/Necluda Region.md",
-    "locations/Mount Lanayru.md",
-    "locations/Maku Tree Sapling.md",
-    "locations/Lurelin Village.md",
+    "sessions/Untitled database.md",
+    "sessions/Test.md",
+    "_templates/Character Infobox.md",
+    "characters/Aaqlet.md",
+    "Masters of the Esoteric Arts.md",
+    "locations/Hyrule.md",
+    "creatures/Wizzrobe.md",
+    "creatures/Tektite.md",
+    "creatures/Small Poe.md",
+    "creatures/Small ChuChu.md",
+    "creatures/Skulltula.md",
+    "creatures/Silver Moblin.md",
+    "creatures/Silver Bokoblin.md",
+    "creatures/Red Moblin.md",
+    "creatures/Red Hinox.md",
+    "creatures/Red Bubble.md",
+    "creatures/Red Bokoblin.md",
+    "creatures/Moblins.md",
+    "creatures/Hardhat Beetle.md",
+    "creatures/Green Lizalfos.md",
+    "creatures/Green Bubble.md",
+    "creatures/Dodongo.md",
+    "creatures/ChuChu.md",
+    "creatures/Boss Poe.md",
+    "creatures/Boss Bokoblin.md",
     "_srd/spells",
     "_srd/races",
     "_srd/npcs",

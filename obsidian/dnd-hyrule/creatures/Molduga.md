@@ -35,6 +35,8 @@ actions:
 
 Molduga are giant sand monsters that can be found in the Gerudo Desert. They resemble a four-legged fish and lurk below the sand, patrolling their territory in search of prey. Once they become aware of potential prey's presence, they will barrel towards it and attempt to slam into it.
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7e/BotW_Molduga_Artwork.png|400](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7e/BotW_Molduga_Artwork.png)
+
 ### References
 
 * https://www.gmbinder.com/share/-MtYw_9wosKjHeaxUk3N

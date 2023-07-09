@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[7. Maze of the Elements Dungeon]]
+#monster #miniboss [[7. Maze of the Elements Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

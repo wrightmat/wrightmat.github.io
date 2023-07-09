@@ -4,7 +4,7 @@ statblock: inline
 #monster 
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/ed/ALBW_Big_Pengator_Model.png]]
 name: Big Pengator
 size: Large
 type: Monstrosity

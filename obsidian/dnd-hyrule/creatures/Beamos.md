@@ -37,6 +37,8 @@ actions:
 
 Beamos are ancient constructs which guard temples and dungeons alike from intruders. They appear as tall, rotating machines with a single "eye" perched at their tops, from which they attack with powerful energy rays. One of their more exploitable weaknesses is that they have a very limited vision-range, so long-ranged attacks will work wonders against them.
 
+![https://oyster.ignimgs.com/mediawiki/apis.ign.com/the-legend-of-zelda-skyward-sword/e/ea/Beamos.png](https://oyster.ignimgs.com/mediawiki/apis.ign.com/the-legend-of-zelda-skyward-sword/e/ea/Beamos.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Beamos_(5e_Creature)

@@ -33,6 +33,8 @@ reactions:
     desc: "When a creature the bokoblin can see targets it with an attack, the bokoblin chooses another bokoblin within 5 feet of it. The two bokoblins swap places, and the chosen bokoblin becomes the target instead."
 ```
 
+![https://www.gamerguides.com/assets/media/15/11072/bossbob-763bde2f.png|300](https://www.gamerguides.com/assets/media/15/11072/bossbob-763bde2f.png)
+
 ### References
 
 https://www.dndbeyond.com/monsters/17160-hobgoblin-captain

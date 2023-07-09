@@ -40,6 +40,8 @@ A typical skulltula is a spider-like, eight-legged monstrosity that is the size 
 
 Skulltulas usually dwell in areas of darkness, most commonly including caverns and forest depths. Small, young skulltulas are most often referred to as walltulas, and have fewer capabilities compared to their elders. If an area has even one skulltula or walltulla, there are usually a dozen or more hiding in the darkness nearby.
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/9/9a/SSHD_Skulltula_Model.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/9/9a/SSHD_Skulltula_Model.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Skulltula_(5e_Creature)

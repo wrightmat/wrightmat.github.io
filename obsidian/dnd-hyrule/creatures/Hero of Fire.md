@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[6. Abandoned Mine Dungeon]]
+#monster #miniboss [[6. Abandoned Mine Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

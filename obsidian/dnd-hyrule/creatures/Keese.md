@@ -4,7 +4,7 @@ statblock: inline
 #monster 
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/35/TotK_Keese_Artwork.png]]
 name: Keese
 size: Tiny
 type: Fiend
@@ -40,6 +40,8 @@ Although it bears physical similarities to a mere bat, a keese usually has physi
 | 5   | Yellow |    Lightning    |
 | 6   | Purple |     Poison      |
 ^random-keese-color
+
+![https://www.models-resource.com/resources/big_icons/23/22284.png](https://www.models-resource.com/resources/big_icons/23/22284.png?updated)
 
 ### References
 

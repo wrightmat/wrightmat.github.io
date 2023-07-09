@@ -1,10 +1,10 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Lizalfos]]
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://www.zeldadungeon.net/wiki/images/thumb/7/74/Green-Lizalfos.png/300px-Green-Lizalfos.png]]
 name: Green Lizalfos
 size: Medium
 type: Humanoid
@@ -37,6 +37,8 @@ actions:
   - name: Spit.
     desc: "Ranged Spell Attack: +2 to hit, range 30/90 ft., one target. Hit: 5 (2d4) acid damage."
 ```
+
+![https://www.zeldadungeon.net/wiki/images/thumb/7/74/Green-Lizalfos.png/300px-Green-Lizalfos.png](https://www.zeldadungeon.net/wiki/images/thumb/7/74/Green-Lizalfos.png/300px-Green-Lizalfos.png)
 
 #### References
 

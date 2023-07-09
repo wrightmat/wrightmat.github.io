@@ -27,6 +27,8 @@ actions:
     desc: "The Dodongo exhales fire in a 15-foot cone. Each creature in that area must make a DC 13 Dexterity saving throw, taking 25 (5d8 + 2) fire damage on a failed save, or half as much damage on a successful one."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/9/9d/OoT_Dodongo_Artwork.png|400](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/9/9d/OoT_Dodongo_Artwork.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Baby_Dodongo_(5e_Creature)

@@ -1,10 +1,10 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Lizalfos]]
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://www.zeldadungeon.net/wiki/images/6/64/Black-Lizalfos.png]]
 name: Black Lizalfos
 size: Medium
 type: Humanoid
@@ -49,8 +49,9 @@ actions:
 | 4   | White  |      Cold       |
 | 5   | Yellow |    Lightning    |
 | 6   | Purple |     Poison      |
-^random-keese-color
+^random-lizalfos-color
 
+![https://www.zeldadungeon.net/wiki/images/6/64/Black-Lizalfos.png|400](https://www.zeldadungeon.net/wiki/images/6/64/Black-Lizalfos.png)
 
 #### References
 

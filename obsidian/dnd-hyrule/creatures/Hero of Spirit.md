@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[8. The Eighth Heroine Dungeon]]
+#monster #miniboss [[8. The Eighth Heroine Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

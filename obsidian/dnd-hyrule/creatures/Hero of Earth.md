@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[5. Citadel Tunnels Dungeon]]
+#monster #miniboss [[5. Citadel Tunnels Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[3. Frozen Cave Dungeon]]
+#monster #miniboss [[3. Frozen Cave Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[2. Well in the Woods Dungeon]]
+#monster #miniboss [[2. Well in the Woods Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

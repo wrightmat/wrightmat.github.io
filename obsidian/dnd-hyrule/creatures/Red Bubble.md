@@ -38,6 +38,8 @@ actions:
 
 Commonly found in ancient crypts and deep lava caverns, these creatures known as flame bubbles, or red bubbles, are tough indeed. As with any type of bubble, their appearance is that of a freakishly large and deformed skull with a magical cloak. These bubbles, however, boast a powerful fire that projects from within their bodies. Unless put out, this flame protects them from physical attacks, and damages their foes.
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/c8/TWW_Red_Bubble_Model.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/c8/TWW_Red_Bubble_Model.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Flame_Bubble_(5e_Creature)

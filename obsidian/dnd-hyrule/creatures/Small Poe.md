@@ -40,6 +40,8 @@ actions:
     desc: "Melee Spell Attack: +5 to hit, reach 5 ft., one creature. Hit: 1 necrotic damage and the target is grappled (escape DC 14). While the target is grappled, the poe cannot use Magic Drain on another target. The target loses 1 magic point, or 2 on a critical hit. If the target has no magic points, it loses an equal number of stamina points if it has any. For each point lost, the poe recovers 4 (1d8) hit points."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/TFH_White_Poe.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/TFH_White_Poe.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Ghini_(5e_Creature)

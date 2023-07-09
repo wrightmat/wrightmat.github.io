@@ -27,6 +27,8 @@ actions:
     desc: "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 5 (1d8 + 1) piercing damage."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4d/OoT_Baby_Dodongo_Artwork.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4d/OoT_Baby_Dodongo_Artwork.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Baby_Dodongo_(5e_Creature)

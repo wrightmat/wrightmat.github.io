@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster #miniboss [[4. Reflecting Pool Dungeon]]
+#monster #miniboss [[4. Reflecting Pool Dungeon]] [[Phantom Heroes]]
 
 ```statblock
 layout: Party Scaled 5e Layout

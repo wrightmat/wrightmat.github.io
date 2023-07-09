@@ -38,6 +38,8 @@ actions:
 
 Commonly found in ancient crypts and deep cold caverns, these creatures known as ice bubbles, or white bubbles, are tough indeed. As with any type of bubble, their appearance is that of a freakishly large and deformed skull with a magical cloak. These bubbles, however, boast a powerful cold that projects from within their bodies. Unless put out, this cold protects them from physical attacks, and damages their foes.
 
+![https://i.imgur.com/icIFLzw.png|200](https://i.imgur.com/icIFLzw.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Flame_Bubble_(5e_Creature)

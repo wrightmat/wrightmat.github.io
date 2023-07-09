@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Moblins]]
 
 ```statblock
 image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/3e/BotW_Black_Moblin_Model.png]]
@@ -31,6 +31,8 @@ actions:
   - name: Spear.
     desc: "Melee Weapon Attack: +4 to hit, reach 10 ft., one target. Hit: 10 (2d6 + 3) piercing damage."
 ```
+
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/3e/BotW_Black_Moblin_Model.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/3e/BotW_Black_Moblin_Model.png)
 
 ### References
 

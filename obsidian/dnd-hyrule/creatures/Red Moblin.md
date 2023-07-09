@@ -1,7 +1,7 @@
 ---
 statblock: inline
 ---
-#monster 
+#monster [[Moblins]]
 
 ```statblock
 image: [[https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/86/BotW_Moblin_Model.png]]
@@ -25,6 +25,8 @@ actions:
   - name: Longsword.
     desc: "Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 5 (1d8 + 1) slashing damage. Two handed: 6 (1d10 + 1) slashing damage."
 ```
+
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/86/BotW_Moblin_Model.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/86/BotW_Moblin_Model.png)
 
 ### References
 

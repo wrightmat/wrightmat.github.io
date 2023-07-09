@@ -44,6 +44,8 @@ actions:
     desc: "Each non-undead creature within 60 feet of the poe that can see it must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute. If the save failes by 5 or more, the target also ages 1d4x10 years. A frightened target can repeat the saving throw at the end of each of its turns, ending the frightened condition on itself on a success. If a target's saving throw is successful or the effect ends for it, the target is immune to the Poe's Horrifying Visage for the next 24 hours. The aging effect can be reversed with a greater restoration spell, but only within 24 hours of it occurring."
 ```
 
+![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/a/ad/OoT_Poe_Artwork.png|300](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/a/ad/OoT_Poe_Artwork.png)
+
 ### References
 
 * https://www.dandwiki.com/wiki/Ghini_(5e_Creature)

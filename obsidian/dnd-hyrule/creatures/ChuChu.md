@@ -4,7 +4,7 @@ statblock: inline
 #monster 
 
 ```statblock
-image: [[Wikilink To Image]]
+image: [[https://64.media.tumblr.com/40f87dbc38bbe7896d2c0d096d652b58/tumblr_ov5sc9oseT1ul80klo1_500.png]]
 name: ChuChu
 size: Medium
 type: Ooze
