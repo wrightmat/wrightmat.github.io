@@ -3,6 +3,7 @@
 ### **Daanvi, the Perfect Order**
 
 `dice: [[Trinkets of the Planes^daanvi-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A monodrone modron gear set with glass, styled as a monocle that when viewed through shows a creature’s relative vicinity importance (someone who thinks highly of themself would have a stronger aura than someone filled with self-doubt) |
@@ -20,6 +21,7 @@
 ### **Dal Quor, the Region of Dreams**
 
 `dice: [[Trinkets of the Planes^dalquor-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A small pyramid of quori celestine that, when held, mentally replays the pleasant dream of a gnome child |
@@ -37,6 +39,7 @@
 ### **Dolurrh, the Realm of the Dead**
 
 `dice: [[Trinkets of the Planes^dolurrh-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A peculiar half mask made from quasit wing that helps maintain self-identity and purpose |
@@ -54,6 +57,7 @@
 ### **Fernia, the Sea of Fire**
 
 `dice: [[Trinkets of the Planes^fernia-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A palm-sized hellhound composed of solid smoke (no bite or breath attacks) |
@@ -71,6 +75,7 @@
 ### **Irian, the Eternal Day**
 
 `dice: [[Trinkets of the Planes^irian-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A shining bottle filled with liquid quartz which causes a creature to move at ludicrous speeds for one round if ever consumed |
@@ -88,6 +93,7 @@
 ### **Kythri, the Churning Chaos**
 
 `dice: [[Trinkets of the Planes^kythri-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A spoon of congealed protoplasmic ooze that can be turned to a fork and back with a Gith command word |
@@ -105,6 +111,7 @@
 ### **Lamannia, the Twilight Forest**
 
 `dice: [[Trinkets of the Planes^lamannia-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A thick shovel made of xorn bone that reduces digging time by half when used |
@@ -122,6 +129,7 @@
 ### **Mabar, the Endless Night**
 
 `dice: [[Trinkets of the Planes^mabar-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A cloak sewn from tangible gloom, instilling melancholy upon its wearer |
@@ -139,6 +147,7 @@
 ### **Risia, the Plain of Ice**
 
 `dice: [[Trinkets of the Planes^risia-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | An orb of never-melting ice that holds a perfect snowflake within |
@@ -156,6 +165,7 @@
 ### **Shavarath, the Battleground**
 
 `dice: [[Trinkets of the Planes^shavarath-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A quill made from the stinger of an imp that writes in never-ending ichor |
@@ -173,6 +183,7 @@
 ### **Syrania, the Azure Sky**
 
 `dice: [[Trinkets of the Planes^syrania-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A small radiant letter opener |
@@ -190,6 +201,7 @@
 ### **Thelanis, the Faerie Court**
 
 `dice: [[Trinkets of the Planes^thelanis-trinkets]]`
+
 | d10 | Trinket |
 | --- | --- |
 | 1 | A golden orb resembling a moon whose surface darkens and waxes in an alignment other than Eberron’s moons |
@@ -207,6 +219,7 @@
 ### **Xoriat, the Realm of Madness**
 
 `dice: [[Trinkets of the Planes^xoriat-trinkets]]`
+
 | d10 | Trinket                                                                                                                                                                                                                                                         |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | A living eyeball and stalk, the eye perpetually looks around as its iris changes colors                                                                                                                                                                         |

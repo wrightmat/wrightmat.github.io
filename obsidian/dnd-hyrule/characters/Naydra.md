@@ -1,5 +1,7 @@
+---
+Race: Dragon
+Location: Lanayru Region
+Type: Medium
+---
 #npc 
 
-Race:: Dragon
-Location:: Lanayru Region
-Type:: Medium

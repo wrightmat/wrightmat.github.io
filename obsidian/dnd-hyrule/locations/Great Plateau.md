@@ -37,15 +37,15 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible   | Qty (12) |
-| ---- | ------------- | -------- |
-| 1-2  | Hyrule Herb   | 2        |
-| 3-4  | Hylian Shroom | 2        |
-| 5-6  | Hylian Rice   | 2        |
-| 7-8  | Apple         | 2        |
-| 9-10 | Acorn         | 2        |
-| 11   | Hylian Tomato | 1        |
-| 12   | Spicy Pepper  | 1        |
+| d12  | Collectible          | Qty (12) |
+| ---- | -------------------- | -------- |
+| 1-2  | Hyrule Herb          | 2        |
+| 3-4  | Hylian Shroom        | 2        |
+| 5-6  | Hylian Grains        | 2        |
+| 7-8  | Hylian Tomato Pepper | 2        |
+| 9-10 | Apple                | 2        |
+| 11   | Rushroom             | 1        |
+| 12   | Fairy                | 1        |
 ^great-plateau-foraging
 
 ##### Fishing

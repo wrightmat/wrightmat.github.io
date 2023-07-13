@@ -1,0 +1,592 @@
+chips = [
+	{
+		"id": "armored-carp",
+		"name": "Armored Carp",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/86/BotW_Armored_Carp_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "tough" ],
+		"tags": ""
+	},
+	{
+		"id": "chillfin-trout",
+		"name": "Chillfin Trout",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/15/BotW_Chillfin_Trout_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "heat" ],
+		"tags": ""
+	},
+	{
+		"id": "hearty-salmon",
+		"name": "Hearty Salmon",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/81/BotW_Hearty_Salmon_Icon.png",
+		"front": [ "heart", "heart", "heart" ],
+		"back": [ "heart", "heart", "heart", "heart", "heart", "heart", "heart-extra", "heart-extra" ],
+		"tags": ""
+	},
+	{
+		"id": "hyrule-bass",
+		"name": "Hyrule Bass",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/66/BotW_Hyrule_Bass_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "mighty-porgy",
+		"name": "Mighty Porgy",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/72/BotW_Mighty_Porgy_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "mighty" ],
+		"tags": ""
+	},
+	{
+		"id": "sizzlefin-trout",
+		"name": "Sizzlefin Trout",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/69/BotW_Sizzlefin_Trout_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "cold" ],
+		"tags": ""
+	},
+	{
+		"id": "staminoka-bass",
+		"name": "Staminoka Bass",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/79/BotW_Staminoka_Bass_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "stamina", "stamina" ],
+		"tags": ""
+	},
+	{
+		"id": "stealthfin-trout",
+		"name": "Stealthfin Trout",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d6/BotW_Stealthfin_Trout_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "sneaky" ],
+		"tags": ""
+	},
+	{
+		"id": "voltfin-trout",
+		"name": "Voltfin Trout",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/1b/BotW_Voltfin_Trout_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "shock" ],
+		"tags": ""
+	},
+	{
+		"id": "apple",
+		"name": "Apple",
+		"image": "https://www.zeldadungeon.net/wiki/images/c/c3/Apple-botw.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "dazzledrupe",
+		"name": "Dazzledrupe",
+		"image": "https://zeldatearsofthekingdom.wiki.fextralife.com/file/Zelda-Tears-of-the-Kingdom/dazzlefruit_materials_zelda_tears_of_the_kingdom_wiki_guide_200px.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart" ],
+		"tags": "Blind"
+	},
+	{
+		"id": "firefruit",
+		"name": "Firefruit",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/1f/Fire_Fruit.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "cold" ],
+		"tags": "Fire"
+	},
+	{
+		"id": "hearty-durian",
+		"name": "Hearty Durian",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/83/BotW_Hearty_Durian_Icon.png",
+		"front": [ "heart", "heart", "heart" ],
+		"back": [ "heart", "heart", "heart", "heart", "heart", "heart", "heart-extra", "heart-extra" ],
+		"tags": ""
+	},
+	{
+		"id": "hydromelon",
+		"name": "Hydromelon",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/b/b0/BotW_Hydromelon_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "heat" ],
+		"tags": "Water"
+	},
+	{
+		"id": "iceberry",
+		"name": "Iceberry",
+		"image": "https://www.gamerguides.com/assets/media/15/11179/icefruit-712b7620.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "heat" ],
+		"tags": "Ice"
+	},
+	{
+		"id": "mighty-bananas",
+		"name": "Mighty Bananas",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/57/BotW_Mighty_Bananas_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "mighty" ],
+		"tags": ""
+	},
+	{
+		"id": "palm-fruit",
+		"name": "Palm Fruit",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/9/93/BotW_Palm_Fruit_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "shockpear",
+		"name": "Shockpear",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/5/59/TotK_Shock_Fruit_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "shock" ],
+		"tags": "Shock"
+	},
+	{
+		"id": "bird-egg",
+		"name": "Bird Egg",
+		"image": "https://www.gamerguides.com/assets/media/15/11416/bird_egg_icon_enemy_zelda_totk-6132fa05.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "fresh-milk",
+		"name": "Fresh Milk",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6a/BotW_Fresh_Milk_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "raw-meat",
+		"name": "Raw Meat",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/52/BotW_Raw_Meat_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "chillshroom",
+		"name": "Chillshroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/26/BotW_Chillshroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "heat" ],
+		"tags": ""
+	},
+	{
+		"id": "hearty-truffle",
+		"name": "Hearty Truffle",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/cc/BotW_Hearty_Truffle_Icon.png",
+		"front": [ "heart", "heart" ],
+		"back": [ "heart", "heart", "heart", "heart", "heart-extra", "heart-extra" ],
+		"tags": ""
+	},
+	{
+		"id": "hylian-shroom",
+		"name": "Hylian Shroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/13/BotW_Hylian_Shroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "ironshroom",
+		"name": "Ironshroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/80/BotW_Ironshroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "tough" ],
+		"tags": ""
+	},
+	{
+		"id": "razorshroom",
+		"name": "Razorshroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/62/BotW_Razorshroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "mighty" ],
+		"tags": ""
+	},
+	{
+		"id": "stamella-shroom",
+		"name": "Stamella Shroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/c2/BotW_Stamella_Shroom_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart", "stamina", "stamina" ],
+		"tags": ""
+	},
+	{
+		"id": "rushroom",
+		"name": "Rushroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/55/BotW_Rushroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "hasty" ],
+		"tags": ""
+	},
+	{
+		"id": "silent-shroom",
+		"name": "Silent Shroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/36/BotW_Silent_Shroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "sneaky" ],
+		"tags": ""
+	},
+	{
+		"id": "sunshroom",
+		"name": "Sunshroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/5d/BotW_Sunshroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "cold" ],
+		"tags": ""
+	},
+	{
+		"id": "zapshroom",
+		"name": "Zapshroom",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6c/BotW_Zapshroom_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "shock" ],
+		"tags": ""
+	},
+	{
+		"id": "armoranth",
+		"name": "Armoranth",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/b/b3/BotW_Armoranth_Icon.png",
+		"front": [ ],
+		"back": [ "heart", "tough" ],
+		"tags": ""
+	},
+	{
+		"id": "cool-safflina",
+		"name": "Cool Safflina",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7d/BotW_Cool_Safflina_Icon.png",
+		"front": [ ],
+		"back": [ "heart", "heat" ],
+		"tags": ""
+	},
+	{
+		"id": "electric-safflina",
+		"name": "Electric Safflina",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/42/BotW_Electric_Safflina_Icon.png",
+		"front": [ ],
+		"back": [ "heart", "shock" ],
+		"tags": ""
+	},
+	{
+		"id": "endura-carrot",
+		"name": "Endura Carrot",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/0/09/BotW_Endura_Carrot_Icon.png",
+		"front": [ "heart", "heart" ],
+		"back": [ "heart", "heart", "heart", "heart", "stamina-extra", "stamina-extra" ],
+		"tags": ""
+	},
+	{
+		"id": "fleet-lotus-seeds",
+		"name": "Fleet Lotus Seeds",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/5e/BotW_Fleet-Lotus_Seeds_Icon.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "sneaky" ],
+		"tags": ""
+	},
+	{
+		"id": "hylian-grains",
+		"name": "Hylian Grains",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/67/BotW_Hylian_Rice_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "hylian-tomato-pepper",
+		"name": "Hylian Tomato Pepper",
+		"image": "https://zeldatearsofthekingdom.wiki.fextralife.com/file/Zelda-Tears-of-the-Kingdom/hylian_tomato_materials_zelda_tears_of_the_kingdom_wiki_guide_200px.png",
+		"front": [ "heart-half" ],
+		"back": [ "heart", "cool" ],
+		"tags": ""
+	},
+	{
+		"id": "hyrule-herb",
+		"name": "Hyrule Herb",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/3d/BotW_Hyrule_Herb_Icon.png",
+		"front": [ "heart" ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "muddle-bud",
+		"name": "Muddle Bud",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/b/b5/TotK_Muddle_Bud_Icon.png",
+		"front": [ ],
+		"back": [ "heart" ],
+		"tags": "Confuse"
+	},
+	{
+		"id": "swift-violet",
+		"name": "Swift Violet",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e1/BotW_Swift_Violet_Icon.png",
+		"front": [ ],
+		"back": [ "heart", "hasty" ],
+		"tags": ""
+	},
+	{
+		"id": "bomb-flower",
+		"name": "Bomb Flower",
+		"image": "https://www.zeldadungeon.net/wiki/images/6/6d/Bomb_Flower_-_TotK_icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Explode"
+	},
+	{
+		"id": "courser-bee-honey",
+		"name": "Courser Bee Honey",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/fd/BotW_Courser_Bee_Honey_Icon.png",
+		"front": [ "heart", "heart" ],
+		"back": [ "heart", "heart", "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "fairy",
+		"name": "Fairy",
+		"image": "https://static.wikia.nocookie.net/zelda/images/0/06/Breath_of_the_Wild_Materials_Fairy_%28Icon%29.png",
+		"front": [ "heart", "heart", "heart", "heart" ],
+		"back": [ "heart", "heart", "heart", "heart", "heart", "heart" ],
+		"tags": "Critical"
+	},
+	{
+		"id": "goron-spice",
+		"name": "Goron Spice",
+		"image": "https://static.wikia.nocookie.net/zelda/images/1/18/Breath_of_the_Wild_Cooking_Ingredients_Goron_Spice_%28Icon%29.png",
+		"front": [ ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "goponga-seasoning",
+		"name": "Goponga Seasoning",
+		"image": "https://i.imgur.com/p0frLeV.png",
+		"front": [ ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "hateno-five-spice",
+		"name": "Hateno Five Spice",
+		"image": "https://i.imgur.com/PVW3UYy.png",
+		"front": [ ],
+		"back": [ "heart", "heart" ],
+		"tags": ""
+	},
+	{
+		"id": "monster-eyeball",
+		"name": "Monster Eyeballl",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/c/ca/TotK_Keese_Eyeball_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Seeking"
+	},
+	{
+		"id": "monster-horn",
+		"name": "Monster Horn",
+		"image": "https://zeldatearsofthekingdom.wiki.fextralife.com/file/Zelda-Tears-of-the-Kingdom/lizalfos_horn_materials_zelda_tears_of_the_kingdom_wiki_guide_200px.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Piercing"
+	},
+	{
+		"id": "monster-jelly",
+		"name": "Monster Jelly",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/4/46/TotK_Chuchu_Jelly_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Water"
+	},
+	{
+		"id": "monster-tail",
+		"name": "Monster Tail",
+		"image": "https://www.gamerguides.com/assets/media/15/11137/item_enemy_05-ccd0b013.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Whip"
+	},
+	{
+		"id": "monster-wing",
+		"name": "Monster Wing",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/2/2d/TotK_Keese_Wing_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Ranged"
+	},
+	{
+		"id": "electric-monster-eyeball",
+		"name": "Electric Monster Eyeballl",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/1/14/TotK_Electric_Keese_Eyeball_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Seeking, Shock"
+	},
+	{
+		"id": "electric-monster-horn",
+		"name": "Electric Monster Horn",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/f/f3/TotK_Electric_Lizalfos_Horn_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Piercing, Shock"
+	},
+	{
+		"id": "electric-monster-jelly",
+		"name": "Electric Monster Jelly",
+		"image": "https://static.wikia.nocookie.net/zelda/images/0/00/Yellowchuchujelly.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Shock"
+	},
+	{
+		"id": "electric-monster-tail",
+		"name": "Electric Monster Tail",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/7/7b/TotK_Electric_Lizalfos_Tail_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Whip, Shock"
+	},
+	{
+		"id": "electric-monster-wing",
+		"name": "Electric Monster Wing",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/f/fa/TotK_Electric_Keese_Wing_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Ranged, Shock"
+	},
+	{
+		"id": "fire-monster-eyeball",
+		"name": "Fire Monster Eyeballl",
+		"image": "https://www.gamerguides.com/assets/media/15/11763/item_enemy_117-b0903c67.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Seeking, Fire"
+	},
+	{
+		"id": "fire-monster-horn",
+		"name": "Fire Monster Horn",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/5/57/TotK_Fire-Breath_Lizalfos_Horn_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Piercing, Fire"
+	},
+	{
+		"id": "fire-monster-jelly",
+		"name": "Fire Monster Jelly",
+		"image": "https://www.zeldadungeon.net/wiki/images/b/ba/Red_Chuchu_Jelly.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Fire"
+	},
+	{
+		"id": "fire-monster-tail",
+		"name": "Fire Monster Tail",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/a/a8/BotW_Red_Lizalfos_Tail_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Whip, Fire"
+	},
+	{
+		"id": "fire-monster-wing",
+		"name": "Fire Monster Wing",
+		"image": "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/28/HWAoC_Fire_Keese_Wing_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Ranged, Fire"
+	},
+	{
+		"id": "ice-monster-eyeball",
+		"name": "Ice Monster Eyeballl",
+		"image": "https://www.gamerguides.com/assets/media/15/11177/item_enemy_119-edee2a8a-1.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Seeking, Ice"
+	},
+	{
+		"id": "ice-monster-horn",
+		"name": "Ice Monster Horn",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/8/8d/TotK_Ice-Breath_Lizalfos_Horn_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Piercing, Ice"
+	},
+	{
+		"id": "ice-monster-jelly",
+		"name": "Ice Monster Jelly",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/f/f4/TotK_White_Chuchu_Jelly_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Ice"
+	},
+	{
+		"id": "ice-monster-tail",
+		"name": "Ice Monster Tail",
+		"image": "https://zeldatearsofthekingdom.wiki.fextralife.com/file/Zelda-Tears-of-the-Kingdom/icy-lizalfos-tail-materials-zelda-tears-of-the-kingdom-wiiki-guide-200px.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Whip, Ice"
+	},
+	{
+		"id": "ice-monster-wing",
+		"name": "Ice Monster Wing",
+		"image": "https://cdn.wikimg.net/en/zeldawiki/images/3/36/TotK_Ice_Keese_Wing_Icon.png",
+		"front": [ ],
+		"back": [ ],
+		"tags": "Ranged, Ice"
+	}
+]
+
+chips['akkala-highlands'] = [ "armoranth", "armoranth", "armoranth", "armoranth", "hyrule-herb", "hyrule-herb", "hyrule-herb", "hyrule-herb", "dazzledrupe", "dazzledrupe", "dazzledrupe", "fairy", "hyrule-bass", "hyrule-bass", "mighty-porgy", "mighty-porgy", "hearty-salmon", "hearty-salmon" ]
+chips['akkala-sea'] = [ "zapshroom", "zapshroom", "zapshroom", "zapshroom", "electric-safflina", "electric-safflina", "dazzledrupe", "dazzledrupe", "swift-violet", "swift-violet", "fleet-lotus-seeds", "fairy", "mighty-porgy", "mighty-porgy", "mighty-porgy", "armored-carp", "armored-carp", "armored-carp" ]
+chips['death-mountain'] = [ "sunshroom", "sunshroom", "sunshroom", "sunshroom", "sunshroom", "firefruit", "firefruit", "firefruit", "ironshroom", "ironshroom", "ironshroom", "bomb-flower" ]
+chips['deep-akkala'] = [ "zapshroom", "zapshroom", "zapshroom", "zapshroom", "firefruit", "firefruit", "firefruit", "dazzledrupe", "dazzledrupe", "stamella-shroom", "stamella-shroom", "fairy", "mighty-porgy", "mighty-porgy", "mighty-porgy", "mighty-porgy", "mighty-porgy", "mighty-porgy" ]
+chips['east-necluda'] = [ "electric-safflina", "apple", "apple", "hylian-shroom", "hylian-shroom", "ironshroom", "ironshroom", "palm-fruit", "palm-fruit", "mighty-bananas", "mighty-bananas", "fairy", "mighty-porgy", "mighty-porgy", "mighty-porgy", "armored-carp", "armored-carp", "armored-carp" ]
+chips['eldin-canyon'] = [ "sunshroom", "sunshroom", "sunshroom", "hylian-shroom", "hylian-shroom", "hylian-shroom", "hylian-tomato-pepper", "hylian-tomato-pepper", "firefruit", "firefruit", "rushroom", "fairy", "sizzlefin-trout", "sizzlefin-trout", "sizzlefin-trout", "sizzlefin-trout", "sizzlefin-trout", "sizzlefin-trout" ]
+chips['eldin-mountains'] = [ "sunshroom", "sunshroom", "sunshroom", "sunshroom", "sunshroom", "ironshroom", "ironshroom", "ironshroom", "firefruit", "firefruit", "swift-violet", "fairy", "sizzlefin-trout", "sizzlefin-trout", "sizzlefin-trout", "sizzlefin-trout", "stealthfin-trout", "stealthfin-trout" ]
+chips['faron-grasslands'] = [ "mighty-bananas", "mighty-bananas", "mighty-bananas", "shockpear", "shockpear", "shockpear", "hearty-durian", "hearty-durian", "hydromelon", "hydromelon", "endura-carrot", "fairy", "mighty-porgy", "mighty-porgy", "mighty-porgy", "armored-carp", "armored-carp", "armored-carp" ]
+chips['faron-sea'] = [ "mighty-bananas", "mighty-bananas", "mighty-bananas", "mighty-bananas", "mighty-bananas", "mighty-bananas", "hearty-durian", "hearty-durian", "hearty-durian", "hearty-durian", "hearty-durian", "hearty-durian", "mighty-porgy", "mighty-porgy", "armored-carp", "armored-carp", "staminoka-bass", "staminoka-bass" ]
+chips['gerudo-desert'] = [ "hydromelon", "hydromelon", "shockpear", "shockpear", "electric-safflina", "electric-safflina", "electric-safflina", "hylian-tomato-pepper", "hylian-tomato-pepper", "palm-fruit", "palm-fruit", "stamella-shroom" ]
+chips['gerudo-highlands'] = [ "chillshroom", "chillshroom", "chillshroom", "zapshroom", "zapshroom", "zapshroom", "cool-safflina", "cool-safflina", "iceberry", "iceberry", "shockpear", "swift-violet" ]
+chips['great-hyrule-forest'] = [ "apple", "apple", "apple", "bird-egg", "bird-egg", "bird-egg", "ironshroom", "ironshroom", "razorshroom", "razorshroom", "hearty-truffle", "fairy", "stealthfin-trout", "stealthfin-trout", "stealthfin-trout", "stealthfin-trout", "stealthfin-trout", "stealthfin-trout" ]
+chips['great-plateau'] = [ "hyrule-herb", "hyrule-herb", "hylian-shroom", "hylian-shroom", "hylian-grains", "hylian-grains", "hylian-tomato-pepper", "hylian-tomato-pepper", "apple", "apple", "rushroom", "fairy", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hyrule-bass" ]
+chips['hebra-mountains'] = [ "iceberry", "iceberry", "iceberry", "iceberry", "cool-safflina", "cool-safflina", "cool-safflina", "chillshroom", "chillshroom", "chillshroom", "hearty-truffle", "fairy", "chillfin-trout", "chillfin-trout", "chillfin-trout", "chillfin-trout", "chillfin-trout", "hearty-salmon" ]
+chips['hyrule-field'] = [ "hyrule-herb", "hyrule-herb", "hylian-shroom", "hylian-shroom", "hylian-grains", "hylian-grains", "apple", "apple", "hylian-tomato-pepper", "courser-bee-honey", "endura-carrot", "stamella-shroom", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hyrule-bass", "staminoka-bass" ]
+chips['hyrule-ridge'] = [ "rushroom", "rushroom", "armoranth", "armoranth", "hylian-grains", "hylian-grains", "electric-safflina", "electric-safflina", "endura-carrot", "swift-violet", "stamella-shroom", "courser-bee-honey", "voltfin-trout", "voltfin-trout", "voltfin-trout", "voltfin-trout", "voltfin-trout", "hearty-salmon" ]
+chips['lake-hylia'] = [ "apple", "apple", "apple", "dazzledrupe", "dazzledrupe", "iceberry", "iceberry", "iceberry", "hydromelon", "hydromelon", "hydromelon", "fairy", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hyrule-bass", "hearty-salmon", "hearty-salmon" ]
+chips['lanayru-great-spring'] = [ "fleet-lotus-seeds", "fleet-lotus-seeds", "fleet-lotus-seeds", "fleet-lotus-seeds", "silent-shroom", "silent-shroom", "silent-shroom", "courser-bee-honey", "hylian-grains", "rushroom", "stamella-shroom", "fairy", "armored-carp", "armored-carp", "armored-carp", "mighty-porgy", "mighty-porgy", "mighty-porgy" ]
+chips['lanayru-sea'] = [ "armored-carp", "armored-carp", "armored-carp", "mighty-porgy", "mighty-porgy", "mighty-porgy" ]
+chips['lanayru-wetlands'] = [ "fleet-lotus-seeds", "fleet-lotus-seeds", "fleet-lotus-seeds", "fleet-lotus-seeds", "hylian-shroom", "hylian-shroom", "hylian-shroom", "hylian-tomato-pepper", "hylian-tomato-pepper", "bird-egg", "bird-egg", "fairy" ]
+chips['mount-lanayru'] = [ "chillshroom", "chillshroom", "chillshroom", "chillshroom", "chillshroom", "chillshroom", "iceberry", "iceberry", "iceberry", "iceberry", "cool-safflina", "cool-safflina", "chillfin-trout", "chillfin-trout", "chillfin-trout", "chillfin-trout", "hyrule-bass", "hyrule-bass" ]
+chips['necluda-sea'] = [ "apple", "apple", "hearty-durian", "hearty-durian", "hearty-durian", "palm-fruit", "palm-fruit", "palm-fruit", "hydromelon", "hydromelon", "hydromelon", "fairy", "hyrule-bass", "hyrule-bass", "hyrule-bass", "mighty-porgy", "mighty-porgy", "mighty-porgy" ]
+chips['tabantha-frontier'] = [ "hylian-grains", "hylian-grains", "hylian-grains", "razorshroom", "razorshroom", "razorshroom", "hylian-tomato-pepper", "hylian-tomato-pepper", "swift-violet", "swift-violet", "courser-bee-honey", "fairy", "chillfin-trout", "chillfin-trout", "chillfin-trout", "voltfin-trout", "voltfin-trout", "hearty-salmon" ]
+chips['west-necluda'] = [ "apple", "apple", "silent-shroom", "silent-shroom", "hylian-shroom", "hylian-shroom", "rushroom", "rushroom", "ironshroom", "fleet-lotus-seeds", "bird-egg", "fairy", "hyrule-bass", "hyrule-bass", "hyrule-bass", "staminoka-bass", "staminoka-bass", "hearty-salmon" ]
+chips['underground'] = [ "bomb-flower", "bomb-flower", "bomb-flower", "bomb-flower", "muddle-bud", "muddle-bud", "muddle-bud", "ironshroom", "razorshroom", "endura-carrot", "hearty-truffle", "fairy", "hyrule-bass", "hyrule-bass", "hearty-salmon", "hearty-salmon", "staminoka-bass", "staminoka-bass" ]
+chips['depths'] = [ "bomb-flower", "bomb-flower", "bomb-flower", "bomb-flower", "muddle-bud", "muddle-bud", "muddle-bud", "muddle-bud", "ironshroom", "ironshroom", "endura-carrot", "hearty-truffle" ]
+
+chips['monster-parts'] = [ "monster-eyeball", "monster-horn", "monster-jelly", "monster-tail", "monster-wing" ]
+chips['monster-parts-electric'] = [ "electric-monster-eyeball", "electric-monster-horn", "electric-monster-jelly", "electric-monster-tail", "electric-monster-wing" ]
+chips['monster-parts-fire'] = [ "fire-monster-eyeball", "fire-monster-horn", "fire-monster-jelly", "fire-monster-tail", "fire-monster-wing" ]
+chips['monster-parts-ice'] = [ "ice-monster-eyeball", "ice-monster-horn", "ice-monster-jelly", "ice-monster-tail", "ice-monster-wing" ]
+chips['monster-parts-all'] = [ "monster-eyeball", "monster-horn", "monster-jelly", "monster-tail", "monster-wing", "electric-monster-eyeball", "electric-monster-horn", "electric-monster-jelly", "electric-monster-tail", "electric-monster-wing", "fire-monster-eyeball", "fire-monster-horn", "fire-monster-jelly", "fire-monster-tail", "fire-monster-wing", "ice-monster-eyeball", "ice-monster-horn", "ice-monster-jelly", "ice-monster-tail", "ice-monster-wing" ]
+
+chips['fish'] = [ "armored-carp", "chillfin-trout", "hearty-salmon", "hyrule-bass", "mighty-porgy", "sizzlefin-trout", "staminoka-bass", "stealthfin-trout", "voltfin-trout" ]
+chips['fruit'] = [ "apple", "dazzledrupe", "firefruit", "hearty-durian", "hydromelon", "iceberry", "mighty-bananas", "palm-fruit", "shockpear" ]
+chips['protein'] = [ "bird-egg", "fresh-milk", "raw-meat" ]
+chips['mushroom'] = [ "chillshroom", "hearty-truffle", "hylian-shroom", "ironshroom", "razorshroom", "rushroom", "silent-shroom", "stamella-shroom", "sunshroom", "zapshroom" ]
+chips['vegetable'] = [ "armoranth", "cool-safflina", "electric-safflina", "endura-carrot", "fleet-lotus-seeds", "hylian-tomato-pepper", "hylian-grains", "hyrule-herb", "muddle-bud", "swift-violet" ]
+chips['other'] = [ "bomb-flower", "courser-bee-honey", "fairy", "goponga-seasoning", "goron-spice", "hateno-five-spice" ]
+
+imgs = []
+imgs['heart'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" ]
+imgs['heart-half'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" ]
+imgs['heart-extra'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/55/BotW_Extra_Heart_Icon.png" ]
+imgs['cold'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/eb/BotW_Cold_Resistance_Icon.png" ]
+imgs['heat'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e6/BotW_Heat_Resistance_Icon.png" ]
+imgs['hasty'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/28/BotW_Hasty_Icon.png" ]
+imgs['mighty'] = ["https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4e/BotW_Mighty_Icon.png" ]
+imgs['shock'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/57/BotW_Shock_Resistance_Icon.png" ]
+imgs['sneaky'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/dd/BotW_Sneaky_Icon.png" ]
+imgs['tough'] = [ "https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f0/BotW_Tough_Icon.png" ]
+imgs['stamina'] = ["https://i.imgur.com/coS9uk8.png" ]
+imgs['stamina-extra'] = [ "https://i.imgur.com/S7n2lK1.png" ]

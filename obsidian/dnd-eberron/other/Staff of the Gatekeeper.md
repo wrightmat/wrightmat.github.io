@@ -10,4 +10,6 @@ This staff can be wielded as a magic quarterstaff. It has 10 charges, If you exp
 
 **Tool of Hunting**. When you hit with a melee attack using this staff, you can expend up to 2 of its charges. For each charge you expend, the target takes an extra 1d6 force damage.
 
-https://www.dndbeyond.com/magic-items/5239713-staff-of-the-gatekeeper
+### References
+
+* https://www.dndbeyond.com/magic-items/5239713-staff-of-the-gatekeeper

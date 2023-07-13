@@ -1,12 +1,19 @@
+---
+Race: Rito
+Gender: Male
+Age: Elderly
+Location: Rito Village
+Occupation: Teacher
+Type: Medium
+Relationships:
+  - "[[Amali]] (wife)"
+  - "[[Kheel]] (daughter)"
+  - "[[Notts]] (daughter)"
+  - "[[Kotts]] (daughter)"
+  - "[[Cree]] (daughter)"
+  - "[[Genli]] (daughter)"
+---
 #npc 
-
-Race:: Rite
-Gender:: Male
-Age:: Elderly
-Location:: Rito Village
-Occupation:: Teacher
-Family:: [[Amali]] (wife), [[Kheel]] (daughter), [[Notts]] (daughter), [[Kotts]] (daughter), [[Cree]] (daughter), [[Genli]] (daughter)
-Type:: Medium
 
 During the time of the Calamity, Kass was a minstrel who travelled throughout Hyrule Kingdom in search of the "Ancient Songs". He had left his family and his hometown of Rito Village to fulfill the final wish of his teacher, the Court Poet.
 

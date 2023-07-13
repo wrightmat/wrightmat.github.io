@@ -22,11 +22,14 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible  | Qty (12) |
-| ---- | ------------ | -------- |
-| 1-7  | Dazzle Fruit | 7        |
-| 8-11 | Zapshroom    | 4        |
-| 12   | Fairy        | 1        |
+| d12  | Collectible       | Qty (12) |
+| ---- | ----------------- | -------- |
+| 1-4  | Zapshroom         | 4        |
+| 5-6  | Electric Safflina | 2        |
+| 7-8  | Dazzledrupe      | 2        |
+| 9-10 | Swift Violet      | 2        |
+| 11   | Fleet Lotus Seeds | 1        |
+| 12   | Fairy             | 1        |
 ^akkala-sea-foraging
 
 ##### Fishing

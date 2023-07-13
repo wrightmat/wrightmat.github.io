@@ -33,7 +33,7 @@ sort Type, Location, file.name
 | d12  | Collectible    | Qty (12) |
 | ---- | -------------- | -------- |
 | 1-3  | Mighty Bananas | 3        |
-| 4-6  | Mighty Thistle | 3        |
+| 4-6  | Shockpear    | 3        |
 | 7-8  | Hearty Durian  | 2        |
 | 9-10 | Hydromelon     | 2        |
 | 11   | Endura Carrot  | 1        |

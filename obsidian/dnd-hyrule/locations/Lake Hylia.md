@@ -25,13 +25,13 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible  | Qty (12) |
-| ---- | ------------ | -------- |
-| 1-2  | Apple        | 2        |
-| 3-5  | Dazzle Fruit | 3        |
-| 6-8  | Ice Fruit    | 3        |
-| 9-11 | Hydromelon   | 3        |
-| 12   | Fairy        | 1        |
+| d12  | Collectible | Qty (12) |
+| ---- | ----------- | -------- |
+| 1-3  | Apple       | 3        |
+| 4-5  | Dazzledrupe | 2        |
+| 6-8  | Iceberry    | 3        |
+| 9-11 | Hydromelon  | 3        |
+| 12   | Fairy       | 1        |
 ^lake-hylia-foraging
 
 ##### Fishing

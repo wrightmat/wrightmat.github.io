@@ -12,6 +12,7 @@ The Githyanki can be found nearer to Eberron, possibly within the Ring of Sibery
 
 The Githzerai can only be found in their monasteries on Kythri.
 
-[](https://keith-baker.com/short-take-gith-in-eberron/)[https://keith-baker.com/short-take-gith-in-eberron/](https://keith-baker.com/short-take-gith-in-eberron/)
+### References
 
-[](https://keith-baker.com/tag/fizbans-treasury-of-dragons/)[https://keith-baker.com/tag/fizbans-treasury-of-dragons/](https://keith-baker.com/tag/fizbans-treasury-of-dragons/)
+* https://keith-baker.com/short-take-gith-in-eberron/
+* https://keith-baker.com/tag/fizbans-treasury-of-dragons/

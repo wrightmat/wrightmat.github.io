@@ -1,9 +1,13 @@
+---
+Race: Hylian
+Gender: Female
+Age: Child
+Location: Hateno Town
+Comments: Hateno School House
+Type: Minor
+Relationships:
+  - "[[Prima]] (mother)"
+  - "[[Worten]] (father)"
+---
 #npc 
 
-Race:: Hylian
-Gender:: Female
-Age:: Child
-Location:: Hateno Town
-Comments:: Hateno School House
-Family:: [[Prima]] (mother), [[Worten]] (father)
-Type:: Minor

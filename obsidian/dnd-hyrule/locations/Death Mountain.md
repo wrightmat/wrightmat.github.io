@@ -33,8 +33,9 @@ sort Type, Location, file.name
 
 | d12  | Collectible | Qty (12) |
 | ---- | ----------- | -------- |
-| 1-6  | Sunshroom   | 6        |
-| 7-11 | Fire Fruit  | 5        |
+| 1-5  | Sunshroom   | 5        |
+| 6-8  | Firefruit  | 3        |
+| 9-11 | Ironshroom  | 3        |
 | 12   | Bomb Flower | 1        |
 ^death-mountain-foraging
 

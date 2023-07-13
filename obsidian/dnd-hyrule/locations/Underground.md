@@ -34,12 +34,15 @@ sort Type, Location, file.name
 
 #### Foraging
 
-| d12   | Collectible | Qty (12) |
-| ----- | ----------- | -------- |
-| 1-4   | Bomb Flower | 4        |
-| 5-7   | Muddle Bud  | 3        |
-| 8-10  | Puffshroom  | 3        |
-| 11-12 | Fairy       | 2        |
+| d12 | Collectible    | Qty (12) |
+| --- | -------------- | -------- |
+| 1-4 | Bomb Flower    | 4        |
+| 5-7 | Muddle Bud     | 3        |
+| 8   | Ironshroom     | 1        |
+| 9   | Razorshroom    | 1        |
+| 10  | Endura Carrot  | 1        |
+| 11  | Hearty Truffle | 1        |
+| 12  | Fairy          | 1        |
 ^underground-foraging
 
 #### Fishing
@@ -49,7 +52,7 @@ sort Type, Location, file.name
 | 1-2 | Hyrule Bass    | 2       |
 | 3-4 | Hearty Salmon  | 2       |
 | 5-6 | Staminoka Bass | 2       |
-^underground-foraging
+^underground-fishing
 
 ### Random Encounters (18+)
 

@@ -9,5 +9,3 @@ Eberron shards are the most common form of dragonshard. They are primarily refin
 - Eberron (small): 4 (1d8) gp
 - Eberron (medium): 80 (4d4x10) gp
 - Eberron (large): 160 (4d8×10) gp
-
-![eberron.jpg](Eberron%20Dragonshard%207fc3281cabee47959d9fc5cc23fd1155/eberron.jpg)

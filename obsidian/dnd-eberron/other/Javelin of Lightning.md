@@ -6,4 +6,6 @@ The javelin's property can't be used again until the next dawn. In the meantime,
 
 Proficiency with a javelin allows you to add your proficiency bonus to the attack roll for any attack you make with it.
 
-https://www.dndbeyond.com/magic-items/4667-javelin-of-lightning
+### References
+
+* https://www.dndbeyond.com/magic-items/4667-javelin-of-lightning

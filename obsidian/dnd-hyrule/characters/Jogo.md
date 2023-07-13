@@ -1,9 +1,12 @@
+---
+Race: Hylian
+Gender: Male
+Age: Older Adult
+Location: Hyrule Castle Town
+Occupation: null
+Type: Minor
+Sexuality: Heterosexual
+Relationships: "[[Juney]] (wife)"
+---
 #npc 
 
-Race:: Hylian
-Gender:: Male
-Age:: Older Adult
-Location:: Hyrule Castle Town
-Occupation:: 
-Family:: [[Juney]] (wife)
-Type:: Minor

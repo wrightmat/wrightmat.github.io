@@ -43,14 +43,14 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible       | Qty (12) |
-| ---- | ----------------- | -------- |
-| 1-3  | Tabantha Wheat    | 3        |
-| 4-6  | Razorshroom       | 3        |
-| 7-8  | Spicy Pepper      | 2        |
-| 9-10 | Swift Violet      | 2        |
-| 11   | Courser Bee Honey | 1        |
-| 12   | Fairy             | 1        |
+| d12  | Collectible          | Qty (12) |
+| ---- | -------------------- | -------- |
+| 1-3  | Hylian Grains        | 3        |
+| 4-6  | Razorshroom          | 3        |
+| 7-8  | Hylian Tomato Pepper | 2        |
+| 9-10 | Swift Violet         | 2        |
+| 11   | Courser Bee Honey    | 1        |
+| 12   | Fairy                | 1        |
 ^tabantha-frontier-foraging
 
 ##### Fishing

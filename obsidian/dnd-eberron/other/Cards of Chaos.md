@@ -20,4 +20,6 @@ Mechanically this is a Deck of Several things (weakened version of the Deck of M
 
 ![https://1.bp.blogspot.com/-DBQh29_MJic/YTbcfPOm-QI/AAAAAAAANdY/hBfKAWRWXbcCWooL-G1ljTMTVyYWUq-aACLcBGAsYHQ/s800/deck_of_many_things_by_karla_chan_d7lddgb-fullview.jpg](https://1.bp.blogspot.com/-DBQh29_MJic/YTbcfPOm-QI/AAAAAAAANdY/hBfKAWRWXbcCWooL-G1ljTMTVyYWUq-aACLcBGAsYHQ/s800/deck_of_many_things_by_karla_chan_d7lddgb-fullview.jpg)
 
-[http://dnd5e.wikidot.com/wondrous-items:deck-of-several-things](http://dnd5e.wikidot.com/wondrous-items:deck-of-several-things)
+### References
+
+* http://dnd5e.wikidot.com/wondrous-items:deck-of-several-things

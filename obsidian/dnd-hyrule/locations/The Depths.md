@@ -35,6 +35,22 @@ sort Type, Location, file.name
 
 ![[Yiga Clan]]
 
+### Collecting
+
+#### Foraging
+
+| d12 | Collectible    | Qty (12) |
+| --- | -------------- | -------- |
+| 1-4 | Bomb Flower    | 4        |
+| 5-7 | Muddle Bud     | 4        |
+| 8-9 | Ironshroom     | 2        |
+| 10  | Endura Carrot  | 1        |
+| 11  | Hearty Truffle | 1        |
+^depths-foraging
+
+#### No Fishing
+
+
 ### Random Encounters (12+)
 
 The Depths is crawling with extremely dangerous and extremely ancient monsters. If someone were to attempt exploration of The Depths, it would be incredibly dangerous.

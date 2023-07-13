@@ -38,16 +38,16 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12 | Collectible       | Qty (12) |
-| --- | ----------------- | -------- |
-| 1-2 | Hyrule Herb       | 2        |
-| 3-4 | Hylian Shroom     | 2        |
-| 5-6 | Hylian Rice       | 2        |
-| 7-8 | Apple             | 2        |
-| 9   | Acorn             | 1        |
-| 10  | Courser Bee Honey | 1        |
-| 11  | Endura Shroom     | 1        |
-| 12  | Stamella Shroom   | 1        |
+| d12 | Collectible          | Qty (12) |
+| --- | -------------------- | -------- |
+| 1-2 | Hyrule Herb          | 2        |
+| 3-4 | Hylian Shroom        | 2        |
+| 5-6 | Hylian Grains        | 2        |
+| 7-8 | Apple                | 2        |
+| 9   | Hylian Tomato Pepper | 1        |
+| 10  | Courser Bee Honey    | 1        |
+| 11  | Endura Carrot        | 1        |
+| 12  | Stamella Shroom      | 1        |
 ^hyrule-field-foraging
 
 ##### Fishing

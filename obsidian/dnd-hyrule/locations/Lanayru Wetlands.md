@@ -31,13 +31,13 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12   | Collectible       | Qty (12) |
-| ----- | ----------------- | -------- |
-| 1-4   | Fleet-Lotus Seeds | 4        |
-| 5-7   | Hylian Shroom     | 3        |
-| 8-9   | Hylian Tomato     | 2        |
-| 10-11 | Bird Egg          | 2        |
-| 12    | Fairy             | 1        |
+| d12   | Collectible          | Qty (12) |
+| ----- | -------------------- | -------- |
+| 1-4   | Fleet Lotus Seeds    | 4        |
+| 5-7   | Hylian Shroom        | 3        |
+| 8-9   | Hylian Tomato Pepper | 2        |
+| 10-11 | Bird Egg             | 2        |
+| 12    | Fairy                | 1        |
 ^lanayru-wetlands-foraging
 
 ##### No Fishing

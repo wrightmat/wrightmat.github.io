@@ -33,17 +33,16 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12 | Collectible      | Qty (12) |
-| --- | ---------------- | -------- |
-| 1-2 | Rushroom         | 2        |
-| 3-4 | Armoranth        | 2        |
-| 5-6 | Tabantha Wheat   | 2        |
-| 7   | Warm Safflina    | 1        |
-| 8   | Electic Safflina | 1        |
-| 9   | Endura Carrot    | 1        |
-| 10  | Endura Shroom    | 1        |
-| 11  | Stamella Shroom  | 1        |
-| 12  | Silent Princess  | 1        |
+| d12 | Collectible       | Qty (12) |
+| --- | ----------------- | -------- |
+| 1-2 | Rushroom          | 2        |
+| 3-4 | Armoranth         | 2        |
+| 5-6 | Hylian Grains    | 2        |
+| 7-8 | Electric Safflina | 2        |
+| 9   | Endura Carrot     | 1        |
+| 10  | Swift Violet      | 1        |
+| 11  | Stamella Shroom   | 1        |
+| 12  | Courser Bee Honey | 1        |
 ^hyrule-ridge-foraging
 
 ##### Fishing

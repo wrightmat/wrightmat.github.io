@@ -33,13 +33,15 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible       | Qty (12) |
-| ---- | ----------------- | -------- |
-| 1-4  | Fleet-Lotus Seeds | 4        |
-| 5-7  | Silent Shroom     | 3        |
-| 8-10 | Blue Nightshade   | 3        |
-| 11   | Hearty Radish     | 1        |
-| 12   | Fairy             | 1        |
+| d12 | Collectible       | Qty (12) |
+| --- | ----------------- | -------- |
+| 1-4 | Fleet Lotus Seeds | 4        |
+| 5-7 | Silent Shroom     | 3        |
+| 8   | Courser Bee Honey | 1        |
+| 9   | Hylian Grains     | 1        |
+| 10  | Rushroom          | 1        |
+| 11  | Stamella Shroom   | 1        |
+| 12  | Fairy             | 1        |
 ^lanayru-great-spring-foraging
 
 ##### Fishing

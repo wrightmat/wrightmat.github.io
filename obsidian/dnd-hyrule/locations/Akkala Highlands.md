@@ -33,7 +33,7 @@ sort Type, Location, file.name
 | ---- | ------------ | -------- |
 | 1-4  | Armoranth    | 4        |
 | 5-8  | Hyrule Herb  | 4        |
-| 9-11 | Dazzle Fruit | 3        |
+| 9-11 | Dazzledrupe | 3        |
 | 12   | Fairy        | 1        |
 ^akkala-highlands-foraging
 

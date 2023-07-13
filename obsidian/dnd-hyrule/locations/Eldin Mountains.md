@@ -24,11 +24,13 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible | Qty (12) |
-| ---- | ----------- | -------- |
-| 1-6  | Sunshroom   | 6        |
-| 7-11 | Fire Fruit  | 5        |
-| 12   | Fairy       | 1        |
+| d12  | Collectible  | Qty (12) |
+| ---- | ------------ | -------- |
+| 1-5  | Sunshroom    | 5        |
+| 6-8  | Ironshroom   | 3        |
+| 9-10 | Firefruit   | 2        |
+| 11   | Swift Violet | 1        |
+| 12   | Fairy        | 1        |
 ^eldin-mountains-foraging
 
 ##### Fishing

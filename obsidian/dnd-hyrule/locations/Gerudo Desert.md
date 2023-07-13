@@ -41,14 +41,14 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12   | Collectible       | Qty (12) |
-| ----- | ----------------- | -------- |
-| 1-2   | Hydromelon        | 2        |
-| 3-4   | Voltfruit         | 2        |
-| 5-6   | Electric Safflina | 2        |
-| 7-8   | Warm Safflina     | 2        |
-| 9-10  | Spicy Pepper      | 2        |
-| 11-12 | Palm Fruit        | 2        |
+| d12   | Collectible          | Qty (12) |
+| ----- | -------------------- | -------- |
+| 1-2   | Hydromelon           | 2        |
+| 3-4   | Shockpear          | 2        |
+| 5-7   | Electric Safflina    | 3        |
+| 8-9   | Hylian Tomato Pepper | 2        |
+| 10-11 | Palm Fruit           | 2        |
+| 12    | Stamella Shroom      | 1        |
 ^gerudo-desert-foraging
 
 ##### No Fishing

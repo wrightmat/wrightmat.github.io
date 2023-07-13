@@ -4,4 +4,6 @@ After drinking this potion, you can use a bonus action to exhale fire at a targe
 
 This potion's orange liquid flickers, and smoke fills the top of the container and wafts out whenever it is opened.
 
-http://dnd5e.wikidot.com/wondrous-items:potion-of-fire-breath
+### References
+
+* http://dnd5e.wikidot.com/wondrous-items:potion-of-fire-breath

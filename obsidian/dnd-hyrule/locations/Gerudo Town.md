@@ -37,8 +37,8 @@ In order to protect the ancient holy site, Riju used her abilities to immediatel
 	- Hydromelon (16 rupees)
 	- Hearty Durian (60 rupees)
 - General Store- Cooking Ingredients
-	- Tabantha Wheat
-	- Hylian Rice
+	- Hylian Grains
+	- ???
 - General Store- Meat
 - General Store- Mushrooms
 - General Store- Weapons

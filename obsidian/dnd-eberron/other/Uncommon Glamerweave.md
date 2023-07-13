@@ -9,4 +9,6 @@ Uncommon glamerweave can have the pattern rise from the cloth. For example, a gl
 
 When you make a Charisma (Performance) or Charisma (Persuasion) check while wearing the uncommon version of glamerweave, you can roll a d4 and add the number rolled to the check. Once you use this property, it can’t be used again until the next dawn.
 
-https://www.dndbeyond.com/magic-items/1093036-uncommon-glamerweave
+### References
+
+* https://www.dndbeyond.com/magic-items/1093036-uncommon-glamerweave

@@ -38,14 +38,13 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12 | Collectible    | Qty (12) |
-| --- | -------------- | -------- |
-| 1-3 | Wildberry      | 3        |
-| 4-6 | Cool Safflina  | 3        |
-| 7-9 | Chillshroom    | 3        |
-| 10  | Swift Violet   | 1        |
-| 11  | Hearty Truffle | 1        |
-| 12  | Fairy          | 1        |
+| d12  | Collectible    | Qty (12) |
+| ---- | -------------- | -------- |
+| 1-4  | Iceberry       | 4        |
+| 5-7  | Cool Safflina  | 3        |
+| 8-10 | Chillshroom    | 3        |
+| 11   | Hearty Truffle | 1        |
+| 12   | Fairy          | 1        |
 ^hebra-mountains-foraging
 
 ##### Fishing

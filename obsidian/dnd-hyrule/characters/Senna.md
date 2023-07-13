@@ -1,8 +1,13 @@
+---
+Race: Hylian
+Gender: Female
+Age: Elderly
+Location: Hateno Town
+Type: Minor
+Sexuality: Heterosexual
+Relationships:
+  - "[[Sefaro]] (son)"
+  - Sayge (deceased husband)
+---
 #npc 
 
-Race:: Hylian
-Gender:: Female
-Age:: Elderly
-Location:: Hateno Town
-Family:: Sayge (deceased husband), [[Sefaro]] (son)
-Type:: Minor

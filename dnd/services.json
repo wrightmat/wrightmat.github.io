@@ -1,4 +1,4 @@
-[
+services = [
 	{
 		"special": [],
 		"index": "arcane-lock-kundarak",

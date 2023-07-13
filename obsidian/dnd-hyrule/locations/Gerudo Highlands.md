@@ -52,11 +52,11 @@ sort Type, Location, file.name
 
 | d12  | Collectible   | Qty (12) |
 | ---- | ------------- | -------- |
-| 1-3  | Sunshroom     | 3        |
+| 1-3  | Chillshroom   | 3        |
 | 4-6  | Zapshroom     | 3        |
 | 7-8  | Cool Safflina | 2        |
-| 9-10 | Wildberry     | 2        |
-| 11   | Rushroom      | 1        |
+| 9-10 | Iceberry      | 2        |
+| 11   | Shockpear   | 1        |
 | 12   | Swift Violet  | 1        |
 ^gerudo-highlands-foraging
 

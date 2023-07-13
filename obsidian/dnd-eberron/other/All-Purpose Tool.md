@@ -4,4 +4,6 @@ This simple screwdriver can transform into a variety of tools; as an action, you
 
 As an action, you can focus on the tool to channel your creative forces. Choose a cantrip that you don't know from any class list. For 8 hours, you can cast that cantrip, and it counts as an artificer cantrip for you. Once this property is used, it can't be used again until the next dawn.
 
-http://dnd5e.wikidot.com/wondrous-items:all-purpose-tool
+### References
+
+* http://dnd5e.wikidot.com/wondrous-items:all-purpose-tool

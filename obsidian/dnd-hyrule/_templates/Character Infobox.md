@@ -1,16 +1,23 @@
 ---
+Alias: 
 Race: 
 Gender: 
 Age: 
+Sexuality: 
+Alignment: 
+Attitude: 
 Location: 
 Occupation: 
+Relationships: 
+Adventure: 
+Comments: 
 Type: Minor
-Image: 
+Image: "![https://www.firstbenefits.org/wp-content/uploads/2017/10/placeholder.png|200](https://www.firstbenefits.org/wp-content/uploads/2017/10/placeholder.png)"
 ---
 
 > [!infobox]
 > # `=this.file.name`
-> ![https://www.firstbenefits.org/wp-content/uploads/2017/10/placeholder.png|200](https://www.firstbenefits.org/wp-content/uploads/2017/10/placeholder.png)
+> `=this.Image`
 > ###### Bio
 > |  |  |
 > | ---- | ---- |
@@ -19,12 +26,61 @@ Image:
 > | Age | `=this.Age` |
 > | Sexuality | `=this.Sexuality` |
 > | Alignment | `=this.Alignment` |
+> | Attitude | `=this.Attitude` |
 > ###### Info
 > |  |  |
 > | ---- | ---- |
-> | Location | `=this.Location` |
-> | Occupation | `=this.Occupation` |
+> | Alias(es) | `=this.Alias` |
 > | Relationships | `=this.Relationships` |
+> | Location(s) | `=this.Location` |
+> | Occupation(s) | `=this.Occupation` |
+> | Adventure(s) | `=this.Adventure` |
 > | Type | `=this.Type` |
+> ###### Comments
+> `=this.Comments`
 
-Character Text.
+
+
+
+
+> [!column] Traits
+>> [!metadata|text-Center bg-c-gray] Appearance
+>> `=this.Appearance`
+>
+>> [!metadata|text-Center bg-c-gray] Personality
+>> `=this.Personality`
+>
+>> [!metadata|text-Center bg-c-gray] Interaction
+>> `=this.Interaction`
+>
+>> [!metadata|text-Center bg-c-gray] Mannerisms
+>> `=this.Mannerism`
+>
+
+> [!column] Motivations
+>> [!metadata|text-Center bg-c-gray] Goals
+>> `=this.Goals`
+>
+>> [!metadata|text-Center bg-c-gray] Bonds
+>> `=this.Bonds`
+>
+>> [!metadata|text-Center bg-c-gray] Flaws
+>> `=this.Flaws`
+>
+>> [!metadata|text-Center bg-c-gray] Ideals
+>> `=this.Ideals`
+>
+>> [!metadata|text-Center bg-c-gray] Likes
+>> `=this.Likes`
+>
+>> [!metadata|text-Center bg-c-gray] Dislikes
+>> `=this.Dislikes`
+>
+
+### History
+
+
+
+### DM Notes
+
+

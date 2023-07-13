@@ -1,10 +1,15 @@
+---
+Race: Rito
+Gender: Female
+Age: Young Adult
+Location: Rito Village
+Occupation: Shop Worker
+Comments: Brazen Beak Armor Shop
+Type: Minor
+Sexuality: Homosexual
+Relationships:
+  - "[[Amali]] (mother)"
+  - "[[Kass]] (father)"
+---
 #npc 
 
-Race:: Rito
-Gender:: Female
-Age:: Young Adult
-Location:: Rito Village
-Occupation:: Shop Worker
-Family:: [[Amali]] (mother), [[Kass]] (father)
-Comments:: Brazen Beak Armor Shop
-Type:: Minor

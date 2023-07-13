@@ -30,10 +30,11 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible | Qty (12) |
-| ---- | ----------- | -------- |
-| 1-6  | Chillshroom | 6        |
-| 7-12 | Ice Fruit   | 6        |
+| d12   | Collectible   | Qty (12) |
+| ----- | ------------- | -------- |
+| 1-6   | Chillshroom   | 6        |
+| 7-10  | Iceberry      | 4        |
+| 11-12 | Cool Safflina | 2        |
 ^mount-lanayru-foraging
 
 ##### Fishing

@@ -49,15 +49,16 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible     | Qty (12) |
-| ---- | --------------- | -------- |
-| 1-2  | Blue Nightshade | 2        |
-| 3-4  | Silent Shroom   | 2        |
-| 5-6  | Hylian Shroom   | 2        |
-| 7-8  | Mighty Thistle  | 2        |
-| 9-10 | Ironshroom      | 2        |
-| 11   | Silent Princess | 1        |
-| 12   | Fairy           | 1        |
+| d12 | Collectible       | Qty (12) |
+| --- | ----------------- | -------- |
+| 1-2 | Apple             | 2        |
+| 3-4 | Silent Shroom     | 2        |
+| 5-6 | Hylian Shroom     | 2        |
+| 7-8 | Rushroom          | 2        |
+| 9   | Ironshroom        | 1        |
+| 10  | Fleet Lotus Seeds | 1        |
+| 11  | Bird Egg          | 1        |
+| 12  | Fairy             | 1        |
 ^west-necluda-foraging
 
 ##### Fishing

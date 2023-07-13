@@ -1,13 +1,21 @@
+---
+Race: Hylian
+Gender: Male
+Age: Older Adult
+Location:
+  - Tarrey Town
+  - Hateno Town
+Occupation:
+  - Shop Owner
+  - Construction Manager
+Comments: Karson Carpentry
+Type: Major
+Sexuality: Bisexual
+Relationships:
+  - "[[Sophie]] (wife)"
+  - "[[Rall]] (son)"
+---
 #npc [[Hudson Construction]]
-
-Race:: Hylian
-Gender:: Male
-Age:: Older Adult
-Location:: Tarrey Town, Hateno Town
-Occupation:: Shop Owner, Construction Manager
-Family:: [[Sophie]] (wife), [[Rall]] (son)
-Comments:: Karson Carpentry
-Type:: Major
 
 Karson has worked for Hudson Construction since its inception, and still manages many of the jobs. But he also owns a carpentry company in Hateno Town that does small custom jobs (that wouldn't compete with Hudson Construction's usual work).
 

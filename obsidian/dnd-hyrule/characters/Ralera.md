@@ -1,8 +1,13 @@
+---
+Race: Hylian
+Gender: Female
+Age: Elderly
+Location: Lurelin Village
+Type: Minor
+Sexuality: Heterosexual
+Relationships:
+  - "[[Rhodes]] (husband)"
+  - Rozel (deceased father)
+---
 #npc 
 
-Race:: Hylian
-Gender:: Female
-Age:: Elderly
-Location:: Lurelin Village
-Family:: Rozel (deceased father), [[Rhodes]] (husband)
-Type:: Minor

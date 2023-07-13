@@ -1,6 +1,4 @@
 var groups = {};
-var equipment = [];
-var services = [];
 var item_selected;
 
 window.addEventListener("load", init, false);
@@ -35,18 +33,14 @@ function populateEquipment() {
   });
 
   // Non-API (Eberron-specific, custom) content
-  var json_equip = getLocal("equipment.json");
-  json_equip.forEach(function (item, index) {
+  equipment.forEach(function (item, index) {
     $('#select-items').append('<option id="' + item.index + '" value="' + item.index +'">' + item.name +'</option>');
-    equipment.push(item);
   });
 }
 
 function populateServices() {
-  var json_service = getLocal("services.json");
-  json_service.forEach(function (item, index) {
+  services.forEach(function (item, index) {
     $('#select-services').append('<option id="' + item.index + '" value="' + item.index +'">' + item.name +'</option>');
-    services.push(item);
   });
 }
 
@@ -60,17 +54,6 @@ function getAPI(r_type, r_async) {
     success: function(result) { r_text = result },
     error: function(xhr, error) { console.log(xhr) },
     async: r_async || false
-  });
-  return r_text;
-}
-
-function getLocal(r_url) {
-  var r_text;
-  $.get({
-    url: "https://wrightmat.github.io/dnd/" + r_url,
-    success: function(result) { r_text = result },
-    error: function(xhr, error) { console.log(xhr) },
-    async: false
   });
   return r_text;
 }

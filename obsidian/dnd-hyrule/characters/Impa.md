@@ -1,11 +1,15 @@
+---
+Race: Hylian
+Gender: Female
+Age: Elderly
+Location: Kakariko Village
+Occupation: Village Elder
+Type: Major
+Sexuality: Heterosexual
+Relationships:
+  - "[[Purah]] (older sister)"
+  - "[[Paya]] (granddaughter)"
+---
 #npc [[Sheikah Seekers]]
 
-Race:: Hylian
-Gender:: Female
-Age:: Elderly
-Location:: Kakariko Village
-Occupation:: Village Elder
-Family:: [[Purah]] (older sister), [[Paya]] (granddaughter)
-Type:: Major
-
-Paya's elderly grandmother, she lives in Seeker Hall with her granddaughter.
+Paya's elderly grandmother, Impa lives in Seeker Hall with her granddaughter.

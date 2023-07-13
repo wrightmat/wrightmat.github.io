@@ -52,3 +52,29 @@ table without id Location, file.link as Name, Race, Gender, Age, Occupation, Com
 from #npc and "characters"
 sort Location, file.name
 ```
+
+### NPC Bio Counts
+
+```dataview
+table without id Race, length(rows) as Count
+from #npc and "characters"
+group by Race
+```
+
+```dataview
+table without id Gender, length(rows) as Count
+from #npc and "characters"
+group by Gender
+```
+
+```dataview
+table without id Age, length(rows) as Count
+from #npc and "characters"
+group by Age
+```
+
+```dataview
+table without id Sexuality, length(rows) as Count
+from #npc and "characters"
+group by Sexuality
+```

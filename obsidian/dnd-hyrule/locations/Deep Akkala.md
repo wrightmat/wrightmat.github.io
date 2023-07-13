@@ -28,12 +28,13 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12  | Collectible  | Qty (12) |
-| ---- | ------------ | -------- |
-| 1-4  | Zapshroom    | 4        |
-| 5-8  | Dazzle Fruit | 4        |
-| 9-11 | Fire Fruit   | 3        |
-| 12   | Fairy        | 1        |
+| d12   | Collectible    | Qty (12) |
+| ----- | -------------- | -------- |
+| 1-4   | Zapshroom      | 4        |
+| 5-7   | Firefruit     | 3        |
+| 8-9   | Dazzledrupe   | 2        |
+| 10-11 | Stamella Shroom | 2        |
+| 12    | Fairy          | 1        |
 ^deep-akkala-foraging
 
 ##### Fishing

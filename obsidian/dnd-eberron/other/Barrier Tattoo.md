@@ -12,4 +12,6 @@ If your attunement to the tattoo ends, the tattoo vanishes, and the needle reapp
 | Rare      | 15 + your Dexterity modifier (maximum of +2) |
 | Very Rare | 18                                           |
 
-https://www.dndbeyond.com/magic-items/2411988-barrier-tattoo
+### References
+
+* https://www.dndbeyond.com/magic-items/2411988-barrier-tattoo

@@ -37,8 +37,8 @@ sort Type, Location, file.name
 | d12  | Collectible    | Qty (12) |
 | ---- | -------------- | -------- |
 | 1-3  | Apple          | 3        |
-| 4-6  | Acorn          | 3        |
-| 7-8  | Bird Egg       | 2        |
+| 4-6  | Bird Egg       | 3        |
+| 7-8  | Ironshroom     | 2        |
 | 9-10 | Razorshroom    | 2        |
 | 11   | Hearty Truffle | 1        |
 | 12   | Fairy          | 1        |

@@ -1,5 +1,7 @@
+---
+Race: Korok
+Location: Korok Forest
+Type: Minor
+---
 #npc 
 
-Race:: Korok
-Location:: Korok Forest
-Type:: Minor

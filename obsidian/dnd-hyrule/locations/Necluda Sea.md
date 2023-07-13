@@ -2,7 +2,7 @@
 
 The Necluda Sea is located at the southeast end of Hyrule where it completely surrounds Tenoko Island and Eventide Island. The Necluda Sea borders the Lanayru Sea to the north and the Faron Sea to the west. It extends through much of the south coast, as far west as Martha's Landing.
 
-Throughout the sea, Armored Carp, Armored Porgy, Mighty Carp, and Mighty Porgy are abundant. Additionally, enemy Water Octoroks and Blue Lizalfos can be found inhabiting the area.
+Throughout the sea, carp and porgies are abundant. Additionally, enemy Water Octoroks and Blue Lizalfos can be found inhabiting the area.
 
 ### Locations
 

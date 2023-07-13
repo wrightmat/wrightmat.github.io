@@ -43,13 +43,14 @@ sort Type, Location, file.name
 
 ##### Foraging
 
-| d12   | Collectible   | Qty (12) |
-| ----- | ------------- | -------- |
-| 1-3   | Sunshroom     | 3        |
-| 4-6   | Hylian Shroom | 3        |
-| 7-9   | Hylian Tomato | 3        |
-| 10-11 | Fire Fruit    | 2        |
-| 12    | Fairy         | 1        |
+| d12  | Collectible          | Qty (12) |
+| ---- | -------------------- | -------- |
+| 1-3  | Sunshroom            | 3        |
+| 4-6  | Hylian Shroom        | 3        |
+| 7-8  | Hylian Tomato Pepper | 2        |
+| 9-10 | Firefruit           | 2        |
+| 11   | Rushroom             | 1        |
+| 12   | Fairy                | 1        |
 ^eldin-canyon-foraging
 
 ##### Fishing

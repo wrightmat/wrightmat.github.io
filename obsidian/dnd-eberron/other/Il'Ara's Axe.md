@@ -8,6 +8,6 @@ You gain a +1 bonus to attack and damage rolls made with this magic weapon. In a
 
 Whenever a hostile creature damages you while the axe is in your possession, you must succeed on a DC 15 Wisdom saving throw or take 1d6 psychic damage and 1d6 cold damage.
 
-##### References
+### References
 
-Based on the Berserker Axe.
+* Based on the Berserker Axe.

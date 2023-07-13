@@ -1,632 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>5e Chip Test</title>
+  <title>TTRPG Chips Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="common.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/peterhry/CircleType@2.3.1/dist/circletype.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="chips.json"></script>
+  <style>
+    @media print {
+      body { visibility: hidden; }
+      #grid-container {
+        visibility: visible;
+        position: absolute;
+        left: 0; top: 0;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<div class="grid-container">
 
-<div class="chip">
-  <span class="circle-txt">Armored Carp</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/86/BotW_Armored_Carp_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Chillfin Trout</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/15/BotW_Chillfin_Trout_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Hearty Salmon</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/81/BotW_Hearty_Salmon_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Hyrule Bass</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/66/BotW_Hyrule_Bass_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Mighty Porgy</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/72/BotW_Mighty_Porgy_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Sizzlefin Trout</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/69/BotW_Sizzlefin_Trout_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f0/BotW_Tough_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e6/BotW_Heat_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" /><br />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4e/BotW_Mighty_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/eb/BotW_Cold_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
+<div id="controls" style="position:absolute; left: 0px; top: 0px;>
+    <label for="group">Groups (Subregion or Type):</label><br/ >
+    <select id="group" onchange="selectGroup(this);">
+      <option value=""></option>
+      <option value="akkala-highlands">Akkala Highlands</option>
+      <option value="akkala-sea">Akkala Sea</option>
+      <option value="death-mountain">Death Mountain</option>
+      <option value="deep-akkala">Deep Akkala</option>
+      <option value="east-necluda">East Necluda</option>
+      <option value="eldin-canyon">Eldin Canyon</option>
+      <option value="eldin-mountains">Eldin Mountains</option>
+      <option value="faron-grasslands">Faron Grassland</option>
+      <option value="faron-sea">Faron Sea</option>
+      <option value="gerudo-desert">Gerudo Desert</option>
+      <option value="gerudo-highlands">Gerudo Highlands</option>
+      <option value="great-hyrule-forest">Great Hyrule Forest</option>
+      <option value="great-plateau">Great Plateau</option>
+      <option value="hebra-mountains">Hebra Mountains</option>
+      <option value="hyrule-field">Hyrule Field</option>
+      <option value="hyrule-ridge">Hyrule Ridge</option>
+      <option value="lake-hylia">Lake Hylia</option>
+      <option value="lanayru-great-spring">Lanayru Great Spring</option>
+      <option value="lanayru-sea">Lanayru Sea</option>
+      <option value="lanayru-wetlands">Lanayru Wetlands</option>
+      <option value="mount-lanayru">Mount Lanayru</option>
+      <option value="necluda-sea">Necluda Sea</option>
+      <option value="tabantha-frontier">Tabantha Frontier</option>
+      <option value="west-necluda">West Necluda</option>
+      <option value="underground">Underground</option>
+      <option value="depths">The Depths</option>
+      <option value="monster-parts">Monster Parts</option>
+      <option value="monster-parts-electric">Monster Parts (Electric)</option>
+      <option value="monster-parts-fire">Monster Parts (Fire)</option>
+      <option value="monster-parts-ice">Monster Parts (Ice)</option>
+      <option value="monster-parts-all">All Monster Parts</option>
+      <option value="fish">All Fish</option>
+      <option value="fruit">All Fruits</option>
+      <option value="protein">All Proteins</option>
+      <option value="mushroom">All Mushrooms</option>
+      <option value="vegetable">All Vegetables</option>
+      <option value="other">All Other/Misc.</option>
+    </select><br /><br />
+    <select id="controls-custom-select" size="30"></select><br />
 </div>
 
-<div class="chip">
-  <span class="circle-txt">Staminoka Bass</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/79/BotW_Staminoka_Bass_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Stealthfin Trout</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d6/BotW_Stealthfin_Trout_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Voltfin Trout</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/1b/BotW_Voltfin_Trout_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Acorn</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/66/BotW_Acorn_Icon.png" class="circle-img" />
-  <div class="chip-life"></div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Apple</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f2/BotW_Apple_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Chickaloo Tree Nut</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/0/04/BotW_Chickaloo_Tree_Nut_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/fe/BotW_Quarter_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" /><br />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/BotW_Stamina_Restoration_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/BotW_Stamina_Restoration_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/dd/BotW_Sneaky_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/59/BotW_Fish_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/57/BotW_Shock_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/54/BotW_Saut%C3%A9ed_Nuts_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/54/BotW_Saut%C3%A9ed_Nuts_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt">Dazzlefruit</span>
-  <img src="https://www.zeldadungeon.net/wiki/images/f/f6/Dazzlefruit_-_TotK_icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Firefruit</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/1f/Fire_Fruit.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Hearty Durian</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/83/BotW_Hearty_Durian_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Hydromelon</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/b/b0/BotW_Hydromelon_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Icefruit</span>
-  <img src="https://www.gamerguides.com/assets/media/15/11179/icefruit-712b7620.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Mighty Bananas</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/57/BotW_Mighty_Bananas_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/eb/BotW_Cold_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/55/BotW_Extra_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" /><br />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/55/BotW_Extra_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e6/BotW_Heat_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e6/BotW_Heat_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4e/BotW_Mighty_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt">Palm Fruit</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/9/93/BotW_Palm_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Voltfruit</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e1/BotW_Voltfruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Wildberry</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/10/BotW_Wildberry_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Bird Egg</span>
-  <img src="https://www.gamerguides.com/assets/media/15/11416/bird_egg_icon_enemy_zelda_totk-6132fa05.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Fresh Milk</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6a/BotW_Fresh_Milk_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Raw Meat</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/52/BotW_Raw_Meat_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/57/BotW_Shock_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/ce/BotW_Simmered_Fruit_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/45/BotW_Omelet_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://www.zeldadungeon.net/wiki/images/f/fb/Hateno_Cheese_-_TotK_icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/5b/BotW_Steamed_Meat_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt">Chillshroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/26/BotW_Chillshroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Endura Shroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/29/BotW_Endura_Shroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Hearty Truffle</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/cc/BotW_Hearty_Truffle_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Hylian Shroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/1/13/BotW_Hylian_Shroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Ironshroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/80/BotW_Ironshroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Razorshroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/62/BotW_Razorshroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/e6/BotW_Heat_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" /><br />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/BotW_Stamina_Restoration_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/BotW_Stamina_Restoration_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f0/BotW_Tough_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/4e/BotW_Mighty_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt">Rushroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/55/BotW_Rushroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Silent Shroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/36/BotW_Silent_Shroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Stamella Shroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/c/c2/BotW_Stamella_Shroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Sunshroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/5d/BotW_Sunshroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Zapshroom</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/6c/BotW_Zapshroom_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Armoranth</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/b/b3/BotW_Armoranth_Icon.png" class="circle-img" />
-  <div class="chip-life"></div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/28/BotW_Hasty_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/dd/BotW_Sneaky_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" /><br />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/BotW_Stamina_Restoration_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/3/37/BotW_Stamina_Restoration_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/eb/BotW_Cold_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/8/8a/BotW_Mushroom_Skewer_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/57/BotW_Shock_Resistance_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt"></span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/ea/BotW_Fried_Wild_Greens_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/f/f0/BotW_Tough_Icon.png" class="img-bg" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt">Blue Nightshade</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/a/a5/BotW_Blue_Nightshade_Icon.png" class="circle-img" />
-  <div class="chip-life"></div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Cool Safflina</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/7d/BotW_Cool_Safflina_Icon.png" class="circle-img" />
-  <div class="chip-life"></div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Electric Saffina</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/4/42/BotW_Electric_Safflina_Icon.png" class="circle-img" />
-  <div class="chip-life"></div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Endura Carrot</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/0/09/BotW_Endura_Carrot_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/2/2e/BotW_Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Fleet Lotus Seeds</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/5/5e/BotW_Fleet-Lotus_Seeds_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-<div class="chip">
-  <span class="circle-txt">Fortified Pumpkin</span>
-  <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/e/ec/BotW_Fortified_Pumpkin_Icon.png" class="circle-img" />
-  <div class="chip-life">
-    <img src="https://static.wikia.nocookie.net/zelda_gamepedia_en/images/7/76/BotW_Half-Heart_Icon.png" />
-  </div>
-</div>
-
-<div class="chip">
-  <span class="circle-txt">Bomb Flower</span>
-  <img src="https://www.zeldadungeon.net/wiki/images/6/6d/Bomb_Flower_-_TotK_icon.png" class="circle-img" />
-  <div class="chip-life"></div>
-</div>
-
+<div class="grid-container-chip" id="grid-container">
 </div>
 
 <script type="text/javascript">
@@ -640,32 +81,56 @@
     });
     return r_text;
   }
-  var materials = getAPI('materials');
-  var creatures = getAPI('creatures');
-  var locations = {};
-  //console.log(materials.data);
 
-  $.each( materials.data, function( key, value ) {
-    for ( val of value.common_locations ) {
-	if ( locations[val] === undefined ) { locations[val] = []; }
-	locations[val].push(value.name);
-    }
-  });
-console.log(creatures.data.food);
-  $.each( creatures.data.food, function( key, value ) {
-    for ( val of value.common_locations ) {
-      //if ( value.edible == "true" ) {
-	if ( locations[val] === undefined ) { locations[val] = []; }
-	locations[val].push(value.name);
-      //}
-    }
-  });
+  var i = 0;
+  function createChip(id) {
+    $.each( chips, function( key, value ) {
+      if ( value.id == id ) {
+	var last_v;
 
-  console.log(locations);
+	// Front
+	$('<div>', { id: 'chip-front-' + id + '-' + i, class: 'chip' }).appendTo('#grid-container');
+	$('<span>', { class: 'circle-txt', text: value.name }).appendTo('#chip-front-' + id + '-' + i);
+	$('<img>', { class: 'circle-img', src: value.image }).appendTo('#chip-front-' + id + '-' + i);
+	$('<div>', { id: 'chip-front-effect-' + id + '-' + i, class: 'chip-life' }).appendTo('#chip-front-' + id + '-' + i);
+	$.each( value.front, function( k, v ) {
+	  $('<img>', { src: imgs[v] }).appendTo('#chip-front-effect-' + id + '-' + i);
+	});
+	$("#chip-front-" + id + "-" + i + " .circle-txt").each(function(i, obj) { new CircleType(obj).dir(-1).radius(40); });
 
-  $('.circle-txt').each(function(i, obj) {
-    new CircleType(obj).dir(-1).radius(40);
+	// Back
+	$('<div>', { id: 'chip-back-' + id + '-' + i, class: 'chip' }).appendTo('#grid-container');
+	$('<span>', { class: 'circle-txt', text: value.tags }).appendTo('#chip-back-' + id + '-' + i);
+	$('<div>', { id: 'chip-back-effect-' + id + '-' + i, class: 'chip-life-back' }).appendTo('#chip-back-' + id + '-' + i);
+	$.each( value.back, function( k, v ) {
+	  var cls;
+	  if (v.indexOf("heart") === -1 && v.indexOf("stamina") === -1) { cls = "img-bg" }
+	  if ( (k == 3 && v.indexOf("heart") == 1) || k == 6 || (last_v && last_v != v) ) { $('<br />').appendTo('#chip-back-effect-' + id + '-' + i); }
+	  $('<img>', { class: cls, src: imgs[v] }).appendTo('#chip-back-effect-' + id + '-' + i);
+	  last_v = v;
+	});
+	$("#chip-back-" + id + "-" + i + " .circle-txt").each(function(i, obj) { new CircleType(obj).dir(-1).radius(40); });
+
+        i += 1;
+      }
+    });
+  }
+
+  function selectGroup(el) {
+    $('#grid-container').empty();
+    var sel = el.options[el.selectedIndex].value;
+    $.each( chips[sel], function( key, value ) {
+      createChip(value);
+    });
+  }
+
+  // populate custom select list and register callback
+  $.each( chips, function( key, value ) {
+    $('#controls-custom-select').append($("<option />").val(value.id).text(value.name));
   });
+  document.getElementById('controls-custom-select').ondblclick = function() {
+    createChip(this.options[this.selectedIndex].value);
+  };
 </script>
 
 </body>

@@ -4,6 +4,7 @@ Carved from Siberys dragonshards, speaking stones are the means by which Ho
 
 At any given time, a gnome is on duty per speaking stone, listening in for, and inscribing messages emanating from said-stone. However, anyone within roughly five feet of the device can overhear the message.
 
-https://eberron.fandom.com/wiki/Speaking_stone
+### References
 
-[https://static.wikia.nocookie.net/eberron/images/5/5c/Scribe.jpg/revision/latest?cb=20220929134218](https://static.wikia.nocookie.net/eberron/images/5/5c/Scribe.jpg/revision/latest?cb=20220929134218)
+* https://eberron.fandom.com/wiki/Speaking_stone
+* https://static.wikia.nocookie.net/eberron/images/5/5c/Scribe.jpg/revision/latest?cb=20220929134218
