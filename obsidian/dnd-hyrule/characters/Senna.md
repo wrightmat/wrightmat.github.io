@@ -3,7 +3,9 @@ Race: Hylian
 Gender: Female
 Age: Elderly
 Location: Hateno Town
-Type: Minor
+Occupation: Shop Owner
+Comments: Kochi Dye Shop
+Type: Medium
 Sexuality: Heterosexual
 Relationships:
   - "[[Sefaro]] (son)"

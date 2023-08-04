@@ -2,10 +2,12 @@
 
 The home of the Zoras is a peaceful architectural marvel beset between the mountains and rivers of Lanayru. A sacred location known as The Reflecting Pool, where Divine Beast Vah Ruta once stood, has become a source of concern for the Zora people, who have observed an evil eminence.
 
+A relief carved at the entrance of the Luminous Graveyard depicts the notes to the "Serenade of Water" (see [[1. Central Windvane and Warp Songs]]).
+
 ### Locations
 
-- **Luminous Graveyard**
-- **Zora Stone Monuments**
+- Luminous Graveyard
+- Zora Stone Monuments
 - Marot's Mart, a general store
 	- Heart Potion (20 rupees)
 	- Air Elixir (200 rupees)

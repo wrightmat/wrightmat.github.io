@@ -1,4 +1,4 @@
-#npc [[Barrakas (Irian)]]
+#npc [[Barrakas (Irian)]] [[The Endless]]
 
 Gender:: Gender-fluid
 Occupation:: Brothel-Keeper

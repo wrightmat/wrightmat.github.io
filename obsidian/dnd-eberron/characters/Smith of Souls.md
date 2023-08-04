@@ -1,4 +1,4 @@
-# Smith of Souls
+#npc [[Aryth (Dolurrh)]]
 
 Gender: Female
 Occupation: Architect

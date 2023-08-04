@@ -6,13 +6,13 @@ statblock: inline
 ```statblock
 image: [[https://i0.wp.com/dmdave.com/wp-content/uploads/2018/11/xag-ya-xeg-yi.jpg?fit=800%2C450&ssl=1]]
 name: Xag-ya
-size: Medium
+size: Large
 type: Abberation
 alignment: Neutral
 ac: 19
 hp: 189
 hit_dice: 18d8 + 108
-speed: 0 ft., fly 30 ft. (hover)
+speed: 0 ft., fly 60 ft. (hover)
 stats: [3, 19, 22, 21, 18, 16]
 saves:
   - intelligence: 9
@@ -23,7 +23,7 @@ skillsaves:
 damage_vulnerabilities: cold, necrotic
 damage_resistances: radiant
 damage_immunities: acid, fire, lightning, psychic, thunder; bludgeoning, piercing, and slashing from nonmagical attacks
-condition_immunities: exhaustion, grappled, paralyzed, poisoned, prone, restrained, unconscious
+condition_immunities: blinded, exhaustion, grappled, paralyzed, poisoned, prone, restrained, unconscious
 senses: blindsense 30 ft., darkvision 120 ft., passive Perception 18
 languages: --
 cr: 12

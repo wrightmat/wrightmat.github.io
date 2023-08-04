@@ -6,6 +6,8 @@ This is not a traditional stable, as the party can see that it's basically aband
 
 If purchased, the party can use the Stable as a central base to use as they please. Details are in the mission below.
 
+On the wall is a poster with the [[Epona Co.]] logo which depicts the notes for Epona's Song (see [[1. Central Windvane and Warp Songs]]).
+
 Primary-Purpose:: Home Base
 Region:: Necluda
 

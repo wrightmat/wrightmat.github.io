@@ -8,5 +8,5 @@ Type: Minor
 Sexuality: Heterosexual
 Relationships: "[[Bedoli]] (sister)"
 ---
-#npc 
+#npc [[Fokka Knights]]
 

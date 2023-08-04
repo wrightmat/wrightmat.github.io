@@ -14,7 +14,7 @@ Random tremors all around the region, but specifically focused around the Akkala
 	- [[Akkala Citadel Town]]
 	- [[Tarrey Town]]
 * [[Deep Akkala]]
-	- [[Akkala Ancient Tech Lab]]
+	- [[Akkala Research Lab]]
 	- [[East Akkala Stable]]
 * [[Akkala Sea]]
 	- [[Lomei Castle Island]]

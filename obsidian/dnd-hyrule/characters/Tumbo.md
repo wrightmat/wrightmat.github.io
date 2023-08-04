@@ -6,7 +6,11 @@ Location: Zora's Domain
 Occupation: Traveling Fisherman
 Type: Minor
 Sexuality: Heterosexual
-Relationships: "[[Fronk]] (father), [[Keye]] (brother), Mei (deceased mother)"
+Adventure: "[[Trading Sequence]]"
+Relationships:
+  - "[[Fronk]] (father)"
+  - "[[Keye]] (brother)"
+  - "Mei (deceased mother)"
 ---
 #npc 
 

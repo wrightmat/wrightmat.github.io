@@ -6,6 +6,7 @@ Location: Tarrey Town
 Occupation: Chief Operating Officer
 Type: Major
 Sexuality: Heterosexual
+Adventure: "[[Trading Sequence]]"
 Relationships:
   - "[[Dinkson]] (husband)"
   - "[[Orson]] (son)"

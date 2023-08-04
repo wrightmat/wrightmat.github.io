@@ -7,6 +7,7 @@ Any NPC on the Great Plateau will inform the players of both the Poes in the Fog
 ### Locations
 
 - Temple of Time
+	- Rebuilt from the ruins, this temple also has a small alter in front of the Goddess Statue that depicts the Song of Time (see [[1. Central Windvane and Warp Songs]]).
 - Eastern Abbey
 - Cartography Chamber
 - Forest of Spirits

@@ -3,9 +3,9 @@ Race: Goron
 Gender: Male
 Age: Middle Aged
 Location: Goron City
-Occupation: Shop Owner (Protein Palace)
+Occupation: Shop Owner
 Relationships: "[[Offrak]] (unknown family member)"
-Comments: 
+Comments: Protein Palace
 Type: Medium
 Sexuality: Asexual
 Image: "![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d2/BotW_Aji_Model.png|200](https://static.wikia.nocookie.net/zelda_gamepedia_en/images/d/d2/BotW_Aji_Model.png)"
@@ -76,7 +76,13 @@ Aji is a Goron who runs the Protein Palace shop in Goron City. He sells a small 
 
 ### History
 
+#### Breath of the Wild
 
+Aji owns the Protein Palace, a stall which sells roasted food in Goron City.
+
+#### Tears of the Kingdom
+
+Aji can be found behind a shop that sells Sapphire. He declares that the shop is closed though, and Marbled Rock Roast is all that matters. The Sapphire is priced at 300 rupees each. After the Goron Regional Phenomena, Aji still be found behind his shop, though this time is happy to sell Sapphire. He wants to be aggressive with his store, and declares ore is half the normal price.
 
 ### DM Notes
 

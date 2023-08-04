@@ -4,7 +4,7 @@ Deep Akkala is a sub-region of the Akkala Region. It is in the north-west of the
 
 ### Locations
 
-* [[Akkala Ancient Tech Lab]]
+* [[Akkala Research Lab]]
 * [[East Akkala Stable]]
 * Spring of Power
 * Akkala Wilds

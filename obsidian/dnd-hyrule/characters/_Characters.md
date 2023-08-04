@@ -17,9 +17,9 @@ columns:
     position: 2
     skipPersist: false
     isHidden: false
-    sortIndex: -1
+    sortIndex: 1
     width: 81
-    isSorted: false
+    isSorted: true
     isSortedDesc: false
     options:
       - { label: "Gerudo", value: "Gerudo", color: "hsl(44, 95%, 90%)"}

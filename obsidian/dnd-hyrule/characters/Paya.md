@@ -11,6 +11,9 @@ Sexuality: Heterosexual
 Relationships:
   - "[[Impa]] (grandmother)"
   - "[[Purah]] (great-aunt)"
+Adventure:
+  - "[[Trading Sequence]]"
+  - "[[2. Seeking the Seekers]]"
 ---
 #npc [[Sheikah Seekers]]
 

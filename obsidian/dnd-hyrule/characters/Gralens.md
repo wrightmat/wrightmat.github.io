@@ -34,7 +34,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-
+Captain Gralens is the head of the military forces at Akkala Citadel, where he moved to (along with many other members of the Monster Control Crews) when it was first re-established.
 
 
 > [!column] Traits
@@ -73,7 +73,11 @@ Sexuality: Heterosexual
 
 ### History
 
+#### Tears of the Kingdom
 
+Gralens is the head of the Monster-Control Crew and runs the team along with its members, Flaxel, Landi, and Derbos. Their primary mission is to hunt down monsters that have been running around since the Upheaval.
+
+Later in the game, Gralens can be found in the Emergency Shelter below Lookout Landing.
 
 ### DM Notes
 

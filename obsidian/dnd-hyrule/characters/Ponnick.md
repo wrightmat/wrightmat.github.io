@@ -2,7 +2,7 @@
 Race: Hylian
 Gender: Male
 Age: Older Adult
-Location: Akkala Ancient Tech Lab
+Location: Akkala Research Lab
 Occupation: Researcher
 Type: Minor
 Sexuality: Heterosexual

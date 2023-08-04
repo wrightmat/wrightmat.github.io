@@ -7,7 +7,6 @@ Location:
   - Crenel Hills
 Adventure: "[[1. Lord and Killer]]"
 Occupation: Noble
-Comments: 
 Type: Major
 Sexuality: Heterosexual
 ---

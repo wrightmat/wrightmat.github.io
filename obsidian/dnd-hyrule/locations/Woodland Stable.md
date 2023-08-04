@@ -2,6 +2,8 @@
 
 The primary animal tended here is the donkey, which travelers often buy or rent in order to explore the wilder areas of Eldin such as Death Mountain and Great Hyrule Forest.
 
+A poster on an inside wall depicts the notes to "Saria's Song" (see [[1. Central Windvane and Warp Songs]]).
+
 Primary-Purpose:: Donkeys
 Region:: Eldin
 

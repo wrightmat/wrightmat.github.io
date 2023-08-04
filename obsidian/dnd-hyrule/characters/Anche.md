@@ -37,7 +37,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-
+Anche guards the Northern Ice House where she's been posted for decades.
 
 
 > [!column] Traits
@@ -76,7 +76,9 @@ Sexuality: Heterosexual
 
 ### History
 
+#### Breath of the Wild
 
+Anche is a Gerudo woman who works as a guard where she is in charge of protecting the Northern Icehouse. The icehouse is used to store ice that was brought down from the Gerudo Highlands. Anche can be found protecting the icehouse where it is only open during the daytime. During the evening hours, Anche can be seen sleeping on the bed, right near the entrance. She mumbles that her work is done for the day and that you should come back tomorrow if you need anything.
 
 ### DM Notes
 

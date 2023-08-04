@@ -8,7 +8,7 @@ Type: Minor
 Sexuality: Heterosexual
 Relationships: "[[Laissa]] (sister)"
 ---
-#npc 
+#npc [[Fokka Knights]]
 
 > [!infobox]
 > # `=this.file.name`

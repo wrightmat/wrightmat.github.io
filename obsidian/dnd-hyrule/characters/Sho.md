@@ -3,7 +3,7 @@ Race: Hylian
 Gender: Male
 Age: Middle Aged
 Location: Rito Village
-Occupation: null
+Occupation: Entomologist
 Type: Minor
 Sexuality: Heterosexual
 ---

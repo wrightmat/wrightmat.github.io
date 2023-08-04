@@ -4,7 +4,7 @@ Located in the center of the Hebra Mountains, between the East Summit and Hebra 
 
 Selmie, who used to live in the lone cabin, now resides in a different log cabin further down the mountain and closer to Rito Village, known as the Hebra Trailhead Lodge. She still challenges willing participants with Shield Surfing Challenges, as well as providing guide services for a price. She is reticent to talk about her experiences with the Rito knights and wants to just move on with her life.
 
-While Rito Village has opened up more to non-Rito, Hebra Village has a strict Rito-only policy. The very knights who originally founded the village, known as the Fokka Order, protect the village form outsiders.
+While Rito Village has opened up more to non-Rito, Hebra Village has a strict Rito-only policy. The very knights who originally founded the village, known as the Fokka Order, protect the village from outsiders.
 
 ### Locations
 

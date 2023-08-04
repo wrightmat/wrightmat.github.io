@@ -3,12 +3,12 @@ Race: Hylian
 Gender: Female
 Age: Elderly
 Location: Hateno Town
-Occupation: Shop Owner (East Wind)
+Occupation: Shop Owner
 Relationships:
   - "[[Ivee]] (daughter)"
   - "[[Azu]] (son)"
   - Pruce (deceased husband)
-Comments: 
+Comments: East Wind
 Type: Medium
 Sexuality: Heterosexual
 ---
@@ -39,7 +39,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-
+Amira runs the East Wind general store, where she's lived and worked for several decades. She spends most of her time gossiping with her friend Nikki, and resents anyone who enters the store looking to buy things.
 
 
 > [!column] Traits
@@ -78,7 +78,9 @@ Sexuality: Heterosexual
 
 ### History
 
+#### Breath of the Wild
 
+Amira is a resident of Hateno Village where she lives with her husband Pruce, daughter Ivee, and son Azu. The family owns the General Store, the East Wind, and they sleep in the beds located in the store's second story. Amira is rather unfriendly, always annoyed when Link tries to talk to her and is always gossiping with her friend Nikki.
 
 ### DM Notes
 

@@ -5,7 +5,7 @@ Age: Elderly
 Location:
   - Hateno Town
   - Hateno School House
-  - Hateno Ancient Tech Lab
+  - Hateno Research Lab
 Occupation: School Principal
 Comments: Hateno School House
 Type: Medium

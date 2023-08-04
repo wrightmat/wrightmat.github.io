@@ -171,7 +171,5 @@ The PCs created the first cannon Spelljammer in the Eberron setting, but in the 
 ### References
 
 * https://keith-baker.com/dm-eberron-spelljammer/
-
 * [https://fiftheditiondndgame.obsidianportal.com/wikis/ship-combat](https://fiftheditiondndgame.obsidianportal.com/wikis/ship-combat)
-
 * Critical Effects: *Stars Without Number*

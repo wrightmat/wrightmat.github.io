@@ -6,7 +6,7 @@ Found in the fairly peaceful region far to the east of Central Hyrule, Hateno wa
 
 ### Locations
 
-* [[Hateno Ancient Tech Lab]]
+* [[Hateno Research Lab]]
 - Fort Hateno
 - Hateno Cemetery
 	- Location just west of Robred Dropoff, where a group of small statues exist. A new mausoleum has been build into the cliff face.
@@ -16,6 +16,7 @@ Found in the fairly peaceful region far to the east of Central Hyrule, Hateno wa
 	- The area bordered by Lake Jarrah, Fir River, and Camphor Pond has been flooded so it can be used to grow rice. Ginner and Midla Woods now serve as a large orchard. The remaining Ovli Plain area is now fields where a variety of crops are grown.
 - Hateno School House
 	- The school house has more than quadrupled in size since it was started, and it now houses four classrooms, as well as a kitchen, study space, and office for the teachers and principal. 
+	- On the wall is a poster with a musical scale and instructions on how to read music, as well as an ocarina and how to play particular notes. The notes depicted in the example are to the "Sun's Song" (see [[1. Central Windvane and Warp Songs]])
 - East Wind, a general store
 	- Heart Potion (20 rupees)
 	- Revitalizing Potion (50 rupees)

@@ -1,4 +1,4 @@
-#npc [[Vult (Shavarath)]]
+#npc [[Vult (Shavarath)]] [[The Endless]]
 
 Gender:: Male
 Race:: Endless

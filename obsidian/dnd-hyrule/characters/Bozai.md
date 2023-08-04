@@ -1,9 +1,11 @@
 ---
 Race: Hylian
 Gender: Male
-Age: Elderly
+Age: Older Adult
+Occupation: Shop Owner
 Location: Kara Kara Bazaar
-Type: Minor
+Comments: Bozai's Rug Shop
+Type: Medium
 Sexuality: Heterosexual
 ---
 #npc 
@@ -33,7 +35,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-
+After tiring of hanging around Gerudo Town and not being able to get in, Bozai eventually settled down nearby in Kara Kara Bazaar. He opened a merchant tent, in fact the first new tent there in many years, where he peddled hand-made rugs.
 
 
 > [!column] Traits

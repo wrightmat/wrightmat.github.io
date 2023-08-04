@@ -47,7 +47,7 @@
     },
     {
       "id": "surface-map",
-      "lastAccessed": 1689049815357,
+      "lastAccessed": 1690676422126,
       "markers": [
         {
           "id": "ID_99791b5808bb",
@@ -515,7 +515,7 @@
             -75.75894014501687,
             33.75000000000001
           ],
-          "link": "3. Great Fairy Malanya",
+          "link": "3. Horse Fairy Malanya",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
           "mutable": true,
           "command": false,
@@ -767,8 +767,8 @@
           "id": "ID_fba9a89ba8b9",
           "type": "Adventure",
           "loc": [
-            73.60299628304274,
-            84.90234375000001
+            72.0739114882038,
+            82.00195312500001
           ],
           "link": "6. Temple of the Volcano God",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
@@ -1022,8 +1022,8 @@
           "id": "ID_797808194aca",
           "type": "Fountain",
           "loc": [
-            -59.31076795603884,
-            -89.912109375
+            -59.355596110016315,
+            -89.47265625
           ],
           "link": "8. Great Fairy Tera",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
@@ -1690,6 +1690,125 @@
           ],
           "link": "Ancient Waterworks",
           "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_a9c989dbc91a",
+          "type": "Adventure",
+          "loc": [
+            52.696361078274485,
+            -96.59179687500001
+          ],
+          "link": "7. River Rapids Course",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_09181a886afa",
+          "type": "Adventure",
+          "loc": [
+            62.22699603631975,
+            -45.70312500000001
+          ],
+          "link": "7. Snowball Bowling",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_ea098a486998",
+          "type": "Adventure",
+          "loc": [
+            -76.01609366420996,
+            177.5390625
+          ],
+          "link": "2. Seabed City and the Ruinous Trench",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_1b2a18c8591b",
+          "type": "Adventure",
+          "loc": [
+            -50.569282865582416,
+            105.38085937500001
+          ],
+          "link": "2. Evil Waves of Grain",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_ca3b0b3baa1b",
+          "type": "Adventure",
+          "loc": [
+            -62.75472592723178,
+            -90.35156250000001
+          ],
+          "link": "8. Bazaar Chase",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_5a680a192a89",
+          "type": "Adventure",
+          "loc": [
+            -45.398449976304086,
+            -118.03710937500001
+          ],
+          "link": "8. The Child of Legend",
+          "layer": "https%3A%2F%2Fwrightmat.github.io%2Fobsidian%2Fmap%2Fhyrule-surface%2F%7Bz%7D-%7Bx%7D-%7By%7D.png",
+          "mutable": true,
+          "command": false,
+          "percent": null,
+          "description": null,
+          "minZoom": 1,
+          "maxZoom": null,
+          "tooltip": "hover"
+        },
+        {
+          "id": "ID_a869cbb81bd9",
+          "type": "Adventure",
+          "loc": [
+            57.89149735271034,
+            -35.59570312500001
+          ],
+          "link": "7. The Danger at Dusk",
+          "layer": "https://wrightmat.github.io/obsidian/map/hyrule-surface/{z}-{x}-{y}.png",
           "mutable": true,
           "command": false,
           "percent": null,

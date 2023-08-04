@@ -9,6 +9,7 @@ The Ring Ruins, and all other debris that had hit Kakariko, are gone. The Zonai 
 ### Locations
 
 - Seeker Hall
+	- On the wall is a poster depicting the Sheikah Seekers symbol and the notes to the "Nocturne of Shadow" (see [[1. Central Windvane and Warp Songs]]).
 - Great Fairy Fountain
 - High Spirits Produce, a general store
 - The Curious Quiver, a weapons shop

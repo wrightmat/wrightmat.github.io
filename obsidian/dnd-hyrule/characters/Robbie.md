@@ -1,7 +1,7 @@
 ---
 Race: Hylian
 Gender: Male
-Location: Akkala Ancient Tech Lab
+Location: Akkala Research Lab
 Occupation: Research Assistant
 Comments: Robbie's personality is inside of Cherry
 Type: Major

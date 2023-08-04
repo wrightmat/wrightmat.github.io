@@ -7,5 +7,5 @@ Occupation: Guard
 Type: Minor
 Sexuality: Homosexual
 ---
-#npc 
+#npc [[Fokka Knights]]
 

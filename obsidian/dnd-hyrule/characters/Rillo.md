@@ -1,5 +1,5 @@
 ---
-Race: Zora
+Race: Rito
 Gender: Male
 Age: Young Adult
 Location: Serenne Stable

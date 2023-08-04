@@ -1,5 +1,7 @@
 #mechanic #reference
 
+### Steps
+
 - Use an appropriate map to determine the distance between travel points.
     - Eberron world map: [https://eberronmap.johnarcadian.com/](https://eberronmap.johnarcadian.com/)
 - Determine the number of days of travel (rounded down) based on the mode of travel (24 miles per day while on foot, 48 miles per day by horse, 80 miles per day by average ship).
@@ -17,6 +19,8 @@
 - When they arrive at the destination, do the description of that area. Also remove the amount of gold necessary for rations over the number of days traveled. 5 sp per day per creature (including mounts).
     - Example: Party travels for a total of a week, on horseback, to get to a destination (consuming 14 rations along the way). Upon arrival, each player removes 70 sp (7 gp)
 
+### Travel Encounters
+
 | Travel Situation                      | Example                                | Random Encounter |
 | ------------------------------------- | -------------------------------------- | ---------------- |
 | Safe route, low danger environment    | Main road, with very few monsters      | 20+              |
@@ -25,16 +29,22 @@
 | Dangerous route                       | Deep forest, high mountain, etc.       | 12+              |
 ^travel-situation
 
-* Initial attitude of any encounter can be determined by rolling 2d6 and comparing the result to the table below. Certain encounters may include initial attitude modifiers to be added or subtracted from the roll to screw it toward a more logical result (for example, a -3 for an evil creature so they're never friendly to the party)
-| 2d6   | Initial Attitude | Explanation                                                |
-| ----- | ---------------- | ---------------------------------------------------------- |
+### Initial Attitude
+
+Initial attitude of any encounter can be determined by rolling 2d6 and comparing the result to the table below. Certain encounters may include initial attitude modifiers to be added or subtracted from the roll to screw it toward a more logical result (for example, a -3 for an evil creature so they're never friendly to the party)
+
+| 2d6 | Initial Attitude | Explanation                                                |
+| --- | ---------------- | ---------------------------------------------------------- |
 | 1-3 | Hostile          | Attacks as soon as possible                                |
 | 4-6 | Unfriendly       | Unsure or wary of the party, but doesn't attack unprovoked |
 | 7-9 | Indifferent      | Ignores the party unless directly interacted with          |
-| 10+  | Friendly         | May approach the party in a helpful manner                 |
+| 10+ | Friendly         | May approach the party in a helpful manner                 |
 ^travel-initial-attitude
 
-* Examples of modifiers based on monster or NPC alignment are below, but initial attitude modifiers could be based on other things as well.
+### Initial Attitude Modifiers (Optional)
+
+Examples of modifiers based on monster or NPC alignment are below, but initial attitude modifiers could be based on other things as well.
+
 | Alignment           | Modifier |
 | ------------------- | -------- |
 | Lawful Good         | +4       |

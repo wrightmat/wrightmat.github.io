@@ -1,13 +1,5 @@
 
-#### Likely 7/13/23 (next time on the ship after Sypheros)
-
-Windsor has a dream, where he sees a thin man with bone-white skin and black hair standing in the center of a vast ocean of shifting deep dark blue sands (Dream), who turns and addresses him:
-
->I helped you, you know. I brought the person of your dreams right to your proverbial doorstep, and you have yet to thank me. But don't worry. There's still time. I see you getting closer and closer, and when you finally arrive you can repay your debt in person. I helped you, and now you can help me.
-
-This is a dream, so Windsor won't get a conversation, and the dream will end abruptly.
-
-#### Likely 7/20/23 (next time on the ship after Aryth)
+#### Likely 8/17/23 (next time on the ship after Vult/Shavarath)
 
 Astra has a vision while sleeping. She sees a thin man with bone-white skin and black hair standing in the center of a vast ocean of shifting deep dark blue sands (Dream), who turns and addresses them:
 
@@ -20,7 +12,7 @@ Astra can speak freely, as this is more of a vision than a true dream (since Ast
 * May learn that Dream is the eldest sibling of the other rulers of the planes they've met, and they're collectively known as The Endless.
 * Will not learn anything of real substance concerning Dream's plans, but if prodding enough will know that they can't be good for Eberron.
 
-#### Likely 7/27/23 (next time on the ship after Vult)
+#### Likely 8/24/23 (sometime within The Void)
 
 Adara has a dream, where she's floating in wildspace, but has no problem breathing or moving about.
 

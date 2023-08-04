@@ -6,6 +6,7 @@ Location: Dueling Peaks Stable
 Occupation: Stable Owner
 Type: Major
 Sexuality: Heterosexual
+Adventure: "[[Trading Sequence]]"
 Relationships:
   - "[[Darton]] (nephew)"
   - "[[Shibo]] (nephew)"

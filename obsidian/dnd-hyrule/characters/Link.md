@@ -7,7 +7,7 @@ Occupation: King of Hyrule
 Type: Major
 Sexuality: Heterosexual
 Relationships:
-  - Zelda (wife)
+  - Queen Zelda (deceased wife)
   - Zelda (daughter)
 ---
 #npc 

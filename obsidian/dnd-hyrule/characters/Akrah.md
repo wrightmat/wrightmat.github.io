@@ -2,7 +2,7 @@
 Race: Hylian
 Gender: Male
 Age: Elderly
-Location: Hateno Ancient Tech Lab
+Location: Hateno Research Lab
 Occupation: Researcher
 Relationships:
   - "[[Garshon]] (Brother)"
@@ -37,7 +37,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-Akrah and his brothers speculated about and studied Leviathan Bones in the time of the Calamity.
+Akrah, along with his brothers, have been discussing legendary and interesting things since the time of the Calamity. Now he's dedicated his sharp mind to the research going on at the Hateno Research Lab.
 
 
 > [!column] Traits
@@ -76,7 +76,13 @@ Akrah and his brothers speculated about and studied Leviathan Bones in the time 
 
 ### History
 
+#### Tears of the Kingdom
 
+Akrah can be found at the New Serenne Stable, arguing with his brother Onya. Akrah doesn't believe in legendary things like his brother Onya, and considers them to be nothing more than stories. He does believe in rumors, however, and wants to chase after a beast he has heard rumors of. Akrah is also the brother of Garshon, who can be found sitting outside, sick of listening to his brothers argue.
+
+#### Breath of the Wild
+
+Akrah is one of three Hylians who can be found at Serenne Stable debating the cause of the Leviathans' extinction, the other two being his brothers Onya and Garshon. He theorizes that the Leviathans went extinct to a volcanic eruption. However, while of the three scientists have been able to locate any Leviathan Bones, they do have an idea of where to find them. Akrah will ask Link if he's willing to travel to these locations to find the bones and return with a Picture.
 
 ### DM Notes
 

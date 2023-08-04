@@ -73,7 +73,11 @@ Addison is a construction worker for Hudson Construction who has been an enthusi
 
 ### History
 
+#### Tears of the Kingdom
 
+Addison has been tasked to put up signs throughout Hyrule. The signs are in regards to President Hudson, founder of Hudson Construction. Hudson has been appointed by Princess Zelda to put building material caches everywhere.
+
+Addison has much admiration for Hudson and has pledged his support to him. However, Addison seems unable to get the signs to stick in the ground, so he just stands there, holding them up. When Link suggests just letting go of the sign, Addison is thrown off by the suggestion, implying that Link doesn't support Hudson.
 
 ### DM Notes
 

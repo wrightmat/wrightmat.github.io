@@ -38,7 +38,7 @@ Image: "![https://static.wikia.nocookie.net/zelda_gamepedia_en/images/6/62/TotK_
 > `=this.Comments`
 
 
-Aaqlet is a Gerudo woman who lives in Gerudo Town. She is the daughter of the Gerudo Perda and the Hylian Wabbin.
+Aaqlet is a Gerudo woman who lives in Gerudo Town and works as a soldier. She is the daughter of the Gerudo Perda and the Hylian Wabbin, who now live in Hyrule Castle Town.
 
 
 > [!column] Traits
@@ -77,7 +77,9 @@ Aaqlet is a Gerudo woman who lives in Gerudo Town. She is the daughter of the Ge
 
 ### History
 
+#### Tears of the Kingdom
 
+Aaqlet is a character found in Tears of the Kingdom. She is the daughter of Perda, a worker at the Gerudo Secret Club. She can usually be found in the shelter's inn looking at a secret map, which shows where the Gerudo Secret Club is. Her dad, Wabbin, can be found in the jail and watches Aaqlet walk by every morning and evening.
 
 ### DM Notes
 

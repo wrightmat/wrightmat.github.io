@@ -34,7 +34,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-Character Text.
+Aja has been in the Central Region since the Upheaval, where he was training as a solder at Lookout Landing. As Hyrule Castle Town rebuilt, Aja became one of the first soldiers stationed to protect it.
 
 
 > [!column] Traits
@@ -73,7 +73,9 @@ Character Text.
 
 ### History
 
+#### Tears of the Kingdom
 
+Aja can be seen practicing his sword fighting in Lookout Landing. He'll comment that just because a weapon has Decayed, doesn't make it useless.
 
 ### DM Notes
 

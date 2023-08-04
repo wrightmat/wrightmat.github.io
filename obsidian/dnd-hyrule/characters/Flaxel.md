@@ -36,7 +36,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-
+Lieutenant Flaxel is the primary trainer for all the soldiers at Akkala Citadel. Her experience on the Monster Control Crews during the Upheaval led her to Akkala Citadel when word started to spread that the Citadel was being rebuilt and repopulated. She was one of the first new soliders to move in, and with her berth of experience, she was immediately promoted.
 
 
 > [!column] Traits
@@ -75,7 +75,13 @@ Sexuality: Heterosexual
 
 ### History
 
+#### Breath of the Wild
 
+Flaxel traveler who sticks together with her four friends, Sesami, Canolo, Oliff, and Palme. Flaxel can be seen wielding a Traveler's Sword and a Hunter's Shield. Initially she gets attacked by some Blue Bokoblins, along with several of her friends near the Koukot Plateau. However, after she is rescued, she will appear at the Gerudo Canyon Stable. She can be found sitting beside the Cooking Pot. When spoken to, she will comment that while she initially upset with Sesami for abandoning her, she realizes he was just scared and that she can't stay mad at him.
+
+#### Tears of the Kingdom
+
+Flaxel can initially be found at Lookout Landing where she is a member of the Monster-Control Crew. She then leads Flaxel's Squad in Bring Peace to Faron! (first) and Bring Peace to Hebra! (after the former quest is completed).
 
 ### DM Notes
 

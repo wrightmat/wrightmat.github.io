@@ -2,7 +2,7 @@
 
 ![https://static0.gamerantimages.com/wordpress/wp-content/uploads/2020/12/breath-of-the-wild-mod-renovates-hyrule-castle.jpg?q=50&fit=contain&w=1140&h=&dpr=1.5|800](https://static0.gamerantimages.com/wordpress/wp-content/uploads/2020/12/breath-of-the-wild-mod-renovates-hyrule-castle.jpg?q=50&fit=contain&w=1140&h=&dpr=1.5)
 
-At the far north end of Castle Town is the castle itself. A large drawbridge over a wide river leads to the castle's gaping entrance. Guards are stationed outside and throughout the castle, demonstrating that the castle is no place to mess around while also feeling welcoming.
+At the far north end of Castle Town is the castle itself. A large drawbridge over a wide river leads to the castle's gaping entrance. Guards are stationed outside and throughout the castle, demonstrating that the castle is no place to mess around, while also feeling welcoming. Princess Zelda and King Link are the only full-time residents of the Castle, along with the guards who protect them, and the staff who serve them.
 
 ### Locations
 
@@ -18,7 +18,7 @@ At the far north end of Castle Town is the castle itself. A large drawbridge ove
 * Zelda's Room and Study
 * Sanctum (Throne Room)
 * Library
-* King's Study and Armory
+* King's Room and Armory
 * Docks
 
 ![https://i.imgur.com/QuB1Ns0.jpeg](https://i.imgur.com/QuB1Ns0.jpeg)

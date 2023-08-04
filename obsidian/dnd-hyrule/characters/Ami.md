@@ -3,7 +3,7 @@ Race: Hylian
 Gender: Male
 Age: Middle Aged
 Location: Hyrule Castle Town
-Occupation: null
+Occupation: 
 Relationships:
   - "[[Izra]] (elder brother)"
   - "[[Yolero]] (elder brother)"
@@ -76,7 +76,9 @@ Sexuality: Heterosexual
 
 ### History
 
+#### Breath of the Wild
 
+Ami is a child who lives at the Wetland Stable on the edge of the Lanayru Wetlands. His brother Izra will direct Link to him for directions, stating it is great to have a little brother who pulls his weight. During the day, Ami can be found watching Yolero practice with his "Master Torch" by the Cooking Pot. If it rains, Ami will seek shelter in the Stable. At night, he sleeps in one of the Beds inside.
 
 ### DM Notes
 

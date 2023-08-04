@@ -11,6 +11,7 @@ This is inspired by Mabe Village from Link's Awakening, Kakariko from Link to th
 - General Store
 - Fortune Teller
 - Milk Bar and Inn
+- The Trendy Tailor
 - Hylia Sanctuary
 
 ### Characters

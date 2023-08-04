@@ -4,6 +4,8 @@ The stables are a place where people can go to have a drink or meal and escape t
 
 >You've been told that the Highland Stable is a place where adventurers can find work and avoid the hassle associated with other places in Hyrule. In fact, the notice board outside is often full of requests for jobs. As you enter the stable, this would appear to be true. A number of nondescript individuals are seated at tables around the establishment, but one shorter than usual Gerudo in the corner grabs your attention - after all, Gerudo in this area of the world are exceedingly rare.
 
+A poster on an inside wall depicts the notes to the "Minuet of Forest" (see [[1. Central Windvane and Warp Songs]]).
+
 Primary-Purpose:: Cows
 Region:: Faron
 

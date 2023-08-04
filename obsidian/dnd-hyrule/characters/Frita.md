@@ -1,16 +1,17 @@
 ---
 Race: Rito
 Gender: Female
-Age: Older Adult
+Age: Adult
 Location:
   - Hyrule Castle Town
   - Outskirt Stable
   - Kara Kara Bazaar
   - Gerudo Town
   - Tabantha Bridge Stable
-Occupation: Traveler
+Occupation: Traveler Merchant and Tailor
 Type: Minor
 Sexuality: Heterosexual
+Adventure: "[[Trading Sequence]]"
 ---
 #npc 
 

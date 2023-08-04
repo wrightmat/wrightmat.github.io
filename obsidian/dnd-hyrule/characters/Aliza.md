@@ -3,7 +3,10 @@ Race: Hylian
 Gender: Female
 Age: Elderly
 Location: Windvane Village
-Occupation: Tailor
+Occupation:
+  - Shop Owner
+  - Tailor
+Comments: The Trendy Tailor
 Type: Medium
 Sexuality: Heterosexual
 ---
@@ -34,7 +37,7 @@ Sexuality: Heterosexual
 > `=this.Comments`
 
 
-
+Aliza learned to sew out of necessity when she was kidnapped by the Yiga Clan many years ago, but she ended up liking it so much that she kept up the craft. She moved to Hyrule Castle Town when it started to develop, and had a small merchant tent where she sold her services. When a small group of people decided to move away from Hyrule Castle Town and settle a new village, Aliza decided to go with them and open a real shop.
 
 
 > [!column] Traits
@@ -73,7 +76,13 @@ Sexuality: Heterosexual
 
 ### History
 
+#### Tears of the Kingdom
 
+Having become a dedicated follower of Cece-Brand fashion, Aliza is kidnapped by the Yiga Clan's Maritta Branch and forced to make Yiga Tights for them. Despite becoming a fashionista, she had no idea how to make clothes and had to learn to sew "on the job". She is irrationally convinced that, as a pretty girl, she will inevitably be saved by The Hero.
+
+#### Breath of the Wild
+
+Aliza is a Hylian who can be found at Outskirt Stable. Talking to her triggers the side quest My Hero, as she wants to meet the legendary hero. Showing her the Master Sword causes her to acknowledge Link as the hero and give him a Star Fragment.
 
 ### DM Notes
 

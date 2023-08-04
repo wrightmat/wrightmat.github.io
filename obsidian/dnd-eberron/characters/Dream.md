@@ -1,4 +1,4 @@
-#npc [[Crya (Dal Quor)]]
+#npc [[Crya (Dal Quor)]] [[The Endless]]
 
 Gender:: Male
 Race:: Endless
@@ -9,3 +9,7 @@ Dream appears as a tall, thin man with bone-white skin, black hair, and two dist
 
 **Played By;** Tom Sturridge
 ![https://d.newsweek.com/en/full/2088866/sandman.jpg?w=790&f=92139f6cd3604f8d1c656d5eb494e0f2](https://d.newsweek.com/en/full/2088866/sandman.jpg?w=790&f=92139f6cd3604f8d1c656d5eb494e0f2)
+
+### Quotes
+
+>A Nightmare's purpose is to reveal a dreamer's fears, that they may face them

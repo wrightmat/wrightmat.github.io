@@ -3,9 +3,10 @@ Race: Hylian
 Gender: Female
 Age: Middle Aged
 Location: Hateno Town
-Occupation: Greeter
+Occupation: Dancer
 Type: Minor
 Sexuality: Heterosexual
+Comments: Zephyr Tavern
 Relationships:
   - "[[Medda]] (father)"
   - "Unnamed mother"

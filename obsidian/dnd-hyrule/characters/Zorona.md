@@ -3,10 +3,11 @@ Race: Hylian
 Gender: Male
 Age: Older Adult
 Location: Goron City
-Occupation: null
+Occupation: Traveling Artist
 Type: Minor
 Sexuality: Heterosexual
+Adventure: "[[Trading Sequence]]"
 ---
 #npc 
 
-Self-described Mystery Buff
+Self-described Mystery Buff and Traveling Artist.

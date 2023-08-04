@@ -1,4 +1,4 @@
-#npc [[Lharvion (Xoriat)]]
+#npc [[Lharvion (Xoriat)]] [[The Endless]]
 
 Gender:: Female
 Race:: Endless

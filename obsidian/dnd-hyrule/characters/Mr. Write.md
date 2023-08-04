@@ -5,7 +5,8 @@ Age: Young Adult
 Location: Hateno Town
 Occupation: Writer
 Type: Medium
-Sexuality: Heterosexual
+Sexuality: Homosexual
+Adventure: "[[Trading Sequence]]"
 ---
 #npc 
 

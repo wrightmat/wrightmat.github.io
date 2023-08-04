@@ -6,6 +6,7 @@ Location: Akkala Citadel Town
 Occupation: Soldier
 Type: Minor
 Sexuality: Heterosexual
+Adventure: "[[Trading Sequence]]"
 Relationships:
   - "[[Kyra]] (wife)"
   - "[[Tisam]] (daughter)"

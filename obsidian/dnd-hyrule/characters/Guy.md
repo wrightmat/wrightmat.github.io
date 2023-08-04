@@ -10,7 +10,7 @@ Relationships:
   - "[[Misa]] (wife)"
   - "[[Fyson]] (son)"
 ---
-#npc 
+#npc [[Fokka Knights]]
 
 > [!infobox]
 > # `=this.file.name`

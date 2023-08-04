@@ -87,4 +87,4 @@ At any time they can decide to backtrack though, and return to any previous loca
 
 ### References
 
-[https://www.reddit.com/r/Eberron/comments/xo4fwd/map_of_eberrons_moons_and_time_to_travel_both/](https://www.reddit.com/r/Eberron/comments/xo4fwd/map_of_eberrons_moons_and_time_to_travel_both/)
+* [https://www.reddit.com/r/Eberron/comments/xo4fwd/map_of_eberrons_moons_and_time_to_travel_both/](https://www.reddit.com/r/Eberron/comments/xo4fwd/map_of_eberrons_moons_and_time_to_travel_both/)
