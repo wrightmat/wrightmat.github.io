@@ -1,9 +1,0 @@
-#npc [[Eyre (Fernia)]]
-
-Gender:: Female
-Occupation:: Sculptor
-Race:: Dao
-
-Naja Ash sculpts fire, producing masterful artifacts and tools that channel or produce flame. She creates the majority of the azer, and she can create other elemental creatures, constructs, or unique blends between the two concepts. She’s the foremost expert on elemental binding in the multiverse, though it would take a great deal to convince her to share her knowledge with mortals.
-
-![https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b944f861-a67b-425d-81f7-11a66dfe55c4/de7j2io-342e286d-091e-4b34-81b6-49a4e4fd063d.jpg/v1/fill/w_816,h_979,q_70,strp/shaitan___dao_girl_by_glabrex_de7j2io-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTIwMCIsInBhdGgiOiJcL2ZcL2I5NDRmODYxLWE2N2ItNDI1ZC04MWY3LTExYTY2ZGZlNTVjNFwvZGU3ajJpby0zNDJlMjg2ZC0wOTFlLTRiMzQtODFiNi00OWE0ZTRmZDA2M2QuanBnIiwid2lkdGgiOiI8PTEwMDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.EVzVNtZat5OaHOaRxtmw__uxbd8M1qRc7-O6r99esbQ](https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b944f861-a67b-425d-81f7-11a66dfe55c4/de7j2io-342e286d-091e-4b34-81b6-49a4e4fd063d.jpg/v1/fill/w_816,h_979,q_70,strp/shaitan___dao_girl_by_glabrex_de7j2io-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTIwMCIsInBhdGgiOiJcL2ZcL2I5NDRmODYxLWE2N2ItNDI1ZC04MWY3LTExYTY2ZGZlNTVjNFwvZGU3ajJpby0zNDJlMjg2ZC0wOTFlLTRiMzQtODFiNi00OWE0ZTRmZDA2M2QuanBnIiwid2lkdGgiOiI8PTEwMDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.EVzVNtZat5OaHOaRxtmw__uxbd8M1qRc7-O6r99esbQ)
