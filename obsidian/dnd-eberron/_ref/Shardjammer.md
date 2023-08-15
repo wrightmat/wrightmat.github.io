@@ -110,7 +110,7 @@ When an attack against a spelljammer is a critical hit, or when a spelljammer ta
 Instead of the rules in the Astral Adventurer’s Guide, consider adopting the following methods of repairing spelljammer ships and weapons:
 
 - Repairing 5 hit point of damage to a berthed ship takes 1 hour and costs 10 gp for materials and labor. Damage to shipboard weapons can be repaired just as quickly and at the same cost.
-- Casting mending on a damaged ship or shipboard weapon restores 5 hit points to the target. The target can regain up to a maximum of 50 hit points in this way, after which it cannot regain any more hit points from the mending spell until it has first been fully repaired and regained all its hit points.
+- Casting *mending* on a damaged ship or shipboard weapon restores 5 hit points to the target. The target can regain up to a maximum of 50 hit points in this way, after which it cannot regain any more hit points from the *mending* spell until it has first been fully repaired and regained all its hit points.
 
 **Ships at Zero Hit Points and Breaking Apart**
 

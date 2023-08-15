@@ -18,6 +18,9 @@ damage_immunities: fire
 senses: darkvision 120 ft. passive Perception 14
 languages: --
 cr: 2
+traits:
+  - name: Death Burst.
+    desc: "When the dodongo dies, it explodes with a fiery, concussive burst. Each creature within 5 feet of it must make a DC 11 Dexterity saving throw, taking 3 (1d6) fire damage and 3 (1d6) thunder damage on a failed save, or half as much on a successful one."
 actions:
   - name: Bite.
     desc: "Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 17 (4d6 + 3) piercing damage."

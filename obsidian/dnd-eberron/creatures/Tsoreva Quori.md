@@ -11,7 +11,7 @@ type: Aberration
 alignment: Lawful Evil
 ac: 16
 hp: 120
-hit_dice: (16d8 + 48)
+hit_dice: 16d8 + 48
 speed: 30 ft., fly 40 ft.
 stats: [17, 15, 16, 14, 16, 16]
 saves:

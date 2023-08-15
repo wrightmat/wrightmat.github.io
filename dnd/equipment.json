@@ -458,5 +458,60 @@ equipment = [
 		"rarity": {
 			"name": "Rare"
 		},
+	},
+	{
+		"index": "last-stand-armor",
+		"name": "Last Stand Armor",
+		"image": "https://gameoutonline.com/wp-content/uploads/2023/07/Last-Stand-Armor-in-DnD-5e-1-e1688206534342.jpg",
+		"desc": [
+			"Armor (any), very rare",
+			"You have a +1 bonus to AC while wearing this armor, which shimmers softly.",
+			"If you die while wearing the armor, it is destroyed, and each celestial, fey, and fiend with 30 feet of you must succeed on a DC 15 Charisma saving throw or be banished to its home plane of existence, unless it is already there."
+		],
+		"equipment_category": {
+			"index": "armor",
+			"name": "Armor",
+			"url": "/api/equipment-categories/armor"
+		},
+		"rarity": {
+			"name": "Very Rare"
+		},
+	},
+	{
+		"index": "sword-of-destruction",
+		"name": "Sword of Destruction",
+		"image": "https://static.wikia.nocookie.net/dxdfanon/images/d/d4/Vorpal.jpg/revision/latest?cb=20150806155216",
+		"equipment_category": {
+			"index": "weapon",
+			"name": "Weapon",
+			"url": "/api/equipment-categories/weapon"
+		},
+		"rarity": {
+			"name": "Legendary"
+		},
+		"desc": [
+			"Weapon (any sword), legendary (requires attunement)",
+			"You gain a +1 bonus to attack and damage rolls made with this magic weapon. In addition, the weapon ignores resistance to slashing damage.",
+			"When you attack a creature that has at least one head with this weapon and roll a 20 on the attack roll, you cut off one of the creature's heads. The creature dies if it can't survive without the lost head. A creature is immune to this effect if it is immune to slashing damage, doesn't have or need a head, has legendary actions, or the GM decides that the creature is too big for its head to be cut off with this weapon. Such a creature instead takes an extra 6d8 slashing damage from the hit."
+		],
+	},
+	{
+		"index": "sandmans-sand",
+		"name": "Sandman's Sand",
+		"image": "https://i.ebayimg.com/images/g/vn4AAOSw6sRjdpIe/s-l1600.jpg",
+		"desc": [
+			"Wondrous item, legendary (requires attunement)",
+			"This leather pouch of sand is said to have once belonged to a powerful creature who went by many names.",
+			"***Uses***. The pouch of sand contains 20 uses. The pouch regains 1d10 expended uses daily at dawn.",
+			"***Sleep***. While holding the pouch, you can use an action to sprinkle some sand on a creature and cast <i>sleep</i>, optionally expending an additional use to cast this spell at a higher level.<br />If the sand is used on a creature that's already sleeping, it must make a DC 15 Wisdom saving throw. On a failure, the creature has especially terrible nightmares and awakes early enough that they gain no benefits of a rest, and take 3d6 psychic damage as they awake."
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Legendary"
+		}
 	}
 ]

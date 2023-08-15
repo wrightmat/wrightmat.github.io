@@ -5,13 +5,13 @@ statblock: inline
 
 ```statblock
 image: [[https://static.wikia.nocookie.net/eberron/images/d/d6/Dream_Master_Quori.jpg/revision/latest/scale-to-width-down/350?cb=20200508212521]]
-name: Uvaspena Quori
+name: Usvapna Quori
 size: Large
 type: Aberration
 alignment: Lawful Evil
 ac: 17
 hp: 228
-hit_dice: (24d10 + 96)
+hit_dice: 24d10 + 96
 speed: 30 ft., fly 40 ft.
 stats: [18, 18, 18, 22, 18, 19]
 saves:
@@ -46,7 +46,7 @@ reactions:
 
 Dal Quor is the plane of dreams and is currently dominated by a dark power known as il-Lashtavar, or the Dreaming Dark. Il-Lashtavar is served by a host of aberrations that are the embodiments of dreams and nightmares — the quori. Because it is difficult for anything to physically travel to or from Dal Quor, quori in Eberron are typically encountered while possessing a host body. The [Inspired](https://www.dndbeyond.com/monsters/489058-inspired) are the most common type of willing host for the quori and are described earlier in this chapter.
 
-#### Uvaspena Quori
+#### Usvapna Quori
 
 Usvapnas, in their quori forms, are up to 10 feet tall, possessing a mostly humanoid torso, but with four arms ending in crab-like pincers, and a long snakelike tail. They do not have a head; instead a cloud of darkness rests where the head would normally be.
 
