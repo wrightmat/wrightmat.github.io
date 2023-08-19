@@ -3,7 +3,7 @@ import DiceBox from 'dice-box'
 const diceBox = new DiceBox("#dice-box", {
   assetPath: '/dnd/assets/dice-box/',
   theme: "default",
-  scale: 12
+  scale: 9
 })
 
 diceBox.init().then(() => {
@@ -23,6 +23,6 @@ diceBox.onRollComplete = function(rollResult) {
   var rolled = rollResult[0].qty + rollResult[0].sides;
   if ( rollResult[0].modifier > 0 ) { rolled += " + " + rollResult[0].modifier; }
   var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center' }).appendTo('#results-list');
-  $('<span>', { style: 'font-size: 8px;', html: rolled + ': ' + rolls_str}).appendTo(li);
+  $('<span>', { style: 'font-size: 10px;', html: rolled + ': ' + rolls_str}).appendTo(li);
   $('<span>', { class: 'badge badge-primary badge-pill', html: rolls_val }).appendTo(li);
 }
