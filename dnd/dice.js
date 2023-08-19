@@ -16,5 +16,5 @@ diceBox.onRollComplete = function(rollResult) {
   rollResult[0].rolls.forEach(function (item, index) {
     rolls += item.value;
   });
-  document.getElementById('pane-dice-results').innerHTML += rolls + '<br />'
+  document.getElementById('pane-dice-results').innerHTML += rollResult[0].qty + rollResult[0].sides + ': ' + rolls + '<br />'
 }
