@@ -16,8 +16,8 @@ diceBox.onRollComplete = function(rollResult) {
   console.log(rollResult);
   rollResult[0].rolls.forEach(function (item, index) {
     rolls_val += item.value;
-    //if ( rolls_str != "" ) { rolls_str += " + " }
-console.log(item.value);
+    if ( rolls_str != "" ) { rolls_str += " + " }
+//console.log(item.value);
     rolls_str += item.value;
   });
   var rolled = rollResult[0].qty + rollResult[0].sides;
