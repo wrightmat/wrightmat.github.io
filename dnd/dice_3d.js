@@ -1,5 +1,6 @@
 import DiceBox from 'dice-box';
-//import DiceParser from 'dice-parser-interface';
+//import { DiceRoller } from "dice-roller-parser";
+import DiceParser from 'dice-parser-interface';
 
 const diceBox = new DiceBox("#dice-box", {
   assetPath: '/dnd/assets/dice-box/',
@@ -9,7 +10,7 @@ const diceBox = new DiceBox("#dice-box", {
 
 diceBox.init()
 
-//const DP = new DiceParser()
+const DP = new DiceParser()
 
 diceBox.onRollComplete = function(rollResult) {
   var arr = parseDice(rollResult);
