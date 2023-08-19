@@ -25,7 +25,7 @@ function rollDice(notation) {
   }
 }
 
-$('#test').addEventListener("click", async () => {
+$("#test").on( "click", async () => {
   const utils = await import("./dice.js");
   rollDice('2d20');
 });
