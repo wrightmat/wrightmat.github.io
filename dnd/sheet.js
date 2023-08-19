@@ -1,4 +1,6 @@
 function rollDice(notation) {
+  var diceBox = window.diceBox;
+
   if ( diceBox == undefined ) {
     console.log("no dice box");
   } else {
