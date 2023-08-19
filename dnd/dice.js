@@ -9,3 +9,5 @@ const diceBox = new DiceBox("#dice-box", {
 diceBox.init().then(() => {
   diceBox.roll('2d20')
 })
+
+diceBox.onRollComplete = (rollResult) => console.log('roll results', rollResult)
