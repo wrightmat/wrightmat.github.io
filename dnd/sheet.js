@@ -1,6 +1,6 @@
 const diceBox = window.diceBox;
 
-if ( diceBox ) {
+if ( diceBox !== undefined ) {
   diceBox.init().then(() => {
     diceBox.roll('2d20')
   });
