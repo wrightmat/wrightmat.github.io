@@ -1,16 +1,16 @@
-require(dice.js);
+var d = require(dice.js);
 
-if ( window.diceBox == undefined ) {
+if ( d.diceBox == undefined ) {
 
   console.log("no dice box");
 
 } else {
 
-  window.diceBox.init().then(() => {
-    window.diceBox.roll('2d20')
+  d.diceBox.init().then(() => {
+    d.diceBox.roll('2d20')
   });
 
-  window.diceBox.onRollComplete = function(rollResult) {
+  d.diceBox.onRollComplete = function(rollResult) {
     var rolls_val = 0;
     var rolls_str = "";
     console.log(rollResult);
