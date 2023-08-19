@@ -19,5 +19,5 @@ window.rollDice3d = function (notation) {
   diceBox.roll(notation);
   setInterval(function() {
     diceBox.clear();
-  }, 5000);
+  }, 10000);
 }
