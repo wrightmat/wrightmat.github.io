@@ -16,5 +16,6 @@ diceBox.onRollComplete = function(rollResult) {
   rollResult[0].rolls.forEach(function (item, index) {
     rolls += item.value;
   });
-  document.getElementById('pane-dice-results').innerHTML += rollResult[0].qty + rollResult[0].sides + ': ' + rolls + '<br />'
+  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center', html: rollResult[0].qty + rollResult[0].sides }).appendTo('#results-list');
+  //document.getElementById('pane-dice-results').innerHTML += rollResult[0].qty + rollResult[0].sides + ': ' + rolls + '<br />'
 }
