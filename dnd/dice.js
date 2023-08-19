@@ -1,7 +1,7 @@
 function rollDice(notation) {
   var diceBox = window.diceBox;
-
-  if ( diceBox == undefined ) {
+console.log(window.rollDice3d);
+  if ( window.rollDice3d == undefined ) {
 
     var arr = [];
     var d = notation.indexOf("d");
