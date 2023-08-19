@@ -12,8 +12,8 @@ diceBox.init().then(() => {
 
 //diceBox.onRollComplete = (rollResult) => document.getElementById('pane-dice-results').innerHTML += rollResult + '<br />'
 diceBox.onRollComplete = function(rollResult) {
-  console.log(rollResult[0]);
-  rollResult[0].forEach(function (item, index) {
+  console.log(rollResult);
+  rollResult.forEach(function (item, index) {
 console.log(item);
     item.rolls.forEach(function (it, ind) {
 	console.log(it.value);
