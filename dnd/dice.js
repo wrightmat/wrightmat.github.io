@@ -2,6 +2,7 @@ function rollDice(notation) {
   var diceBox = window.diceBox;
 
   if ( diceBox == undefined ) {
+
     var arr = [];
     var d = notation.indexOf("d");
     var x = notation.indexOf("x");
@@ -16,12 +17,15 @@ function rollDice(notation) {
     var rolls_val = 0;
     var rolls_str = "";
     arr.forEach(function (item, index) {
-      rolls_val += item.value;
+console.log(item);
+      rolls_val += item;
       if ( rolls_str != "" ) { rolls_str += " + " }
-      rolls_str += item.value;
+      rolls_str += item;
     });
     displayDiceResults([ notation, rolls_str, rolls_val ]);
+
   } else {
+
     diceBox.init().then(() => {
       diceBox.roll(notation);
     });
@@ -30,6 +34,7 @@ function rollDice(notation) {
       displayDiceResults(arr);
     }
   }
+
 }
 
 function parseDice(rollResult) {
