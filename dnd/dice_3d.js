@@ -1,5 +1,5 @@
 import DiceBox from 'dice-box';
-import DiceParser from 'dice-parser-interface';
+//import DiceParser from 'dice-parser-interface';
 
 const diceBox = new DiceBox("#dice-box", {
   assetPath: '/dnd/assets/dice-box/',
