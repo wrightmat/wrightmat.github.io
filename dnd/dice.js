@@ -1,14 +1,18 @@
-import DiceBox from 'dice-box'
+import DiceBox from 'dice-box';
 
 const diceBox = new DiceBox("#dice-box", {
   assetPath: '/dnd/assets/dice-box/',
   theme: "default",
-  scale: 6
-})
+  scale: 5
+});
 
-diceBox.init().then(() => {
-  diceBox.roll('2d20')
-})
+if ( diceBox ) {
+  diceBox.init().then(() => {
+    diceBox.roll('2d20')
+  });
+} else {
+  console.log("no dice box");
+}
 
 diceBox.onRollComplete = function(rollResult) {
   var rolls_val = 0;
@@ -22,7 +26,7 @@ diceBox.onRollComplete = function(rollResult) {
   rolls_str += ' = ';
   var rolled = rollResult[0].qty + rollResult[0].sides;
   if ( rollResult[0].modifier > 0 ) { rolled += " + " + rollResult[0].modifier; }
-  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center' style: 'margin-left:0px;padding-left:0px;' }).appendTo('#results-list');
+  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center' style: 'margin-left:-4px;padding-left:-4px;' }).appendTo('#results-list');
   $('<span>', { style: 'font-size: 10px;', html: rolled + ': ' + rolls_str}).appendTo(li);
   $('<span>', { class: 'badge badge-primary badge-pill', html: rolls_val }).appendTo(li);
 }
