@@ -11,11 +11,16 @@ diceBox.init().then(() => {
 })
 
 diceBox.onRollComplete = function(rollResult) {
-  var rolls = 0;
+  var rolls_val = 0;
+  var rolls_str = "";
   console.log(rollResult);
   rollResult[0].rolls.forEach(function (item, index) {
-    rolls += item.value;
+    rolls_val += item.value;
+    if ( rolls_str != "" ) { rolls_str += " + " }
+    rolls_str += toString(item.value);
   });
-  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center', html: rollResult[0].qty + rollResult[0].sides }).appendTo('#results-list');
-  //document.getElementById('pane-dice-results').innerHTML += rollResult[0].qty + rollResult[0].sides + ': ' + rolls + '<br />'
+  var rolled = rollResult[0].qty + rollResult[0].sides;
+  if ( rollResult[0].modifier > 0 ) { rolled += " +" + rollResult[0].modifier; }
+  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center', html: rolled + ': ' + rolls_str }).appendTo('#results-list');
+  $('<span>', { class: 'badge badge-primary badge-pill', html: rolls_val }).appendTo(li);
 }
