@@ -7,6 +7,7 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 <script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="dice.js"></script>
 <script>
   var roll;
   var params;
@@ -77,6 +78,7 @@
     else if (roll.includes('+')) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); }
     $('#dice-label').html(rolled);
   };
+
 </script>
 </head>
 
@@ -87,6 +89,11 @@
   <button class="dice-button" id="dice-button" onclick="diceButton();"></button>
   <div class="dice-label" id="dice-label"></div>
 </div>
+
+<div id="dice-box"></div>
+<button id="rollem" onclick="DiceRoller.DiceRoom.DiceBox.roll('1d20');">Roll em!</button>
+
+<script type="module" src="./includes/DiceRoller.js"></script>
 
 </body>
 </html>

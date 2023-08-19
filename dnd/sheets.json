@@ -1,0 +1,26 @@
+sheets = [
+	{
+		"level": "1",
+		"name": "Daruk",
+		"gender": "Male",
+		"ancestry": "Goron",
+		"background": "Soldier",
+		"statement": "",
+		"motivation": "",
+		"power": "4",
+		"wisdom": "2",
+		"courage": "3",
+		"armor": "17",
+		"hero": "",
+		"rupees": "1000",
+		"speed": "30 ft.",
+		"languages": "Common, Goro",
+		"defenses": "Fire Resistance, Natural Armor",
+		"appearance": "Rock person",
+		"alignment": "",
+		"allies": "",
+		"itemslots": [
+			{ item_name: "Boulder Breaker", item_durability: "1", item_slots: "2", roll: "power", damage: "d6" }
+		]
+	}
+]
