@@ -14,6 +14,7 @@ diceBox.init().then(() => {
 diceBox.onRollComplete = function(rollResult) {
   console.log(rollResult);
   rollResult.forEach(function (item, index) {
+console.log(item);
     item[rolls].forEach(function (it, ind) {
 	console.log(it.value);
     });
