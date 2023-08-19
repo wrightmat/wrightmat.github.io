@@ -6,11 +6,16 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-<script type="module" src="dice-box.es.min.js"></script>
-<script type="module" src="world.offscreen.min.js"></script>
-<script type="module" src="world.onscreen.min.js"></script>
 <script type="text/javascript" src="common.js"></script>
+<script type="importmap">
+    {
+	"imports": {
+            "dice-box": "https://unpkg.com/@3d-dice/dice-box"
+	}
+    }
+</script>
 <script type="module" src="dice.js"></script>
+
 <script>
   var roll;
   var params;
@@ -96,7 +101,6 @@
 <button id="rollem" onclick="DiceRoller.DiceRoom.DiceBox.roll('1d20');">Roll em!</button>
 
 <div id="dice-box"></div>
-
 
 </body>
 </html>
