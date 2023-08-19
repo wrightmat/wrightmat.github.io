@@ -52,11 +52,10 @@ console.log(rollResult[0]);
   var rolls_str = "";
 
   rollResult[0].rolls.forEach(function (item, index) {
-    rolls_val += item.value;
     if ( rolls_str != "" ) { rolls_str += " + " }
     rolls_str += item.value;
   });
-  rolls_val += rollResult[0].modifier || 0
+  rolls_val += rollResult[0].value
 
   var rolled = rollResult[0].qty + rollResult[0].sides;
   if ( rollResult[0].modifier > 0 ) { rolled += "+" + rollResult[0].modifier; }
@@ -65,6 +64,7 @@ console.log(rollResult[0]);
 }
 
 function displayDiceResults(resultsArr) {
+console.log(resultsArr);
   if ( resultsArr[3] ) { var reason = resultsArr[3] + '<br />' } else { var reason = "" }
   var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center' }).prependTo('#results-list');
   $('<span>', { style: 'font-size: 10px;', html: reason + '<b>' + resultsArr[0] + '</b>: ' + resultsArr[1]}).appendTo(li);
