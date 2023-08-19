@@ -1,3 +1,5 @@
+require(dice.js);
+
 if ( window.diceBox == undefined ) {
 
   console.log("no dice box");
