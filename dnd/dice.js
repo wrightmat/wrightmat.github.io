@@ -5,5 +5,3 @@ export const diceBox = new DiceBox("#dice-box", {
   theme: "default",
   scale: 5
 });
-
-window.diceBox = diceBox;
