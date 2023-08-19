@@ -4,13 +4,11 @@
 <title>5e Dice Roller</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="style.css">
-<script type="module" src="./includes/Teal.js"></script>
-<script type="text/javascript" src="./libs/three.min.js"></script>
-<script type="text/javascript" src="./libs/cannon.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-<script type="text/javascript" src="./libs/jquery.ui.touch-punch.min.js"></script>
-<script type="text/javascript" src="./libs/spectrum.js"></script>
+<script type="module" src="dice-box.es.min.js"></script>
+<script type="module" src="world.offscreen.min.js"></script>
+<script type="module" src="world.onscreen.min.js"></script>
 <script type="text/javascript" src="common.js"></script>
 <script>
   var roll;
@@ -98,7 +96,11 @@
 
 <div id="dice-box"></div>
 
-<script type="module" src="dice.js"></script>
+<script>
+const diceBox = new DiceBox("#dice-box", {
+  assetPath: '/assets/dice-box/' // include the trailing backslash
+})
+</script>
 
 </body>
 </html>
