@@ -1,9 +1,10 @@
-//const diceBox = window.diceBox;
+const diceBox = window.diceBox;
 
 if ( diceBox ) {
   diceBox.init().then(() => {
     diceBox.roll('2d20')
   });
+
 
 diceBox.onRollComplete = function(rollResult) {
   var rolls_val = 0;
