@@ -19,8 +19,8 @@ console.log(arr);
       rolls_val += item.value;
       if ( rolls_str != "" ) { rolls_str += " + " }
       rolls_str += item.value;
-    }
-  displayDiceResults([ rolled, rolls_str, rolls_val, reason ]);
+    });
+    displayDiceResults([ rolled, rolls_str, rolls_val, reason ]);
   } else {
     diceBox.init().then(() => {
       diceBox.roll(notation);
