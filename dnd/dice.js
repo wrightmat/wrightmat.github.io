@@ -1,7 +1,5 @@
 function rollDice(notation) {
   var diceBox = window.diceBox;
-console.log(diceBox);
-window.rollDice3d(notation);
 
   if ( diceBox == undefined ) {
 
@@ -42,7 +40,7 @@ window.rollDice3d(notation);
 
   } else {
 
-    rollDice3d(notation);
+    window.rollDice3d(notation);
 
   }
 
