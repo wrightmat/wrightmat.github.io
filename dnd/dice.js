@@ -22,6 +22,6 @@ diceBox.onRollComplete = function(rollResult) {
   rolls_str += ' = ';
   var rolled = rollResult[0].qty + rollResult[0].sides;
   if ( rollResult[0].modifier > 0 ) { rolled += " + " + rollResult[0].modifier; }
-  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center', html: rolled + ': ' + rolls_str }).appendTo('#results-list');
+  var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center', style: 'font-size:8px;', html: rolled + ': ' + rolls_str }).appendTo('#results-list');
   $('<span>', { class: 'badge badge-primary badge-pill', html: rolls_val }).appendTo(li);
 }
