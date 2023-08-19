@@ -18,6 +18,7 @@ diceBox.onRollComplete = function(rollResult) {
 }
 
 window.rollDice3d = function (notation) {
+  console.log(DP.parseNotation(notation));
   $('#dice-box').css('z-index', 1);
   diceBox.roll(notation);
   setInterval(function() {
@@ -26,5 +27,5 @@ window.rollDice3d = function (notation) {
 }
 
 window.parseNotation = function (notation) {
-  return DP.parseNotation(notationInput.value);
+  return DP.parseNotation(notation);
 }
