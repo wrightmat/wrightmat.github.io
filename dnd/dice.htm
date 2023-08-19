@@ -82,7 +82,6 @@
     else if (roll.includes('+')) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); }
     $('#dice-label').html(rolled);
   };
-
 </script>
 </head>
 
@@ -97,7 +96,18 @@
 <div id="dice-box"></div>
 <button id="rollem" onclick="DiceRoller.DiceRoom.DiceBox.roll('1d20');">Roll em!</button>
 
+<canvas id="container"></canvas>
+
 <script type="module" src="./includes/DiceRoller.js"></script>
+
+<script type="text/javascript">
+element_container = $('#container'); //this should be your canvas element
+vector2_dimensions = new THREE.Vector2(1024, 768); // this is the size of the initial canvas
+notation = new DiceNotation('1d20@14'); //create a new notation object
+db = new DiceBox(element_container, vector2_dimensions); // the box needs a canvas and starting bounds
+db.initialize();
+db.startClickThrow(notation); // throw your dice
+</script>
 
 </body>
 </html>
