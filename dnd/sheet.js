@@ -1,12 +1,17 @@
-const diceBox = window.diceBox;
+//const diceBox = window.diceBox;
 
-if ( diceBox !== undefined ) {
-  diceBox.init().then(() => {
-    diceBox.roll('2d20')
+if ( window.diceBox == undefined ) {
+
+  console.log("no dice box");
+
+} else {
+
+  window.diceBox.init().then(() => {
+    window.diceBox.roll('2d20')
   });
 
 
-diceBox.onRollComplete = function(rollResult) {
+window.diceBox.onRollComplete = function(rollResult) {
   var rolls_val = 0;
   var rolls_str = "";
   console.log(rollResult);
@@ -21,8 +26,6 @@ diceBox.onRollComplete = function(rollResult) {
   var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center', style: 'margin-left:-4px;padding-left:-4px;' }).appendTo('#results-list');
   $('<span>', { style: 'font-size: 10px;', html: rolled + ': ' + rolls_str}).appendTo(li);
   $('<span>', { class: 'badge badge-primary badge-pill', html: rolls_val }).appendTo(li);
-}
+};
 
-} else {
-  console.log("no dice box");
 }

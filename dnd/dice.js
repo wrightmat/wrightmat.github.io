@@ -6,4 +6,4 @@ const diceBox = new DiceBox("#dice-box", {
   scale: 5
 });
 
-window.diceBox = diceBox;
+//window.diceBox = diceBox;
