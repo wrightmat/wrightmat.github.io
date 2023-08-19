@@ -11,6 +11,7 @@ diceBox.init()
 diceBox.onRollComplete = function(rollResult) {
   var arr = parseDice(rollResult);
   displayDiceResults(arr);
+  $('#dice-box').css('z-index', -1);
 }
 
 window.rollDice3d = function (notation) {
