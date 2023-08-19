@@ -13,6 +13,6 @@ diceBox.onRollComplete = function(rollResult) {
   displayDiceResults(arr);
 }
 
-export function rollDice3d(notation) {
+window.rollDice3d = function (notation) {
   diceBox.roll(notation);
 }
