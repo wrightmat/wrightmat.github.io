@@ -40,6 +40,7 @@ function rollDice(notation) {
 
   } else {
 
+    $('#dice-box').css('z-index', 1);
     window.rollDice3d(notation);
 
   }

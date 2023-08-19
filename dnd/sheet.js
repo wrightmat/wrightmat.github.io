@@ -39,7 +39,7 @@ $("#test").on("click", function() {
 	    
 	    $('<div>', { id: 'item-' + (i+1) + '-buttons', class: 'btn-group', role: 'group' }).appendTo('#col-5-item-' + (i+1));
 	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Atk', onclick: 'rollDice("1d20+' + $('#power').val() + '")' }).appendTo('#item-' + (i+1) + '-buttons');
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg', onclick: 'rollDice("d6")' }).appendTo('#item-' + (i+1) + '-buttons');
+	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg', onclick: 'rollDice("1d6")' }).appendTo('#item-' + (i+1) + '-buttons');
 	}
     }
 
