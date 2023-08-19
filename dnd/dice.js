@@ -10,6 +10,4 @@ diceBox.init().then(() => {
   diceBox.roll('2d20')
 })
 
-diceBox.onRollComplete => function(rollResult) {
-  console.log('roll results', rollResult)
-}
+diceBox.onRollComplete = (rollResult) => document.getElementById('pane-dice-results').innerHTML += rollResult + '<br />'
