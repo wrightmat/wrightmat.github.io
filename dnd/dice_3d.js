@@ -1,4 +1,7 @@
 import DiceBox from 'dice-box';
+import DiceParser from 'dice-parser-interface';
+
+const DP = new DiceParser()
 
 const diceBox = new DiceBox("#dice-box", {
   assetPath: '/dnd/assets/dice-box/',
@@ -20,4 +23,8 @@ window.rollDice3d = function (notation) {
   setInterval(function() {
     diceBox.clear();
   }, 10000);
+}
+
+window.parseNotation = function (notation) {
+  return DP.parseNotation(notationInput.value);
 }
