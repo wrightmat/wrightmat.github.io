@@ -27,18 +27,19 @@ $("#test").on("click", function() {
 	for ( let i = 0; i < slots; i++ ) {
 	    if ( i > 0 ) { var st = 'padding-right:80px;padding-top:10px;' } else { var st = 'padding-right:80px;'; }
 	    $('<div>', { id: 'row-item-' + (i+1), class: 'row', style: st }).appendTo('#pane-items');
-	    $('<div>', { id: 'col-1-item-' + (i+1), class: 'col-7' }).appendTo('#row-item-' + (i+1));
-	    $('<div>', { id: 'col-2-item-' + (i+1), class: 'col-2' }).appendTo('#row-item-' + (i+1));
-	    $('<div>', { id: 'col-3-item-' + (i+1), class: 'col-2' }).appendTo('#row-item-' + (i+1));
-	    $('<div>', { id: 'col-4-item-' + (i+1), class: 'col-1' }).appendTo('#row-item-' + (i+1));
+	    $('<div>', { id: 'col-1-item-' + (i+1), class: 'col-7', style: 'padding-left:1px; padding-right:1px;' }).appendTo('#row-item-' + (i+1));
+	    $('<div>', { id: 'col-2-item-' + (i+1), class: 'col-2', style: 'padding-left:1px; padding-right:12px;' }).appendTo('#row-item-' + (i+1));
+	    $('<div>', { id: 'col-3-item-' + (i+1), class: 'col-1', style: 'padding-left:1px; padding-right:1px;' }).appendTo('#row-item-' + (i+1));
+	    $('<div>', { id: 'col-4-item-' + (i+1), class: 'col-1', style: 'padding-left:1px; padding-right:1px;' }).appendTo('#row-item-' + (i+1));
+	    $('<div>', { id: 'col-5-item-' + (i+1), class: 'col-1', style: 'padding-right:0px;' }).appendTo('#row-item-' + (i+1));
 	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-name', class: 'form-control', title: 'Item Name' }).appendTo('#col-1-item-' + (i+1));
-	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-durability', class: 'form-control', title: 'Item Durability', placeholder: '☆' }).appendTo('#col-2-item-' + (i+1));
-	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-slots', class: 'form-control', title: 'Item Slots', placeholder: '#', onchange: 'calculateItemSlots()' }).appendTo('#col-3-item-' + (i+1));
+	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-stat', class: 'form-control', title: 'Item Stat' }).appendTo('#col-2-item-' + (i+1));
+	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-durability', class: 'form-control', title: 'Item Durability', placeholder: '☆' }).appendTo('#col-3-item-' + (i+1));
+	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-slots', class: 'form-control', title: 'Item Slots', placeholder: '#', onchange: 'calculateItemSlots()' }).appendTo('#col-4-item-' + (i+1));
 	    
-	    $('<div>', { id: 'item-' + (i+1) + '-buttons', class: 'btn-group', role: 'group' }).appendTo('#col-4-item-' + (i+1));
-	// Need to add "attack" value ("power", "wisdom", "courage") to Atk button so it's passed to itemButton(). Need to add "damage" value to Dmg button so it's passed to itemButton().
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Atk', onclick: 'itemButton(this)' }).appendTo('#item-' + (i+1) + '-buttons');
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg', onclick: 'itemButton(this)' }).appendTo('#item-' + (i+1) + '-buttons');
+	    $('<div>', { id: 'item-' + (i+1) + '-buttons', class: 'btn-group', role: 'group' }).appendTo('#col-5-item-' + (i+1));
+	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Atk', onclick: 'rollDice("1d20+' + $('#power').val() + '")' }).appendTo('#item-' + (i+1) + '-buttons');
+	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg', onclick: 'rollDice("d6")' }).appendTo('#item-' + (i+1) + '-buttons');
 	}
     }
 
@@ -94,9 +95,14 @@ $("#test").on("click", function() {
 	populateItemSlots(itemslots);
 
 	for (var i = 0; i < sheet.itemslots.length; i++) {
-	    $('#item-' + (i+1) + '-name').val(sheet.itemslots[i].item_name);
-	    $('#item-' + (i+1) + '-durability').val(sheet.itemslots[i].item_durability);
-	    $('#item-' + (i+1) + '-slots').val(sheet.itemslots[i].item_slots);
+	  $('#item-' + (i+1) + '-name').val(sheet.itemslots[i].item_name);
+	  if (sheet.itemslots[i].armor ) {
+	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].armor);
+	  } else if ( sheet.itemslots[i].damage ) {
+	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].damage);
+	  }
+	  $('#item-' + (i+1) + '-durability').val(sheet.itemslots[i].item_durability);
+	  $('#item-' + (i+1) + '-slots').val(sheet.itemslots[i].item_slots);
 	}
 	calculateItemSlots();
 
