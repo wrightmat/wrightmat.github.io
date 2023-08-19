@@ -10,14 +10,11 @@ diceBox.init().then(() => {
   diceBox.roll('2d20')
 })
 
-//diceBox.onRollComplete = (rollResult) => document.getElementById('pane-dice-results').innerHTML += rollResult + '<br />'
 diceBox.onRollComplete = function(rollResult) {
+  var rolls = 0;
   console.log(rollResult);
-  rollResult.forEach(function (item, index) {
-console.log(item);
-    item.rolls.forEach(function (it, ind) {
-	console.log(it.value);
-    });
+  rollResult[0].rolls.forEach(function (item, index) {
+    rolls += item.value;
   });
-  //document.getElementById('pane-dice-results').innerHTML += rollResult + '<br />'
+  document.getElementById('pane-dice-results').innerHTML += rolls + '<br />'
 }
