@@ -9,7 +9,7 @@ const diceBox = new DiceBox("#dice-box", {
 
 diceBox.init()
 
-const DP = new DiceParser()
+//const DP = new DiceParser()
 
 diceBox.onRollComplete = function(rollResult) {
   var arr = parseDice(rollResult);
