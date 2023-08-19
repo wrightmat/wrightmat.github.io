@@ -1,8 +1,4 @@
 import DiceBox from 'dice-box';
-import { DiceRoller } from "dice-roller-parser";
-import DiceParser from 'dice-parser-interface';
-
-const DP = new DiceParser()
 
 const diceBox = new DiceBox("#dice-box", {
   assetPath: '/dnd/assets/dice-box/',
@@ -19,7 +15,6 @@ diceBox.onRollComplete = function(rollResult) {
 }
 
 window.rollDice3d = function (notation) {
-  console.log(DP.parseNotation(notation));
   $('#dice-box').css('z-index', 1);
   diceBox.roll(notation);
   setInterval(function() {
