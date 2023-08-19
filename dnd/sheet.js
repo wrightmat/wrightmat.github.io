@@ -58,12 +58,6 @@ $("#test").on("click", function() {
 	return inventory;
     }
 
-    function itemButton(el) {
-	console.log(el);
-	// Need a good visual dice roller library!
-	// Parse out information from button that was clicked, and roll the appropriate dice, displaying the result
-    }
-
     function populateSheet(sheet) {
 	$('#name').val(sheet.name);
 	$('#gender').val(sheet.gender);

@@ -47,6 +47,7 @@ function rollDice(notation) {
 }
 
 function parseDice(rollResult) {
+console.log(rollResult[0]);
   var rolls_val = 0;
   var rolls_str = "";
 
