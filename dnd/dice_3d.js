@@ -21,7 +21,3 @@ window.rollDice3d = function (notation) {
     diceBox.clear();
   }, 10000);
 }
-
-window.parseNotation = function (notation) {
-  return DP.parseNotation(notation);
-}

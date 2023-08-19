@@ -56,6 +56,7 @@ console.log(rollResult[0]);
     if ( rolls_str != "" ) { rolls_str += " + " }
     rolls_str += item.value;
   });
+  rolls_val += rollResult[0].modifier || 0
 
   var rolled = rollResult[0].qty + rollResult[0].sides;
   if ( rollResult[0].modifier > 0 ) { rolled += "+" + rollResult[0].modifier; }
