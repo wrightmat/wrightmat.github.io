@@ -1,4 +1,4 @@
-function rollDice(notation) {
+function rollDice(notation, reason) {
   var diceBox = window.diceBox;
 
   if ( window.rollDice3d == undefined ) {
@@ -36,17 +36,17 @@ function rollDice(notation) {
       rolls_str += item;
     });
 
-    displayDiceResults([ notation, rolls_str, rolls_val ]);
+    displayDiceResults([ notation, rolls_str, rolls_val, reason ]);
 
   } else {
 
-    window.rollDice3d(notation);
+    window.rollDice3d(notation, reason);
 
   }
 
 }
 
-function parseDice(rollResult) {
+function parseDice(rollResult, reason) {
 console.log(rollResult[0]);
   var rolls_val = 0;
   var rolls_str = "";
@@ -60,7 +60,7 @@ console.log(rollResult[0]);
   var rolled = rollResult[0].qty + rollResult[0].sides;
   if ( rollResult[0].modifier > 0 ) { rolled += "+" + rollResult[0].modifier; }
 
-  return [ rolled, rolls_str, rolls_val ]
+  return [ rolled, rolls_str, rolls_val, reason ]
 }
 
 function displayDiceResults(resultsArr) {
