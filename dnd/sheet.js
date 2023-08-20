@@ -1,21 +1,20 @@
-    $('#power').on("change", function() {
-	if ( !$('#hearts').val() ) { $('#hearts').val($('#power').val()) }
-    });
-    $('#courage').on("change", function() {
-	if ( !$('#stamina').val() ) { $('#stamina').val($('#courage').val()) }
-    });
-    $('#wisdom').on("change", function() {
-	if ( !$('#items').val() ) {
-	    $('#items').val($('#wisdom').val());
-            var itemslots = $('#items').val();
-	    populateItemSlots(itemslots);
-	}
-    });
-
-    $('#items').on("change", function() {
+$('#power').on("change", function() {
+    if ( !$('#hearts').val() ) { $('#hearts').val($('#power').val()) }
+});
+$('#courage').on("change", function() {
+    if ( !$('#stamina').val() ) { $('#stamina').val($('#courage').val()) }
+});
+$('#wisdom').on("change", function() {
+    if ( !$('#items').val() ) {
+	$('#items').val($('#wisdom').val());
         var itemslots = $('#items').val();
 	populateItemSlots(itemslots);
-    });
+    }
+});
+$('#items').on("change", function() {
+    var itemslots = $('#items').val();
+    populateItemSlots(itemslots);
+});
 
     function populateItemSlots(slots) {
 	$('#pane-items').empty();
