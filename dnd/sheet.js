@@ -1,8 +1,3 @@
-$("#test").on("click", function() {
-  console.log("clicked");
-  rollDice('2d20');
-});
-
     $('#power').on("change", function() {
 	if ( !$('#hearts').val() ) { $('#hearts').val($('#power').val()) }
     });
@@ -96,9 +91,9 @@ $("#test").on("click", function() {
 	    $('#item-' + (i+1) + '-buttons').children().first().on("click", function() {
 	      if ( sheet.itemslots[i].attack == "power" ) {
 		rollDice('1d20+' + sheet.power);
-	      } elseif ( sheet.itemslots[i].attack == "courage" ) {
+	      } else if ( sheet.itemslots[i].attack == "courage" ) {
 		rollDice('1d20+' + sheet.courage);
-	      } elseif ( sheet.itemslots[i].attack == "wisdom" ) {
+	      } else if ( sheet.itemslots[i].attack == "wisdom" ) {
 		rollDice('1d20+' + sheet.wisdom);
 	      }
 	    });
