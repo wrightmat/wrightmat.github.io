@@ -72,6 +72,7 @@ function populateSheet(sheet) {
     $('#alignment').val(sheet.alignment);
     $('#allies').val(sheet.allies);
     $('#notes').val(sheet.notes);
+    $('<img>', { src: 'https://nintendoeverything.com/wp-content/uploads/zelda-breath-wild-daruk.jpg', style: 'height:300px; max-width:300px;' }).appendTo('#pane-picture');
 
     if ( !$('#hearts').val() ) { $('#hearts').val($('#power').val()) }
     if ( !$('#stamina').val() ) { $('#stamina').val($('#courage').val()) }
@@ -84,8 +85,8 @@ function populateSheet(sheet) {
 	if (sheet.itemslots[i].armor ) {
 	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].armor);
 	} else if ( sheet.itemslots[i].damage ) {
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Atk' }).appendTo('#item-' + (i+1) + '-buttons');
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg' }).appendTo('#item-' + (i+1) + '-buttons');
+	    $('<button>', { type: 'button', class: 'btn btn-secondary', style: 'background:#e9ecef; color:#495057; border: 1px solid #ced4da;', html: 'Atk' }).appendTo('#item-' + (i+1) + '-buttons');
+	    $('<button>', { type: 'button', class: 'btn btn-secondary', style: 'background:#e9ecef; color:#495057; border: 1px solid #ced4da;', html: 'Dmg' }).appendTo('#item-' + (i+1) + '-buttons');
 	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].damage);
 	    $('#item-' + (i+1) + '-buttons').children().first().on("click", function() {
 		if ( sheet.itemslots[i-1].attack == "power" ) {

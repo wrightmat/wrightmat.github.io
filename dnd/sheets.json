@@ -21,6 +21,7 @@ sheets = [
 		"allies": "",
 		"itemslots": [
 			{ item_name: "Boulder Breaker", item_durability: "1", item_slots: "2", attack: "power", damage: "d6" }
-		]
+		],
+		"image": "https://nintendoeverything.com/wp-content/uploads/zelda-breath-wild-daruk.jpg"
 	}
 ]
