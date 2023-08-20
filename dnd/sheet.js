@@ -89,18 +89,19 @@ $('#items').on("change", function() {
 	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].damage);
 	    $('#item-' + (i+1) + '-buttons').children().first().on("click", function() {
 	      if ( sheet.itemslots[i-1].attack == "power" ) {
-		rollDice('1d20+' + sheet.power);
+		rollDice('1d20+' + sheet.power, sheet.itemslots[i-1].item_name);
 	      } else if ( sheet.itemslots[i-1].attack == "courage" ) {
-		rollDice('1d20+' + sheet.courage);
+		rollDice('1d20+' + sheet.courage, sheet.itemslots[i-1].item_name);
 	      } else if ( sheet.itemslots[i-1].attack == "wisdom" ) {
-		rollDice('1d20+' + sheet.wisdom);
+		rollDice('1d20+' + sheet.wisdom, sheet.itemslots[i-1].item_name);
 	      }
 	    });
+
 	    $('#item-' + (i+1) + '-buttons').children().last().on("click", function() {
-	      if ( sheet.itemslots[i-1].damage.charAt(0) == "d" ) {
-		rollDice("1" + sheet.itemslots[i-1].damage);
+	      if ( $('#item-' + i + '-stat').val().charAt(0) == "d" ) {
+		rollDice("1" + $('#item-' + i + '-stat').val(), $('#item-' + i + '-name').val());
 	      } else {
-	        rollDice(sheet.itemslots[i-1].damage);
+	        rollDice($('#item-' + i + '-stat').val(), $('#item-' + i + '-name').val());
 	      }
 	    });
 	  }

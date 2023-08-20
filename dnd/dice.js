@@ -67,6 +67,6 @@ function displayDiceResults(resultsArr) {
 console.log(resultsArr);
   if ( resultsArr[3] ) { var reason = resultsArr[3] + '<br />' } else { var reason = "" }
   var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center' }).prependTo('#results-list');
-  $('<span>', { style: 'font-size: 10px;', html: reason + '<b>' + resultsArr[0] + '</b>: ' + resultsArr[1]}).appendTo(li);
+  $('<span>', { style: 'font-size: 10px;white-space: nowrap;', html: reason + '<b>' + resultsArr[0] + '</b>: ' + resultsArr[1]}).appendTo(li);
   $('<span>', { class: 'badge badge-primary badge-pill', html: resultsArr[2] }).appendTo(li);
 }
