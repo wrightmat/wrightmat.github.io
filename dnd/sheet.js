@@ -36,10 +36,7 @@ $("#test").on("click", function() {
 	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-stat', class: 'form-control', title: 'Item Stat' }).appendTo('#col-2-item-' + (i+1));
 	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-durability', class: 'form-control', title: 'Item Durability', placeholder: '☆' }).appendTo('#col-3-item-' + (i+1));
 	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-slots', class: 'form-control', title: 'Item Slots', placeholder: '#', onchange: 'calculateItemSlots()' }).appendTo('#col-4-item-' + (i+1));
-	    
 	    $('<div>', { id: 'item-' + (i+1) + '-buttons', class: 'btn-group', role: 'group' }).appendTo('#col-5-item-' + (i+1));
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Atk', onclick: 'rollDice("1d20+' + $('#power').val() + '")' }).appendTo('#item-' + (i+1) + '-buttons');
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg', onclick: 'rollDice("1d6")' }).appendTo('#item-' + (i+1) + '-buttons');
 	}
     }
 
