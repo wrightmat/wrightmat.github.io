@@ -18,19 +18,16 @@ $('#items').on("change", function() {
 
 function populateItemSlots(slots) {
     $('#pane-items').empty();
-    for ( let i = 0; i < slots; i++ ) {
-	if ( i > 0 ) { var st = 'padding-right:80px;padding-top:10px;' } else { var st = 'padding-right:80px;'; }
-	$('<div>', { id: 'row-item-' + (i+1), class: 'row', style: st }).appendTo('#pane-items');
-	$('<div>', { id: 'col-1-item-' + (i+1), class: 'col-7', style: 'padding-left:1px; padding-right:1px;' }).appendTo('#row-item-' + (i+1));
-	$('<div>', { id: 'col-2-item-' + (i+1), class: 'col-2', style: 'padding-left:1px; padding-right:12px;' }).appendTo('#row-item-' + (i+1));
-	$('<div>', { id: 'col-3-item-' + (i+1), class: 'col-1', style: 'padding-left:1px; padding-right:1px;' }).appendTo('#row-item-' + (i+1));
-	$('<div>', { id: 'col-4-item-' + (i+1), class: 'col-1', style: 'padding-left:1px; padding-right:1px;' }).appendTo('#row-item-' + (i+1));
-	$('<div>', { id: 'col-5-item-' + (i+1), class: 'col-1', style: 'padding-right:0px;' }).appendTo('#row-item-' + (i+1));
-	$('<input>', { type: 'text', id: 'item-' + (i+1) + '-name', class: 'form-control', title: 'Item Name' }).appendTo('#col-1-item-' + (i+1));
-	$('<input>', { type: 'text', id: 'item-' + (i+1) + '-stat', class: 'form-control', title: 'Item Stat' }).appendTo('#col-2-item-' + (i+1));
-	$('<input>', { type: 'text', id: 'item-' + (i+1) + '-durability', class: 'form-control', title: 'Item Durability', placeholder: '☆' }).appendTo('#col-3-item-' + (i+1));
-	$('<input>', { type: 'text', id: 'item-' + (i+1) + '-slots', class: 'form-control', title: 'Item Slots', placeholder: '#', onchange: 'calculateItemSlots()' }).appendTo('#col-4-item-' + (i+1));
-	$('<div>', { id: 'item-' + (i+1) + '-buttons', class: 'btn-group', role: 'group' }).appendTo('#col-5-item-' + (i+1));
+    for ( let j = 0; j < slots; j++ ) {
+	$('<div>', { id: 'row-item-' + (j+1), class: 'row py-1' }).appendTo('#pane-items');
+	$('<div>', { id: 'col-1-item-' + (j+1), class: 'col-4 px-1' }).appendTo('#row-item-' + (j+1));
+	$('<div>', { id: 'col-2-item-' + (j+1), class: 'col-1 px-0' }).appendTo('#row-item-' + (j+1));
+	$('<div>', { id: 'col-3-item-' + (j+1), class: 'col-1 px-1' }).appendTo('#row-item-' + (j+1));
+	$('<div>', { id: 'col-4-item-' + (j+1), class: 'col-2 px-0' }).appendTo('#row-item-' + (j+1));
+	$('<div>', { id: 'col-5-item-' + (j+1), class: 'col-2 px-1' }).appendTo('#row-item-' + (j+1));
+	$('<input>', { type: 'text', id: 'item-' + (j+1) + '-name', class: 'form-control', title: 'Item Name' }).appendTo('#col-1-item-' + (j+1));
+	$('<input>', { type: 'text', id: 'item-' + (j+1) + '-durability', class: 'form-control', title: 'Item Durability', placeholder: '☆' }).appendTo('#col-2-item-' + (j+1));
+	$('<input>', { type: 'text', id: 'item-' + (j+1) + '-slots', class: 'form-control', title: 'Item Slots', placeholder: '#', onchange: 'calculateItemSlots()' }).appendTo('#col-3-item-' + (j+1));
     }
 }
 
@@ -72,7 +69,7 @@ function populateSheet(sheet) {
     $('#alignment').val(sheet.alignment);
     $('#allies').val(sheet.allies);
     $('#notes').val(sheet.notes);
-    $('<img>', { src: 'https://nintendoeverything.com/wp-content/uploads/zelda-breath-wild-daruk.jpg', style: 'height:300px; max-width:300px;' }).appendTo('#pane-picture');
+    $('<img>', { src: sheet.image, style: 'height:300px; max-width:300px;' }).appendTo('#pane-picture');
 
     if ( !$('#hearts').val() ) { $('#hearts').val($('#power').val()) }
     if ( !$('#stamina').val() ) { $('#stamina').val($('#courage').val()) }
@@ -80,33 +77,44 @@ function populateSheet(sheet) {
     var itemslots = $('#items').val();
     populateItemSlots(itemslots);
 
-    for ( var i = 0; i < sheet.itemslots.length; i++ ) {
+    for ( let i = 0; i < sheet.itemslots.length; i++ ) {
 	$('#item-' + (i+1) + '-name').val(sheet.itemslots[i].item_name);
 	if (sheet.itemslots[i].armor ) {
-	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].armor);
-	} else if ( sheet.itemslots[i].damage ) {
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', style: 'background:#e9ecef; color:#495057; border: 1px solid #ced4da;', html: 'Atk' }).appendTo('#item-' + (i+1) + '-buttons');
-	    $('<button>', { type: 'button', class: 'btn btn-secondary', style: 'background:#e9ecef; color:#495057; border: 1px solid #ced4da;', html: 'Dmg' }).appendTo('#item-' + (i+1) + '-buttons');
-	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].damage);
-	    $('#item-' + (i+1) + '-buttons').children().first().on("click", function() {
-		if ( sheet.itemslots[i-1].attack == "power" ) {
-		    rollDice('1d20+' + sheet.power, sheet.itemslots[i-1].item_name);
-		} else if ( sheet.itemslots[i-1].attack == "courage" ) {
-		    rollDice('1d20+' + sheet.courage, sheet.itemslots[i-1].item_name);
-		} else if ( sheet.itemslots[i-1].attack == "wisdom" ) {
-		    rollDice('1d20+' + sheet.wisdom, sheet.itemslots[i-1].item_name);
-		}
-	    });
+	    $('<div>', { id: 'col-4-item-' + (i+1) + '-group', class: 'input-group' }).appendTo('#col-4-item-' + (i+1));
+	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-armor', class: 'form-control', title: 'Item Armor' }).appendTo('#col-4-item-' + (i+1) + '-group');
+            $('<div>', { class: 'input-group-append', html: '<div class="input-group-text"><i class="bi bi-shield" style="font-size:16px;"></i></div>' }).appendTo('#col-4-item-' + (i+1) + '-group');
+	    $('#item-' + (i+1) + '-armor').val(sheet.itemslots[i].armor);
+	    $('#armor').val(parseInt($('#armor').val()) + parseInt(sheet.itemslots[i].armor));
+	} else if ( sheet.itemslots[i].attack ) {
+	    $('<div>', { id: 'col-4-item-' + (i+1) + '-group', class: 'input-group' }).appendTo('#col-4-item-' + (i+1));
+	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-atk', class: 'form-control', title: 'Item Attack' }).appendTo('#col-4-item-' + (i+1) + '-group');
+            $('<div>', { class: 'input-group-append', html: '<input type="button" class="input-group-text btn-secondary" id="item-' + (i+1) + '-button-1" value="Atk" />' }).appendTo('#col-4-item-' + (i+1) + '-group');
+	    $('#item-' + (i+1) + '-atk').val(sheet.itemslots[i].attack);
 
-	    $('#item-' + (i+1) + '-buttons').children().last().on("click", function() {
-		if ( $('#item-' + i + '-stat').val().charAt(0) == "d" ) {
-		    rollDice("1" + $('#item-' + i + '-stat').val(), $('#item-' + i + '-name').val());
-		} else {
-	            rollDice($('#item-' + i + '-stat').val(), $('#item-' + i + '-name').val());
+	    $('#item-' + (i+1) + '-button-1').on("click", function() {
+		if ( $('#item-' + (i+1) + '-atk').val() == "P" ) {
+		    rollDice('1d20+' + sheet.power, sheet.itemslots[i].item_name);
+		} else if ( $('#item-' + (i+1) + '-atk').val() == "C" ) {
+		    rollDice('1d20+' + sheet.courage, sheet.itemslots[i].item_name);
+		} else if ( $('#item-' + (i+1) + '-atk').val() == "W" ) {
+		    rollDice('1d20+' + sheet.wisdom, sheet.itemslots[i].item_name);
 		}
 	    });
 	}
+	if ( sheet.itemslots[i].damage ) {
+	    $('<div>', { id: 'col-5-item-' + (i+1) + '-group', class: 'input-group' }).appendTo('#col-5-item-' + (i+1));
+	    $('<input>', { type: 'text', id: 'item-' + (i+1) + '-dmg', class: 'form-control', title: 'Item Damage' }).appendTo('#col-5-item-' + (i+1) + '-group');
+            $('<div>', { class: 'input-group-append', html: '<input type="button" class="input-group-text btn-secondary" id="item-' + (i+1) + '-button-2" value="Dmg" />' }).appendTo('#col-5-item-' + (i+1) + '-group');
+	    $('#item-' + (i+1) + '-dmg').val(sheet.itemslots[i].damage);
 
+	    $('#item-' + (i+1) + '-button-2').on("click", function() {
+		if ( $('#item-' + (i+1) + '-dmg').val().charAt(0) == "d" ) {
+		    rollDice("1" + $('#item-' + (i+1) + '-dmg').val(), $('#item-' + (i+1) + '-name').val());
+		} else {
+	            rollDice($('#item-' + (i+1) + '-dmg').val(), $('#item-' + (i+1) + '-name').val());
+		}
+	    });
+	}
 	$('#item-' + (i+1) + '-durability').val(sheet.itemslots[i].item_durability);
 	$('#item-' + (i+1) + '-slots').val(sheet.itemslots[i].item_slots);
     }
