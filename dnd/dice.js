@@ -2,7 +2,7 @@ function rollDice(notation, reason) {
   var diceBox = window.diceBox;
 
   if ( window.rollDice3d == undefined ) {
-
+    // if the 3d dice aren't initialized (local or an error) then fall back on a basic roller. 
     var arr = [];
     var d = notation.indexOf("d");
     if ( notation.indexOf("x") >= 0 ) { var x = notation.indexOf("x") }
@@ -39,15 +39,11 @@ function rollDice(notation, reason) {
     displayDiceResults([ notation, rolls_str, rolls_val, reason ]);
 
   } else {
-
     window.rollDice3d(notation, reason);
-
   }
-
 }
 
 function parseDice(rollResult, reason) {
-console.log(rollResult[0]);
   var rolls_val = 0;
   var rolls_str = "";
 
@@ -64,7 +60,6 @@ console.log(rollResult[0]);
 }
 
 function displayDiceResults(resultsArr) {
-console.log(resultsArr);
   if ( resultsArr[3] ) { var reason = resultsArr[3] + '<br />' } else { var reason = "" }
   var li = $('<li>', { class: 'list-group-item d-flex justify-content-between align-items-center' }).prependTo('#results-list');
   $('<span>', { style: 'font-size: 10px;white-space: nowrap;', html: reason + '<b>' + resultsArr[0] + '</b>: ' + resultsArr[1]}).appendTo(li);

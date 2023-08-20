@@ -13,136 +13,133 @@
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="dice.js"></script>
   <script type="text/javascript" src="sheets.json"></script>
+  <script type="text/javascript" src="sheet.js"></script>
 </head>
 
 <body>
 
 <canvas id="dice-box" style="position:fixed;width:100%;height:100%;z-index:-1;"></canvas>
 <div id="parent" style="position:relative;width:1200px;padding:20px 10px 0px 10px;">
-
-<div id="pane-top">
-  <div class="row">
-    <div id="level-progress" class="col-1 circle">
+  <div id="pane-top">
+    <div class="row">
+      <div id="level-progress" class="col-1 circle">
         <strong id="level"></strong><span id="xp"></span>
-    </div>
-    <div class="col-5">
-      <input type="text" id="name" class="form-control" title="Name" style="padding-top:0px;">
-      <label for="name">Name</label>
-    </div>
-    <div class="col-2">
-      <input type="text" id="gender" class="form-control" title="Gender / Pronouns" style="padding-top:0px;">
-      <label for="gender">Gender / Pronouns</label>
-    </div>
-    <div class="col-4">
-      <input type="text" id="statement" class="form-control" title="Statement" style="padding-top:0px;">
-      <label for="statement">Statement</label>
-    </div>
-  </div>
-  <div class="row" style="padding-top:5px">
-    <div class="col">
-      <input type="text" id="ancestry" class="form-control" title="Ancestry" style="padding-top:0px;">
-      <label for="ancestry">Ancestry</label>
-    </div>
-    <div class="col">
-      <input type="text" id="background" class="form-control" title="Background" style="padding-top:0px;">
-      <label for="background">Background</label>
-    </div>
-    <div class="col">
-      <input type="text" id="motivation" class="form-control" title="Motivation" style="padding-top:0px;">
-      <label for="motivation">Motivation</label>
-    </div>
-  </div>
-</div>
-
-<div id="pane-picture" class="soft-edges" style="position:absolute; left:1%; top:110%;">
-  <img src="https://nintendoeverything.com/wp-content/uploads/zelda-breath-wild-daruk.jpg" style="height:300px; max-width:300px;" />
-</div>
-
-<div id="pane-dice-results" style="position:absolute; right:1%; top:105%; width:150px; height:302px; overflow:hidden;">
-  <ul id="results-list" class="list-group" style="height:10px;"></ul>
-</div>
-
-<div id="pane-center">
-  <i class="bi bi-triangle" style="font-size:150px;position:absolute;top:80px;left:48%;"></i>
-  <input type="text" id="power" style="position:absolute;top:180px;left:53%;width:30px;font-size:46px;border:0px;text-align:center;font-weight:bold;color:red;" title="Power" />
-  <i class="bi bi-triangle" style="font-size:150px;position:absolute;top:220px;left:40%;"></i>
-  <input type="text" id="wisdom" style="position:absolute;top:320px;left:45%;width:30px;font-size:46px;border:0px;text-align:center;font-weight:bold;color:blue;" title="Wisdom" />
-  <i class="bi bi-triangle" style="font-size:150px;position:absolute;top:220px;left:56%;"></i>
-  <input type="text" id="courage" style="position:absolute;top:320px;left:61%;width:30px;font-size:46px;border:0px;text-align:center;font-weight:bold;color:green;" title="Courage" />
-
-  <i class="bi bi-heart" style="font-size:100px;position:absolute;top:150px;left:35%;"></i>
-  <input type="text" id="hearts" style="position:absolute;top:198px;left:38%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:red;" title="Hearts" />
-  <input type="text" id="hearts-temp" style="position:absolute;top:198px;left:28%;width:60px;height:50px;font-size:40px;border:0px;border-bottom:2px solid black;text-align:center;font-weight:bold;color:pink;" title="Temp Hearts" />
-  <i class="bi bi-square" style="font-size:100px;position:absolute;top:400px;left:50%;"></i>
-  <input type="text" id="items" style="position:absolute;top:455px;left:53%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:blue;" title="Item Slots" />
-  <i class="bi bi-circle" style="font-size:100px;position:absolute;top:220px;left:70%;"></i>
-  <input type="text" id="stamina" style="position:absolute;top:275px;left:73%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:green;" title="Stamina" />
-  <input type="text" id="stamina-temp" style="position:absolute;top:275px;left:80%;width:60px;height:50px;font-size:40px;border:0px;border-bottom:2px solid black;text-align:center;font-weight:bold;color:lightgreen;" title="Temp Stamina" />
-  <i class="bi bi-shield" style="font-size:100px;position:absolute;top:600px;left:50%;"></i>
-  <input type="text" id="armor" style="position:absolute;top:648px;left:52%;width:52px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:grey;" title="Armor" />
-  <i class="bi bi-hexagon" style="font-size:100px;position:absolute;top:800px;left:50%;"></i>
-  <input type="text" id="hero" style="position:absolute;top:855px;left:53%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:orange;" title="Hero Points" />
-</div>
-
-<div id="pane-items" style="position:absolute;left:0;top:450px;width:500px;">
-</div>
-
-<div id="pane-info" style="position:absolute;left:65%;top:450px;width:400px;">
-  <div class="row">
-    <div class="col"><div class="input-group mb-2 mr-sm-2">
-      <div class="input-group-prepend">
-        <div class="input-group-text"><i class="bi bi-gem" style="font-size:16px;"></i></div>
       </div>
-      <input type="number" id="rupees" class="form-control" placeholder="Rupees" title="Rupees" />
-    </div></div>
-    <div class="col"><div class="input-group mb-2 mr-sm-2">
-      <div class="input-group-prepend">
-        <div class="input-group-text"><i class="bi bi-send" style="font-size:16px;"></i></div>
+      <div class="col-5">
+        <input type="text" id="name" class="form-control" title="Name" style="padding-top:0px;">
+        <label for="name">Name</label>
       </div>
-      <input type="text" id="speed" class="form-control" placeholder="Speed" title="Speed" />
-    </div></div>
-  </div>
-  <div class="row" style="padding-top:15px;">
-    <div class="col">
-      <input type="text" id="languages" class="form-control" title="Languages" style="padding-top:0px;" />
-      <label for="languages">Languages</label>
+      <div class="col-2">
+        <input type="text" id="gender" class="form-control" title="Gender / Pronouns" style="padding-top:0px;">
+        <label for="gender">Gender / Pronouns</label>
+      </div>
+      <div class="col-4">
+        <input type="text" id="statement" class="form-control" title="Statement" style="padding-top:0px;">
+        <label for="statement">Statement</label>
+      </div>
+    </div>
+    <div class="row" style="padding-top:5px">
+      <div class="col">
+        <input type="text" id="ancestry" class="form-control" title="Ancestry" style="padding-top:0px;">
+        <label for="ancestry">Ancestry</label>
+      </div>
+      <div class="col">
+        <input type="text" id="background" class="form-control" title="Background" style="padding-top:0px;">
+        <label for="background">Background</label>
+      </div>
+      <div class="col">
+        <input type="text" id="motivation" class="form-control" title="Motivation" style="padding-top:0px;">
+        <label for="motivation">Motivation</label>
+      </div>
     </div>
   </div>
-  <div class="row" style="padding-top:20px">
-    <div class="col">
-      <input type="text" id="defenses" class="form-control" title="Defenses (Vulnerabilities, Resistances, Immunities)" style="padding-top:0px;" />
-      <label for="defenses">Defenses (Vulnerabilities, Resistances, Immunities)</label>
-    </div>
+
+  <div id="pane-picture" class="soft-edges" style="position:absolute; left:1%; top:110%;">
+    <img src="https://nintendoeverything.com/wp-content/uploads/zelda-breath-wild-daruk.jpg" style="height:300px; max-width:300px;" />
   </div>
-  <div class="row" style="padding-top:20px">
-    <div class="col">
-      <input type="text" id="appearance" class="form-control" title="Appearance (Age, Height, Weight)" style="padding-top:0px;" />
-      <label for="appearance">Appearance (Age, Height, Weight)</label>
-    </div>
+
+  <div id="pane-dice-results" style="position:absolute; right:1%; top:105%; width:150px; height:302px; overflow:hidden;">
+    <ul id="results-list" class="list-group" style="height:10px;"></ul>
   </div>
-  <div class="row" style="padding-top:20px">
-    <div class="col">
-      <input type="text" id="alignment" class="form-control" title="Alignment" style="padding-top:0px;" />
-      <label for="appearance">Alignment</label>
-    </div>
+
+  <div id="pane-center">
+    <i class="bi bi-triangle" style="font-size:150px;position:absolute;top:80px;left:48%;"></i>
+    <input type="text" id="power" style="position:absolute;top:180px;left:53%;width:30px;font-size:46px;border:0px;text-align:center;font-weight:bold;color:red;" title="Power" />
+    <i class="bi bi-triangle" style="font-size:150px;position:absolute;top:220px;left:40%;"></i>
+    <input type="text" id="wisdom" style="position:absolute;top:320px;left:45%;width:30px;font-size:46px;border:0px;text-align:center;font-weight:bold;color:blue;" title="Wisdom" />
+    <i class="bi bi-triangle" style="font-size:150px;position:absolute;top:220px;left:56%;"></i>
+    <input type="text" id="courage" style="position:absolute;top:320px;left:61%;width:30px;font-size:46px;border:0px;text-align:center;font-weight:bold;color:green;" title="Courage" />
+
+    <i class="bi bi-heart" style="font-size:100px;position:absolute;top:150px;left:35%;"></i>
+    <input type="text" id="hearts" style="position:absolute;top:198px;left:38%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:red;" title="Hearts" />
+    <input type="text" id="hearts-temp" style="position:absolute;top:198px;left:28%;width:60px;height:50px;font-size:40px;border:0px;border-bottom:2px solid black;text-align:center;font-weight:bold;color:pink;" title="Temp Hearts" />
+    <i class="bi bi-square" style="font-size:100px;position:absolute;top:400px;left:50%;"></i>
+    <input type="text" id="items" style="position:absolute;top:455px;left:53%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:blue;" title="Item Slots" />
+    <i class="bi bi-circle" style="font-size:100px;position:absolute;top:220px;left:70%;"></i>
+    <input type="text" id="stamina" style="position:absolute;top:275px;left:73%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:green;" title="Stamina" />
+    <input type="text" id="stamina-temp" style="position:absolute;top:275px;left:80%;width:60px;height:50px;font-size:40px;border:0px;border-bottom:2px solid black;text-align:center;font-weight:bold;color:lightgreen;" title="Temp Stamina" />
+    <i class="bi bi-shield" style="font-size:100px;position:absolute;top:600px;left:50%;"></i>
+    <input type="text" id="armor" style="position:absolute;top:648px;left:52%;width:52px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:grey;" title="Armor" />
+    <i class="bi bi-hexagon" style="font-size:100px;position:absolute;top:800px;left:50%;"></i>
+    <input type="text" id="hero" style="position:absolute;top:855px;left:53%;width:30px;height:50px;font-size:40px;border:0px;text-align:center;font-weight:bold;color:orange;" title="Hero Points" />
   </div>
-  <div class="row" style="padding-top:20px">
-    <div class="col">
-      <input type="text" id="allies" class="form-control" title="Allies / Organizations" style="padding-top:0px;" />
-      <label for="appearance">Allies / Organizations</label>
-    </div>
+
+  <div id="pane-items" style="position:absolute;left:0;top:450px;width:500px;">
   </div>
-  <div class="row" style="padding-top:20px">
-    <div class="col">
-      <textarea id="notes" class="form-control" style="height:120px;" title="Character Backstory / Details / Other Notes"></textarea>
-      <label for="notes">Character Backstory / Details / Other Notes</label>
+
+  <div id="pane-info" style="position:absolute;left:65%;top:450px;width:400px;">
+    <div class="row">
+      <div class="col"><div class="input-group mb-2 mr-sm-2">
+        <div class="input-group-prepend">
+          <div class="input-group-text"><i class="bi bi-gem" style="font-size:16px;"></i></div>
+        </div>
+        <input type="number" id="rupees" class="form-control" placeholder="Rupees" title="Rupees" />
+      </div></div>
+      <div class="col"><div class="input-group mb-2 mr-sm-2">
+        <div class="input-group-prepend">
+          <div class="input-group-text"><i class="bi bi-send" style="font-size:16px;"></i></div>
+        </div>
+        <input type="text" id="speed" class="form-control" placeholder="Speed" title="Speed" />
+      </div></div>
+    </div>
+    <div class="row" style="padding-top:15px;">
+      <div class="col">
+        <input type="text" id="languages" class="form-control" title="Languages" style="padding-top:0px;" />
+        <label for="languages">Languages</label>
+      </div>
+    </div>
+    <div class="row" style="padding-top:20px">
+      <div class="col">
+        <input type="text" id="defenses" class="form-control" title="Defenses (Vulnerabilities, Resistances, Immunities)" style="padding-top:0px;" />
+        <label for="defenses">Defenses (Vulnerabilities, Resistances, Immunities)</label>
+      </div>
+    </div>
+    <div class="row" style="padding-top:20px">
+      <div class="col">
+        <input type="text" id="appearance" class="form-control" title="Appearance (Age, Height, Weight)" style="padding-top:0px;" />
+        <label for="appearance">Appearance (Age, Height, Weight)</label>
+      </div>
+    </div>
+    <div class="row" style="padding-top:20px">
+      <div class="col">
+        <input type="text" id="alignment" class="form-control" title="Alignment" style="padding-top:0px;" />
+        <label for="appearance">Alignment</label>
+      </div>
+    </div>
+    <div class="row" style="padding-top:20px">
+      <div class="col">
+        <input type="text" id="allies" class="form-control" title="Allies / Organizations" style="padding-top:0px;" />
+        <label for="appearance">Allies / Organizations</label>
+      </div>
+    </div>
+    <div class="row" style="padding-top:20px">
+      <div class="col">
+        <textarea id="notes" class="form-control" style="height:120px;" title="Character Backstory / Details / Other Notes"></textarea>
+        <label for="notes">Character Backstory / Details / Other Notes</label>
+      </div>
     </div>
   </div>
 </div>
-
-</div>
-
-<script type="text/javascript" src="sheet.js"></script>
 
 </body>
 </html>
