@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>5e Dice Roller</title>
+<title>TTRPG Dice Roller</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="style.css">
 <script type="importmap">{ "imports": { "dice-box": "https://unpkg.com/@3d-dice/dice-box" } }</script><script type="module" src="dice_3d.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
 <script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="dice.js"></script>
 
 <script>
   var roll;
@@ -16,34 +17,33 @@
 
   function init() {
     params = new Proxy(new URLSearchParams(window.location.search), {
-      get: (searchParams, prop) => searchParams.get(prop),
+      get: ( searchParams, prop ) => searchParams.get(prop),
     });
     // pad by default, but allow it to be turned off
-    if (params.pad) { pad = params.pad; }
-    if (pad == true) { $('body').prepend('<br /><br />'); }
-    if (params.ability) {
+    if ( params.pad ) { pad = params.pad; }
+    if ( pad == true ) { $('body').prepend('<br /><br />'); }
+    if ( params.ability ) {
 	$('#dice-roller').addClass('dice-ability-roller').removeClass('dice-roller');
 	$('#dice-button').addClass('dice-ability-button').removeClass('dice-button');
 	$('#dice-label').addClass('dice-ability-label').removeClass('dice-label');
 	$('#dice-button').insertAfter('#dice-label');
 	add = Math.floor((params.ability - 10) / 2);
 	roll = '1d20';
-	if (add > 0) {
+	if ( add > 0 ) {
 	    roll_text = params.ability + ' (+' + add + ')'
 	} else {
 	    roll_text = params.ability + ' (' + add + ')'
 	}
 	if (params.label) { $('#dice-top').html(params.label) }
 	$('#dice-button').html(roll_text);
-	//diceButton();
     } else {
 	roll = params.roll || '1d20';
 	var roll_text = roll;
-	if (params.mult !== null) {
+	if ( params.mult !== null ) {
 	    mult = params.mult;
 	    roll_text = roll_text + 'x' + mult;
 	}
-	if (params.add !== null) {
+	if ( params.add !== null ) {
 	    add = params.add;
 	    roll_text = roll_text + '+' + add;
 	}
@@ -53,30 +53,26 @@
   };
 
   function diceButton() {
-    if (roll.indexOf('+') > 0) {
-	var rolled = parseInt(rollDice(roll.substring(0, roll.indexOf('+'))));
-    } else {
-	var rolled = parseInt(rollDice(roll));
-    }
-    if (roll == '1d20' || roll == 'd20') {
-      if (rolled == 20) {
+    var rolled = rollDice(roll)[2];
+    if ( roll == '1d20' || roll == 'd20' ) {
+      if ( rolled == 20 ) {
         $('#dice-label').addClass('dice-nat-20');
       } else {
         $('#dice-label').removeClass('dice-nat-20');
       }
-      if (rolled == 1) {
+      if ( rolled == 1 ) {
         $('#dice-label').addClass('dice-nat-1');
       } else {
         $('#dice-label').removeClass('dice-nat-1');
       }
     }
-    if (mult) { rolled = rolled * parseInt(mult); }
-    else if (roll.includes('x')) {
-      if (roll.includes('+')) { rolled = rolled * parseInt(roll.substring(roll.indexOf('x')+1, roll.indexOf('+')));
+    if ( mult ) { rolled = rolled * parseInt(mult); }
+    else if ( roll.includes('x') ) {
+      if ( roll.includes('+') ) { rolled = rolled * parseInt(roll.substring(roll.indexOf('x')+1, roll.indexOf('+')));
       } else { rolled = rolled * parseInt(roll.substring(roll.indexOf('x')+1, roll.length)); }
     }
-    if (add) { rolled = rolled + parseInt(add); }
-    else if (roll.includes('+')) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); }
+    if ( add ) { rolled = rolled + parseInt(add); }
+    else if ( roll.includes('+') ) { rolled = rolled + parseInt(roll.substring(roll.indexOf('+')+1, roll.length)); }
     $('#dice-label').html(rolled);
   };
 </script>
