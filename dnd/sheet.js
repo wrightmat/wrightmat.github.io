@@ -88,19 +88,19 @@ $('#items').on("change", function() {
 	    $('<button>', { type: 'button', class: 'btn btn-secondary', html: 'Dmg' }).appendTo('#item-' + (i+1) + '-buttons');
 	    $('#item-' + (i+1) + '-stat').val(sheet.itemslots[i].damage);
 	    $('#item-' + (i+1) + '-buttons').children().first().on("click", function() {
-	      if ( sheet.itemslots[i].attack == "power" ) {
+	      if ( sheet.itemslots[i-1].attack == "power" ) {
 		rollDice('1d20+' + sheet.power);
-	      } else if ( sheet.itemslots[i].attack == "courage" ) {
+	      } else if ( sheet.itemslots[i-1].attack == "courage" ) {
 		rollDice('1d20+' + sheet.courage);
-	      } else if ( sheet.itemslots[i].attack == "wisdom" ) {
+	      } else if ( sheet.itemslots[i-1].attack == "wisdom" ) {
 		rollDice('1d20+' + sheet.wisdom);
 	      }
 	    });
 	    $('#item-' + (i+1) + '-buttons').children().last().on("click", function() {
-	      if ( sheet.damage.charAt(0) == "d" ) {
-		rollDice("1" + sheet.damage);
+	      if ( sheet.itemslots[i-1].damage.charAt(0) == "d" ) {
+		rollDice("1" + sheet.itemslots[i-1].damage);
 	      } else {
-	        rollDice(sheet.damage);
+	        rollDice(sheet.itemslots[i-1].damage);
 	      }
 	    });
 	  }
