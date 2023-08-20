@@ -96,9 +96,9 @@ $("#test").on("click", function() {
 	    $('#item-' + (i+1) + '-buttons').children().first().on("click", function() {
 	      if ( sheet.itemslots[i].attack == "power" ) {
 		rollDice('1d20+' + sheet.power);
-	      elseif ( sheet.itemslots[i].attack == "courage" ) {
+	      } elseif ( sheet.itemslots[i].attack == "courage" ) {
 		rollDice('1d20+' + sheet.courage);
-	      elseif ( sheet.itemslots[i].attack == "wisdom" ) {
+	      } elseif ( sheet.itemslots[i].attack == "wisdom" ) {
 		rollDice('1d20+' + sheet.wisdom);
 	      }
 	    });
