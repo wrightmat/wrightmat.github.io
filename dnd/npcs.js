@@ -91,7 +91,7 @@ function notionAppendBlock(p, b) {
 }
 
 function changeAlignment() {
-    if ($('#npc-alignment').find(':selected').val() != 'random') {
+    if ( $('#npc-alignment').find(':selected').val() != 'random' ) {
 	$('#tbl-alignment').hide();
     } else {
 	$('#tbl-alignment').show();
@@ -99,83 +99,82 @@ function changeAlignment() {
 }
 
 function generateNPC() {
-    if ($('#npc-type').find(':selected').val() == 'random') {
+    if ( $('#npc-type').find(':selected').val() == 'random' ) {
 	var type = getTableResult(npc_type);
     } else {
-	var ind = []
+	var ind = [];
 	npc_type.forEach(function (item) {
-	    if (item.title != undefined) {
-		if (item.title == $('#npc-type').find(':selected').val()) {
+	    if ( item.title != undefined ) {
+		if ( item.title == $('#npc-type').find(':selected').val() ) {
 		    ind = item;
 		}
 	    }
-	});
-	var type = ind;
+	}); var type = ind;
     }
     if ($('#npc-race').find(':selected').val() == 'random') {
-	if ($('#npc-location').find(':selected').val() == 'eberron') {
+	if ( $('#npc-location').find(':selected').val() == 'eberron' ) {
 	    var race = getTableResult(npc_race);
-	} else if ($('#npc-location').find(':selected').val() == 'space') {
-	    while (race == undefined || race == 'Other') {
+	} else if ( $('#npc-location').find(':selected').val() == 'space' ) {
+	    while ( race == undefined || race == 'Other' ) {
 		var race = getTableResult(npc_race[$('#npc-location').find(':selected').text()]);
 		var ind = []; npc_race.forEach(function (item) {
-		    if (item.title != undefined) {
-			if (item.title == race) { ind = item; }
+		    if ( item.title != undefined ) {
+			if ( item.title == race ) { ind = item; }
 		    }
-		}); var race = ind
+		}); var race = ind;
 	    }
 	} else {
-	    while (race == undefined || race == 'Other') {
+	    while ( race == undefined || race == 'Other' ) {
 		var race = getTableResult(npc_race[$('#npc-location').find(':selected').text()]);
 		var ind = []; npc_race.forEach(function (item) {
-		    if (item.title != undefined) {
+		    if ( item.title != undefined ) {
 			if (item.title == race) { ind = item; }
 		    }
-		}); var race = ind
+		}); var race = ind;
 	    }
 	}
     } else {
-	var ind = []
+	var ind = [];
 	npc_race.forEach(function (item) {
-	    if (item.title != undefined) {
-		if (item.title == $('#npc-race').find(':selected').val()) {
+	    if ( item.title != undefined ) {
+		if ( item.title == $('#npc-race').find(':selected').val() ) {
 		    ind = item;
 		}
 	    }
 	});
 	var race = ind
     }
-    if ($('#npc-gender').find(':selected').val() == 'random') {
+    if ( $('#npc-gender').find(':selected').val() == 'random' ) {
 	var gender = getTableResult(npc_gender);
     } else {
 	var ind = []
 	npc_gender.forEach(function (item) {
-	    if (item.title != undefined) {
-		if (item.title == $('#npc-gender').find(':selected').val()) {
+	    if ( item.title != undefined ) {
+		if ( item.title == $('#npc-gender').find(':selected').val() ) {
 		    ind = item;
 		}
 	    }
 	});
 	var gender = ind
     }
-    if ($('#npc-alignment').find(':selected').val() == 'random') {
+    if ( $('#npc-alignment').find(':selected').val() == 'random' ) {
 	var alignment = align_selected[Math.floor(Math.random() * align_selected.length)]
     } else {
 	var alignment = $('#npc-alignment').find(':selected').val()
     }
     // Half races - combine the two name sets before using the markov generator
-    if (race.title == "Half-Elf") {
+    if ( race.title == "Half-Elf" ) {
 	var names = name_set['Elf ' + gender.title].concat(name_set['Human ' + gender.title]);
 	var name = generate_name(names);
-    } else if (race.title == "Half-Orc") {
+    } else if ( race.title == "Half-Orc" ) {
 	var names = name_set['Orc ' + gender.title].concat(name_set['Human ' + gender.title]);
 	var name = generate_name(names);
     // Non-gendered races
-    } else if (['Changeling','Kalashtar'].includes(race.title)) {
+    } else if ( ['Changeling','Kalashtar'].includes(race.title) ) {
 	var name_type = race.title;
 	var name = generate_name(name_type);
     // Races with specific names that shouldn't use the markov generator
-    } else if (['Shifter','Warforged'].includes(race.title)) {
+    } else if ( ['Shifter','Warforged'].includes(race.title) ) {
 	var name = name_set[race.title][Math.floor(Math.random() * name_set[race.title].length)];
     } else {
 	var name_type = race.title + ' ' + gender.title;
@@ -184,18 +183,18 @@ function generateNPC() {
 
     var age = []; var height; var weight; var speed; var eyes = ""; var hair = ""; var skin = "";
     var tiers = [ "Young Adult", "Adult", "Middle Aged", "Older Adult", "Elderly" ];
-    if (race.age) {
-	age.age = getRandomInt(race.age[0], race.age[1]);
+    if ( race.age ) {
+	age[1] = getRandomInt(race.age[0], race.age[1]);
 	var age_tiers = Math.floor((race.age[1] - race.age[0]) / 5);
-	var age_tier = Math.floor(age.age / age_tiers);
-	age.group = tiers[age_tier - 1];
+	var age_tier = Math.floor(age[1] / age_tiers);
+	age[0] = tiers[age_tier - 1];
     }
-    if (race.height) { height = getRandomInt(race.height[0], race.height[1]); }
-    if (race.weight) { weight = getRandomInt(race.weight[0], race.weight[1]); }
-    if (race.speed) { speed = race.speed; }
-    if (race.eyes) { eyes = getTableResult(race.eyes); }
-    if (race.hair) { hair = getTableResult(race.hair); }
-    if (race.skin) { skin = getTableResult(race.skin); }
+    if ( race.height ) { height = getRandomInt(race.height[0], race.height[1]); }
+    if ( race.weight ) { weight = getRandomInt(race.weight[0], race.weight[1]); }
+    if ( race.speed ) { speed = race.speed; }
+    if ( race.eyes ) { eyes = getTableResult(race.eyes); }
+    if ( race.hair ) { hair = getTableResult(race.hair); }
+    if ( race.skin ) { skin = getTableResult(race.skin); }
 
     var attitude = getTableResult(npc_attitude);
     var orientation = getTableResult(npc_orientation);
@@ -210,22 +209,30 @@ function generateNPC() {
     var flaw = getTableResult(npc_flaws);
     var ideal_1 = getTableResult(npc_ideals[alignment.substring(0,1).toUpperCase()])
     var ideal_2 = getTableResult(npc_ideals[alignment.substring(2,1).toUpperCase()])
-    if (getRandomInt(0,1) == 0) { var ideal = ideal_1 } else { var ideal = ideal_2 }
+    if ( getRandomInt(0,1) == 0 ) { var ideal = ideal_1 } else { var ideal = ideal_2 }
     var saying; do { saying = getTableResult(npc_sayings); }
-    while ( (saying.race != undefined && !saying.race.includes(race)) || (saying.alignment != undefined && !(saying.alignment.includes(alignment.substring(0,1)) || saying.alignment.includes(alignment.substring(2,1)))) || (saying.type != undefined && !saying.type.includes(type)) );
+    while ( ( saying.race != undefined && !saying.race.includes(race) ) || ( saying.alignment != undefined && !(saying.alignment.includes(alignment.substring(0,1)) || saying.alignment.includes(alignment.substring(2,1))) ) || ( saying.type != undefined && !saying.type.includes(type) ) );
     var stats = type.stats;
     stats[ability_high.stat - 1] += ability_high.mod;
     stats[ability_low.stat - 1] += ability_low.mod;
-    var hp = [];
-    hp.value = type.hp[0];
-    hp.roll = type.hp[1];
 
     var npc = new Object();
     npc.location = $('#npc-location').find(':selected').val();
     npc.name = name;
-    npc.race = race;
-    npc.type = type;
-    npc.alignment = alignment;
+    npc.race = {}; npc.type = {};
+    npc.race.title = race.title;
+    npc.race.group = race.group;
+    npc.type.title = type.title;
+    npc.type.skills = type.skills;
+    npc.type.cr = type.cr;
+    npc.type.abilities = type.abilities;
+    npc.type.actions = type.actions;
+    npc.type.description = type.description;
+    npc.alignment = []; var al = "";
+    npc.alignment[0] = alignment.toUpperCase();
+    if ( alignment.substring(0,1) == "c" ) { al = "Chaotic" } else if ( alignment.substring(0,1) == "l" ) { al = "Lawful" } else if ( alignment.substring(0,1) == "n" ) { al = "Neutral" }
+    if ( alignment.substring(2,1) == "g" ) { al += " Good" } else if ( alignment.substring(2,1) == "e" ) { al += " Evil" } else if ( alignment.substring(2,1) == "n" ) { al += " Neutral" }
+    npc.alignment[1] = al;
     npc.gender = gender;
     npc.attitude = attitude;
     npc.orientation = orientation;
@@ -245,7 +252,7 @@ function generateNPC() {
     npc.ideal = ideal;
     npc.saying = saying.saying;
     npc.ac = type.ac;
-    npc.hp = hp;
+    npc.hp = type.hp;
     npc.speed = speed;
     npc.stats = stats;
     npc.cr = type.cr;
@@ -263,10 +270,10 @@ function generateNPC() {
 function refreshSelect(sel) {
     page = "";
     $('#npc-select').empty();
-    for (let i = 0; i < npcs.length; i++) {
+    for ( let i = 0; i < npcs.length; i++ ) {
 	$('#npc-select').append('<option value="">' + npcs[i].name + ' (' + npcs[i].race.title + ' ' + npcs[i].type.title + ')</option>');
     }
-    if (sel >= 0) {
+    if ( sel >= 0 ) {
 	$('#npc-select option')[sel].selected = true;
     }
 }
@@ -277,20 +284,20 @@ function changeSelect(el) {
 
 function changeFormat(el) {
     var sel = $('#npc-select').prop('selectedIndex');
-    if (sel >= 0) {
+    if ( sel >= 0 ) {
 	populateOutput(el.selectedIndex, npcs[sel]);
     }
 }
 
 function removeNPC() {
-    if ($('#npc-select').prop('selectedIndex') > -1) {
+    if ( $('#npc-select').prop('selectedIndex') > -1 ) {
 	npcs.splice($('#npc-select').prop('selectedIndex'), 1);
 	refreshSelect();
     }
 }
 
 function exportNPC() {
-    if ($('#npc-select').prop('selectedIndex') > -1) {
+    if ( $('#npc-select').prop('selectedIndex') > -1 ) {
 	var npc = npcs[$('#npc-select').prop('selectedIndex')];
 	// Give status update, since Notion page creation can take some time.
 	var sts_1 = "<p>Creating new Notion page for '" + npc.name + "'...</p>";
@@ -311,40 +318,40 @@ function exportNPC() {
 function outputLine(type, id, header, cell, suppl) {
     // type: 0 = table, 1 = markdown, 2 = notion blocks
     var header = header || "";
-    if (type == 0) {
+    if ( type == 0 ) {
 	var updated = false;
 	$('#tbl-npc tr').each(function() {
-	    if (id !== "" && id == this.id) {
+	    if ( id !== "" && id == this.id ) {
 		updated = true;
-		if (header !== "") { $(this).find('th').text(header); }
-		if (cell !== "") { $(this).find('td:eq(0)').text(cell); }
+		if ( header !== "" ) { $(this).find('th').text(header); }
+		if ( cell !== "" ) { $(this).find('td:eq(0)').text(cell); }
 		$(this).find('td:eq(1)').html(replaceText($(this).find('td:eq(1)').attr("id"), cell));
 	    }
 	})
-	if (!updated) {
+	if ( !updated ) {
 	    var line = ""
-	    if (typeof suppl == "undefined") { suppl = "" }
-	    if (id == "") {
+	    if ( typeof suppl == "undefined" ) { suppl = "" }
+	    if ( id == "" ) {
 		line = '<tr><th>' + header +'</th><td>&nbsp;</td></tr>';
 	    } else {
 		line = '<tr id="' + id + '"><th>' + header + '</th><td id="' + id + '">' + cell + '</td><td id="' + suppl + '">' + replaceText(suppl, cell) + '</td></tr>';
 	    }
 	    $('#tbl-npc').append(line);
 	}
-    } else if (type == 1) {
+    } else if ( type == 1 ) {
     	var line = "" 
-	if (id == "") {
-	    if (header != "") { header = '**' + header + '**' }
+	if ( id == "" ) {
+	    if ( header != "" ) { header = '**' + header + '**' }
 	    line = header + '<br />';
 	} else {
-	    if (header != "") {
+	    if ( header != "" ) {
 	    	line = '**' + header + '**: ' + cell + '<br />';
 	    } else {
 		line = cell + '</br />';
 	    }
 	}
 	$('#div-npc').append(line);
-    } else if (type == 2) {
+    } else if ( type == 2 ) {
 	var block = new Object();
 	var rtx = new Object();
 	var rtx_array = []
@@ -421,13 +428,13 @@ function populateOutput(type, npc) {
 	outputLine(type, "race", "Race", npc.race.title);
 	outputLine(type, "type", "Type", npc.type.title);
 	outputLine(type, "");
-	outputLine(type, "alignment", "Alignment", npc.alignment.toUpperCase());
+	outputLine(type, "alignment", "Alignment", npc.alignment[0]);
 	outputLine(type, "attitude", "Initial Attitude", npc.attitude);
 	outputLine(type, "gender", "Gender", npc.gender.title);
 	outputLine(type, "relationship", "Relationship Status", npc.relationship);
 	outputLine(type, "orientation", "Sexual Orientation", npc.orientation);
 	outputLine(type, "");
-	outputLine(type, "age.age", "Age", npc.age.age, "^ (" + npc.age.group + ")");
+	outputLine(type, "age[1]", "Age", npc.age[1], "^ (" + npc.age[0] + ")");
 	outputLine(type, "height", "Height", npc.height, "^ in.");
 	outputLine(type, "weight", "Weight", npc.weight, "^ lbs.");
 	outputLine(type, "eyes", "Eyes", npc.eyes);
@@ -445,7 +452,7 @@ function populateOutput(type, npc) {
 	outputLine(type, "saying", "Saying", npc.saying);
 	outputLine(type, "");
 	outputLine(type, "ac", "AC", npc.ac);
-	outputLine(type, "hp.value", "HP", npc.hp.value, "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp.roll) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
+	outputLine(type, "hp.value", "HP", npc.hp[0], "<iframe src='dice.htm?roll=" + encodeURIComponent(npc.hp[1]) + "&pad=false' style='width:110px;height:30px;border:0px;' scrolling='no'></iframe>");
 	outputLine(type, "speed", "Speed", npc.speed, "^ ft.");
 	outputLine(type, "");
 	outputLine(type, "", "Stats");

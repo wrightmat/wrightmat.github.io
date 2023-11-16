@@ -28,6 +28,24 @@ function jsonConcat(o1, o2) {
   return o1;
 }
 
+function rollRandom(dice, sum=true) {
+  var arr = [];
+  var d = dice.indexOf("d");
+  var x = dice.indexOf("x");
+  var num = dice.substring(0, d) || 1;
+  if ( x >= 0 ) { var die = dice.substring(d+1, x); } else { var die = dice.substring(d+1, dice.length); }
+  if ( x >= 0 ) { var mult = dice.substring(x+1, dice.length) } else { var mult = 1 };
+  if (parseInt(d) == 0) { d = 1; }
+  for (let i = 0; i < num; i++) {
+    arr.push(getRandomInt(d, die) * mult);
+  }
+  if (sum) {
+    return arr.reduce((a, b) => a + b);
+  } else {
+    return arr;
+  }
+}
+
 function setCookie(cname, cvalue, exdays) {
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -56,11 +74,11 @@ function getTableResult(table) {
     // either a string or array depending on the table
     if (typeof table[0] == "string") {
 	// simple table, without ranges
-	return table[rollDice(table[0])];
+	return table[rollRandom(table[0])];
     } else if (typeof table[0] == "object") {
 	// complex table, with ranges
 	var ind;
-	var roll = rollDice(table[0][0]);
+	var roll = rollRandom(table[0][0]);
 	table[0].forEach(function (item, index) {
 	    if (typeof item == "object") {
 		if (item.length == 2 && roll >= item[0] && roll <= item[1]) {

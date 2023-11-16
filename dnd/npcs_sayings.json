@@ -36,7 +36,7 @@ npc_sayings = [
 		alignment: [ 'c' ]
 	},
 	{
-		saying: "If something is nonlethal then you aren’t trying hard enough.",
+		saying: "If something is nonlethal then you aren't trying hard enough.",
 		alignment: [ 'c', 'e' ]
 	},
 	{
@@ -281,7 +281,7 @@ npc_sayings = [
 		saying: "It looks safe enough."
 	},
 	{
-		saying: "-sigh- ...this is going to hurt."
+		saying: "-sigh- ... this is going to hurt."
 	},
 	{
 		saying: "I used to be an adventurer like you, but then I took an arrow to the knee."
@@ -290,7 +290,7 @@ npc_sayings = [
 		saying: "It's not really magic unless something goes *boom*"
 	},
 	{
-		saying: "Plan?...There ain't no plan!"
+		saying: "Plan? ... There ain't no plan!"
 	},
 	{
 		saying: "Well, butter me nibblets."
@@ -305,7 +305,7 @@ npc_sayings = [
 		saying: "My horse is smarter than you and I reckon he's a dumb horse."
 	},
 	{
-		saying: "You ain’t useful or pretty."
+		saying: "You ain't useful or pretty."
 	},
 	{
 		saying: "Secrets are like acid. They burn you up but they can be fun to spit out."

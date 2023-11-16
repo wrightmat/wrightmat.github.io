@@ -1,796 +1,196 @@
-npc_type = [
-	[ "1d100", [1,5], [6,10], [11,15], [16,20], [21,25], [26,35], [36,40], [41,45], [46,50], [51,55], [56,60], [61,65], [66,70], [71,75], [76,80], [81,85], [86,88], [89,92], [93,96], [97,100] ],
+npcs = [
 	{
-		title: "Acolyte",
-		stats: [ 10, 10, 10, 10, 14, 11 ],
-		ac: 10,
-		hp: [ 9, "2d8" ],
-		skills: "Medicine +4, Religion +2",
-		cr: 0.25,
-		abilities: [
-			"Spellcasting. The acolyte is a 1st-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). The acolyte has following cleric spells prepared:<br />Cantrips (at will): light, sacred flame, thaumaturgy<br />1st level (3 slots): bless, cure wounds, sanctuary"
-		],
-		actions: [
-			"Club. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 2 (1d4) bludgeoning damage."
-		],
-		description: "Acolytes are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities."
+		"location": "barovia",
+		"name": "Madam Eva",
+		"race": { "title": "Human", "group": "Base" },
+		"type": { "title": "Custom" },
+		"alignment": [ "CN", "Chaotic Neutral" ],
+		"gender": { "title": "Female", "pronouns": [ "she", "her" ] },
+		"attitude": "Helpful","orientation": "Heterosexual","relationship": "Single","age": [ "Elderly" ],"occupation": "Fortune Teller",
+		"appearance": "wrinkled skin; long fingernails and nose; wears a robe with a head piece","talent": "Tarokka Cards","mannerism": "Usually fidgeting with her cards.","interaction_trait": "Always ready to help people even though she's bound by Strahd.",
+		"bond": "The Vistani are my people now.","flaw": "The people whose fates I divine aren't important. They are but the means to an end.","ideal": "I wish Strahd to be free of his curse.","saying": "The stars speak to me. They whisper of the horrors waiting in the night.",
+		"ac": 10,"hp": [ 88, "16d8 + 16" ],"speed": 20,"stats": [ 8,11,12,17,20,18 ],"cr": 10,"skills": "Arcana +7, Deception +8, Insight +13, Intimidation +8, Perception +9, Religion +7",
+		"description": "The fortune-teller Madam Eva lives among the Vistani but isn't truly one of them. She appears to be in her seventies, but she is, in fact, much older.",
+		"image": "https://www.worldanvil.com/uploads/images/cd25bf78774c5d557123679de4ca2878.jpg"
 	},
 	{
-		title: "Assassin",
-		stats: [ 11, 16, 14, 13, 11, 10 ],
-		ac: 15,
-		hp: [ 78, "12d8+24" ],
-		saves: "Dex +7, Int +5",
-		skills: "Acrobatics +7, Deception +4, Perception +4, Stealth +11",
-		cr: 8,
-		abilities: [
-			"Assassinate. During its first turn, the assassin has advantage on attack rolls against any creature that hasn't taken a turn. Any hit the assassin scores against a surprised creature is a critical hit.",
-			"Evasion. If the assassin is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, the assassin instead takes no damage if it succeeds on the saving throw, and only half damage if it fails.",
-			"Sneak Attack (1/Turn). The assassin deals an extra 13 (4d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 feet of an ally of the assassin that is n't incapacitated and the assassin doesn't have disadvantage on the attack roll."
-		],
-		actions: [
-			"Multiattack. The assassin makes two shortsword attacks.",
-			"Shortsword. Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) piercing damage, and the target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one.",
-			"Light Crossbow. Ranged Weapon Attack: +7 to hit, range 80/320 ft., one target. Hit: 7 (1d8 + 3) piercing damage, and the target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one."
-		],
-		description: "Trained in the use of poison, assassins are remorseless killers who work for nobles, guildmasters, sovereigns, and anyone else who can afford them."
+		"location": "barovia",
+		"name": "Strahd Von Zarovich",
+		"race": { "title": "Vampire", "group": "Barovia" },
+		"type": { "title": "Custom" },
+		"alignment": [ "LE", "Lawful Evil" ],
+		"gender": { "title": "Male", "pronouns": [ "he", "him" ] },
+		"attitude": "Indifferent","orientation": "Pansexual","relationship": "Single","age": [ "Immortal" ],"occupation": "Master of Ravenloft",
+		"appearance": "Dead - but also formally dressed, muscular, and very sure of himself","skin": "pale","hair": "black","eyes": "dark (but glow like red hot coals when he is aroused or angry)",
+		"talent": "Manipulation","mannerism": "Seductive and subtle","interaction_trait": "Will try to manipulate the players and prey on their weaknesses, while also trying to convince them to be turned into a vampire.",
+		"goals": [ "Turn Ireena Kolyana", "Find Rudolph Van Richten", "Search for a Successor or Consort" ],
+		"saying": "You are here because I willed it; you exist because I allow it, and you will die because I demand it.",
+		"ac": 16,"hp": [ 144, "17d8 + 68" ],"speed": 30,"stats": [ 18,18,18,20,15,18 ],"cr": 15,"skills": "Arcana +15, Perception +12, Religion +10, Stealth +14",
+		"description": "With his mind sharp and his heart dark, Strahd von Zarovich is a formidable foe. Courage and lives beyond measure have been lost to him.",
+		"image": "https://static.wikia.nocookie.net/bronydandd/images/a/ac/Strahd.jpg/revision/latest?cb=20200221224505"
 	},
 	{
-		title: "Bandit",
-		stats: [ 11, 12, 12, 10, 10, 10 ],
-		ac: 12,
-		hp: [ 11, "2d8+2" ],
-		cr: 0.125,
-		actions: [
-			"Scimitar. Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 4 (1d6 + 1) slashing damage.",
-			"Light Crossbow. Ranged Weapon Attack: +3 to hit, range 80 ft./320ft., one target. Hit: 5 (1d8 + 1) piercing damage."
-		],
-		description: "Bandits rove in gangs and are sometimes led by thugs, veterans, or spellcasters. Not all bandits are evil. Oppression, drought, disease, or famine can often drive otherwise honest folk to a life of banditry. Pirates are bandits of the high seas. They might be freebooters interested only in treasure and murder, or they might be privateers sanctioned by the crown to attack and plunder an enemy nation's vessels."
+		"location": "barovia",
+		"name": "Ismark the Lesser",
+		"race": { "title": "Human", "group": "Base" },
+		"type": { "title": "Veteran", "description": "Veterans are professional fighters that take up arms for pay or to protect something they believe in or value. Their ranks include soldiers retired from long service and warriors who never served anyone but themselves.", },
+		"alignment": [ "LG", "Lawful Good" ],
+		"gender": { "title": "Male", "pronouns": [ "he", "him" ] },
+		"attitude": "Friendly", "orientation": "Heterosexual", "relationship": "Single", "age": [ "Middle Aged" ], "skin": "white", "hair": "blonde",
+		"appearance": "Ruggedly handsome",
+		"talent": "", "mannerism": "", "interaction_trait": "",
+		"goals": [ "Get Ireena to safety" ],
+		"ac":17,"hp":[58,"9d8+18"],"speed":25,"stats":[18,13,14,10,11,10],"cr":3,
+		"skills":"Athletics +5, Perception +2",
+		"description": "Ismark is as tight-lipped as any of the other Barovian villagers, unless the talk deals with Ireena or Strahd. Ismark knows everything the other villagers know. He also knows that, for some unknown reason, Strahd is attracted to Ireena and desires her above all others. Ismark has spent most of his adult life training with weapons in the hope of one day confronting and killing the Strahd. If the characters suggest that he accompany them, Ismark agrees provided that Ireena is first taken to a place of safety.",
+		"image": "https://www.worldanvil.com/uploads/images/8daaa5db244432def5e6851af8fa406f.png"
 	},
 	{
-		title: "Bandit Captain",
-		stats: [ 15, 16, 14, 14, 11, 14 ],
-		ac: 15,
-		hp: [ 65, "10d8+20" ],
-		saves: "Str +4, Dex +5, Wis +2",
-		skills: "Athletics +4, Deception +4",
-		cr: 2,
-		actions: [
-			"Multiattack. The captain makes three melee attacks: two with its scimitar and one with its dagger. Or the captain makes two ranged attacks with its daggers.",
-			"Scimitar. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (ld6 + 3) slashing damage.",
-			"Dagger. Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 5 (1d4 + 3) piercing damage."
-		],
-		reactions: [
-			"Parry. The captain adds 2 to its AC against one melee attack that would hit it. To do so, the captain must see the attacker and be wielding a melee weapon."
-		],
-		description: "It takes a strong personality, ruthless cunning, and a silver tongue to keep a gang of bandits in line. The bandit captain has these qualities in spades. In addition to managing a crew of selfish malcontents, the pirate captain is a variation of the bandit captain, with a ship to protect and command. To keep the crew in line, the captain must mete out rewards and punishment on a regular basis. More than treasure, a bandit captain or pirate captain craves infamy. A prisoner who appeals to the captain's vanity or ego is more likely to be treated fairly than a prisoner who does not or claims not to know anything of the captain's colorful reputation."
+		"location":"barovia",
+		"name":"Mad Mary",
+		"race":{"title":"Human","group":"Base"},
+		"type":{"title":"Commoner","cr":0,"actions":["Club. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 2 (1d4) bludgeoning damage."],"description":"Commoners include peasants, serfs, slaves, servants, pilgrims, merchants, artisans, and hermits."},
+		"alignment":["CN","Chaotic Neutral"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Unfriendly","orientation":"Heterosexual","relationship":"Married","age":["Older Adult"],"eyes":"hazel","hair":"brown","skin":"white",
+		"appearance":"Distinctive posture (crooked or rigid)","talent":"Great at solving puzzles","mannerism":"Lost in sorrow and despondency","interaction_trait":"Will talk, albeit haltingly, to someone who talks with her gently",
+		"goals": [ "Rescue of her daughter Gertruda" ],
+		"ac":10,"hp":[4,"1d8"],"speed":30,"stats":[10,12,10,9,10,10],"cr":0,"actions":["Club. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 2 (1d4) bludgeoning damage."],
+		"description":"Mary hid her beloved daughter, Gertruda, in this house for the girl's entire life. Gertruda, now a teenager, broke out of the house a week ago and has not been seen since. Her mother fears the worst - and is justified in doing so.",
+		"image": "https://static.wikia.nocookie.net/welcome-to-sunny-barovia/images/4/41/Mad_mary.png/revision/latest?cb=20181019142957"
 	},
 	{
-		title: "Berserker",
-		stats: [ 16, 12, 17, 9, 11, 9 ],
-		ac: 13,
-		hp: [ 67, "9d8+27" ],
-		cr: 2,
-		abilities: [
-			"Reckless. At the start of its turn, the berserker can gain advantage on all melee weapon attack rolls during that turn, but attack rolls against it have advantage until the start of its next turn."
-		],
-		actions: [
-			"Greataxe. Melee Weapon Attack: +5 to hit, reach 5 ft. , one target. Hit: 9 (1d12 + 3) slashing damage."
-		],
-		description: "Hailing from uncivilized lands, unpredictable berserkers come together in war parties and seek conflict wherever they can find it."
+		"location":"barovia",
+		"name":"Ireena Kolyana",
+		"race":{"title":"Human","group":"Base"},
+		"type":{"title":"Noble","cr":0.125,"actions":["Rapier. Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 5 (ld8 + 1) piercing damage"],"description":"Nobles wield great authority and influence as members of the upper class, possessing wealth a nd connections that can make them as powerful as monarchs and generals. A noble often travels in the company of guards, as well as servants who are commoners. The noble's statistics can also be used to represent courtiers who aren't of noble birth."},
+		"alignment":["LG","Lawful Good"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Friendly","orientation":"Heterosexual","relationship":"Single","age":["Young Adult",25],"eyes":"blue","hair":"brown","skin":"dark brown",
+		"appearance":"Strikingly beautiful","talent":"Swordplay","mannerism":"Speaks loudly","interaction_trait":"Curious",
+		"bond":"Loyal to a benefactor, patron, or employer","flaw":"Has a powerful enemy","ideal":"Self-sacrifice",
+		"ac":15,"hp":[9,"2d8"],"speed":30,"stats":[10,14,11,12,14,16],"cr":0.125,"actions":["Rapier. Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 5 (ld8 + 1) piercing damage"],"reactions":["Parry. The noble adds 2 to its AC aga inst one melee attack that would hit it. To do so, the noble mu st see the attacker and be wielding a melee weapon."],
+		"description":"Ireena, a striking young woman with auburn hair, has been bitten twice by Strahd (but they're fuzzy memories). The villagers are afraid of her and avoid her. The characters are Ireena's best hope for protection, so she is willing to accompany them under certain conditions. Although she appears mild, she has a strong will, and she aids the party as best she can in saving herself. She doesn't remember her early past. She doesn't know how she came to Barovia or where she came from.",
+		"image": "https://static.wikia.nocookie.net/ravenloft/images/6/6e/Ireena.png/revision/latest?cb=20161212001242"
 	},
 	{
-		title: "Commoner",
-		stats: [ 10, 10, 10, 10, 10, 10 ],
-		ac: 10,
-		hp: [ 4, "1d8" ],
-		cr: 0,
-		actions: [
-			"Club. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 2 (1d4) bludgeoning damage."
-		],
-		description: "Commoners include peasants, serfs, slaves, servants, pilgrims, merchants, artisans, and hermits."
+		"location":"barovia",
+		"name":"Donavich",
+		"race":{"title":"Human","group":"Base"},
+		"type":{"title":"Acolyte","skills":"Medicine +4, Religion +2","cr":0.25,"abilities":["Spellcasting. The acolyte is a 1st-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). The acolyte has following cleric spells prepared: * Cantrips (at will): light, sacred flame, thaumaturgy * 1st level (3 slots): bless, cure wounds, sanctuary"],"actions":["Club. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 2 (1d4) bludgeoning damage."],"description":"Acolytes are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities."},
+		"alignment":["LG","Lawful Good"],
+		"gender":{"title":"Male","pronouns":["he","him"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Single","age":["Older Adult"],"eyes":"hazel","hair":"bald","skin":"white",
+		"appearance":"Dark sacks under eyes, like hasn't slept in weeks","talent":"Great with children","mannerism":"Frequently uses the wrong word","interaction_trait":"Irritable",
+		"occupation": "Priest (Barovia)",
+		"goals": [ "Save Doru without destroying him", "Encourage that Ireena be taken as far from Castle Ravenloft as possible" ],
+		"ac":10,"hp":[9,"2d8"],"speed":30,"stats":[10,10,10,10,14,12],"cr":0.25,"skills":"Medicine +4, Religion +2","abilities":["Spellcasting. The acolyte is a 1st-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). The acolyte has following cleric spells prepared: * Cantrips (at will): light, sacred flame, thaumaturgy * 1st level (3 slots): bless, cure wounds, sanctuary"],"actions":["Club. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 2 (1d4) bludgeoning damage."],
+		"description":"Donavich is, in a word, insane. A little more than a year ago, his twenty-year-old son Doru and several other villagers stormed Castle Ravenloft in revolt, having been lured there by a wizard in black robes who came to Barovia from a faraway land. By all accounts, the wizard died by Strahd's hand, and so too did Doru, who returned to his father as a vampire spawn. Donavich was able to trap his son in the church's undercroft, where he remains to this day.",
+		"image": "https://www.worldanvil.com/uploads/images/824ea4430a7c12057b2bad203a4f2557.png"
 	},
 	{
-		title: "Cultist",
-		stats: [ 11, 12, 10, 10, 11, 10 ],
-		ac: 12,
-		hp: [ 9, "2d8" ],
-		skills: "Deception +2, Religion +2",
-		cr: 0.125,
-		abilities: [
-			"Dark Devotion. The cultist has advantage on saving throws against being charmed or frightened."
-		],
-		actions: [
-			"Scimitar. Melee Weapon Attack: +3 to hit, reach 5 ft., one creature. Hit: 4 (1d6 + 1) slashing damage."
-		],
-		description: "Cultists swear allegiance to dark powers such as elemental princes, demon lords, or a rchdevils. Most conceal their loyalties to avoid being ostracized, imprisoned, or executed for their beliefs. Unlike evil acolytes, cultists often show signs of insanity in their beliefs and practices."
+		"location":"barovia",
+		"name":"Rahadin",
+		"race":{"title":"Elf","group":"Base"},
+		"type": {"title": "Custom"},
+		"alignment":["LE","Lawful Evil"],
+		"gender":{"title":"Male","pronouns":["he","him"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Single","age":["Adult",321],"eyes":"amber","hair":"black","skin":"white",
+		"appearance":"Flamboyant or outlandish clothes","talent":"Knows thieves' cant","mannerism":"Uses colorful oaths and exclamations","interaction_trait":"Arrogant",
+		"occupation": "Chamberlain",
+		"bond":"I am a son of King Barov von Zarovich, and I will serve his son - my brother and lord - forever.","flaw":"I have slain thousands of men. I will slaughter thousands more to preserve the von Zarovich legacy.","ideal":"Loyalty is everything",
+		"ac":18,"hp":[135,"18d8 + 54"],"speed":35,"stats":[14,22,17,15,16,18],"cr":10,
+		"description":"Rahadin, the dusk elf chamberlain of Castle Ravenloft, has served Strahd's family faithfully for nearly five hundred years. He is Strahd's eternal servant, a longtime comrade-in-arms, and a ruthless warrior who has killed thousands in his lifetime.",
+		"image": "https://static.wikia.nocookie.net/ravenloft/images/a/af/Rahadin.jpg/revision/latest?cb=20210503144653"
 	},
 	{
-		title: "Cult Fanatic",
-		stats: [ 11, 14, 12, 10, 13, 14 ],
-		ac: 13,
-		hp: [ 33, "6d8+6" ],
-		skills: "Deception +4, Persuasion +4, Religion +2",
-		cr: 2,
-		abilities: [
-			"Dark Devotion. The cultist has advantage on saving throws against being charmed or frightened.",
-			"Spellcasting. The fanatic is a 4th-level spellcaster. Its spell casting ability is Wisdom (spell save DC 11, +3 to hit with spell attacks). The fanatic has the following cleric spells prepared:<br />Cantrips (at will): light, sacred flame, thaumaturgy<br />1st level (4 slots): command, inflict wounds, shield of faith<br />2nd level (3 slots): hold person, spiritual weapon"
-		],
-		actions: [
-			"Multiattack. The fanatic makes two melee attacks.",
-			"Dagger. Melee or Ranged Weapon Attack: +4 to hit, reach 5 ft. or range 20/60 ft., one creature. Hit: 4 (1d4 + 2) piercing damage."
-		],
-		description: "Fanatics are often part of a cult's leadership, using their charisma and dogma to influence and prey on those of weak will. Most are interested in personal power above all else."
+		"location":"barovia",
+		"name":"Cyrus Belview",
+		"race":{"title":"Mongrelfolk","group":"Barovia"},
+		"type":{"title":"Custom"},
+		"alignment":["CN","Chaotic Neutral"],
+		"gender":{"title":"Male","pronouns":["he","him"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Single","age":["Adult"],"eyes":"brown","hair":"grey","skin":"dark","height":57,
+		"appearance":"Hunched over","talent":"Telling poor jokes at inopportune moments","mannerism":"Obviously crazy, giggles to himself from time to time for no clear reason","interaction_trait":"Moans and slaps his head",
+		"occupation": "Servant", "saying": "The master will not be pleased!",
+		"goals": [ "To get the characters to retire to their 'room in the tower' (area K49, to set off the elevator trap)", "To serve his master Strahd" ],
+		"ac":11,"hp":[26,"4d8 + 8"],"speed":20,"stats":[12,9,15,9,10,6],"cr":0.25,
+		"description":"Cyrus Belview is a mongrelfolk and Strahd's faithful servant. He stands 4 feet, 9 inches tall but appears shorter because of his hunched posture. The left side his face is covered with lizard scales, and he has the ears of a panther. His left foot looks like a duck’s webbed foot, and his arms have patches of black dog fur. Poor old Cyrus is obviously crazy. He has served the master for uncounted years and is devoted to him.",
+		"image": "https://www.worldanvil.com/uploads/images/cab5de7c970ed9e18b1b6155c81e1082.jpg"
 	},
 	{
-		title: "Druid",
-		stats: [ 10, 12, 13, 12, 15, 11 ],
-		ac: 11,
-		hp: [ 27, "5d8+5" ],
-		skills: "Medicine +4, Nature +3, Perception +4",
-		cr: 2,
-		abilities: [
-			"Spellcasting. The druid is a 4th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). It has the following druid spells prepared:<br />Cantrips (at will): druidcraft, produce flame, shillelagh<br />1st level (4 slots): entangle, longstrider, speak with animals, thunderwave<br />2nd level (3 slots): animal messenger, barkskin"
-		],
-		actions: [
-			"Quarterstaff. Melee Weapon Attack: +2 to hit (+4 to hit with shillelagh), reach 5 ft., one target. Hit: 3 (1d6) bludgeoning damage, or 4 (1d8) bludgeoning damage with shillelagh or if wielded with two hands."
-		],
-		description: "Druids dwell in forests and other secluded wilderness locations, where they protect the natural world from monsters and the encroachment of civilization. Some are tribal shamans who heal the sick, pray to animal spirits, and provide spiritual guidance."
+		"location":"barovia",
+		"name":"Escher",
+		"race":{"title":"Human","group":"Barovia"},
+		"type":{"title":"Vampire Spawn"},
+		"alignment":["NE","Neutral Evil"],
+		"gender":{"title":"Male","pronouns":["he","him"]},
+		"attitude":"Indifferent","orientation":"Homosexual","relationship":"Complicated","age":["Young Adult"],"eyes":"brown","hair":"blonde","skin":"pale",
+		"appearance":"Hauntingly handsome","talent":"","mannerism":"", "interaction_trait":"Melancholy and wit",
+		"occupation": "Consort",
+		"goals": [ "To get Strahd's attention", "To lead any pursuers right to Strahd", "To eventually become a vampire lord himself" ],
+		"ac":15,"hp":[82,"11d8 + 33"],"speed":30,"stats":[16,16,16,11,10,12],"cr":5,
+		"description":"Escher is feeling somewhat neglected of late and has retreated here until Strahd's mood improves. In conversation, Escher displays wit with a hint of melancholy. Beneath his arch mood is a dread that Strahd is growing bored of him and will lock him in the catacombs with Strahd's other castoff consorts.",
+		"image": "https://i.imgur.com/dkPlJMq.jpeg"
 	},
 	{
-		title: "Gladiator",
-		stats: [ 18, 15, 16, 10, 12, 15 ],
-		ac: 16,
-		hp: [ 112, "15d8+45" ],
-		saves: "Str +7, Dex +5, Con +6",
-		skills: "Athletics +10, Intimidation +5",
-		cr: 5,
-		abilities: [
-			"Brave. The gladiator has advantage on saving throws against being frightened.",
-			"Brute. A melee weapon deals one extra die of its damage when the gladiator hits with it (included in the attack)."
-		],
-		actions: [
-			"Multiattack. The gladiator makes three melee attacks or two ranged attacks.",
-			"Spear. Melee or Ranged Weapon Attack: +7 to hit, reach 5 ft. and range 20/60 ft., one target. Hit: 11 (2d6 + 4) piercing damage, or 13 (2d8 + 4) piercing damage if used with two hands to make a melee attack.",
-			"Shield Bash. Melee Weapon Attack: +7 to hit, reach 5 ft., one creature. Hit: 9 (2d4 + 4) bludgeoning damage. If the target is a Medium or smaller creature, it must succeed on a DC 15 Strength saving throw or be knocked prone."
-		],
-		reactions: [
-			"Parry. The gladiator adds 3 to its AC against one melee attack that would hit it. To do so, the gladiator must see the attacker and be wielding a melee weapon."
-		],
-		description: "Gladiators battle for the entertainment of raucous crowds. Some gladiators are brutal pit fighters who treat each match as a life-or-death struggle, while others are professional duelists who command huge fees but rarely fight to the death."
+		"location":"barovia",
+		"name":"Anastrasya Karelova",
+		"race":{"title":"Human","group":"Barovia"},
+		"type":{"title":"Vampire Spawn"},
+		"alignment":["NE","Neutral Evil"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Complicated","age":["Adult"],"eyes":"green","hair":"black","skin":"pale",
+		"appearance":"Beautiful","talent":"","mannerism":"Stares into the distance", "interaction_trait":"Argumentative",
+		"occupation": "Bride Consort",
+		"goals": [ "To get Strahd's attention and do his bidding" ],
+		"ac":15,"hp":[82,"11d8 + 33"],"speed":30,"stats":[16,16,16,11,10,12],"cr":5,
+		"description":"Anastrasya Karelova wears a stained and tattered red wedding gown, a black and crimson silk head scarf sewn with precious jewels (worth 750 gp), and a platinum necklace with a black opal pendant (worth 1,500 gp).",
+		"image": "https://i.imgur.com/sdGFNFw.jpeg"
 	},
 	{
-		title: "Guard",
-		stats: [ 13, 12, 12, 10, 11, 10 ],
-		ac: 16,
-		hp: [ 11, "2d8+2" ],
-		skills: "Perception +2",
-		cr: 0.125,
-		actions: [
-			"Spear. Melee or Ranged Weapon Attack: +3 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 4 (1d6 + 1) piercing damage."
-		],
-		description: "Guards include members of a city watch, sentries in a citadel or fortified town, and the bodyguards of merchants and nobles."
+		"location":"barovia",
+		"name":"Ludmilla Vilisevic",
+		"race":{"title":"Human","group":"Barovia"},
+		"type":{"title":"Vampire Spawn"},
+		"alignment":["NE","Neutral Evil"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Complicated","age":["Adult"],"eyes":"brown","hair":"black","skin":"pale",
+		"appearance":"Beautiful","talent":"","mannerism":"Uses flowery speech or long words", "interaction_trait":"Arrogant",
+		"occupation": "Bride Consort",
+		"goals": [ "To get Strahd's attention and do his bidding" ],
+		"ac":15,"hp":[82,"11d8 + 33"],"speed":30,"stats":[16,16,16,11,10,12],"cr":5,
+		"description":"Ludmilla Vilisevic wears a soiled white wedding gown, a gold tiara (worth 750 gp), and ten gold bracelets (worth 100 gp each).",
+		"image": "https://i.imgur.com/qCY9APQ.jpeg"
 	},
 	{
-		title: "Knight",
-		stats: [ 16, 11, 14, 11, 11, 15 ],
-		ac: 18,
-		hp: [ 52, "8d8+16" ],
-		saves: "Con +4, Wis +2",
-		cr: 3,
-		abilities: [
-			"Brave. The knight has advantage on saving throws against being frightened."
-		],
-		actions: [
-			"Multiattack. The knight makes two melee attacks.",
-			"Greatsword. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 10 (2d6 + 3) slashing damage.",
-			"Heavy Crossbow. Ranged Weapon Attack: +2 to hit, range 100/400 ft., one target. Hit: 5 (ld10) piercing damage.",
-			"Leadership (Recharges after a Short or Long Rest). For 1 minute, the knight can utter a special command or warning whenever a non hostile creature that it can see within 30 feet of it makes an attack roll or a saving throw. The creature can add a d4 to its roll provided it can hear and understand the knight. A creature can benefit from only one Leadership die at a time. This effect ends if the knight is incapacitated."
-		],
-		reactions: [
-			"Parry. The knight adds 2 to its AC against one melee attack that would hit it. To do so, the gladiator must see the attacker and be wielding a melee weapon."
-		],
-		description: "Knights are warriors who pledge service to rulers, religious orders, and noble causes. A knight's alignment determines the extent to which a pledge is honor. Whether undertaking a quest or patrolling a realm: a knight often travels with an entourage that includes squires and hirelings who are commoners."
+		"location":"barovia",
+		"name":"Volenta Popofsky",
+		"race":{"title":"Human","group":"Barovia"},
+		"type":{"title":"Vampire Spawn"},
+		"alignment":["NE","Neutral Evil"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Complicated","age":["Adult"],"eyes":"blue","hair":"black","skin":"pale",
+		"appearance":"Beautiful","talent":"","mannerism":"", "interaction_trait":"Rude",
+		"occupation": "Bride Consort",
+		"goals": [ "To get Strahd's attention and do his bidding" ],
+		"ac":15,"hp":[82,"11d8 + 33"],"speed":30,"stats":[16,16,16,11,10,12],"cr":5,
+		"description":"Volenta Popofsky wears a faded gold wedding gown, a platinum mask shaped vaguely like a skull (750 gp), and ten platinum rings set with gemstones (worth 250 gp each).",
+		"image": "https://i.imgur.com/MvK675l.jpeg"
 	},
 	{
-		title: "Mage",
-		stats: [ 9, 14, 11, 17, 12, 11 ],
-		ac: 12,
-		hp: [ 40, "9d8" ],
-		saves: "Int +6, Wis +4",
-		skills: "Arcana +6, History +6",
-		cr: 6,
-		abilities: [
-			"Spellcasting. The mage is a 9th-level spe llcaster. Its spellcasting ability is Intelligence (spell save DC 14, +6 to hit with spell attacks). The mage has the following wizard spells prepared:<br />Cantrips (at will): fire bolt, light, mage hand, prestidigitation<br />1st level (4 slots): detect magic, mage armor, magic missile, shield<br />2nd level (3 slots): misty step, suggestion<br />3rd level (3 slots): counterspell,fireball, fly<br />4th level (3 slots): greater invisibility, ice storm<br />5th level (1 slot): cone of cold"
-		],
-		actions: [
-			"Dagger. Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 4 (1d4 + 2) piercing damage."
-		],
-		description: "Mages spend their lives in the study and practice of magic. Good-aligned mages offer counsel to nobles and others in power, while evil mages dwell in isolated sites to perform unspeakable experiments without interference."
-	},
-	{
-		title: "Noble",
-		stats: [ 11, 12, 11, 12, 14, 16 ],
-		ac: 15,
-		hp: [ 9, "2d8" ],
-		cr: 0.125,
-		actions: [
-			"Rapier. Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 5 (ld8 + 1) piercing damage"
-		],
-		reactions: [
-			"Parry. The noble adds 2 to its AC aga inst one melee attack that would hit it. To do so, the noble mu st see the attacker and be wielding a melee weapon."
-		],
-		description: "Nobles wield great authority and influence as members of the upper class, possessing wealth a nd connections that can make them as powerful as monarchs and generals. A noble often travels in the company of guards, as well as servants who are commoners. The noble's statistics can also be used to represent courtiers who aren't of noble birth."
-	},
-	{
-		title: "Priest",
-		stats: [ 10, 10, 12, 13, 16, 13 ],
-		ac: 13,
-		hp: [ 27, "5d8+5" ],
-		skills: "Medicine +7, Persuasion +3, Religion +4",
-		cr: 2,
-		abilities: [
-			"Divine Eminence. As a bonus action, the priest can expend a spell slot to cause its melee weapon attacks to magically deal an extra 10 (3d6) radiant damage to a target on a hit. This benefit lasts until the end of the turn. If the priest expends a spell slot of 2nd level or higher, the extra damage increases by ld6 for each level above 1st.",
-			"Spellcasting. The priest is a 5th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 13, +5 to hit with spell attacks). The priest has the following cleric spells prepared:<br />Cantrips (at will): fight, sacred flame, thaumaturgy<br />1st level (4 slots): cure wounds, guiding bolt, sanctuary<br />2nd level (3 slots): lesser restoration, spiritual weapon<br />3rd level (2 slots): dispel magic, spirit guardians<br />"
-		],
-		actions: [
-			"Mace. Melee Weapon Attack: +2 to hit, reach 5 ft., one target. Hit: 3 (ld6) bludgeoning damage."
-		],
-		description: "Priests bring the teachings of their gods to the common folk. They are the spiritual leaders of temples and shrines and often hold positions of influence in their communities. Evil priests might work openly under a tyrant, or they might be the leaders of religious sects hidden in the shadows of good society, overseeing depraved rites. A priest typically has one or more acolytes to help with religious ceremonies and other sacred duties."
-	},
-	{
-		title: "Scout",
-		stats: [ 11, 14, 12, 11, 13, 11 ],
-		ac: 16,
-		hp: [ 16, "3d8+3" ],
-		skills: "Nature +4, Perception +5, Stealth +6, Survival +5",
-		cr: 0.5,
-		abilities: [
-			"Keen Hearing and Sight. The scout has advantage on Wisdom (Perception) checks that rely on hearing or sight."
-		],
-		actions: [
-			"Multiattack. The scout makes two melee attacks or two ranged attacks.",
-			"Shortsword. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage.",
-			"Longbow. Ranged Weapon Attack: +4 to hi t, ranged 150/600 ft., one target. Hit: 6 (1d8 + 2) piercing damage."
-		],
-		description: "Scouts are skilled hunters and trackers who offer their services for a fee. Most hunt wild game, but a few work as bounty hunters, serve as guides, or provide military reconnaissance."
-	},
-	{
-		title: "Spy",
-		stats: [ 10, 15, 10, 12, 14, 16 ],
-		ac: 12,
-		hp: [ 27, "6d8" ],
-		skills: "Deception +5, Insight +4, Investigqtion +5, Perception +6, Persuasion +5, Sleight of Hand +4, Stealth +4",
-		cr: 1,
-		abilities: [
-			"Cunning Action. On each of its turns, the spy ca n use a bonus action to take the Dash, Disengage, or Hide action.",
-			"Sneak Attack (1/Turn). The spy deals an extra 7 (2d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 feet of an ally of the spy that isn't incapacitated and the spy doesn't have disadvantage on the attack roll."
-		],
-		actions: [
-			"Multiattack. The spy makes two melee attacks.",
-			"Shortsword. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage.",
-			"Hand Crossbow. Ranged Weapon Attack: +4 to hit, range 30/120 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
-		],
-		description: "Rulers, nobles, merchants, guild masters, and other wealthy individuals use spies to gain the upper hand in a world of cutthroat politics. A spy is trained to secretly gather information. Loya l spies would rather die than divulge information that could compromise them or their employers."
-	},
-	{
-		title: "Thug",
-		stats: [ 15, 11, 14, 10, 10, 11 ],
-		ac: 11,
-		hp: [ 32, "5d8+10" ],
-		skills: "Intimidation +2",
-		cr: 0.5,
-		abilities: [
-			"Pack Tactics. The thug has advantage on an attack roll against a creature if at least one of the thug's allies is within 5 feet of the creature and the ally isn't incapacitated."
-		],
-		actions: [
-			"Multiattack. The thug makes two melee attacks.",
-			"Mace. Melee Weapon Attack: +4 to hit, reach 5 ft., one creature. Hit: 5 (1d6 + 2) bludgeoning damage.",
-			"Heavy Crossbow. Ranged Weapon Attack: +2 to hit, range 100/400 ft., one target. Hit: 5 (1d10) piercing damage."
-		],
-		description: "Thugs are ruthless enforcers skilled at intimidation and violence. They work for money and have few scruples."
-	},
-	{
-		title: "Tribal Warrior",
-		stats: [ 13, 11, 12, 8, 11, 8 ],
-		ac: 12,
-		hp: [ 11, "2d8+2" ],
-		skills: "Intimidation +2",
-		cr: 0.125,
-		abilities: [
-			"Pack Tactics. The warrior has advantage on an attack roll against a creature if at least one of the thug's allies is within 5 feet of the creature and the ally isn't incapacitated."
-		],
-		actions: [
-			"Spear. Melee or Ranged Weapon Attack: +3 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 4 (1d6 + 1) piercing damage, or 5 (1d8 + 1) piercing damage if used with two hands to make a melee attack."
-		],
-		description: "Tribal warriors live beyond civilization, most often subsisting on fishing and hunting. Each tribe acts in accordance with the wishes of its chief, who is the greatest or oldest warrior of the tribe or a tribe member blessed by the gods."
-	},
-	{
-		title: "Veteran",
-		stats: [ 16, 13, 14, 10, 11, 11 ],
-		ac: 17,
-		hp: [ 58, "9d8+18" ],
-		skills: "Athletics +5, Perception +2",
-		cr: 3,
-		actions: [
-			"Multiattack. The veteran makes two longsword attacks. If it has a shortsword drawn, it can also make a shortsword attack.",
-			"Longsword. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 7 (1d8 + 3) slashing damage, or 8 (1d10 + 3) slashing damage if used with two hands.",
-			"Shortsword. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) piercing damage.",
-			"Heavy Crossbow. Ranged Weapon Attack: +3 to hit, range 100/400 ft., one target. Hit: 5 (1d10) piercing damage."
-		],
-		description: "Veterans are professional fighters that take up arms for pay or to protect something they believe in or value. Their ranks include soldiers retired from long service and warriors who never served anyone but themselves."
+		"location":"barovia",
+		"name":"Morgantha",
+		"race":{"title":"Night Hag","group":"Base"},
+		"type":{"title":"Night Hag"},
+		"alignment":["NE","Neutral Evil"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Indifferent","orientation":"Heterosexual","relationship":"Single","age":["Elderly"],"eyes":"blue","hair":"black","skin":"blue",
+		"appearance":"Worts and a pointed nose - your traditional witch", "talent":"", "mannerism":"", "interaction_trait":"",
+		"occupation": "Baker",
+		"goals": [ "To sell her dream pastries", "To gather children so she can grind their bones", "To spy on Strahd through Cyrus's hag eye" ],
+		"ac":17,"hp":[112,"15d8 + 45"],"speed":30,"stats":[18,15,16,16,14,16],"cr":5,
+		"description":"This old woman is Morgantha, a night hag. She doesn't mind visitors, as long as they've come to do business. She tries to sell her latest batch of dream pastries, charging 1 gp for each one. She's proud of her confections and claims that she uses only the finest ingredients.",
+		"image": "https://vignette3.wikia.nocookie.net/forgottenrealms/images/4/40/Night_Hag-5e.png/revision/latest?cb=20161123195659"
 	}
-]
-
-npc_race = [
-	[ "1d100", [1,3], [4,6], [7,15], [16,24], [25,35], [36,39], [40,60], [61,68], [69,79], [80,86], [87,90], [91,93], [94,96], [97], [98,100] ],
-	{
-		title: "Changeling",
-		group: "Base",
-		age: [16, 100],
-		height: [50, 80], // inches
-		weight: [80, 300], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "grey", "white", "blonde" ],
-		skin: [ "1d6", "white", "pale", "fair", "light brown", "dark brown", "black" ]
-	},
-	{
-		title: "Dragonborn",
-		group: "Base",
-		age: [15, 90],
-		height: [60, 90], // inches
-		weight: [150, 450], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		skin: [ "1d10", "black", "blue", "brass", "bronze", "copper", "gold", "green", "red", "silver", "white" ]
-	},
-	{
-		title: "Dwarf",
-		group: "Base",
-		age: [50, 360],
-		height: [45, 65], // inches
-		weight: [60, 280], // lbs
-		speed: 25, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Elf",
-		group: "Base",
-		age: [100, 760],
-		height: [55, 85], // inches
-		weight: [60, 280], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "white", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Gnome",
-		group: "Base",
-		age: [40, 460],
-		height: [45, 65], // inches
-		weight: [20, 80], // lbs
-		speed: 25, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Goblinoid",
-		group: "Base",
-		age: [40, 260],
-		height: [45, 65], // inches
-		weight: [60, 280], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "tan", "green", "yellow", "red", "brown", "black" ]
-	},
-	{
-		title: "Half-Elf",
-		group: "Base",
-		age: [20, 200],
-		height: [50, 80], // inches
-		weight: [80, 300], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Half-Orc",
-		group: "Base",
-		age: [14, 80],
-		height: [60, 80], // inches
-		weight: [100, 400], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "tan", "green", "yellow", "red", "brown", "black" ]
-	},
-	{
-		title: "Halfling",
-		group: "Base",
-		age: [20, 260],
-		height: [25, 55], // inches
-		weight: [20, 80], // lbs
-		speed: 25, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Human",
-		group: "Base",
-		age: [18, 100],
-		height: [50, 80], // inches
-		weight: [80, 300], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Kalashtar",
-		group: "Base",
-		age: [18, 100],
-		height: [50, 80], // inches
-		weight: [80, 300], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "grey", "white", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Orc",
-		group: "Base",
-		age: [12, 50],
-		height: [60, 80], // inches
-		weight: [130, 400], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "bald", "black", "brown", "auburn", "red", "blonde" ],
-		skin: [ "1d6", "tan", "green", "yellow", "red", "brown", "black" ]
-	},
-	{
-		title: "Shifter",
-		group: "Base",
-		age: [10, 75],
-		height: [50, 80], // inches
-		weight: [80, 300], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "brown", "amber", "hazel", "green", "blue", "gray" ],
-		hair: [ "1d6", "white", "black", "brown", "grey", "white", "blonde" ],
-		skin: [ "1d6", "pale", "fair", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Tiefling",
-		group: "Base",
-		age: [18, 110],
-		height: [50, 80], // inches
-		weight: [80, 300], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "black", "black", "red", "white", "silver", "gold" ],
-		hair: [ "1d6", "purple", "blue", "dark brown", "dark red", "black", "black" ],
-		skin: [ "1d6", "light red", "dark red", "light brown", "olive", "dark brown", "black" ]
-	},
-	{
-		title: "Warforged",
-		group: "Base",
-		age: [2, 50],
-		height: [50, 80], // inches
-		weight: [180, 400], // lbs
-		speed: 30, // feet per round
-		eyes: [ "1d6", "quartz", "onyx", "citrine", "emerald", "sapphire", "amethyst" ],
-		skin: [ "1d12", "wood", "stone", "stone", "ceramic", "metal (iron)", "metal (steel)", "metal (steel)", "metal (silver)", "metal (gold)", "metal (byeshk)", "adamantine", "mithral" ]
-	},
-	{
-		title: "Kobold",
-		group: "Eberron",
-	},
-	{
-		title: "Lizardfolk",
-		group: "Eberron",
-	},
-	{
-		title: "Gnoll",
-		group: "Eberron",
-	},
-	{
-		title: "Undying",
-		group: "Eberron",
-	},
-	{
-		title: "Gith (-yanki/-zerai)",
-		group: "Spelljammer",
-	},
-	{
-		title: "Giff",
-		group: "Spelljammer",
-	},
-	{
-		title: "Astral Elf",
-		group: "Spelljammer",
-	},
-	{
-		title: "Autognome",
-		group: "Spelljammer",
-	},
-	{
-		title: "Plasmoid",
-		group: "Spelljammer",
-	},
-	{
-		title: "Hadozee",
-		group: "Spelljammer",
-	},
-	{
-		title: "Slaad",
-		group: "Spelljammer",
-	},
-	{
-		title: "Herengon",
-		group: "Spelljammer",
-	}
-]
-
-npc_gender = [
-	[ "4d8", [1,3], [4,17], [18,31], [32] ],
-	{
-		title: "Non-Binary",
-		pronouns: [ "they", "them" ]
-	},
-	{
-		title: "Male",
-		pronouns: [ "he", "him" ]
-	},
-	{
-		title: "Female",
-		pronouns: [ "she", "her" ]
-	},
-	{
-		title: "Other/Undifferentiated",
-		pronouns: [ "it" ]
-	}
-]
-
-npc_orientation = [
-	[ "4d8", [1,3], [4,28], [29,31], [32] ],
-	"Bisexual",
-	"Heterosexual",
-	"Homosexual",
-	"Asexual"
-]
-
-npc_relationship = [
-	[ "4d8", [1,2], [3,15], [16,24], [25,31], [32] ],
-	"Recently divorced",
-	"Single",
-	"Married",
-	"In a relationship",
-	"Seeing someone who is married"
-]
-
-npc_appearance = [
-	"1d20",
-	"Distinctive jewelry: earrings, necklace, circlet, bracelets",
-	"Piercings",
-	"Flamboyant or outlandish clothes",
-	"Formal, clean clothes",
-	"Ragged, dirty clothes",
-	"Pronounced scar",
-	"Missing teeth",
-	"Missing fingers",
-	"Unusual eye color (or two different colors)",
-	"Tattoos",
-	"Birthmark",
-	"Unusual skin color",
-	"Bald",
-	"Braided beard or hair",
-	"Unusual hair color",
-	"Nervous eye twitch",
-	"Distinctive nose",
-	"Distinctive posture (crooked or rigid)",
-	"Exceptionally beautiful",
-	"Exceptionally ugly"
-]
-
-npc_ability_high = [
-	"1d6",
-	{
-		"stat": 1,
-		"mod": 2,
-		"adjectives": [ "powerful", "brawny", "strong as an ox" ]
-	},
-	{
-		"stat": 2,
-		"mod": 2,
-		"adjectives": [ "lithe", "agile", "graceful" ]
-	},
-	{
-		"stat": 3,
-		"mod": 2,
-		"adjectives": [ "hardy", "hale", "healthy" ]
-	},
-	{
-		"stat": 4,
-		"mod": 2,
-		"adjectives": [ "studious", "learned", "inquisitive" ]
-	},
-	{
-		"stat": 5,
-		"mod": 2,
-		"adjectives": [ "perceptive", "spiritual", "insightful" ]
-	},
-	{
-		"stat": 6,
-		"mod": 2,
-		"adjectives": [ "persuasive", "forceful", "born leader" ]
-	}
-]
-
-npc_ability_low = [
-	"1d6",
-	{
-		"stat": 1,
-		"mod": -1,
-		"adjectives": [ "feeble", "scrawny" ]
-	},
-	{
-		"stat": 2,
-		"mod": -1,
-		"adjectives": [ "clumsy", "fumbling" ]
-	},
-	{
-		"stat": 3,
-		"mod": -1,
-		"adjectives": [ "sickly", "pale" ]
-	},
-	{
-		"stat": 4,
-		"mod": -1,
-		"adjectives": [ "dim-witted", "slow" ]
-	},
-	{
-		"stat": 5,
-		"mod": -1,
-		"adjectives": [ "oblivious", "absent-minded" ]
-	},
-	{
-		"stat": 6,
-		"mod": -1,
-		"adjectives": [ "dull", "boring" ]
-	}
-]
-
-npc_talents = [
-	"1d20",
-	"Plays a musical instrument",
-	"Speaks several languages fluently",
-	"Unbelievably lucky",
-	"Perfect memory",
-	"Great with animals",
-	"Great with children",
-	"Great at solving puzzles",
-	"Great at one game",
-	"Great at impersonations",
-	"Draws beautifully",
-	"Paints beautifully",
-	"Sings beautifully",
-	"Drinks everyone under the table",
-	"Expert carpenter",
-	"Expert cook",
-	"Expert dart thrower and rock skipper",
-	"Expert juggler",
-	"Skilled actor and master of disguise",
-	"Skilled dancer",
-	"Knows thieves' cant"
-]
-
-npc_mannerisms = [
-	"1d20",
-	"Prone to singing, whistling, or humming quietly",
-	"Speaks in rhyme or some other peculiar way",
-	"Particularly low or high voice",
-	"Slurs words, lisps, or stutters",
-	"Enunciates overly clearly",
-	"Speaks loudly",
-	"Whispers",
-	"Uses flowery speech or long words",
-	"Frequently uses the wrong word",
-	"Uses colorful oaths and exclamations",
-	"Makes constant jokes or puns",
-	"Prone to predictions of doom",
-	"Fidgets",
-	"Squints",
-	"Stares into the distance",
-	"Chews something",
-	"Paces",
-	"Taps fingers",
-	"Bites fingernails",
-	"Twirls hair or tugs beard"
-]
-
-npc_interaction_traits = [
-	"1d12",
-	"Argumentative",
-	"Arrogant",
-	"Blustering",
-	"Rude",
-	"Curious",
-	"Friendly",
-	"Honest",
-	"Hot tempered",
-	"Irritable",
-	"Ponderous",
-	"Quiet",
-	"Suspicious"
-]
-
-npc_bonds = [
-	"1d10",
-	"Dedicated to fulfilling a personal life goal",
-	"Protective of close family members",
-	"Protective of colleagues or compatriots",
-	"Loyal to a benefactor, patron, or employer",
-	"Captivated by a romantic interest",
-	"Drawn to a special place",
-	"Protective of a sentimental keepsake",
-	"Protective of a valuable possession",
-	"Out for revenge",
-	"None"
-]
-
-npc_flaws = [
-	"1d12",
-	"Forbidden love or susceptibility to romance",
-	"Enjoys decadent pleasures",
-	"Arrogance",
-	"Envies another creature's possessions or station",
-	"Overpowering greed",
-	"Prone to rage",
-	"Has a powerful enemy",
-	"Specific phobia",
-	"Shameful or scandalous history",
-	"Secret crime or misdeed",
-	"Possession of forbidden lore",
-	"Foolhardy bravery"
-]
-
-npc_ideals = []
-npc_ideals["G"] = [
-	"1d6",
-	"Beauty", "Charity", "Greater good", "Life", "Respect", "Self-sacrifice"
-]
-npc_ideals["E"] = [
-	"1d6",
-	"Domination", "Greed", "Might", "Pain", "Retribution", "Slaughter"
-]
-npc_ideals["L"] = [
-	"1d6",
-	"Community", "Fairness", "Honor", "Logic", "Responsibility", "Tradition"
-]
-npc_ideals["C"] = [
-	"1d6",
-	"Change", "Creativity", "Freedom", "Independence", "No limits", "Whimsy"
-]
-npc_ideals["N"] = [
-	"1d6",
-	"Balance", "Knowledge", "Live and let live", "Moderation", "Neutrality", "People"
-]
-npc_ideals["O"] = [
-	"1d6",
-	"Aspiration", "Discovery", "Glory", "Nation", "Redemption", "Self-knowledge"
-]
-
-npc_attitude = [
-	[ "4d8", [1,2], [3,9], [10,23], [24,30], [31,32] ],
-	"Hostile",
-	"Unfriendly",
-	"Indifferent",
-	"Friendly",
-	"Helpful"
 ]

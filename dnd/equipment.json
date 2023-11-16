@@ -150,6 +150,7 @@ equipment = [
 		"special": [],
 		"index": "dragonshard-eberron-small",
 		"name": "Eberron Dragonshard, Small",
+		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -165,8 +166,8 @@ equipment = [
 		"weight": 1,
 		"desc": [
 			"Wondrous item, uncommon",
-			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q’barra and the distant land of Xen’drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
-			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools — such as the lightning rail and elemental airships — require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
+			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
+			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
 		"contents": [],
@@ -176,6 +177,7 @@ equipment = [
 		"special": [],
 		"index": "dragonshard-eberron-medium",
 		"name": "Eberron Dragonshard, Medium",
+		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -191,8 +193,8 @@ equipment = [
 		"weight": 1,
 		"desc": [
 			"Wondrous item, uncommon",
-			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q’barra and the distant land of Xen’drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
-			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools — such as the lightning rail and elemental airships — require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
+			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
+			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
 		"contents": [],
@@ -202,6 +204,7 @@ equipment = [
 		"special": [],
 		"index": "dragonshard-eberron-large",
 		"name": "Eberron Dragonshard, Large",
+		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -217,8 +220,8 @@ equipment = [
 		"weight": 1,
 		"desc": [
 			"Wondrous item, uncommon",
-			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q’barra and the distant land of Xen’drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
-			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools — such as the lightning rail and elemental airships — require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
+			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
+			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
 		"contents": [],
@@ -244,7 +247,7 @@ equipment = [
 		"desc": [
 			"Wondrous item, rare",
 			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
-			"Khyber dragonshards have a affinity for binding magics. Elemental binding — which is behind airships, the lightning rail, and elemental galleons — requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
+			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
 		"contents": [],
@@ -270,7 +273,7 @@ equipment = [
 		"desc": [
 			"Wondrous item, rare",
 			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
-			"Khyber dragonshards have a affinity for binding magics. Elemental binding — which is behind airships, the lightning rail, and elemental galleons — requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
+			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
 		"contents": [],
@@ -296,7 +299,7 @@ equipment = [
 		"desc": [
 			"Wondrous item, rare",
 			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
-			"Khyber dragonshards have a affinity for binding magics. Elemental binding — which is behind airships, the lightning rail, and elemental galleons — requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
+			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
 		"contents": [],
@@ -306,6 +309,7 @@ equipment = [
 		"special": [],
 		"index": "dragonshard-siberys-small",
 		"name": "Siberys Dragonshard, Small",
+		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -321,7 +325,7 @@ equipment = [
 		"weight": 1,
 		"desc": [
 			"Wondrous item, very rare",
-			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen’drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
+			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
 			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
@@ -332,6 +336,7 @@ equipment = [
 		"special": [],
 		"index": "dragonshard-siberys-medium",
 		"name": "Siberys Dragonshard, Medium",
+		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -347,7 +352,7 @@ equipment = [
 		"weight": 1,
 		"desc": [
 			"Wondrous item, very rare",
-			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen’drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
+			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
 			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
@@ -358,6 +363,7 @@ equipment = [
 		"special": [],
 		"index": "dragonshard-siberys-large",
 		"name": "Siberys Dragonshard, Large",
+		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -373,7 +379,7 @@ equipment = [
 		"weight": 1,
 		"desc": [
 			"Wondrous item, very rare",
-			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen’drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
+			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
 			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
 		],
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
@@ -383,7 +389,7 @@ equipment = [
 {
 		"index": "prismatic-geode",
 		"name": "Prismatic Geode",
-		"image": "https://wrightmat.github.io/obsidian/img/prismatic-geode.png",
+		"image": "https://raw.githubusercontent.com/wrightmat/dnd-eberron/main/docs/_img/prismatic-geode.png",
 		"desc": [
 			"Wondrous item, legendary (requires attunement)",
 			"This split geode shimmers with a rainbow of colors. Most attuned to the arcane forces of nature can tell at just a glance that it radiates power untold.",

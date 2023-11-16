@@ -15,34 +15,22 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .circle span { position: absolute; top: 50%; left: 35%; width: 100%; text-align: center; line-height: 0px; font-size: 12px; }
 
 .row label { position: absolute; top: 75%; right: 20px; width: 100%; text-align: right; line-height: 0px; font-size: 10px; color: grey; }
+.soft-edges:before { display: block; content: ""; position: absolute; width: 100%; height: 100%; -moz-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); -webkit-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); }
 
-.soft-edges:before {
-    display: block;
-    content: "";
-    position: absolute;
-    width: 100%; height: 100%;
-    -moz-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1);
-    -webkit-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1);
-    box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1);
-}
+.card-container { position: absolute; left: 300px; padding-right: 100px; }
+.cards { display: flex; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
+.cards_item { display: flex; padding: 0.1rem; }
+.card { background-color: white; border: 1px solid #695d39; border-radius: .5em; display: flex; flex-direction: column; overflow: hidden; height: 7in; min-height: 7in; width: 2.5in; min-width: 2.5in; }
+.card_image { height: 3.5in; }
+.card_image img { max-height: 3.2in; width: 100%; -webkit-transform: scaleY(-1); transform: scaleY(-1); }
+.card_content { padding: 0.4rem; height: 3.5in; }
+.card_content h4 { line-height: 0.5; margin-top: 12px; margin-bottom: 5px; }
+.card_content .info { font-size: 9px; line-height: 2; font-style: italic; padding-top: 2px; }
+.card_content .info input { height: 8px; }
+.card_content .content { font-size: 10px; line-height: 1; text-align: justify; vertical-align: middle; }
+.card_content .notes { font-size: 9px; }
 
-.card {
-  font-family: "Georgia", serif;
-  height: 2.5in; min-height: 2.5in;
-  width: 3.5in; min-width: 3.5in;
-  background-color: #fff;
-  border: 1px solid #695d39;
-  border-radius: .5em;
-  /*box-shadow: -.25em .25em .5em -.25em #000;*/
-  padding: 0px 5px 2px 5px;
-  margin-left: 10px; margin-right: 10px;
-}
-.card h4 { line-height: 0px; margin-top: 12px; margin-bottom: 5px; }
-.card img { float: right; margin: 3px -2px 0px 6px; max-width: 120px; max-height: 50px; border-radius: .5em; }
-.card .content { font-size: 10px; line-height: 0.9; text-align: justify; vertical-align: middle; }
-.card .info { font-size: 9px; line-height: 0.2; font-style: italic; padding-top: 2px; }
-.card .info input { height: 8px; }
-.card .notes { font-size: 9px; }
+.grid-container-chip { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 10px; }
 .chip { position: relative; width: 96px; height: 96px; border-radius: 50%; border: dashed 1px #000; }
 .circle-img { position: absolute; left: 0; top: 0; width: 65px; height: 65px; padding: 15px; }
 .circle-txt { position: absolute; left: 50%; bottom: 2px; font-size: 10px; font-weight: bold; }
@@ -52,17 +40,6 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .chip-life-back { position: absolute; top: 25%; left: 22px; }
 .chip-life-back img { height: 15px; }
 .chip-life-back .img-bg { background: #ccc; border-radius: 50%; height: 20px; -webkit-print-color-adjust: exact !important; }
-
-.grid-container-chip {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-gap: 10px;
-}
-.grid-container-card {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 10px;
-}
 
 .dice-roller { width: 100px; height: 30px; }
 .dice-button { background: black; color: white; font-weight: bold; border: 1px black; border-radius: 5px 0px 0px 5px; float: left; height: 100%; width: 62%; cursor: pointer; user-select: none; }
