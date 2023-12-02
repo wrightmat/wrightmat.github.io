@@ -23,6 +23,8 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .card { background-color: white; border: 1px solid #695d39; border-radius: .5em; display: flex; flex-direction: column; overflow: hidden; height: 7in; min-height: 7in; width: 2.5in; min-width: 2.5in; }
 .card_image { height: 3.5in; }
 .card_image img { max-height: 3.2in; width: 100%; -webkit-transform: scaleY(-1); transform: scaleY(-1); }
+.card_icon { float: right; }
+.card_icon img { max-height: 50px; max-width: 50px; }
 .card_content { padding: 0.4rem; height: 3.5in; }
 .card_content h4 { line-height: 0.5; margin-top: 12px; margin-bottom: 5px; }
 .card_content .info { font-size: 9px; line-height: 2; font-style: italic; padding-top: 2px; }

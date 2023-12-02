@@ -19,11 +19,24 @@
 <body>
 
 <div id="card-controls" style="position:absolute; left: 0px; top: 0px;">
-    <label for="controls-groups">Groups (Categories):</label><br/ >
-    <select id="controls-groups" onchange="selectGroup(this);" style="width:200px;">
-      <option value=""></option>
-    </select><br /><br />
-    <select id="controls-custom-select" size="30" style="width:200px;"></select><br />
+  <label for="controls-groups">Groups (Categories):</label><br/ >
+  <select id="controls-groups" onchange="selectGroup(this);" style="width:200px;">
+    <option value=""></option>
+  </select><br /><br />
+  <select id="controls-custom-select" size="30" style="width:200px;">
+  </select><br /><br />
+  <label for="controls-image-back">Back:</label>
+  <select id="controls-image-back" name="image_back" onchange="setPreferences(this);">
+    <option value="image" selected="selected">Defined Image</option>
+    <option value="icon">Type Icon</option>
+    <option value="none">None</option>
+  </select><br />
+  <label for="controls-image-front">Front:</label>
+  <select id="controls-image-front" name="image_front" onchange="setPreferences(this);">
+    <option value="image">Defined Image</option>
+    <option value="icon">Type Icon</option>
+    <option value="none" selected="selected">None</option>
+  </select>
 </div>
 
 <div id="card-container" class="card-container">
@@ -35,6 +48,7 @@
   var i = 0;
   var groups = {};
   var items = getAPI()['results'];
+  var preferences = { "image_back": "image", "image_front": "none" };
 
   function getAPI(r_url, r_async) {
     var r_text;
@@ -92,23 +106,69 @@
   }
 
   function createCard(id) {
+    var desc = "";
+    var icon = "";
+    var notes = "";
     var card = getCard(id);
+    if ( card.equipment_category ) {
+	  switch( card.equipment_category.index ) {
+	    case "armor":
+	      icon = "https://www.dndbeyond.com/attachments/2/666/armor.jpg";
+	      break;
+	    case "weapons":
+	      icon = "https://www.dndbeyond.com/attachments/2/664/weapon.jpg";
+	      break;
+	    case "potions":
+	      icon = "https://www.dndbeyond.com/attachments/2/667/potion.jpg";
+	      break;
+	    case "rings":
+	      icon = "https://www.dndbeyond.com/attachments/2/668/ring.jpg";
+	      break;
+	    case "rods":
+	      icon = "https://www.dndbeyond.com/attachments/2/669/rod.jpg";
+	      break;
+	    case "scrolls":
+	      icon = "https://www.dndbeyond.com/attachments/2/661/scroll.jpg";
+	      break;
+	    case "staffs":
+	      icon = "https://www.dndbeyond.com/attachments/2/662/staff.jpg";
+	      break;
+	    case "wands":
+	      icon = "https://www.dndbeyond.com/attachments/2/663/wand.jpg";
+	      break;
+	    case "wondrous-items":
+	      icon = "https://www.dndbeyond.com/attachments/2/665/wondrousitem.jpg";
+	      break;
+	    default:
+	      icon = "";
+	  }
+    } else {
+      icon = "";
+    }
     if ( card ) {
 	$('<li>', { class: 'cards_item', id: 'cards_item-' + id + '-' + i }).appendTo('#cards');
 	$('<div>', { class: 'card', id: 'card-' + id + '-' + i }).appendTo('#cards_item-' + id + '-' + i);
 	$('<div>', { class: 'card_image', id: 'card_image-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
-	if ( card.image !== undefined ) {
+	if ( preferences.image_back == "image" && card.image !== undefined ) {
 	  $('<img>', { src: card.image }).appendTo('#card_image-' + id + '-' + i);
+	} else if ( preferences.image_back == "icon" ) {
+console.log(card.equipment_category.index)
+	  $('<img>', { src: icon }).appendTo('#card_image-' + id + '-' + i);
 	}
 	$('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
+	$('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
+	if ( preferences.image_front == "image" && card.image !== undefined ) {
+	  $('<img>', { src: card.image }).appendTo('#card_icon-' + id + '-' + i);
+	} else if ( preferences.image_front == "icon" ) {
+	  $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
+console.log("icon front");
+	}
 	$('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
 	$('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i);
-	var desc = "";
 	$.each( card.desc, function( k, v ) {
 	  if ( k > 0 ) { desc = desc + '<p>' + markdownParser(v) + '</p>'; }
 	});
 	$('<p>', { class: 'content', html: desc }).appendTo('#card_content-' + id + '-' + i);
-	var notes = "";
 	if ( card.properties !== undefined ) {
 	  $.each( card.properties, function( k, v ) {
 	    if ( k > 0 ) { notes = notes + ', ' + v; } else { notes = notes + "<br /><b>Notes</b>: " + v; }
@@ -119,7 +179,7 @@
 	if ( notes != "" ) {
 	  $('<p>', { class: 'notes', html: notes }).appendTo('#card_content-' + id + '-' + i);
 	}
-        i += 1;
+        i += 1;	// increment counter to ensure unique ids
     }
   }
 
@@ -129,6 +189,12 @@
     $.each( groups[sel], function( key, value ) {
       createCard(value);
     });
+  }
+
+  function setPreferences(el) {
+    var sel = el.options[el.selectedIndex].value;
+    preferences[el.name] = sel;
+console.log(preferences);
   }
 
   // populate select lists and register callback
