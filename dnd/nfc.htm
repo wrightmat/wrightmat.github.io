@@ -12,10 +12,13 @@
 
 <body>
 
-<div class="container"><input type="button" id="scanButton" value="Start Scanning" /></div>
+<div class="container">
+  <input type="button" id="scanButton" value="Start Scanning" />  <input type="button" id="fullscreenButton" value="Open Fullscreen" onclick="openFullscreen();" /><br />
+</div>
 <div id="error-log" class="alert alert-primary"></div>
 
 <script type="text/javascript">
+  // Show console log on screen (helpful for mobile)
   console.log = (function (old_function, div_log) { 
     return function (text) {
         old_function(text);
@@ -23,6 +26,28 @@
     };
   } (console.log.bind(console), document.getElementById("error-log")));
 
+  // Fullscreen
+  var elem = document.documentElement;
+  function openFullscreen() {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) { /* Safari */
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE11 */
+      elem.msRequestFullscreen();
+    }
+  }
+  function closeFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { /* Safari */
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { /* IE11 */
+      document.msExitFullscreen();
+    }
+  }
+
+  // NFC scanning
   document.querySelector("#scanButton").onclick = async () => {
     try {
       const ndef = new NDEFReader();
