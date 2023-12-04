@@ -31,17 +31,17 @@
 	.then(() => {
 	  console.log("Scan started successfully.");
 	  ndef.onreadingerror = (event) => {
-	    console.log("Error! Cannot read data from the NFC tag. Try a different one?",);
+	    console.log("Error! Cannot read data from the NFC tag.");
 	  };
 	  ndef.onreading = (event) => {
-	    console.log("NDEF message read.");
+	    console.log(event);
 	  };
 	})
 	.catch((error) => {
-	  console.log(`Error! Scan failed to start: ${error}.`);
+	  console.log("Error! Scan failed to start: ${error}.");
 	});
     } catch (error) {
-      console.log(error);
+      console.log("Error! ${error}.");
     }
   }
 
