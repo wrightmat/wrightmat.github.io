@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TTRPG NFC Dice Tower</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+</head>
+
+<body>
+
+<script type="text/javascript">
+  async function scanNFC() {
+    try {
+      const ndef = new NDEFReader();
+      await ndef.scan();
+      console.log("Scan started");
+
+      ndef.addEventListener("readingerror", () => {
+        console.log("Cannot read data from the NFC tag. Try another one?");
+      });
+
+      ndef.addEventListener("reading", ({ message, serialNumber }) => {
+        console.log(`> Serial Number: ${serialNumber}`);
+        console.log(`> Records: (${message.records.length})`);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  scanNFC();
+
+</script>
+
+</body>
+</html>

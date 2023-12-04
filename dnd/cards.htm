@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="common.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" scr="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="equipment.json"></script>
   <script type="text/javascript" src="npcs.json"></script>
@@ -23,19 +24,24 @@
   <select id="controls-groups" onchange="selectGroup(this);" style="width:200px;">
     <option value=""></option>
   </select><br /><br />
-  <select id="controls-custom-select" size="30" style="width:200px;">
+  <select id="controls-custom-select" size="28" style="width:200px;">
   </select><br /><br />
-  <label for="controls-image-back">Back:</label>
+  <label for="controls-image-back">Image Back:</label>
   <select id="controls-image-back" name="image_back" onchange="setPreferences(this);">
     <option value="image" selected="selected">Defined Image</option>
     <option value="icon">Type Icon</option>
-    <option value="none">None</option>
+    <option value="none">Nothing</option>
   </select><br />
-  <label for="controls-image-front">Front:</label>
+  <label for="controls-image-front">Image Front:</label>
   <select id="controls-image-front" name="image_front" onchange="setPreferences(this);">
     <option value="image">Defined Image</option>
     <option value="icon">Type Icon</option>
-    <option value="none" selected="selected">None</option>
+    <option value="none" selected="selected">Nothing</option>
+  </select><br />
+  <label for="controls-front-bottom">Front Bottom:</label>
+  <select id="controls-front-bottom" name="front_bottom" onchange="setPreferences(this);">
+    <option value="none" selected="selected">Nothing</option>
+    <option value="code">Stat Code</option>
   </select>
 </div>
 
@@ -107,43 +113,14 @@
 
   function createCard(id) {
     var desc = "";
-    var icon = "";
     var notes = "";
     var card = getCard(id);
     if ( card.equipment_category ) {
-	  switch( card.equipment_category.index ) {
-	    case "armor":
-	      icon = "https://www.dndbeyond.com/attachments/2/666/armor.jpg";
-	      break;
-	    case "weapons":
-	      icon = "https://www.dndbeyond.com/attachments/2/664/weapon.jpg";
-	      break;
-	    case "potions":
-	      icon = "https://www.dndbeyond.com/attachments/2/667/potion.jpg";
-	      break;
-	    case "rings":
-	      icon = "https://www.dndbeyond.com/attachments/2/668/ring.jpg";
-	      break;
-	    case "rods":
-	      icon = "https://www.dndbeyond.com/attachments/2/669/rod.jpg";
-	      break;
-	    case "scrolls":
-	      icon = "https://www.dndbeyond.com/attachments/2/661/scroll.jpg";
-	      break;
-	    case "staffs":
-	      icon = "https://www.dndbeyond.com/attachments/2/662/staff.jpg";
-	      break;
-	    case "wands":
-	      icon = "https://www.dndbeyond.com/attachments/2/663/wand.jpg";
-	      break;
-	    case "wondrous-items":
-	      icon = "https://www.dndbeyond.com/attachments/2/665/wondrousitem.jpg";
-	      break;
-	    default:
-	      icon = "";
-	  }
+      var icon = "img/" + card.equipment_category.index + ".png";
+    } else if ( card.type ) {
+      var icon = "img/character.png";
     } else {
-      icon = "";
+      var icon = "img/general.png";
     }
     if ( card ) {
 	$('<li>', { class: 'cards_item', id: 'cards_item-' + id + '-' + i }).appendTo('#cards');
@@ -152,7 +129,6 @@
 	if ( preferences.image_back == "image" && card.image !== undefined ) {
 	  $('<img>', { src: card.image }).appendTo('#card_image-' + id + '-' + i);
 	} else if ( preferences.image_back == "icon" ) {
-console.log(card.equipment_category.index)
 	  $('<img>', { src: icon }).appendTo('#card_image-' + id + '-' + i);
 	}
 	$('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
@@ -161,7 +137,6 @@ console.log(card.equipment_category.index)
 	  $('<img>', { src: card.image }).appendTo('#card_icon-' + id + '-' + i);
 	} else if ( preferences.image_front == "icon" ) {
 	  $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
-console.log("icon front");
 	}
 	$('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
 	$('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i);
