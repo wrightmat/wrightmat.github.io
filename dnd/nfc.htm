@@ -25,17 +25,20 @@
   async function scanNFC() {
     try {
       const ndef = new NDEFReader();
-      await ndef.scan();
-      console.log("Scan started");
-
-      ndef.addEventListener("readingerror", () => {
-        console.log("Cannot read data from the NFC tag. Try another one?");
-      });
-
-      ndef.addEventListener("reading", ({ message, serialNumber }) => {
-        console.log(`> Serial Number: ${serialNumber}`);
-        console.log(`> Records: (${message.records.length})`);
-      });
+      ndef
+	.scan()
+	.then(() => {
+	  console.log("Scan started successfully.");
+	  ndef.onreadingerror = (event) => {
+	    console.log("Error! Cannot read data from the NFC tag. Try a different one?",);
+	  };
+	  ndef.onreading = (event) => {
+	    console.log("NDEF message read.");
+	  };
+	})
+	.catch((error) => {
+	  console.log(`Error! Scan failed to start: ${error}.`);
+	});
     } catch (error) {
       console.log(error);
     }
