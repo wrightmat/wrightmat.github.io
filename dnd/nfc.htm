@@ -152,7 +152,9 @@
 
   function parseResults(result) {
     // special cases (numbers that don't exist on standard dice sets)
-    if ( parseInt(result) == 99 ) {
+    if ( parseInt(result) == 0 ) {
+	canvasColor("blue");
+    } else if ( parseInt(result) == 99 ) {
 	canvasColor("green");
 	canvasText("Treasure!");
 	playSound("https://wrightmat.github.io/dnd/sfx/treasure.ogg");
