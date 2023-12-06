@@ -151,14 +151,26 @@
   }
 
   function parseResults(result) {
-    //switch (result) {
-      //case "1":
+    // special cases (numbers that don't exist on standard dice sets)
+    if ( parseInt(result) == 99 ) {
+	canvasColor("green");
+	canvasText("Treasure!");
+	playSound("https://wrightmat.github.io/dnd/sfx/treasure.ogg");
+    if ( parseInt(result) == 98 ) {
+	canvasColor("red");
+	canvasText("Roll Initiative!");
+	speak("Roll Initiative!");
+    // for basic numbers, just read out the number and show on screen
+    } else if ( Number.isInteger(parseInt(result)) ) {
 	canvasColor("blue");
 	canvasText(result);
 	speak(result);
-	//break;
-      //default:
-    //}
+    // likely a string - just show it on screen and read it out
+    } else {
+	canvasColor("blue");
+	canvasText(result);
+	speak(result);
+    }
   }
 </script>
 
