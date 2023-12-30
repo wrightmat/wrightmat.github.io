@@ -120,18 +120,18 @@ npcs = [
 	},
 	{
 		"location":"barovia",
-		"name":"Escher",
+		"name":"Escher Belasco",
 		"race":{"title":"Human","group":"Barovia"},
-		"type":{"title":"Vampire Spawn"},
+		"type":{"title":"Vampire"},
 		"alignment":["NE","Neutral Evil"],
 		"gender":{"title":"Male","pronouns":["he","him"]},
 		"attitude":"Indifferent","orientation":"Homosexual","relationship":"Complicated","age":["Young Adult"],"eyes":"brown","hair":"blonde","skin":"pale",
 		"appearance":"Hauntingly handsome","talent":"","mannerism":"", "interaction_trait":"Melancholy and wit",
-		"occupation": "Consort",
-		"goals": [ "To get Strahd's attention", "To lead any pursuers right to Strahd", "To eventually become a vampire lord himself" ],
+		"occupation": "Castellan",
+		"goals": [ "To gain power and eventually become a vampire lord", "To not interfere with or anger House Deneith (especially Baron Breven d'Deneith)", "To spread the Blood of Vol" ],
 		"ac":15,"hp":[82,"11d8 + 33"],"speed":30,"stats":[16,16,16,11,10,12],"cr":5,
-		"description":"Escher is feeling somewhat neglected of late and has retreated here until Strahd's mood improves. In conversation, Escher displays wit with a hint of melancholy. Beneath his arch mood is a dread that Strahd is growing bored of him and will lock him in the catacombs with Strahd's other castoff consorts.",
-		"image": "https://i.imgur.com/dkPlJMq.jpeg"
+		"description":"Escher Belasco is a flirtatious and enigmatic vampire and former consort of Strahd von Zarovich. Originally from the Village of Barovia in the nation of Barovia, he resided in Castle Ravenloft for some time, before coming to Eberron. He now maintains dominions over Loom Keep in Karrnath.",
+		"image": "https://i.pinimg.com/originals/38/16/ef/3816ef213d15e59b2afc88d0fe235636.png"
 	},
 	{
 		"location":"barovia",
