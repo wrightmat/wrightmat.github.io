@@ -207,5 +207,20 @@ npcs = [
 		"ac":17,"hp":[136,"16d10 + 48"],"speed":40,"stats":[18,15,16,18,18,18],"cr":11,
 		"description":"Flamewind is a gynosphinx with amazing oracular powers. Found in Xen'drik in 996 YK, Flamewind resides at Morgrave University in Sharn, where she spends her time in the university's library in trade for her visions of things to come.",
 		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/171319/assets/869364/Flamewind2.png?1528415102"
+	},
+	{
+		"location":"eberron",
+		"name":"Arstyvrax",
+		"race":{"title":"Obsidian Dragon","group":"Dragon"},
+		"type":{"title":"Adult Obsidian Dragon"},
+		"alignment":["CN","Chaotic Neutral"],
+		"gender":{"title":"Male","pronouns":["he","him"]},
+		"attitude":"Hostile","orientation":"Asexual","relationship":"n/a","age":["Adult"],"eyes":"black","skin":"black",
+		"appearance":"Scales and wings of a deep black", "talent":"", "mannerism":"", "interaction_trait":"",
+		"occupation": "Tribe Leader",
+		"goals": [ "To release Khyber and bring about the Third Age (of the Dragons)." ],
+		"ac":18,"hp":[210,"20d12 + 80"],"speed":40,"stats":[19,12,19,18,17,18],"cr":13,
+		"description":"The practice of necromancy is forbidden among the dragons of Argonnessen, but Arstyvrax is one of this land's foremost practitioners of the dark art. He is a member of the Shadowmasters - a cabal of a dozen necromancer dragons who share lore and maintain secret libraries scattered across the Vast.",
+		"image": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/e606d8a2-bcb2-4ab7-aa31-f6c4e6fc71f6/dewvy1k-dd8773d0-a9f9-48eb-a7f3-2e825dc2fa76.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2U2MDZkOGEyLWJjYjItNGFiNy1hYTMxLWY2YzRlNmZjNzFmNlwvZGV3dnkxay1kZDg3NzNkMC1hOWY5LTQ4ZWItYTdmMy0yZTgyNWRjMmZhNzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.n0-fcLezTDXAnvEgLf1xXwTbytxQ-ME3Ix4zbEMDNjs"
 	}
 ]
