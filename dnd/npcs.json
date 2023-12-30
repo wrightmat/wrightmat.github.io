@@ -192,5 +192,20 @@ npcs = [
 		"ac":17,"hp":[112,"15d8 + 45"],"speed":30,"stats":[18,15,16,16,14,16],"cr":5,
 		"description":"This old woman is Morgantha, a night hag. She doesn't mind visitors, as long as they've come to do business. She tries to sell her latest batch of dream pastries, charging 1 gp for each one. She's proud of her confections and claims that she uses only the finest ingredients.",
 		"image": "https://vignette3.wikia.nocookie.net/forgottenrealms/images/4/40/Night_Hag-5e.png/revision/latest?cb=20161123195659"
+	},
+	{
+		"location":"eberron",
+		"name":"Flamewind",
+		"race":{"title":"Gynosphinx","group":"Sphinx"},
+		"type":{"title":"Gynosphinx"},
+		"alignment":["NN","Neutral"],
+		"gender":{"title":"Female","pronouns":["she","her"]},
+		"attitude":"Helpful","orientation":"Asexual","relationship":"n/a","age":["Immortal"],"eyes":"black","hair":"black and orange","skin":"black and orange",
+		"appearance":"Worts and a pointed nose - your traditional witch", "talent":"", "mannerism":"", "interaction_trait":"",
+		"occupation": "Researcher",
+		"goals": [ "To learn as much as possible about the events of the last fifty years, and the dragon involvement in particular." ],
+		"ac":17,"hp":[136,"16d10 + 48"],"speed":40,"stats":[18,15,16,18,18,18],"cr":11,
+		"description":"Flamewind is a gynosphinx with amazing oracular powers. Found in Xen'drik in 996 YK, Flamewind resides at Morgrave University in Sharn, where she spends her time in the university's library in trade for her visions of things to come.",
+		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/171319/assets/869364/Flamewind2.png?1528415102"
 	}
 ]
