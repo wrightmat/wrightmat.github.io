@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calendar Creator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="calendar.json"></script>
+  <style>
+	body { margin: 20px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; font-size: 96.5%; font-family: Helvetica, Arial, sans-serif; }
+	a { text-decoration: none; color: #fff; }
+	input[type=checkbox]:checked + label.strikethrough { text-decoration: line-through; }
+	.calendar { position: absolute; border-radius: 4px; overflow: hidden; width: 1800px; height: 900px; left: 25%; margin-left: -400px; margin-top: -225px; top: 25%; background-color: #ffffff; color: #333333; }
+	.calendar h1, .calendar h2 { font-weight: 300; font-size: 36px; line-height: 24px; text-transform: uppercase; margin: 0px 0px 20px 0px; }
+	.calendar h1 span { display: block; }
+	.calendar .col { position: relative; float: left; height: 100%; }
+	.calendar .col .content { padding: 10px; }
+	.calendar ul { margin: 0px; }
+	.calendar ul li { list-style: none; }
+	.calendar .leftCol { width: 30%; background-color: #999DA0; }
+	.calendar .calendar-tasks li { color: #ffffff; margin-bottom: 10px; }
+	.calendar .calendar-tasks .small { height: 24px; vertical-align: text-bottom; }
+	.calendar .tasks p, .calendar .tasks input, .calendar .calendar-tasks li { font-weight: 300; font-size: 13px; }
+	.calendar .tasks p { border-bottom: solid 1px rgba(255,255,255,0.4); }
+	.calendar .tasks input { background-color: #f48989; color: #ffffff; border: none; width: 15px; }
+	.calendar .leftCol h1 { color: #ffffff; margin-bottom: 40px; }
+	.calendar .rightCol { width: 70%; }
+	.calendar .rightCol h2 { color: #c7bebe; text-align: right; margin-bottom: 70px; }
+	.calendar .year { height: 0px; }
+	.calendar .months { float: left; width: 100%; height: 80px; }
+	.calendar .months li, .calendar .weekdays li, .calendar .days li { float: left; text-transform: uppercase; }
+	.calendar .months li a, .calendar .weekdays li a, .calendar .weekday-subs li a, .calendar .days li a { display: block; color: #747978; }
+	.calendar .months li a { font-size: 20px; color: #c7bebe; text-align: center; width: 200px; margin-bottom: 20px; }
+	.calendar .months li .selected { font-weight: bold; color: #747978; }
+	.calendar .weekdays { float: left; width: 100%; height: 20px; }
+	.calendar .weekdays li a { width: 170px; text-align: center; margin-bottom: 10px; font-size: 14px; }
+	.calendar .weekday-subs { float: left; width: 100%; height: 30px; }
+	.calendar .weekday-subs li { float: left }
+	.calendar .weekday-subs li a { width: 170px; text-align: center; margin-bottom: 20px;; font-size: 12px; }
+	.calendar .days li { width: 14%; }
+	.calendar .days li a { height: 155px; text-align: left; margin: auto; font-size: 12px; font-weight: bold; border-radius: 12px; margin-bottom: 10px; padding-top: 10px; padding-left: 10px; background-color: #ffffff }
+	.calendar .days li a:hover { background-color: #EEEDE9; }
+	.calendar .days li .selected { background-color: #ccc!important; color: #fff; }
+	.calendar .events li { float: left; text-transform: none; font-size: 14px; margin: 5px; padding: 5px; width: 80%; height: 28px; vertical-align: top; }
+	.birthday { background-color: #ADD8E6; color: #fff; }
+	.festival { background-color: #F48989; color: #fff; }
+	.season { background-color: #90EE90; color: #fff; }
+	.quest { background-color: #dabcff; color: #fff; }
+  </style>
+</head>
+
+<body>
+
+<div class="calendar">
+    <div class="col leftCol">
+	<div class="content">
+	    <h1 class="date" id="calendar-date"></h1>
+	    <div class="tasks"><ul class="calendar-tasks" id="calendar-tasks"></ul></div>
+	</div>
+    </div>
+    <div class="col rightCol">
+	<div class="content">
+	    <h2 class="year" id="calendar-year"></h2>
+	    <ul class="months" id="calendar-months"></ul>
+	    <div class="clearfix"></div>
+	    <ul class="weekdays" id="calendar-weekdays"></ul>
+	    <div class="clearfix"></div>
+	    <ul class="weekday-subs" id="calendar-weekday-subs"></ul>
+	    <div class="clearfix"></div>
+	    <ul class="days" id="calendar-days"></ul>
+	    <div class="clearfix"></div>
+	</div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+
+<script>
+    var events = [];
+    var tasks = [];
+
+    var currentYear = 1;
+    var currentMonth = 1;
+    var currentDay = 1;
+
+    updateYear();
+    updateMonths();
+    updateWeekdays();
+    updateDays();
+    updateDate();
+    updateTasks();
+
+    function checkTask(el) {
+	for ( var _s = 0; _s <= tasks.length - 1; _s += 1 ) {
+	    if ( tasks[_s] ) {
+		for ( var _t = 0; _t <= tasks[_s].length - 1; _t += 1 ) {
+		    if ( tasks[_s][_t] && tasks[_s][_t].title == el.name ) {
+			if ( tasks[_s][_t].checked == "true" ) {
+			    tasks[_s][_t].checked = "false";
+			} else {
+			    tasks[_s][_t].checked = "true";
+			}
+		    }
+		}
+	    }
+	}
+	updateTasks();
+    }
+
+    function clearTaskList() {
+	tasks = [];
+	localStorage.removeItem('tasks');
+	updateTasks();
+    }
+
+    function getImage(item) {
+	var image;
+	for ( var _i = 0; _i <= images.length - 1; _i += 1 ) {
+	    Object.keys( images[_i] ).forEach( function eachKey ( key ) {
+		if ( item == key ) { image = images[_i][key] }
+	    });
+	}
+	return image;
+    }
+
+    function changeMonth(m) {
+	currentMonth = m;
+	updateMonths();
+	updateDays();
+	updateDate();
+	updateTasks();
+    }
+
+    function changeDay(d) {
+	currentDay = d;
+	updateDays();
+	updateDate();
+	updateTasks();
+    }
+
+    function changeYear(y) {
+	currentYear = y;
+	updateYear();
+	updateDays();
+	updateDate();
+	updateTasks();
+    }
+
+    function updateDate() {
+	$('#calendar-date').empty();
+	var header = currentDay + ' ' + months[currentMonth - 1] + ', Year ' + currentYear; 
+	$('#calendar-date').text(header);
+	$('#calendar-date').append('<a href="#" onclick="clearTaskList();"> [x] </a>');
+    }
+
+    function updateTasks() {
+	// TODO: Investigate issues causing the object to be written differently to storage, breaking the checking of items
+	//if ( localStorage.getItem('tasks') && localStorage.getItem('tasks').length > 0 && tasks.length == 0 ) {
+	    // if a stored task list exists (with checked items, from previous session), then load it
+	//    var task_store = JSON.parse(localStorage.getItem('tasks'));
+	//    if ( task_store.length > 1 ) { var allTasks = task_store[1] } else { var allTasks = task_store[0] }
+	//    console.log("Task list retrieved from local storage.");
+	//    console.log(allTasks);
+	//} else {
+		// otherwise rebuild the task list
+		var allTasks = [];
+		var recurringTasks = calendar[0][0][currentMonth][currentDay]
+		var monthTasks = calendar[0][currentYear][currentMonth][0]
+		var dayTasks = calendar[0][currentYear][currentMonth][currentDay]
+		if ( typeof monthTasks == 'object' && monthTasks.length > 0 ) {
+		    for ( var _s = 0; _s <= monthTasks.length - 1; _s += 1 ) {
+			if ( monthTasks[_s].type == "task" ) {
+			    monthTasks[_s].frequency = "monthly";
+			    allTasks[allTasks.length + _s] = monthTasks[_s];
+			}
+		    }
+		}
+		if ( typeof recurringTasks == 'object' && recurringTasks.length > 0 ) {
+		    for ( var _s = 0; _s <= recurringTasks.length - 1; _s += 1 ) {
+			if ( recurringTasks[_s].type == "task" ) {
+			    recurringTasks[_s].frequency = "monthly";
+			    allTasks[allTasks.length + _s] = recurringTasks[_s];
+			}
+		    }
+		}
+		tasks[currentMonth] = allTasks;
+	
+		if ( typeof dayTasks === 'object' && dayTasks.length > 0 ) {
+		    for ( var _s = 0; _s <= dayTasks.length - 1; _s += 1 ) {
+			if ( dayTasks[_s].type == "task" ) {
+			    dayTasks[_s].frequency = "daily";
+			    allTasks[allTasks.length + _s] = dayTasks[_s];
+			}
+		    }
+		}
+		tasks[currentYear + '-' + currentMonth + '-' + currentDay] = dayTasks;
+	//}
+
+	$('#calendar-tasks').empty();
+	var frequency = "monthly";
+	for ( var _i = 0; _i <= allTasks.length - 1; _i += 1 ) {
+	    if ( allTasks[_i] ) {
+		if ( allTasks[_i].frequency !== frequency ) { $('#calendar-tasks').append('<br /><br />'); }
+		var task = '<li><input type="checkbox" id="task-' + _i + '" name="' + allTasks[_i].title + '" onclick="checkTask(this);"'
+		if ( allTasks[_i].checked == "true" ) { task += ' checked="true"'; }
+		task += '><label for="task-' + _i + '" class="strikethrough">';
+		if ( allTasks[_i].link ) {
+		    task += '<a href="' + allTasks[_i].link + '" target="_blank">' + allTasks[_i].title + '</a>';
+		} else {
+		    task += allTasks[_i].title;
+		}
+		if ( allTasks[_i].items ) {
+		    task += ' ( ';
+		    for ( var _j = 0; _j <= allTasks[_i].items.length - 1; _j += 1 ) {
+			Object.keys( allTasks[_i].items[_j] ).forEach( function eachKey ( key ) {
+			    task += '<img class="small" src="' + getImage(key) + '" title="' + key + '" />'
+			    if ( allTasks[_i].items[_j][key] > 0 ) { task += numberWithCommas(allTasks[_i].items[_j][key]); }
+			    task += '&nbsp;&nbsp;';
+			});
+		    }
+		    task += ')';
+		}
+		task += '</label></li>';
+		$('#calendar-tasks').append(task);
+		frequency = allTasks[_i].frequency;
+	    }
+	}
+	$('#calendar-tasks').append('<br />');
+	var date = currentYear + '-' + currentMonth + '-' + currentDay;
+	for ( var _i = 0; _i <= events[date].length - 1; _i += 1 ) {
+	    if ( events[date][_i] ) {
+		var event = '<li><b>' + capitalizeFirstLetter(events[date][_i].type) + ':</b> ';
+		if ( events[date][_i].image ) { event += '<img src="' + events[date][_i].image + '"> '; }
+		if ( events[date][_i].link ) {
+		    event += '<a href="' + events[date][_i].link + '" target="_blank">' + events[date][_i].title + '</a>';
+		} else {
+		    event += events[date][_i].title;
+		}
+		if ( events[date][_i].items ) {
+		    event += ' (';
+		    for ( var _j = 0; _j <= events[date][_i].items.length - 1; _j += 1 ) {
+			Object.keys( events[date][_i].items[_j] ).forEach( function eachKey ( key ) { 
+			    event += '<img class="small" src="' + getImage(key) + '" title="' + key + '" />'
+			    if ( events[date][_i].items[_j][key] > 0 ) { event += ' ' + numberWithCommas(events[date][_i].items[_j][key]); }
+			});
+		    }
+		    event += ')';
+		}
+		event += '</li>';
+		$('#calendar-tasks').append(event);
+	    }
+	}
+    }
+
+    function updateDays() {
+	$('#calendar-days').empty();
+	for ( var _i = 1; _i <= 28; _i += 1 ) {
+	    var allEvents = [];
+	    var eventsList = '';
+	    var _addClass = '';
+	    var recurringEvents = calendar[0][0][currentMonth][_i]
+	    var monthEvents = calendar[0][currentYear][currentMonth][_i]
+	    if ( typeof recurringEvents == 'object' && recurringEvents.length > 0 ) {
+		for ( var _s = 0; _s <= recurringEvents.length - 1; _s += 1 ) {
+		    if ( recurringEvents[_s].type !== "task" ) { allEvents[allEvents.length + _s] = recurringEvents[_s]; }
+		}
+	    }
+	    if ( typeof monthEvents === 'object' && monthEvents.length > 0 ) {
+		for ( var _s = 0; _s <= monthEvents.length - 1; _s += 1 ) {
+		    if ( monthEvents[_s].type !== "task" ) { allEvents[allEvents.length + _s] = monthEvents[_s]; }
+		}
+	    }
+	    if ( allEvents.length > 0 ) { eventsList = "<div class='events'><ul>"; }
+	    for ( var _s = 0; _s <= allEvents.length - 1; _s += 1 ) {
+		if ( allEvents[_s] ) {
+		    eventsList += '<li class="' + allEvents[_s].type + '">'
+		    if ( allEvents[_s].image ) { eventsList += '<img src="' + allEvents[_s].image + '"> ' }
+		    eventsList += allEvents[_s].title + "</li>";
+		}
+	    }
+	    if ( allEvents.length > 0 ) {
+		eventsList += "</ul></div>";
+		_addClass = ' class="event"';
+	    }
+	    if ( _i === currentDay ) {
+		events[currentYear + '-' + currentMonth + '-' + currentDay] = allEvents;
+		_addClass = ' class="selected"';
+	    }
+	    $('#calendar-days').append('<li><a href="#" onclick="changeDay(' + _i + ')" title=" ' + _i + '" data-value="' + _i + '"' + _addClass + '>' + _i + eventsList);
+	}
+    }
+
+    function updateMonths() {
+	$('#calendar-months').empty();
+	for ( var _i = 1; _i <= months.length; _i += 1 ) {
+	    var month = '<li id="month-' + _i + '"><a href="#" onclick="changeMonth(' + _i + ')" title="' + months[_i - 1] + '" data-value="' + _i + '"';
+	    if ( _i == currentMonth ) { month += ' class="selected"'; }
+	    month += '>' + months[_i - 1] + '</a></li>';
+	    $('#calendar-months').append(month);
+	}
+    }
+
+    function updateWeekdays() {
+	$('#calendar-weekdays').empty();
+	for ( var _i = 1; _i <= weekdays.length; _i += 1 ) {
+	    var weekday = '<li id="weekday-' + _i + '"><a href="#" title="' + weekdays[_i - 1] + '" data-value="' + _i + '">' + weekdays[_i - 1] + '</a></li>';
+	    $('#calendar-weekdays').append(weekday);
+	}
+	if ( weekday_subs ) {
+	    $('#calendar-weekday-subs').empty();
+	    for ( var _i = 1; _i <= weekday_subs.length; _i += 1 ) {
+		var sub = '<li id="weekday-subs-' + _i + '"><a href="#" title="' + weekday_subs[_i - 1] + '" data-value="' + _i + '">' + weekday_subs[_i - 1] + '</a></li>';
+		$('#calendar-weekday-subs').append(sub);
+	    }
+	}
+    }
+
+    function updateYear() {
+	$('#calendar-year').empty();
+	$('#calendar-year').text("Year " + currentYear);
+	$('#calendar-year').append('<span style="cursor: pointer;" onclick="changeYear(' + (currentYear + 1) + ')"> + </span>');
+	if ( currentYear > 1 ) { $('#calendar-year').append('<span style="cursor: pointer;" onclick="changeYear(' + (currentYear - 1) + ')"> - </span>'); }
+    }
+
+    window.addEventListener("beforeunload", function (e) {
+	// save the tasks object (and therefore any checked tasks) to local storage (not currently working, as the object writes strangely
+	//localStorage.setItem('tasks', JSON.stringify(tasks));
+	//console.log("Task list saved to local storage.");
+    });
+</script>
+
+</body>
+</html>

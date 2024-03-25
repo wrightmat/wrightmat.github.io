@@ -519,5 +519,27 @@ equipment = [
 		"rarity": {
 			"name": "Legendary"
 		}
+	},
+	{
+		"index": "dragon-mask",
+		"name": "Dragon Mask",
+		"image": "https://www.worldanvil.com/uploads/images/2d0422a43764282d1c88dd5d90d09182.png",
+		"desc": [
+			"Wondrous item, legendary (requires attunement)",
+			"Each dragon mask is a legendary wondrous item that reshapes to fit the face and head of a wearer attuned to it. While you are wearing any dragon mask and attuned to it, you gain the following benefits.",
+			"**Damage Absorption.** You have resistance against the mask's damage type. If you already have resistance to that damage type from another source, you instead have immunity. If you already have immunity to that damage type from another source, whenever you are subjected to damage of that type, you take none of that damage and regain a number of hit points equal to half the damage dealt of that type.",
+			"**Draconic Majesty.** While you are wearing no armor, you can add your Charisma bonus to your Armor Class.",
+			"**Dragon Sight.** You gain darkvision out to 60 feet, or to an additional 60 feet if you already have that sense. Once per day, you can gain blindsight out to 30 feet for 5 minutes.",
+			"**Dragon Tongue.** You can speak and understand Draconic. You also have advantage on any Charisma check you make against dragons that share the mask's color.",
+			"**Legendary Resistance (1/Day).** If you fail a saving throw, you can choose to succeed instead."
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Legendary"
+		}
 	}
 ]

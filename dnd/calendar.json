@@ -1,0 +1,808 @@
+months = [ "Spring", "Summer", "Fall", "Winter" ];
+weekdays = [ "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" ];
+weekday_subs = [ "New Special Orders", "", "TV: Queen of Sauce", "", "Traveling Cart<br />Krobus: Iridium Sprinkler", "Saloon Visit (gifts)", "Traveling Cart<br />TV: Queen of Sauce" ];
+days = 28;
+
+images = [
+	{ "amethyst": "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png" },
+	{ "apple": "https://stardewvalleywiki.com/mediawiki/images/7/7d/Apple.png" },
+	{ "apricot": "https://stardewvalleywiki.com/mediawiki/images/f/fc/Apricot.png" },
+	{ "aquamarine": "https://stardewvalleywiki.com/mediawiki/images/a/a2/Aquamarine.png" },
+	{ "artichoke_dip": "https://stardewvalleywiki.com/mediawiki/images/7/77/Artichoke_Dip.png" },
+	{ "autumns_bounty": "https://stardewvalleywiki.com/mediawiki/images/f/f4/Autumn%27s_Bounty.png" },
+	{ "bamboo_pole": "https://stardewvalleywiki.com/mediawiki/images/d/da/Bamboo_Pole.png" },
+	{ "banana_pudding": "https://stardewvalleywiki.com/mediawiki/images/4/40/Banana_Pudding.png" },
+	{ "bat_wing": "https://stardewvalleywiki.com/mediawiki/images/3/35/Bat_Wing.png" },
+	{ "battery_pack": "https://stardewvalleywiki.com/mediawiki/images/2/25/Battery_Pack.png" },
+	{ "bean_hotpot": "https://stardewvalleywiki.com/mediawiki/images/2/24/Bean_Hotpot.png" },
+	{ "beer": "https://stardewvalleywiki.com/mediawiki/images/b/b3/Beer.png" },
+	{ "beet": "https://stardewvalleywiki.com/mediawiki/images/a/a4/Beet.png" },
+	{ "blackberry": "https://stardewvalleywiki.com/mediawiki/images/2/25/Blackberry.png" },
+	{ "blackberry_cobbler": "https://stardewvalleywiki.com/mediawiki/images/7/70/Blackberry_Cobbler.png" },
+	{ "blueberry": "https://stardewvalleywiki.com/mediawiki/images/9/9e/Blueberry.png" },
+	{ "blueberry_tart": "https://stardewvalleywiki.com/mediawiki/images/9/9b/Blueberry_Tart.png" },
+	{ "cactus_fruit": "https://stardewvalleywiki.com/mediawiki/images/3/32/Cactus_Fruit.png" },
+	{ "catfish": "https://stardewvalleywiki.com/mediawiki/images/9/99/Catfish.png" },
+	{ "cauliflower": "https://stardewvalleywiki.com/mediawiki/images/a/aa/Cauliflower.png" },
+	{ "cave_carrot": "https://stardewvalleywiki.com/mediawiki/images/3/34/Cave_Carrot.png" },
+	{ "chanterelle": "https://stardewvalleywiki.com/mediawiki/images/1/1d/Chanterelle.png" },
+	{ "cheese": "https://stardewvalleywiki.com/mediawiki/images/a/a5/Cheese.png" },
+	{ "cheese_cauliflower": "https://stardewvalleywiki.com/mediawiki/images/6/6e/Cheese_Cauliflower.png" },
+	{ "cherry": "https://stardewvalleywiki.com/mediawiki/images/2/20/Cherry.png" },
+	{ "chocolate_cake": "https://stardewvalleywiki.com/mediawiki/images/8/87/Chocolate_Cake.png" },
+	{ "clay": " https://stardewvalleywiki.com/mediawiki/images/a/a2/Clay.png" },
+	{ "cloth": "https://stardewvalleywiki.com/mediawiki/images/5/51/Cloth.png" },
+	{ "complete_breakfast": "https://stardewvalleywiki.com/mediawiki/images/3/3d/Complete_Breakfast.png" },
+	{ "coconut": "https://stardewvalleywiki.com/mediawiki/images/2/2f/Coconut.png" },
+	{ "coffee": "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png" },
+	{ "common_mushroom": "https://stardewvalleywiki.com/mediawiki/images/2/2e/Common_Mushroom.png" },
+	{ "copper_bar": "https://stardewvalleywiki.com/mediawiki/images/f/f1/Copper_Bar.png" },
+	{ "copper_ore": "https://stardewvalleywiki.com/mediawiki/images/7/78/Copper_Ore.png" },
+	{ "corn": "https://stardewvalleywiki.com/mediawiki/images/f/f8/Corn.png" },
+	{ "crab_cakes": "https://stardewvalleywiki.com/mediawiki/images/7/70/Crab_Cakes.png" },
+	{ "cranberry_candy": "https://stardewvalleywiki.com/mediawiki/images/9/9d/Cranberry_Candy.png" },
+	{ "crispy_bass": "https://stardewvalleywiki.com/mediawiki/images/5/53/Crispy_Bass.png" },
+	{ "crocus": "https://stardewvalleywiki.com/mediawiki/images/2/2f/Crocus.png" },
+	{ "crystal_fruit": "https://stardewvalleywiki.com/mediawiki/images/1/16/Crystal_Fruit.png" },
+	{ "dandelion": "https://stardewvalleywiki.com/mediawiki/images/b/b1/Dandelion.png" },
+	{ "daffodil": "https://stardewvalleywiki.com/mediawiki/images/4/4b/Daffodil.png" },
+	{ "diamond": "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+	{ "dish_o_the_sea": "https://stardewvalleywiki.com/mediawiki/images/f/ff/Dish_O%27_The_Sea.png" },
+	{ "driftwood": "https://stardewvalleywiki.com/mediawiki/images/6/63/Driftwood.png" },
+	{ "duck_egg": "https://stardewvalleywiki.com/mediawiki/images/3/31/Duck_Egg.png" },
+	{ "duck_feather": "https://stardewvalleywiki.com/mediawiki/images/f/f9/Duck_Feather.png" },
+	{ "earth_crystal": "https://stardewvalleywiki.com/mediawiki/images/7/74/Earth_Crystal.png" },
+	{ "egg": "https://stardewvalleywiki.com/mediawiki/images/2/26/Egg.png" },
+	{ "eggplant": "https://stardewvalleywiki.com/mediawiki/images/8/8f/Eggplant.png" },
+	{ "eggplant_parmesan": "https://stardewvalleywiki.com/mediawiki/images/7/73/Eggplant_Parmesan.png" },
+	{ "emerald": "https://stardewvalleywiki.com/mediawiki/images/6/6a/Emerald.png" },
+	{ "escargot": "https://stardewvalleywiki.com/mediawiki/images/7/78/Escargot.png" },
+	{ "farmers_lunch": "https://stardewvalleywiki.com/mediawiki/images/7/79/Farmer%27s_Lunch.png" },
+	{ "fiddlehead_risotto": "https://stardewvalleywiki.com/mediawiki/images/2/2d/Fiddlehead_Risotto.png" },
+	{ "fire_quartz": "https://stardewvalleywiki.com/mediawiki/images/5/5b/Fire_Quartz.png" },
+	{ "fish_taco": "https://stardewvalleywiki.com/mediawiki/images/d/d5/Fish_Taco.png" },
+	{ "fairy_rose": "https://stardewvalleywiki.com/mediawiki/images/5/5c/Fairy_Rose.png" },
+	{ "flounder": "https://stardewvalleywiki.com/mediawiki/images/8/85/Flounder.png" },
+	{ "fried_calamari": "https://stardewvalleywiki.com/mediawiki/images/2/25/Fried_Calamari.png" },
+	{ "fried_eel": "https://stardewvalleywiki.com/mediawiki/images/8/84/Fried_Eel.png" },
+	{ "fried_mushroom": "https://stardewvalleywiki.com/mediawiki/images/4/4a/Fried_Mushroom.png" },
+	{ "frozen_tear": "https://stardewvalleywiki.com/mediawiki/images/e/ec/Frozen_Tear.png" },
+	{ "fruit_salad": "https://stardewvalleywiki.com/mediawiki/images/9/9e/Fruit_Salad.png" },
+	{ "ginger": "https://stardewvalleywiki.com/mediawiki/images/8/85/Ginger.png" },
+	{ "ginger_ale": "https://stardewvalleywiki.com/mediawiki/images/1/1a/Ginger_Ale.png" },
+	{ "glazed_yams": "https://stardewvalleywiki.com/mediawiki/images/3/30/Glazed_Yams.png" },
+	{ "goat_cheese": "https://stardewvalleywiki.com/mediawiki/images/c/c8/Goat_Cheese.png" },
+	{ "goat_milk": "https://stardewvalleywiki.com/mediawiki/images/4/45/Goat_Milk.png" },
+	{ "gold": "https://stardewvalleywiki.com/mediawiki/images/1/10/Gold.png" },
+	{ "gold_bar": "https://stardewvalleywiki.com/mediawiki/images/4/4e/Gold_Bar.png" },
+	{ "gold_ore": "https://stardewvalleywiki.com/mediawiki/images/f/f7/Gold_Ore.png" },
+	{ "grape": "https://stardewvalleywiki.com/mediawiki/images/c/c2/Grape.png" },
+	{ "green_algae": "https://stardewvalleywiki.com/mediawiki/images/6/6d/Green_Algae.png" },
+	{ "green_bean": "https://stardewvalleywiki.com/mediawiki/images/5/5c/Green_Bean.png" },
+	{ "green_tea": "https://stardewvalleywiki.com/mediawiki/images/8/8f/Green_Tea.png" },
+	{ "hardwood": "https://stardewvalleywiki.com/mediawiki/images/e/ed/Hardwood.png" },
+	{ "hazelnut": "https://stardewvalleywiki.com/mediawiki/images/3/31/Hazelnut.png" },
+	{ "holly": "https://stardewvalleywiki.com/mediawiki/images/b/b8/Holly.png" },
+	{ "honey": "https://stardewvalleywiki.com/mediawiki/images/c/c6/Honey.png" },
+	{ "hot_pepper": "https://stardewvalleywiki.com/mediawiki/images/f/f1/Hot_Pepper.png" },
+	{ "ice_cream": "https://stardewvalleywiki.com/mediawiki/images/5/5d/Ice_Cream.png" },
+	{ "iron_bar": "https://stardewvalleywiki.com/mediawiki/images/6/6c/Iron_Bar.png" },
+	{ "iron_ore": "https://stardewvalleywiki.com/mediawiki/images/8/87/Iron_Ore.png" },
+	{ "iridium_bar": "https://stardewvalleywiki.com/mediawiki/images/c/c4/Iridium_Bar.png" },
+	{ "jade": "https://stardewvalleywiki.com/mediawiki/images/7/7e/Jade.png" },
+	{ "jelly": "https://stardewvalleywiki.com/mediawiki/images/0/05/Jelly.png" },
+	{ "joja_cola": "https://stardewvalleywiki.com/mediawiki/images/d/d5/Joja_Cola.png" },
+	{ "large_egg": "https://stardewvalleywiki.com/mediawiki/images/5/5d/Large_Egg.png" },
+	{ "large_egg_brown": "https://stardewvalleywiki.com/mediawiki/images/9/91/Large_Brown_Egg.png" },
+	{ "large_goat_milk": "https://stardewvalleywiki.com/mediawiki/images/f/f2/Large_Goat_Milk.png" },
+	{ "large_milk": "https://stardewvalleywiki.com/mediawiki/images/6/67/Large_Milk.png" },
+	{ "leek": "https://stardewvalleywiki.com/mediawiki/images/5/57/Leek.png" },
+	{ "lemon_stone": "https://stardewvalleywiki.com/mediawiki/images/3/31/Lemon_Stone.png" },
+	{ "lingcod": "https://stardewvalleywiki.com/mediawiki/images/8/87/Lingcod.png" },
+	{ "lobster": "https://stardewvalleywiki.com/mediawiki/images/9/9f/Lobster.png" },
+	{ "tiger_trout": "https://stardewvalleywiki.com/mediawiki/images/0/01/Tiger_Trout.png" },
+	{ "mango": "https://stardewvalleywiki.com/mediawiki/images/3/38/Mango.png" },
+	{ "mango_sticky_rice": "https://stardewvalleywiki.com/mediawiki/images/6/6e/Mango_Sticky_Rice.png" },
+	{ "maple_bar": "https://stardewvalleywiki.com/mediawiki/images/1/18/Maple_Bar.png" },
+	{ "maple_syrup": "https://stardewvalleywiki.com/mediawiki/images/6/6a/Maple_Syrup.png" },
+	{ "mead": "https://stardewvalleywiki.com/mediawiki/images/8/84/Mead.png" },
+	{ "melon": "https://stardewvalleywiki.com/mediawiki/images/1/19/Melon.png" },
+	{ "miners_treat": "https://stardewvalleywiki.com/mediawiki/images/1/12/Miner%27s_Treat.png" },
+	{ "morel": "https://stardewvalleywiki.com/mediawiki/images/b/b1/Morel.png" },
+	{ "nautilus_shell": "https://stardewvalleywiki.com/mediawiki/images/a/a4/Nautilus_Shell.png" },
+	{ "oak_resin": "https://stardewvalleywiki.com/mediawiki/images/4/40/Oak_Resin.png" },
+	{ "obsidian": "https://stardewvalleywiki.com/mediawiki/images/2/23/Obsidian.png" },
+	{ "octopus": "https://stardewvalleywiki.com/mediawiki/images/5/5a/Octopus.png" },
+	{ "omni_geode": "https://stardewvalleywiki.com/mediawiki/images/0/09/Omni_Geode.png" },
+	{ "orange": "https://stardewvalleywiki.com/mediawiki/images/4/43/Orange.png" },
+	{ "ostrich_egg": "https://stardewvalleywiki.com/mediawiki/images/c/c3/Ostrich_Egg.png" },
+	{ "pale_ale": "https://stardewvalleywiki.com/mediawiki/images/7/78/Pale_Ale.png" },
+	{ "pancakes": "https://stardewvalleywiki.com/mediawiki/images/6/6b/Pancakes.png" },
+	{ "parsnip": "https://stardewvalleywiki.com/mediawiki/images/d/db/Parsnip.png" },
+	{ "parsnip_soup": "https://stardewvalleywiki.com/mediawiki/images/7/76/Parsnip_Soup.png" },
+	{ "peach": "https://stardewvalleywiki.com/mediawiki/images/e/e2/Peach.png" },
+	{ "pepper_poppers": "https://stardewvalleywiki.com/mediawiki/images/0/08/Pepper_Poppers.png" },
+	{ "pickles": "https://stardewvalleywiki.com/mediawiki/images/c/c7/Pickles.png" },
+	{ "pina_colada": "https://stardewvalleywiki.com/mediawiki/images/1/12/Pi%C3%B1a_Colada.png" },
+	{ "pine_tar": "https://stardewvalleywiki.com/mediawiki/images/c/ce/Pine_Tar.png" },
+	{ "pink_cake": "https://stardewvalleywiki.com/mediawiki/images/3/32/Pink_Cake.png" },
+	{ "pizza": "https://stardewvalleywiki.com/mediawiki/images/f/f4/Pizza.png" },
+	{ "plum_pudding": "https://stardewvalleywiki.com/mediawiki/images/a/a0/Plum_Pudding.png" },
+	{ "poi": "https://stardewvalleywiki.com/mediawiki/images/f/f1/Poi.png" },
+	{ "pomegranate": "https://stardewvalleywiki.com/mediawiki/images/1/1b/Pomegranate.png" },
+	{ "poppy": "https://stardewvalleywiki.com/mediawiki/images/3/37/Poppy.png" },
+	{ "poppyseed_muffin": "https://stardewvalleywiki.com/mediawiki/images/8/8e/Poppyseed_Muffin.png" },
+	{ "potato": "https://stardewvalleywiki.com/mediawiki/images/c/c2/Potato.png" },
+	{ "pufferfish": "https://stardewvalleywiki.com/mediawiki/images/b/ba/Pufferfish.png" },
+	{ "pumpkin": "https://stardewvalleywiki.com/mediawiki/images/6/64/Pumpkin.png" },
+	{ "pumpkin_pie": "https://stardewvalleywiki.com/mediawiki/images/7/7d/Pumpkin_Pie.png" },
+	{ "pumpkin_soup": "https://stardewvalleywiki.com/mediawiki/images/5/59/Pumpkin_Soup.png" },
+	{ "purple_mushroom": "https://stardewvalleywiki.com/mediawiki/images/4/4b/Purple_Mushroom.png" },
+	{ "quartz": "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+	{ "radioactive_bar": "https://stardewvalleywiki.com/mediawiki/images/7/7e/Radioactive_Bar.png" },
+	{ "rainbow_shell": "https://stardewvalleywiki.com/mediawiki/images/3/3d/Rainbow_Shell.png" },
+	{ "red_mushroom": "https://stardewvalleywiki.com/mediawiki/images/e/e1/Red_Mushroom.png" },
+	{ "red_plate": "https://stardewvalleywiki.com/mediawiki/images/4/45/Red_Plate.png" },
+	{ "rhubarb_pie": "https://stardewvalleywiki.com/mediawiki/images/2/21/Rhubarb_Pie.png" },
+	{ "rice_pudding": "https://stardewvalleywiki.com/mediawiki/images/e/ec/Rice_Pudding.png" },
+	{ "roasted_hazelnuts": "https://stardewvalleywiki.com/mediawiki/images/1/18/Roasted_Hazelnuts.png" },
+	{ "roots_platter": "https://stardewvalleywiki.com/mediawiki/images/e/e0/Roots_Platter.png" },
+	{ "ruby": "https://stardewvalleywiki.com/mediawiki/images/a/a9/Ruby.png" },
+	{ "salad": "https://stardewvalleywiki.com/mediawiki/images/7/7e/Salad.png" },
+	{ "salmon_dinner": "https://stardewvalleywiki.com/mediawiki/images/8/8b/Salmon_Dinner.png" },
+	{ "sandfish": "https://stardewvalleywiki.com/mediawiki/images/b/bb/Sandfish.png" },
+	{ "sashimi": "https://stardewvalleywiki.com/mediawiki/images/4/41/Sashimi.png" },
+	{ "sea_cucumber": "https://stardewvalleywiki.com/mediawiki/images/a/a9/Sea_Cucumber.png" },
+	{ "sea_urchin": "https://stardewvalleywiki.com/mediawiki/images/e/e7/Sea_Urchin.png" },
+	{ "seaweed": "https://stardewvalleywiki.com/mediawiki/images/1/13/Seaweed.png" },
+	{ "slime": "https://stardewvalleywiki.com/mediawiki/images/3/38/Slime.png" },
+	{ "snail": "https://stardewvalleywiki.com/mediawiki/images/d/d2/Snail.png" },
+	{ "snow_yam": "https://stardewvalleywiki.com/mediawiki/images/3/3f/Snow_Yam.png" },
+	{ "solar_essence": "https://stardewvalleywiki.com/mediawiki/images/f/f4/Solar_Essence.png" },
+	{ "spaghetti": "https://stardewvalleywiki.com/mediawiki/images/0/08/Spaghetti.png" },
+	{ "spice_berry": "https://stardewvalleywiki.com/mediawiki/images/c/c6/Spice_Berry.png" },
+	{ "spicy_eel": "https://stardewvalleywiki.com/mediawiki/images/f/f2/Spicy_Eel.png" },
+	{ "spring_onion": "https://stardewvalleywiki.com/mediawiki/images/0/0c/Spring_Onion.png" },
+	{ "squid": "https://stardewvalleywiki.com/mediawiki/images/8/81/Squid.png" },
+	{ "squid_ink": "https://stardewvalleywiki.com/mediawiki/images/a/ac/Squid_Ink.png" },
+	{ "stir_fry": "https://stardewvalleywiki.com/mediawiki/images/e/ed/Stir_Fry.png" },
+	{ "stone": "https://stardewvalleywiki.com/mediawiki/images/d/d4/Stone.png" },
+	{ "strawberry": "https://stardewvalleywiki.com/mediawiki/images/6/6d/Strawberry.png" },
+	{ "stuffing": "https://stardewvalleywiki.com/mediawiki/images/9/9a/Stuffing.png" },
+	{ "sturgeon": "https://stardewvalleywiki.com/mediawiki/images/4/42/Sturgeon.png" },
+	{ "summer_spangle": "https://stardewvalleywiki.com/mediawiki/images/9/9f/Summer_Spangle.png" },
+	{ "sunflower": "https://stardewvalleywiki.com/mediawiki/images/8/81/Sunflower.png" },
+	{ "super_cucumber": "https://stardewvalleywiki.com/mediawiki/images/d/d5/Super_Cucumber.png" },
+	{ "super_meal": "https://stardewvalleywiki.com/mediawiki/images/d/d2/Super_Meal.png" },
+	{ "survival_burger": "https://stardewvalleywiki.com/mediawiki/images/8/87/Survival_Burger.png" },
+	{ "sweet_pea": "https://stardewvalleywiki.com/mediawiki/images/d/d9/Sweet_Pea.png" },
+	{ "tea_leaves": "https://stardewvalleywiki.com/mediawiki/images/5/5b/Tea_Leaves.png" },
+	{ "tigerseye": "https://stardewvalleywiki.com/mediawiki/images/6/6e/Tigerseye.png" },
+	{ "tom_kha_soup": "https://stardewvalleywiki.com/mediawiki/images/3/3b/Tom_Kha_Soup.png" },
+	{ "tomato": "https://stardewvalleywiki.com/mediawiki/images/9/9d/Tomato.png" },
+	{ "topaz": "https://stardewvalleywiki.com/mediawiki/images/a/a5/Topaz.png" },
+	{ "tropical_curry": "https://stardewvalleywiki.com/mediawiki/images/3/32/Tropical_Curry.png" },
+	{ "truffle": "https://stardewvalleywiki.com/mediawiki/images/f/f2/Truffle.png" },
+	{ "truffle_oil": "https://stardewvalleywiki.com/mediawiki/images/3/3d/Truffle_Oil.png" },
+	{ "tulip": "https://stardewvalleywiki.com/mediawiki/images/c/cf/Tulip.png" },
+	{ "vegetable_medley": "https://stardewvalleywiki.com/mediawiki/images/0/0a/Vegetable_Medley.png" },
+	{ "void_egg": "https://stardewvalleywiki.com/mediawiki/images/5/58/Void_Egg.png" },
+	{ "void_essence": "https://stardewvalleywiki.com/mediawiki/images/1/1f/Void_Essence.png" },
+	{ "void_mayonnaise": "https://stardewvalleywiki.com/mediawiki/images/f/f3/Void_Mayonnaise.png" },
+	{ "wild_horseradish": "https://stardewvalleywiki.com/mediawiki/images/9/90/Wild_Horseradish.png" },
+	{ "wild_plum": "https://stardewvalleywiki.com/mediawiki/images/3/3b/Wild_Plum.png" },
+	{ "wine": "https://stardewvalleywiki.com/mediawiki/images/6/69/Wine.png" },
+	{ "winter_root": "https://stardewvalleywiki.com/mediawiki/images/1/11/Winter_Root.png" },
+	{ "wood": "https://stardewvalleywiki.com/mediawiki/images/d/df/Wood.png" },
+	{ "wool": "https://stardewvalleywiki.com/mediawiki/images/3/34/Wool.png" },
+	{ "yam": "https://stardewvalleywiki.com/mediawiki/images/5/52/Yam.png" },
+],
+
+calendar = [
+	{
+	"0": {
+		"1": {
+			"4": [
+				{ type: "birthday", title: "Kent", image: "https://stardewvalleywiki.com/mediawiki/images/8/86/Kent_Icon.png", link: "https://stardewvalleywiki.com/Kent", items: [ { "fiddlehead_risotto":0 },{ "roasted_hazelnuts":0 }, { "daffodil":0 } ] }
+			],
+			"7": [
+				{ type: "birthday", title: "Lewis", image: "https://stardewvalleywiki.com/mediawiki/images/b/b6/Lewis_Icon.png", link: "https://stardewvalleywiki.com/Lewis", items: [ { "autumns_bounty":0 }, { "glazed_yams":0 }, { "green_tea":0 }, { "hot_pepper":0 }, { "vegetable_medley":0 }, { "blueberry":0 }, { "cactus_fruit":0 }, { "coconut":0 }, { "common_mushroom":0 }, { "daffodil":0 }, { "dandelion":0 }, { "leek":0 } ] }
+			],
+			"10": [
+				{ type: "birthday", title: "Vincent", image: "https://stardewvalleywiki.com/mediawiki/images/0/0b/Vincent_Icon.png", link: "https://stardewvalleywiki.com/Vincent", items: [ { "cranberry_candy":0 }, { "ginger_ale":0 }, { "grape":0 }, { "pink_cake":0 }, { "snail":0 }, { "coconut":0 }, { "daffodil":0 } ] }
+			],
+			"13": [
+				{ type: "festival", title: "Egg Festival", link: "https://stardewvalleywiki.com/Egg_Festival" }
+			],
+			"14": [
+				{ type: "birthday", title: "Haley", image: "https://stardewvalleywiki.com/mediawiki/images/f/f7/Haley_Icon.png", link: "https://stardewvalleywiki.com/Haley", items: [ { "coconut":0 }, { "fruit_salad":0 }, { "pink_cake":0 }, { "sunflower":0 }, { "daffodil":0 } ] }
+			],
+			"15": [
+				{ type: "season", title: "Salmonberries" }
+			],
+			"16": [
+				{ type: "season", title: "Salmonberries" }
+			],
+			"17": [
+				{ type: "season", title: "Salmonberries" }
+			],
+			"18": [
+				{ type: "season", title: "Salmonberries" },
+				{ type: "birthday", title: "Pam", image: "https://stardewvalleywiki.com/mediawiki/images/b/b6/Pam_Icon.png", link: "https://stardewvalleywiki.com/Pam", items: [ { "beer":0 }, { "cactus_fruit":0 }, { "glazed_yams":0 }, { "mead":0 }, { "pale_ale":0 }, { "parsnip":0 }, { "parsnip_soup":0 }, { "pina_colada":0 }, { "daffodil":0 } ] }
+			],
+			"20": [
+				{ type: "birthday", title: "Shane", image: "https://stardewvalleywiki.com/mediawiki/images/b/b4/Shane_Icon.png", link: "https://stardewvalleywiki.com/Shane", items: [ { "beer":0 }, { "hot_pepper":0 }, { "pepper_poppers":0 }, { "pizza":0 }, { "parsnip":0 } ] }
+			],
+			"24": [
+				{ type: "festival", title: "Flower Dance", link: "https://stardewvalleywiki.com/Flower_Dance" }
+			],
+			"26": [
+				{ type: "birthday", title: "Pierre", image: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Pierre_Icon.png", link: "https://stardewvalleywiki.com/Pierre", items: [ { "fried_calamari":0 }, { "daffodil":0 }, { "dandelion":0 } ] }
+			],
+			"27": [
+				{ type: "birthday", title: "Emily", image: "https://stardewvalleywiki.com/mediawiki/images/c/c3/Emily_Icon.png", link: "https://stardewvalleywiki.com/Emily", items: [ { "amethyst":0 }, { "aquamarine":0 }, { "cloth":0 }, { "emerald":0 }, { "jade":0 }, { "ruby":0 }, { "survival_burger":0 }, { "topaz":0 }, { "wool":0 }, { "daffodil":0 }, { "quartz":0 } ] }
+			]
+		},
+		"2": {
+			"4": [
+				{ type: "birthday", title: "Jas", image: "https://stardewvalleywiki.com/mediawiki/images/6/68/Jas_Icon.png", link: "https://stardewvalleywiki.com/Jas", items: [ { "fairy_rose":0 }, { "pink_cake":0 }, { "plum_pudding":0 }, { "coconut":0 }, { "daffodil":0 } ] }
+			],
+			"8": [
+				{ type: "birthday", title: "Gus", image: "https://stardewvalleywiki.com/mediawiki/images/d/db/Gus_Icon.png", link: "https://stardewvalleywiki.com/Gus", items: [ { "diamond":0 }, { "escargot":0 }, { "fish_taco":0 }, { "orange":0 }, { "tropical_curry":0 }, { "daffodil":0 } ] }
+			],
+			"10": [
+				{ type: "birthday", title: "Maru", image: "https://stardewvalleywiki.com/mediawiki/images/2/23/Maru_Icon.png", link: "https://stardewvalleywiki.com/Maru", items: [ { "battery_pack":0 }, { "cauliflower":0 }, { "cheese_cauliflower":0 }, { "diamond":0 }, { "gold_bar":0 }, { "iridium_bar":0 }, { "miners_treat":0 }, { "pepper_poppers":0 }, { "radioactive_bar":0 }, { "rhubarb_pie":0 }, { "strawberry":0 }, { "quartz":0 } ] }
+			],
+			"11": [
+				{ type: "festival", title: "Luau", link: "https://stardewvalleywiki.com/Luau" }
+			],
+			"12": [
+				{ type: "season", title: "Beach" }
+			],
+			"13": [
+				{ type: "season", title: "Beach" },
+				{ type: "birthday", title: "Alex", image: "https://stardewvalleywiki.com/mediawiki/images/7/73/Alex_Icon.png", link: "https://stardewvalleywiki.com/Alex", items: [ { "complete_breakfast":0 }, { "salmon_dinner":0 }, { "egg":0 } ] }
+			],
+			"14": [
+				{ type: "season", title: "Beach" }
+			],
+			"17": [
+				{ type: "birthday", title: "Sam", image: "https://stardewvalleywiki.com/mediawiki/images/5/52/Sam_Icon.png", link: "https://stardewvalleywiki.com/Sam", items: [ { "cactus_fruit":0 }, { "maple_bar":0 }, { "pizza":0 }, { "tigerseye":0 }, { "joja_cola":0 } ] }
+			],
+			"19": [
+				{ type: "birthday", title: "Demetrius", image: "https://stardewvalleywiki.com/mediawiki/images/0/0b/Demetrius_Icon.png", link: "https://stardewvalleywiki.com/Demetrius", items: [ { "bean_hotpot":0 }, { "ice_cream":0 }, { "rice_pudding":0 }, { "strawberry":0 }, { "purple_mushroom":0 } ] }
+			],
+			"22": [
+				{ type: "birthday", title: "Dwarf", image: "https://stardewvalleywiki.com/mediawiki/images/0/08/Dwarf_Icon.png", link: "https://stardewvalleywiki.com/Dwarf", items: [ { "amethyst":0 }, { "aquamarine":0 }, { "emerald":0 }, { "jade":0 }, { "lemon_stone":0 }, { "omni_geode":0 }, { "ruby":0 }, { "topaz":0 }, { "cave_carrot":0 }, { "quartz":0 } ] }
+			],
+			"24": [
+				{ type: "birthday", title: "Willy", image: "https://stardewvalleywiki.com/mediawiki/images/7/73/Willy_Icon.png", link: "https://stardewvalleywiki.com/Willy", items: [ { "catfish":0 }, { "diamond":0 }, { "iridium_bar":0 }, { "mead":0 }, { "octopus":0 }, { "pumpkin":0 }, { "sea_cucumber":0 }, { "sturgeon":0 }, { "gold_bar":0 }, { "quartz":0 }, { "lingcod":0 }, { "tiger_trout":0 } ] }
+			],
+			"26": [
+				{ type: "birthday", title: "Leo", image: "https://stardewvalleywiki.com/mediawiki/images/3/3d/Leo_Icon.png", link: "https://stardewvalleywiki.com/Leo", items: [ { "duck_feather":0 }, { "mango":0 }, { "ostrich_egg":0 }, { "poi":0 }, { "nautilus_shell":0 }, { "quartz":0 }, { "rainbow_shell":0 }, { "sea_urchin":0 }, { "spice_berry":0 } ] }
+			],
+			"28": [
+				{ type: "festival", title: "Dance of the Moonlight Jellies", link: "https://stardewvalleywiki.com/Dance_of_the_Moonlight_Jellies" }
+			],
+		},
+		"3": {
+			"2": [
+				{ type: "birthday", title: "Penny", image: "https://stardewvalleywiki.com/mediawiki/images/b/bc/Penny_Icon.png", link: "https://stardewvalleywiki.com/Penny", items: [ { "diamond":0 }, { "emerald":0 }, { "melon":0 }, { "poppy":0 }, { "poppyseed_muffin":0 }, { "red_plate":0 }, { "roots_platter":0 }, { "sandfish":0 }, { "tom_kha_soup":0 }, { "dandelion":0 }, { "leek":0 } ] }
+			],
+			"5": [
+				{ type: "birthday", title: "Elliott", image: "https://stardewvalleywiki.com/mediawiki/images/6/6f/Elliott_Icon.png", link: "https://stardewvalleywiki.com/Elliott", items: [ { "crab_cakes":0 }, { "duck_feather":0 }, { "lobster":0 }, { "pomegranate":0 }, { "squid_ink":0 }, { "tom_kha_soup":0 }, { "octopus":0 }, { "squid":0 }, { "daffodil":0 } ] }
+			],
+			"8": [
+				{ type: "season", title: "Blackberries" }
+			],
+			"9": [
+				{ type: "season", title: "Blackberries" }
+			],
+			"10": [
+				{ type: "season", title: "Blackberries" }
+			],
+			"11": [
+				{ type: "season", title: "Blackberries" },
+				{ type: "birthday", title: "Jodi", image: "https://stardewvalleywiki.com/mediawiki/images/f/f7/Jodi_Icon.png", link: "https://stardewvalleywiki.com/Jodi", items: [ { "chocolate_cake":0 }, { "crispy_bass":0 }, { "diamond":0 }, { "eggplant_parmesan":0 }, { "fried_eel":0 }, { "pancakes":0 }, { "rhubarb_pie":0 }, { "vegetable_medley":0 }, { "egg":0 } ] }
+			],
+			"13": [
+				{ type: "birthday", title: "Abigail", image: "https://stardewvalleywiki.com/mediawiki/images/6/63/Abigail_Icon.png", link: "https://stardewvalleywiki.com/Abigail", items: [ { "amethyst":0 }, { "banana_pudding":0 }, { "blackberry_cobbler":0 }, { "chocolate_cake":0 }, { "pufferfish":0 }, { "pumpkin":0 }, { "spicy_eel":0 }, { "quartz":0 } ] }
+			],
+			"15": [
+				{ type: "birthday", title: "Sandy", image: "https://stardewvalleywiki.com/mediawiki/images/7/7d/Sandy_Icon.png", link: "https://stardewvalleywiki.com/Sandy", items: [ { "crocus":0 }, { "daffodil":0 }, { "mango_sticky_rice":0 }, { "sweet_pea":0 }, { "goat_milk":0 }, { "quartz":0 }, { "wool":0 } ] }
+			],
+			"16": [
+				{ type: "festival", title: "Stardew Valley Fair", link: "https://stardewvalleywiki.com/Stardew_Valley_Fair" }
+			],
+			"18": [
+				{ type: "birthday", title: "Marnie", image: "https://stardewvalleywiki.com/mediawiki/images/d/d4/Marnie_Icon.png", link: "https://stardewvalleywiki.com/Marnie", items: [ { "diamond":0 },  { "farmers_lunch":0 }, { "pink_cake":0 }, { "pumpkin_pie":0 }, { "quartz":0 } ] }
+			],
+			"21": [
+				{ type: "birthday", title: "Robin", image: "https://stardewvalleywiki.com/mediawiki/images/d/d1/Robin_Icon.png", link: "https://stardewvalleywiki.com/Robin", items: [ { "goat_cheese":0 }, { "peach":0 }, { "spaghetti":0 }, { "hardwood":0 }, { "quartz":0 } ] }
+			],
+			"24": [
+				{ type: "birthday", title: "George", image: "https://stardewvalleywiki.com/mediawiki/images/a/ad/George_Icon.png", link: "https://stardewvalleywiki.com/George", items: [ { "fried_mushroom":0 }, { "leek":0 }, { "daffodil":0 } ] }
+			],
+			"27": [
+				{ type: "festival", title: "Spirit's Eve", link: "https://stardewvalleywiki.com/Spirit%27s_Eve" }
+			],
+		},
+		"4": {
+			"1": [
+				{ type: "birthday", title: "Krobus", image: "https://stardewvalleywiki.com/mediawiki/images/1/10/Krobus_Icon.png", link: "https://stardewvalleywiki.com/Krobus", items: [ { "diamond":0 }, { "iridium_bar":0 }, { "pumpkin":0 }, { "void_egg":0 }, { "void_mayonnaise":0 }, { "wild_horseradish":0 }, { "gold_bar":0 }, { "quartz":0 } ]  }
+			],
+			"3": [
+				{ type: "birthday", title: "Linus", image: "https://stardewvalleywiki.com/mediawiki/images/d/db/Linus_Icon.png", link: "https://stardewvalleywiki.com/Linus", items: [ { "blueberry_tart":0 }, { "cactus_fruit":0 }, { "coconut":0 }, { "dish_o_the_sea":0 }, { "yam":0 }, { "common_mushroom":0 }, { "daffodil":0 }, { "dandelion":0 }, { "hazelnut":0 }, { "leek":0 }, { "spring_onion":0 }, { "wild_horseradish":0 } ] }
+			],
+			"7": [
+				{ type: "birthday", title: "Caroline", image: "https://stardewvalleywiki.com/mediawiki/images/d/d4/Caroline_Icon.png", link: "https://stardewvalleywiki.com/Caroline", items: [ { "fish_taco":0 }, { "green_tea":0 }, { "summer_spangle":0 }, { "tropical_curry":0 }, { "daffodil":0 }, { "tea_leaves":0 } ] }
+			],
+			"8": [
+				{ type: "festival", title: "Festival of Ice", link: "https://stardewvalleywiki.com/Festival_of_Ice" }
+			],
+			"10": [
+				{ type: "birthday", title: "Sebastian", image: "https://stardewvalleywiki.com/mediawiki/images/6/6a/Sebastian_Icon.png", link: "https://stardewvalleywiki.com/Sebastian", items: [ { "frozen_tear":0 }, { "obsidian":0 }, { "pumpkin_soup":0 }, { "sashimi":0 }, { "void_egg":0 }, { "flounder":0 }, { "quartz":0 } ] }
+			],
+			"14": [
+				{ type: "birthday", title: "Harvey", image: "https://stardewvalleywiki.com/mediawiki/images/7/7a/Harvey_Icon.png", link: "https://stardewvalleywiki.com/Harvey", items: [ { "coffee":0 }, { "pickles":0 }, { "super_meal":0 }, { "truffle_oil":0 }, { "wine":0 }, { "common_mushroom":0 }, { "daffodil":0 }, { "dandelion":0 }, { "duck_egg":0 }, { "duck_feather":0 }, { "hazelnut":0 }, { "leek":0 } ] }
+			],
+			"15": [
+				{ type: "festival", title: "Night Market", link: "https://stardewvalleywiki.com/Night_Market" }
+			],
+			"16": [
+				{ type: "festival", title: "Night Market", link: "https://stardewvalleywiki.com/Night_Market" }
+			],
+			"17": [
+				{ type: "festival", title: "Night Market", link: "https://stardewvalleywiki.com/Night_Market" },
+				{ type: "birthday", title: "Wizard", image: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Wizard_Icon.png", link: "https://stardewvalleywiki.com/Wizard", items: [ { "purple_mushroom":0 }, { "solar_essence":0 }, { "super_cucumber":0 }, { "void_essence":0 }, { "quartz":0 } ] }
+			],
+			"20": [
+				{ type: "birthday", title: "Evelyn", image: "https://stardewvalleywiki.com/mediawiki/images/5/54/Evelyn_Icon.png", link: "https://stardewvalleywiki.com/Evelyn", items: [ { "beet":0 }, { "chocolate_cake":0 }, { "diamond":0 }, { "fairy_rose":0 }, { "stuffing":0 }, { "tulip":0 }, { "daffodil":0 } ] }
+			],
+			"23": [
+				{ type: "birthday", title: "Leah", image: "https://stardewvalleywiki.com/mediawiki/images/6/6e/Leah_Icon.png", link: "https://stardewvalleywiki.com/Leah", items: [ { "goat_cheese":0 }, { "poppyseed_muffin":0 }, { "salad":0 }, { "stir_fry":0 }, { "truffle":0 }, { "vegetable_medley":0 }, { "wine":0 }, { "chanterelle":0 }, { "common_mushroom":0 }, { "daffodil":0 }, { "dandelion":0 }, { "driftwood":0 } ] }
+			],
+			"25": [
+				{ type: "festival", title: "Feast of the Winter Star", link: "https://stardewvalleywiki.com/Feast_of_the_Winter_Star" }
+			],
+			"26": [
+				{ type: "birthday", title: "Clint", image: "https://stardewvalleywiki.com/mediawiki/images/7/74/Clint_Icon.png", link: "https://stardewvalleywiki.com/Clint", items: [ { "amethyst":0 }, { "aquamarine":0 }, { "artichoke_dip":0 }, { "emerald":0 }, { "fiddlehead_risotto":0 }, { "gold_bar":0 }, { "iridium_bar":0 }, { "jade":0 }, { "omni_geode":0 }, { "ruby":0 }, { "topaz":0 } ] }
+			],
+		}
+	},
+	"1": {
+		"1": {
+			"0": [
+				{ type: "task", title: "Spring Foraging Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"wild_horseradish":1},{"daffodil":1},{"leek":1},{"dandelion":1} ] },
+				{ type: "task", title: "Build a Silo at Robin's", link: "https://stardewvalleywiki.com/Carpenter%27s_Shop", items: [ {"gold":100},{"stone":100},{"clay":10},{"copper_bar":5} ] },
+				{ type: "task", title: "Spring Crops Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"parsnip":1},{"green_bean":1},{"cauliflower":1},{"potato":1} ] },
+				{ type: "task", title: "Build a Coop at Robin's", link: "https://stardewvalleywiki.com/Carpenter%27s_Shop", items: [ {"gold":4000},{"wood":300},{"stone":100} ] },
+				{ type: "task", title: "Buy a Chicken at Marnie's", link: "https://stardewvalleywiki.com/Marnie%27s_Ranch", items: [ {"gold":800} ] },
+				{ type: "task", title: "Craft as many Preserves Jars as possible (at least 16)" },
+				{ type: "task", title: "Plant as many Oak trees as possible, and add Tappers (collecting Oak Resin)" },
+				{ type: "task", title: "Blacksmith's Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"copper_bar":1},{"iron_bar":1},{"gold_bar":1} ] },
+				{ type: "task", title: "Geologist's Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"quartz":1}, {"earth_crystal":1}, {"frozen_tear":1}, {"fire_quartz":1} ] },
+				{ type: "task", title: "Adventurer's Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"slime":99},{"bat_wing":10},{"solar_essence":1},{"void_essence":1} ] },
+				{ type: "task", title: "Build a Barn at Robin's", link: "https://stardewvalleywiki.com/Carpenter%27s_Shop", items: [ {"gold":6000},{"wood":350},{"stone":150} ] },
+				{ type: "task", title: "Buy a Cow at Marnie's", link: "https://stardewvalleywiki.com/Marnie%27s_Ranch", items: [ {"gold":1500} ] },
+				{ type: "task", title: "Vault Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"gold":2500},{"gold":5000},{"gold":10000},{"gold":25000} ] },
+				{ type: "task", title: "Gift Caroline a Daffodil every day possible (trying for 2 hearts ASAP for Tree Sapling Recipe). Start crafting Tea Saplings once recipe is obtained." }
+			],
+			"1": [
+				{ type: "task", title: "Craft Chest (50 wood). Stow everything except for Scythe and Hoe." },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "If found, turn in an artifact to Gunther before 4pm.", items: [ {"gold":250} ] },
+				{ type: "task", title: "Talk to as many people as possible along the way." },
+				{ type: "task", title: "Buy 1 Cauliflower Seed (80g), 1 Bean Starter (60g), 18 Parsnip Seeds (60g)." },
+				{ type: "task", title: "Plant and water crops and any Mixed Seeds = 52+ Energy." },
+				{ type: "task", title: "Clear farm of trees with leftover energy." },
+				{ type: "task", title: "Goal: Foraging 1" },
+				{ type: "task", title: "Goal: 300 Wood" }
+			],
+			"2": [
+				{ type: "quest", title: "To The Beach", items: [ {"bamboo_pole":0} ] },
+				{ type: "task", title: "Water crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Cut trees along the way to (300 Wood). Keep any seeds to make Field Snacks." },
+				{ type: "task", title: "Buy a Training Rod from Willy (speeds up XP gathering from perfect catches)." },
+				{ type: "task", title: "Open up the right side of beach and collect forageables - immediately sell." },
+				{ type: "task", title: "Ocean fishing all day - sell to Willy up until 5pm - then pass out at 2 am." },
+				{ type: "task", title: "Goal: Fishing 2" },
+				{ type: "task", title: "Goal: 2,000 g" }
+			],
+			"3": [
+				{ type: "task", title: "Ensure a clear path through the south of the farm." },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Buy Fiberglass Rod (1,800 g) and Bait (10 g)." },
+				{ type: "task", title: "Ocean fishing all day." },
+				{ type: "task", title: "Stop by the river and try to catch a catfish (keep for CC Bundle)." },
+				{ type: "task", title: "Goal: Fishing 3 to 4" },
+				{ type: "task", title: "Goal: 6,000 g" }
+			],
+			"4": [
+				{ type: "task", title: "Water crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Buy upgraded backpack (2,000 g)." },
+				{ type: "task", title: "Craft a chest and place at the Mountain Lake fishing spot." },
+				{ type: "task", title: "Mountain Lake fishing all day, selling anything caught (except for chubs)." },
+				{ type: "task", title: "Goal: Fishing 5 (Fisher Perk)" },
+				{ type: "task", title: "Goal: 11,400 g" }
+			],
+			"5": [
+				{ type: "task", title: "Harvest Parsnips (don't sell, use as food), and water any other crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Buy as many Potato Seeds as possible (need 226), but don't plant yet." },
+				{ type: "task", title: "If not raining, go to Community Center between 8 am and 1 pm and INSPECT THE PLAQUE INSIDE." },
+				{ type: "task", title: "Mines open! Move fishing chest to the mines entrance." },
+				{ type: "task", title: "Goal: Farming 1" },
+				{ type: "task", title: "Goal: Foraging 3" },
+				{ type: "task", title: "Goal: 70 Copper Ore, 20 Coal, 25 Stone" },
+				{ type: "task", title: "Goal: Mines level 30" },
+				{ type: "task", title: "Goal: 2,000 g" }
+			],
+			"6": [
+				{ type: "task", title: "Craft Furnace, and start making Copper Bars.", items: [ {"stone":25},{"copper_ore":20} ] },
+				{ type: "task", title: "Clear any stones in the nearby area, and till extra land." },
+				{ type: "task", title: "Plant Potatoes with Quality Fertilizer." },
+				{ type: "task", title: "Visit Wizard to start Community Center (clearing trees and foraging along the way)." },
+				{ type: "task", title: "Upgrade to Copper Pickaxe", items: [ {"gold":2000},{"copper_bar":5} ] },
+				{ type: "task", title: "Plant trees of each type around farm - focus on Oak Trees (acorns), and add Tappers." },
+				{ type: "task", title: "Goal: 2,000 g" }
+			],
+			"7": [
+				{ type: "task", title: "Water crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Mountain Lake fishing - sell everything but one Largemouth Bass, Carp, and Bullhead." },
+				{ type: "task", title: "Goal: 2,000 g" }
+			],
+			"8": [
+				{ type: "task", title: "Water crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Retrieve Copper Pickaxe and upgrade to Copper Axe", items: [ {"gold":2000},{"copper_bar":5} ] },
+				{ type: "task", title: "Get as deep as possible in Mines." },
+				{ type: "task", title: "Smelt all possible ore into bars." },
+				{ type: "task", title: "Goal: Mines level 60" },
+				{ type: "task", title: "Goal: 25 Copper Ore, 80 Iron Ore, 20 Quartz, 40 Coal" }
+			],
+			"9": [
+				{ type: "task", title: "Water crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Get as deep as possible in the Mines - sell everything except what's needed for bundles." },
+				{ type: "task", title: "Goal: Mines level 80" },
+				{ type: "task", title: "Goal: 80 Iron Ore, 20 Gold Ore, 20 Quartz, 40 Coal" },
+				{ type: "task", title: "Goal: 2,000 g" }
+			],
+			"10": [
+				{ type: "task", title: "Water crops" },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Retrieve Copper Axe and upgrade to Copper Hoe", items: [ {"gold":2000},{"copper_bar":5} ] },
+				{ type: "task", title: "Do NOT spend any money after this day! Save for Strawberries!" },
+				{ type: "task", title: "Goal: Mines level 90" },
+				{ type: "task", title: "Goal: 20 Iron Ore, 80 Gold Ore, 20 Quartz, 40 Coal" },
+				{ type: "task", title: "Goal: 5,000 g" }
+			],
+			"11": [
+				{ type: "quest", title: "Robin's Lost Axe", items: [ { "gold": "250" } ] },
+				{ type: "task", title: "Harvest Green Bean, and water other crops." },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Do NOT spend any money! Save for Strawberries!" },
+				{ type: "task", title: "Goal: Mines level 100" },
+				{ type: "task", title: "Goal: 25 Iron Ore, 20 Gold Ore, 10 Quartz, 10 Coal" },
+				{ type: "task", title: "Goal: 10,000 g" }
+			],
+			"12": [
+				{ type: "task", title: "Harvest Potatoes, and water other crops." },
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Do NOT spend any money! Save for Strawberries!" },
+				{ type: "task", title: "Goal: Farming 6" },
+				{ type: "task", title: "Goal: 15,000 g" }
+			],
+			"13": [
+				{ type: "task", title: "Harvest Cauliflower, and water other crops." },
+				{ type: "task", title: "Till and water 100 plots." },
+				{ type: "task", title: "Craft and place Quality Sprinklers." },
+				{ type: "task", title: "Go to Egg Festival and buy at least 100 Strawberry Seeds (100g each). Gather 9 eggs to win Egg Hunt.", link: "https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2Fmbimzj4ut7921.jpg" },
+				{ type: "task", title: "After festival is over, run back and complete Spring Crops Bundle." },
+				{ type: "task", title: "Plant all Strawberry Seeds in pre-watered plots and put down Speed-Gro from the Spring Crops Bundle." }
+			],
+			"14": [
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Upgrade to Steel Axe", items: [ {"gold":5000},{"iron_bar":5} ] },
+				{ type: "task", title: "Goal: Foraging 4" },
+				{ type: "task", title: "Goal: Complete Mines" }
+			],
+			"15": [
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Buy 10 Cauliflower Seeds and 2 Tulip Seeds. Plant them all, being sure to fertilize the Cauliflower (need 1 Gold)." },
+				{ type: "task", title: "Goal: 5,000 g" }
+			],
+			"16": [
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Retrieve Steel Axe and upgrade to Steel Pickaxe", items: [ {"gold":5000},{"iron_bar":5} ] },
+				{ type: "task", title: "Unlock Secret Woods." },
+				{ type: "task", title: "Grind Mines Level 15 for Ancient Seeds by killing Bugs. Donate to Gunther and plant the gifted Ancient Seed immediately." },
+				{ type: "task", title: "Goal: Foraging 5 (Gatherer Perk)" }
+			],
+			"17": [
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Grind Mines Level 11 for Copper Ore." },
+				{ type: "task", title: "Goal: 3,300 g" }
+			],
+			"18": [
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Retrieve Steel Pickaxe." },
+				{ type: "task", title: "Buy 40 Parsnip Seeds, plant and fertilize them (for Quality Bundle)." }
+			],
+			"19": [
+				{ type: "task", title: "Forage everything (Spring Onions especially)!", link: "https://i.imgur.com/VscC1i1.png" },
+				{ type: "task", title: "Grind Mines Level 41 for Iron Ore." },
+				{ type: "quest", title: "Jodi's Request", items: [ { "gold":350 } ] }
+			],
+			"20": [
+				{ type: "task", title: "Harvest first Strawberry crop." },
+				{ type: "task", title: "Goal: 10,000 g" }
+			],
+			"21": [
+				{ type: "task", title: "Upgrade to Gold Pickaxe", items: [ {"gold":10000},{"gold_bar":5} ] },
+				{ type: "task", title: "Grind Mines Level 81 for Gold Ore" },
+				{ type: "task", title: "Goal: 2,000 g" }
+			],
+			"22": [
+				{ type: "task", title: "Grind Mines Levels 41 - 71 (focus on 61) for Coal by killing Dust Sprites. Use a Monster Musk to increase their spawn rate." },
+				{ type: "task", title: "Goal: 4,000 g" }
+			],
+			"23": [
+				{ type: "task", title: "Mines: Fish at Level 100 to get a Lava Eel. Place into a Fish Pond as soon as possible." },
+				{ type: "task", title: "Goal: 6,000 g" }
+			],
+			"24": [
+				{ type: "task", title: "Harvest Strawberries." },
+				{ type: "task", title: "Goal: 8,000 g" }
+			],
+			"25": [
+				{ type: "task", title: "Goal: 10,000 g" }
+			],
+			"26": [
+				{ type: "task", title: "Buy and plant an Orange Sapling", items: [ {"gold":4000} ] },
+				{ type: "task", title: "Buy and plant a Peach Sapling", items: [ {"gold":6000} ] },
+				{ type: "task", title: "Goal: 5,000 g" }
+			],
+			"27": [
+				{ type: "task", title: "Goal: 10,000 g" }
+			],
+			"28": [
+				{ type: "task", title: "Harvest Strawberries." },
+				{ type: "task", title: "Goal: Farming 8" },
+				{ type: "task", title: "Goal: 20,000 g" },
+				{ type: "task", title: "Carry over to next season: Daffodil (3), Strawberry (2), Gold Cauliflower, Joja Cola, Leek, Wild Horseradish, Tulip, Egg, Strawberries (50, for seeds later)" }
+			]
+		},
+		"2": {
+			"0": [
+				{ type: "task", title: "Summer Foraging Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"grape":1},{"spice_berry":1},{"sweet_pea":1} ] },
+				{ type: "task", title: "Summer Crops Bundle", items: [ {"tomato":1},{"hot_pepper":1},{"blueberry":1},{"melon":1} ] },
+				{ type: "task", title: "Quality Crops (all gold star) Bundle", items: [ {"parsnip":5},{"melon":5},{"pumpkin":5},{"corn":5} ] },
+				{ type: "task", title: "Craft as many Kegs as possible (at least 20)", items: [ {"wood":30},{"copper_bar":1},{"iron_bar":1},{"oak_resin":1} ] },
+				{ type: "task", title: "Build a Shed at Robin's", items: [ {"gold":15000},{"wood":300} ] },
+				{ type: "task", title: "All Dwarf Scrolls obtained and donated (Dwarven Translation Guide obtained)." },
+				{ type: "task", title: "Build a Big Coop at Robin's", items: [ {"gold":10000},{"wood":400},{"stone":150} ] },
+				{ type: "task", title: "Build a Deluxe Coop at Robin's", items: [ {"gold":20000},{"wood":500},{"stone":200} ] },
+				{ type: "task", title: "Buy Duck from Marnie", items: [ {"gold":1200} ] },
+				{ type: "task", title: "Buy Rabbit from Marnie", items: [ {"gold":8000} ] },
+				{ type: "task", title: "Build a Fish Pond", items: [ {"gold":5000},{"stone":200},{"seaweed":5},{"green_algae":5} ] },
+				{ type: "task", title: "Have at least 60 Preserves Jars and Kegs by end of month." },
+				{ type: "task", title: "River Fishing (sunny): keep a Sunfish" },
+				{ type: "task", title: "River Fishing (rainy): keep a Shad" },
+				{ type: "task", title: "Lake Fishing: keep a Sturgeon" },
+				{ type: "task", title: "Ocean Fishing: keep a Tuna" }
+			],
+			"1": [
+				{ type: "task", title: "Clear farm and go buy seeds. Poppy, Summer Spangle, Hops Starter, Tomato, Hot Pepper, Sunflower Seed, Blueberry (100), Melon (50), Corn (20) minimum." }
+			],
+			"2": [
+				{ type: "task", title: "Goal: 10,000 g" }
+			],
+			"3": [
+				{ type: "task", title: "Railroad and Spa area becomes accessible (can restore Energy for free at the Spa)." },
+				{ type: "task", title: "Buy and plant an Apple Sapling", items: [ {"gold":4000} ] },
+				{ type: "task", title: "Buy and plant a Pomegranate Sapling", items: [ {"gold":6000} ] },
+				{ type: "quest", title: "Mayor's 'Shorts'", items: [ { "gold":750 } ] }
+			],
+			"5": [
+				{ type: "task", title: "River Fishing (keep a Sunfish for Bundles)." }
+			],
+			"6": [
+				{ type: "task", title: "Lake Fishing (keep a Sturgeon for Bundles)." }
+			],
+			"7": [
+				{ type: "task", title: "Buy a Rare Seed from the Traveling Cart", items: [ {"gold":1000} ] }
+			],
+			"14": [
+				{ type: "quest", title: "Pam Is Thirsty", items: [ {"gold":350} ] }
+			],
+			"15": [
+				{ type: "task", title: "Goal: Farming 9" }
+			],
+			"16": [
+				{ type: "task", title: "Harvest Ancient Fruit. Recycle into Seed Maker and keep the crop constantly cycling." }
+			],
+			"20": [
+				{ type: "quest", title: "Crop Research", items: [ {"gold":550} ] }
+			],
+			"25": [
+				{ type: "task", title: "Cover as much field as possible in Wheat Seeds. They will carry over to Fall and can be harvested on Day 1, leaving the fields plowed and watered!" },
+				{ type: "task", title: "Goal: 2,000 g" },
+				{ type: "quest", title: "Knee Therapy", items: [ {"gold":200} ] }
+			],
+			"26": [
+				{ type: "task", title: "Buy and plant an Apricot Sapling", items: [ {"gold":2000} ] }
+			],
+			"27": [
+				{ type: "task", title: "Get Beet Seeds from the Desert. Grab at least one Coconut and Cactus Fruit." },
+				{ type: "task", title: "Goal: 10,000 g" }
+			],
+			"28": [
+				{ type: "task", title: "Goal: 20,000 g" },
+				{ type: "task", title: "Carry over to next season: Melon, Summer Spangle, Coconut/Cactus Fruit" }
+			]
+		},
+		"3": {
+			"0": [
+				{ type: "task", title: "Fall Foraging Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"common_mushroom":1},{"wild_plum":1},{"hazelnut":1},{"blackberry":1} ] },
+				{ type: "task", title: "Fall Crops Bundle", items: [ {"corn":1},{"eggplant":1},{"pumpkin":1},{"yam":1} ] },
+				{ type: "task", title: "Build a Big Barn at Robin's", items: [ {"gold":12000},{"wood":450},{"stone":200} ] },
+				{ type: "task", title: "Build a Deluxe Barn at Robin's", items: [ {"gold":25000},{"wood":550},{"stone":300} ] },
+				{ type: "task", title: "Buy Pig from Marnie", items: [ {"gold":16000} ] },
+				{ type: "task", title: "Build another Fish Pond", items: [ {"gold":5000},{"stone":200},{"seaweed":5},{"green_algae":5} ] },
+				{ type: "task", title: "Ocean Fishing: keep a Sardine and Tilapia" },
+				{ type: "task", title: "Ocean Fishing (raining): keep a Red Snapper (day) and an Eel (night)" },
+				{ type: "task", title: "River Fishing (raning): keep a Walleye (night)" },
+				{ type: "task", title: "River Fishing: keep a Tiger Trout" }
+			],
+			"1": [
+				{ type: "task", title: "Clear farm and go buy seeds. Eggplant, Yam, Amaranth, Pumpkin (50), Cranberries (80) minimum. Plant Rare Seed as well." }
+			],
+			"2": [
+				{ type: "quest", title: "Special Orders board available" }
+			],
+			"3": [
+				{ type: "quest", title: "Cow's Delight", items: [ {"gold":500} ] }
+			],
+			"8": [
+				{ type: "quest", title: "Blackberry Basket" }
+			],
+			"19": [
+				{ type: "quest", title: "Carving Pumpkins", items: [ {"gold":500} ] }
+			],
+			"25": [
+				{ type: "task", title: "Give Sweet Gem Berry to Old Master Cannoli in the Secret Woods for a Stardrop." }
+			],
+			"28": [
+				{ type: "task", title: "Goal: 40,000 g" },
+				{ type: "task", title: "Carry over to next season: Pickles" }
+			]
+		},
+		"4": {
+			"0": [
+				{ type: "task", title: "Winter Foraging Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"winter_root":1},{"crystal_fruit":1},{"snow_yam":1},{"crocus":1} ] },
+				{ type: "task", title: "Construction Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"wood":99},{"wood":99},{"stone":99},{"hardwood":10} ] },
+				{ type: "task", title: "Exotic Foraging Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"coconut":0},{"cactus_fruit":0},{"cave_carrot":0},{"red_mushroom":0},{"purple_mushroom":0},{"maple_syrup":0},{"oak_resin":0},{"pine_tar":0},{"morel":0} ] },
+				{ type: "task", title: "Animal Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"large_milk":0},{"large_egg_brown":0},{"large_egg":0},{"large_goat_milk":0},{"wool":0},{"duck_egg":0} ] },
+				{ type: "task", title: "Artisan Bundle", link: "https://stardewvalleywiki.com/Bundles", items: [ {"truffle_oil":0},{"cloth":0},{"goat_cheese":0},{"cheese":0},{"honey":0},{"jelly":0},{"apple":0},{"apricot":0},{"orange":0},{"peach":0},{"pomegranate":0},{"cherry":0} ] },
+				{ type: "task", title: "Lake Fishing: keep a Sturgeon" },
+				{ type: "task", title: "Finish all Fish Tank Bundles", link: "https://stardewvalleywiki.com/Bundles" },
+				{ type: "task", title: "Finish all Bulletin Board Bundles", link: "https://stardewvalleywiki.com/Bundles" },
+				{ type: "task", title: "Unlock Willy's Ship", items: [ {"hardwood":200},{"iridium_bar":5},{"battery_pack":5} ] },
+				{ type: "task", title: "Focus on the Special Orders Board (check every Monday) since some crafting recipes are only available as gifts from Special Orders." }
+			],
+			"2": [
+				{ type: "quest", title: "Catch a Squid", items: [ {"gold":800} ] }
+			],
+			"5": [
+				{ type: "task", title: "Buy Stardrop from Krobus", items: [ {"gold":20000} ] }
+			],
+			"6": [
+				{ type: "quest", title: "Clint's Attempt" }
+			],
+			"12": [
+				{ type: "quest", title: "A Dark Reagent", items: [ {"gold":1000} ] }
+			],
+			"17": [
+				{ type: "quest", title: "A Favor For Clint", items: [ {"gold":500} ] }
+			],
+			"21": [
+				{ type: "quest", title: "Robin's Request", items: [ {"gold":500} ] }
+			],
+			"26": [
+				{ type: "quest", title: "Fish Stew", items: [ {"gold":400} ] }
+			],
+			"28": [
+				{ type: "task", title: "Carry over to next year: Earth Crystal (10), Clam (10), Coral (10), Coconut (10), Cactus Fruit (10), Dragon Tooth (10), Banana (10), Iridium Bars (up to 45)" },
+				{ type: "task", title: "Place in Refrigerator: Wheat Flour (22), Sugar (18), Milk (12), Oil (11), Egg (8), Cave Carrot (5), Green Algae (5), Carp (4), Vinegar (4), Coffee (3), Ginger (3), Rice (3), Cheese (3), Periwinkle (2), Shrimp (2), Squid Ink (2), Mayonnaise (2), Fish (Any) (2), Coconut (2), White Algae (2), Largemouth Bass (1), Clam (1), Crab (1), Bream (1), Mussel (1), Seaweed (1), Void Mayonnaise (1), Crayfish (1), Snail (1), Lobster (1), Maple Syrup (1), Winter Root (1), Squid (1)" }
+			]
+		}
+	},
+	"2": {
+		"1": {
+			"0": [
+				{ type: "task", title: "Focus on buying and gathering as many cooking/crafting ingredients as possible - have to cook and craft one of everything." },
+				{ type: "task", title: "Should ideally be married by the end of Spring" }
+			],
+			"1": [
+				{ type: "task", title: "Clear farm, buy all seeds available from Pierre and plant. Will need at least 30 of each for shipping accomplishment." }
+			],
+			"6": [
+				{ type: "quest", title: "Fresh Fruit", items: [ {"gold":600} ] }
+			],
+			"15": [
+				{ type: "quest", title: "Granny's Gift", items: [ {"gold":500} ] }
+			],
+			"28": [
+				{ type: "task", title: "Place in Refrigerator: Parsnip (2), Green Bean (2), Potato (2), Garlic (2), Kale (2), Eel (2), Sardine (2), Wild Horseradish (1), Blue Jazz (1), Dandelion (1), Apricot (1), Rhubarb (1), Leek (1), Cauliflower (1), Morel (1), Sunfish (1), Flounder (1)" }
+			]
+		},
+		"2": {
+			"1": [
+				{ type: "task", title: "Clear farm, buy all seeds available from Pierre and plant. Will need at least 30 of each for shipping accomplishment." }
+			],
+			"6": [
+				{ type: "quest", title: "Aquatic Research", items: [ {"gold":1000} ] }
+			],
+			"15": [
+				{ type: "quest", title: "A Soldier's Star", items: [ {"gold":500} ] }
+			],
+			"21": [
+				{ type: "quest", title: "Mayor's Need", items: [ {"gold":750} ] }
+			],
+			"25": [
+				{ type: "task", title: "Cover as much field as possible in Wheat Seeds. They will carry over to Fall and can be harvested on Day 1, leaving the fields plowed and watered!" },
+			],
+			"28": [
+				{ type: "task", title: "Place in Refrigerator: Tomato (8), Taro Root (4), Red Cabbage (3), Hot Pepper (3), Radish (2), Blueberry (2), Corn (2), Melon (2), Mango (1), Pineapple (1), Banana (1), Fiddlehead Fern (1), Poppy (1), Rainbow Trout (1), Tuna (1)" }
+			]
+		},
+		"3": {
+			"1": [
+				{ type: "task", title: "Clear farm, buy all seeds available from Pierre and plant. Will need at least 30 of each for shipping accomplishment." }
+			],
+			"6": [
+				{ type: "quest", title: "Wanted: Lobster", items: [ {"gold":500} ] }
+			],
+			"19": [
+				{ type: "quest", title: "Pam Needs Juice", items: [ {"gold":400} ] }
+			],
+			"28": [
+				{ type: "task", title: "Place in Refrigerator: Hazelnut (4), Cranberries (4), Pumpkin (3), Common Mushroom (3), Wild Plum (2), Artichoke (2), Yam (2), Blackberry (2), Eggplant (2), Apple (1), Amaranth (1), Bok Choy (1), Beet (1), Salmon (1), Sea Cucumber (1), Midnight Carp (1)" }
+			]
+		},
+		"4": {
+			"0": [
+				{ type: "task", title: "Finish all cooking recipes" }
+			],
+			"5": [
+				{ type: "quest", title: "Staff of Power", items: [ {"gold":5000} ] }
+			],
+			"13": [
+				{ type: "quest", title: "Catch a Lingcod", items: [ {"gold":550} ] }
+			],
+			"19": [
+				{ type: "quest", title: "Exotic Spirits", items: [ {"gold":600} ] }
+			]
+		}
+	},
+	"3": {
+		"1": {
+
+		},
+		"2": {
+
+		},
+		"3": {
+
+		},
+		"4": {
+
+		}
+	}
+	}
+]
