@@ -22,13 +22,16 @@ function init() {
   //drawGrid(50, 50);
 }
 
-function toggleDragging(event) {
+function toggleHandlers(event) {
   if ( map.dragging._enabled ) {
-    map.dragging.disable();
+    map._handlers.forEach(function(handler) {
+      handler.disable();
+  });
   } else {
-    map.dragging.enable();
+    map._handlers.forEach(function(handler) {
+      handler.enable();
+    });
   }
-console.log(map.dragging);
 }
 
 function findCenter(arr) {
@@ -206,7 +209,7 @@ function createMap(type = 'eberron') {
   } else {
     var fullmap = L.tileLayer("https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg", {
       //maxZoom: 7, continuousWorld: !1, noWrap: !0
-      minZoom: 3, maxZoom: 4, continuousWorld: !1, noWrap: !0
+      minZoom: 3, maxZoom: 6, continuousWorld: !1, noWrap: !0
     }),
     eberronmap = L.map("map", { layers: [fullmap], zoomControl: !1, attributionControl: !1 }).setView([20.009428770699756, .07578125], 3.5);
     //var zoomControl = L.control.zoom({ position: "topright" }).addTo(eberronmap);
@@ -253,7 +256,7 @@ function createMap(type = 'eberron') {
       "Hexes": hexes
     };
     //var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(eberronmap);
-    for (var m = 0; m < map_markers.length; m++) {
+    for ( var m = 0; m < map_markers.length; m++ ) {
       if ( map_markers[m].type == "circle" ) {
         var circle = L.circle(map_markers[m].latlng, parseInt(map_markers[m].radius)).addTo(eberronmap);
 	if ( map_markers[m].color ) { circle.setStyle({color: map_markers[m].color}); }
