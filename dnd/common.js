@@ -18,13 +18,13 @@ function alphabetizeSelectList(el) {
 }
 
 function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function numberWithCommas(x) {
-    var parts = x.toString().split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    return parts.join(".");
+  var parts = x.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
 }
 
 function getRandomInt(min, max) {
@@ -72,36 +72,26 @@ function deleteCookie(name) {
 }
 
 function getTableResult(table) {
-    // returns a table result based on random roll as denoted in the table
-    // either a string or array depending on the table
-    if (typeof table[0] == "string") {
-	// simple table, without ranges
-	return table[rollRandom(table[0])];
-    } else if (typeof table[0] == "object") {
-	// complex table, with ranges
-	var ind;
-	var roll = rollRandom(table[0][0]);
-	table[0].forEach(function (item, index) {
-	    if (typeof item == "object") {
-		if (item.length == 2 && roll >= item[0] && roll <= item[1]) {
-		    ind = index;
-		} else if (item.length == 1 && roll == item[0]) {
-		    ind = index;
-		}
-	    }
-	});
-	return table[ind];
-    }
-}
-
-const markdownParser = (text) => {
-	const toHTML = text
-		.replace(/^### (.*$)/gim, '<h3>$1</h3>') // h3 tag
-		.replace(/^## (.*$)/gim, '<h2>$1</h2>') // h2 tag
-		.replace(/^# (.*$)/gim, '<h1>$1</h1>') // h1 tag
-		.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>') // bold text
-		.replace(/\*(.*)\*/gim, '<i>$1</i>'); // italic text
-	return toHTML.trim(); // using trim method to remove whitespace
+  // returns a table result based on random roll as denoted in the table
+  // either a string or array depending on the table
+  if (typeof table[0] == "string") {
+    // simple table, without ranges
+    return table[rollRandom(table[0])];
+  } else if (typeof table[0] == "object") {
+    // complex table, with ranges
+    var ind;
+    var roll = rollRandom(table[0][0]);
+    table[0].forEach(function (item, index) {
+      if (typeof item == "object") {
+	if (item.length == 2 && roll >= item[0] && roll <= item[1]) {
+	  ind = index;
+	} else if (item.length == 1 && roll == item[0]) {
+	  ind = index;
+	}
+      }
+    });
+    return table[ind];
+  }
 }
 
 function navbar() {

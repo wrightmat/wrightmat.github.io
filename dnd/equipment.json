@@ -1,8 +1,12 @@
 equipment = [
 	{
-		"special": [],
 		"index": "tindertwig",
 		"name": "Tindertwig",
+		"desc": [
+			"Adventuring gear",
+			"A tindertwig is an alchemical tool used to easily light fires. It is a tiny wooden stick with an alchemical substance applied to one end.",
+			"When the alchemical substance is struck against something rough, it ignites automatically, much quicker than a flint and steel, let alone with a magnifying glass, and without additional tinder. They make lighting torches and other fires easier and faster."
+		],
 		"equipment_category": {
 			"index": "adventuring-gear",
 			"name": "Adventuring Gear",
@@ -17,19 +21,16 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 0,
-		"desc": [
-			"",
-			"A tindertwig is an alchemical tool used to easily light fires. It is a tiny wooden stick with an alchemical substance applied to one end.",
-			"When the alchemical substance is struck against something rough, it ignites automatically, much quicker than a flint and steel, let alone with a magnifying glass, and without additional tinder. They make lighting torches and other fires easier and faster."
-		],
-		"url": "https://eberron.fandom.com/wiki/Tindertwig",
-		"contents": [],
-		"properties": []
+		"url": "https://eberron.fandom.com/wiki/Tindertwig"
 	},
 	{
-		"special": [],
 		"index": "everbright-lantern",
 		"name": "Everbright Lantern",
+		"desc": [
+			"Wondrous item, common",
+			"Everbright lanterns are lanterns enchanted to shed a magical light that never dies out. While they can be carried, they are also used as street lights in cities across Khorvaire. They are a creation of House Cannith.",
+			"Everbright lanterns resemble normal bullseye lanterns, but with an Eberron dragonshard contained in the lantern's housing as the source of light. When the shutters are open, the light from the Eberron dragonshard can brightly illuminate an area up to 60 ft (18 m) away, similar to a normal bullseye lantern, but without the need for fuel."
+		],
 		"equipment_category": {
 			"index": "adventuring-gear",
 			"name": "Adventuring Gear",
@@ -47,19 +48,16 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 3,
-		"desc": [
-			"Wondrous item, common",
-			"Everbright lanterns are lanterns enchanted to shed a magical light that never dies out. While they can be carried, they are also used as street lights in cities across Khorvaire. They are a creation of House Cannith.",
-			"Everbright lanterns resemble normal bullseye lanterns, but with an Eberron dragonshard contained in the lantern's housing as the source of light. When the shutters are open, the light from the Eberron dragonshard can brightly illuminate an area up to 60 ft (18 m) away, similar to a normal bullseye lantern, but without the need for fuel."
-		],
-		"url": "https://eberron.fandom.com/wiki/Everbright_lantern",
-		"contents": [],
-		"properties": []
+		"url": "https://eberron.fandom.com/wiki/Everbright_lantern"
 	},
 	{
-		"special": [],
 		"index": "truelight-lantern",
 		"name": "Truelight Lantern",
+		"desc": [
+			"Wondrous item, uncommon",
+			"Truelight lanterns are elaborately crafted from flametouched iron and heavily polished to have a silvery hue. The flame inside them is a translucent white and gives off no heat. Whenever its secondary ability is activated, this flame becomes fully invisible. They shed a similar amount of light to that of a standard bullseye lantern and are known to share many of the same properties as an everbright lantern.",
+			"Once per day, speaking the word 'reveal' in Celestial causes a truelight lantern to emit clear illumination in a cone of 60 ft., as well as shadowy illumination out to 120 ft., for a period of 10 minutes. Furthermore, anything that falls within the light of the 60 ft. cone becomes visible as if all creatures viewing them were under the effect of the spell true seeing."
+		],
 		"equipment_category": {
 			"index": "adventuring-gear",
 			"name": "Adventuring Gear",
@@ -77,20 +75,16 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 3,
-		"desc": [
-			"Wondrous item, uncommon",
-			"Truelight lanterns are elaborately crafted from flametouched iron and heavily polished to have a silvery hue. The flame inside them is a translucent white and gives off no heat. Whenever its secondary ability is activated, this flame becomes fully invisible. They shed a similar amount of light to that of a standard bullseye lantern and are known to share many of the same properties as an everbright lantern.",
-			"Once per day, speaking the word 'reveal' in Celestial causes a truelight lantern to emit clear illumination in a cone of 60 ft., as well as shadowy illumination out to 120 ft., for a period of 10 minutes. Furthermore, anything that falls within the light of the 60 ft. cone becomes visible as if all creatures viewing them were under the effect of the spell true seeing."
-		],
-		"url": "https://eberron.fandom.com/wiki/Truelight_lantern",
-		"contents": [],
-		"properties": []
+		"url": "https://eberron.fandom.com/wiki/Truelight_lantern"
 	},
 	{
-		"special": [],
 		"index": "speaking-stone",
 		"name": "Speaking Stone",
 		"image": "https://static.wikia.nocookie.net/eberron/images/5/5c/Scribe.jpg/revision/latest/scale-to-width-down/350?cb=20220929134218",
+		"desc": [
+			"Wondrous item, very rare",
+			"Speaking stones are magic items carved from Siberys dragonshards that allow communication. They are the means by which House Sivis operates their network of messaging stations, enabling instantaneous communication between them."
+		],
 		"equipment_category": {
 			"index": "adventuring-gear",
 			"name": "Adventuring Gear",
@@ -108,18 +102,16 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 30,
-		"desc": [
-			"Wondrous item, very rare",
-			"Speaking stones are magic items carved from Siberys dragonshards that allow communication. They are the means by which House Sivis operates their network of messaging stations, enabling instantaneous communication between them."
-		],
-		"url": "https://eberron.fandom.com/wiki/Speaking_stone",
-		"contents": [],
-		"properties": []
+		"url": "https://eberron.fandom.com/wiki/Speaking_stone"
 	},
 	{
-		"special": [],
-		"index": "feather-token",
+		"index": "feather-token-eberron",
 		"name": "Feather Token",
+		"desc": [
+			"Wondrous item, common",
+			"A feather token is a magical item designed to protect a user from the danger of falling from great heights. It is a small metal disk inscribed with a feather. Those used by House Orien are instead shaped like unicorns and inscribed with their sigil.",
+			"If one who carries this token falls more than 20 feet (6.1 meters), it will activate and carry them safely to the ground. Thereafter, its magic is spent. Feather tokens are commonly used in case of falls from the heights of Sharn, at least by those who can afford them, while those who can consider them inexpensive."
+		],
 		"equipment_category": {
 			"index": "adventuring-gear",
 			"name": "Adventuring Gear",
@@ -137,20 +129,17 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 1,
-		"desc": [
-			"Wondrous item, common",
-			"A feather token is a magical item designed to protect a user from the danger of falling from great heights. It is a small metal disk inscribed with a feather. Those used by House Orien are instead shaped like unicorns and inscribed with their sigil.",
-			"If one who carries this token falls more than 20 feet (6.1 meters), it will activate and carry them safely to the ground. Thereafter, its magic is spent. Feather tokens are commonly used in case of falls from the heights of Sharn, at least by those who can afford them, while those who can consider them inexpensive."
-		],
-		"url": "https://eberron.fandom.com/wiki/Feather_token",
-		"contents": [],
-		"properties": []
+		"url": "https://eberron.fandom.com/wiki/Feather_token"
 	},
 	{
-		"special": [],
 		"index": "dragonshard-eberron-small",
 		"name": "Eberron Dragonshard, Small",
 		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
+		"desc": [
+			"Wondrous item, uncommon",
+			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
+			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
+		],
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -164,20 +153,17 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 1,
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
+	},
+	{
+		"index": "dragonshard-eberron-medium",
+		"name": "Eberron Dragonshard, Medium",
+		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"desc": [
 			"Wondrous item, uncommon",
 			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
 			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
 		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
-	},
-	{
-		"special": [],
-		"index": "dragonshard-eberron-medium",
-		"name": "Eberron Dragonshard, Medium",
-		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -191,20 +177,17 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 1,
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
+	},
+	{
+		"index": "dragonshard-eberron-large",
+		"name": "Eberron Dragonshard, Large",
+		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"desc": [
 			"Wondrous item, uncommon",
 			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
 			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
 		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
-	},
-	{
-		"special": [],
-		"index": "dragonshard-eberron-large",
-		"name": "Eberron Dragonshard, Large",
-		"image": "https://db4sgowjqfwig.cloudfront.net/campaigns/139296/assets/776072/images.jpg?1504838672",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -218,19 +201,16 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 1,
-		"desc": [
-			"Wondrous item, uncommon",
-			"Eberron dragonshards are found in shallow soil, and often encased in geode-like stone shells. Eberron shards can be found almost anywhere, but the most significant deposits have been discovered in jungle environments, notably Q'barra and the distant land of Xen'drik. In their raw form, Eberron shards are rosy crystals with crimson swirls flowing their depths.",
-			"Eberron shards are the most common form of dragonshard. They are primarily refined into a glowing powder. This dragonshard dust can be used to fuel almost any act of magic. When casting a spell, you can use dragonshard dust in place of any spell component that has a cost, unless the DM says otherwise. Dragonshard dust is used in the creation of magic items, and many powerful tools - such as the lightning rail and elemental airships - require an ongoing expenditure of Eberron dragonshards to maintain their enchantments."
-		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
 	},
 	{
-		"special": [],
 		"index": "dragonshard-khyber-small",
 		"name": "Khyber Dragonshard, Small",
+		"desc": [
+			"Wondrous item, rare",
+			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
+			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
+		],
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -244,19 +224,16 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 1,
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
+	},
+	{
+		"index": "dragonshard-khyber-medium",
+		"name": "Khyber Dragonshard, Medium",
 		"desc": [
 			"Wondrous item, rare",
 			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
 			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
 		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
-	},
-	{
-		"special": [],
-		"index": "dragonshard-khyber-medium",
-		"name": "Khyber Dragonshard, Medium",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
@@ -270,123 +247,104 @@ equipment = [
 			"unit": "gp"
 		},
 		"weight": 1,
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
+	},
+	{
+		"index": "dragonshard-khyber-large",
+		"name": "Khyber Dragonshard, Large",
 		"desc": [
 			"Wondrous item, rare",
 			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
 			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
 		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
-	},
-	{
-		"special": [],
-		"index": "dragonshard-khyber-large",
-		"name": "Khyber Dragonshard, Large",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
 			"url": "/api/equipment-categories/wondrous-items"
-		},
-		"rarity": {
-			"name": "Rare"
 		},
 		"cost": {
 			"random": "3d8x250",
 			"unit": "gp"
 		},
 		"weight": 1,
-		"desc": [
-			"Wondrous item, rare",
-			"Khyber dragonshards are found deep in the earth, often near layers of magma. These living crystals typically grow on cavern walls, and superstition says they flourish in areas with significant fiendish activity. Khyber dragonshards are deep blue or dark violet, laced with gleaming veins.",
-			"Khyber dragonshards have a affinity for binding magics. Elemental binding - which is behind airships, the lightning rail, and elemental galleons - requires a Khyber shard to hold the elemental. Khyber shards are used for phylacteries, planar binding, any other effects that trap or manipulate spirits. Khyber dragonshards are also used for many necromantic rituals."
-		],
+		"rarity": {
+			"name": "Rare"
+		},
 		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
 	},
 	{
-		"special": [],
 		"index": "dragonshard-siberys-small",
 		"name": "Siberys Dragonshard, Small",
 		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
+		"desc": [
+			"Wondrous item, very rare",
+			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
+			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
+		],
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
 			"url": "/api/equipment-categories/wondrous-items"
-		},
-		"rarity": {
-			"name": "Very Rare"
 		},
 		"cost": {
 			"random": "1d8x50",
 			"unit": "gp"
 		},
 		"weight": 1,
+		"rarity": {
+			"name": "Very Rare"
+		},
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
+	},
+	{
+		"index": "dragonshard-siberys-medium",
+		"name": "Siberys Dragonshard, Medium",
+		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"desc": [
 			"Wondrous item, very rare",
 			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
 			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
 		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
-	},
-	{
-		"special": [],
-		"index": "dragonshard-siberys-medium",
-		"name": "Siberys Dragonshard, Medium",
-		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
 			"url": "/api/equipment-categories/wondrous-items"
-		},
-		"rarity": {
-			"name": "Very Rare"
 		},
 		"cost": {
 			"random": "4d8x100",
 			"unit": "gp"
 		},
 		"weight": 1,
+		"rarity": {
+			"name": "Very Rare"
+		},
+		"url": "https://eberron.fandom.com/wiki/Dragonshard",
+	},
+	{
+		"index": "dragonshard-siberys-large",
+		"name": "Siberys Dragonshard, Large",
+		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"desc": [
 			"Wondrous item, very rare",
 			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
 			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
 		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
-	},
-	{
-		"special": [],
-		"index": "dragonshard-siberys-large",
-		"name": "Siberys Dragonshard, Large",
-		"image": "https://media-waterdeep.cursecdn.com/attachments/4/102/503.png",
 		"equipment_category": {
 			"index": "wondrous-items",
 			"name": "Wondrous Items",
 			"url": "/api/equipment-categories/wondrous-items"
-		},
-		"rarity": {
-			"name": "Very Rare"
 		},
 		"cost": {
 			"random": "8d8x200",
 			"unit": "gp"
 		},
 		"weight": 1,
-		"desc": [
-			"Wondrous item, very rare",
-			"Siberys dragonshards fall from the Ring of Siberys, the ring of crystals that encircles the world. While rare in Khorvaire, there are significant shard fields in the continent of Xen'drik, and this is a potential source of great wealth for explorers. Siberys dragonshards are amber in color, with swirling golden veins gleaming within.",
-			"Siberys dragonshards have a close affinity to dragonmarks and are a vital part of any dragonmark focus item. Larger shards may be required for eldritch machines or used in the creation of legendary items or artifacts."
-		],
-		"url": "https://eberron.fandom.com/wiki/Dragonshard",
-		"contents": [],
-		"properties": []
+		"rarity": {
+			"name": "Very Rare"
+		},
+		"url": "https://eberron.fandom.com/wiki/Dragonshard"
 	},
-{
+	{
 		"index": "prismatic-geode",
 		"name": "Prismatic Geode",
 		"image": "https://raw.githubusercontent.com/wrightmat/dnd-eberron/main/docs/_img/prismatic-geode.png",
@@ -424,7 +382,7 @@ equipment = [
 		"rarity": {
 			"name": "Uncommon"
 		},
-		"properties": [ "Barbarian", "Combat" ]
+		"notes": "Barbarian, Combat"
 	},
 	{
 		"index": "amulet-black-skull",
@@ -443,7 +401,7 @@ equipment = [
 		},
 		"rarity": {
 			"name": "Very Rare"
-		},
+		}
 	},
 	{
 		"index": "banner-eternal-battlefield",
@@ -463,7 +421,7 @@ equipment = [
 		},
 		"rarity": {
 			"name": "Rare"
-		},
+		}
 	},
 	{
 		"index": "last-stand-armor",
@@ -481,12 +439,17 @@ equipment = [
 		},
 		"rarity": {
 			"name": "Very Rare"
-		},
+		}
 	},
 	{
 		"index": "sword-of-destruction",
 		"name": "Sword of Destruction",
 		"image": "https://static.wikia.nocookie.net/dxdfanon/images/d/d4/Vorpal.jpg/revision/latest?cb=20150806155216",
+		"desc": [
+			"Weapon (any sword), legendary (requires attunement)",
+			"You gain a +1 bonus to attack and damage rolls made with this magic weapon. In addition, the weapon ignores resistance to slashing damage.",
+			"When you attack a creature that has at least one head with this weapon and roll a 20 on the attack roll, you cut off one of the creature's heads. The creature dies if it can't survive without the lost head. A creature is immune to this effect if it is immune to slashing damage, doesn't have or need a head, has legendary actions, or the GM decides that the creature is too big for its head to be cut off with this weapon. Such a creature instead takes an extra 6d8 slashing damage from the hit."
+		],
 		"equipment_category": {
 			"index": "weapon",
 			"name": "Weapon",
@@ -494,12 +457,7 @@ equipment = [
 		},
 		"rarity": {
 			"name": "Legendary"
-		},
-		"desc": [
-			"Weapon (any sword), legendary (requires attunement)",
-			"You gain a +1 bonus to attack and damage rolls made with this magic weapon. In addition, the weapon ignores resistance to slashing damage.",
-			"When you attack a creature that has at least one head with this weapon and roll a 20 on the attack roll, you cut off one of the creature's heads. The creature dies if it can't survive without the lost head. A creature is immune to this effect if it is immune to slashing damage, doesn't have or need a head, has legendary actions, or the GM decides that the creature is too big for its head to be cut off with this weapon. Such a creature instead takes an extra 6d8 slashing damage from the hit."
-		],
+		}
 	},
 	{
 		"index": "sandmans-sand",
@@ -541,5 +499,165 @@ equipment = [
 		"rarity": {
 			"name": "Legendary"
 		}
+	},
+	{
+		"index": "orb-dragonkind",
+		"name": "Orb of Dragonkind",
+		"image": "https://static.wikia.nocookie.net/forgottenrealms/images/5/56/Orb_of_dragonkind-5e.jpg/revision/latest?cb=20180409150915",
+		"desc": [
+			"Wondrous item, artifact (requires attunement)",
+			"Each orb contains the essence of an evil dragon, a presence that resents any attempt to coax magic from it. Those lacking in force of personality might find themselves enslaved to an orb. An orb is an etched crystal globe about 10 inches in diameter. When used, it grows to about 20 inches in diameter, and mist swirls inside it.",
+			"While attuned to an orb, you can use an action to peer into the orb's depths and speak its command word. You must then make a DC 15 Charisma check. On a successful check, you control the orb for as long as you remain attuned to it. On a failed check, you become charmed by the orb for as long as you remain attuned to it.",
+			"While you are charmed by the orb, you can't voluntarily end your attunement to it, and the orb casts *suggestion* on you at will (save DC 18), urging you to work toward the evil ends it desires. The dragon essence within the orb might want many things: the annihilation of a particular people, freedom from the orb, to spread suffering in the world, to advance the worship of Tiamat, or something else the GM decides.",
+			"**Spells.** The orb has 7 charges and regains 1d4 + 3 expended charges daily at dawn. If you control the orb, you can use an action and expend 1 or more charges to cast one of the following spells (save DC 18) from it: *cure wounds* (5th-level version, 3 charges), *daylight* (1 charge), *death ward* (2 charges), or *scrying* (3 charges). You can also use an action to cast the *detect magic* spell from the orb without using any charges.",
+			"**Call Dragons.** While you control the orb, you can use an action to cause the artifact to issue a telepathic call that extends in all directions for 40 miles. Evil dragons in range feel compelled to come to the orb as soon as possible by the most direct route. Dragon deities such as Tiamat are unaffected by this call. Dragons drawn to the orb might be hostile toward you for compelling them against their will. Once you have used this property, it can't be used again for 1 hour."
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Artifact"
+		}
+	},
+	{
+		"index": "lantern-seeking",
+		"name": "Lantern of Seeking",
+		"image": "https://i5.walmartimages.com/seo/Moroccan-Lantern-Decorative-Candle-Holder-for-Decor-Amber-Glass-Medium_ef4fde87-9330-4d13-a848-afc46b2af8ff_1.14eb042ce40352e5027fa0d15fccc61c.jpeg",
+		"desc": [
+			"Wondrous item, uncommon",
+			"This hooded lantern glows with magical light, and requires no fuel. Any wielder of the lantern can use an action to activate it, causing it to shed bright light in a 30-foot-radius and dim light for an additional 30 feet.",
+			"When an appropriate command word is spoken, and certain types of creatures are within 300 feet of the lantern, its flame flickers with different colors, as indicated below. The lantern doesn't pinpoint the creature's exact location, however.<br /><br /><br />",
+			"| d10 | Creature Type | Color   | Command   |\n| --- | ------------- | ------- | --------- |\n| 1   | Aberrations   | Violet  |           |\n| 2   | Celestials    | Silver  |           |\n| 3   | Constructs    | Orange  |           |\n| 4   | Dragons       | Brown   |           |\n| 5   | Elementals    | Blue    |           |\n| 6   | Fey           | Green   |           |\n| 7   | Fiends        | Red     |           |\n| 8   | Giants        | Cyan    |           |\n| 9   | Monstrosities | Yellow  | Everlight |\n| 10  | Undead        | Magenta | Everdark  |"
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Uncommon"
+		}
+	},
+	{
+		"index": "moonblade-vestige",
+		"name": "Moonblade (Vestige)",
+		"image": "https://static.wikia.nocookie.net/forgottenrealms/images/9/90/Moonblade-5e.jpg/revision/latest?cb=20171020224031",
+		"desc": [
+			"Weapon (longsword), legendary (requires attunement)",
+			"Of all the magic items created by the elves, one of the most prized and jealously guarded is a moonblade. In ancient times, nearly all elven noble houses claimed one such blade. Over the centuries, some blades have faded from the world, their magic lost as family lines have become extinct. Other blades have vanished with their bearers during great quests. Thus, only a few of these weapons remain.",
+			"A moonblade passes down from parent to child. The sword chooses its bearer and remains bonded to that person for life. If the bearer dies, another heir can claim the blade. If no worthy heir exists, the sword lies dormant. It functions like a normal longsword until a worthy soul finds it and lays claim to its power.",
+			"**Sentience.** A moonblade is a sentient neutral good weapon with an Intelligence of 12, a Wisdom of 10, and a Charisma of 12. It has hearing and darkvision out to a range of 120 feet. The weapon communicates by transmitting emotions, sending a tingling sensation through the wielder's hand when it wants to communicate something it has sensed. It can communicate more explicitly, through visions or dreams, when the wielder is either in a trance or asleep.",
+			"**Personality.** Every moonblade seeks the advancement of elvenkind and elven ideals. Courage, loyalty, beauty, music, and life are all part of this purpose. The weapon is bonded to the family line it is meant to serve. Once it has bonded with an owner who shares its ideals, its loyalty is absolute. If a moonblade has a flaw, it is overconfidence. Once it has decided on an owner, it believes that only that person should wield it, even if the owner falls short of elven ideals."
+		],
+		"abilties": [
+			{
+				"1": "You have a +1 bonus to attack and damage rolls made with this magic weapon.",
+				"2": "You have a +2 bonus to attack and damage rolls made with this magic weapon.",
+				"3": "You have a +3 bonus to attack and damage rolls made with this magic weapon."
+			},
+			{
+				"1": "The moonblade gains the finesse property.",
+				"2": "The moonblade gains the finesse and thrown (range 20/60 feet) properties.",
+				"3": "The moonblade gains the finesse and thrown (range 20/60 feet) properties. The first time you attack with the sword on each of your turns, you can transfer some or all of the sword’s bonus to your Armor Class, instead of using the bonus on any attacks that turn. For example, you could reduce the bonus to your attack and damage rolls to +1 and gain a +2 bonus to AC. The adjusted bonuses remain in effect until the start of your next turn, although you must hold the sword to gain a bonus to AC from it."
+			}
+		],
+		"equipment_category": {
+			"index": "weapon",
+			"name": "Weapon",
+			"url": "/api/equipment-categories/weapon"
+		},
+		"weapon_category": "Martial",
+		"weapon_range": "Melee",
+		"category_range": "Martial Melee",
+		"damage": {
+			"damage_dice": "1d8",
+			"damage_type": {
+				"index": "slashing",
+				"name": "Slashing",
+				"url": "/api/damage-types/slashing"
+			}
+		},
+		"range": {
+			"normal": 5
+		},
+		"weight": 3,
+		"properties": [
+			{
+				"index": "versatile",
+				"name": "Versatile",
+				"url": "/api/weapon-properties/versatile"
+			}
+		],
+		"two_handed_damage": {
+			"damage_dice": "1d10",
+			"damage_type": {
+				"index": "slashing",
+				"name": "Slashing",
+				"url": "/api/damage-types/slashing"
+			}
+		},
+		"rarity": {
+			"name": "Legendary"
+		},
+		"url": "/api/equipment/longsword"
+	},
+	{
+		"index": "dragon-claws-vestige",
+		"name": "Dragon Claws (Vestige)",
+		"image": "https://www.worldanvil.com/uploads/images/e208e46eef475705a8cd1c35e0b6b687.jpg",
+		"desc": [
+			"Weapon (claws), legendary (requires attunement)",
+			"The jewels and runes in these claws flare with purple light when you enter combat, empowering your natural fists or natural weapons. While wearing the claws, your attacks are considered to be magical."
+		],
+		"abilties": [
+			{
+				"1": "You have a +1 bonus to attack and damage rolls made with this magic weapon.",
+				"2": "You have a +2 bonus to attack and damage rolls made with this magic weapon.",
+				"3": "You have a +3 bonus to attack and damage rolls made with this magic weapon."
+			},
+			{
+				"1": "You can regain ki points equal to a roll of your Martial Arts die as an action while wearing the dragon claws. You can’t use this property again until you finish a long rest.",
+				"2": "You can regain ki points equal to a roll of your Martial Arts die as a bonus action while wearing the dragon claws. You can’t use this property again until you finish a long rest.",
+				"3": "You can regain ki points equal to a roll of your Martial Arts die as a bonus action while wearing the dragon claws."
+			}
+		],
+		"equipment_category": {
+			"index": "weapon",
+			"name": "Weapon",
+			"url": "/api/equipment-categories/weapon"
+		},
+		"weapon_category": "Simple",
+		"weapon_range": "Melee",
+		"category_range": "Simple Melee",
+		"damage": {
+			"damage_dice": "1d6",
+			"damage_type": {
+				"index": "slashing",
+				"name": "Slashing",
+				"url": "/api/damage-types/slashing"
+			}
+		},
+		"range": {
+			"normal": 5
+		},
+		"weight": 1,
+		"properties": [
+			{
+				"index": "finesse",
+				"name": "Finesse",
+				"url": "/api/weapon-properties/finesse"
+			},
+			{
+				"index": "light",
+				"name": "Light",
+				"url": "/api/weapon-properties/light"
+			}
+		],
+		"rarity": {
+			"name": "Legendary"
+		},
+		"url": "/api/equipment/scimitar"
 	}
 ]

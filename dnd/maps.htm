@@ -13,18 +13,21 @@
   <script type="text/javascript" src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script type="text/javascript" src="https://eberronmap.johnarcadian.com/assets/leafletruler-cmod/leaflet-ruler.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="map_markers.json"></script>
 </head>
 
 <body>
 <header id="header"></header>
 
 <div id="map" style="width:1900px;height:900px;"></div>
+
 <div style="position:absolute;top:0px;right:10px;height:20px;width:110px;">
-<select class="form-control" id="map-type" onchange="changeMap(this);">
-<option id="eberron" value="eberron">Eberron</option>
-<option id="sharn" value="sharn">Sharn</option>
-<option id="hyrule" value="hyrule">Hyrule</option>
-</select></div>
+  <select class="form-control" id="map-type" onchange="changeMap(this);">
+    <option id="eberron" value="eberron">Eberron</option>
+    <option id="sharn" value="sharn">Sharn</option>
+    <option id="hyrule" value="hyrule">Hyrule</option>
+  </select>
+</div>
 
 <script type="text/javascript" src="maps.js"></script>
 

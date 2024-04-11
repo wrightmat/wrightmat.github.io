@@ -246,6 +246,12 @@ function createMap(type = 'eberron') {
       "Hexes": hexes
     };
     var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(eberronmap);
+    for (var m = 0; m < map_markers.length; m++) {
+      if ( map_markers[m].type == "circle" ) {
+        var circle = L.circle(map_markers[m].latlng, parseInt(map_markers[m].radius)).addTo(eberronmap);
+	if ( map_markers[m].color ) { circle.setStyle({color: map_markers[m].color}); }
+      }
+    }
     return eberronmap;
   }
 }

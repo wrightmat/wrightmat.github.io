@@ -1,0 +1,74 @@
+map_markers = [
+	{
+		"type": "circle",
+		"latlng": [35.00, 20.00],
+		"radius": "1000000",
+		"color": "purple",
+		"description": "The Storm of Speartip",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [-10.00, -14.00],
+		"radius": "1000000",
+		"color": "purple",
+		"description": "The Legacy of the Moonblade",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [25.00, -50.00],
+		"radius": "1000000",
+		"color": "blue",
+		"description": "Mystic Glade and Vvaraak's Cave",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [25.00, -30.00],
+		"radius": "1000000",
+		"color": "blue",
+		"description": "Echoes of the Celestial Realm",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [18.00, -15.00],
+		"radius": "1000000",
+		"color": "green",
+		"description": "The Draconic Phylactery",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [8.00, -22.00],
+		"radius": "1000000",
+		"color": "green",
+		"description": "Labyrinth of the Lantern's Light",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [18.00, 0.00],
+		"radius": "1000000",
+		"color": "yellow",
+		"description": "Stygianos the Carrion Sphinx",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [-28.00, 102.00],
+		"radius": "1000000",
+		"color": "orange",
+		"description": "Passage Through the Crystal Library",
+		"link": ""
+	},
+	{
+		"type": "circle",
+		"latlng": [-30.00, 45.00],
+		"radius": "1000000",
+		"color": "red",
+		"description": "The Vast",
+		"link": ""
+	}
+]

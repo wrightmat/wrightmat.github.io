@@ -6,13 +6,14 @@
   <link rel="stylesheet" type="text/css" href="common.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script type="text/javascript" src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="equipment.json"></script>
   <script type="text/javascript" src="npcs.json"></script>
   <style>
     @media print {
       #card-controls { visibility: hidden; }
-      #card-container { visibility: visible; position: absolute; left: 0; top: 0; padding: 100px 0px 100px 0px; }
+      #card-container { visibility: visible; position: absolute; left: 0; top: 0; }
     }
   </style>
 </head>
@@ -26,23 +27,26 @@
   </select><br /><br />
   <select id="controls-custom-select" size="28" style="width:200px;">
   </select><br /><br />
+  <label for="controls-card-design">Card Design:</label>
+  <select id="controls-card-design" name="card_design" onchange="setPreferences(this);">
+    <option value="standard" selected="selected">Standard Item or NPC</option>
+    <option value="modular">Modular Weapon (Vestige)</option>
+    <option value="stat-code">Stat Code</option>
+  </select><br /><br />
   <label for="controls-image-back">Image Back:</label>
   <select id="controls-image-back" name="image_back" onchange="setPreferences(this);">
     <option value="image" selected="selected">Defined Image</option>
     <option value="icon">Type Icon</option>
     <option value="none">Nothing</option>
   </select><br />
+  <label for="controls-image-back-override">Image Override: </label><input id="controls-image-back-override" /><br /><br />
   <label for="controls-image-front">Image Front:</label>
   <select id="controls-image-front" name="image_front" onchange="setPreferences(this);">
     <option value="image">Defined Image</option>
     <option value="icon">Type Icon</option>
     <option value="none" selected="selected">Nothing</option>
   </select><br />
-  <label for="controls-front-bottom">Front Bottom:</label>
-  <select id="controls-front-bottom" name="front_bottom" onchange="setPreferences(this);">
-    <option value="none" selected="selected">Nothing</option>
-    <option value="code">Stat Code</option>
-  </select>
+  <label for="controls-image-front-override">Image Override: </label><input id="controls-image-front-override" /><br /><br />
 </div>
 
 <div id="card-container" class="card-container">
@@ -54,7 +58,7 @@
   var i = 0;
   var groups = {};
   var items = getAPI()['results'];
-  var preferences = { "image_back": "image", "image_front": "none" };
+  var preferences = { "image_back": "image", "image_front": "none", "card_design": "standard" };
 
   function getAPI(r_url, r_async) {
     var r_text;
@@ -112,8 +116,6 @@
   }
 
   function createCard(id) {
-    var desc = "";
-    var notes = "";
     var card = getCard(id);
     if ( card.equipment_category ) {
       var icon = "img/" + card.equipment_category.index + ".png";
@@ -123,39 +125,111 @@
       var icon = "img/general.png";
     }
     if ( card ) {
+	// Container
 	$('<li>', { class: 'cards_item', id: 'cards_item-' + id + '-' + i }).appendTo('#cards');
 	$('<div>', { class: 'card', id: 'card-' + id + '-' + i }).appendTo('#cards_item-' + id + '-' + i);
+	// Back
 	$('<div>', { class: 'card_image', id: 'card_image-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
-	if ( preferences.image_back == "image" && card.image !== undefined ) {
+	if ( preferences.image_back == "image" && $('#controls-image-back-override').val() !== "" ) {
+	  $('<img>', { src: $('#controls-image-back-override').val() }).appendTo('#card_image-' + id + '-' + i);
+	} else if ( preferences.image_back == "image" && card.image !== undefined ) {
 	  $('<img>', { src: card.image }).appendTo('#card_image-' + id + '-' + i);
 	} else if ( preferences.image_back == "icon" ) {
 	  $('<img>', { src: icon }).appendTo('#card_image-' + id + '-' + i);
 	}
-	$('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
-	$('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
-	if ( preferences.image_front == "image" && card.image !== undefined ) {
-	  $('<img>', { src: card.image }).appendTo('#card_icon-' + id + '-' + i);
-	} else if ( preferences.image_front == "icon" ) {
-	  $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
-	}
-	$('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
-	$('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i);
-	$.each( card.desc, function( k, v ) {
-	  if ( k > 0 ) { desc = desc + '<p>' + markdownParser(v) + '</p>'; }
-	});
-	$('<p>', { class: 'content', html: desc }).appendTo('#card_content-' + id + '-' + i);
-	if ( card.properties !== undefined ) {
-	  $.each( card.properties, function( k, v ) {
-	    if ( k > 0 ) { notes = notes + ', ' + v; } else { notes = notes + "<br /><b>Notes</b>: " + v; }
-	  });
-	} else if ( card.saying !== undefined ) {
-	  notes = '<i>"' + card.saying + '"</i>'
-	}
-	if ( notes != "" ) {
-	  $('<p>', { class: 'notes', html: notes }).appendTo('#card_content-' + id + '-' + i);
+
+	// Front
+	if ( preferences.card_design == "standard" ) {
+	  $('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
+	  $('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
+	  if ( preferences.image_front == "image" && $('#controls-image-front-override').val() !== "" ) {
+	    $('<img>', { src: $('#controls-image-front-override').val() }).appendTo('#card_image-' + id + '-' + i);
+	  } else if ( preferences.image_front == "image" && card.image !== undefined ) {
+	    $('<img>', { src: card.image }).appendTo('#card_icon-' + id + '-' + i);
+	  } else if ( preferences.image_front == "icon" ) {
+	    $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
+	  }
+	  $('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
+	  if ( card.desc !== undefined ) {
+	    var desc = "";
+	    $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i);
+	    $.each( card.desc, function( k, v ) {
+	      if ( k > 0 ) { desc = desc + '<p>' + marked.parse(v, { gfm: true }) + '</p>'; }
+	    });
+	    $('<p>', { class: 'content', html: desc }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.weapon_category !== undefined ) {
+	    var atk = "<b>Attack</b>: " + card.weapon_category;	var rng = "";
+	    if ( card.weapon_range == "Melee" ) { rng = "Reach " } else { rng = "Range " }
+	    if ( card.range !== undefined ) { atk += " (" + rng + card.range.normal + " ft.)" }
+	    $('<p>', { class: 'content', html: atk }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.damage !== undefined ) {
+	    var dmg = "<b>Damage</b>: " + card.damage.damage_dice;
+	    if ( card.two_handed_damage !== undefined ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
+	    dmg += " " + card.damage.damage_type.name
+	    $('<p>', { class: 'content', html: dmg }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.properties !== undefined ) {
+	    var props = "";
+	    $.each( card.properties, function( k, v ) {
+	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
+	    }); props += '<br />'
+	    $('<p>', { class: 'content', html: props }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.notes !== undefined || card.saying !== undefined ) {
+	    var notes = "";
+	    if ( card.notes !== undefined ) {
+	      notes = "<br /><b>Notes</b>: " + card.notes;
+	    } else if ( card.saying !== undefined ) {
+	      notes = '<i>"' + card.saying + '"</i>'
+	    }
+	    $('<p>', { class: 'notes', html: notes }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	} else if ( preferences.card_design == "modular" ) {
+	  $('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
+	  $('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
+	  if ( preferences.image_front == "image" && $('#controls-image-front-override').val() !== "" ) {
+	    $('<img>', { src: $('#controls-image-front-override').val() }).appendTo('#card_image-' + id + '-' + i);
+	  } else if ( preferences.image_front == "image" && card.image !== undefined ) {
+	    $('<img>', { src: card.image }).appendTo('#card_icon-' + id + '-' + i);
+	  } else if ( preferences.image_front == "icon" ) {
+	    $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
+	  }
+	  $('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
+	  if ( card.desc !== undefined ) { $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i); }
+	  if ( card.weapon_category !== undefined ) {
+	    var atk = "<b>Attack</b>: " + card.weapon_category;	var rng = "";
+	    if ( card.weapon_range == "Melee" ) { rng = "Reach " } else { rng = "Range " }
+	    if ( card.range !== undefined ) { atk += " (" + rng + card.range.normal + " ft.)" }
+	    $('<p>', { class: 'content', html: atk }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.damage !== undefined ) {
+	    var dmg = "<b>Damage</b>: " + card.damage.damage_dice;
+	    if ( card.two_handed_damage !== undefined ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
+	    dmg += " " + card.damage.damage_type.name
+	    $('<p>', { class: 'content', html: dmg }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.properties !== undefined ) {
+	    var props = "";
+	    $.each( card.properties, function( k, v ) {
+	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
+	    }); props += '<br />'
+	    $('<p>', { class: 'content', html: props }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.desc !== undefined ) {
+	    $('<p>', { class: 'content', html: card.desc[1] }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  // Ability Slots
+	  var abilities = $('<div>', { class: 'card_ability_container' }).appendTo('#card_content-' + id + '-' + i);
+	  $('<div>', { class: 'card_ability_block', id: 'card_ability-1-' + id + '-' + i }).appendTo( abilities );
+	  $('<div>', { class: 'card_ability_block', id: 'card_ability-2-' + id + '-' + i }).appendTo( abilities );
+	  $('<div>', { class: 'card_ability_block', id: 'card_ability-3-' + id + '-' + i }).appendTo( abilities );
 	}
         i += 1;	// increment counter to ensure unique ids
     }
+    $('#controls-image-back-override').val("")
+    $('#controls-image-front-override').val("")
   }
 
   function selectGroup(el) {
@@ -169,7 +243,6 @@
   function setPreferences(el) {
     var sel = el.options[el.selectedIndex].value;
     preferences[el.name] = sel;
-console.log(preferences);
   }
 
   // populate select lists and register callback
