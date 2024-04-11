@@ -22,6 +22,15 @@ function init() {
   //drawGrid(50, 50);
 }
 
+function toggleDragging(event) {
+  if ( map.dragging._enabled ) {
+    map.dragging.disable();
+  } else {
+    map.dragging.enable();
+  }
+console.log(map.dragging);
+}
+
 function findCenter(arr) {
   var minX, maxX, minY, maxY;
   for (var i = 0; i < arr.length; i++) {
