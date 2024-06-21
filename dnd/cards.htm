@@ -2,10 +2,11 @@
 <html>
 <head>
   <title>TTRPG Cards Creator</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="common.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script type="text/javascript" src="https://unpkg.com/fabric@5.3.0/dist/fabric.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="equipment.json"></script>
@@ -29,8 +30,9 @@
   </select><br /><br />
   <label for="controls-card-design">Card Design:</label>
   <select id="controls-card-design" name="card_design" onchange="setPreferences(this);">
-    <option value="standard" selected="selected">Standard Item or NPC</option>
+    <option value="standard" selected="selected">Standard (Item or NPC)</option>
     <option value="modular">Modular Weapon (Vestige)</option>
+    <option value="npc">NPC (Strixhaven)</option>
     <option value="stat-code">Stat Code</option>
   </select><br /><br />
   <label for="controls-image-back">Image Back:</label>
@@ -50,13 +52,11 @@
 </div>
 
 <div id="card-container" class="card-container">
-  <ul class="cards" id="cards">
-  </ul>
+  <ul class="cards" id="cards"></ul>
 </div>
 
 <script type="text/javascript">
-  var i = 0;
-  var groups = {};
+  var i = 0; var groups = {};
   var items = getAPI()['results'];
   var preferences = { "image_back": "image", "image_front": "none", "card_design": "standard" };
 
@@ -76,19 +76,19 @@
     var card;
     $.each( equipment, function( key, value ) {
       if ( value.index == id ) {
-	card = value;
-	card.source = "equipment";
+	card = value; card.source = "equipment";
       }
     });
     $.each( npcs, function( key, value ) {
       if ( 'npc-' + value.name.replaceAll(' ','-').toLowerCase() == id ) {
-	card = value;
-	card.source = "npcs";
+	card = value; card.source = "npcs";
 	if ( card.desc == undefined ) {
-	    card.desc = []; var eyes = ""; var hair = ""; var skin = "";
-	    card.desc[0] = value.age[0] + ' ' + value.gender.title + ' (' + value.gender.pronouns.join('/') + ') ' + value.race.title + ' ' + ( value.occupation || value.type.title )
-	    if ( value.alignment !== undefined ) {
-	      if ( card.desc[0].length > 45 ) { var al = ', ' + value.alignment[0] } else { var al = ', ' + value.alignment[1]; }
+	    card.desc = []; var eyes = ''; var hair = ''; var skin = ''; card.desc[0] = '';
+	    if ( value.age ) { card.desc[0] += value.age[0] + ' '; }
+	    if ( value.gender ) { card.desc[0] += ' (' + value.gender.pronouns.join('/') + ') '; }
+	    if ( value.race ) { card.desc[0] +=  value.race.title + ' ' + ( value.occupation || value.type.title ); }
+	    if ( value.alignment ) {
+	      if ( card.desc[0].length > 36 ) { var al = ', ' + value.alignment[0] } else { var al = ', ' + value.alignment[1]; }
 	    } else { var al = ''; }
 	    card.desc[0] += al;
 	    card.desc[1] = value.description;
@@ -96,20 +96,25 @@
 	    if ( value.hair !== undefined && value.hair !== "" )  { var hair = ', ' + value.hair + ' hair' }
 	    if ( value.skin !== undefined && value.skin !== "" )  { var skin = ', ' + value.skin + ' skin' }
 	    if ( value.ideal !== undefined || value.bond !== undefined || value.flaw !== undefined ) {
-	      card.desc[2] = '<b>Ideal:</b> ' + value.ideal + '<br /><b>Bond:</b> ' + value.bond + '<br /><b>Flaw:</b> ' + value.flaw;
+	      card.desc[2] = '<b>Ideal:</b> ' + ( value.ideal || ' - ' ) + '<br /><b>Bond:</b> ' + ( value.bond || ' - ' ) + '<br /><b>Flaw:</b> ' + ( value.flaw || ' - ' );
 	    } else if ( value.goals !== undefined ) {
 	      card.desc[2] = '<b>Goals:</b> ' + value.goals.join(', ');
 	    }
-	    card.desc[2] += '<br /><br /><b>Relationship:</b> ' + value.relationship + ' (' + value.orientation + ')' + '<br /><b>Appearance:</b> ' + value.appearance + eyes + hair + skin
-		 + '<br /><b>Interaction Trait(s):</b> ' + value.interaction_trait + '<br /><b>Mannerism(s):</b> ' + value.mannerism + '<br/><b>Talent(s):</b> ' + value.talent
-		 + '<br /><br /><b>Stats:</b> ' + value.type.title + ' (' + value.stats.join(', ') + ')<br /><b>AC:</b> ' + value.ac + '<br /><b>HP:</b> ' + value.hp[0] + ' (' + value.hp[1] + ')' + '<br /><b>Speed:</b> ' + value.speed
+	    if ( value.relationship ) { card.desc[2] += '<br /><br /><b>Relationship:</b> ' + value.relationship + ' (' + value.orientation + ')' + '<br />'; }
+	    if ( value.appearance ) { card.desc[2] += '<b>Appearance:</b> ' + value.appearance + eyes + hair + skin + '<br />'; }
+	    if ( value.interaction_trait ) { card.desc[2] += '<b>Interaction Trait(s):</b> ' + value.interaction_trait + '<br />'; }
+	    if ( value.mannerism ) { card.desc[2] += '<b>Mannerism(s):</b> ' + value.mannerism + '<br/>'; }
+	    if ( value.talent ) { card.desc[2] += '<b>Talent(s):</b> ' + value.talent; }
+	    if ( value.stats ) { card.desc[2] += '<br /><br /><b>Stats:</b> ' + value.type.title + ' (' + value.stats.join(', ') + ')<br />'; }
+	    if ( value.ac ) { card.desc[2] += '<b>AC:</b> ' + value.ac + '<br />'; }
+	    if ( value.hp ) { card.desc[2] += '<b>HP:</b> ' + value.hp[0] + ' (' + value.hp[1] + ')' + '<br />'; }
+	    if ( value.speed ) { card.desc[2] += '<b>Speed:</b> ' + value.speed; }
 	}
       }
     });
     $.each( items, function( key, value ) {
       if ( value.index == id ) {
-	card = getAPI(value.url);
-	card.source = "api";
+	card = getAPI(value.url); card.source = "api";
       }
     });
     return card;
@@ -117,6 +122,7 @@
 
   function createCard(id) {
     var card = getCard(id);
+    id = id.replaceAll('"','').replaceAll("'","");  // eliminate any special characters that don't play nicely with the DOM
     if ( card.equipment_category ) {
       var icon = "img/" + card.equipment_category.index + ".png";
     } else if ( card.type ) {
@@ -126,20 +132,41 @@
     }
     if ( card ) {
 	// Container
-	$('<li>', { class: 'cards_item', id: 'cards_item-' + id + '-' + i }).appendTo('#cards');
-	$('<div>', { class: 'card', id: 'card-' + id + '-' + i }).appendTo('#cards_item-' + id + '-' + i);
+	$('<li>', { class: 'cards_item', id: 'cards_item-' + id + '-' + i }).appendTo( '#cards' );
+	$('<div>', { class: 'card', id: 'card-' + id + '-' + i }).appendTo( '#cards_item-' + id + '-' + i );
+
 	// Back
-	$('<div>', { class: 'card_image', id: 'card_image-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
-	if ( preferences.image_back == "image" && $('#controls-image-back-override').val() !== "" ) {
-	  $('<img>', { src: $('#controls-image-back-override').val() }).appendTo('#card_image-' + id + '-' + i);
-	} else if ( preferences.image_back == "image" && card.image !== undefined ) {
-	  $('<img>', { src: card.image }).appendTo('#card_image-' + id + '-' + i);
-	} else if ( preferences.image_back == "icon" ) {
-	  $('<img>', { src: icon }).appendTo('#card_image-' + id + '-' + i);
+	var back_cls; if ( preferences.image_back == "icon" ) { back_cls = "icon" } else { back_cls = "image" }
+	$('<div>', { class: 'card_back', id: 'card_back-' + id + '-' + i }).appendTo( '#card-' + id + '-' + i );
+	if ( preferences.card_design == "standard" ) {
+	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( preferences.image_back == "image" && $('#controls-image-back-override').val() !== "" ) {
+	    $('<img>', { src: $('#controls-image-back-override').val() }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  } else if ( preferences.image_back == "image" && card.image !== undefined ) {
+	    $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  } else if ( preferences.image_back == "icon" ) {
+	    $('<img>', { src: icon }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  }
+	} else if ( preferences.card_design == "npc" ) {
+	  $('<div>', { class: 'header', id: 'card_back-header-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( card.type.title == "Professor" ) {
+	    $('<div>', { class: 'topright', html: '<i class="bi bi-mortarboard"></i>' }).appendTo( '#card_back-' + id + '-' + i );
+	  } else if ( card.type.title == "Student" ) {
+	    $('<div>', { class: 'topright', html: '<i class="bi bi-backpack"></i>' }).appendTo( '#card_back-' + id + '-' + i );
+	  }
+	  $('<h4>', { html: card.name }).appendTo( '#card_back-header-' + id + '-' + i );
+	  $('<p>', { class: 'info', html: '(' + card.gender.pronouns.join('/') + ')' }).appendTo( '#card_back-header-' + id + '-' + i );
+	  $('<div>', { class: 'footer', id: 'card_back-footer-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( card.extracurriculars ) { $('<p>', { html: '<b>Extracurriculars</b>: ' + card.extracurriculars.join(', ') }).appendTo( '#card_back-footer-' + id + '-' + i ); }
+	  if ( card.job ) { $('<p>', { html: '<b>Job:</b> ' + card.job }).appendTo( '#card_back-footer-' + id + '-' + i ); }
+	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  $('<div>', { class: 'imagetext', id: 'card_back-imagetext-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  $('<p>', { html: card.alignment[0] + ' ' + card.race.title + ' ' + card.occupation }).appendTo( '#card_back-imagetext-' + id + '-' + i );
 	}
 
 	// Front
-	if ( preferences.card_design == "standard" ) {
+	if ( preferences.card_design == "standard" || preferences.card_design == "npc" ) {
 	  $('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
 	  $('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
 	  if ( preferences.image_front == "image" && $('#controls-image-front-override').val() !== "" ) {
@@ -176,6 +203,10 @@
 	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
 	    }); props += '<br />'
 	    $('<p>', { class: 'content', html: props }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.boon || card.bane ) {
+	    $('<p>', { class: 'content', html: '<b>Boon:</b> ' + card.boon }).appendTo('#card_content-' + id + '-' + i);
+	    $('<p>', { class: 'content', html: '<b>Bane:</b> ' + card.bane }).appendTo('#card_content-' + id + '-' + i);
 	  }
 	  if ( card.notes !== undefined || card.saying !== undefined ) {
 	    var notes = "";
