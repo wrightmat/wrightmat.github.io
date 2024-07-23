@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TTRPG WLED</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="wled.json"></script>
+</head>
+
+<body>
+
+<div id="controls">
+  <div id="controls-ip" class="row m-1 mb-4">
+    <label for="ip" class="col-sm-2 col-form-label"><b>IP Address:</b></label>
+    <select id="ip" class="col-sm form-control m-1"><option value=""></option></select>
+    <input type="button" id="init" value="Initialize" class="col-sm-2 btn btn-primary m-1" />
+    <input type="button" id="get" value="Get State" class="col-sm-2 btn btn-secondary m-1" />
+  </div>
+
+  <div id="controls-left" style="width:200px;float:left;">
+    <div id="controls-segments"> 
+      <select id="seg" size="20" style="width:180px;" multiple="multiple" class="form-control"></select>
+    </div>
+  </div>
+
+  <div id="controls-right" style="width:600px;float:right;">
+    <div id="controls-seg">
+      <input type="button" id="on" value="On" /><br /><br />
+      <div id="controls-on">
+	<div class="mb-3">
+	  <label for="bri" class="form-label">Brightness:</label>
+          <input type="range" id="bri" min="1" max="255" value="128" class="form-control" />
+        </div>
+	<div class="mb-3">
+	  <label for="col0" class="form-label">Colors:</label>
+	  <div>
+            <input type="color" id="col0" class="col" value="#ff0000" style="width:30%;">&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="color" id="col1" class="col" value="#ff0000" style="width:30%;">&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="color" id="col2" class="col" value="#ff0000" style="width:30%;">
+	  </div>
+	</div>
+	<div class="mb-3">
+          <label for="ps" class="form-label">Preset:</label>
+          <select id="ps" class="form-control"><option value=""></option></select>
+	</div>
+	<div class="mb-3">
+          <label for="pal" class="form-label">Palette:</label>
+          <select id="pal" class="form-control"></select>
+	</div>
+	<div class="mb-3">
+          <label for="fx" class="form-label">Effect:</label>
+          <select id="fx" class="form-control"></select>
+	</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="controls-utils" style="width:100%;clear:both;"><br />
+    <div class="row mt-4">
+      <label for="utils-clock" class="col-sm-2 col-form-label">Clock:</label>
+      <select id="utils-clock" class="col-sm form-control m-1">
+        <option value="d6-u">d6 (Top) Count Up</option>
+        <option value="d6-d">d6 (Top) Count Down</option>
+        <option value="d4-u">d4 (Bottom) Count Up</option>
+        <option value="d4-d">d4 (Bottom) Count Down</option>
+      </select>
+      <select id="utils-clock-adv" class="col-sm form-control m-1">
+        <option value="manual">Manually Advance</option>
+        <option value="auto">Auto Advance</option>
+      </select>
+      <input type="text" id="utils-clock-interval" value="10" title="Interval, in minutes" style="width:60px;" />
+    </div>
+    <div class="row mb-4">
+      <div style="width:40%;float:left;">
+        <input type="button" id="utils-clock-submit" value="⏵" title="Start Clock" class="col-sm-2 btn btn-success m-1" />
+        <input type="button" id="utils-clock-stop" value="⏹" title="Stop Clock" class="col-sm-2 btn btn-danger m-1" />
+      </div>
+      <div style="width:50%;float:right;">
+        <input type="button" id="utils-clock-manual" value="⏭" title="Advance" class="col-sm-2 btn btn-info m-1" />
+      </div>
+      <div class="col-sm form-control m-1">
+        <input type="checkbox" id="utils-clock-leds" /><label for="utils-clock-leds"> Show LEDs</label>
+      </div>
+      <div id="utils-clock-display" class="col-sm form-control m-1"></div>
+    </div>
+  </div>
+
+  <div id="controls-cmd" class="fixed-bottom m-4">
+    <div class="row">
+      <label for="cmd" class="col-sm-3 col-form-label">Custom Command (JSON):</label>
+      <textarea id="cmd" class="col-sm col-form-label"></textarea>
+      <input type="button" id="submit" value="Submit" class="col-sm-2 btn btn-primary m-1" />
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  var ip; var ip_index;
+  var seg; var wled_get;
+  var clock = {}; var clockTimer;
+
+  $('#init').hide();
+  $('#get').hide();
+  $('#utils-clock-interval').hide();
+  $('#utils-clock-stop').hide();
+  $('#utils-clock-manual').prop("disabled", true);
+  $('#controls-seg').hide();
+  for ( var i = 0; i < wled.length; i++ ) {
+    $('#ip').append('<option id="' + i + '" value="' + wled[i].ip +'">' + wled[i].ip +'</option>');
+  }
+
+  function initIP(index) {
+    var cmd;
+    wled_get = wledGet( ip );
+    wled[index].seg.unshift( wled_get.state.seg[0] ); // pass through the default Segment 0
+    // for each segment, turn it on then add it to the list then turn it off again
+    // this ensures that each segment is added to the led strip memory appropriately, aligning the indices for future use
+    for ( var i = 0; i < wled[index].seg.length; i++ ) {
+      wled[index].seg[i].on = true;
+      cmd = '{"seg":[' + JSON.stringify(wled[index].seg[i]) + ']}';
+      wledCommand( ip, cmd );
+      if ( wled[index].seg[i].n ) { var name = wled[index].seg[i].n; } else { var name = "Segment " + i; }
+      if ( i > 0 ) {
+        $('#seg').append('<option id="' + wled[index].seg[i].id + '" value="' + wled[index].seg[i].n +'">' + name +'</option>');
+      }
+      wled[index].seg[i].on = false;
+      cmd = '{"seg":[' + JSON.stringify(wled[index].seg[i]) + ']}';
+      wledCommand( ip, cmd );
+    }
+    for ( var i = 0; i < wled[index].ps.length; i++ ) {
+      $('#ps').append('<option id="' + i + '" value="' + wled[index].ps[i].name +'">' + wled[index].ps[i].name +'</option>');
+    }
+    for ( var i = 0; i < wled_get.palettes.length; i++ ) {
+      $('#pal').append('<option id="' + i + '" value="' + wled_get.palettes[i] +'">' + wled_get.palettes[i] +'</option>');
+    }
+    for ( var i = 0; i < wled_get.effects.length; i++ ) {
+      $('#fx').append('<option id="' + i + '" value="' + wled_get.effects[i] +'">' + wled_get.effects[i] +'</option>');
+    }
+    $('#utils-clock-leds').prop('checked', true);
+  }
+
+  function updateControls() {
+    wled_get = wledGet( ip );
+    if ( wled_get.state.seg[seg[0]] && ( wled_get.state.seg[seg[0]].on || false ) ) {
+      $('#on').val('Off');
+      $('#controls-seg').show();
+      $('#controls-on').show();
+      $('#bri').val( wled_get.state.seg[seg[0]].bri );
+      var col0 = wled_get.state.seg[seg[0]].col[0];
+      var col1 = wled_get.state.seg[seg[0]].col[1];
+      var col2 = wled_get.state.seg[seg[0]].col[2];
+      $('#col0').val( rgbToHex( col0[0], col0[1], col0[2] ) );
+      $('#col1').val( rgbToHex( col1[0], col1[1], col1[2] ) );
+      $('#col2').val( rgbToHex( col2[0], col2[1], col2[2] ) );
+      $('#fx option').eq( wled_get.state.seg[seg[0]].fx ).prop('selected', true);
+      $('#pal option').eq( wled_get.state.seg[seg[0]].pal ).prop('selected', true);
+    } else {
+      $('#on').val('On');
+      $('#controls-seg').show();
+      $('#controls-on').hide();
+    }
+  }
+
+  function updateControlsClock() {
+    if ( clock.running && clock.adv == "auto" ) {
+      $('#utils-clock-stop').show();
+      $('#utils-clock-submit').val("⏸");
+      $('#utils-clock-submit').prop("title", "Pause Clock");
+      $('#utils-clock-manual').prop("disabled", false);
+    } else if ( clock.running && clock.adv == "manual" ) {
+      $('#utils-clock-submit').val("⏹");
+      $('#utils-clock-submit').prop("title", "Stop Clock");
+      $('#utils-clock-manual').prop("disabled", false);
+    } else {
+      clearInterval( clockTimer );
+      $('#utils-clock-submit').val("⏵");
+      $('#utils-clock-submit').prop("title", "Start Clock");
+      $('#utils-clock-manual').prop("disabled", true);
+    }
+    // clear the display and leds (only the first time or on stop for the leds)
+    $('#utils-clock-display').html('');
+    if ( wled[ip_index] && $('#utils-clock-leds').is(':checked') && ( jQuery.isEmptyObject(clock) || clock.value == 0 || clock.dir == "d" ) ) {
+      for ( var s = 0; s < wled[ip_index].seg.length; s++ ) {
+	if ( ( jQuery.isEmptyObject(clock) && wled[ip_index].seg[s].clock ) || ( clock.clock && wled[ip_index].seg[s].clock == clock.clock.substring(0,2) ) ) {
+	  var seg_cmd = {}; seg_cmd.id = wled[ip_index].seg[s].id; seg_cmd.on = false;
+          var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}'; wledCommand( ip, cmd );
+	}
+      }
+    }
+    // write out the new clock value
+    for ( var c = 0; c < clock.value; c++ ) {
+      $('#utils-clock-display').append('⬛');
+    }
+    if ( wled[ip_index] && $('#utils-clock-leds').is(':checked') ) {
+      var led_ind = 0
+      for ( var s = 0; s < wled[ip_index].seg.length; s++ ) {
+	if ( clock.clock && wled[ip_index].seg[s].clock == clock.clock.substring(0,2) ) {
+	  if ( clock.value > led_ind ) {
+	    var seg_cmd = {}; seg_cmd.id = wled[ip_index].seg[s].id; seg_cmd.on = true;
+            var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}'; wledCommand( ip, cmd );
+	  }
+	  led_ind += 1;
+	}
+      }
+    }
+  }
+
+  function clockAdvance() {
+    if ( clock.running ) {
+      if ( clock.dir == "u" ) {
+        clock.value += 1;
+        if ( clock.value >= clock.segments ) {
+          clock = {}; updateControlsClock();
+        }
+      } else {
+        clock.value -= 1;
+        if ( clock.value <= 0 ) {
+	  clock = {}; updateControlsClock();
+        }
+      }
+      updateControlsClock();
+    }
+  }
+
+  $('#submit').on("click", function() {
+    wledCommand( ip, $('#cmd').val() );
+  });
+  $('#on').on("click", function() {
+    if ( seg ) {
+      for ( var s = 0; s < seg.length; s++ ) {
+        if ( wled_get.state.seg[seg[s]] ) {
+          var seg_cmd = {}
+          seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+          seg_cmd.on = !wled_get.state.seg[seg[s]].on;
+          var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        } else {
+          var seg_cmd = {}
+          seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+	  seg_cmd.on = true;
+          var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        }
+        wledCommand( ip, cmd );
+        updateControls();
+      }
+    } else {
+      wled[ip_index].on = !wled[ip_index].on;
+      wledCommand( ip, '{"on":' + wled[0].on + '}' );
+    }
+  });
+  $('#bri').on("change", function() {
+    if ( seg ) {
+      for ( var s = 0; s < seg.length; s++ ) {
+        var seg_cmd = {}
+        seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+        seg_cmd.bri = $('#bri').val();
+        var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        wledCommand( ip, cmd );
+      }
+    } else {
+      wledCommand( ip, '{"bri":' + $('#bri').val() + '}' );
+    }
+  });
+  $('.col').on("change", function() {
+    if ( seg ) {
+      for ( var s = 0; s < seg.length; s++ ) {
+        var col0 = hexToRgb( $('#col0').val() )
+        var col1 = hexToRgb( $('#col1').val() )
+        var col2 = hexToRgb( $('#col2').val() )
+        var col_arr = []; col_arr[0] = col0; col_arr[1] = col1; col_arr[2] = col2
+        var seg_cmd = {}
+        seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+        seg_cmd.col = col_arr;
+        var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        wledCommand( ip, cmd );
+      }
+    }
+  });
+  $('#fx').on("change", function() {
+    if ( seg ) {
+      for ( var s = 0; s < seg.length; s++ ) {
+        var seg_cmd = {}
+        seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+        seg_cmd.fx = this.options[this.selectedIndex].id;
+        var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        wledCommand( ip, cmd );
+      }
+    }
+  });
+  $('#pal').on("change", function() {
+    if ( seg ) {
+      for ( var s = 0; s < seg.length; s++ ) {
+        var seg_cmd = {}
+        seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+        seg_cmd.pal = this.options[this.selectedIndex].id;
+        var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        wledCommand( ip, cmd );
+      }
+    }
+  });
+  $('#ps').on("change", function() {
+    if ( seg ) {
+      for ( var s = 0; s < seg.length; s++ ) {
+        var sel = wled[ip_index].ps[this.selectedIndex - 1];
+        var seg_cmd = {}
+        seg_cmd.id = wled[ip_index].seg[seg[s]].id;
+        seg_cmd.col = sel.col;
+        var cmd = '{"seg":[' + JSON.stringify(seg_cmd) + ']}';
+        wledCommand( ip, cmd );
+        $('#pal option').eq( sel.pal ).prop('selected', true);
+        $('#pal').change();
+        $('#fx option').eq( sel.fx ).prop('selected', true);
+        $('#fx').change();
+        updateControls();
+      }
+    }
+  });
+  $('#seg').on("click", function() {
+    seg = $('#seg option:selected').toArray().map(item => item.id);
+    //seg = this.options[this.selectedIndex].id;
+    $('#ps option').eq( 0 ).prop('selected', true);
+    updateControls();
+  });
+  $('#ip').on("change", function() {
+    ip = this.options[this.selectedIndex].value;
+    ip_index = this.options[this.selectedIndex].id;
+    if ( ip !== "" ) {
+      $('#init').show();
+      $('#get').show();
+    } else {
+      $('#init').hide();
+      $('#get').hide();
+    }
+  });
+  $('#init').on("click", function() {
+    if ( ip_index ) { initIP(ip_index); }
+  });
+  $('#get').on("click", function() {
+    if ( ip ) {
+      wled_get = wledGet( ip );
+      console.log(wled_get);
+    }
+  });
+  $('#utils-clock-adv').on("change", function() {
+    var sel = this.options[this.selectedIndex].value;
+    if ( sel == "auto" ) {
+      $('#utils-clock-interval').show();
+      $('#utils-clock-manual').show();
+      $('#utils-clock-manual').prop("disabled", true); // we enable this when the clock is started
+    } else {
+      $('#utils-clock-interval').hide();
+      $('#utils-clock-stop').hide();
+      $('#utils-clock-manual').show();
+      $('#utils-clock-manual').prop("disabled", false);
+    }
+  });
+  $('#utils-clock-stop').on("click", function() {
+    clock = {}; updateControlsClock();
+  });
+  $('#utils-clock-submit').on("click", function() {
+    if ( jQuery.isEmptyObject( clock ) ) {
+      var sel = $('#utils-clock').find(":selected").val();
+      var adv = $('#utils-clock-adv').find(":selected").val();
+      clock.clock = sel;
+      if ( sel.substring(0,2) == "d4" ) {
+        clock.segments = 4;
+        if ( sel.substring(3,4) == "d" ) {
+	  clock.dir = "d"; clock.value = 3;
+        } else {
+	  clock.dir = "u"; clock.value = 0;
+        }
+      } else {
+        clock.segments = 6;
+        if ( sel.substring(3,4) == "d" ) {
+	  clock.dir = "d"; clock.value = 5;
+        } else {
+	  clock.dir = "u"; clock.value = 0;
+        }
+      }
+      clock.adv = adv;
+      clock.running = !clock.running;
+      if ( clock.adv == "auto" ) {
+        clock.interval = $('#utils-clock-interval').val() * 60 * 1000;
+        clockTimer = setInterval( clockAdvance, clock.interval );
+      }
+    } else {
+      clock.running = !clock.running;
+      if ( clock.running && clock.adv == "auto" ) {
+	clockTimer = setInterval( clockAdvance, clock.interval );
+      } else if ( !clock.running && clock.adv == "manual" ) {
+        clock = {}; updateControlsClock();
+      }
+    }
+    updateControlsClock();
+  });
+  $('#utils-clock-manual').on("click", function() {
+    clockAdvance();
+  });
+</script>
+
+</body>
+</html>

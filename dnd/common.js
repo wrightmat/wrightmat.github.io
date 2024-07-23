@@ -31,11 +31,43 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ];
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+}
+
 function jsonConcat(o1, o2) {
   for (var key in o2) {
     o1[key] = o2[key];
   }
   return o1;
+}
+
+function jsonSearch( obj, key1, val1, key2, val2 ) {
+  var arr1 = []; var arr2 = [];
+  $.each( obj, function( i, o ) {
+    $.each( o, function( k, v ) {
+      if ( k == key1 ) {
+	if ( ( typeof v === 'object' && Object.values(v).includes(val1) ) || 
+	     ( Array.isArray(v) && v.find(a => a.includes(val1)) ) || 
+	     ( typeof v !== 'object' && v.includes(val1) ) ) {
+	  arr1.push( obj[i] )
+	}
+      }
+      if ( key2 && k == key2 ) {
+	if ( ( typeof v === 'object' && Object.values(v).includes(val2) ) || 
+	     ( Array.isArray(v) && v.find(a => a.includes(val2)) ) || 
+	     ( typeof v !== 'object' && v.includes(val2) ) ) {
+	  arr2.push( obj[i] )
+	}
+      }
+    });
+  });
+  if ( key2 ) { return arr1.filter(value => arr2.includes(value)); } else { return arr1; }
 }
 
 function rollRandom(dice, sum=true) {
@@ -127,4 +159,26 @@ function toggleFullscreen(event) {
   };
 
   isFullscreen ? document.cancelFullScreen() : element.requestFullScreen();
+}
+
+function wledCommand(ip, cmd) {
+  var r;
+console.log(cmd);
+  $.post({
+    url: "http://" + ip + "/json",
+    contentType: "application/json",
+    data: cmd,
+    success: function(result) { r = result },
+    error: function(xhr, error) { console.log(xhr) },
+    async: false
+  });
+console.log(r);
+  return r
+}
+
+function wledGet(ip) {
+  var r;
+  $.ajaxSetup({ async: false });  
+  $.get( "http://" + ip + "/json", function( result ) { r = result; });
+  return r
 }

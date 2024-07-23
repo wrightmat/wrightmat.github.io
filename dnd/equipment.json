@@ -659,5 +659,68 @@ equipment = [
 			"name": "Legendary"
 		},
 		"url": "/api/equipment/scimitar"
+	},
+	{
+		"index": "platinum-scarf-vestige",
+		"name": "Platinum Scarf (Vestige)",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/5rK4Kr2zKaCsFxN/preview",
+		"desc": [
+			"Wondrous item, legendary (requires attunement)",
+			"This scarf is covered in a number of platinum-colored scales equal to your Proficiency Bonus. As an action, you can pull a scale from the scarf and activate one of its abilities, or treat it as a thrown weapon. Once a scale is removed, it is gone until the next dawn, when all scales grow back."
+		],
+		"abilties": [
+			{
+				"1": "You have a +1 bonus to attack and damage rolls made with this magic weapon.",
+				"2": "You have a +2 bonus to attack and damage rolls made with this magic weapon.",
+				"3": "You have a +3 bonus to attack and damage rolls made with this magic weapon."
+			},
+			{
+				"1": "You can regain ki points equal to a roll of your Martial Arts die as an action while wearing the dragon claws. You can’t use this property again until you finish a long rest.",
+				"2": "You can regain ki points equal to a roll of your Martial Arts die as a bonus action while wearing the dragon claws. You can’t use this property again until you finish a long rest.",
+				"3": "You can regain ki points equal to a roll of your Martial Arts die as a bonus action while wearing the dragon claws."
+			}
+		],
+		"equipment_category": {
+			"index": "wondrous-item",
+			"name": "Wondrous Item",
+			"url": "/api/equipment-categories/wondrous-item"
+		},
+		"weapon_category": "Simple",
+		"weapon_range": "Ranged",
+		"category_range": "Simple Ranged",
+		"damage": {
+			"damage_dice": "1d4",
+			"damage_type": {
+				"index": "piercing",
+				"name": "Piercing",
+				"url": "/api/damage-types/piercing"
+			}
+		},
+		"range": {
+			"normal": 20,
+			"far": 60
+		},
+		"weight": 1,
+		"properties": [
+			{
+				"index": "finesse",
+				"name": "Finesse",
+				"url": "/api/weapon-properties/finesse"
+			},
+			{
+				"index": "range",
+				"name": "Range",
+				"url": "/api/weapon-properties/range"
+			},
+			{
+				"index": "thrown",
+				"name": "Thrown",
+				"url": "/api/weapon-properties/thrown"
+			}
+		],
+		"rarity": {
+			"name": "Legendary"
+		},
+		"url": "/api/equipment/scimitar"
 	}
 ]

@@ -11,12 +11,6 @@
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="equipment.json"></script>
   <script type="text/javascript" src="npcs.json"></script>
-  <style>
-    @media print {
-      #card-controls { visibility: hidden; }
-      #card-container { visibility: visible; position: absolute; left: 0; top: 0; }
-    }
-  </style>
 </head>
 
 <body>
@@ -26,7 +20,7 @@
   <select id="controls-groups" onchange="selectGroup(this);" style="width:200px;">
     <option value=""></option>
   </select><br /><br />
-  <select id="controls-custom-select" size="28" style="width:200px;">
+  <select id="controls-custom-select" size="28" style="width:300px;">
   </select><br /><br />
   <label for="controls-card-design">Card Design:</label>
   <select id="controls-card-design" name="card_design" onchange="setPreferences(this);">
@@ -49,6 +43,7 @@
     <option value="none" selected="selected">Nothing</option>
   </select><br />
   <label for="controls-image-front-override">Image Override: </label><input id="controls-image-front-override" /><br /><br />
+  <input type="button" id="btn-clear" value="Clear Cards" onclick="$('#cards').empty();" />
 </div>
 
 <div id="card-container" class="card-container">
@@ -56,6 +51,8 @@
 </div>
 
 <script type="text/javascript">
+  //$.each( jsonSearch(npcs, "type", "Student"), function( key, value ) { console.log(value.name, "|", value.race.title, "|", value.occupation); });
+
   var i = 0; var groups = {};
   var items = getAPI()['results'];
   var preferences = { "image_back": "image", "image_front": "none", "card_design": "standard" };
@@ -138,7 +135,7 @@
 	// Back
 	var back_cls; if ( preferences.image_back == "icon" ) { back_cls = "icon" } else { back_cls = "image" }
 	$('<div>', { class: 'card_back', id: 'card_back-' + id + '-' + i }).appendTo( '#card-' + id + '-' + i );
-	if ( preferences.card_design == "standard" ) {
+	if ( preferences.card_design == "standard" || preferences.card_design == "modular" ) {
 	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
 	  if ( preferences.image_back == "image" && $('#controls-image-back-override').val() !== "" ) {
 	    $('<img>', { src: $('#controls-image-back-override').val() }).appendTo( '#' + back_cls + '-' + id + '-' + i );
@@ -149,20 +146,24 @@
 	  }
 	} else if ( preferences.card_design == "npc" ) {
 	  $('<div>', { class: 'header', id: 'card_back-header-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
-	  if ( card.type.title == "Professor" ) {
+	  if ( card.type && card.type.title == "Professor" ) {
 	    $('<div>', { class: 'topright', html: '<i class="bi bi-mortarboard"></i>' }).appendTo( '#card_back-' + id + '-' + i );
-	  } else if ( card.type.title == "Student" ) {
+	  } else if ( card.type && card.type.title == "Student" ) {
 	    $('<div>', { class: 'topright', html: '<i class="bi bi-backpack"></i>' }).appendTo( '#card_back-' + id + '-' + i );
 	  }
 	  $('<h4>', { html: card.name }).appendTo( '#card_back-header-' + id + '-' + i );
-	  $('<p>', { class: 'info', html: '(' + card.gender.pronouns.join('/') + ')' }).appendTo( '#card_back-header-' + id + '-' + i );
+	  if ( card.gender ) { $('<p>', { class: 'info', html: '(' + card.gender.pronouns.join('/') + ')' }).appendTo( '#card_back-header-' + id + '-' + i ); }
+	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( card.image ) { $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i ); }
+	  if ( card.type && ( card.type.title == "Student" || card.type.title == "Professor" ) ) {
+	    $('<div>', { class: 'imagetext', id: 'card_back-imagetext-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	    if ( card.alignment && card.race && card.occupation ) {
+	      $('<p>', { html: card.alignment[0] + ' ' + card.race.title + ' ' + card.occupation }).appendTo( '#card_back-imagetext-' + id + '-' + i );
+	    }
+	  }
 	  $('<div>', { class: 'footer', id: 'card_back-footer-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
 	  if ( card.extracurriculars ) { $('<p>', { html: '<b>Extracurriculars</b>: ' + card.extracurriculars.join(', ') }).appendTo( '#card_back-footer-' + id + '-' + i ); }
 	  if ( card.job ) { $('<p>', { html: '<b>Job:</b> ' + card.job }).appendTo( '#card_back-footer-' + id + '-' + i ); }
-	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
-	  $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i );
-	  $('<div>', { class: 'imagetext', id: 'card_back-imagetext-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
-	  $('<p>', { html: card.alignment[0] + ' ' + card.race.title + ' ' + card.occupation }).appendTo( '#card_back-imagetext-' + id + '-' + i );
 	}
 
 	// Front
@@ -177,7 +178,7 @@
 	    $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
 	  }
 	  $('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
-	  if ( card.desc !== undefined ) {
+	  if ( card.desc ) {
 	    var desc = "";
 	    $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i);
 	    $.each( card.desc, function( k, v ) {
@@ -185,19 +186,23 @@
 	    });
 	    $('<p>', { class: 'content', html: desc }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.weapon_category !== undefined ) {
+	  if ( card.weapon_category ) {
 	    var atk = "<b>Attack</b>: " + card.weapon_category;	var rng = "";
 	    if ( card.weapon_range == "Melee" ) { rng = "Reach " } else { rng = "Range " }
-	    if ( card.range !== undefined ) { atk += " (" + rng + card.range.normal + " ft.)" }
+	    if ( card.range ) {
+	      atk += " (" + rng + card.range.normal + " ft.";
+	      if ( card.range.far ) { atk += "/" + card.range.far + " ft."; }
+	      atk += ")";
+	    }
 	    $('<p>', { class: 'content', html: atk }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.damage !== undefined ) {
+	  if ( card.damage ) {
 	    var dmg = "<b>Damage</b>: " + card.damage.damage_dice;
-	    if ( card.two_handed_damage !== undefined ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
+	    if ( card.two_handed_damage ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
 	    dmg += " " + card.damage.damage_type.name
 	    $('<p>', { class: 'content', html: dmg }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.properties !== undefined ) {
+	  if ( card.properties ) {
 	    var props = "";
 	    $.each( card.properties, function( k, v ) {
 	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
@@ -208,11 +213,11 @@
 	    $('<p>', { class: 'content', html: '<b>Boon:</b> ' + card.boon }).appendTo('#card_content-' + id + '-' + i);
 	    $('<p>', { class: 'content', html: '<b>Bane:</b> ' + card.bane }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.notes !== undefined || card.saying !== undefined ) {
+	  if ( card.notes || card.saying ) {
 	    var notes = "";
-	    if ( card.notes !== undefined ) {
+	    if ( card.notes ) {
 	      notes = "<br /><b>Notes</b>: " + card.notes;
-	    } else if ( card.saying !== undefined ) {
+	    } else if ( card.saying ) {
 	      notes = '<i>"' + card.saying + '"</i>'
 	    }
 	    $('<p>', { class: 'notes', html: notes }).appendTo('#card_content-' + id + '-' + i);
@@ -228,28 +233,32 @@
 	    $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
 	  }
 	  $('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
-	  if ( card.desc !== undefined ) { $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i); }
-	  if ( card.weapon_category !== undefined ) {
+	  if ( card.desc ) { $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i); }
+	  if ( card.weapon_category ) {
 	    var atk = "<b>Attack</b>: " + card.weapon_category;	var rng = "";
 	    if ( card.weapon_range == "Melee" ) { rng = "Reach " } else { rng = "Range " }
-	    if ( card.range !== undefined ) { atk += " (" + rng + card.range.normal + " ft.)" }
-	    $('<p>', { class: 'content', html: atk }).appendTo('#card_content-' + id + '-' + i);
+	    if ( card.range ) {
+	      atk += " (" + rng + card.range.normal + " ft.";
+	      if ( card.range.far ) { atk += "/" + card.range.far + " ft."; }
+	      atk += ")";
+	    }
+	    $('<p>', { class: 'content-small', html: atk }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.damage !== undefined ) {
+	  if ( card.damage ) {
 	    var dmg = "<b>Damage</b>: " + card.damage.damage_dice;
-	    if ( card.two_handed_damage !== undefined ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
+	    if ( card.two_handed_damage ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
 	    dmg += " " + card.damage.damage_type.name
-	    $('<p>', { class: 'content', html: dmg }).appendTo('#card_content-' + id + '-' + i);
+	    $('<p>', { class: 'content-small', html: dmg }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.properties !== undefined ) {
+	  if ( card.properties ) {
 	    var props = "";
 	    $.each( card.properties, function( k, v ) {
 	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
 	    }); props += '<br />'
-	    $('<p>', { class: 'content', html: props }).appendTo('#card_content-' + id + '-' + i);
+	    $('<p>', { class: 'content-small', html: props }).appendTo('#card_content-' + id + '-' + i);
 	  }
-	  if ( card.desc !== undefined ) {
-	    $('<p>', { class: 'content', html: card.desc[1] }).appendTo('#card_content-' + id + '-' + i);
+	  if ( card.desc ) {
+	    $('<p>', { class: 'content-small', html: card.desc[1] }).appendTo('#card_content-' + id + '-' + i);
 	  }
 	  // Ability Slots
 	  var abilities = $('<div>', { class: 'card_ability_container' }).appendTo('#card_content-' + id + '-' + i);
