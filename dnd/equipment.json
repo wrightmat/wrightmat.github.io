@@ -541,6 +541,44 @@ equipment = [
 		}
 	},
 	{
+		"index": "dodecahedron-doom",
+		"name": "Dodecahedron of Doom",
+		"image": "https://static1.srcdn.com/wordpress/wp-content/uploads/2023/05/dnd-dodecahedron-of-doom.jpg",
+		"desc": [
+			"Wondrous Item, rare",
+			"This twelve-sided metal die is 12 inches across and bears the numbers 1 through 12 engraved on its pentagonal sides. The dodecahedron contains arcane clockwork mechanisms that whir and click whenever the die is cast.",
+			"The dodecahedron can be hurled up to 60 feet as an action: A random magical effect occurs when the die comes to a rest after rolling across the ground for at least 10 feet. If an effect requires a target and no eligible target is within range, nothing happens.",
+			"| d12 | Effect |\n| ----------| -------------- |\n| 1-2   | The die explodes and is destroyed. Each creature within 20 feet must make a DC 13 Dexterity saving throw, taking 40 (9d8) force damage on a failed save, or half as much damage on a success. |\n| 3-4   | The die casts light on itself, lasting until a creature touches the die. |\n| 5-6   | The die casts Ray of Frost (+5 to hit) targeting a random creature within 60 feet that doesn't have total cover. |\n| 7-8   | The die casts Shocking Grasp (+5 to hit) on the next creature that touches it. |\n| 9-10  | The die casts Darkness on itself, lasting 10 minutes. |\n| 11-12 | The next creature to touch the die gains 1d10 temporary HP that last for 1 hour. |"
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Rare"
+		}
+	},
+	{
+		"index": "bead-force",
+		"name": "Bead of Force",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/7aSREjXSYktNZa9/preview",
+		"desc": [
+			"Wondrous Item, rare",
+			"This small black sphere measures 3/4 of an inch in diameter and weighs an ounce. Typically, 1d4 + 4 beads of force are found together.",
+			"You can use an action to throw the bead up to 60 feet. The bead explodes on impact and is destroyed. Each creature within a 10-foot radius of where the bead landed must succeed on a DC 15 Dexterity saving throw or take 5d4 force damage. A sphere of transparent force then encloses the area for 1 minute. Any creature that failed the save and is completely within the area is trapped inside this sphere. Creatures that succeeded on the save, or are partially within the area, are pushed away from the center of the sphere until they are no longer inside it. Only breathable air can pass through the sphere's wall. No attack or other effect can.",
+			"An enclosed creature can use its action to push against the sphere's wall, moving the sphere up to half the creature's walking speed. The sphere can be picked up, and its magic causes it to weigh only 1 pound, regardless of the weight of creatures inside."
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Rare"
+		}
+	},
+	{
 		"index": "moonblade-vestige",
 		"name": "Moonblade (Vestige)",
 		"image": "https://static.wikia.nocookie.net/forgottenrealms/images/9/90/Moonblade-5e.jpg/revision/latest?cb=20171020224031",

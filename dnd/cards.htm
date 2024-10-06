@@ -77,10 +77,10 @@
       }
     });
     $.each( npcs, function( key, value ) {
-      if ( 'npc-' + value.name.replaceAll(' ','-').toLowerCase() == id ) {
+      if ( 'npc-' + value.name.replaceAll(' ','-').replaceAll('(','').replaceAll(')','').toLowerCase() == id ) {
 	card = value; card.source = "npcs";
 	if ( card.desc == undefined ) {
-	    card.desc = []; var eyes = ''; var hair = ''; var skin = ''; card.desc[0] = '';
+	    card.desc = []; var eyes = ''; var hair = ''; var skin = ''; card.desc[0] = ''; card.desc[2] = '';
 	    if ( value.age ) { card.desc[0] += value.age[0] + ' '; }
 	    if ( value.gender ) { card.desc[0] += ' (' + value.gender.pronouns.join('/') + ') '; }
 	    if ( value.race ) { card.desc[0] +=  value.race.title + ' ' + ( value.occupation || value.type.title ); }
@@ -89,12 +89,12 @@
 	    } else { var al = ''; }
 	    card.desc[0] += al;
 	    card.desc[1] = value.description;
-	    if ( value.eyes !== undefined && value.eyes !== "" )  { var eyes = ', ' + value.eyes + ' eyes' }
-	    if ( value.hair !== undefined && value.hair !== "" )  { var hair = ', ' + value.hair + ' hair' }
-	    if ( value.skin !== undefined && value.skin !== "" )  { var skin = ', ' + value.skin + ' skin' }
-	    if ( value.ideal !== undefined || value.bond !== undefined || value.flaw !== undefined ) {
+	    if ( value.eyes )  { var eyes = ', ' + value.eyes + ' eyes' }
+	    if ( value.hair )  { var hair = ', ' + value.hair + ' hair' }
+	    if ( value.skin )  { var skin = ', ' + value.skin + ' skin' }
+	    if ( value.ideal || value.bond || value.flaw ) {
 	      card.desc[2] = '<b>Ideal:</b> ' + ( value.ideal || ' - ' ) + '<br /><b>Bond:</b> ' + ( value.bond || ' - ' ) + '<br /><b>Flaw:</b> ' + ( value.flaw || ' - ' );
-	    } else if ( value.goals !== undefined ) {
+	    } else if ( value.goals ) {
 	      card.desc[2] = '<b>Goals:</b> ' + value.goals.join(', ');
 	    }
 	    if ( value.relationship ) { card.desc[2] += '<br /><br /><b>Relationship:</b> ' + value.relationship + ' (' + value.orientation + ')' + '<br />'; }
@@ -102,10 +102,10 @@
 	    if ( value.interaction_trait ) { card.desc[2] += '<b>Interaction Trait(s):</b> ' + value.interaction_trait + '<br />'; }
 	    if ( value.mannerism ) { card.desc[2] += '<b>Mannerism(s):</b> ' + value.mannerism + '<br/>'; }
 	    if ( value.talent ) { card.desc[2] += '<b>Talent(s):</b> ' + value.talent; }
-	    if ( value.stats ) { card.desc[2] += '<br /><br /><b>Stats:</b> ' + value.type.title + ' (' + value.stats.join(', ') + ')<br />'; }
+	    if ( value.stats ) { card.desc[2] += '<br /><b>Stats:</b> ' + value.type.title + ' (' + value.stats.join(', ') + ')<br />'; }
 	    if ( value.ac ) { card.desc[2] += '<b>AC:</b> ' + value.ac + '<br />'; }
 	    if ( value.hp ) { card.desc[2] += '<b>HP:</b> ' + value.hp[0] + ' (' + value.hp[1] + ')' + '<br />'; }
-	    if ( value.speed ) { card.desc[2] += '<b>Speed:</b> ' + value.speed; }
+	    if ( value.speed ) { card.desc[2] += '<b>Speed:</b> ' + value.speed }
 	}
       }
     });
@@ -119,7 +119,7 @@
 
   function createCard(id) {
     var card = getCard(id);
-    id = id.replaceAll('"','').replaceAll("'","");  // eliminate any special characters that don't play nicely with the DOM
+    id = id.replaceAll('"','').replaceAll("'","").replaceAll('(','').replaceAll(')','');  // eliminate any special characters that don't play nicely with the DOM
     if ( card.equipment_category ) {
       var icon = "img/" + card.equipment_category.index + ".png";
     } else if ( card.type ) {
@@ -295,8 +295,13 @@
       groups[value.index].push(v.index);
     });
   });
-  // special non-equipment groups that will be populated below
-  $('#controls-groups').append('<option id="npcs" value="npcs">NPCs</option>'); groups['npcs'] = [];
+  $('#controls-groups').append('<option id="npcs" value="npcs">NPCs</option>');
+  groups['npcs'] = [];
+  var npc_locations = [...new Set( npcs.map( item => item.location ) )];
+  $.each( npc_locations, function( key, value ) {
+    $('#controls-groups').append('<option id="' + value + '" value="' + value +'">NPCs (' + value +')</option>');
+    groups[value] = [];
+  });
 
   $.each( equipment, function( key, value ) {
     $('#controls-custom-select').append($("<option />").val(value.index).text(value.name));
@@ -308,8 +313,9 @@
     $('#controls-custom-select').append($("<option />").val(value.index).text(value.name));
   });
   $.each( npcs, function( key, value ) {
-    $('#controls-custom-select').append($("<option />").val( 'npc-' + value.name.replaceAll(' ','-').toLowerCase() ).text( value.name + ' (' + value.race.title + ' ' + ( value.occupation || value.type.title ) + ' NPC)' ));
-    groups['npcs'].push('npc-' + value.name.replaceAll(' ','-').toLowerCase());
+    $('#controls-custom-select').append($("<option />").val( 'npc-' + value.name.replaceAll(' ','-').replaceAll('(','').replaceAll(')','').toLowerCase() ).text( value.name + ' (' + value.race.title + ' ' + ( value.occupation || value.type.title ) + ' NPC)' ));
+    groups['npcs'].push('npc-' + value.name.replaceAll(' ','-').replaceAll('(','').replaceAll(')','').toLowerCase());
+    groups[value.location].push('npc-' + value.name.replaceAll(' ','-').replaceAll('(','').replaceAll(')','').toLowerCase());
   });
   document.getElementById('controls-custom-select').ondblclick = function() {
     createCard(this.options[this.selectedIndex].value);

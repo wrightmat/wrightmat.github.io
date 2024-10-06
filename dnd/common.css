@@ -41,7 +41,7 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .card_content { height: 4.75in; padding: 0.4rem; position: relative;  }
 .card_content h4 { line-height: 0.5; margin-top: 12px; margin-bottom: 2px; }
 .card_content .info { font-size: 11px; line-height: 2; font-style: italic; } .card_content .info input { height: 11px; }
-.card_content .content { font-size: 13px; line-height: 1; text-align: justify; vertical-align: middle; }
+.card_content .content { font-size: 12px; line-height: 1; text-align: justify; vertical-align: middle; }
 .card_content .content-small { font-size: 11px; line-height: 0.8; text-align: justify; vertical-align: middle; }
 .card_content .notes { font-size: 12px; }
 .card_ability_container { display: grid; grid-template-rows: 1fr auto; min-height: 3in; width: 2.6in; position: absolute; bottom: 0.1in; }

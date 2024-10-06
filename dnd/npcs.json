@@ -224,6 +224,113 @@ npcs = [
 		"image": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/e606d8a2-bcb2-4ab7-aa31-f6c4e6fc71f6/dewvy1k-dd8773d0-a9f9-48eb-a7f3-2e825dc2fa76.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2U2MDZkOGEyLWJjYjItNGFiNy1hYTMxLWY2YzRlNmZjNzFmNlwvZGV3dnkxay1kZDg3NzNkMC1hOWY5LTQ4ZWItYTdmMy0yZTgyNWRjMmZhNzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.n0-fcLezTDXAnvEgLf1xXwTbytxQ-ME3Ix4zbEMDNjs"
 	},
 	{
+		"location": "eberron",
+		"name": "Lord of Blades",
+		"race": { "title": "Warforged", "group": "Humanoid" },
+		"type": { "title": "Artificer" },
+		"alignment": [ "LE", "Lawful Evil" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Hostile", "age": ["Adult"], "eyes": "black", "skin": "silver",
+		"appearance": "", "talent":"", "mannerism":"", "interaction_trait":"",
+		"occupation": "Military/Religious Leader",
+		"goals": [ "To build an empire of warforged in the Mournland." ],
+		"ac": 19, "hp": [ 195, "23d8 + 92" ], "stats": [ 20,15,18,19,17,18 ], "cr": 18,
+		"description": "The Lord of Blades is a mysterious and messianic warforged military and religious leader based in the Mournland. He commands a militant warforged cult known as the Blades and is the nearest thing to a ruler in the Mournland.<br /><br />While all can agree the Lord of Blades must be a powerful and charismatic leader, their opinions differed. Some speak of him as a teacher and philosopher, even a visionary or messiah, while many others perceive him to be a power-mad tyrannical warlord, self-proclaimed prophet, and racist psychopathic abomination bent on founding a warforged empire and challenging other nations for control of all of Khorvaire.<br /><br />The Lord of Blades is a highly modified warforged with adamantine armor plating attached with protruding blades, making him unique among warforged. Some of these blades, thirteen in number, give the appearance of wings spreading from his back.",
+		"image": "https://static.wikia.nocookie.net/eberron/images/a/a5/Lord_of_Blades.jpg"
+	},
+	{
+		"location": "eberron",
+		"name": "Valmoc",
+		"race": { "title": "Dragonborn", "group": "Humanoid" },
+		"type": { "title": "Paladin" },
+		"alignment": [ "LG", "Lawful Good" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Helpful", "age": ["Adult"], "eyes": "white", "skin": "silver",
+		"appearance": "", "talent":"", "mannerism":"", "interaction_trait":"",
+		"goals": [ "To protect those who are entrusted to him." ],
+		"ac": 18, "hp": [ 84, "10d10 + 20" ], "stats": [ 14,8,14,10,12,20 ],
+		"description": "Valmoc is a silver dragonborn who serves as a sort of emissary for the silver dragons and the Silver Scales organization more generally. He's sort of the opposite of a mercenary - someone who is hired to protect others. The party will encounter him somewhere as they travel, as a means to learn about the Paladin Protectors of the Realm.<br /><br />Valmoc embodies the stoicism and discipline associated with his dragonborn heritage. He speaks in measured tones, revealing little about himself or his true intentions. He is unyielding in his commitment to the party's protection, even if it means keeping them in the dark about the true extent of their significance.<br /><br />Mysterious and enigmatic, Valmoc enjoys playing with the perceptions of those around him. He appears and disappears without warning, leaving peopl to question his motives. His actions are calculated, and he carefully selects the information he shares, maintaining an air of secrecy.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/ren6zy4sXxHmtm4/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Serelath",
+		"race": { "title": "Human", "group": "Humanoid" },
+		"type": { "title": "Veteran" },
+		"alignment": [ "-", "Unaligned" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Helpful", "age": ["Adult"],
+		"appearance": "", "talent":"", "mannerism":"", "interaction_trait":"",
+		"goals": [ "To find new treasures of all sorts." ],
+		"ac": 17, "hp": [ 58, "9d8 + 18" ], "stats": [ 16,13,14,16,14,21 ],
+		"description": "Serelath is a steel dragon who took on a human form to explore the world of mortals, driven by his innate curiosity and a dragon's love for collecting treasures and secrets. He ventured into a labyrinth years ago, intrigued by its mysteries and the powerful artifacts rumored to be hidden within. His knowledge of ancient magics and civilizations led him deeper into the maze until he encountered a basilisk statue, which turned him to stone.<br /><br />He carries a bag of holding filled with his treasures, including various works of art, antiquities, books, finery, and magic items that he refuses to ever part with. Serelath does his best to hide any draconic mannerisms (which is difficult for him, as he moves with an almost feline grace) and make sure no one learns about his true form. He is also elusive with any information about himself, simply saying he came from a land far away (saying Seren Island if pushed, but this is not true).<br /><br />In his human form, he appears as a rugged adventurer in his mid-forties, with steely gray hair and piercing blue eyes. His attire consists of well-worn leather armor and a faded cloak. An intricate tattoo peeks out from his clothing.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/DAiMZniYE8LBn7d/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Serelath (Steel Dragon)",
+		"race": { "title": "Steel Dragon", "group": "Dragon" },
+		"type": { "title": "Veteran" },
+		"alignment": [ "-", "Unaligned" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Helpful", "age": ["Adult"],
+		"appearance": "", "talent":"", "mannerism":"", "interaction_trait":"",
+		"goals": [ "To find new treasures, whether they be monetary, cultural, or magical." ],
+		"ac": 19, "hp": [ 243, "18d12 + 126" ], "stats": [ 27,13,27,16,14,21 ],
+		"description": "Serelath is a steel dragon who took on a human form to explore the world of mortals, driven by his innate curiosity and a dragon's love for collecting treasures and secrets. He ventured into a labyrinth years ago, intrigued by its mysteries and the powerful artifacts rumored to be hidden within. His knowledge of ancient magics and civilizations led him deeper into the maze until he encountered a basilisk statue, which turned him to stone.<br /><br />He carries a bag of holding filled with his treasures, including various works of art, antiquities, books, finery, and magic items that he refuses to ever part with. Serelath does his best to hide any draconic mannerisms (which is difficult for him, as he moves with an almost feline grace) and make sure no one learns about his true form. He is also elusive with any information about himself, simply saying he came from a land far away (saying Seren Island if pushed, but this is not true).<br /><br />In his dragon form, he has scales that shine like burnished steel and that make complex patterns across his body. His face is particularly expressive, sometimes giving the illusion of a human-like face.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/wnjtJ48GkdHSyfN/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Chip",
+		"race": { "title": "Warforged", "group": "Humanoid" },
+		"type": { "title": "Mage" },
+		"alignment": [ "N", "Neutral" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Helpful", "age": ["Young Adult"],
+		"appearance": "", "talent":"", "mannerism":"", "interaction_trait":"",
+		"goals": [ "To explore the world." ],
+		"ac": 12, "hp": [ 40, "9d8" ], "stats": [ 9,14,11,17,12,11 ],
+		"description": "Chip's torso has intricate arcane runes etched into it, softly glowing, indicating his connection to magic. His hands are more delicate and precise compared to other warforged, designed for casting spells rather than combat. He wears a simple, patched-up robe over his metallic body, and carries a small, well-used spellbook strapped to his side.<br /><br />Chip is endlessly curious about the world around him. His artificial mind, designed to learn and adapt, absorbs information rapidly. He often asks questions about things others might take for granted, eager to understand everything from the mechanics of magic to the nuances of social interactions. Chip is still learning about emotions, social cues, and the subtleties of communication. He might take things literally, struggle with sarcasm, or misinterpret certain gestures, leading to moments of awkwardness. However, this is usually endearing, as he genuinely tries his best to fit in.<br /><br />While he is an apprentice wizard, Chip is aware of the potential dangers of magic. He approaches his studies with a mix of awe and caution, always double-checking his work and hesitating before trying something new.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/3oBGWwF7zJdCYtx/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Snips",
+		"race": { "title": "Musteval Guardinal", "group": "Celestial" },
+		"type": { "title": "Companion" },
+		"alignment": [ "NG", "Neutral Good" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Helpful", "age": ["Adult"],
+		"ac": 13, "hp": [ 38, "11d6" ], "stats": [ 12,16,11,14,15,14 ], "speed": "35 ft.",
+		"description": "Mustevals are small, mousy guardinals skilled at evading danger. Their speed, stealthy nature, and illusion magic make them worthwhile companions.<br /><br /><b><u>Actions</u></b><br /><b>Bone Blade.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) slashing damage plus 3 (1d6) radiant damage.<br /><br /><b>Spellcasting.</b> The musteval casts one of the following spells, requiring no material components and using Charisma as the spellcasting ability:<br /> - At will: dancing lights<br /> - 1/day each: disguise self, invisibility<br /><br /><b><u>Reactions</u></b><br /><b>Skirmish Movement.</b> When a creature ends its turn within 5 feet of the musteval, the musteval can move up to half its speed. This movement doesn’t provoke opportunity attacks.<br /><br /><b>Languages:</b> Celestial, Common<br /><br />Dex +6, Cha +4, Perception +6, Stealth +7",
+		"image": "https://www.dndbeyond.com/avatars/thumbnails/37204/499/1000/1000/638318543792959618.png"
+	},
+	{
+		"location": "eberron",
+		"name": "Corean",
+		"race": { "title": "Equinal Guardinal", "group": "Celestial" },
+		"type": { "title": "Companion" },
+		"alignment": [ "NG", "Neutral Good" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"attitude": "Helpful", "age": ["Adult"],
+		"ac": 13, "hp": [ 42, "6d10 + 12" ], "stats": [ 15,15,14,10,15,11 ], "speed": "60 ft.",
+		"description": "Various elven groups, tracing back to their roots on Xen'drik, have long bred fey horses to serve as swift steeds for their warriors.<br /><br /><b><u>Actions</u></b><br /><b>Hooves.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 10 (2d6 + 3) bludgeoning damage.<br /><br /><b><u>Bonus Actions</u></b><br /><b>Fey Step (1/Day).</b> The equinal, along with anything it is wearing or carrying, teleports up to 30 feet to an unoccupied space it can see.<br /><br /><b>Quickness (Recharge 6).</b> The equinal can take the Dodge action as a bonus action.<br /><br /><b>Languages:</b> Celestial, Common<br /><br />Str +5, Con +5, Athletics +5, Perception +5, Religion +3",
+		"image": "https://static.wikia.nocookie.net/eberron/images/8/8d/Valenarsteed.png"
+	},
+	{
+		"location": "eberron",
+		"name": "Dawn",
+		"race": { "title": "Avoral Guardinal", "group": "Celestial" },
+		"type": { "title": "Companion" },
+		"alignment": [ "NG", "Neutral Good" ],
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"attitude": "Helpful", "age": ["Adult"],
+		"ac": 14, "hp": [ 35, "7d8 + 7" ], "stats": [ 13,15,12,13,15,16 ], "speed": "30 ft., fly 50 ft.",
+		"description": "Avorals are bird-like guardinals with keen, golden eyes. Prone to wander, these avian Celestials often leave their realm, meandering to wherever the winds might take them.<br /><br /><b>Dive Attack.</b> If the avoral is flying, dives at least 30 feet in a straight line toward a Medium or smaller creature, and ends within 5 feet of it, that creature must succeed on a DC 15 Strength save or take 14 (4d6) piercing damage and be prone.<br /><br /><b>Flyby.</b> The avoral doesn't provoke opportunity attacks when it flies out of an enemy's reach.<br /><br /><b>Keen Hearing and Sight.</b> The avoral has advantage on Wisdom (Perception) checks that rely on hearing or sight.<br /><br /><b><u>Actions</u></b><br /><b>Talons.</b> Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 8 (2d6 + 1) slashing damage.<br /><br /><b>Languages:</b> Celestial, Common<br /><br />Dex +5, Cha +7, Perception +5, Stealth +5",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/FKfZX5aDBQfN4Le/preview"
+	},
+	{
 		"location": "strixhaven",
 		"name": "Aurora Luna Wynterstarr",
 		"race": { "title": "Dhampir", "group": "Humanoid" },
@@ -938,7 +1045,7 @@ npcs = [
 		"boon": "While on campus, the players feel more confident and supported. This manifests as a slight boost in morale, making them more likely to receive positive feedback from professors and peers when discussing their studies or presenting projects. They are also more likely to get encouragement and minor assistance from other students who admire Teddy.",
 		"bane": "The players occasionally feel the weight of Teddy's disapproval, leading them to second guess themselves in important situations. Players remember 'he's not mad, he's just disappointed'.",
 		"description": "Teddy is a middle-aged blacksmith dad who had a mid-life crisis and decided to go back to school. He intends to use magic, specifically the elemental magic of Prismari, to further his smithing skills. Teddy gushes about his kids (Alice, age 11 and Junior, age 8) and his wife (Lyrissa Moonbeam, half-elf pastry chef) at any and all opportunities, and provides fatherly advice to wayward students. He's very serious about his studies, but has only average grades.",
-		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/xPfTM4ikmYwLJzA"
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/xPfTM4ikmYwLJzA/preview"
 	},
 	{
 		"location": "strixhaven",
@@ -1084,7 +1191,7 @@ npcs = [
 		"occupation": "New Student (Silverquill)",
 		"boon": "You gain access to Bryndis's financial resources for minor expenses and enjoy entry to exclusive university events and circles.",
 		"bane": "You face unexpected financial difficulties and find yourself excluded from important social events and circles.",
-		"description": "Bryndis Stonequill is a striking and composed dwarf, exuding intelligence and authority. Her hair is rich chestnut brown, intricately braided and adorned with small silver trinkets. Bryndis dresses in tailored jackets with intricate silver embroidery, crisp white shirts, and long, elegant skirts. A beautifully crafted quill and a leather-bound journal are her constant companions.<br /><br />Hailing from the wealthy clan Doldarun in the Mror Holds, Bryndis is a student at Silverquill College, and known for her eloquence and sharp wit. She is highly ambitious and driven, constantly striving for excellence in both her academic and magical pursuits. Despite her formidable exterior, Bryndis is deeply loyal to her friends and has a strong sense of justice. Her talents lie not only in her command of language but also in her ability to inspire and lead others. She excels in debates and rhetorical challenges, making her a respected figure among her peers.",
+		"description": "Bryndis is a striking and composed dwarf, exuding intelligence and authority. Her hair is rich chestnut brown, intricately braided and adorned with small silver trinkets. Bryndis dresses in tailored jackets with intricate silver embroidery, crisp white shirts, and long, elegant skirts. A beautifully crafted quill and a leather-bound journal are her constant companions.<br /><br />Hailing from the wealthy clan Doldarun in the Mror Holds, Bryndis is a student at Silverquill College, and known for her eloquence and sharp wit. She is highly ambitious and driven, constantly striving for excellence in both her academic and magical pursuits. Despite her formidable exterior, Bryndis is deeply loyal to her friends and has a strong sense of justice. Her talents lie not only in her command of language but also in her ability to inspire and lead others. She excels in debates and rhetorical challenges, making her a respected figure among her peers.",
 		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/5Rnryy8QD3DBBD2/preview"
 	},
 	{
@@ -1103,7 +1210,7 @@ npcs = [
 	{
 		"location": "strixhaven",
 		"name": "Kaelin Wildclaw",
-		"race": { "title": "Hobgoblin", "group": "Humanoid" },
+		"race": { "title": "Shifter", "group": "Humanoid" },
 		"type": { "title": "Student" },
 		"alignment": [ "CG", "Chaotic Good" ],
 		"gender": { "title": "Male", "pronouns": ["he","him"] },
