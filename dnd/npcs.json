@@ -1219,5 +1219,141 @@ npcs = [
 		"bane": "You find yourself stalked by a wild animal any time you're out on campus at night.",
 		"description": "Kaelin Wildclaw hails from the Eldeen Reaches. He has a sun-kissed complexion, piercing green eyes, and a wild mane of dark brown hair. His shifter heritage is evident in his slightly elongated canines and tufted ears, giving him a fierce yet approachable appearance. He wears practical clothing, including a simple tunic and trousers, accented with leather straps and pouches for carrying herbs and other natural materials. Kaelin is known for his keen instincts and deep connection to nature. Curious and eager to learn, he's often exploring natural areas around campus. Kaelin already has a depth of knowledge about the flora and fauna of Eberron. He is always willing to help, but his fiercely independent streak can sometimes lead to challenges in group settings. Kaelin excels in herbalism and natural magic, showing particular talent in potion-making and animal studies.",
 		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/bEE9MZmZFPgFk7Y/preview"
+	},
+	{
+		"location": "forgotten_realms",
+		"name": "Thunderbolt",
+		"race": { "title": "Riding Horse" },
+		"type": { "title": "Companion" }, "age": [ "Elderly" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 10, "hp": [ 13, "2d10 + 2" ], "speed": "60 ft.", "stats": [ 16,10,12,2,11,7 ],
+		"description": "A family horse that's way older than Octavian himself.<br /><br /><b><u>Actions</u></b><br /><b>Hooves.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 8 (2d4 + 3) bludgeoning damage.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/RozcS5orEnQtLM8/preview"
+	},
+	{
+		"location": "forgotten_realms",
+		"name": "Octavian Hoff",
+		"race": { "title": "Human", "group": "Humanoid" },
+		"type": { "title": "Ranger" },
+		"alignment": [ "LE", "Lawful Evil" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"age": [ "Young Adult" ], "occupation": "Farmer",
+		"ac": 14, "hp": [ 24, "2d10 + 4" ], "speed": 30, "stats": [ 10,15,15,12,15,8 ],
+		"description": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!<br /><br />In his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+		"image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg"
+	},
+	{
+		"location": "eberron",
+		"name": "Avarice",
+		"race": { "title": "Tiefling", "group": "Humanoid" },
+		"type": { "title": "Thief" },
+		"alignment": [ "CE", "Chaotic Evil" ],
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"ac": 13, "hp": [ 84, "13d8 + 26" ], "speed": "30 ft.", "stats": [ 8,16,14,17,10,9 ],
+		"description": "Avarice is a cruel and vindictive tiefling trained in the arcane tradition of evocation. She likes using her magic to destroy things, and her hunger for magic items knows no bounds. Her supreme confidence means that she never backs down from a challenge, even when the odds are clearly stacked against her. Seeing other wizards as a threat, paranoia rules her life.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/x6dk5k67J7Mg3ef/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Victory Graves",
+		"race": { "title": "Human", "group": "Humanoid" },
+		"type": { "title": "Thief" },
+		"alignment": [ "NE", "Neutral Evil" ],
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"ac": 18, "hp": [ 88, "16d8 + 16" ], "speed": "40 ft.", "stats": [ 16,22,12,14,13,13 ],
+		"description": "Vic learned to fight as soon as she could lift a blade, and she honed her skills in vicious backroom fighting pits and bloody alleyway brawls. She delights in luring foes into one-on-one duels with her, where her sharp reflexes and precise strikes prove deadly. Vic always carries a powerful rapier forged from sentira known as mindrazor.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/Ze3SBi7jTkNxWDG/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Jutkarr Flintfingers",
+		"race": { "title": "Dwarf", "group": "Humanoid" },
+		"type": { "title": "Thief" },
+		"alignment": [ "NE", "Neutral Evil" ],
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 18, "hp": [ 91, "14d8 + 28" ], "speed": "25 ft.", "stats": [ 13,15,14,22,16,7 ],
+		"description": "Though Jutkarr Flintfingers is a devotee of Kol Korran, the Sovereign venerated by thieves and assassins, he doesn’t consider himself a scoundrel. In fact, the grandfatherly dwarf actively dislikes most thieves, calling them lazy cheats and cocky liars. Jutkarr instead considers himself a 'problem solver' and believes that any true follower of Kol Korran is the same. To him, there’s little difference between solving the daily word puzzle in the city broadsheet and 'solving' a guarded mansion, a warded treasure vault, or the social complexities of a street gang war. Each is merely a pleasant distraction and chance to keep his wits sharp.",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/5bLsgLRytw4QFST/preview"
+	},
+	{
+		"location": "eberron",
+		"name": "Belwyn",
+		"race": { "title": "Half-Orc", "group": "Humanoid" },
+		"type": { "title": "Monk" },
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"ac": 18, "hp": [ 80, "10d8 + 30" ], "speed": "45 ft.", "stats": [ 16,18,16,10,16,8 ],
+		"description": ""
+	},
+	{
+		"location": "eberron",
+		"name": "Enchanter",
+		"race": { "title": "Warforged", "group": "Humanoid" },
+		"type": { "title": "Veteran" },
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 19, "hp": [ 95 ], "speed": "30 ft.", "stats": [ 18,14,16,10,12,10 ],
+		"description": "Enchanter is a warforged who used to work for House Cannith, took up shelter in the Mournland for some time, and eventually traveled to and settled in Sharn. A party of adventurers he once met convinced him to explore the world, and between his work in the Cannith workshop near the Red Hammer, he continue to travel to this day."
+	},
+	{
+		"location": "eberron",
+		"name": "Gunnora",
+		"race": { "title": "Half-Elf", "group": "Humanoid" },
+		"type": { "title": "Fighter" },
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"ac": 17, "hp": [ 85 ], "speed": "30 ft.", "stats": [ 14,18,16,14,10,12 ],
+		"description": "Gunnora honed her fighting skills near the Mournland, in an effort to travel from her orphanage in Thrane to the elven cities of Valenar, before eventually traveling into the mist itself. She spent years wandering the expansive wasteland, until she was one day saved from almost certain death by a large mechanical man, known as the Lord of Blades. Gunnora resided in the warforged camp for several years, where she learned many advanced fighting techniques from the Lord of Blades - even becoming an honorary member of 'The Blades'. Eventually Gunnora left, and first found herself in Taer Valior, where she met the great Valenar leader Shan Kaelan. Finally she settled in Taer Zanathar.<br /><br />Gunnora wields her scimitar and shortsword with finesse, using her dual-weapon style to its full advantage, often enhancing her strikes with Booming Blade for extra damage."
+	},
+	{
+		"location": "eberron",
+		"name": "Lukt",
+		"race": { "title": "Changeling", "group": "Humanoid" },
+		"type": { "title": "Paladin" },
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 18, "hp": [ 92 ], "speed": "30 ft.", "stats": [ 18,10,16,12,13,18 ],
+		"description": "Lukt was once a devoted paladin of the Silver Flame, but after years of manipulation by the rakshasa Kashtarhak, he turned toward the corrupting influence of Eldrantulku. Now an Oathbreaker, Lukt seeks to spread chaos and darkness, using his shapechanging abilities and dark powers to sow discord."
+	},
+	{
+		"location": "eberron",
+		"name": "Zelara Windheart",
+		"race": { "title": "Kalashtar", "group": "Humanoid" },
+		"type": { "title": "Cleric" },
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"ac": 17, "hp": [ 72 ], "speed": "30 ft.", "stats": [ 10,14,14,12,20,16 ],
+		"description": "Tall and graceful, flowing white robes embroidered in silver, long black hair. Calm, compassionate, and deeply introspective. Often seeks to guide others on their spiritual journey, valuing peace and enlightenment over competition."
+	},
+	{
+		"location": "eberron",
+		"name": "Dornak Vath",
+		"race": { "title": "Human", "group": "Humanoid" },
+		"type": { "title": "Monk" },
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 18, "hp": [ 82 ], "speed": "50 ft.", "stats": [ 14,18,16,10,16,10 ],
+		"description": "This human monk, following the Way of the Ascendant Dragon, channels the essence of dragons in his combat and movement, delivering strikes infused with elemental power. Muscular and broad-shouldered, with shaved head and a faint dragon tattoo along his arms. Stoic, disciplined, driven, and believes that strength of will can overcome any obstacle."
+	},
+	{
+		"location": "eberron",
+		"name": "Kesri Lithiel",
+		"race": { "title": "Elf", "group": "Humanoid" },
+		"type": { "title": "Ranger" },
+		"gender": { "title": "Female", "pronouns": ["she","her"] },
+		"ac": 17, "hp": [ 78 ], "speed": "35 ft.", "stats": [ 12,18,14,12,18,10 ],
+		"description": "Reserved and analytical, Kesri sees life as a cycle of death and rebirth. She values nature's balance and enters the Games seeking to understand the spiritual harmony it represents."
+	},
+	{
+		"location": "eberron",
+		"name": "Omirak",
+		"race": { "title": "Goliath", "group": "Humanoid" },
+		"type": { "title": "Barbarian" },
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 16, "hp": [ 124 ], "speed": "40 ft.", "stats": [ 18,14,18,10,14,12 ],
+		"description": "While physically imposing, Omirak is surprisingly gentle and thoughtful, often contemplating the teachings of his ancestors. He participates in the Games to connect deeper with the spirits that guide him."
+	},
+	{
+		"location": "eberron",
+		"name": "Jakarus Ashenlight",
+		"race": { "title": "Half-Orc", "group": "Humanoid" },
+		"type": { "title": "Paladin" },
+		"gender": { "title": "Male", "pronouns": ["he","him"] },
+		"ac": 20, "hp": [ 92 ], "speed": "30 ft.", "stats": [ 18,10,16,10,14,18 ],
+		"description": "Honorable and righteous, Jakarus is unwavering in his commitment to justice and truth. He participates in the Games as a test of faith, seeking to prove his dedication to the ideals of his deity while inspiring others around him."
 	}
 ]

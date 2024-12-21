@@ -29,6 +29,12 @@
     <option value="npc">NPC (Strixhaven)</option>
     <option value="stat-code">Stat Code</option>
   </select><br /><br />
+  <label for="controls-header-back">Header Back:</label>
+  <select id="controls-header-back" name="header_back" onchange="setPreferences(this);">
+    <option value="none" selected="selected">No Text Header</option>
+    <option value="name-pronouns">Name & Pronouns</option>
+    <option value="name">Name</option>
+  </select><br /><br />
   <label for="controls-image-back">Image Back:</label>
   <select id="controls-image-back" name="image_back" onchange="setPreferences(this);">
     <option value="image" selected="selected">Defined Image</option>
@@ -104,7 +110,10 @@
 	    if ( value.talent ) { card.desc[2] += '<b>Talent(s):</b> ' + value.talent; }
 	    if ( value.stats ) { card.desc[2] += '<br /><b>Stats:</b> ' + value.type.title + ' (' + value.stats.join(', ') + ')<br />'; }
 	    if ( value.ac ) { card.desc[2] += '<b>AC:</b> ' + value.ac + '<br />'; }
-	    if ( value.hp ) { card.desc[2] += '<b>HP:</b> ' + value.hp[0] + ' (' + value.hp[1] + ')' + '<br />'; }
+	    if ( value.hp ) { card.desc[2] += '<b>HP:</b> ' + value.hp[0];
+	      if ( value.hp[1] ) { card.desc[2] += ' (' + value.hp[1] + ')'; }
+	      card.desc[2] += '<br />';
+	    }
 	    if ( value.speed ) { card.desc[2] += '<b>Speed:</b> ' + value.speed }
 	}
       }
@@ -143,6 +152,13 @@
 	    $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i );
 	  } else if ( preferences.image_back == "icon" ) {
 	    $('<img>', { src: icon }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  }
+	  $('<div>', { class: 'header', id: 'card_back-header-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( preferences.header_back == "name" || preferences.header_back == "name-pronouns" ) {
+	    $('<h4>', { html: card.name }).appendTo( '#card_back-header-' + id + '-' + i );
+	  }
+	  if ( preferences.header_back == "name-pronouns" ) {
+	    if ( card.gender ) { $('<p>', { class: 'info', html: '(' + card.gender.pronouns.join('/') + ')' }).appendTo( '#card_back-header-' + id + '-' + i ); }
 	  }
 	} else if ( preferences.card_design == "npc" ) {
 	  $('<div>', { class: 'header', id: 'card_back-header-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );

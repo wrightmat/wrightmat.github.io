@@ -579,6 +579,24 @@ equipment = [
 		}
 	},
 	{
+		"index": "hezcalipa-heart",
+		"name": "Hezcalipa’s Heart",
+		"image": "http://wizzle.tplinkdns.com:38090/index.php/s/ZiZKyKrw6sooRLB/preview",
+		"desc": [
+			"Wondrous Item, very rare",
+			"Hezcalipa's Heart is a radiant crystal about the size of a human fist, pulsing with divine energy. It is believed to be the literal heart of the couatl Hezcalipa, a powerful celestial being who once served as a guardian of Eberron.",
+			"Any creature who holds the Heart gains 1d10 hit points every minute, or every round while in combat. Once per day, a creature can hold out the Heart and speak Hezcalipa's name, fully healing up to eight creatures of all hit points. Once this has been done, the Heart goes dark until the next dawn, losing all of its benefits."
+		],
+		"equipment_category": {
+			"index": "wondrous-items",
+			"name": "Wondrous Items",
+			"url": "/api/equipment-categories/wondrous-items"
+		},
+		"rarity": {
+			"name": "Very Rare"
+		}
+	},
+	{
 		"index": "moonblade-vestige",
 		"name": "Moonblade (Vestige)",
 		"image": "https://static.wikia.nocookie.net/forgottenrealms/images/9/90/Moonblade-5e.jpg/revision/latest?cb=20171020224031",
