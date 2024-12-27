@@ -115,7 +115,7 @@
     $('#ip').append('<option id="' + i + '" value="' + wled[i].ip +'">' + wled[i].ip +'</option>');
   }
 
-  function initIP(index) {
+  function initIP( index ) {
     var cmd;
     wled_get = wledGet( ip );
     wled[index].seg.unshift( wled_get.state.seg[0] ); // pass through the default Segment 0

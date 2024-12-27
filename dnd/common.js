@@ -1,4 +1,4 @@
-function alphabetizeSelectList(el) {
+function alphabetizeSelectList( el ) {
   var selected = el.val();
   var opts_list = el.find('option');
   opts_list.sort(function (a, b) {
@@ -17,30 +17,30 @@ function alphabetizeSelectList(el) {
   });
 }
 
-function capitalizeFirstLetter(string) {
+function capitalizeFirstLetter( string ) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function numberWithCommas(x) {
+function numberWithCommas( x ) {
   var parts = x.toString().split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return parts.join(".");
 }
 
-function getRandomInt(min, max) {
+function getRandomInt( min, max ) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function hexToRgb(hex) {
+function hexToRgb( hex ) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ];
 }
 
-function rgbToHex(r, g, b) {
+function rgbToHex( r, g, b ) {
   return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
 }
 
-function jsonConcat(o1, o2) {
+function jsonConcat( o1, o2 ) {
   for (var key in o2) {
     o1[key] = o2[key];
   }
@@ -70,7 +70,7 @@ function jsonSearch( obj, key1, val1, key2, val2 ) {
   if ( key2 ) { return arr1.filter(value => arr2.includes(value)); } else { return arr1; }
 }
 
-function rollRandom(dice, sum=true) {
+function rollRandom( dice, sum = true ) {
   var arr = [];
   var d = dice.indexOf("d");
   var x = dice.indexOf("x");
@@ -88,18 +88,18 @@ function rollRandom(dice, sum=true) {
   }
 }
 
-function setCookie(name, value) {
+function setCookie( name, value ) {
   var cookie = [name, '=', JSON.stringify(value), '; domain=.', window.location.host.toString(), '; path=/;'].join('');
   document.cookie = cookie;
 }
 
-function getCookie(name) {
+function getCookie( name ) {
   var result = document.cookie.match(new RegExp(name + '=([^;]+)'));
   result && (result = JSON.parse(result[1]));
   return result;
 }
 
-function deleteCookie(name) {
+function deleteCookie( name ) {
   document.cookie = [name, '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/; domain=.', window.location.host.toString()].join('');
 }
 
@@ -146,7 +146,7 @@ function navbar() {
   $('body').css('padding-top','50px');
 }
 
-function toggleFullscreen(event) {
+function toggleFullscreen( event ) {
   var element = document.body;
 
   if (event instanceof HTMLElement) { element = event; }
@@ -161,24 +161,22 @@ function toggleFullscreen(event) {
   isFullscreen ? document.cancelFullScreen() : element.requestFullScreen();
 }
 
-function wledCommand(ip, cmd) {
+function wledCommand( address, cmd ) {
   var r;
-console.log(cmd);
   $.post({
-    url: "http://" + ip + "/json",
+    url: address + "/json",
     contentType: "application/json",
     data: cmd,
     success: function(result) { r = result },
     error: function(xhr, error) { console.log(xhr) },
     async: false
   });
-console.log(r);
   return r
 }
 
-function wledGet(ip) {
+function wledGet( address ) {
   var r;
   $.ajaxSetup({ async: false });  
-  $.get( "http://" + ip + "/json", function( result ) { r = result; });
+  $.get( address + "/json", function( result ) { r = result; });
   return r
 }
