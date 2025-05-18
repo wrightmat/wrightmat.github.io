@@ -1,0 +1,19 @@
+<!--
+@name: Character Page - Cover
+@size: a6
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}" style="text-align: center; vertical-align: middle;">
+    <br /><br /><h1>{{name}}</h1><br />
+    <h3>{{race.fullName}} {{classes.0.definition.name}}{{#classes.0.subclassDefinition}} ({{classes.0.subclassDefinition.name}}){{/classes.0.subclassDefinition}} {{level}}</h3>
+    <p>{{traits.gender}}, {{background.definition.name}}</p><br />
+    <p>{{#decorations.avatarUrl}}<img src="{{decorations.avatarUrl}}" style="width: 80%; height: 80%; border-radius: 10px;" />{{/decorations.avatarUrl}}</p>
+  </div>
+
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <p class="heading">Backstory</p> <p class="small">{{notes.backstory}}</p><br />
+    <p class="heading">Additional Notes</p> <p class="small">{{notes.otherNotes}}</p>
+  </div>
+</div>

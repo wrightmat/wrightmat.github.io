@@ -1,0 +1,28 @@
+{
+  "baseWeightsByTag": {
+    "friendly": { "Friendly": 3, "Indifferent": 1, "Hostile": 0 },
+    "loyal": { "Friendly": 2, "Indifferent": 1, "Hostile": 0 },
+    "optimistic": { "Friendly": 2, "Indifferent": 1, "Hostile": 0 },
+    "reserved": { "Friendly": 0, "Indifferent": 3, "Hostile": 1 },
+    "stoic": { "Friendly": 0, "Indifferent": 2, "Hostile": 1 },
+    "mysterious": { "Friendly": 0, "Indifferent": 3, "Hostile": 1 },
+    "flamboyant": { "Friendly": 2, "Indifferent": 1, "Hostile": 0 },
+    "gruff": { "Friendly": 0, "Indifferent": 2, "Hostile": 2 },
+    "aggressive": { "Friendly": 0, "Indifferent": 1, "Hostile": 3 },
+    "wild": { "Friendly": 0, "Indifferent": 1, "Hostile": 3 },
+    "chaotic": { "Friendly": 1, "Indifferent": 1, "Hostile": 2 },
+    "jealous": { "Friendly": 0, "Indifferent": 1, "Hostile": 3 },
+    "secretive": { "Friendly": 0, "Indifferent": 3, "Hostile": 1 },
+    "nervous": { "Friendly": 1, "Indifferent": 2, "Hostile": 1 },
+    "romantic": { "Friendly": 2, "Indifferent": 1, "Hostile": 0 },
+    "protective": { "Friendly": 2, "Indifferent": 1, "Hostile": 1 },
+    "curious": { "Friendly": 2, "Indifferent": 1, "Hostile": 0 },
+    "dignified": { "Friendly": 1, "Indifferent": 2, "Hostile": 0 },
+    "scholarly": { "Friendly": 1, "Indifferent": 2, "Hostile": 0 },
+    "pessimistic": { "Friendly": 0, "Indifferent": 2, "Hostile": 2 },
+    "dramatic": { "Friendly": 1, "Indifferent": 1, "Hostile": 1 },
+    "eccentric": { "Friendly": 1, "Indifferent": 2, "Hostile": 0 },
+    "stoic": { "Friendly": 0, "Indifferent": 3, "Hostile": 0 },
+    "_default": { "Friendly": 1, "Indifferent": 2, "Hostile": 1 }
+  }
+}

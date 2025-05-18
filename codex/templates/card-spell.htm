@@ -1,0 +1,35 @@
+<!--
+@name: Spell Card
+@size: business
+@orientation: horizontal
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <section class="spell-layout">
+      <div class="spell-school"><span class="drop-shadow"><i class="ddb-{{schools.0}} school-{{schools.0}}"></i> <b>{{level}}</b></span></div>
+      <div class="spell-name"><h3>{{name}}</h3></div>
+      <div class="spell-icons">{{#icons}}<i class="{{.}}"></i>{{/icons}}</div>
+      <div class="spell-time"><p class="section-short">Time </p>{{casting_time}}</div>
+      <div class="spell-duration"><p class="section-short">Duration </p>{{duration}}</div>
+      <div class="spell-range">
+	<div class="spell-range-main"><p class="section-short">Range </p>{{range}}</div>
+        <div class="spell-range-aoe">{{#area_of_effect}}<span class="no-wrap"><i class="ddb-{{area_of_effect.type}}"></i> {{area_of_effect.size}} ft.{{/area_of_effect}}</span></div>
+      </div>
+      <div class="spell-components"><p class="section-short">{{components}}</p></div>
+      <div class="spell-description">
+	{{{descList}}}
+	{{{higher_level}}}
+      </div>
+    </section>
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <section class="spell-layout-back">
+      <div class="spell-school"><span class="drop-shadow">{{#schools}}<i class="ddb-{{.}} school-{{.}}"></i>{{/schools}} <b>{{level}}</b></span></div>
+      <div class="spell-icons">{{#icons}}<i class="{{.}}"></i>{{/icons}}</div>
+      <div class="spell-icon"><div class="spell-icon-wrapper"><i class="icons {{id}} school-{{schools.0}}"></i></div></div>
+      <div class="spell-classes">{{#classes}}<i class="ddb-{{index}}"></i>{{/classes}}</div>
+      <div class="spell-references"><h3>{{name}}</h3></div>
+    </section>
+  </div>
+</div>

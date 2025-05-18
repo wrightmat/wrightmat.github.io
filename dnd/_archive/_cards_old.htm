@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TTRPG Cards Creator</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script type="text/javascript" src="common.js"></script>
+  <script type="text/javascript" src="equipment.json"></script>
+  <script type="text/javascript" src="npcs.json"></script>
+</head>
+
+<body>
+
+<div id="card-controls" style="position:absolute; left: 0px; top: 0px;">
+  <label for="controls-groups">Groups (Categories):</label><br/ >
+  <select id="controls-groups" onchange="selectGroup(this);" style="width:200px;">
+    <option value=""></option>
+  </select><br /><br />
+  <select id="controls-custom-select" size="28" style="width:300px;">
+  </select><br /><br />
+  <label for="controls-card-design">Card Design:</label>
+  <select id="controls-card-design" name="card_design" onchange="setPreferences(this);">
+    <option value="standard" selected="selected">Standard (Item or NPC)</option>
+    <option value="modular">Modular Weapon (Vestige)</option>
+    <option value="npc">NPC (Strixhaven)</option>
+    <option value="stat-code">Stat Code</option>
+  </select><br /><br />
+  <label for="controls-header-back">Header Back:</label>
+  <select id="controls-header-back" name="header_back" onchange="setPreferences(this);">
+    <option value="none" selected="selected">No Text Header</option>
+    <option value="name-pronouns">Name & Pronouns</option>
+    <option value="name">Name</option>
+  </select><br /><br />
+  <label for="controls-image-back">Image Back:</label>
+  <select id="controls-image-back" name="image_back" onchange="setPreferences(this);">
+    <option value="image" selected="selected">Defined Image</option>
+    <option value="icon">Type Icon</option>
+    <option value="none">Nothing</option>
+  </select><br />
+  <label for="controls-image-back-override">Image Override: </label><input id="controls-image-back-override" /><br /><br />
+  <label for="controls-image-front">Image Front:</label>
+  <select id="controls-image-front" name="image_front" onchange="setPreferences(this);">
+    <option value="image">Defined Image</option>
+    <option value="icon">Type Icon</option>
+    <option value="none" selected="selected">Nothing</option>
+  </select><br />
+  <label for="controls-image-front-override">Image Override: </label><input id="controls-image-front-override" /><br /><br />
+  <input type="button" id="btn-clear" value="Clear Cards" onclick="$('#cards').empty();" />
+</div>
+
+<div id="card-container" class="card-container">
+  <ul class="cards" id="cards"></ul>
+</div>
+
+<script type="text/javascript">
+  //$.each( jsonSearch(npcs, "type", "Student"), function( key, value ) { console.log(value.name, "|", value.race.title, "|", value.occupation); });
+
+  var i = 0; var groups = {};
+  var items = getAPI()['results'];
+  var preferences = { "image_back": "image", "image_front": "none", "card_design": "standard" };
+
+  function cleanText(text) { return text.replaceAll(' ','-').replaceAll('"','').replaceAll("'","").replaceAll('(','').replaceAll(')','') }
+
+  function getAPI(r_url, r_async) {
+    var r_text;
+    if ( r_url == undefined) { var r_url = "/api/magic-items/"; }
+    $.get({
+      url: "https://www.dnd5eapi.co" + r_url,
+      success: function(result) { r_text = result },
+      error: function(xhr, error) { console.log(xhr) },
+      async: r_async || false
+    });
+    return r_text;
+  }
+
+  function getCard(id) {
+    var card;
+    $.each( equipment, function( ek, ev ) {
+      if ( ev.index == id ) { card = ev; card.source = "equipment"; }
+    });
+    $.each( npcs, function( nk, nv ) {
+      if ( 'npc-' + cleanText(nv.name).toLowerCase() == id ) {
+	card = nv; card.source = "npcs";
+	if ( card.desc == undefined ) {
+	    card.desc = []; var eyes = ''; var hair = ''; var skin = ''; card.desc[0] = ''; card.desc[2] = '';
+	    if ( nv.age ) { card.desc[0] += nv.age + ' '; }
+	    if ( nv.genderPronouns ) { card.desc[0] += ' (' + nv.genderPronouns.join('/') + ') '; }
+	    if ( nv.race ) { card.desc[0] +=  nv.race.fullName + ' ' + ( nv.background.definition.name || nv.classes[0].definition.name ); }
+	    if ( nv.alignment ) {
+	      if ( card.desc[0].length > 36 ) { var al = ', ' + nv.alignment.name } else { var al = ', ' + nv.alignment.description; }
+	    } else { var al = ''; }
+	    card.desc[0] += al;
+	    card.desc[1] = nv.traits.backstory;
+	    if ( nv.traits.eyes )  { var eyes = ', ' + nv.traits.eyes + ' eyes' }
+	    if ( nv.traits.hair )  { var hair = ', ' + nv.traits.hair + ' hair' }
+	    if ( nv.traits.skin )  { var skin = ', ' + nv.traits.skin + ' skin' }
+	    if ( nv.traits.ideal || nv.traits.bond || nv.traits.flaw ) {
+	      card.desc[2] = '<b>Ideal:</b> ' + ( nv.traits.ideal || ' - ' ) + '<br /><b>Bond:</b> ' + ( nv.traits.bond || ' - ' ) + '<br /><b>Flaw:</b> ' + ( nv.traits.flaw || ' - ' );
+	    } else if ( nv.traits.goals ) {
+	      card.desc[2] = '<b>Goals:</b> ' + nv.traits.goals.join(', ');
+	    }
+	    if ( nv.traits.relationship ) { card.desc[2] += '<br /><br /><b>Relationship:</b> ' + nv.traits.relationship + ' (' + nv.traits.orientation + ')' + '<br />'; }
+	    if ( nv.traits.appearance ) { card.desc[2] += '<b>Appearance:</b> ' + nv.traits.appearance + eyes + hair + skin + '<br />'; }
+	    if ( nv.traits.interactionTrait ) { card.desc[2] += '<b>Interaction Trait(s):</b> ' + nv.traits.interactionTraits + '<br />'; }
+	    if ( nv.traits.mannerisms ) { card.desc[2] += '<b>Mannerism(s):</b> ' + nv.traits.mannerisms + '<br/>'; }
+	    if ( nv.traits.talents ) { card.desc[2] += '<b>Talent(s):</b> ' + nv.traits.talents; }
+	    if ( nv.stats ) { card.desc[2] += '<br /><b>Stats:</b> ' + nv.classes[0].definition.name + ' (' + nv.stats.join(', ') + ')<br />'; }
+	    if ( nv.ac ) { card.desc[2] += '<b>AC:</b> ' + nv.ac.val + '<br />'; }
+	    if ( nv.hp ) { card.desc[2] += '<b>HP:</b> ' + nv.hp.value;
+	      if ( nv.hp.hitDieSize ) { card.desc[2] += ' (' + nv.hp.hitDieSize + ')'; }
+	      card.desc[2] += '<br />';
+	    }
+	    if ( nv.speed ) { card.desc[2] += '<b>Speed:</b> ' + nv.speed }
+	}
+      }
+    });
+    $.each( items, function( ik, iv ) {
+      if ( iv.index == id ) { card = getAPI(iv.url); card.source = "api"; }
+    });
+    return card;
+  }
+
+  function createCard(id) {
+    var card = getCard(id);
+    id = cleanText(id);  // eliminate any special characters that don't play nicely with the DOM
+    if ( card.equipment_category ) {
+      var icon = "img/" + card.equipment_category.index + ".png";
+    } else if ( card.type ) {
+      var icon = "img/character.png";
+    } else {
+      var icon = "img/general.png";
+    }
+    if ( card ) {
+	// Container
+	$('<li>', { class: 'cards_item', id: 'cards_item-' + id + '-' + i }).appendTo( '#cards' );
+	$('<div>', { class: 'card', id: 'card-' + id + '-' + i }).appendTo( '#cards_item-' + id + '-' + i );
+
+	// Back
+	var back_cls; if ( preferences.image_back == "icon" ) { back_cls = "icon" } else { back_cls = "image" }
+	$('<div>', { class: 'card_back', id: 'card_back-' + id + '-' + i }).appendTo( '#card-' + id + '-' + i );
+	if ( preferences.card_design == "standard" || preferences.card_design == "modular" ) {
+	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( preferences.image_back == "image" && $('#controls-image-back-override').val() !== "" ) {
+	    $('<img>', { src: $('#controls-image-back-override').val() }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  } else if ( preferences.image_back == "image" && card.image !== undefined ) {
+	    $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  } else if ( preferences.image_back == "icon" ) {
+	    $('<img>', { src: icon }).appendTo( '#' + back_cls + '-' + id + '-' + i );
+	  }
+	  $('<div>', { class: 'header', id: 'card_back-header-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( preferences.header_back == "name" || preferences.header_back == "name-pronouns" ) {
+	    $('<h4>', { html: card.name }).appendTo( '#card_back-header-' + id + '-' + i );
+	  }
+	  if ( preferences.header_back == "name-pronouns" ) {
+	    if ( card.gender ) { $('<p>', { class: 'info', html: '(' + card.gender.pronouns.join('/') + ')' }).appendTo( '#card_back-header-' + id + '-' + i ); }
+	  }
+	} else if ( preferences.card_design == "npc" ) {
+	  $('<div>', { class: 'header', id: 'card_back-header-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( card.type && card.type.title == "Professor" ) {
+	    $('<div>', { class: 'topright', html: '<i class="bi bi-mortarboard"></i>' }).appendTo( '#card_back-' + id + '-' + i );
+	  } else if ( card.type && card.type.title == "Student" ) {
+	    $('<div>', { class: 'topright', html: '<i class="bi bi-backpack"></i>' }).appendTo( '#card_back-' + id + '-' + i );
+	  }
+	  $('<h4>', { html: card.name }).appendTo( '#card_back-header-' + id + '-' + i );
+	  if ( card.gender ) { $('<p>', { class: 'info', html: '(' + card.gender.pronouns.join('/') + ')' }).appendTo( '#card_back-header-' + id + '-' + i ); }
+	  $('<div>', { class: back_cls, id: back_cls + '-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( card.image ) { $('<img>', { src: card.image }).appendTo( '#' + back_cls + '-' + id + '-' + i ); }
+	  if ( card.type && ( card.type.title == "Student" || card.type.title == "Professor" ) ) {
+	    $('<div>', { class: 'imagetext', id: 'card_back-imagetext-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	    if ( card.alignment && card.race && card.occupation ) {
+	      $('<p>', { html: card.alignment[0] + ' ' + card.race.title + ' ' + card.occupation }).appendTo( '#card_back-imagetext-' + id + '-' + i );
+	    }
+	  }
+	  $('<div>', { class: 'footer', id: 'card_back-footer-' + id + '-' + i }).appendTo( '#card_back-' + id + '-' + i );
+	  if ( card.extracurriculars ) { $('<p>', { html: '<b>Extracurriculars</b>: ' + card.extracurriculars.join(', ') }).appendTo( '#card_back-footer-' + id + '-' + i ); }
+	  if ( card.job ) { $('<p>', { html: '<b>Job:</b> ' + card.job }).appendTo( '#card_back-footer-' + id + '-' + i ); }
+	}
+
+	// Front
+	if ( preferences.card_design == "standard" || preferences.card_design == "npc" ) {
+	  $('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
+	  $('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
+	  if ( preferences.image_front == "image" && $('#controls-image-front-override').val() !== "" ) {
+	    $('<img>', { src: $('#controls-image-front-override').val() }).appendTo('#card_image-' + id + '-' + i);
+	  } else if ( preferences.image_front == "image" && card.image !== undefined ) {
+	    $('<img>', { src: card.image }).appendTo('#card_icon-' + id + '-' + i);
+	  } else if ( preferences.image_front == "icon" ) {
+	    $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
+	  }
+	  $('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
+	  if ( card.desc ) {
+	    var desc = "";
+	    $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i);
+	    $.each( card.desc, function( k, v ) {
+	      if ( k > 0 && v !== undefined ) { desc = desc + '<p>' + marked.parse(v, { gfm: true }) + '</p>'; }
+	    });
+	    $('<p>', { class: 'content', html: desc }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.weapon_category ) {
+	    var atk = "<b>Attack</b>: " + card.weapon_category;	var rng = "";
+	    if ( card.weapon_range == "Melee" ) { rng = "Reach " } else { rng = "Range " }
+	    if ( card.range ) {
+	      atk += " (" + rng + card.range.normal + " ft.";
+	      if ( card.range.far ) { atk += "/" + card.range.far + " ft."; }
+	      atk += ")";
+	    }
+	    $('<p>', { class: 'content', html: atk }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.damage ) {
+	    var dmg = "<b>Damage</b>: " + card.damage.damage_dice;
+	    if ( card.two_handed_damage ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
+	    dmg += " " + card.damage.damage_type.name
+	    $('<p>', { class: 'content', html: dmg }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.properties ) {
+	    var props = "";
+	    $.each( card.properties, function( k, v ) {
+	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
+	    }); props += '<br />'
+	    $('<p>', { class: 'content', html: props }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.boon || card.bane ) {
+	    $('<p>', { class: 'content', html: '<b>Boon:</b> ' + card.boon }).appendTo('#card_content-' + id + '-' + i);
+	    $('<p>', { class: 'content', html: '<b>Bane:</b> ' + card.bane }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.notes || card.saying ) {
+	    var notes = "";
+	    if ( card.notes ) {
+	      notes = "<br /><b>Notes</b>: " + card.notes;
+	    } else if ( card.saying ) {
+	      notes = '<i>"' + card.saying + '"</i>'
+	    }
+	    $('<p>', { class: 'notes', html: notes }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	} else if ( preferences.card_design == "modular" ) {
+	  $('<div>', { class: 'card_content', id: 'card_content-' + id + '-' + i }).appendTo('#card-' + id + '-' + i);
+	  $('<div>', { class: 'card_icon', id: 'card_icon-' + id + '-' + i }).appendTo('#card_content-' + id + '-' + i);
+	  if ( preferences.image_front == "image" && $('#controls-image-front-override').val() !== "" ) {
+	    $('<img>', { src: $('#controls-image-front-override').val() }).appendTo('#card_image-' + id + '-' + i);
+	  } else if ( preferences.image_front == "image" && card.decorations.avatarUrl ) {
+	    $('<img>', { src: card.decorations.avatarUrl }).appendTo('#card_icon-' + id + '-' + i);
+	  } else if ( preferences.image_front == "icon" ) {
+	    $('<img>', { src: icon }).appendTo('#card_icon-' + id + '-' + i);
+	  }
+	  $('<h4>', { html: card.name }).appendTo('#card_content-' + id + '-' + i);
+	  if ( card.desc ) { $('<p>', { class: 'info', html: card.desc[0] }).appendTo('#card_content-' + id + '-' + i); }
+	  if ( card.weapon_category ) {
+	    var atk = "<b>Attack</b>: " + card.weapon_category;	var rng = "";
+	    if ( card.weapon_range == "Melee" ) { rng = "Reach " } else { rng = "Range " }
+	    if ( card.range ) {
+	      atk += " (" + rng + card.range.normal + " ft.";
+	      if ( card.range.far ) { atk += "/" + card.range.far + " ft."; }
+	      atk += ")";
+	    }
+	    $('<p>', { class: 'content-small', html: atk }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.damage ) {
+	    var dmg = "<b>Damage</b>: " + card.damage.damage_dice;
+	    if ( card.two_handed_damage ) { dmg += " (" + card.two_handed_damage.damage_dice + ")" }
+	    dmg += " " + card.damage.damage_type.name
+	    $('<p>', { class: 'content-small', html: dmg }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.properties ) {
+	    var props = "";
+	    $.each( card.properties, function( k, v ) {
+	      if ( k > 0 ) { props = props + ', ' + v.name; } else { props = props + "<b>Properties</b>: " + v.name; }
+	    }); props += '<br />'
+	    $('<p>', { class: 'content-small', html: props }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  if ( card.desc ) {
+	    $('<p>', { class: 'content-small', html: card.desc[1] }).appendTo('#card_content-' + id + '-' + i);
+	  }
+	  // Ability Slots
+	  var abilities = $('<div>', { class: 'card_ability_container' }).appendTo('#card_content-' + id + '-' + i);
+	  $('<div>', { class: 'card_ability_block', id: 'card_ability-1-' + id + '-' + i }).appendTo( abilities );
+	  $('<div>', { class: 'card_ability_block', id: 'card_ability-2-' + id + '-' + i }).appendTo( abilities );
+	  $('<div>', { class: 'card_ability_block', id: 'card_ability-3-' + id + '-' + i }).appendTo( abilities );
+	}
+        i += 1;	// increment counter to ensure unique ids
+    }
+    $('#controls-image-back-override').val("")
+    $('#controls-image-front-override').val("")
+  }
+
+  function selectGroup(el) {
+    $('#grid-container').empty();
+    var sel = el.options[el.selectedIndex].value;
+    $.each( groups[sel], function( gk, gv ) { createCard(gv); });
+  }
+
+  function setPreferences(el) {
+    var sel = el.options[el.selectedIndex].value;
+    preferences[el.name] = sel;
+  }
+
+  // Populate select lists and register callback
+  var categories = getAPI("/api/equipment-categories")['results'];
+  $.each( categories, function ( ck, cv ) {
+    $('#controls-groups').append('<option id="' + cv.index + '" value="' + cv.index +'">' + cv.name +'</option>');
+    groups[cv.index] = [];
+    var equip = getAPI(cv.url)['equipment'];
+    $.each( equip, function( ek, ev ) { groups[cv.index].push(ev.index); });
+  });
+  $('#controls-groups').append('<option id="npcs" value="npcs">NPCs</option>');
+  groups['npcs'] = [];
+  var npc_locations = [...new Set( npcs.map( item => item.location ) )];
+  $.each( npc_locations, function( lk, lv ) {
+    $('#controls-groups').append('<option id="' + lv + '" lv="' + lv +'">NPCs (' + lv +')</option>');
+    groups[lv] = [];
+  });
+  $.each( equipment, function( ek, ev ) {
+    $('#controls-custom-select').append($("<option />").val(ev.index).text(ev.name));
+    $.each( groups, function( gk, gv ) { if ( gk == ev.equipment_category.index ) groups[gk].push(ev.index); });
+  });
+  $.each( items, function( ik, iv ) {
+    $('#controls-custom-select').append($("<option />").val(iv.index).text(iv.name));
+  });
+  $.each( npcs, function( nk, nv ) {
+    $('#controls-custom-select').append($("<option />").val( 'npc-' + cleanText(nv.name).toLowerCase() ).text( nv.name + ' (' + nv.race.fullName + ' ' + ( nv.background.definition.name || nv.classes[0].definition.name ) + ' NPC)' ));
+    groups['npcs'].push('npc-' + cleanText(nv.name).toLowerCase());
+    //groups[nv.group.name].push('npc-' + cleanText(nv.name).toLowerCase());
+  });
+  document.getElementById('controls-custom-select').ondblclick = function() {
+    createCard(this.options[this.selectedIndex].value);
+  };
+</script>
+
+</body>
+</html>

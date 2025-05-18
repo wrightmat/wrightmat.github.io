@@ -1,0 +1,68 @@
+{	"aasimar": {
+		"male": [ "Noldal", "Zylgon", "Borlil", "Heakil", "Maivrol", "Milwil", "Onritin", "Beikineim", "Braidravin", "Cryrrivim" ],
+		"female": [ "Iania", "Zimni", "Malvi", "Iavom", "Esra", "Ronveah", "Rhovima", "Wanlizen", "Drirsasa", "Winmalan", "Onme" ]
+	},
+	"changeling": {
+		"neutral": [ "Aunn", "Bin", "Cas", "Dox", "Ek", "Hars", "Kilk", "Mas", "Nix", "Ot", "Paik", "Sim", "Vil", "Yug" ]
+	},
+	"dragonborn": {
+		"male": [ "Arjhan", "Balasar", "Bharash", "Donaar", "Ghesh", "Heskan", "Kriv", "Medrash", "Mehen", "Nadarr", "Pandjed", "Patrin", "Rhogar", "Shamash", "Shedinn", "Tarhun", "Torinn", "Balvarax", "Belahunt", "Caersashi", "Drakax", "Dralasku", "Draqrin", "Drazakan", "Egorox", "Errax", "Exizz", "Faxan", "Fermoz", "Ghezax", "Gorax", "Herzix", "Hisanax", "Iorn", "Jayrax", "Klixan", "Locar", "Matahez", "Moarax", "Morvaraxan", "Nagraxak", "Navroth", "Orlaseth", "Pazie", "Prixiros", "Ravkiro", "Rimsikara", "Rraxon", "Saroth", "Sulpraxon", "Taznax", "Vaxan", "Vorfarn", "Wraeth", "Wulunax", "Xarrax", "Yorax", "Yrexal", "Zavbron", "Zrag", "Zrann" ],
+		"female": [ "Akra", "Biri", "Daar", "Farideh", "Harann", "Havilar", "Jheri", "Kava", "Korinn", "Mishann", "Nala", "Perra", "Raiann", "Sora", "Surina", "Thava", "Uadjit", "Asgarri", "Belnoraeza", "Birisika", "Caerlasar", "Calurinn", "Delbithani", "Desbiska", "Draqrin", "Dur", "Estekk", "Faejun", "Faeshah", "Fajurn", "Forkoros", "Fridoh", "Ghash", "Ghreah", "Gorax", "Gorlin", "Grax", "Greyama", "Iorn", "Iorskan", "Jarax", "Juilrama", "Luskan", "Mian", "Mortrin", "Nagiluga", "Nalianna", "Neszyski", "Orlaseth", "Pazireis", "Perlasaha", "Perthrapo", "Pilam", "Prikris", "Qihu", "Quiannni", "Rasmor", "Rasqioth", "Rasturim", "Ravarn", "Rherdusa", "Ruhimen", "Sap", "Sobih", "Sosam", "Sulinma", "Sulpx", "Taaphar", "Tazn", "Thava", "Thebis", "Unkiash", "Vorurn", "Wrahazar", "Wralina","Yozavur", "Zarisham", "Zenporamba", "Zragar" ],
+		"clan": [ "Clethtinthiallor", "Daardendrian", "Delmirev", "Drachedandion", "Fenkenkabradon", "Kepeshkmolik", "Kerrhylon", "Kimbatuul", "Linxakasendalor", "Myastan", "Nemmonis", "Norixius", "Ophinshtalajiir", "Prexijandilin", "Shestendeliath", "Turnuroth", "Verthisathurgiesh", "Yarjerit" ]
+	},
+	"dwarf": {
+		"male": [ "Adrik", "Barn", "Dain", "Einkil", "Fargrim", "Flint", "Harbek", "Kildrak", "Orsik", "Rurik", "Thoradin", "Traubon", "Ulfgar", "Vondal" ],
+		"female": [ "Amber", "Dagnal", "Eldeth", "Gunnloda", "Gurdis", "Kathra", "Ilde", "Mardred", "Sannl", "Tobera", "Vistra" ],
+		"clan": [ "Balderk", "Battlehammer", "Brawnanvil", "Dankil", "Fireforge", "Frostbeard", "Gorunn", "Holderhek", "Ironfist", "Loderr", "Lutgehr", "Rumnaheim", "Strakeln", "Torunn", "Ungart" ]
+	},
+	"elf": {
+		"male": [ "Adran", "Aelar", "Aramil", "Arannis", "Aust", "Beiro", "Berrian", "Carric", "Enialis", "Erdan", "Erevan", "Galinndan", "Hadarai", "Heian", "Himo", "Immeral", "Ivellios", "Laucian", "Mindartis", "Paelias", "Peren", "Quarion", "Riardon", "Rolen", "Soveliss", "Thamior", "Tharivol", "Theren", "Vari" ],
+		"female": [ "Adrie", "Althaea", "Anastrianna", "Andraste", "Antinua", "Bethrynna", "Birel", "Caelynn", "Drusilia", "Enna", "Felosial", "Ielenia", "Jelenneth", "Keyleth", "Leshanna", "Lia", "Meriele", "Mialee", "Naivara", "Quelenna", "Quillathe", "Sariel", "Shanairra", "Shava", "Silaqui", "Theirastra", "Thia", "Vadania", "Valanthe", "Xanaphi" ]
+	},
+	"gnome": {
+		"male": [ "Alston", "Alvyn", "Boddynock", "Brocc", "Burgell", "Dimble", "Eldon", "Erky", "Fonkin", "Frug", "Gerbo", "Gimble", "Glim", "Jebeddo", "Kellen", "Namfoodle", "Orryn", "Roondar", "Seebo", "Sindri", "Warryn", "Wrenn", "Zook" ],
+		"female": [ "Bimpnottin", "Breena", "Caramip", "Carlin", "Donella", "Duvamil", "Ella", "Ellyjobell", "Ellywick", "Lilli", "Loopmottin", "Lorilla", "Mardnab", "Nissa", "Nyx", "Oda", "Orla", "Roywyn", "Shamil", "Tana", "Waywocket", "Zanna" ],
+		"clan": [ "Beren", "Daergel", "Folkor", "Garrick", "Nackle", "Murnig", "Ningel", "Raulnor", "Scheppen", "Timbers", "Turen" ]
+	},
+	"goblinoid": {
+		"male": [ "Srebnalk", "Xiagluld", "Caatterd", "Grutaat", "Drarm", "Riobs", "Oiq", "Vic", "Rhik" ],
+		"female": [ "Gliokkolsia", "Hokoiszea", "Bhaftaaz", "Criotnalmee", "Khinkea", "Gryh", "Tamif" ],
+		"neutral": [ "Krugz", "Wreel", "Ibs", "Crosz", "Srugs", "Duzz", "Sharx" ]
+	},
+	"goliath": {
+		"neutral": [ "Aukan", "Eglath", "Gae-Al", "Gauthak", "Ilikan", "Keothi", "Kuori", "Lo-Kag", "Manneo", "Maveith", "Nalla", "Orilo", "Paavu", "Pethani", "Thalai", "Thotham", "Uthal", "Vaunea", "Vimak" ],
+		"nickname": [ "Bearkiller", "Dawncaller", "Fearless", "Flintfinder", "Horncarver", "Keeneye", "Lonehunter", "Longleaper", "Rootsmasher", "Skywatcher", "Steadyhand", "Threadtwister", "Twice-Orphaned", "Twistedlimb", "Wordpainter" ],
+		"clan": [ "Anakalathai", "Elanithino", "Gathakanathi", "Kalagiano", "Katho-Olavi", "Kolae-Gileana", "Ogolakanu", "Thuliaga", "Thunukalathi", "Vaimei-Laga" ]
+	},
+	"halfling": {
+		"male": [ "Alton", "Ander", "Cade", "Corrin", "Eldon", "Errich", "Finnan", "Garret", "Lindal", "Lyle", "Merric", "Milo", "Osborn", "Perrin", "Reed", "Roscoe", "Wellby" ],
+		"female": [ "Andry", "Bree", "Callie", "Cora", "Euphemia", "Jillian", "Kithri", "Lavinia", "Lidda", "Merla", "Nedda", "Paela", "Portia", "Seraphina", "Shaena", "Trym", "Vani", "Verna" ]
+	},
+	"human": {
+		"male": [ "Anton", "Diero", "Marcon", "Pieron", "Rimardo", "Romero", "Salazar", "Umbero", "Payton", "Osmar", "Sinclair", "Theodor", "Jonatan", "Erick", "Elbert", "Logan", "Hans", "Haden", "Brayton", "Dean", "Charles", "Matthew", "Alex", "Ander", "Bran", "Faurgar", "Windsor" ],
+		"female": [ "Balama", "Dona", "Faila", "Jalana", "Luisa", "Marta", "Quara", "Selise", "Vonda", "Mindy", "Skyla", "Suzette", "Joan", "Macey", "Rhiannon", "Louella", "Sofia", "Sarah", "Jolene", "Claire", "Kerrie", "Rea", "Tessa", "Nulara", "Umara", "Navarra", "Alexis" ]
+	},
+	"kalashtar": {
+		"neutral": [ "Coratash", "Dalavash", "Dolishara", "Halakosh", "Khoratari", "Koratana", "Lanhareth", "Molavakri", "Nevitash", "Sorashana", "Torashtai", "Valakhad", "Vishara" ]
+	},
+	"quori": {
+		"neutral": [ "Ashana", "Ashtai", "Ishara", "Hareth", "Khad", "Kosh", "Melk", "Nari", "Tana", "Tari", "Tash", "Ulad", "Vakri", "Vash" ]
+	},
+	"orc": {
+		"male": [ "Dench", "Feng", "Gell", "Henk", "Holg", "Imsh", "Keth", "Krusk", "Mhurren", "Ront", "Shump", "Thokk", "Grutok", "Lortar", "Abzug", "Shugog", "Urzul", "Ruhk", "Mobad", "Shamog", "Mugrub", "Bajok", "Rhorog", "Jahrukk" ],
+		"female": [ "Baggi", "Emen", "Engong", "Kansif", "Myev", "Neega", "Ovak", "Ownka", "Shautha", "Sutha", "Vola", "Volen", "Yevelda", "Kansif", "Ownka", "Emen", "Sutha", "Myev", "Neega", "Baggi", "Shautha", "Ovak", "Vola", "Engong" ]
+	},
+	"shifter": {
+		"neutral": [ "Badger", "Bear", "Cat", "Fang", "Grace", "Grim", "Moon", "Rain", "Red", "Scar", "Stripe", "Swift", "Talon", "Wolf" ]
+	},
+	"tiefling": {
+		"male": [ "Akmenos", "Amnon", "Barakas", "Damakos", "Ekemon", "Iados", "Kairon", "Leucis", "Melech", "Mordai", "Morthos", "Pelaios", "Skamos", "Therai" ],
+		"female": [ "Akta", "Anakis", "Bryseis", "Criella", "Damaia", "Ea", "Kallista", "Lerissa", "Makaria", "Nemeia", "Orianna", "Phelaia", "Rieta" ]
+	},
+	"warforged": {
+		"neutral": [ "Anchor", "Banner", "Bastion", "Blade", "Blue", "Bow", "Cart", "Church", "Crunch", "Crystal", "Dagger", "Dent", "Five", "Glaive", "Hammer", "Iron", "Lucky", "Mace", "Oak", "Onyx", "Pants", "Pierce", "Red", "Rod", "Rusty", "Scout", "Seven", "Shield", "Slash", "Smith", "Spike", "Temple", "Vault", "Wall", "Defender", "Echo", "Inspector", "Prism" ]
+	},
+	"gith": {
+		"neutral": [ "Osan", "Vrililrun", "Treth", "Trad'a'th", "Asath", "Lyp'a'ath", "Gelin", "X'a'aros", "L'a'as", "Xith", "Zatrug", "Fetru", "Aaluth", "Jallag", "Zelresra", "Paalle", "Idrelzy", "Jissal", "Ver'reg", "Saarstuth" ]
+	}
+}

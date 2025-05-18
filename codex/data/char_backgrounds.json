@@ -1,0 +1,1088 @@
+{
+  "acolyte": {
+    "title": "Acolyte",
+    "description": "You spent your life in service to a temple, studying religious rites and ceremonies. Your faith guides your actions and beliefs.",
+    "equipment": [
+      "Holy symbol",
+      "Prayer book or prayer wheel",
+      "5 sticks of incense",
+      "Vestments",
+      "Set of common clothes",
+      "Pouch containing 15 gp"
+    ],
+    "equipment_objects": [
+      "holy symbol",
+      "prayer beads",
+      "book"
+    ],
+    "tags": {
+      "devout": 3,
+      "reserved": 3,
+      "stoic": 2,
+      "dutiful": 2,
+      "disciplined": 2,
+      "gentle": 2,
+      "calm": 2,
+      "serene": 2,
+      "thoughtful": 1,
+      "loyal": 1,
+      "wise": 1,
+      "focused": 1,
+      "soft-spoken": 1,
+      "traditional": 1,
+      "pragmatic": -1,
+      "boisterous": -2,
+      "reckless": -2,
+      "brash": -2,
+      "chaotic": -1,
+      "flamboyant": -2,
+      "manipulative": -2,
+      "hedonistic": -2,
+      "impulsive": -1,
+      "eccentric": -1
+    },
+    "ideals": [
+      "Charity. I always try to help those in need.",
+      "Tradition. The rituals of the past must be preserved.",
+      "Faith. I trust that my deity will guide me.",
+      "Aspiration. I seek to rise to the highest levels of my faith.",
+      "Community. My faith brings us together.",
+      "Change. We must help others adapt and grow spiritually."
+    ],
+    "bonds": [
+      "I would die to protect the temple where I served.",
+      "I owe my life to the priest who took me in.",
+      "Everything I do is for the greater glory of my faith.",
+      "I seek to preserve an ancient relic of my faith.",
+      "Someone I loved was lost because of my faith, and I must atone."
+    ],
+    "flaws": [
+      "I am blindly trusting of those who profess faith.",
+      "I am inflexible in my thinking.",
+      "I judge others harshly and myself even more so.",
+      "I put too much trust in those of authority within my temple.",
+      "My piety sometimes leads me to overlook practical matters."
+    ],
+    "talents": [
+      "recite religious texts from memory",
+      "identify obscure holy symbols",
+      "offer last rites in multiple languages",
+      "perform silent meditation for hours",
+      "sense spiritual unrest in a place",
+      "quote scripture with perfect timing"
+    ]
+  },
+  "charlatan": {
+    "title": "Charlatan",
+    "description": "You have always had a way with people, bending truths, forging documents, and creating false identities to get what you want.",
+    "equipment": [
+      "Fine clothes",
+      "Disguise kit",
+      "Tools of the con",
+      "Pouch containing 15 gp"
+    ],
+    "equipment_objects": [
+      "mirror",
+      "disguise",
+      "fake document"
+    ],
+    "tags": {
+      "cunning": 3,
+      "deceptive": 3,
+      "charismatic": 2,
+      "clever": 2,
+      "bold": 2,
+      "manipulative": 2,
+      "resourceful": 2,
+      "witty": 2,
+      "expressive": 1,
+      "dramatic": 1,
+      "talkative": 1,
+      "gregarious": 1,
+      "confident": 1,
+      "calculating": 1,
+      "pragmatic": 1,
+      "stoic": -2,
+      "reserved": -2,
+      "honest": -2,
+      "dutiful": -2,
+      "humble": -2,
+      "gentle": -1,
+      "serious": -1,
+      "disciplined": -1,
+      "soft-spoken": -1
+    },
+    "ideals": [
+      "Independence. I am a free spirit—no one tells me what to do.",
+      "Fairness. I never target people who can't afford to lose a few coins.",
+      "Charity. I distribute the gains of my cons to those in need.",
+      "Creativity. I never run the same con twice.",
+      "Friendship. Bonds between companions are the true treasure.",
+      "Aspiration. I’m determined to make something of myself."
+    ],
+    "bonds": [
+      "I owe everything to my mentor—a horrible person who's probably rotting in jail somewhere.",
+      "Somewhere out there, I have a child who doesn’t know me.",
+      "I come from a noble family, and I am pretending to be someone else to escape my past.",
+      "A powerful person wronged me, and I will exact revenge.",
+      "I swindled the wrong person and must work to ensure they never cross paths with me again."
+    ],
+    "flaws": [
+      "I can't resist a pretty face.",
+      "I'm always in debt.",
+      "I'm convinced that no one could ever fool me the way I fool others.",
+      "I'm too greedy for my own good.",
+      "I can't resist taking a risk if there's money involved."
+    ],
+    "talents": [
+      "forge signatures flawlessly",
+      "slip keys from pockets mid-handshake",
+      "imitate any voice they've heard",
+      "produce fake credentials on demand",
+      "shuffle a deck with flair",
+      "sell a lie with absolute confidence"
+    ]
+  },
+  "criminal": {
+    "title": "Criminal",
+    "description": "You have a history of breaking the law, working as a burglar, smuggler, enforcer, or worse. You understand the criminal underworld's codes and connections.",
+    "equipment": [
+      "Crowbar",
+      "Set of dark common clothes with hood",
+      "Pouch containing 15 gp"
+    ],
+    "equipment_objects": [
+      "dagger",
+      "lockpick",
+      "dice"
+    ],
+    "tags": {
+      "cunning": 3,
+      "bold": 3,
+      "resourceful": 2,
+      "stealthy": 2,
+      "defiant": 2,
+      "pragmatic": 2,
+      "gritty": 2,
+      "focused": 2,
+      "untrustworthy": 1,
+      "suspicious": 1,
+      "ruthless": 1,
+      "quiet": 1,
+      "calculating": 1,
+      "observant": 1,
+      "stoic": -1,
+      "reserved": -1,
+      "gentle": -1,
+      "disciplined": -1,
+      "charitable": -2,
+      "innocent": -2,
+      "naive": -2,
+      "trusting": -2,
+      "dutiful": -1,
+      "idealistic": -1,
+      "emotional": -1
+    },
+    "ideals": [
+      "Honor. I don’t steal from others in the trade.",
+      "Freedom. Chains are meant to be broken.",
+      "Charity. I steal from the rich and give to the poor.",
+      "Greed. I will do whatever it takes for money.",
+      "Redemption. There’s a spark of good in everyone.",
+      "Community. I work with others to survive."
+    ],
+    "bonds": [
+      "I’m trying to pay off an old debt I owe to a generous benefactor.",
+      "I’m loyal to my crew above all else.",
+      "Someone I loved died because of a mistake I made.",
+      "I was framed for a crime I didn’t commit.",
+      "I owe my life to the organization that took me in."
+    ],
+    "flaws": [
+      "When I see something valuable, I can’t think about anything but how to steal it.",
+      "When faced with a choice between money and my friends, I usually choose money.",
+      "If there’s a plan, I’ll forget it. If I don’t forget it, I’ll ignore it.",
+      "I can’t resist swindling people who are more powerful than me.",
+      "I turn tail and run when things look bad."
+    ],
+    "talents": [
+      "pick locks blindfolded",
+      "palm small objects without detection",
+      "case a room in under five seconds",
+      "break into windows without leaving a trace",
+      "create convincing forged documents",
+      "speak in thieves' cant fluently"
+    ]
+  },
+  "entertainer": {
+    "title": "Entertainer",
+    "description": "You thrive in front of an audience, whether performing music, storytelling, or dramatic feats. You have a way of captivating and influencing others.",
+    "equipment": [
+      "Musical instrument",
+      "Admirer’s token",
+      "Costume",
+      "Pouch containing 15 gp"
+    ],
+    "equipment_objects": [
+      "instrument",
+      "costume",
+      "fan letter"
+    ],
+    "tags": {
+      "charismatic": 3,
+      "expressive": 3,
+      "dramatic": 2,
+      "gregarious": 2,
+      "creative": 2,
+      "boisterous": 2,
+      "charming": 2,
+      "witty": 2,
+      "confident": 1,
+      "bold": 1,
+      "flamboyant": 1,
+      "energetic": 1,
+      "friendly": 1,
+      "eccentric": 1,
+      "stoic": -2,
+      "reserved": -2,
+      "serious": -1,
+      "disciplined": -1,
+      "methodical": -1,
+      "quiet": -1,
+      "pragmatic": -1,
+      "suspicious": -1,
+      "reclusive": -2,
+      "grim": -2,
+      "cold": -2
+    },
+    "ideals": [
+      "Beauty. Art should reflect the beauty in all things.",
+      "Tradition. The stories, legends, and songs of the past must never be forgotten.",
+      "Creativity. The world is in need of new ideas and bold action.",
+      "Greed. I’m only in it for the money and fame.",
+      "People. I like seeing the smiles on people's faces when I perform.",
+      "Honesty. Art should come from the heart."
+    ],
+    "bonds": [
+      "My instrument is my most treasured possession.",
+      "Someone stole my precious performance prop, and I want it back.",
+      "I once performed for a noble who still seeks me out.",
+      "I’ll do anything to prove myself superior to a rival performer.",
+      "A terrible mistake ruined my reputation. I seek to rebuild it."
+    ],
+    "flaws": [
+      "I’ll do anything to win fame and renown.",
+      "I have trouble keeping my true feelings hidden. My sharp tongue lands me in trouble.",
+      "Despite my best efforts, I am always caught up in scandal.",
+      "I’ll do anything to get a laugh, even if it’s inappropriate.",
+      "I once satirized a noble who still wants my head."
+    ],
+    "talents": [
+      "juggle knives or flaming torches",
+      "perform mimicry on command",
+      "hold a note longer than seems possible",
+      "improvise rhymes instantly",
+      "draw a crowd with a single gesture",
+      "twirl a baton or instrument with flair"
+    ]
+  },
+  "folk_hero": {
+    "title": "Folk Hero",
+    "description": "You come from humble beginnings and have stood up against oppression, earning the love and respect of your community.",
+    "equipment": [
+      "Set of artisan’s tools",
+      "Shovel, iron pot",
+      "Set of common clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "tool",
+      "medal",
+      "string"
+    ],
+    "tags": {
+      "brave": 3,
+      "resilient": 3,
+      "humble": 2,
+      "compassionate": 2,
+      "stoic": 2,
+      "loyal": 2,
+      "determined": 2,
+      "protective": 2,
+      "kind": 1,
+      "honest": 1,
+      "resourceful": 1,
+      "selfless": 1,
+      "hopeful": 1,
+      "pragmatic": 1,
+      "boisterous": -1,
+      "flamboyant": -1,
+      "arrogant": -2,
+      "reckless": -1,
+      "selfish": -2,
+      "manipulative": -1,
+      "cunning": -1,
+      "aloof": -2,
+      "reserved": -1,
+      "whimsical": -2
+    },
+    "ideals": [
+      "Respect. People deserve to be treated with dignity.",
+      "Fairness. No one should get preferential treatment.",
+      "Freedom. Tyrants must be overthrown.",
+      "Community. We must work together to survive.",
+      "Destiny. I am destined for great things.",
+      "Change. Life is constant change, and we must adapt."
+    ],
+    "bonds": [
+      "I protect those who cannot protect themselves.",
+      "I fight for the common people.",
+      "I am loyal to my family above all else.",
+      "A tyrant once wronged my village. I will see them brought to justice.",
+      "I worked the land and love it still. I will protect nature."
+    ],
+    "flaws": [
+      "I have a strong sense of pride that sometimes blinds me.",
+      "I'm quick to assume someone is guilty without proof.",
+      "I judge others harshly.",
+      "I can be naive about the world’s dangers.",
+      "I believe my actions are justified no matter what."
+    ],
+    "talents": [
+      "calm angry mobs with simple words",
+      "repair tools with improvised materials",
+      "recall stories passed down by elders",
+      "tame small animals",
+      "inspire courage with a simple gesture",
+      "recognize local folk songs from across regions"
+    ]
+  },
+  "guild_artisan": {
+    "title": "Guild Artisan",
+    "description": "You are a member of a guild of craftsmen or merchants, skilled in a particular trade and respected among artisans.",
+    "equipment": [
+      "Set of artisan’s tools",
+      "Letter of introduction from guild",
+      "Set of traveler’s clothes",
+      "Pouch containing 15 gp"
+    ],
+    "equipment_objects": [
+      "tool",
+      "journal",
+      "badge"
+    ],
+    "tags": {
+      "disciplined": 3,
+      "skilled": 3,
+      "pragmatic": 2,
+      "resilient": 2,
+      "methodical": 2,
+      "industrious": 2,
+      "stoic": 2,
+      "diligent": 2,
+      "focused": 1,
+      "reserved": 1,
+      "loyal": 1,
+      "honest": 1,
+      "precise": 1,
+      "responsible": 1,
+      "chaotic": -2,
+      "boisterous": -1,
+      "carefree": -2,
+      "reckless": -2,
+      "manipulative": -1,
+      "flamboyant": -1,
+      "hedonistic": -2,
+      "dramatic": -1,
+      "wild": -2,
+      "untrustworthy": -1
+    },
+    "ideals": [
+      "Community. It is the duty of all to strengthen the community.",
+      "Generosity. My talents are meant to be shared.",
+      "Freedom. Everyone should be free to pursue their livelihood.",
+      "Greed. I will do whatever it takes to become wealthy.",
+      "Aspiration. I seek to prove my worth through my craft.",
+      "Tradition. The work of past generations must be honored."
+    ],
+    "bonds": [
+      "I owe my guild a great debt.",
+      "My tools are symbols of my past and my future.",
+      "I protect the reputation of my craft at all costs.",
+      "One day I will return to my guild and rise to the top.",
+      "I created something precious once and lost it."
+    ],
+    "flaws": [
+      "I’m obsessed with winning recognition.",
+      "I’m miserly with my wealth.",
+      "I’m judgmental of those less skilled than I am.",
+      "I hate being wrong and won’t admit it.",
+      "I value work over relationships."
+    ],
+    "talents": [
+      "identify materials by touch alone",
+      "negotiate fair prices instinctively",
+      "craft replacement parts from scrap",
+      "sketch detailed blueprints on napkins",
+      "evaluate structural integrity at a glance",
+      "recite guild codes and contracts from memory"
+    ]
+  },
+  "hermit": {
+    "title": "Hermit",
+    "description": "You lived in seclusion—either in a sheltered community or alone—for a formative period, pursuing a quest for insight, enlightenment, or escape.",
+    "equipment": [
+      "Scroll case stuffed with notes",
+      "Winter blanket",
+      "Common clothes",
+      "Herbalism kit",
+      "5 gp"
+    ],
+    "equipment_objects": [
+      "scroll",
+      "amulet",
+      "bottle"
+    ],
+    "tags": {
+      "introspective": 3,
+      "wise": 3,
+      "reserved": 2,
+      "stoic": 2,
+      "serene": 2,
+      "thoughtful": 2,
+      "calm": 2,
+      "disciplined": 2,
+      "quiet": 2,
+      "spiritual": 1,
+      "eccentric": 1,
+      "aloof": 1,
+      "gentle": 1,
+      "austere": 1,
+      "boisterous": -2,
+      "dramatic": -2,
+      "flamboyant": -2,
+      "manipulative": -1,
+      "reckless": -2,
+      "gregarious": -2,
+      "talkative": -2,
+      "hedonistic": -2,
+      "emotional": -1,
+      "chaotic": -1
+    },
+    "ideals": [
+      "Self-Knowledge. If you know yourself, there’s nothing left to fear.",
+      "Logic. Emotions must not cloud judgment.",
+      "Free Thinking. Inquiry and curiosity are the pillars of progress.",
+      "Power. Isolation reveals hidden truths and grants power.",
+      "Live and Let Live. Meddling in others' affairs leads to trouble.",
+      "Aspiration. I seek the perfection of my soul."
+    ],
+    "bonds": [
+      "I entered seclusion to hide from those who might harm me.",
+      "I’m still seeking the enlightenment I pursued in seclusion.",
+      "I keep a secret that could devastate the world.",
+      "I discovered a powerful truth I must protect.",
+      "I left behind something precious in the world I abandoned."
+    ],
+    "flaws": [
+      "I harbor dark, bloodthirsty thoughts.",
+      "I let my emotions get the better of me, despite my seclusion.",
+      "I secretly believe the world revolves around me.",
+      "I am dogmatic in my thoughts and philosophy.",
+      "I have trouble trusting others."
+    ],
+    "talents": [
+      "forage edible plants in unfamiliar terrain",
+      "brew herbal teas for any condition",
+      "maintain complete silence for days",
+      "interpret dreams symbolically",
+      "build small shrines from natural objects",
+      "read body language like a book"
+    ]
+  },
+  "noble": {
+    "title": "Noble",
+    "description": "You come from an aristocratic family, and your position carries influence. You understand wealth, privilege, and etiquette.",
+    "equipment": [
+      "Set of fine clothes",
+      "Signet ring",
+      "Scroll of pedigree",
+      "Pouch containing 25 gp"
+    ],
+    "equipment_objects": [
+      "signet ring",
+      "scroll",
+      "wine glass"
+    ],
+    "tags": {
+      "refined": 3,
+      "elegant": 3,
+      "proud": 2,
+      "composed": 2,
+      "reserved": 2,
+      "dignified": 2,
+      "disciplined": 2,
+      "stoic": 2,
+      "arrogant": 2,
+      "commanding": 1,
+      "traditional": 1,
+      "wealthy": 1,
+      "aloof": 1,
+      "patient": 1,
+      "boisterous": -2,
+      "chaotic": -2,
+      "reckless": -2,
+      "wild": -2,
+      "brash": -2,
+      "friendly": -1,
+      "carefree": -2,
+      "whimsical": -2,
+      "gregarious": -2,
+      "emotional": -1,
+      "clumsy": -2,
+      "hedonistic": -1
+    },
+    "ideals": [
+      "Respect. Noble obligation demands courtesy to all.",
+      "Responsibility. It is my duty to care for others.",
+      "Independence. I must prove I can handle myself.",
+      "Power. If I can attain more power, I must.",
+      "Family. Blood runs thicker than water.",
+      "Aspiration. I seek to rise even higher in status."
+    ],
+    "bonds": [
+      "I will face any challenge to uphold my family's honor.",
+      "My loyalty to my sovereign is unwavering.",
+      "The common folk must see me as a protector.",
+      "I have an ancient bloodline that I must protect.",
+      "My family lost everything, and I must reclaim our honor."
+    ],
+    "flaws": [
+      "I secretly believe that everyone is beneath me.",
+      "I have a tendency to overestimate my abilities.",
+      "I hide a terrible secret that could ruin my family.",
+      "I am too focused on maintaining appearances.",
+      "I can be insufferably arrogant."
+    ],
+    "talents": [
+      "identify coats of arms instantly",
+      "recall courtly customs flawlessly",
+      "deliver veiled insults in perfect etiquette",
+      "ride horses with effortless grace",
+      "remember everyone they’ve ever met",
+      "stay composed under pressure"
+    ]
+  },
+  "knight": {
+    "title": "Knight",
+    "description": "You are a mounted warrior sworn to ideals of chivalry, loyalty, and protection. You are part of a noble tradition, whether honored or tarnished.",
+    "equipment": [
+      "Set of fine clothes",
+      "Signet ring",
+      "Scroll of pedigree",
+      "Pouch containing 25 gp"
+    ],
+    "equipment_objects": [
+      "signet ring",
+      "dice",
+      "dagger"
+    ],
+    "tags": {
+      "disciplined": 3,
+      "honorable": 3,
+      "stoic": 2,
+      "proud": 2,
+      "dutiful": 2,
+      "resilient": 2,
+      "serious": 2,
+      "commanding": 2,
+      "loyal": 2,
+      "traditional": 1,
+      "dignified": 1,
+      "calm": 1,
+      "reserved": 1,
+      "focused": 1,
+      "boisterous": -2,
+      "reckless": -2,
+      "carefree": -2,
+      "chaotic": -2,
+      "whimsical": -2,
+      "dramatic": -1,
+      "eccentric": -1,
+      "emotional": -1,
+      "brash": -1,
+      "hedonistic": -2,
+      "manipulative": -1
+    },
+    "ideals": [
+      "Honor. I maintain my principles above all else.",
+      "Duty. My cause is more important than my life.",
+      "Loyalty. Those who fight beside me are worth protecting.",
+      "Glory. I seek fame and renown through my deeds.",
+      "Compassion. I will protect the helpless.",
+      "Tradition. I uphold the standards of knighthood."
+    ],
+    "bonds": [
+      "I am bound to protect my liege lord.",
+      "I have sworn fealty to a noble cause.",
+      "I carry the memory of a fallen comrade.",
+      "I will fight to restore my family's lost honor.",
+      "I must defend the weak wherever they are found."
+    ],
+    "flaws": [
+      "I have an unhealthy obsession with personal glory.",
+      "I am arrogant about my status.",
+      "I am rigid in my views and slow to adapt.",
+      "I am overly judgmental of others' failures.",
+      "I secretly feel unworthy of my knighthood."
+    ],
+    "talents": [
+      "polish armor until it gleams",
+      "recite chivalric vows flawlessly",
+      "identify military strategy from terrain",
+      "dismount and salute with flourish",
+      "recognize famous warriors on sight",
+      "fight honorably even when outmatched"
+    ]
+  },
+  "outlander": {
+    "title": "Outlander",
+    "description": "You grew up in the wilds, far from civilization. You are familiar with nature's ways and the harsh realities of survival.",
+    "equipment": [
+      "Staff",
+      "Hunting trap",
+      "Trophy from an animal you killed",
+      "Traveler’s clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "weapon",
+      "trophy",
+      "map"
+    ],
+    "tags": {
+      "resilient": 3,
+      "pragmatic": 3,
+      "stoic": 2,
+      "rugged": 2,
+      "fierce": 2,
+      "wild": 2,
+      "resourceful": 2,
+      "instinctive": 2,
+      "quiet": 1,
+      "gruff": 1,
+      "independent": 1,
+      "blunt": 1,
+      "brave": 1,
+      "reserved": 1,
+      "refined": -2,
+      "carefree": -1,
+      "dramatic": -1,
+      "reckless": -1,
+      "gregarious": -2,
+      "flamboyant": -2,
+      "manipulative": -1,
+      "romantic": -2,
+      "delicate": -2,
+      "subtle": -1,
+      "whimsical": -2
+    },
+    "ideals": [
+      "Change. Life is constant change, and we must adapt.",
+      "Greater Good. It is each person's responsibility to ensure the survival of the tribe.",
+      "Honor. If I dishonor myself, I dishonor my tribe.",
+      "Might. The strong survive and the weak perish.",
+      "Nature. The natural world is more important than all civilization.",
+      "Glory. I must earn glory through my deeds."
+    ],
+    "bonds": [
+      "My family is the most important thing in my life.",
+      "I will bring terrible wrath down on those who destroy nature.",
+      "I suffer from a terrible guilt that haunts me.",
+      "I will do anything to defend my homeland.",
+      "I pursue a dangerous foe who wronged my people."
+    ],
+    "flaws": [
+      "I am slow to trust others from civilized lands.",
+      "I am often blunt and tactless.",
+      "I find it difficult to live indoors.",
+      "I sometimes solve problems with violence first.",
+      "I have little respect for rules or laws."
+    ],
+    "talents": [
+      "track creatures across hard terrain",
+      "start a fire in any conditions",
+      "name any local plant or animal",
+      "navigate by the stars",
+      "whistle to imitate animal calls",
+      "blend into wilderness effortlessly"
+    ]
+  },
+  "sage": {
+    "title": "Sage",
+    "description": "You spent years studying the lore of the multiverse, seeking knowledge and uncovering secrets that few others comprehend.",
+    "equipment": [
+      "Bottle of black ink",
+      "Quill",
+      "Small knife",
+      "Letter from a dead colleague",
+      "Set of common clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "book",
+      "ink pen",
+      "notes"
+    ],
+    "tags": {
+      "introspective": 3,
+      "thoughtful": 3,
+      "logical": 2,
+      "reserved": 2,
+      "curious": 2,
+      "wise": 2,
+      "focused": 2,
+      "disciplined": 2,
+      "serious": 1,
+      "calm": 1,
+      "quiet": 1,
+      "aloof": 1,
+      "studious": 1,
+      "pragmatic": 1,
+      "flamboyant": -2,
+      "dramatic": -2,
+      "boisterous": -2,
+      "reckless": -1,
+      "wild": -1,
+      "chaotic": -1,
+      "gregarious": -1,
+      "whimsical": -1,
+      "impulsive": -1,
+      "carefree": -1,
+      "manipulative": -1
+    },
+    "ideals": [
+      "Knowledge. The path to power is through knowledge.",
+      "Beauty. What is beautiful points us beyond itself toward the divine.",
+      "Logic. Emotions must not cloud logical thinking.",
+      "Self-Improvement. The goal of a life of study is self-betterment.",
+      "No Limits. Nothing should fetter the infinite possibilities."
+    ],
+    "bonds": [
+      "I have an ancient text that holds terrible secrets.",
+      "One day I will prove myself superior to my old rival.",
+      "I’ve been searching my whole life for the answer to a certain question.",
+      "I sold my soul for knowledge and am now working to reclaim it.",
+      "My life’s work is a series of tomes related to a specific field."
+    ],
+    "flaws": [
+      "I am easily distracted by fascinating topics.",
+      "I tend to explain everything at length.",
+      "I am contemptuous of those less learned than I am.",
+      "I have trouble resisting forbidden knowledge.",
+      "I can be rigid in my beliefs."
+    ],
+    "talents": [
+      "quote obscure tomes word for word",
+      "identify magical script at a glance",
+      "recite historical timelines backwards",
+      "solve riddles on reflex",
+      "draft meticulous research notes",
+      "argue theoretical philosophy convincingly"
+    ]
+  },
+  "sailor": {
+    "title": "Sailor",
+    "description": "You spent your youth on a ship, learning to live with wind, water, and danger. You are familiar with the workings of vessels and the life of sailors.",
+    "equipment": [
+      "Belaying pin (club)",
+      "50 feet of silk rope",
+      "Lucky charm",
+      "Set of common clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "rope",
+      "deck of cards",
+      "anchor charm"
+    ],
+    "tags": {
+      "resilient": 3,
+      "boisterous": 3,
+      "pragmatic": 2,
+      "gritty": 2,
+      "gregarious": 2,
+      "brash": 2,
+      "energetic": 2,
+      "resourceful": 2,
+      "bold": 1,
+      "independent": 1,
+      "carefree": 1,
+      "loyal": 1,
+      "reckless": 1,
+      "cheerful": 1,
+      "refined": -2,
+      "reserved": -2,
+      "delicate": -2,
+      "dignified": -1,
+      "methodical": -1,
+      "aloof": -1,
+      "soft-spoken": -1,
+      "timid": -2,
+      "rigid": -1,
+      "emotional": -1,
+      "traditional": -1,
+      "whimsical": 0
+    },
+    "ideals": [
+      "Respect. The thing that keeps a ship together is mutual respect.",
+      "Fairness. We all do the work, so we all share in the rewards.",
+      "Freedom. The sea is freedom—the freedom to go anywhere and do anything.",
+      "Mastery. I'm a master of my trade, and I take pride in it.",
+      "People. I am loyal to my crew, not to ideals.",
+      "Aspiration. Someday I'll own my own ship."
+    ],
+    "bonds": [
+      "I'm loyal to my captain above all else.",
+      "The ship is the most important thing in my life.",
+      "I was cheated out of my fair share of profits.",
+      "A storm took everything from me, and I will never forget it.",
+      "Someone I loved was lost at sea, and I seek to honor them."
+    ],
+    "flaws": [
+      "I follow orders, even when I think they're wrong.",
+      "I'll do anything to win a bet.",
+      "I can't help but pocket loose coins and other trinkets I come across.",
+      "I dislike authority and can be insubordinate.",
+      "I drink too much when I get nervous."
+    ],
+    "talents": [
+      "tie any knot in under five seconds",
+      "balance on a moving deck without effort",
+      "read the wind by feel alone",
+      "sing bawdy sea shanties in harmony",
+      "patch sails with improvised tools",
+      "interpret naval flags instinctively"
+    ]
+  },
+  "pirate": {
+    "title": "Pirate",
+    "description": "You spent your life raiding ships and coastal settlements, living by a code of freedom and ruthlessness.",
+    "equipment": [
+      "Belaying pin (club)",
+      "50 feet of silk rope",
+      "Lucky charm",
+      "Set of common clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "pistol",
+      "compass",
+      "lucky charm"
+    ],
+    "tags": {
+      "chaotic": 3,
+      "bold": 3,
+      "boisterous": 2,
+      "rebellious": 2,
+      "gritty": 2,
+      "resilient": 2,
+      "brash": 2,
+      "reckless": 2,
+      "fearless": 2,
+      "pragmatic": 1,
+      "defiant": 1,
+      "gregarious": 1,
+      "resourceful": 1,
+      "independent": 1,
+      "dutiful": -2,
+      "disciplined": -2,
+      "refined": -2,
+      "reserved": -1,
+      "polished": -2,
+      "rigid": -1,
+      "serious": -1,
+      "gentle": -2,
+      "caring": -2,
+      "timid": -2,
+      "calm": -1
+    },
+    "ideals": [
+      "Freedom. The sea is freedom—the freedom to go anywhere and do anything.",
+      "Greed. I will do whatever it takes to become rich.",
+      "Honor. I don't steal from my own crew.",
+      "Respect. Respect is earned through action.",
+      "Might. The strongest rule the seas.",
+      "Aspiration. One day, I'll command my own fleet."
+    ],
+    "bonds": [
+      "I'm loyal to my ship and crew, no matter what.",
+      "I will avenge a crewmate slain unfairly.",
+      "I secretly long to atone for my crimes.",
+      "Someone I wronged seeks revenge, and I fear the day they find me.",
+      "I stole a priceless treasure that others are still hunting."
+    ],
+    "flaws": [
+      "I follow my greed blindly.",
+      "Violence is my first resort.",
+      "I can't resist a risky bet.",
+      "I hold grudges and act on them.",
+      "I value personal freedom over everything, even loyalty."
+    ],
+    "talents": [
+      "hide blades in unexpected places",
+      "flip a coin across their knuckles",
+      "tell if rum is watered down by scent",
+      "intimidate with a grin",
+      "find the weak spot in any ship",
+      "laugh off threats with swagger"
+    ]
+  },
+  "soldier": {
+    "title": "Soldier",
+    "description": "You served in a militia, army, or mercenary force, learning discipline and the harsh realities of war.",
+    "equipment": [
+      "Insignia of rank",
+      "Trophy taken from a fallen enemy",
+      "Set of bone dice or deck of cards",
+      "Set of common clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "insignia",
+      "dice",
+      "dagger"
+    ],
+    "tags": {
+      "disciplined": 3,
+      "stoic": 3,
+      "resilient": 2,
+      "pragmatic": 2,
+      "loyal": 2,
+      "focused": 2,
+      "brave": 2,
+      "serious": 2,
+      "commanding": 1,
+      "dutiful": 1,
+      "stern": 1,
+      "blunt": 1,
+      "gruff": 1,
+      "honorable": 1,
+      "carefree": -2,
+      "boisterous": -1,
+      "reckless": -2,
+      "chaotic": -2,
+      "gregarious": -2,
+      "whimsical": -2,
+      "romantic": -2,
+      "flamboyant": -1,
+      "dramatic": -1,
+      "manipulative": -1,
+      "wild": -2
+    },
+    "ideals": [
+      "Greater Good. Our lot is to lay down our lives for others.",
+      "Responsibility. I do what I must and obey just authority.",
+      "Independence. When people follow orders blindly, they embrace tyranny.",
+      "Might. In life as in war, the stronger force wins.",
+      "Respect. Those who fight beside me are worth dying for.",
+      "Glory. I must earn glory in battle for myself."
+    ],
+    "bonds": [
+      "I would still lay down my life for the people I served with.",
+      "Someone saved my life on the battlefield. To this day, I will never leave a friend behind.",
+      "I fight for those who cannot fight for themselves.",
+      "I’ll never forget the crushing defeat my company suffered.",
+      "I carry a reminder of my lost comrades."
+    ],
+    "flaws": [
+      "I obey the law, even if it causes misery.",
+      "I have little respect for those who haven't proven themselves in battle.",
+      "I made a terrible mistake in battle that haunts me.",
+      "My hatred of my enemies is blind and unreasoning.",
+      "I enjoy violence too much."
+    ],
+    "talents": [
+      "clean a weapon blindfolded",
+      "recognize rank by gait or gear",
+      "wake instantly from deep sleep",
+      "recall battlefield layouts by memory",
+      "drill others into shape with a stare",
+      "use improvised signals to coordinate tactics"
+    ]
+  },
+  "urchin": {
+    "title": "Urchin",
+    "description": "You grew up on the streets, relying on your wits and resilience to survive among the poor and forgotten.",
+    "equipment": [
+      "Small knife",
+      "Map of the city you grew up in",
+      "Pet mouse",
+      "Token to remember your parents",
+      "Set of common clothes",
+      "Pouch containing 10 gp"
+    ],
+    "equipment_objects": [
+      "knife",
+      "string",
+      "pet mouse"
+    ],
+    "tags": {
+      "resourceful": 3,
+      "resilient": 3,
+      "cunning": 2,
+      "quiet": 2,
+      "observant": 2,
+      "pragmatic": 2,
+      "gritty": 2,
+      "independent": 2,
+      "wily": 1,
+      "clever": 1,
+      "bold": 1,
+      "suspicious": 1,
+      "stealthy": 1,
+      "defiant": 1,
+      "refined": -2,
+      "gentle": -1,
+      "emotional": -1,
+      "dramatic": -1,
+      "boisterous": -2,
+      "gregarious": -2,
+      "flamboyant": -2,
+      "idealistic": -2,
+      "reckless": -1,
+      "whimsical": -1,
+      "carefree": -2
+    },
+    "ideals": [
+      "Respect. All people deserve respect.",
+      "Change. The lowly must be lifted up.",
+      "Freedom. No one tells me what to do.",
+      "Survival. I must always do what it takes to survive.",
+      "Community. We have to watch out for each other.",
+      "Aspiration. I'm going to make something of myself."
+    ],
+    "bonds": [
+      "I owe my survival to another street urchin.",
+      "I will never forget the kindness of a stranger.",
+      "I protect those who can't protect themselves.",
+      "I was separated from my family and seek to find them.",
+      "I seek revenge against those who wronged me in childhood."
+    ],
+    "flaws": [
+      "I will never fully trust anyone other than myself.",
+      "If I'm outnumbered, I will always run.",
+      "I will take risks if there's a reward.",
+      "I am slow to forgive offenses against me.",
+      "I pocket anything I see that looks valuable."
+    ],
+    "talents": [
+      "slip through crowds unseen",
+      "navigate any city without a map",
+      "hide objects where no one checks",
+      "steal food without being noticed",
+      "spot guards before others do",
+      "disappear in shadows instantly"
+    ]
+  }
+}

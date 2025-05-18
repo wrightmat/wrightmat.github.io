@@ -1,0 +1,3772 @@
+characters = [
+  {
+    "name": "Madam Eva",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 10, "description": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Fortune Teller" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Madam Eva" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://www.worldanvil.com/uploads/images/cd25bf78774c5d557123679de4ca2878.jpg" },
+    "hp": { "value": 88, "hitDieSize": "16d8 + 16" },
+    "level": 10,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 20, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [
+      { "name": "arcana", "friendlyName": "Arcana", "stat": 0, "mod": 7, "str": "+7" },
+      { "name": "deception", "friendlyName": "Deception", "stat": 0, "mod": 8, "str": "+8" },
+      { "name": "insight", "friendlyName": "Insight", "stat": 0, "mod": 13, "str": "+13" },
+      { "name": "intimidation", "friendlyName": "Intimidation", "stat": 0, "mod": 8, "str": "+8" },
+      { "name": "perception", "friendlyName": "Perception", "stat": 0, "mod": 9, "str": "+9" },
+      { "name": "religion", "friendlyName": "Religion", "stat": 0, "mod": 7, "str": "+7" }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 20, "mod": 5, "str": "+5" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "The fortune-teller Madam Eva lives among the Vistani but isn't truly one of them. She appears to be in her seventies, but she is, in fact, much older."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Elderly",
+      "appearance": "wrinkled skin; long fingernails and nose; wears a robe with a head piece",
+      "attitude": "Helpful",
+      "bonds": "The Vistani are my people now.",
+      "eyes": "",
+      "flaws": "The people whose fates I divine aren't important. They are but the means to an end.",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "hair": "",
+      "ideals": "I wish Strahd to be free of his curse.",
+      "interactionTraits": "Always ready to help people even though she's bound by Strahd.",
+      "mannerisms": "Usually fidgeting with her cards.",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "The stars speak to me. They whisper of the horrors waiting in the night.",
+      "skin": "",
+      "talents": "Tarokka Cards"
+    }
+  },
+  {
+    "name": "Strahd Von Zarovich",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 16, "description": "" },
+    "alignment": { "name": "LE", "description": "Lawful Evil" },
+    "background": {
+      "definition": { "name": "Master of Ravenloft" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Strahd Von Zarovich" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://static.wikia.nocookie.net/bronydandd/images/a/ac/Strahd.jpg/revision/latest?cb=20200221224505" },
+    "hp": { "value": 144, "hitDieSize": "17d8 + 68" },
+    "level": 15,
+    "race": {
+      "fullName": "Vampire",
+      "baseName": "Barovia",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [
+      { "name": "arcana", "friendlyName": "Arcana", "stat": 0, "mod": 15, "str": "+15" },
+      { "name": "perception", "friendlyName": "Perception", "stat": 0, "mod": 12, "str": "+12" },
+      { "name": "religion", "friendlyName": "Religion", "stat": 0, "mod": 10, "str": "+10" },
+      { "name": "stealth", "friendlyName": "Stealth", "stat": 0, "mod": 14, "str": "+14" }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 3, "name": "CON", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 4, "name": "INT", "value": 20, "mod": 5, "str": "+5" },
+      { "id": 5, "name": "WIS", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "With his mind sharp and his heart dark, Strahd von Zarovich is a formidable foe. Courage and lives beyond measure have been lost to him."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Immortal",
+      "appearance": "Dead - but also formally dressed, muscular, and very sure of himself",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "dark (but glow like red hot coals when he is aroused or angry)",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "Turn Ireena Kolyana; Find Rudolph Van Richten; Search for a Successor or Consort",
+      "hair": "black",
+      "ideals": "",
+      "interactionTraits": "Will try to manipulate the players and prey on their weaknesses, while also trying to convince them to be turned into a vampire.",
+      "mannerisms": "Seductive and subtle",
+      "orientation": "Pansexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "You are here because I willed it; you exist because I allow it, and you will die because I demand it.",
+      "skin": "pale",
+      "talents": "Manipulation"
+    }
+  },
+  {
+    "name": "Ismark the Lesser",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 17, "description": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Ismark the Lesser" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://www.worldanvil.com/uploads/images/8daaa5db244432def5e6851af8fa406f.png" },
+    "hp": { "value": 58, "hitDieSize": "9d8+18" },
+    "level": 3,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 25, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [
+      { "name": "athletics", "friendlyName": "Athletics", "stat": 0, "mod": 5, "str": "+5" },
+      { "name": "perception", "friendlyName": "Perception", "stat": 0, "mod": 2, "str": "+2" }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 10, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Ismark is as tight-lipped as any of the other Barovian villagers, unless the talk deals with Ireena or Strahd. Ismark knows everything the other villagers know. He also knows that, for some unknown reason, Strahd is attracted to Ireena and desires her above all others. Ismark has spent most of his adult life training with weapons in the hope of one day confronting and killing the Strahd. If the characters suggest that he accompany them, Ismark agrees provided that Ireena is first taken to a place of safety."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Middle Aged",
+      "appearance": "Ruggedly handsome",
+      "attitude": "Friendly",
+      "bonds": "",
+      "eyes": "",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "Get Ireena to safety",
+      "hair": "blonde",
+      "ideals": "",
+      "interactionTraits": "",
+      "mannerisms": "",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "",
+      "skin": "white",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Mad Mary",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 10, "description": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Mad Mary" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://static.wikia.nocookie.net/welcome-to-sunny-barovia/images/4/41/Mad_mary.png/revision/latest?cb=20181019142957" },
+    "hp": { "value": 4, "hitDieSize": "1d8" },
+    "level": 0,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 4, "name": "INT", "value": 9, "mod": -1, "str": "-1" },
+      { "id": 5, "name": "WIS", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 10, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Mary hid her beloved daughter, Gertruda, in this house for the girl's entire life. Gertruda, now a teenager, broke out of the house a week ago and has not been seen since. Her mother fears the worst - and is justified in doing so."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "appearance": "Distinctive posture (crooked or rigid)",
+      "attitude": "Unfriendly",
+      "bonds": "",
+      "eyes": "hazel",
+      "flaws": "",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "Rescue of her daughter Gertruda",
+      "hair": "brown",
+      "ideals": "",
+      "interactionTraits": "Will talk, albeit haltingly, to someone who talks with her gently",
+      "mannerisms": "Lost in sorrow and despondency",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Married",
+      "saying": "",
+      "skin": "white",
+      "talents": "Great at solving puzzles"
+    }
+  },
+  {
+    "name": "Ireena Kolyana",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 15, "description": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Ireena Kolyana" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://static.wikia.nocookie.net/ravenloft/images/6/6e/Ireena.png/revision/latest?cb=20161212001242" },
+    "hp": { "value": 9, "hitDieSize": "2d8" },
+    "level": 0.125,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 4, "name": "INT", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 16, "mod": 3, "str": "+3" }
+    ],
+    "notes": {
+      "backstory": "Ireena, a striking young woman with auburn hair, has been bitten twice by Strahd (but they're fuzzy memories). The villagers are afraid of her and avoid her. The characters are Ireena's best hope for protection, so she is willing to accompany them under certain conditions. Although she appears mild, she has a strong will, and she aids the party as best she can in saving herself. She doesn't remember her early past. She doesn't know how she came to Barovia or where she came from."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "age": 25,
+      "ageGroup": "Young Adult",
+      "appearance": "Strikingly beautiful",
+      "attitude": "Friendly",
+      "bonds": "Loyal to a benefactor, patron, or employer",
+      "eyes": "blue",
+      "flaws": "Has a powerful enemy",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "",
+      "hair": "brown",
+      "ideals": "Self-sacrifice",
+      "interactionTraits": "Curious",
+      "mannerisms": "Speaks loudly",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "",
+      "skin": "dark brown",
+      "talents": "Swordplay"
+    }
+  },
+  {
+    "name": "Donavich",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 10, "description": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "Priest (Barovia)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Donavich" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://www.worldanvil.com/uploads/images/824ea4430a7c12057b2bad203a4f2557.png" },
+    "hp": { "value": 9, "hitDieSize": "2d8" },
+    "level": 0.25,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [
+      { "name": "medicine", "friendlyName": "Medicine", "stat": 0, "mod": 4, "str": "+4" },
+      { "name": "religion", "friendlyName": "Religion", "stat": 0, "mod": 2, "str": "+2" }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 12, "mod": 1, "str": "+1" }
+    ],
+    "notes": {
+      "backstory": "Donavich is, in a word, insane. A little more than a year ago, his twenty-year-old son Doru and several other villagers stormed Castle Ravenloft in revolt, having been lured there by a wizard in black robes who came to Barovia from a faraway land. By all accounts, the wizard died by Strahd's hand, and so too did Doru, who returned to his father as a vampire spawn. Donavich was able to trap his son in the church's undercroft, where he remains to this day."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "age": 0,
+      "ageGroup": "Older Adult",
+      "appearance": "Dark sacks under eyes, like hasn't slept in weeks",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "hazel",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "Save Doru without destroying him; Encourage that Ireena be taken as far from Castle Ravenloft as possible",
+      "hair": "bald",
+      "ideals": "",
+      "interactionTraits": "Irritable",
+      "mannerisms": "Frequently uses the wrong word",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "",
+      "skin": "white",
+      "talents": "Great with children"
+    }
+  },
+  {
+    "name": "Rahadin",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 18, "description": "" },
+    "alignment": { "name": "LE", "description": "Lawful Evil" },
+    "background": {
+      "definition": { "name": "Chamberlain" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Rahadin" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://static.wikia.nocookie.net/ravenloft/images/a/af/Rahadin.jpg/revision/latest?cb=20210503144653" },
+    "hp": { "value": 135, "hitDieSize": "18d8 + 54" },
+    "level": 10,
+    "race": {
+      "fullName": "Elf",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 35, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 2, "name": "DEX", "value": 22, "mod": 6, "str": "+6" },
+      { "id": 3, "name": "CON", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "Rahadin, the dusk elf chamberlain of Castle Ravenloft, has served Strahd's family faithfully for nearly five hundred years. He is Strahd's eternal servant, a longtime comrade-in-arms, and a ruthless warrior who has killed thousands in his lifetime."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "age": 321,
+      "ageGroup": "Adult",
+      "appearance": "Flamboyant or outlandish clothes",
+      "attitude": "Indifferent",
+      "bonds": "I am a son of King Barov von Zarovich, and I will serve his son - my brother and lord - forever.",
+      "eyes": "amber",
+      "flaws": "I have slain thousands of men. I will slaughter thousands more to preserve the von Zarovich legacy.",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "",
+      "hair": "black",
+      "ideals": "Loyalty is everything",
+      "interactionTraits": "Arrogant",
+      "mannerisms": "Uses colorful oaths and exclamations",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "",
+      "skin": "white",
+      "talents": "Knows thieves' cant"
+    }
+  },
+  {
+    "name": "Cyrus Belview",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 11, "description": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Servant" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Cyrus Belview" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://www.worldanvil.com/uploads/images/cab5de7c970ed9e18b1b6155c81e1082.jpg" },
+    "hp": { "value": 26, "hitDieSize": "4d8 + 8" },
+    "level": 0.25,
+    "race": {
+      "fullName": "Mongrelfolk",
+      "baseName": "Barovia",
+      "weightSpeeds": {
+        "normal": { "walk": 20, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 2, "name": "DEX", "value": 9, "mod": -1, "str": "-1" },
+      { "id": 3, "name": "CON", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 9, "mod": -1, "str": "-1" },
+      { "id": 5, "name": "WIS", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 6, "mod": -2, "str": "-2" }
+    ],
+    "notes": {
+      "backstory": "Cyrus Belview is a mongrelfolk and Strahd's faithful servant. He stands 4 feet, 9 inches tall but appears shorter because of his hunched posture. The left side his face is covered with lizard scales, and he has the ears of a panther. His left foot looks like a duck's webbed foot, and his arms have patches of black dog fur. Poor old Cyrus is obviously crazy. He has served the master for uncounted years and is devoted to him."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Hunched over",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "brown",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To get the characters to retire to their 'room in the tower' (area K49, to set off the elevator trap); To serve his master Strahd",
+      "hair": "grey",
+      "ideals": "",
+      "interactionTraits": "Moans and slaps his head",
+      "mannerisms": "Obviously crazy, giggles to himself from time to time for no clear reason",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "The master will not be pleased!",
+      "skin": "dark",
+      "talents": "Telling poor jokes at inopportune moments"
+    }
+  },
+  {
+    "name": "Escher Belasco",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 15, "description": "" },
+    "alignment": { "name": "NE", "description": "Neutral Evil" },
+    "background": {
+      "definition": { "name": "Castellan" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Escher Belasco" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://i.pinimg.com/originals/38/16/ef/3816ef213d15e59b2afc88d0fe235636.png" },
+    "hp": { "value": 82, "hitDieSize": "11d8 + 33" },
+    "level": 5,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Barovia",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 12, "mod": 1, "str": "+1" }
+    ],
+    "notes": {
+      "backstory": "Escher Belasco is a flirtatious and enigmatic vampire and former consort of Strahd von Zarovich. Originally from the Village of Barovia in the nation of Barovia, he resided in Castle Ravenloft for some time, before coming to Eberron. He now maintains dominions over Loom Keep in Karrnath."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "appearance": "Hauntingly handsome",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "brown",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To gain power and eventually become a vampire lord; To not interfere with or anger House Deneith (especially Baron Breven d'Deneith); To spread the Blood of Vol",
+      "hair": "blonde",
+      "ideals": "",
+      "interactionTraits": "Melancholy and wit",
+      "mannerisms": "",
+      "orientation": "Homosexual",
+      "personalityTraits": "",
+      "relationship": "Complicated",
+      "saying": "",
+      "skin": "pale",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Anastrasya Karelova",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 15, "description": "" },
+    "alignment": { "name": "NE", "description": "Neutral Evil" },
+    "background": {
+      "definition": { "name": "Bride Consort" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Anastrasya Karelova" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://i.imgur.com/sdGFNFw.jpeg" },
+    "hp": { "value": 82, "hitDieSize": "11d8 + 33" },
+    "level": 5,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Barovia",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 12, "mod": 1, "str": "+1" }
+    ],
+    "notes": {
+      "backstory": "Anastrasya Karelova wears a stained and tattered red wedding gown, a black and crimson silk head scarf sewn with precious jewels (worth 750 gp), and a platinum necklace with a black opal pendant (worth 1,500 gp)."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Beautiful",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "green",
+      "flaws": "",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "To get Strahd's attention and do his bidding",
+      "hair": "black",
+      "ideals": "",
+      "interactionTraits": "Argumentative",
+      "mannerisms": "Stares into the distance",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Complicated",
+      "saying": "",
+      "skin": "pale",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Ludmilla Vilisevic",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 15, "description": "" },
+    "alignment": { "name": "NE", "description": "Neutral Evil" },
+    "background": {
+      "definition": { "name": "Bride Consort" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Ludmilla Vilisevic" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://i.imgur.com/qCY9APQ.jpeg" },
+    "hp": { "value": 82, "hitDieSize": "11d8 + 33" },
+    "level": 5,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Barovia",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 12, "mod": 1, "str": "+1" }
+    ],
+    "notes": {
+      "backstory": "Ludmilla Vilisevic wears a soiled white wedding gown, a gold tiara (worth 750 gp), and ten gold bracelets (worth 100 gp each)."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Beautiful",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "brown",
+      "flaws": "",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "To get Strahd's attention and do his bidding",
+      "hair": "black",
+      "ideals": "",
+      "interactionTraits": "Arrogant",
+      "mannerisms": "Uses flowery speech or long words",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Complicated",
+      "saying": "",
+      "skin": "pale",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Volenta Popofsky",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 15, "description": "" },
+    "alignment": { "name": "NE", "description": "Neutral Evil" },
+    "background": {
+      "definition": { "name": "Bride Consort" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Volenta Popofsky" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://i.imgur.com/MvK675l.jpeg" },
+    "hp": { "value": 82, "hitDieSize": "11d8 + 33" },
+    "level": 5,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Barovia",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 12, "mod": 1, "str": "+1" }
+    ],
+    "notes": {
+      "backstory": "Volenta Popofsky wears a faded gold wedding gown, a platinum mask shaped vaguely like a skull (750 gp), and ten platinum rings set with gemstones (worth 250 gp each)."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Beautiful",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "blue",
+      "flaws": "",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "To get Strahd's attention and do his bidding",
+      "hair": "black",
+      "ideals": "",
+      "interactionTraits": "Rude",
+      "mannerisms": "",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Complicated",
+      "saying": "",
+      "skin": "pale",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Morgantha",
+    "group": { "name": "Barovia", "subgroupDefinition": "" },
+    "ac": { "value": 17, "description": "" },
+    "alignment": { "name": "NE", "description": "Neutral Evil" },
+    "background": {
+      "definition": { "name": "Baker" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Morgantha" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://vignette3.wikia.nocookie.net/forgottenrealms/images/4/40/Night_Hag-5e.png/revision/latest?cb=20161123195659" },
+    "hp": { "value": 112, "hitDieSize": "15d8 + 45" },
+    "level": 5,
+    "race": {
+      "fullName": "Night Hag",
+      "baseName": "Base",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 16, "mod": 3, "str": "+3" }
+    ],
+    "notes": {
+      "backstory": "This old woman is Morgantha, a night hag. She doesn't mind visitors, as long as they've come to do business. She tries to sell her latest batch of dream pastries, charging 1 gp for each one. She's proud of her confections and claims that she uses only the finest ingredients."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Elderly",
+      "appearance": "Worts and a pointed nose - your traditional witch",
+      "attitude": "Indifferent",
+      "bonds": "",
+      "eyes": "blue",
+      "flaws": "",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "To sell her dream pastries; To gather children so she can grind their bones; To spy on Strahd through Cyrus's hag eye",
+      "hair": "black",
+      "ideals": "",
+      "interactionTraits": "",
+      "mannerisms": "",
+      "orientation": "Heterosexual",
+      "personalityTraits": "",
+      "relationship": "Single",
+      "saying": "",
+      "skin": "blue",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Flamewind",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 17, "description": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Researcher" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Flamewind" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://db4sgowjqfwig.cloudfront.net/campaigns/171319/assets/869364/Flamewind2.png?1528415102" },
+    "hp": { "value": 136, "hitDieSize": "16d10 + 48" },
+    "level": 11,
+    "race": {
+      "fullName": "Gynosphinx",
+      "baseName": "Sphinx",
+      "weightSpeeds": {
+        "normal": { "walk": 40, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 5, "name": "WIS", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "Flamewind is a gynosphinx with amazing oracular powers. Found in Xen'drik in 996 YK, Flamewind resides at Morgrave University in Sharn, where she spends her time in the university's library in trade for her visions of things to come."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Immortal",
+      "appearance": "Body of a lion, face of an elf woman, black wings",
+      "attitude": "Helpful",
+      "bonds": "",
+      "eyes": "black",
+      "flaws": "",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+      "goals": "To learn as much as possible about the events of the last fifty years, and the dragon involvement in particular.",
+      "hair": "black/orange",
+      "ideals": "",
+      "interactionTraits": "",
+      "mannerisms": "",
+      "orientation": "Asexual",
+      "personalityTraits": "",
+      "relationship": "n/a",
+      "saying": "",
+      "skin": "black/orange",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Arstyvrax",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 18, "description": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Tribe Leader" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Arstyvrax" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/e606d8a2-bcb2-4ab7-aa31-f6c4e6fc71f6/dewvy1k-dd8773d0-a9f9-48eb-a7f3-2e825dc2fa76.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2U2MDZkOGEyLWJjYjItNGFiNy1hYTMxLWY2YzRlNmZjNzFmNlwvZGV3dnkxay1kZDg3NzNkMC1hOWY5LTQ4ZWItYTdmMy0yZTgyNWRjMmZhNzYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.n0-fcLezTDXAnvEgLf1xXwTbytxQ-ME3Ix4zbEMDNjs" },
+    "hp": { "value": 210, "hitDieSize": "20d12 + 80" },
+    "level": 13,
+    "race": {
+      "fullName": "Obsidian Dragon",
+      "baseName": "Dragon",
+      "weightSpeeds": {
+        "normal": { "walk": 40, "fly": 60, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 19, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 19, "mod": 4, "str": "+4" },
+      { "id": 4, "name": "INT", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 5, "name": "WIS", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "The practice of necromancy is forbidden among the dragons of Argonnessen, but Arstyvrax is one of this land's foremost practitioners of the dark art. He is a member of the Shadowmasters - a cabal of a dozen necromancer dragons who share lore and maintain secret libraries scattered across the Vast."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Scales and wings of a deep black",
+      "attitude": "Hostile",
+      "eyes": "black",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To release Khyber and bring about the Third Age (of the Dragons).",
+      "orientation": "Asexual",
+      "personalityTraits": "",
+      "relationship": "n/a",
+      "skin": "black"
+    }
+  },
+  {
+    "name": "Lord of Blades",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 19, "description": "" },
+    "alignment": { "name": "LE", "description": "Lawful Evil" },
+    "background": {
+      "definition": { "name": "Military/Religious Leader" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lord of Blades" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://static.wikia.nocookie.net/eberron/images/a/a5/Lord_of_Blades.jpg" },
+    "hp": { "value": 195, "hitDieSize": "23d8 + 92" },
+    "level": 18,
+    "race": {
+      "fullName": "Warforged",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 20, "mod": 5, "str": "+5" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 4, "name": "INT", "value": 19, "mod": 4, "str": "+4" },
+      { "id": 5, "name": "WIS", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "The Lord of Blades is a mysterious and messianic warforged military and religious leader based in the Mournland. He commands a militant warforged cult known as the Blades and is the nearest thing to a ruler in the Mournland.<br /><br />While all can agree the Lord of Blades must be a powerful and charismatic leader, their opinions differed. Some speak of him as a teacher and philosopher, even a visionary or messiah, while many others perceive him to be a power-mad tyrannical warlord, self-proclaimed prophet, and racist psychopathic abomination bent on founding a warforged empire and challenging other nations for control of all of Khorvaire.<br /><br />The Lord of Blades is a highly modified warforged with adamantine armor plating attached with protruding blades, making him unique among warforged. Some of these blades, thirteen in number, give the appearance of wings spreading from his back."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Hostile",
+      "bonds": "",
+      "eyes": "black",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To build an empire of warforged in the Mournland.",
+      "hair": "",
+      "ideals": "",
+      "interactionTraits": "",
+      "mannerisms": "",
+      "orientation": "",
+      "personalityTraits": "",
+      "relationship": "",
+      "saying": "",
+      "skin": "silver",
+      "talents": ""
+    }
+  },
+  {
+    "name": "Valmoc",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 18, "description": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Valmoc" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/ren6zy4sXxHmtm4/preview" },
+    "hp": { "value": 84, "hitDieSize": "10d10 + 20" },
+    "level": 0,
+    "race": {
+      "fullName": "Dragonborn",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 2, "name": "DEX", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 6, "name": "CHA", "value": 20, "mod": 5, "str": "+5" }
+    ],
+    "notes": {
+      "backstory": "Valmoc is a silver dragonborn who serves as a sort of emissary for the silver dragons and the Silver Scales organization more generally. He's sort of the opposite of a mercenary - someone who is hired to protect others. The party will encounter him somewhere as they travel, as a means to learn about the Paladin Protectors of the Realm.<br /><br />Valmoc embodies the stoicism and discipline associated with his dragonborn heritage. He speaks in measured tones, revealing little about himself or his true intentions. He is unyielding in his commitment to the party's protection, even if it means keeping them in the dark about the true extent of their significance.<br /><br />Mysterious and enigmatic, Valmoc enjoys playing with the perceptions of those around him. He appears and disappears without warning, leaving peopl to question his motives. His actions are calculated, and he carefully selects the information he shares, maintaining an air of secrecy."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "eyes": "white",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To protect those who are entrusted to him.",
+      "skin": "silver"
+    }
+  },
+  {
+    "name": "Serelath",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 17, "description": "" },
+    "alignment": { "name": "-", "description": "Unaligned" },
+    "background": {
+      "definition": { "name": "Far Traveler" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Steel Dragon" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/DAiMZniYE8LBn7d/preview" },
+    "hp": { "value": 58, "hitDieSize": "9d8 + 18" },
+    "level": 0,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 21, "mod": 5, "str": "+5" }
+    ],
+    "notes": {
+      "backstory": "Serelath is a steel dragon who took on a human form to explore the world of mortals, driven by his innate curiosity and a dragon's love for collecting treasures and secrets. He ventured into a labyrinth years ago, intrigued by its mysteries and the powerful artifacts rumored to be hidden within. His knowledge of ancient magics and civilizations led him deeper into the maze until he encountered a basilisk statue, which turned him to stone.<br /><br />He carries a bag of holding filled with his treasures, including various works of art, antiquities, books, finery, and magic items that he refuses to ever part with. Serelath does his best to hide any draconic mannerisms (which is difficult for him, as he moves with an almost feline grace) and make sure no one learns about his true form. He is also elusive with any information about himself, simply saying he came from a land far away (saying Seren Island if pushed, but this is not true).<br /><br />In his human form, he appears as a rugged adventurer in his mid-forties, with steely gray hair and piercing blue eyes. His attire consists of well-worn leather armor and a faded cloak. An intricate tattoo peeks out from his clothing."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To find new treasures of all sorts."
+    }
+  },
+  {
+    "name": "Serelath (Steel Dragon)",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 19, "description": "" },
+    "alignment": { "name": "-", "description": "Unaligned" },
+    "background": {
+      "definition": { "name": "Far Traveler" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Steel Dragon" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/wnjtJ48GkdHSyfN/preview" },
+    "hp": { "value": 243, "hitDieSize": "18d12 + 126" },
+    "level": 0,
+    "race": {
+      "fullName": "Steel Dragon",
+      "baseName": "Dragon",
+      "weightSpeeds": {
+        "normal": { "walk": 40, "fly": 60, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 27, "mod": 8, "str": "+8" },
+      { "id": 2, "name": "DEX", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 27, "mod": 8, "str": "+8" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 21, "mod": 5, "str": "+5" }
+    ],
+    "notes": {
+      "backstory": "Serelath is a steel dragon who took on a human form to explore the world of mortals, driven by his innate curiosity and a dragon's love for collecting treasures and secrets. He ventured into a labyrinth years ago, intrigued by its mysteries and the powerful artifacts rumored to be hidden within. His knowledge of ancient magics and civilizations led him deeper into the maze until he encountered a basilisk statue, which turned him to stone.<br /><br />He carries a bag of holding filled with his treasures, including various works of art, antiquities, books, finery, and magic items that he refuses to ever part with. Serelath does his best to hide any draconic mannerisms (which is difficult for him, as he moves with an almost feline grace) and make sure no one learns about his true form. He is also elusive with any information about himself, simply saying he came from a land far away (saying Seren Island if pushed, but this is not true).<br /><br />In his dragon form, he has scales that shine like burnished steel and that make complex patterns across his body. His face is particularly expressive, sometimes giving the illusion of a human-like face."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To find new treasures, whether they be monetary, cultural, or magical."
+    }
+  },
+  {
+    "name": "Chip",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 12, "description": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Wizard" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/3oBGWwF7zJdCYtx/preview" },
+    "hp": { "value": 40, "hitDieSize": "9d8" },
+    "level": 0,
+    "race": {
+      "fullName": "Warforged",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 9, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 4, "name": "INT", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 6, "name": "CHA", "value": 11, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Chip's torso has intricate arcane runes etched into it, softly glowing, indicating his connection to magic. His hands are more delicate and precise compared to other warforged, designed for casting spells rather than combat. He wears a simple, patched-up robe over his metallic body, and carries a small, well-used spellbook strapped to his side.<br /><br />Chip is endlessly curious about the world around him. His artificial mind, designed to learn and adapt, absorbs information rapidly. He often asks questions about things others might take for granted, eager to understand everything from the mechanics of magic to the nuances of social interactions. Chip is still learning about emotions, social cues, and the subtleties of communication. He might take things literally, struggle with sarcasm, or misinterpret certain gestures, leading to moments of awkwardness. However, this is usually endearing, as he genuinely tries his best to fit in.<br /><br />While he is an apprentice wizard, Chip is aware of the potential dangers of magic. He approaches his studies with a mix of awe and caution, always double-checking his work and hesitating before trying something new."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "goals": "To explore the world"
+    }
+  },
+  {
+    "name": "Snips",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 13, "description": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Snips" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://www.dndbeyond.com/avatars/thumbnails/37204/499/1000/1000/638318543792959618.png" },
+    "hp": { "value": 38, "hitDieSize": "11d6" },
+    "level": 0,
+    "race": {
+      "fullName": "Musteval Guardinal",
+      "baseName": "Celestial",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 2, "name": "DEX", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 3, "name": "CON", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 4, "name": "INT", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 5, "name": "WIS", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 14, "mod": 2, "str": "+2" }
+    ],
+    "notes": {
+      "backstory": "Mustevals are small, mousy guardinals skilled at evading danger. Their speed, stealthy nature, and illusion magic make them worthwhile companions.<br /><br /><b><u>Actions</u></b><br /><b>Bone Blade.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) slashing damage plus 3 (1d6) radiant damage.<br /><br /><b>Spellcasting.</b> The musteval casts one of the following spells, requiring no material components and using Charisma as the spellcasting ability:<br /> - At will: dancing lights<br /> - 1/day each: disguise self, invisibility<br /><br /><b><u>Reactions</u></b><br /><b>Skirmish Movement.</b> When a creature ends its turn within 5 feet of the musteval, the musteval can move up to half its speed. This movement doesn\u2019t provoke opportunity attacks.<br /><br /><b>Languages:</b> Celestial, Common<br /><br />Dex +6, Cha +4, Perception +6, Stealth +7"
+    },
+    "tags": [ "NPC", "Familiar" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Corean",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 13, "description": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Corean" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://static.wikia.nocookie.net/eberron/images/8/8d/Valenarsteed.png" },
+    "hp": { "value": 42, "hitDieSize": "6d10 + 12" },
+    "level": 0,
+    "race": {
+      "fullName": "Equinal Guardinal",
+      "baseName": "Celestial",
+      "weightSpeeds": {
+        "normal": { "walk": 60, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 11, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Various elven groups, tracing back to their roots on Xen'drik, have long bred fey horses to serve as swift steeds for their warriors.<br /><br /><b><u>Actions</u></b><br /><b>Hooves.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 10 (2d6 + 3) bludgeoning damage.<br /><br /><b><u>Bonus Actions</u></b><br /><b>Fey Step (1/Day).</b> The equinal, along with anything it is wearing or carrying, teleports up to 30 feet to an unoccupied space it can see.<br /><br /><b>Quickness (Recharge 6).</b> The equinal can take the Dodge action as a bonus action.<br /><br /><b>Languages:</b> Celestial, Common<br /><br />Str +5, Con +5, Athletics +5, Perception +5, Religion +3"
+    },
+    "tags": [ "NPC", "Familiar" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Dawn",
+    "group": { "name": "Eberron", "subgroupDefinition": "" },
+    "ac": { "value": 14, "description": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Dawn" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/FKfZX5aDBQfN4Le/preview" },
+    "hp": { "value": 35, "hitDieSize": "7d8 + 7" },
+    "level": 0,
+    "race": {
+      "fullName": "Avoral Guardinal",
+      "baseName": "Celestial",
+      "weightSpeeds": {
+        "normal": { "walk": 5, "fly": 60, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 5, "name": "WIS", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 16, "mod": 3, "str": "+3" }
+    ],
+    "notes": {
+      "backstory": "Avorals are bird-like guardinals with keen, golden eyes. Prone to wander, these avian Celestials often leave their realm, meandering to wherever the winds might take them.<br /><br /><b>Dive Attack.</b> If the avoral is flying, dives at least 30 feet in a straight line toward a Medium or smaller creature, and ends within 5 feet of it, that creature must succeed on a DC 15 Strength save or take 14 (4d6) piercing damage and be prone.<br /><br /><b>Flyby.</b> The avoral doesn't provoke opportunity attacks when it flies out of an enemy's reach.<br /><br /><b>Keen Hearing and Sight.</b> The avoral has advantage on Wisdom (Perception) checks that rely on hearing or sight.<br /><br /><b><u>Actions</u></b><br /><b>Talons.</b> Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 8 (2d6 + 1) slashing damage.<br /><br /><b>Languages:</b> Celestial, Common<br /><br />Dex +5, Cha +7, Perception +5, Stealth +5"
+    },
+    "tags": [ "NPC", "Familiar" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "",
+      "attitude": "Helpful",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Aurora Luna Wynterstarr",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-008.aurora.png" },
+    "race": {
+      "fullName": "Dhampir",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Before arriving at Strixhaven, Aurora changed her name and appearance to that of her on-stage persona: Aurora Luna Wynterstarr, the brilliant singer and songwriter. Aurora was born a dhampir, which she's taken as a cosmic sign that she is meant for greatness.<br /><br />An accomplished musician on several instruments, Aurora is often found at Bow's End Tavern performing beautiful dirges on the hurdy-gurdy for the assembled patrons. Aurora is also a member of the Strixhaven Show Band Association, though she believes the music they play lacks the raw emotion of her original compositions.<br /><br />She works as a groundskeeper at the Strixhaven Stadium, where she takes great pleasure in using magic to blight undesirable vegetation on the field.",
+      "bane": "When there's live music on campus, the lyrics always include rude sentiments directed toward you.",
+      "boon": "Out of respect for Aurora, fellow campus musicians will cover your expenses for one night per week at places where live music is common.",
+      "job": "Strixhaven Stadium groundskeeper",
+      "extracurriculars": "Strixhaven Show Band Association"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Bhedum \u201cRampart\u201c Sooviij",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-009.bhedum.png" },
+    "race": {
+      "fullName": "Loxodon",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Since their name is difficult to pronounce without a trunk, Bhedum has taken to referring to themself as \u201cRampart\u201c, the closest translation of their name in Common. They are often found poring over ancient texts detailing battles, seeking to better understand the tactical decisions that result in victory and defeat. Rampart is happy to discuss their knowledge with fellow members of the Dragonsguard Historical Society, often doing so late into the night.<br /><br />Rampart's opponents at the Dragonchess Club find themselves outmatched time and again by the loxodon's technique, though Rampart is a gracious winner. They attend all their classes clad in gilded, centuries-old plate armor, with an immense and similarly decorated sword strapped to their back. Rampart explains that doing so better simulates the battlefield conditions they study.",
+      "bane": "Library books you need inexplicably go missing at key times, especially those about history. As a result, you can't pull all-nighters.",
+      "boon": "Rampart's commanding presence rubs off, and when you're trying to avoid campus security, your fellow students always help you lie low.",
+      "job": "None",
+      "extracurriculars": "Dragonchess Club; Dragonsguard Historical Society"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Non-Binary",
+      "genderPronouns": [ "they", "them" ]
+    }
+  },
+  {
+    "name": "Cadoras Damellawar",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "First Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-010.cadoras.png" },
+    "race": {
+      "fullName": "Elf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Cadoras is a jolly soul, and anyone who spends time with him ends up chuckling at whatever nonsense he is currently sporting. He is a passionate member of the Live-Action Roleplaying Guild and loves playing out all sorts of fantastical adventures. He always roleplays archers, entirely because he's recently spent a lot of money on a prop-bow and can't afford anything else. He is also a member of the university's Distinguished Society of Fine Artists, where he uses magic to sculpt beautiful statuary of complex fractal patterns. The fact that he is self-taught makes the quality of his work that much more impressive.<br /><br />Cadoras does have some strange eating habits; he sometimes eats an entire jar of pickled onions in a single sitting and then drinks the vinegar.",
+      "bane": "You are a pariah in the campus roleplaying scene. The worst monsters are named after you.",
+      "boon": "The esteem for Cadoras in live-action roleplaying circles extends to you. Guild members will share any information you wish to know about Aberrations, Monstrosities, and Oozes.",
+      "job": "None",
+      "extracurriculars": "Distinguished Society of Fine Artists; Live-Action Roleplaying Guild"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Drazhomir Yarnask",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Second Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-011.drazhomir.png" },
+    "race": {
+      "fullName": "Minotaur",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Drazhomir is so soft-spoken that many of his peers must ask him to speak up to be understood. He is over seven feet tall, yet he continuously stoops, as if trying to occupy as little space as possible. Several activities and clubs that involve feats of strength and size continuously try to recruit him\u2014to no avail. Drazhomir prefers spending his time in the Biblioplex, where he works as a book clerk, assisting students in finding required texts and shelving returns. He moves silently through the stacks, and he has given more than one student a scare when they've turned around to suddenly find him there.<br /><br />Drazhomir's greatest love is poetry. As a member of the university's Dead Languages Society, he scours ancient literature for stirring poems written in old tongues, reading them to the rest of the group in a soft, resonant voice that comes directly from his soul.",
+      "bane": "Other students who work in the Biblioplex refuse to help you find any of the tomes you seek. Even the reference librarians are more cryptic.",
+      "boon": "Drazhomir writes you poetry, and the smile it puts on your face makes you likable to everyone on campus.",
+      "job": "Biblioplex book clerk",
+      "extracurriculars": "Dead Languages Society"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Grayson Wildemere",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-012.grayson.png" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Grayson comes from an old, moneyed, and influential family. To him, studying at Strixhaven is a means to an end. Learning business acumen is just as important to Grayson as his classes, so he has joined the Future Entrepreneurs of Strixhaven. Grayson makes a point to know as much about everyone as possible, gathering information until he finds the best circumstance to use it. Having learned to pick locks, he often accesses places where he's unauthorized, searching for secrets.<br /><br />Grayson has become a writer for the Strixhaven Star, where he's responsible for the gossip column. His writing style is biting, and he uses this platform to expose bullies and mock ignorance. Many of his peers are leery of him, but some have witnessed him paying for poorer students' books and other supplies\u2014a fact he tries to keep secret.",
+      "bane": "Gossip columns proclaim exaggerated versions of your worst traits.",
+      "boon": "Whenever you want to buy something on campus, a few words from Grayson get you deals. There's a 25 percent chance your purchase costs half as much.",
+      "job": "None",
+      "extracurriculars": "Future Entrepreneurs of Strixhaven; Strixhaven Star"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Greta Gorunn",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "First Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-013.greta.png" },
+    "race": {
+      "fullName": "Dwarf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Greta is often heard long before she is seen, as her raucous laughter echoes through the university's halls. Enjoying a reputation as a golden-hearted troublemaker, Greta hates studying and grumbles about it at length. This has led to numerous warnings from the librarians for unnecessarily loud behavior, much to Greta's amusement.<br /><br />A fervent member of the Strixhaven Iron-Lifters Society, she has already started to break long-held records in both powerlifting and weightlifting. When not training or competing (or occasionally studying), Greta spends her time in Bow's End Tavern carousing. As beer isn't free, she helps out at Strixhaven Stadium, setting up and putting away heavy equipment. Most people would begrudge the hard labor, but Greta happily does it, reasoning that she is being paid to work out.<br /><br />Greta makes a point to write regularly to her older brother, Grog, whom she misses terribly.",
+      "bane": "Heavy things show up in inconvenient places, such as in front of your dorm door.",
+      "boon": "Whenever you need anything heavy moved, members of the Iron-Lifters Society show up to help you.",
+      "job": "Strixhaven Stadium equipment assistant",
+      "extracurriculars": "Strixhaven Iron-Lifters Society"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Javenesh Stoutclaw",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Second Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-014.javenesh.png" },
+    "race": {
+      "fullName": "Owlin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Javenesh is an imposing and powerfully built owlin who looks permanently scruffy despite his best efforts. Contributing to his dishevelment are tufts of juvenile plumage that refuse to smooth down, a handful of scars whose origin he's not sure of, and at least one hole in whatever clothing he's wearing.<br /><br />Contrary to what people initially assume, Javenesh is a friendly sort. To make ends meet, he works at Bow's End Tavern, managing servers and keeping the peace, relying on his rough appearance to dissuade those intent on making trouble. When not attending classes, Javenesh is an intimidating presence at the Intramural Silkball Club, where few people want to see him barreling toward them. He wishes more people would take the effort to get to know him, rather than be put off by his size and rough exterior.",
+      "bane": "The servers at Bow's End Tavern know you are no friend to Javenesh. At the slightest sign of trouble, they blame you and ask you to leave.",
+      "boon": "Javenesh's reputation as a tough guy follows you. If peers would be aggressive toward you, they quickly back down.",
+      "job": "Bow's End Tavern assistant manager",
+      "extracurriculars": "Intramural Silkball Club"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Larine Arneza",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "First Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-015.larine.png" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Some think Larine is aloof to the point of being rude, but her friends say that nothing is further from the truth. She is a delightful presence and doesn\u2019t ignore social obligations so much as get distracted easily. Larine is a member of the Intramural Water-Dancing Club, where she performs underwater balletic movements effortlessly. Despite her swimming ability, her tendency to lose focus means learning group choreography takes her more time and effort. Larine has a natural affinity with animals, especially aquatic species, and she\u2019s working on a solo synchronized swimming routine that replaces the other students with a shoal of fish. Rehearsals aren\u2019t going well. As an employee of the Strixhaven Performing Arts Society, Larine is a ticket taker, a job she\u2019s recently switched to as a result of struggling to give correct change while working at the box office.",
+      "bane": "You are offered the worst tickets to performances, if any at all.",
+      "boon": "Larine is an expert at creating stylized distractions. If you want to slip away unnoticed from anywhere on campus, Larine or her club members help you escape.",
+      "job": "Strixhaven Performing Arts Society ticket taker",
+      "extracurriculars": "Intramural Water-Dancing Club"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Melwythorne",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "First Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-016.melwythorne.png" },
+    "race": {
+      "fullName": "Dryad",
+      "baseName": "Fey",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Towering over most students, Melwythorne strikes an imposing figure, especially given the branches that grow from his head like antlers. Calm in demeanor, he\u2019s often confused by the people rushing around him, as their haste won\u2019t lengthen their brief lifespans. Melwythorne had never been away from his grove before coming to Strixhaven and has found the transition to university life difficult. However, since he joined the Intramural Silkball Club, this close-knit surrogate family has helped him deal with his homesickness.<br /><br />He is also a member of the Student-Mages of Faith. He enjoys helping his fellow students celebrate their high holidays and discussing theology and spirituality. For him, the natural world and all living beings form a vast consciousness across all planes of existence, transcending the power and reach of any one deity.",
+      "bane": "Members of the silkball club and the Student-Mages of Faith refuse to acknowledge your presence.",
+      "boon": "Melwythorne\u2019s spirituality centers you. You can calm even the most frazzled of your peers and, if necessary, extract information as needed.",
+      "job": "None",
+      "extracurriculars": "Intramural Silkball Club; Student-Mages of Faith"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Mina Lee",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "Second Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-017.mina-lee.png" },
+    "race": {
+      "fullName": "Changeling",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Mina\u2019s greatest love is the use of language; she adores how subtle differences in intonation and vocabulary can shape one\u2019s perception of reality. Her fascination with language extends to spells and verbal components. After graduation, she plans to conduct research on the variance of language in spells and how one might tweak verbal components that the greater magical community considers immutable.<br /><br />Mina\u2019s love of language and nuance has led her to join the Strixhaven Star as an investigative journalist. Here, she reveals truth, corrects misconceptions, and combats injustice. She has also taken a job as a server at Firejolt Caf\u00e9, which not only provides some cash but also puts her in a position to overhear snippets of conversation that might provide leads for her journalistic investigations.",
+      "bane": "Firejolt Caf\u00e9 never has the ingredients in stock for the beverages you initially order, even if it\u2019s a common drink.",
+      "boon": "Mina loves sharing her vast repository of knowledge with you. If you seek obscure information that\u2019s not secret, Mina researches it and reports her findings within a week.",
+      "job": "Firejolt Caf\u00e9 server",
+      "extracurriculars": "Strixhaven Star"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Nora Ann Wu",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Second Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-018.nora-ann-wu.png" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "Rarely without a smile on her face, Nora is a kind person who is generous with her time and attention. This has led her to gain employment within the university\u2019s dormitories, where she acts as a resident assistant. Nora offers confidential support to any student and is especially passionate about counseling other transgender students. She thoughtfully handles concerns ranging from students\u2019 homesickness to matters that require her to act as an advocate for another student.<br /><br />Nora is a passionate member of the Distinguished Society of Fine Artists. As such, she spends hours on the potter\u2019s wheel throwing clay. Despite her enthusiasm, her technical skill is lacking. Her tutors, in attempts to be encouraging, often describe Nora\u2019s work as rustic or naive. Undeterred, Nora continues to produce terrible mug after terrible mug, which she gives as gifts to her friends.",
+      "bane": "Few faculty care to help you with basic requests.",
+      "boon": "The faculty\u2019s respect for Nora extends to you. You can expect straightforward answers when you ask a faculty member for basic information.",
+      "job": "Dormitories resident assistant",
+      "extracurriculars": "Distinguished Society of Fine Artists"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Quentillius Antiphiun Melentor III",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-019.quentillius.png" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Quentillius approaches all his endeavors with the utmost seriousness. He believes one should either do something correctly or not at all. Quentillius is a member of the university\u2019s Playactors Drama Guild, where his dedication to what he calls \u201cthe craft\u201d is absolute. He looks down on other actors who are slow to memorize lines or who miss cues. Backstage crew members fare better, as Quentillius regards them as crucial and often brings them and the director flowers or notes of thanks. While Quentillius is a powerful presence on stage\u2014especially in romantic roles\u2014critics have called his performances histrionic. To better perform his future roles in ancient plays, Quentillius has joined the Dead Languages Society. He plans to perform his roles in the plays\u2019 original languages, regardless of whether the rest of the production is translated.",
+      "bane": "Whenever you perform as part of a production, a small crowd shows up and boos you specifically.",
+      "boon": "You have adopted Quentillius\u2019s authoritative voice, and in dire situations, your peers obey you when you issue commands.",
+      "job": "None",
+      "extracurriculars": "Dead Languages Society; Play-actors Drama Guild"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Rosimyffenbip Wuzfeddlims",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "First Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-020.rosie.png" },
+    "race": {
+      "fullName": "Gnome",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Excitable and impish, Rosimyffenbip is proud of her name; she insists you can call her \u201cRosie\u201d only if you are her friend. Or a teacher. Or a student. Or any other member of the university staff. Rosie speaks quickly and with so much energy that it often takes a moment to recover from a conversation with her. She moves far faster than one would expect; it\u2019s unclear whether this is due to magic, a gnomish technological contraption, or just the laws of physics bending to Rosie\u2019s force of personality.<br /><br />Rosie referees silkball and takes fair play very seriously. Woe betide any participant who feels the wrath of her whistle. Rosie is also an enthusiastic participant in Strixhaven\u2019s Live-Action Roleplaying Guild. She insists on roleplaying only \u201cmonsters\u201d and delights in chasing down participants to \u201ceat\u201d them. Many a participant has heard giggling approaching them at high speed before their character\u2019s death.",
+      "bane": "Whenever you participate in sports on campus (except for the Battle of Strixhaven), fouls are constantly called on you.",
+      "boon": "Rosie\u2019s energy is contagious. Whenever you travel any significant distance, you can reach your destination in half the normal time.",
+      "job": "Intramural Fields referee",
+      "extracurriculars": "Live-Action Roleplaying Guild"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Rubina Larkingdale",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-021.rubina.png" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "skills": [],
+    "notes": {
+      "backstory": "When Rubina walks into a room, people take notice. A measured performer with gravitas beyond her years, Rubina is a valued member of the Playactors Drama Guild who can handle weightier roles that more melodramatic actors can\u2019t. This has caused friction within the guild as members vie for parts. Rubina\u2019s stage presence extends to delivering presentations in class. When she orates, one can almost imagine a hardened general marshaling her bloodied and exhausted troops for a final push against a far superior foe.<br /><br />Rubina is part of the Strixhaven Show Band Association and has moved from playing to conducting. No previous student conductor has demanded and received such unwavering respect as Rubina. With merely a look and a raised eyebrow, she can quiet even the most raucous orchestra sections.",
+      "bane": "Whenever any band performs in public, its members stop and shake their heads in disapproval when they see you.",
+      "boon": "Rubina\u2019s gravitas has rubbed off, and you can easily command an entire room\u2019s attention. They hear your words favorably if you wish.",
+      "job": "None",
+      "extracurriculars": "Playactors Drama Guild; Strixhaven Show Band Association"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Shuvadri Glintmantle",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "First Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-022.shuvadri.png" },
+    "race": {
+      "fullName": "Owlin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Her peers are often surprised when they learn Shuvadri is interested in joining Silverquill College, since its members sometimes earn a reputation as abrasive. Shuvadri, on the other hand, exhibits an air of absolute serenity. Anything that might frustrate or delight another student, whether it\u2019s a poor test score or success at a competition, elicits little outward response from Shuvadri. A deep thinker, Shuvadri is rarely surprised by such an outcome, and she enjoys being a centering presence for her peers.<br /><br />Also a member of the Student-Mages of Faith, Shuvadri is happy to talk about her appreciation of deities who are devoted to service and community. Many of her peers think she is destined to hold high rank in a temple.<br /><br />Shuvadri works on the campus grounds to erase graffiti, wearing a content smile on her face.",
+      "bane": "Graffiti making rude allusions to you keeps appearing on campus, and it takes days to get cleaned.",
+      "boon": "If you quickly need the help of your peers, they drop everything to assist you as a favor to Shuvadri.",
+      "job": "Campus Grounds graffiti eraser",
+      "extracurriculars": "Student-Mages of Faith"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Tilana Kapule",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "First Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-023.tilana.png" },
+    "race": {
+      "fullName": "Kalashtar",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Tilana\u2019s poised demeanor and steady gaze are remarkable. An excellent judge of character, she doesn\u2019t associate with those she deems mean-spirited. Her exacting judgment has led her to join the Dragonchess Club, and while she is still honing her skill at the game itself, she compensates by reading her opponent instead of the board. Many a foe has struggled to sit in silence as she gives them her full attention, probing for weaknesses, the pieces seemingly incidental.<br /><br />Surprising to some, Tilana has also joined the Intramural Silkball Club. During matches, she focuses on trying to understand and preempt the opposing sides\u2019 strategies. More than once she has suggested new plays mid-game that have caught the opposing team off guard. The faculty at Strixhaven are convinced that, if she wished, one day Tilana would make an excellent professor.",
+      "bane": "The faculty don\u2019t trust you or help you much, for rumor has it that Tilana has found you wanting.",
+      "boon": "Tilana loves helping analyze problems. When you go to her for advice, she suggests a helpful solution that you hadn\u2019t considered.",
+      "job": "None",
+      "extracurriculars": "Dragonchess Club; Intramural Silkball Club"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Urzmaktok Grojsh",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-024.urzmaktok.png" },
+    "race": {
+      "fullName": "Orc",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "First to class, last to leave, and always asking for additional homework, Urzmaktok is a meticulous student. Despite his consistently high marks, Urzmaktok makes no attempt to show off, although his studies seem rudimentary to him. Rumor has it that he is completing enough credits to earn multiple degrees when he graduates.<br /><br />Urzmaktok works for the Campus Magic Labs as a specimen preparer. This additional access to the labs also allows him to run his personal experiments in peace. Unsurprisingly, he is also a member of the Fantastical Horticulture Club. There, he looks to develop new species of plants that might yield new ingredients for potions.<br /><br />Urzmaktok makes it clear he wants everyone to use his full first name. Should anyone use a nickname, he won\u2019t acknowledge the address.",
+      "bane": "No one on campus who isn\u2019t another player character will study with you. If you ask, most shrug decline, saying you\u2019ll probably fail.",
+      "boon": "No matter the subject, you can always find a partner to study with, whether it\u2019s Urzmaktok or a classmate doing him a favor.",
+      "job": "Campus Magic Labs specimen preparer",
+      "extracurriculars": "Fantastical Horticulture Club"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Zanther Bowen",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "First Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "https://media.dndbeyond.com/compendium-images/sacoc/zBbqVwSoOPBn2DCM/03-025.zanther.png" },
+    "race": {
+      "fullName": "Fire Genasi",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "One of the most popular students on campus, Zanther is a member of the Mage Tower Cheer Squad, and his exceptional athleticism has earned him the position as the squad\u2019s primary flyer. As such, Zanther is launched into the air in elaborate cheering routines, much to the crowd\u2019s delight.<br /><br />Zanther has also joined the Intramural Gymnastics Club. Here he completes at rhythmic gymnastics in both ribbon as well as hoop. To further test himself and impress the judges, Zanther conducts his routines to a vast array of different musical styles and arrangements. When traveling around campus between classes, he shouts random affirmations of school spirit to everyone at large. Despite his peppy nature, Zanther is genuinely encouraging and in no way acts superior. If anything, he seems somewhat oblivious to his own popularity at Strixhaven.",
+      "bane": "No one on campus invites you to parties or events, although your friends receive invitations.",
+      "boon": "You enjoy a high social rank as a result of your association with Zanther. Most of your peers fall all over themselves to do you favors.",
+      "job": "None",
+      "extracurriculars": "Intramural Gymnastics Club; Mage Tower Cheer Squad"
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ],
+      "orientation": "Bisexual",
+    }
+  },
+  {
+    "name": "Adrix and Nev",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Quandrix Professors of Substance/Theory" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Professor of Substance" },
+        "subclassDefinition": { "name": "Quandrix Professor of Theory" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/nBkKdRAg7Y5jKC3/preview" },
+    "race": {
+      "fullName": "Triton",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "The twins Adrix (professor of substance) and Nev (professor of theory) grew up literally swimming in magic, in an ocean region near a powerful magical snarl. At an early age, they began to see patterns in the tides and currents that eluded even the most esteemed scholars of their society. Once, they saved a hundred lives by predicting the sudden arrival of a tsunami, despite the deceptively calm seas \u2014 washing away any doubts in their prowess.<br /><br />Adrix and Nev now teach as a duo, blending mastery of both of Quandrix\u2019s philosophical perspectives. They constantly debate the merits of various esoteric mathematical principles, but if one of their students is in danger, they leap into action in perfect harmony."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "name": "Arkin Minexes",
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "Prismari Professor of Expression" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Professor of Expression" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/oSADSnaXgZSHfYY/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Arkin is a newly hired instructor teaching a few courses in choreography and dance ensembles. He recently graduated from Strixhaven himself, and he bubbles with excitement at the prospect of guiding a new generation of students on the course of study he so greatly enjoyed. He particularly delights in finding new ways to help students work collaboratively to unlock the heights of their creative potential."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Augusta Tullus",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Lorehold Professor of Order" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Professor of Order" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/bgpHC3t25cifRnY/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Augusta Tullus is an human cleric teacher at the Lorehold College of Strixhaven University. Augusta, a professor of spirit studies, has been called the college's most talented pastraiser, she can not only summon ghostly historical figures but also conjure entire dioramas of historical events for her lectures.<br /><br />Augusta believes that history repeats itself as orderly progress toward an ideal. She believes that the mistakes of the past can inform the choices of the present, creating a world of peace, order, and rules. She plays things very by the book and is highly disappointed with students who embark on Dean Plargg's dangerous field trips."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Breena",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Silverquill Professor of Shadow" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Shadow" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/4sGPtLxFSiK3jk4/preview" },
+    "race": {
+      "fullName": "Owlin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Breena (the Demagogue) has a talent for getting her way. If she wants you to do something, you won\u2019t just do it \u2014 you\u2019ll be sure it was your idea all along. Her students and colleagues alike hang on her every word, and in front of a crowd, she\u2019s a powerhouse of charisma, enhancing her speeches with elegant swirls of ink magic. Though she\u2019s an elite mage who can easily hold her own in a fight, Breena prefers to defeat her foes with words alone.<br /><br />An Oriq agent once trapped and attempted to recruit her, threatening her students\u2019 lives if she didn\u2019t comply. Within an hour, she convinced him to free her, abandon his wicked ways, and seek wisdom from the archaics."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Brenneth Blackstone",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Silverquill Professor of Shadow" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Shadow" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/bfxab4SgjMeTR4W/preview" },
+    "race": {
+      "fullName": "Dhampir",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Brenneth Blackstone (Scriptology Star) is a rising star in the study of magical writing and symbols. With a dynamic lecturing style, this dhampir \u2014 a partial vampire \u2014 attracts students from across Strixhaven purely for his lessons\u2019 value as performance art. He teaches a course in scrivening and scriptology that characters take over the course of year 2."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Deekah",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Quandrix Professor of Theory" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Professor of Theory" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/6Ls7ic29CPLHLAT/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Deekah sees the world as an endless sequence of interconnected equations, which to her is the most beautiful thing imaginable. She explores new theorems by giving them physical form, and her exquisite geometric creations are thrilling sights on campus."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Embrose Lu",
+    "group": { "name": "strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Silverquill Professor of Shadow" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Shadow" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/Nf78iKWDpQDqHQC/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Embrose Lu is a master poet whose ink magic is merciless. Scant with praise and quick with a cutting remark, Dean Lu has seen many mage-students scrub out of Strixhaven and has nothing good to say about those who can\u2019t hack it.<br /><br />A cynic, Embrose believes that most people are in it for themselves. He demands his students learn how to use language-based magic to \u201cget what they deserve.\u201d While he often argues with Dean Talonrook, he holds a deep (if begrudging) respect for the owlin."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Middle Aged",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Fain",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Silverquill Professor of Shadow" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Shadow" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/kdfy8eBRCzMApCT/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Lost an important textbook? Craving some rare delicacy from home? Need something inconveniently forbidden? Enter Fain (the Broker). He has an extensive network of connections on and off campus, and he can procure just about anything \u2014 so long as you can afford his price."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Gyome",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Witherbloom Chef" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Gyome" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/g5LK9qDaKmf8f8a/preview" },
+    "race": {
+      "fullName": "Troll",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Gyome is the beloved, if unconventional, chef of Witherbloom College, whose earthy, herbaceous cooking is as much an extension of his magic as it is his culinary skill. Towering and moss-covered, with an apron straining to contain his massive frame, Gyome moves with surprising grace through the kitchens, wielding oversized utensils with expert precision. He has an almost encyclopedic knowledge of edible plants and fungi, often foraging the Witherbloom swamps for the freshest ingredients to incorporate into his meals.<br /><br />Known for his gruff but good-natured demeanor, Gyome takes pride in crafting hearty, nourishing dishes that not only feed the body but rejuvenate the spirit. While some students might balk at his swamp-inspired recipes, most find his meals oddly invigorating \u2014 especially when he adds his signature \u201ctroll stew\u201c, a secret concoction he claims can heal both heart and soul."
+    },
+    "tags": [ "NPC", "Staff" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Hofri Ghostforge",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Lorehold Professor of Order" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Professor of Order" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/CTcxCXApoiinScj/preview" },
+    "race": {
+      "fullName": "Dwarf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Hofri Ghostforge is a dwarf cleric professor at the Lorehold College of Strixhaven University. Lorehold battle mediums can call upon spirits and turn them into hardy soldiers by housing the spirits in statues depicting their living selves. If no statue is available, the average medium is unable to physically manifest the spirit. Hofri is no average medium.<br /><br />When Hofri first enrolled in Strixhaven, he believed his future lay with Prismari. A diligent student, he quickly mastered the technical skills, but his magic left something to be desired. After talking with the school's counselor, Mavinda, Hofri decided to try his luck with Lorehold. It turned out he was a natural with spirit magic, a true Lorehold through and through.<br /><br />His time at Prismari was hardly wasted, however. Combining his artistic skill with his keen spiritual sense, Hofri was able to visualize a spirit's mortal appearance and construct a viable statue form for them to inhabit. No one in Lorehold's history was able to create a spirit statue from scratch, and Hofri was offered a professorial position after graduation, which he happily accepted."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Imbraham",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Quandrix Professor of Theory" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Professor of Theory" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/YebmM4ENbokJLcg/preview" },
+    "race": {
+      "fullName": "Owlin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Imbraham is stern and shrewd, with a mind as piercing as his curved beak. He is known for the unnerving habit of fully rotating his head around to address his students, while still rapidly chalking up complex theorems and equations on a chalkboard. Imbraham loves numbers more than people or the out-of-doors; some say he hasn\u2019t gone outside certain chambers of the Quandrix campus in years.<br /><br />Imbraham wants nothing more than to crack the mysteries of the world through dauntingly complex theories. He offers his students standing bounties on any of his unsolved equations."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Kianne",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Quandrix Professor of Substance" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Professor of Substance" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/YmiJmNdE2CnmNqe/preview" },
+    "race": {
+      "fullName": "Elf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Brilliant and eccentric, Dean Kianne is one of the preeminent mana scholars of the world. She has visited and studied countless bizarre magical phenomena, from snarls to star arches to ancient shrines. She loves to share her wild theories with anyone who will listen.<br /><br />Kianne believes in using mathematics to better understand nature. She places an emphasis on practical magic that improves daily life through applied calculations. She rolls her eyes at Dean Imbraham\u2019s theories, dismissing them as evidence that her fellow dean lives in an imaginary world."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Lisette",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Witherbloom Professor of Growth" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Professor of Growth" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/pBBCjNbZsf4eL2S/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Lissette (Dean of the Root) is a world-class healer and herbalist; it\u2019s even said she once cured the Lorehold founder dragon of a secret illness. Lisette\u2019s classes lean more toward demonstration and hands-on experience than lectures. When Lisette speaks, her words are soft and full of colorful metaphors.<br /><br />Lisette believes in preserving nature and life, and she instills in her students a respect for all living things. While Dean Valentin\u2019s exploitation of living creatures disgusts her, she also knows she can use the results of his cruelty to help future lives."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Losheel",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Lorehold Professor of Chaos" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Professor of Chaos" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/XzeR6t4CaFPtHCE/preview" },
+    "race": {
+      "fullName": "Loxodon",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Losheel, Clockwork Scholar, is a loxodon artificer at the Lorehold College of Strixhaven University.<br /><br />Losheel proudly admits that she's willing to work very hard in order to be as lazy as possible. She turns her brilliant mind to constructing ever-more-efficient mechanical helpers, with the goal of one day being able to do anything she wants without standing up."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Mavinda Sharpbeak",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Guidance Counselor" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Radiance" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/9LqHEw6iaCoija3/preview" },
+    "race": {
+      "fullName": "Owlin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Mavinda Sharpbeak is a Silverquill Professor of Radiance and the Guidance Counselor of Strixhaven University.<br /><br />While she is the guidance counselor for all students, she mostly is visited by first years."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Nassari",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": {
+        "name": "Prismari Professor of Expression"
+      }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Professor of Expression" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/AycyJ35kJCydAXC/preview" },
+    "race": {
+      "fullName": "Genasi",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Nassari is the current Dean of Expression. Nazzari always wants to see art that is bigger, more radical in concept, and more emotionally powerful. For their final project as a mage-student, Nassari famously \u201cturned in\u201d an earthquake, which almost destroyed three campus buildings. The piece received a standing ovation from the mage-student body \u2014 and a grumpy thumbs down from the campus construction golems."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Non-Binary",
+      "genderPronouns": [ "they", "them" ]
+    }
+  },
+  {
+    "name": "Nils",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Silverquill Professor of Radiance" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Radiance" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/bzWj8Bwa6iHLgGC/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Nils (Discipline Enforcer) is an optimist, as he believes in every student\u2019s potential for greatness. However, this outlook also means he\u2019s constantly disappointed by their suboptimal choices, and he is well known for his strictness and abrupt scoldings."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Osgir",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Lorehold Professor of Order" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Professor of Order" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/XSzYDcJbSJ7Qi45/preview" },
+    "race": {
+      "fullName": "Giant",
+      "baseName": "Giant",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Professor Osgir is a stone giant teacher at the Lorehold College of Strixhaven University. Even by Lorehold standards, Osgir is obsessed with relics of the past. Whether it's a magnificent, jeweled crown or an ugly old shovel, every treasure connects him to civilizations of old. As a student, he was constantly in detention for hoarding the best finds from Lorehold dig sites in his room; he lost count of how many times he was sternly told, \u201cHistory belongs to us all!\u201c<br /><br />So, naturally, he mastered the magical art of duplicative restoration. Not only can he perfectly recreate an ancient object or device from the smallest scrap, he can produce a second, identical version every time, for his personal collection. He displays something different every week in his Lorehold office, from a mighty sword of demon-slaying to a delicate elven music box."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Plargg",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Lorehold Professor of Chaos" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Professor of Chaos" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/tTcHsGP8xXmJBDJ/preview" },
+    "race": {
+      "fullName": "Orc",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Plargg is an orc shaman teacher at the Lorehold College of Strixhaven University. Plargg is a gruff, blind orc who specializes in military history. Known as a demanding teacher, students seek him out anyway for his perfect recall of hundreds of historical stories and for his lessons in wielding potent scroll magic. He invented \u201cheat lettering,\u201c a form of magical parchment embossing that provides a tactile way to read texts.<br /><br />Plargg believes that history is full of unpredictable, war-filled chaos and that his students need to be ready for anything. He teaches that there are no rewards without risk, and his excursions always end with multiple trips to the nurse's office. He pays little attention to Dean Augusta's work, dismissing her attempts to find order in the chaos as a foolhardy waste of time."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Ruxa",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Quandrix Professor of Substance" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Professor of Substance" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/bJjZZLBdqPeRygf/preview" },
+    "race": {
+      "fullName": "Bear",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Ruxa looks like a bipedal brown bear and knows that wild new theories, though exciting, are worth less without a deep understanding of the basics. He teaches students of all levels, and even his most experienced pupils benefit from a much deeper understanding of the fundamental building blocks of the world."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Shaile Talonrook",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "Silverquill Professor of Radiance" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Professor of Radiance" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/SLtsfa6aLMdwQL6/preview" },
+    "race": {
+      "fullName": "Owlin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Shaile Talonrook is a perennially optimistic orator. A master of literature, she often quotes obscure passages from famous texts. Her soul-filling advice and educated references have been known to make people literally glow.<br /><br />Shaile believes that all people have the potential for good and wishes to teach her students how to make the world a better place. She and Dean Lu often clash over Silverquill\u2019s curriculum, but the balance found between them is far more eloquent than even their words can describe."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Tivash",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Witherbloom Professor of Decay" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Professor of Decay" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/7QiLeGiCWfTwF5A/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "It\u2019s tough to study the secrets of life and death with out getting your hands dirty \u2014 which is the first thing Tivash (Gloom Summoner) teaches Witherbloom students. Some call the forces he manipulates evil, but he asserts that power is only as good or evil as how you use it."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Uvilda Mistcoiler",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Prismari Professor of Perfection" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Professor of Perfection" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/Lm3E2LAnZKrbMYY/preview" },
+    "race": {
+      "fullName": "Genasi",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Uvilda Mistcoiler is the current Dean of Perfection. A master of artistic technique, Uvilda trains with a range of elements whenever she isn\u2019t focused on her teaching. She is known for giving students profoundly insightful feedback, which she tailors to each individual. After a review, she often offers a small piece of advice that alters the student\u2019s point of view and work forever \u2014 for the better.<br /><br />Uvilda believes that good art comes from the head. To her, carefully measured strokes and deliberate object placement make the difference between fully realized art and a total mess. If Dean Nassari interrupts her careful work with bombastic expressions one more time, Uvilda is prepared to enroll in Quandrix to learn how to shrink Nassari."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Valentin",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Witherbloom Professor of Decay" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Professor of Decay" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/QPm3D7sZe5awLBY/preview" },
+    "race": {
+      "fullName": "Vampire",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Dean Valentin (Dean of the Vein) is ancient and drinks the blood of living creatures throughout the bayou. Valentin is a kind of sangromancer \u2014 he receives visions from the blood he consumes, which he uses to learn things about a creature or place. He has no qualms about exploiting the bayou\u2019s creatures for personal gain.<br /><br />Valentin's classes focus on dissection and decay. He and Dean Lisette often clash over his cavalier treatment of animals, but that hasn\u2019t stopped her from using his discoveries for her research."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Elderly",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Verelda Lang",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Witherbloom Professor of Growth" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Professor of Growth" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/ByqweNWdxLLBPcw/preview" },
+    "race": {
+      "fullName": "Dryad",
+      "baseName": "Fey",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Verelda Lang (Arcano-Biologist) is a respected Witherbloom professor of growth who teaches introductory courses in magical physiologies, helping students in every college learn about the many unusual creatures they\u2019re likely to encounter, whatever the students\u2019 field of study. Her research extends to the vital functions of fractal creatures and other artificial life-forms, leading her to teach courses at Quandrix College as well."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Veyran",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Prismari Professor of Perfection" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Professor of Perfection" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/CSwZ6c7ZgBKCzEg/preview" },
+    "race": {
+      "fullName": "Genasi",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "In addition to being an accomplished elementalist, Veyran (Voice of Duality) serves as a mentor to many Prismari pledgemages. She advocates enthusiastically for the importance of both passion and disciplined technique in any artistic pursuit. If a new student is upset or overwhelmed, she eagerly calls forth playful, beautiful elemental creatures to cheer up the student."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Willowdusk",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Witherbloom Professor of Growth" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Professor of Growth" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/Mqz6pK3wJT8JsoC/preview" },
+    "race": {
+      "fullName": "Treant",
+      "baseName": "Fey",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "No one knows how old Willowdusk (Essence Seer) really is. This professor of growth claims to be older than Strixhaven itself, and although many suspect that she exaggerates, no one else who has lived long enough to refute her cares to do so. Many years ago, a group of rebellious students got lost in Detention Bog and took shelter in what turned out to be Willowdusk\u2019s roots. She protected them from a pack of hungry groffs and shepherded them back to Widdershins Hall, offering a lecture on proper herb-gathering practices during the journey.<br /><br />Her lessons proved so effective that she was asked to stay as a professor. She loves passing on her knowledge of medicinal herbs, pest mascot cultivation, and dissection techniques to generations of new students, and she almost always has a pot of tea brewing."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Unknown",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Zaffai",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Prismari Professor of Expression" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Professor of Expression" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/g3Ea9iA3jgw7EWA/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "As soon as Zaffai (Thunder Conductor) came of age, his parents sent him to Strixhaven, assuring him his budding musical genius deserved the finest instruction in the world. (In truth, though he did possess prodigious talent, they were also growing tired of their house being randomly struck by lightning or engulfed in cyclones whenever he practiced.) Even as he flourished as both mage and musician, he discovered a new aptitude: conducting.<br /><br />In addition to teaching, he serves as Grand Maestro of Strixhaven's Orchestra of the Arcane, an elite extracurricular activity for top Prismari students. They practice only outdoors, and their concerts fill the sky with beautiful explosions of elemental magic."
+    },
+    "tags": [ "NPC", "Professor" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Alara Veilsong",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/N3gKgs9QQyFwY9Q/preview" },
+    "race": {
+      "fullName": "Eladrin",
+      "baseName": "Fey",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Alara Veilsong is a winter eladrin with a deep yearning to transform into a spring eladrin. As a member of Quandrix College, she excels in the study of mathematics and magic.<br /><br />Alara's love for symmetry is evident in everything she does, from her meticulously organized spellbooks to the intricate patterns of her magical constructs. Her art, which prominently features butterflies, symbolizes her desire for transformation and beauty. She often wears garments in shades of blue, with patterns that echo the symmetrical designs she adores. Despite her wintery appearance, Alara's personality is warm and nurturing, always seeking to help others find balance and harmony in their lives. Her dream of becoming a spring eladrin fuels her studies and artistic pursuits, driving her to create beauty and symmetry in all aspects of her life.",
+      "bane": "You may randomly feel a literal and figurative chill, leading to moments of discomfort and distraction, making it harder to concentrate.",
+      "boon": "Being near Alara grants a calming and focusing effect, helping others to organize their thoughts and approach challenges with clarity and precision.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ],
+    }
+  },
+  {
+    "name": "Argentis",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "New Student (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Argentis" },
+        "subclassDefinition": { "name": "Prismari Apprentice" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/X74FcKjKQtbHoxB/preview" },
+    "race": {
+      "fullName": "Warforged",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Argentis is a warforged and a new member of Prismari College, already renowned for his extraordinary talent in dance and elemental performance. Standing tall with a sleek, metallic frame, Argentis's body is a work of art itself, shimmering with a silvery hue.<br /><br />Designed for grace and expression, his joints and limbs are constructed to allow for fluid, almost ethereal movements that captivate all who watch. His passion lies in blending dance with elemental magic, creating breathtaking displays that merge art and nature. Despite his mechanical nature, Argentis is deeply expressive, channeling emotions through his art with a precision and beauty that resonate with the soul.",
+      "bane": "You find small but inconvenient occurrences such as unexpected gusts of wind, flickering lights, or minor elemental disturbances in your surroundings.",
+      "boon": "Being around Argentis grants an inspiration boost in creative endeavors, particularly those involving movement and performance.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Fabian Ashborne",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "First Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/JNwt2Z33FsQGPDA/preview" },
+    "race": {
+      "fullName": "Tiefling",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Fabian Ashborne is a tiefling member of Prismari College, known for his fierce determination and exceptional magical talent. Born to a poor family in the harsh Demon Wastes, Fabian's early life was a struggle for survival. His deep blue skin and sharp horns reflect his infernal heritage, but his spirit is one of resilience and hope. When he discovered his magical prowess, Fabian dedicated himself to studying and mastering his abilities, dreaming of a life beyond the Wastes. His hard work paid off when he was accepted into Strixhaven, a chance to escape his past and create a better future. At Prismari, Fabian specializes in elemental magic, particularly fire and lightning, which he uses to create spectacular performances. Despite his intense focus on his studies, he remains humble and grounded, always willing to lend a hand to those in need.",
+      "bane": "You experience subtle but intense heat around you, which might result in discomfort, minor burns, or the feeling of being watched.",
+      "boon": "You experience a comforting warmth that boosts your morale and fortitude, and also makes you more resilient to cold environments.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Ithicha",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "New Student (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/p5WcYWQCBZa4tqf/preview" },
+    "race": {
+      "fullName": "Lizardfolk",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Ithicha is from Q'barra and a dedicated member of Quandrix, known for their stoic demeanor and sharp intellect. Beyond their rigorous studies, Ithicha has a unique ability to communicate with the natural world around them, particularly plants and small animals, using an ancient form of druidic magic. This skill allows them to gather insights and data directly from nature, enhancing his understanding of magical and natural symmetries. Their enchanted, glowing book is not just a study tool but a living artifact that records the whispers of the forest and the secrets of the flora. Ithicha often shares these insights through intricate, glowing geometric patterns in their art, which serve as both beautiful displays and complex magical diagrams. Ithicha's quest for knowledge is driven by a deep curiosity about the underlying patterns of the universe and a desire to bridge the gap between nature and magic.",
+      "bane": "You might find pathways blocked by overgrown vines, animals creating disturbances, or even minor mishaps caused by the environment.",
+      "boon": "You gain a heightened awareness of your natural surroundings, making it easier to find hidden paths, resources, and understand natural phenomena.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Non-Binary",
+      "genderPronouns": [ "they", "them" ]
+    }
+  },
+  {
+    "name": "Leonidas",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "New Student (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/GgoHZBJ6zgf8cpR/preview" },
+    "race": {
+      "fullName": "Tabaxi",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Leonidas is a tabaxi from the Eldeen Reaches and a devoted member of Witherbloom College. He excels in the balance of ecosystems and the intricate interplay between flora and fauna. Leonidas's deep understanding of these relationships allows him to cultivate unique plants and harness their properties. Leonidas creates living gardens and vibrant ecosystems as part of his projects, showcasing his ability to harmonize with the environment. His dedication to studying the symbiotic relationships within nature makes him an invaluable resource in Witherbloom. Leonidas's unique approach to magic, blending natural science with practical application, inspires those around him and highlights the delicate balance necessary for life to thrive.",
+      "bane": "You may experience sudden plant growth obstructing your path, animals causing distractions, or even minor natural hazards making your tasks more difficult.",
+      "boon": "You gain a deeper understanding of the balance of ecosystems, enhancing your ability to work with plants and animals. This makes it easier to cultivate plants, care for animals, and create effective herbal remedies.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Rhit",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "New Student (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/a96WyoR2QopkmiA/preview" },
+    "race": {
+      "fullName": "Goblin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Rhit is a goblin from Darguun and a member of Lorehold College. Rhit prefers to blow off classes and pursue his own interests, often found exploring old ruins or tinkering with ancient artifacts. His small stature and nimble fingers make him adept at navigating tight spaces and disarming traps. Rhit has a natural talent for unearthing hidden treasures and secrets, which he sometimes sells or uses to play pranks on others. He is known for his mischievous nature and sharp wit, always ready with a clever retort or a daring scheme. Despite his disregard for formal education, Rhit possesses a keen intellect and a deep curiosity about the past. His unconventional approach often leads to surprising discoveries that more studious individuals might overlook. Rhit's art involves creating intricate models of ancient structures and mechanisms, showcasing his knack for detail and innovation.",
+      "bane": "You might find your belongings misplaced, traps set in your path, or misleading information leading you astray.",
+      "boon": "You gain an instinctive ability to find hidden objects and secret passages, making exploration and treasure hunting more fruitful.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Joran Brightspark",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "First Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/FEGW2iBxAnPGJDx/preview" },
+    "race": {
+      "fullName": "Halfling",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Joran Brightspark is a halfling Prismari student raised by gnomes on the island nation of Lorghalen. Growing up surrounded by gnomish ingenuity and curiosity, Joran developed a deep fascination with elemental magic and the art of binding elements. Her goal is to further the understanding of elemental binding by studying under both Prismari and Lorehold Colleges. Joran is known for her boundless energy and enthusiasm, often seen experimenting with new spells and magical effects. She blends the artistic flair of Prismari with the historical and theoretical knowledge of Lorehold, creating unique and dynamic works of magic. Her background with gnomes has given her a knack for intricate designs and a love for tinkering with magical artifacts. Despite her small stature, Joran's presence is commanding, and her passion for her studies is infectious, inspiring those around her to explore the limitless possibilities of magic.",
+      "bane": "You might experience small disturbances such as sudden gusts of wind, small fires, or unexpected water splashes.",
+      "boon": "You gain a subtle connection to elemental forces, enhancing your ability to manipulate elemental magic and making spells involving elements more controlled.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Agatha Zaphrin",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/TPaHfYn8LQogY84/preview" },
+    "race": {
+      "fullName": "Shifter",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Agatha Zaphrin is a Shifter student of Quandrix College who goes to great lengths to hide her true nature. She wears a hood most of the time and avoids going outside during full moons. Agatha's keen mind and analytical skills make her an exceptional student, excelling in the study of magical theory and the manipulation of arcane energies. Despite her reclusive tendencies, she is deeply curious about the world around her and can often be found exploring on non-full moon nights with a glowing blue lantern in hand. This lantern, an artifact she created, helps her gather and analyze magical data.",
+      "bane": "Whenever you cast a spell that requires concentration, there is a small chance that you lose concentration immediately upon casting.",
+      "boon": "Agatha will allow you to use her glowing lantern to identify the properties of a magical item or effect.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Toren Dustfall",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "Second Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/g6wXNBkFaRtZ87j/preview" },
+    "race": {
+      "fullName": "Half-Orc",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Toren Dustfall is a bold and imaginative artist whose creations blend the raw power of nature with vibrant emotion. Raised in the shadow of a volcanic mountain, Toren\u2019s passion for fire and earth magic often manifests in his sculptures, which seem to come alive with searing flames or flowing lava. Despite his imposing stature, Toren is surprisingly soft-spoken, letting his art express the feelings he struggles to put into words. Known for his relentless work ethic, he frequently practices late into the night, leaving glowing embers on the Prismari campus as silent testaments to his dedication. Toren is also fiercely loyal to his friends and will defend their dreams with the same intensity he channels into his art.",
+      "bane": "You find strange scorch marks or crumbled bits of earth in places you frequent, as if Toren\u2019s intense magic lingers to make life messier.",
+      "boon": "Whenever you need help creating something artistic or dramatic, Toren shows up with materials or inspiration that align with your vision.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Blakely Margedi",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/yoY3zXq6a2HwCkf/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Blakely Margedi is a methodical and disciplined wordsmith whose mastery of runic magic sets him apart from his peers. His carefully crafted spells are a mesmerizing dance of light and shadow, each rune precisely formed and perfectly placed, reflecting his almost obsessive dedication to perfection. A staunch believer in the power of order and structure, Blakely often acts as a mediator among his classmates, using his eloquence to defuse conflicts. Despite his reserved demeanor, he takes pride in mentoring younger students, encouraging them to find clarity and purpose in their magical studies. Though some find his rigid adherence to rules frustrating, Blakely\u2019s unwavering commitment to excellence and his craft make him a respected figure among his peers.",
+      "bane": "Important documents or letters you need seem to have inexplicable smudges or missing sections, as though some of Blakely\u2019s magic is obscuring it.",
+      "boon": "Blakely\u2019s runic expertise often leaves helpful annotations in your notes or projects, making your work easier to complete or more polished.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Catherine Shepherd",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/BcEBdWtwD6rNM8y/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Catherine Shepherd is a serene and enigmatic student whose deep connection with nature is almost mystical. Born in a remote swampy village, she grew up wandering phosphorescent marshlands, where she learned to commune with the wild animals and glowing marshwicks that now seem to follow her wherever she goes. Catherine prefers the company of creatures and plants to people, often whispering to them as if sharing secrets only they can understand. While she exudes an unassuming calm, her magic carries an unpredictable edge, reflecting both the nurturing and untamed sides of nature. Fellow students are drawn to her quiet confidence and mysterious aura, though few have managed to truly earn her trust.",
+      "bane": "Nearby animals shy away from you, as if echoing Catherine\u2019s disappointment.",
+      "boon": "Animals seem drawn to you and act unusually friendly, as if Catherine has encouraged them to look after you.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Edward \u201cTeddy\u201d Ironbreaker",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "First Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/XESytHeEXYjHeaX/preview" },
+    "race": {
+      "fullName": "Dwarf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Teddy is a middle-aged blacksmith dad who had a mid-life crisis and decided to go back to school. He intends to use magic, specifically the elemental magic of Prismari, to further his smithing skills. Teddy gushes about his kids (Alice, age 11 and Junior, age 8) and his wife (Lyrissa Moonbeam, half-elf pastry chef) at any and all opportunities, and provides fatherly advice to wayward students. He's very serious about his studies, but has only average grades.",
+      "bane": "You occasionally feel the weight of Teddy's disapproval, leading you to second guess yourself in important situations. You remember 'he's not mad, he's just disappointed'.",
+      "boon": "While on campus, you feel more confident and supported. This manifests as a slight boost in morale, making you more likely to receive positive feedback from professors and peers when discussing studies or presenting projects. You are also more likely to get encouragement and minor assistance from other students who admire Teddy.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Older Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Farid Kahn",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "First Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/qCxfWygYStxsPCz/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Farid Kahn is a poised and honorable student with a knack for combining logic and protective magic. Hailing from a noble family with deep traditions in both martial prowess and arcane mastery, he is as comfortable in a debate as he is in a sparring ring. Farid takes pride in his intricate abjurations, which are not only functional but also showcase his meticulous understanding of arcane geometry. He is deeply loyal to his friends and values integrity above all, often stepping in to protect those who cannot protect themselves. Despite his noble background, he is approachable and eager to share his knowledge, though he can come across as overly formal or self-critical at times.",
+      "bane": "Minor barriers, such as stacks of books or tangled ropes, seem to appear at the most inconvenient times, slowing your progress.",
+      "boon": "Farid\u2019s protective influence ensures that doors you need to get through are always unlocked or easier to bypass.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Helezana Grara",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "First Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/qy7GDTNfy7FtoDq/preview" },
+    "race": {
+      "fullName": "Elf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Helezana Grara is a compassionate and intuitive student who draws her magic directly from the earth's lifeblood. Born into an ancient elven clan of druids, she sees magic as a sacred bond between life and the land, and her glowing, lotus-like flower is both a focus of her power and a symbol of this connection. Helezana is deeply empathetic, often sensing the emotions of others and offering quiet support to those in need. Her magic blends healing and growth with a raw, primal energy that can turn defensive in the face of harm to nature or her friends. Despite her peaceful demeanor, Helezana is unafraid to take decisive action when life is threatened, and her unwavering dedication to balance inspires those around her.",
+      "bane": "Roots and brambles seem to trip you more often, as though nature itself is a little less friendly in your presence.",
+      "boon": "Flowers bloom more vibrantly and herbs grow faster in areas where you spend time, as if Helezana\u2019s magic subtly supports you.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Ingrid Egilsil",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/C8TRJNBn3FqF8ro/preview" },
+    "race": {
+      "fullName": "Aasimar",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Ingrid Egilsil is a radiant and disciplined scholar who views history as a guiding light for the present and future. As an Aasimar, she feels a divine obligation to preserve and honor the legacies of those who came before her, often quoting ancient texts and recounting legends to illustrate her points. Ingrid carries herself with poise and confidence, though her rigid adherence to rules can make her seem unyielding. She values precision and order, and she often inspires others to rise to her exacting standards of excellence.",
+      "bane": "You hear faint, disapproving whispers when you attempt to cut corners or ignore rules, as if Ingrid\u2019s ideals follow you.",
+      "boon": "Ancient texts or forgotten relics you encounter seem to glow faintly, guiding you to useful insights or tools.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Killian Lu",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/2QjzSLztRJtX7iN/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Killian Lu is a charismatic and talented student whose mastery of ink magic makes his spells as fluid and striking as his personality. As the son of Dean Embrose Lu, he feels the weight of high expectations but strives to forge his own identity within Silverquill. Killian is a natural leader, adept at rallying his peers with his persuasive words and artistic flair, though his confidence can sometimes be mistaken for arrogance. He has a penchant for transforming mundane tasks into opportunities for creative expression, often turning his assignments into demonstrations of his unique style. Despite the pressure he faces, Killian is approachable and enjoys mentoring others, valuing connection and collaboration over rivalry.",
+      "bane": "Gossip or rumors about you seem to spread quickly, whether true or not, as though Killian\u2019s sharp tongue has inspired others.",
+      "boon": "Invitations to exclusive events or gatherings often find their way to you, as if Killian\u2019s social reach includes you.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "flaws": "",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Kiya Alwan",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Quandrix)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Quandrix Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/GseANYgGPxXjAtJ/preview" },
+    "race": {
+      "fullName": "Half-Elf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Kiya Alwan is a meticulous and studious mage whose fascination with arcane geometry and mathematical precision makes her a standout in Quandrix. Often found engrossed in books, she is deeply passionate about unraveling the mysteries of magic through logic and formulas. Kiya believes that every problem has a solution if one is patient and disciplined enough to find it, and she often acts as a calm, grounding presence among her peers. While she values structure and order, she is open-minded when it comes to new perspectives and enjoys collaborative problem-solving. Her quiet determination and knack for turning abstract theories into practical applications earn her respect, even from those who don\u2019t share her methodical nature.",
+      "bane": "You occasionally see glowing symbols in the air that distract you or obscure important details, like echoes of Kiya\u2019s magic.",
+      "boon": "Complex puzzles or patterns seem to solve themselves a little faster when you\u2019re around, as if Kiya\u2019s mind is quietly assisting.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Mesmerelda Gar",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "N", "description": "Neutral" },
+    "background": {
+      "definition": { "name": "First Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/Afrdwx5xzNSkbDw/preview" },
+    "race": {
+      "fullName": "Human",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Mesmerelda Gar is a dazzling presence in any room, effortlessly blending charm and sophistication with the sharp wit expected of a Silverquill student. Coming from a wealthy and influential family, she is well-versed in social graces and carries herself with an air of unshakable confidence. Mesmerelda thrives in formal settings, seeing social events as both an art form and an opportunity to influence others through carefully chosen words and calculated charisma. While she can be perceived as aloof or even intimidating, those who earn her trust discover a fiercely loyal friend who values honesty and strength of character. Her flair for the dramatic often manifests in her spells, which she executes with an almost theatrical precision.",
+      "bane": "At the worst times, your appearance becomes slightly disheveled or out of style, as though Mesmerelda\u2019s critiques haunt you.",
+      "boon": "Fashionable clothing or accessories you desire seem to become readily available, as if Mesmerelda\u2019s sense of style has rubbed off on you.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Nelson Dawoud",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "First Year (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/mc4Xq4m78LM5Mcy/preview" },
+    "race": {
+      "fullName": "Half-Elf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Nelson Dawoud is a reserved but insightful student whose mastery of shadow magic reflects the duality of light and darkness in his personality. Born into a family of poets, Nelson\u2019s creative flair shines through in his spellcasting, which often takes the form of shadowy verses swirling in the air. While he tends to keep to himself, his empathetic nature and deep understanding of others\u2019 emotions make him a trusted confidant. Nelson\u2019s quiet demeanor belies a fierce dedication to justice and fairness, and he will not hesitate to step into the spotlight when he believes someone has been wronged. His unique combination of introspection and courage earns him the respect of peers who take the time to know him.",
+      "bane": "Shadows near you occasionally seem to stretch or flicker unnaturally, unnerving others around you.",
+      "boon": "Shadows seem to work in your favor, subtly concealing you when you need to stay unnoticed.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Rebecca \u201cBecca\u201d Dominic",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Second Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/x6HgQXMgSqkieco/preview" },
+    "race": {
+      "fullName": "Dwarf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Becca Dominic is a lively and inquisitive Lorehold student whose passion for history is matched only by her love of storytelling. She specializes in animating the past, quite literally, by summoning spectral figures from her meticulously researched scrolls. Becca\u2019s boundless curiosity often leads her to explore the darkest and most forgotten corners of the library, where she believes the best stories are hidden. Her unorthodox approach to magical history makes her popular among her peers but occasionally draws criticism from more traditional Lorehold scholars. With her quick wit and fierce sense of justice, Becca often uses her animated creations to defend the downtrodden or to bring historical lessons to life in surprising and dramatic ways.",
+      "bane": "You sometimes feel as though unseen figures are watching or following you, unsettling and distracting you.",
+      "boon": "Spectral figures from Becca\u2019s scrolls occasionally lend a hand when you\u2019re in a tight spot, carrying small objects or pointing the way.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Rinn Silverfrond",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Second Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/9itJPqaAxDPfTWS/preview" },
+    "race": {
+      "fullName": "Half-Elf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Rinn Silverfrond is a free-spirited and adventurous alchemist who views the natural world as her laboratory. Her enthusiasm for experimentation often leads her to craft potions and remedies from unexpected ingredients she gathers during her forest explorations. Rinn's magic has an organic, playful quality, with her alchemical supplies often darting around her like eager assistants. She is deeply attuned to the rhythms of life and death in nature, blending her love for creation with a mischievous, almost childlike wonder. Though her carefree attitude can sometimes lead to chaotic outcomes, her inventive solutions and big heart make her a beloved figure among her peers.",
+      "bane": "Potions or herbal remedies you use occasionally bubble or fizzle unpredictably, and possible fail to function, as if Rinn\u2019s chaotic tendencies are affecting them.",
+      "boon": "Alchemical supplies or herbs you need seem to appear conveniently, as though Rinn\u2019s influence has made nature more accommodating.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Willow \u201cWill\u201d Nailo",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "NG", "description": "Neutral Good" },
+    "background": {
+      "definition": { "name": "First Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/3SjbmrxgBgDTSLw/preview" },
+    "race": {
+      "fullName": "Halfling",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Willow Nailo is a meticulous and thoughtful artist whose work blends classical technique with bursts of Prismari flair. They believe that art is as much about presentation as it is about creation, and they approach every painting like a performance. Despite their small stature, Will\u2019s presence is magnetic, drawing people into their world of vivid landscapes and emotionally charged portraits. They are deeply empathetic, often capturing the essence of people and places in their work, and they thrive on collaboration and feedback. While they can be a perfectionist at times, Will\u2019s genuine kindness and passion for creativity make them a cherished friend and a promising talent in Prismari.",
+      "bane": "Any magical visual effects you create (such as illusions or conjured objects) are muted and less vibrant, reducing their effectiveness.",
+      "boon": "Artistic supplies or inspiration seem to arrive just when you need them, as though Will\u2019s creative energy has touched you.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Non-Binary",
+      "genderPronouns": [ "they", "them" ]
+    }
+  },
+  {
+    "name": "Vanxun Pakul",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LG", "description": "Lawful Good" },
+    "background": {
+      "definition": { "name": "First Year (Lorehold)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Lorehold Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/tbX55wP3wH75WpC/preview" },
+    "race": {
+      "fullName": "Dragonborn",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Vanxun Pakul stands out not just for his striking draconic heritage, but for the quiet humility with which he approaches life at Lorehold. While many assume that being a dragonborn grants him an innate advantage at a school founded by dragons, Vanxun feels the weight of these expectations and strives to prove himself through hard work and diligence. He has a deep reverence for history and often expresses awe at walking in the footsteps of his draconic ancestors. Though his plain attire and reserved demeanor make him appear unassuming, Vanxun\u2019s natural charisma and respect for tradition earn him the admiration of peers and professors alike. His angular features and pronounced horns give him an air of regal intensity, but his earnest, compassionate nature shines through in everything he does.",
+      "bane": "Your ability to recall historical information is clouded, causing you to roll certain checks with disadvantage.",
+      "boon": "Professors or mentors seem especially inclined to help you, as if Vanxun\u2019s dedication has rubbed off on them.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Finnian Sparkwhistle",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "Second Year (Prismari)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Prismari Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/pgrZGXH8cmasLrx/preview" },
+    "race": {
+      "fullName": "Gnome",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Finnian's eyes are a deep, captivating green, and his hair is an unruly mass of electric blue, often styled in a way that defies gravity. His primary attire consists of a long coat made of a shimmering material that seems to change color based on his mood, along with a high-collared shirt underneath with arcane patterns that glow faintly, and pants with various pockets containing magical tools and art supplies.<br /><br />Finnian is known for his boundless energy and innovative thinking. He is constantly experimenting with new forms of magical expression and artistic techniques. Despite his somewhat chaotic appearance, he is deeply focused and dedicated to his studies. He has a warm, approachable demeanor and enjoys collaborating with others, often providing insightful feedback and encouragement. He excels in elemental magic and illusion, using his skills to create breathtaking displays of magical art, with a particular affinity for manipulating light and sound.",
+      "bane": "You occasionally hear faint, distracting whispers or see minor illusions that disrupt your focus during important moments.",
+      "boon": "When presenting or discussing art, you have an edge in attracting positive attention and admiration from peers and professors.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Bryndis Doldarun",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "LN", "description": "Lawful Neutral" },
+    "background": {
+      "definition": { "name": "New Student (Silverquill)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Silverquill Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/rCYsSdNTzmY2bpS/preview" },
+    "race": {
+      "fullName": "Dwarf",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Bryndis is a striking and composed dwarf, exuding intelligence and authority. Her hair is rich chestnut brown, intricately braided and adorned with small silver trinkets. Bryndis dresses in tailored jackets with intricate silver embroidery, crisp white shirts, and long, elegant skirts. A beautifully crafted quill and a leather-bound journal are her constant companions.<br /><br />Hailing from the wealthy clan Doldarun in the Mror Holds, Bryndis is a student at Silverquill College, and known for her eloquence and sharp wit. She is highly ambitious and driven, constantly striving for excellence in both her academic and magical pursuits. Despite her formidable exterior, Bryndis is deeply loyal to her friends and has a strong sense of justice. Her talents lie not only in her command of language but also in her ability to inspire and lead others. She excels in debates and rhetorical challenges, making her a respected figure among her peers.",
+      "bane": "You face unexpected financial difficulties and find yourself excluded from important social events and circles.",
+      "boon": "You gain access to Bryndis's financial resources for minor expenses and enjoy entry to exclusive university events and circles.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
+    }
+  },
+  {
+    "name": "Drugar Thornshade",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CN", "description": "Chaotic Neutral" },
+    "background": {
+      "definition": { "name": "Second Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Pledgemage" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/7azfBwWeY4ZMcFr/preview" },
+    "race": {
+      "fullName": "Hobgoblin",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Drugar Thornshade is a tall and imposing hobgoblin with a muscular build. His red skin, piercing yellow eyes, and long dark hair tied back in a tight braid, draw attention to the markings snaking up his arms and neck - which most assume are tribal tattoos, but are actually a dragonmark. He dresses in practical, rugged clothing, including a leather vest over a dark green tunic, sturdy boots, and various pouches and herbs hanging from his belt.<br /><br />Drugar is known for his stoic and disciplined nature, maintaining a calm and composed demeanor even in challenging situations. He has a deep connection with nature and a profound respect for life and death. Drugar excels in potion-making and the study of necromancy, often spending long hours in the laboratory experimenting with various plants and herbs. Highly intelligent and analytical, he stands out in both practical and theoretical aspects of his magical education.",
+      "bane": "You experience subtle, persistent health issues and find yourself avoided by other Witherbloom students, making it harder to gather information and support.",
+      "boon": "You gain access to Drugar's extensive knowledge of herbalism and natural remedies, providing minor healing benefits and resistance to common ailments while on campus.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Kaelin Wildclaw",
+    "group": { "name": "Strixhaven", "subgroupDefinition": "" },
+    "alignment": { "name": "CG", "description": "Chaotic Good" },
+    "background": {
+      "definition": { "name": "First Year (Witherbloom)" }
+    },
+    "classes": [
+      {
+        "definition": { "name": "Witherbloom Apprentice" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/np45aHGPz8JxaZ7/preview" },
+    "race": {
+      "fullName": "Shifter",
+      "baseName": "Humanoid",
+      "weightSpeeds": {
+        "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "notes": {
+      "backstory": "Kaelin Wildclaw hails from the Eldeen Reaches. He has a sun-kissed complexion, piercing green eyes, and a wild mane of dark brown hair. His shifter heritage is evident in his slightly elongated canines and tufted ears, giving him a fierce yet approachable appearance. He wears practical clothing, including a simple tunic and trousers, accented with leather straps and pouches for carrying herbs and other natural materials. Kaelin is known for his keen instincts and deep connection to nature. Curious and eager to learn, he's often exploring natural areas around campus. Kaelin already has a depth of knowledge about the flora and fauna of Eberron. He is always willing to help, but his fiercely independent streak can sometimes lead to challenges in group settings. Kaelin excels in herbalism and natural magic, showing particular talent in potion-making and animal studies.",
+      "bane": "You find yourself stalked by a wild animal any time you're out on campus at night.",
+      "boon": "You benefit from Kaelin's extensive knowledge of flora and fauna, providing minor advantages in identifying plants and animals and finding natural remedies on campus.",
+      "job": "",
+      "extracurriculars": ""
+    },
+    "tags": [ "NPC", "Student" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
+    "name": "Thunderbolt",
+    "group": { "name": "Forgotten Realms", "subgroupDefinition": "" },
+    "ac": { "value": 11, "description": "" },
+    "classes": [
+      {
+        "definition": { "name": "Thunderbolt" },
+        "subclassDefinition": { "name": "" }
+      }
+    ],
+    "decorations": { "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/RozcS5orEnQtLM8/preview" },
+    "hp": { "value": 13, "hitDieSize": "2d10 + 2" },
+    "level": 0,
+    "race": {
+      "fullName": "Riding Horse",
+      "baseName": "",
+      "weightSpeeds": {
+        "normal": { "walk": 40, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 }
+      }
+    },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 2, "mod": -4, "str": "-4" },
+      { "id": 5, "name": "WIS", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 7, "mod": -2, "str": "-2" }
+    ],
+    "notes": {
+      "backstory": "A family horse that's way older than Octavian himself.<br /><br /><b><u>Actions</u></b><br /><b>Hooves.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 8 (2d4 + 3) bludgeoning damage."
+    },
+    "tags": [ "NPC", "Mount" ],
+    "traits": {
+      "ageGroup": "Elderly",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  }
+]

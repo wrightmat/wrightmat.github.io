@@ -1,0 +1,165 @@
+{
+  "speciesTemplates": {
+    "elf": [
+      "Slender and poised, with refined features and a lightness to their step.",
+      "Graceful and ageless, their presence feels like a living melody.",
+      "Tall and elegant, their movements are as fluid as wind through leaves."
+    ],
+    "dwarf": [
+      "Broad-shouldered and solidly built, with deep-set eyes and a heavy brow.",
+      "Stocky and powerful, every movement seems grounded and deliberate.",
+      "Short and solid, they carry their weight like a mountain in motion."
+    ],
+    "human": [
+      "Balanced in build and bearing, with expressive features and a steady gaze.",
+      "Adaptable and familiar, with posture shaped by experience.",
+      "Sturdy and straightforward, they carry the weight of a practical life."
+    ],
+    "halfling": [
+      "Compact and cheerful-looking, with bright eyes and an easy smile.",
+      "Light-footed and spry, always seeming slightly amused.",
+      "Small and sunny, their presence feels effortlessly comforting."
+    ],
+    "gnome": [
+      "Small and sprightly, with sharp eyes and animated expressions.",
+      "Always in motion, they radiate cleverness and curiosity.",
+      "Whimsical and bright-eyed, as if perpetually discovering something new."
+    ],
+    "orc": [
+      "Burly and imposing, with strong limbs and pronounced tusks.",
+      "Musclebound and battle-marked, their stance dares challenge.",
+      "Heavyset and rugged, with the build of a lifelong survivor."
+    ],
+    "goblinoid": [
+      "Lean and wiry, with sharp features and an ever-watchful gaze.",
+      "Narrow of build, with eyes that flick to every shadow.",
+      "Slight and sinewy, with a restless energy in their posture."
+    ],
+    "dragonborn": [
+      "Towering and muscular, with scaled skin and a proud bearing.",
+      "Thick-necked and regal, their movements speak of inherited power.",
+      "A massive form clad in scales, exuding restrained force."
+    ],
+    "tiefling": [
+      "Lean and graceful, with horns, a tail, and a subtle otherworldly edge.",
+      "Elegant in motion, with infernal features softened by charisma.",
+      "Slim and striking, their infernal heritage is undeniable but dignified."
+    ],
+    "aasimar": [
+      "Radiant in presence, with an ethereal glow that hints at divine heritage.",
+      "Graceful and luminous, they seem almost too perfect for this world.",
+      "Their presence glows faintly, and their gaze holds something eternal."
+    ],
+    "changeling": [
+      "Smooth and pale, with minimal features and a blank-slate quality.",
+      "Their appearance seems soft and undefined, like an impression of a person.",
+      "Faintly uncanny, their expression is neutral and hard to read."
+    ],
+    "warforged": [
+      "A humanoid frame of metal and wood, shaped for function over form.",
+      "Their faceplate is unreadable, their movements mechanically smooth.",
+      "Artifice in motion — built for purpose, not ornament."
+    ],
+    "kalashtar": [
+      "Graceful and quiet, with faraway eyes and an unshakable calm.",
+      "Composed and serene, as if always listening to a deeper silence.",
+      "Smooth features and steady breath hint at a deep inner world."
+    ],
+    "shifter": [
+      "Tense and lean, with animalistic features that shift subtly with emotion.",
+      "Their movements are sharp and instinctive, always half-ready to pounce.",
+      "Hair bristling and nostrils flaring — their beast-blood is close to the surface."
+    ],
+    "goliath": [
+      "Massive and weathered, with stony skin and the look of a mountain’s child.",
+      "Towering and broad, their build seems carved rather than grown.",
+      "Each movement feels heavy and deliberate, like shifting stone."
+    ]
+  },
+
+  "tagModifiers": {
+    "gruff": [
+      "Their features are hardened, with a permanent scowl.",
+      "They carry a roughness that repels idle chatter.",
+      "There's a stubborn edge to their stance and voice."
+    ],
+    "vain": [
+      "Impeccably groomed, every detail of their appearance seems deliberate.",
+      "They radiate practiced perfection, always catching reflections.",
+      "Nothing about their look seems accidental — or humble."
+    ],
+    "eccentric": [
+      "They wear an odd assortment of accessories that defy easy categorization.",
+      "Their clothing is an expressive mess of color, texture, and opinion.",
+      "You get the sense they dressed for a different world than this one."
+    ],
+    "mysterious": [
+      "Their expression gives little away, and their gaze seems distant.",
+      "Something about them resists easy understanding.",
+      "Their stillness feels like a curtain over something deeper."
+    ],
+    "stoic": [
+      "They carry themselves with upright posture and a calm, impassive face.",
+      "Still and silent, their expression betrays little.",
+      "Their gaze is steady, and their stance never wavers."
+    ],
+    "friendly": [
+      "They have a warm smile and an inviting presence.",
+      "Everything about them says ‘come sit down’ without a word.",
+      "Open posture and bright eyes welcome interaction."
+    ],
+    "nervous": [
+      "They fidget constantly, eyes darting at every sound.",
+      "Nervous energy buzzes under their every motion.",
+      "They seem ever on edge, like waiting for something to go wrong."
+    ],
+    "reserved": [
+      "Their posture is guarded, and they tend to avoid prolonged eye contact.",
+      "They hold themselves close, arms often folded.",
+      "There’s a polite distance to everything they do."
+    ],
+    "flamboyant": [
+      "Bright colors and exaggerated gestures define their presence.",
+      "They're a performance even when standing still.",
+      "Every glance and gesture feels theatrical."
+    ],
+    "dignified": [
+      "They move with care and confidence, radiating quiet authority.",
+      "Composure clings to them like a finely tailored cloak.",
+      "Even their silences feel intentional and respected."
+    ],
+    "_default": [
+      "Their demeanor is difficult to read, giving little away.",
+      "They seem ordinary at first glance, but there's more beneath the surface.",
+      "Their appearance is unremarkable, yet subtly compelling."
+    ]
+  },
+
+  "ageGroupModifiers": {
+    "Young Adult": [
+      "Their features still hold a trace of youth.",
+      "There’s a lightness in their step, and little burden in their eyes.",
+      "Bright-eyed and quick, they seem ready to prove themselves."
+    ],
+    "Adult": [
+      "Confident and composed, they seem in their prime.",
+      "There’s a calm strength in their bearing.",
+      "Seasoned but not hardened, they hold their head high."
+    ],
+    "Middle Aged": [
+      "There’s a steadiness in their bearing, touched by experience.",
+      "Subtle lines and a firm stance show the balance of youth and wisdom.",
+      "You sense someone who has weathered a few storms and stayed upright."
+    ],
+    "Older Adult": [
+      "Lines of age mark their face, though their eyes remain sharp.",
+      "Their posture leans slightly, but their presence still commands.",
+      "They wear age like armor: worn, but strong."
+    ],
+    "Elderly": [
+      "Their posture leans with time, and their expression is thoughtful.",
+      "Wrinkles speak of laughter, pain, and memory.",
+      "They carry themselves with slow certainty and distant focus."
+    ]
+  }
+}

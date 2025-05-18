@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TTRPG Printing Utility</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="common.css" rel="stylesheet" type="text/css">
+  <link href="ddb.css" rel="stylesheet" type="text/css">
+  <link href="img/icons.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.rawgit.com/fponticelli/dicefont/fc6b8c47/dist/dicefont/dicefont.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" type="text/javascript"></script>
+  <script src="https://unpkg.com/mustache@latest" type="text/javascript"></script>
+  <script src="common.js" type="text/javascript"></script>
+  <script src="ddb_parser.js" type="text/javascript"></script>
+  <script src="data/characters.json" type="text/javascript"></script>
+  <script src="data/equipment.json" type="text/javascript"></script>
+</head>
+
+<body>
+
+<div id="card-controls" style="position:absolute; left: 0px; top: 0px;">
+  <p id="container-sources"><label for="controls-sources">Sources:</label><br/ >
+  <select id="controls-sources" onchange="selectSource(this);" style="width:200px;">
+    <option value=""></option>
+    <option value="ddb-characters">Characters (D&D Beyond)</option>
+    <option value="json-characters">Characters (JSON)</option>
+    <option value="api-classes">Classes (API)</option>
+    <option value="api-conditions">Conditions (API)</option>
+    <option value="api-equipment">Equipment (API)</option>
+    <option value="json-equipment">Equipment (JSON)</option>
+    <option value="api-features">Features (API)</option>
+    <option value="api-magic-items">Magic Items (API)</option>
+    <option value="api-monsters">Monsters (API)</option>
+    <option value="ddb-monsters">Monsters (D&D Beyond)</option>
+    <option value="api-races">Races (API)</option>
+    <option value="api-spells">Spells (API)</option>
+    <option value="api-subclasses">Subclasses (API)</option>
+    <option value="api-subraces">Subraces (API)</option>
+  </select><br /><br /></p>
+
+  <p id="container-groups"><label for="controls-groups">Groups (Categories):</label><br/ >
+  <select id="controls-groups" onchange="selectGroup(this);" style="width:200px;"><option value=""></option></select><br /></p>
+  <p id="container-select"><br /><select id="controls-select" size="28" style="width:300px;"></select><br /><br /></p>
+  <p id="container-id"><label for="controls-id">ID: </label><input id="controls-id" />
+  <input type="button" id="btn-submit-id" value="Create Print" onclick="submitId();" /><br /><br /></p>
+
+  <p id="container-template"><label for="controls-template">Template:</label>
+  <select id="controls-template" name="template" onchange="setPreferences(this);">
+    <option value="card-item" selected="selected">General Item</option>
+    <option value="card-npc">General NPC</option>
+    <option value="card-spell">Spell Card</option>
+    <option value="card-item-modular">Modular Weapon (Vestige)</option>
+    <option value="card-npc-strixhaven">NPC (Strixhaven)</option>
+    <option value="notecard-character">Character Notecard</option>
+    <option value="booklet-character-strixhaven">Character Booklet (Strixhaven)</option>
+  </select><br /><br /></p>
+
+  <p id="container-size"><label for="controls-size">Size:</label>
+  <select id="controls-size" name="size" onchange="setPreferences(this);">
+    <option value="tarot" selected="selected">Tarot Card (2.75" x 4.75")</option>
+    <option value="poker">Poker Card (2.5" x 3.5")</option>
+    <option value="business">Business Card (2" x 3.5")</option>
+    <option value="notecard">Notecard (5" x 7")</option>
+    <option value="a6">A6 Paper (4.1" x 5.8")</option>
+    <option value="legal">Legal Paper (8.5" x 11")</option>
+  </select></p>
+  <p id="container-orientation"><label for="controls-orientation">Orientation:</label>
+  <select id="controls-orientation" name="orientation" onchange="setPreferences(this);">
+    <option value="vertical" selected="selected">Vertical</option>
+    <option value="horizontal">Horizontal</option>
+  </select><br /><br /></p>
+
+  <p id="container-image-back"><label for="controls-image-back">Image Back:</label>
+  <select id="controls-image-back" name="image_back" onchange="setPreferences(this);">
+    <option value="image" selected="selected">Defined Image</option>
+    <option value="icon">Type Icon</option>
+    <option value="none">Nothing</option>
+  </select><br />
+  <label for="controls-image-back-override">Image Override: </label><input id="controls-image-back-override" /><br /></p>
+  <p id="container-image-front"><label for="controls-image-front">Image Front:</label>
+  <select id="controls-image-front" name="image_front" onchange="setPreferences(this);">
+    <option value="image">Defined Image</option>
+    <option value="icon">Type Icon</option>
+    <option value="none" selected="selected">Nothing</option>
+  </select><br />
+  <label for="controls-image-front-override">Image Override: </label><input id="controls-image-front-override" /><br /></p>
+  <p id="container-clear"><br /><input type="button" id="btn-clear" value="Clear Prints" onclick="$('#prints').empty();" /></p>
+</div>
+
+<div id="grid-container" class="container">
+  <ul class="prints" id="prints"></ul>
+</div>
+
+<script type="text/javascript">
+  var api_items;
+  var index = 1;
+  var groups = {};
+  var preferences = { "image_back": "image", "image_front": "none", "template": "card-item", "size": "tarot", "orientation": "vertical" };
+
+  $('#container-select').hide(); $('#container-id').hide(); $('#container-groups').hide();
+
+  function cleanText( txt ) {
+    return txt.replaceAll(' ','-').replaceAll('"','').replaceAll("'","").replaceAll('(','').replaceAll(')','')
+  }
+
+  function setPreferences(el) {
+    preferences[el.name] = el.options[el.selectedIndex].value;
+  }
+
+  function getAPI( r_url, r_async ) {
+    var r_text;
+    $.get({
+      url: "https://www.dnd5eapi.co" + r_url,
+      success: function(result) { r_text = result },
+      error: function(xhr, error) { console.log(xhr) },
+      async: r_async || false
+    });
+    return r_text;
+  }
+
+  function getCard( id ) {
+    var card = {};
+    var sel = $('#controls-sources').val();
+    if ( sel == 'json-equipment' ) {
+      equipment.forEach((equip, ei) => {  if ( equip.index == id ) card = equip;  });
+    } else if ( sel == 'json-characters' ) {
+      characters.forEach((char, ni) => {  if ( 'npc-' + cleanText(char.name).toLowerCase() == id ) card = char;  });
+    } else if ( sel.substring(0,3) == 'api' ) {
+      api_items.forEach((item, ii) => {  if ( item.index == id ) card = getAPI(item.url);  });
+    }
+    card.id = cleanText(id); card.source = sel;
+    return card;
+  }
+
+  function createCard( card ) {
+    if ( card ) {
+      card.icons = [];
+      card.index = index; card.preferences = preferences;
+
+      if ( card.desc ) {	// parse any markdown in the description array
+	$.each( card.desc, function( k, v ) { if ( k > 0 && v !== undefined ) { card.desc[k] = marked.parse(v); } });
+      }
+      if ( card.concentration && card.concentration == true ) { card.icons.push('ddb-concentration'); }
+      if ( card.ritual && card.ritual == true ) { card.icons.push('ddb-ritual'); }
+      if ( card.classes ) {
+	card.classList = '';
+	card.classes.forEach((cls, ci) => { if ( ci > 0 ) { card.classList += ', '; }; card.classList += cls.name; });
+      }
+      if ( card.components ) {
+	card.componentList = '';
+	card.components.forEach((cmp, ci) => { if ( ci > 0 ) { card.componentList += ', '; }; card.componentList += cmp; });
+      }
+
+      if ( preferences.image_back == "image" ) {
+	if ( $('#controls-image-back-override').val() ) { card.imageBack = $('#controls-image-back-override').val();
+	} else if ( card.decorations ) { card.imageBack = card.decorations.avatarUrl;
+	} else if ( card.image ) { if ( card.image.substring(0, 5) == "/api/" ) { card.imageBack = "https://www.dnd5eapi.co" + card.image; } else { card.imageBack = card.image; } }
+      }
+      if ( preferences.image_front == "image" ) {
+	if ( $('#controls-image-front-override').val() ) { card.imageFront = $('#controls-image-front-override').val();
+	} else if ( card.decorations ) { card.imageFront = card.decorations.avatarUrl;
+	} else if ( card.image ) { if ( card.image.substring(0, 5) == "/api/" ) { card.imageFront = "https://www.dnd5eapi.co" + card.image; } else { card.imageFront = card.image; } }
+      }
+      card.template = preferences.template;
+      $.get('templates/' + card.template + '.htm', function( templated ) {
+        var rendered = Mustache.render( templated, card );
+        $('#prints').append( rendered );
+      });
+      index += 1;
+console.log(card);
+    }
+    $('#controls-image-back-override').val('');
+    $('#controls-image-front-override').val('');
+  }
+
+
+  function selectSource(el) {
+    var sel = el.options[el.selectedIndex].value;
+    $('#controls-groups').empty(); $('#controls-select').empty();
+
+    if ( sel.includes('equipment') || sel.includes('item') ) { $('#controls-template').val('card-item').change();
+    } else if ( sel == 'json-characters' ) { $('#controls-template').val('card-npc').change();
+    } else if ( sel == 'ddb-characters' ) { $('#controls-template').val('notecard-character').change(); }
+
+    if ( sel.substring(0,3) == 'ddb' ) {
+      $('#container-id').show(); $('#container-select').hide(); $('#container-groups').hide();
+    } else if ( sel.substring(0,3) == 'api' ) {
+      $('#container-id').hide(); $('#container-select').show(); $('#container-groups').show();
+      if ( sel == 'api-equipment' ) {
+	var categories = getAPI('/api/equipment-categories')['results'];
+	categories.forEach((cat, ci) => { $('#controls-groups').append('<option id="' + cat.index + '" value="' + cat.index +'">' + cat.name +'</option>'); });
+      }
+      api_items = getAPI('/api/' + sel.substring(4,sel.length))['results'];
+      api_items.forEach((item, ii) => { $('#controls-select').append($("<option />").val(item.index).text(item.name)); });
+    } else if ( sel.substring(0,4) == 'json' ) {
+      $('#container-id').hide(); $('#container-select').show(); $('#container-groups').show();
+      if ( sel == 'json-characters' ) {
+	var char_groups = [...new Set( characters.map( item => item.group.name ) )];
+	char_groups.forEach((grp, gi) => {
+	  $('#controls-groups').append('<option id="' + grp + '" value="' + grp +'">NPCs (' + grp +')</option>');
+	  groups[grp] = [];
+	});
+	characters.forEach((char, ci) => {
+	  var paren = '';
+	  if ( char.background && char.background.definition.name !== "" ) { paren = ' (' + char.race.fullName + ' ' + char.background.definition.name + ')';
+	  } else if ( char.classes && char.classes[0].definition.name !== "" ) { paren = ' (' + char.race.fullName + ' ' + char.classes[0].definition.name + ')';
+	  } else { paren = ' (' + char.race.fullName + ' NPC)'; }
+	  $('#controls-select').append($("<option />").val( 'npc-' + cleanText(char.name).toLowerCase() ).text( char.name + paren ));
+	});
+      } else if ( sel == 'json-equipment' ) {
+	equipment.forEach((equip, ei) => { $('#controls-select').append($("<option />").val(equip.index).text(equip.name)); });
+      }
+    }
+  }
+
+  function selectGroup(el) {
+    $('#grid-container').empty();
+    var sel = el.options[el.selectedIndex].value;
+    $.each( groups[sel], function( gk, gv ) { createCard( getCard(gv) ); });
+  }
+
+  function submitId(el) {
+    var charId = $('#controls-id').val();
+    var char = ddbGetCharacter(charId)['data'];
+    char = ddbParseCharacter(char);
+    createCard(char);
+  }
+
+  // Register callbacks
+  $('#controls-select').on('dblclick', function() {
+    createCard( getCard(this.options[this.selectedIndex].value) );
+  });
+  $('#controls-size').on('change', function() {
+    const newSize = $(this).val();
+    const sizeClasses = ['tarot', 'poker', 'business', 'notecard'];
+    $('.card').each( function() {
+      const $card = $(this);
+      $card.removeClass(sizeClasses.join(' ')).addClass(newSize);
+    });
+  });
+  $('#controls-orientation').on('change', function() {
+    const newOrient = $(this).val();
+    const sizeClasses = ['horizontal', 'vertical'];
+    $('.card').each( function() {
+      const $card = $(this);
+      $card.removeClass(sizeClasses.join(' ')).addClass(newOrient);
+    });
+  });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if ( urlParams.get('id') ) { $('#controls-id').val(urlParams.get('id')); }
+  if ( urlParams.get('source') ) { $('#controls-sources').val(urlParams.get('source')).change(); }
+  if ( urlParams.get('template') ) { $('#controls-template').val(urlParams.get('template')).change(); }
+  if ( urlParams.get('orientation') ) { $('#controls-orientation').val(urlParams.get('orientation')).change(); }
+  if ( urlParams.get('size') ) { $('#controls-size').val(urlParams.get('size')).change(); }
+
+  // Make the page easily editable to fix minor things before printing
+  document.body.contentEditable = 'true';
+</script>
+
+</body>
+</html>

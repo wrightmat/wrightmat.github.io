@@ -1,0 +1,443 @@
+[
+  {
+	"index": "sorcerous-burst",
+	"name": "Sorcerous Burst",
+	"desc": [
+		"You cast sorcerous energy at one creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d8 damage of a type you choose: Acid, Cold, Fire, Lightning, Poison, Psychic, or Thunder.",
+		"If you roll an 8 on a d8 for this spell, you can roll another d8 and add it to the damage. The maximum number of these additional d8s you can add to the spell's damage equals your spellcasting ability modifier."
+	],
+	"higher_level": [],
+	"range": "120 feet",
+	"components": ["V","S"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 0,
+	"attack_type": "ranged",
+	"damage": {
+		"damage_type": {
+			"index": "choice",
+			"name": "Varies",
+			"url": "/api/2014/damage-types"
+		},
+		"damage_at_character_level": {
+			"1": "1d8",
+			"5": "2d8",
+			"11": "3d8",
+			"17": "4d8"
+		}
+	},
+	"school": {
+		"index": "evocation",
+		"name": "Evocation",
+		"url": "/api/2014/magic-schools/evocation"
+	},
+	"classes": [
+		{
+			"index": "sorcerer",
+			"name": "Sorcerer",
+			"url": "/api/2014/classes/sorcerer"
+		}
+	],
+	"subclasses": [],
+	"url": "/api/2024/spells/sorcerous-burst",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "healing-spirit",
+	"name": "Healing Spirit",
+	"desc": [
+		"You call forth a nature spirit to soothe the wounded. The intangible spirit appears in a space that is a 5-foot cube you can see within range. The spirit looks like a transparent beast or fey (your choice). Until the spell ends, whenever you or a creature you can see moves into the spirit’s space for the first time on a turn or starts its turn there, you can cause the spirit to restore 1d6 hit points to that creature (no action required). The spirit can heal a number of times equal to 1 + your spellcasting ability modifier (minimum of twice).",
+		"After healing that number of times, the spirit disappears. The spirit can't heal constructs or undead."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 3rd level or higher, the healing increases by 1d6 for each slot level above 2nd."
+	],
+	"range": "60 feet",
+	"components": ["V","S"],
+	"material": null,
+	"ritual": false,
+	"duration": "Concentration, up to 1 minute",
+	"concentration": true,
+	"casting_time": "1 bonus action",
+	"level": 2,
+	"attack_type": null,
+	"dc": null,
+	"damage": {
+		"damage_type": {
+			"index": "healing",
+			"name": "Healing",
+			"url": "/api/2014/damage-types/healing"
+		},
+		"damage_at_slot_level": {
+			"2": "1d6",
+			"3": "2d6",
+			"4": "3d6",
+			"5": "4d6",
+			"6": "5d6",
+			"7": "6d6",
+			"8": "7d6",
+			"9": "8d6"
+		}
+	},
+	"school": {
+		"index": "conjuration",
+		"name": "Conjuration",
+		"url": "/api/2014/magic-schools/conjuration"
+	},
+	"classes": [
+		{
+			"index": "druid",
+			"name": "Druid",
+			"url": "/api/2014/classes/druid"
+		},
+		{
+			"index": "ranger",
+			"name": "Ranger",
+			"url": "/api/2014/classes/ranger"
+		}
+	],
+	"subclasses": [],
+	"url": "/api/2014/spells/healing-spirit",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "cure-wounds",
+	"name": "Cure Wounds",
+	"desc": [
+		"A creature you touch regains a number of Hit Points equal to 2d8 + your spellcasting ability modifier. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 2d8 for each slot level above 1st."
+	],
+	"range": "Touch",
+	"components": ["V","S"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 1,
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2024/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "bard",
+			"name": "Bard",
+			"url": "/api/2024/classes/bard"
+		},
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2024/classes/cleric"
+		},
+		{
+			"index": "druid",
+			"name": "Druid",
+			"url": "/api/2024/classes/druid"
+		},
+		{
+			"index": "paladin",
+			"name": "Paladin",
+			"url": "/api/2024/classes/paladin"
+		},
+		{
+			"index": "ranger",
+			"name": "Ranger",
+			"url": "/api/2024/classes/ranger"
+		}
+	],
+	"url": "/api/2024/spells/cure-wounds",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "healing-word",
+	"name": "Healing Word",
+	"desc": [
+		"A creature of your choice that you can see within range regains Hit Points equal to 2d4 + your spellcasting ability modifier. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 2d4 for each slot level above 1st."
+	],
+	"range": "60 feet",
+	"components": ["V"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 bonus action",
+	"level": 1,
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2024/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "bard",
+			"name": "Bard",
+			"url": "/api/2024/classes/bard"
+		},
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2024/classes/cleric"
+		},
+		{
+			"index": "druid",
+			"name": "Druid",
+			"url": "/api/2024/classes/druid"
+		}
+	],
+	"url": "/api/2024/spells/healing-word",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "mass-healing-word",
+	"name": "Mass Healing Word",
+	"desc": [
+		"As you call out words of restoration, up to six creatures of your choice that you can see within range regain Hit Points equal to 2d4 + your spellcasting ability modifier. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 4th level or higher, the healing increases by 2d4 for each slot level above 3rd."
+	],
+	"range": "60 feet",
+	"components": ["V"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 bonus action",
+	"level": 3,
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2024/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2024/classes/cleric"
+		}
+	],
+	"url": "/api/2024/spells/mass-healing-word",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "prayer-of-healing",
+	"name": "Prayer of Healing",
+	"desc": [
+		"Up to five creatures of your choice that you can see within range regain Hit Points equal to 2d8 + your spellcasting ability modifier. This spell has no effect on Constructs or Undead. A creature can't be affected by this spell again until it finishes a Long Rest."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 3rd level or higher, the healing increases by 1d8 for each slot level above 2nd."
+	],
+	"range": "30 feet",
+	"components": ["V"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "10 minutes",
+	"level": 2,
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2024/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2024/classes/cleric"
+		},
+		{
+			"index": "paladin",
+			"name": "Paladin",
+			"url": "/api/2024/classes/paladin"
+		}
+	],
+	"url": "/api/2024/spells/prayer-of-healing",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "aura-of-vitality",
+	"name": "Aura of Vitality",
+	"desc": [
+		"Healing energy radiates from you in an aura with a 30-foot radius. Until the spell ends, the aura moves with you, centered on you. You can use a bonus action to cause one creature in the aura (including you) to regain 2d6 Hit Points. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [],
+	"range": "Self (30-foot radius)",
+	"components": ["V"],
+	"material": null,
+	"ritual": false,
+	"duration": "Concentration, up to 1 minute",
+	"concentration": true,
+	"casting_time": "1 action",
+	"level": 3,
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2024/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "paladin",
+			"name": "Paladin",
+			"url": "/api/2024/classes/paladin"
+		}
+	],
+	"url": "/api/2024/spells/aura-of-vitality",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "mass-cure-wounds",
+	"name": "Mass Cure Wounds",
+	"desc": [
+		"A wave of healing energy washes out from a point you choose within range. Choose up to six creatures in a 30-foot-radius sphere centered on that point. Each target regains hit points equal to 3d8 + your spellcasting ability modifier. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 6th level or higher, the healing increases by 1d8 for each slot level above 5th."
+	],
+	"range": "60 feet",
+	"components": ["V","S"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 5,
+	"attack_type": null,
+	"damage": {
+		"damage_type": {
+			"index": "healing",
+			"name": "Healing",
+			"url": "/api/2014/damage-types/healing"
+		},
+		"damage_at_slot_level": {
+			"5": "3d8",
+			"6": "4d8",
+			"7": "5d8",
+			"8": "6d8",
+			"9": "7d8"
+		}
+	},
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2014/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2014/classes/cleric"
+		},
+		{
+			"index": "druid",
+			"name": "Druid",
+			"url": "/api/2014/classes/druid"
+		}
+	],
+	"subclasses": [],
+	"url": "/api/2024/spells/mass-cure-wounds",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "heal",
+	"name": "Heal",
+	"desc": [
+		"Choose a creature that you can see within range. The target regains 100 hit points. This spell also ends blindness, deafness, and any diseases affecting the target. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 7th level or higher, the healing increases by 10 hit points for each slot level above 6th."
+	],
+	"range": "60 feet",
+	"components": ["V","S"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 6,
+	"attack_type": null,
+	"damage": {
+		"damage_type": {
+			"index": "healing",
+			"name": "Healing",
+			"url": "/api/2014/damage-types/healing"
+		},
+		"damage_at_slot_level": {
+			"6": "100",
+			"7": "110",
+			"8": "120",
+			"9": "130"
+		}
+	},
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2014/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2014/classes/cleric"
+		},
+		{
+			"index": "druid",
+			"name": "Druid",
+			"url": "/api/2014/classes/druid"
+		}
+	],
+	"subclasses": [],
+	"url": "/api/2024/spells/heal",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+	"index": "mass-heal",
+	"name": "Mass Heal",
+	"desc": [
+		"A flood of healing energy flows from you into injured creatures around you. Choose any number of creatures within a 60-foot radius of you. Each regains up to 700 hit points, divided as you choose. This spell also ends blindness, deafness, and any diseases affecting the targets. This spell has no effect on Constructs or Undead."
+	],
+	"higher_level": [],
+	"range": "60 feet",
+	"components": ["V","S"],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 9,
+	"attack_type": null,
+	"damage": {
+		"damage_type": {
+			"index": "healing",
+			"name": "Healing",
+			"url": "/api/2014/damage-types/healing"
+		}
+	},
+	"school": {
+		"index": "abjuration",
+		"name": "Abjuration",
+		"url": "/api/2014/magic-schools/abjuration"
+	},
+	"classes": [
+		{
+			"index": "cleric",
+			"name": "Cleric",
+			"url": "/api/2014/classes/cleric"
+		}
+	],
+	"subclasses": [],
+	"url": "/api/2024/spells/mass-heal",
+	"updated_at": "2025-04-18T00:00:00.000Z"
+  }
+]

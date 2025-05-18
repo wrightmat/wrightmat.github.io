@@ -1,0 +1,22 @@
+<!--
+@name: Character Page - Inventory
+@size: a6
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <p class="heading">Inventory</p>
+    <table><tbody><tr class="table-header" id="inventory">
+    <th width="5%"></th><th width="40%">Equipment Name</th><th width="10%">Qty</th><th width="10%">Weight</th><th width="35%">Notes</th></tr>
+    <!-- {{#inventory}} -->
+      <tr class="table-item"><td><span class="equip"><span class="circle {{equipped}}"></span></span></td><td>{{name}} <i class="{{icon}}"></i></td><td>{{quantity}}</td><td>{{weight.str}}</td><td><span class="notes">{{notes}}</span></td></tr>
+    <!-- {{/inventory}} -->
+    </table>
+  </div>
+
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <p class="heading">Inventory</p><br />
+    <b>CP:</b> {{currencies.cp}} &nbsp;&nbsp; <b>SP:</b> {{currencies.sp}} &nbsp;&nbsp; <b>GP:</b> {{currencies.gp}}</div>
+  </div>
+</div>

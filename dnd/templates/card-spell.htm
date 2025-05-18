@@ -1,0 +1,28 @@
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <section class="spell-layout">
+      <div class="spell-school"><i class="ddb-{{school.index}}"></i> <b>{{level}}</b></div>
+      <div class="spell-name"><h1>{{name}}</h1></div>
+      <div class="spell-icons">{{#icons}}<i class="{{.}}"></i>{{/icons}}</div>
+      <div class="spell-time"><p class="section-short">Time </p>{{casting_time}}</div>
+      <div class="spell-duration"><p class="section-short">Duration </p>{{duration}}</div>
+      <div class="spell-range"><p class="section-short">Range </p>{{range}}
+        <div style="position:absolute;top:40px;right:65px;">{{#area_of_effect}}<i class="ddb-{{area_of_effect.type}}"></i> {{area_of_effect.size}} ft.{{/area_of_effect}}</div>
+      </div>
+      <div class="spell-components"><p class="section-short">{{componentList}}</p></div>
+      <div class="spell-description">
+	{{{descList}}}
+	{{{higher_level}}}
+      </div>
+    </section>
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <section class="spell-layout-back">
+      <div style="position: absolute; left: 10px; top: 10px;"><i class="ddb-{{school.index}}"></i> <b>{{level}}</b></div>
+      <div style="position: absolute; right: 10px; top: 10px;"">{{#icons}}<i class="{{.}}"></i>{{/icons}}</div>
+      <div class="spell-icon"><i class="icons {{id}}"></i></div>
+      <div style="position: absolute; bottom: 10px; left: 10px;">{{#classes}}<i class="ddb-{{index}}"></i>{{/classes}}</div>
+      <div style="position: absolute; bottom: 10px; right: 10px;">{{references}}</div>
+    </section>
+  </div>
+</div>

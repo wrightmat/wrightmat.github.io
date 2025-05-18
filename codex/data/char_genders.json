@@ -1,0 +1,6 @@
+{
+  "female": { "title": "Female", "pronouns": [ "she", "her" ] },
+  "male": { "title": "Male", "pronouns": [ "he", "him" ] },
+  "nonbinary": { "title": "Non-Binary", "pronouns": [ "they", "them" ] },
+  "none": { "title": "Other/Undifferentiated", "pronouns": [ "it" ] }
+}

@@ -1,9 +1,13 @@
 @media print {
-  #card-controls { visibility: hidden; }
-  #card-container { visibility: visible; position: absolute; left: 0; top: 0; }
+  @page { size: letter portrait; margin: 0; padding: 0; }
+  html, body { width: 8.5in; height: 22in; margin: 0; padding: 0 !important; }
+  header { visibility: hidden; }
+  #controls { visibility: hidden; }
 }
 
-header { background-color: #bbb; position: fixed; left: 0; right: 0; top: 5px; height: 30px; display: flex; align-items: center; box-shadow: 0 0 25px 0 #bbb; }
+html, body { width: 8.5in; height: 22in; margin: 0; padding: 40px 0 0 0; /* space at the top for the header */ }
+
+header { position: fixed; left: 0; right: 0; top: 5px; height: 30px; display: flex; align-items: center; box-shadow: 0 0 25px 0 #bbb; background-color: #bbb; z-index: 1000; }
 header * { display: inline; }
 header li { margin: 20px; }
 header li a { color: black; font-weight: bold; text-decoration: none; }
@@ -13,41 +17,87 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .table-selector th { cursor: default; padding: 2px 20px; }
 .table-selector td { cursor: pointer; padding: 2px 20px; }
 .table-selector td:hover { background-color: #eee; }
+.center { display: block; margin-left: auto; margin-right: auto; width: 50%; }
+.float-left { float: left; width: 50%; }    .float-left-40 { float: left; width: 40%; }
+.float-right { float: right; width: 50%; }  .float-right-60 { float: right; width: 60%; }
+.float-flex-container { display: flex; justify-content: space-between; }
+.float-clear { clear:both; }
 
-.circle { width: 100px; display: inline-block; position: relative; text-align: center; line-height: 1.2; }
-.circle canvas { vertical-align: top; }
-.circle strong { position: absolute; top: 0%; left: 0%; width: 100%; text-align: center; line-height: 40px; font-size: 30px; }
-.circle span { position: absolute; top: 50%; left: 35%; width: 100%; text-align: center; line-height: 0px; font-size: 12px; }
+.ability-block { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100px; height: 70px; border: 2px solid #000; border-radius: 8px; background: #f8f8f8; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 6px; }
+.ability-block .name { font-size: 0.9em; font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
+.ability-block .modifier { font-size: 1.6em; font-weight: bold; color: #000; padding-bottom: 5px; }
+.ability-block .score { font-size: 1.1em; font-weight: bold; color: #333; }
+.columns { flex: 1 1 auto; display: flex; gap: 2px; }
+.column { flex: 1 1 0; padding: 0 2px; }
+.item-list { list-style-position: inside; padding: 0; margin: 0; }
+.skill, .spell, .equipment, .weapon { display: flex; align-items: center; margin: 2px 0; font-size: 1.1em; }
+.skill { line-height: 1.2em; }
+.skill .modifier { padding: 0 8px; }
+.skill .expert { background-color: #36454f; }	.skill .p4 { background-color: #36454f; }
+.skill .proficient { background-color: #b2beb5; }   .skill .p3 { background-color: #b2beb5; }
+.skill .half-proficient { background-color: #e8e8e8; }	.skill .p1 { background-color: #e8e8e8; }
+.equip .true { background-color: #b2beb5; }
+.spell .true { background-color: #b2beb5; }
+.circle { width: 10px; height: 10px; border: 2px solid #333; border-radius: 50%; background-color: #fff; margin-right: 2px; display: inline-block; flex-shrink: 0; }
+.ddb-concentration, .ddb-ritual { height: 12px !important; width: 12px !important; }
+.stat-0, .str { color: red; }
+.stat-1, .dex { color: gold; }
+.stat-2, .con { color: darkorange; }
+.stat-3, .int { color: blue; }
+.stat-4, .wis { color: green; }
+.stat-5, .cha { color: purple; }
+.heading { flex: 0 0 auto; font-size: 1.3em; text-decoration: underline; font-weight: bold; line-height: 0.4; }
+.info { font-size: 0.9em; line-height: 1.2; font-style: italic; padding-top: 2px; }
+.notes { font-size: 0.7em; line-height: 0.8em; }
+.section { font-size: 1.2em; font-weight: bold; }
+.section-short { font-size: 1.1em; font-weight: bold; line-height: 0.2; }
+.large { font-size: 1.6em; }
+.small { font-size: 0.9em; }
+.smaller { font-size: 0.7em; }
+.tiny { font-size: 0.5em; line-height: 0.1em; }
 
-/* .row label { position: absolute; top: 75%; right: 20px; width: 100%; text-align: right; line-height: 0px; font-size: 10px; color: grey; } */
-.soft-edges:before { display: block; content: ""; position: absolute; width: 100%; height: 100%; -moz-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); -webkit-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); }
+#controls	{ position: fixed; top: 20px; right: 20px; width: 300px; background-color: #fff; border: 1px solid #ccc; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); z-index: 9999; padding: 10px; cursor: default; user-select: none; }
+#controls-header	{ background-color: #eee; padding: 5px 10px; font-weight: bold; cursor: move; border-bottom: 1px solid #ccc; }
+#container	{ display: flex; flex-direction: column; overflow: hidden; }
+.no-select	{ user-select: none; }
+.no-wrap	{ white-space: nowrap; }
 
-/* Based on Tarot card size of 2.75" x 4.75" (double height so they can be folded in half to create front and back) */
-.card-container { position: absolute; left: 300px; padding-right: 100px; }
-.cards { display: flex; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
-.cards_item { display: flex; padding: 0.5rem; padding-bottom: 3.5rem; }
-.card { background-color: white; border: 1px solid #695d39; border-radius: .5em; display: flex; flex-direction: column; overflow: hidden; height: 9.5in; min-height: 9.5in; width: 2.75in; min-width: 2.75in; }
-.card_back { height: 4.75in; padding: 0.4rem; position: relative; -webkit-transform: scaleY(-1); transform: scaleY(-1); }
-.card_back .topright { position: absolute; top: 5px; left: 5px; font-size: 20px; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
-.card_back .header { position: absolute; top: 0px; right: 0px; padding-left: 5px; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
-.card_back .footer { position: absolute; top: 388px; right: 0px; padding-left: 10px; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
-.card_back .footer p { font-size: 12px; }
-.card_back h4 { line-height: 0.2; margin-top: 5px; margin-bottom: 1px; }
-.card_back .info { font-size: 14px; line-height: 1.2; font-style: italic; padding-top: 2px; }
-.card_back .image img { max-height: 4.0in; max-width: 2.5in; padding: 1em; position: absolute; bottom: 50px; left: 0; }
-.card_back .icon img { max-height: 50px; max-width: 50px; position: absolute; bottom: 0; left: 0; }
-.card_back .imagetext { position: absolute; bottom: 66px; right: 32px; height: 20px; width: 190px; text-align: center; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
-.card_back .imagetext p { font-size: 10px; font-style: italic; line-height; 0; padding: 0; margin: 0; }
-.card_content { height: 4.75in; padding: 0.4rem; position: relative;  }
-.card_content h4 { line-height: 0.5; margin-top: 12px; margin-bottom: 2px; }
-.card_content .info { font-size: 11px; line-height: 2; font-style: italic; } .card_content .info input { height: 11px; }
-.card_content .content { font-size: 12px; line-height: 1; text-align: justify; vertical-align: middle; }
-.card_content .content-small { font-size: 11px; line-height: 0.8; text-align: justify; vertical-align: middle; }
-.card_content .notes { font-size: 12px; }
-.card_ability_container { display: grid; grid-template-rows: 1fr auto; min-height: 3in; width: 2.6in; position: absolute; bottom: 0.1in; }
-.card_ability_block { border: 1px dashed black; width: 100%; height: 0.9in; margin: 4px auto 4px auto; background-color: #f9f9f9; }
+.card-sheet	{ display: grid; gap: 0.04in; justify-content: center; padding: 0.1in; page-break-after: always; break-after: always; width: 8.5in; height: 11in; box-sizing: border-box; z-index: 1; }
+.card-sheet.tarot.vertical		{ grid-template-columns: repeat(3, 2.75in); grid-auto-rows: 4.75in; }
+.card-sheet.tarot.horizontal		{ grid-template-columns: repeat(3, 4.75in); grid-auto-rows: 2.75in; }
+.card-sheet.poker.vertical		{ grid-template-columns: repeat(3, 2.5in); grid-auto-rows: 3.5in; }
+.card-sheet.poker.horizontal		{ grid-template-columns: repeat(3, 3.5in); grid-auto-rows: 2.5in; }
+.card-sheet.business.vertical		{ grid-template-columns: repeat(2, 2.0in); grid-auto-rows: 3.5in; }
+.card-sheet.business.horizontal		{ grid-template-columns: repeat(2, 3.5in); grid-auto-rows: 2.0in; }
+.card-sheet.notecard.vertical		{ grid-template-columns: repeat(1, 5in); grid-auto-rows: 7in; }
+.card-sheet.notecard.horizontal		{ grid-template-columns: repeat(1, 7in); grid-auto-rows: 5in; }
+.card-sheet.a6.vertical			{ grid-template-columns: repeat(1, 4.13in); grid-auto-rows: 5.83in; }
+.card-sheet.a6.horizontal		{ grid-template-columns: repeat(1, 5.83in); grid-auto-rows: 4.13in; }
+.card	{ position: relative; border: 1px solid black; box-sizing: border-box; padding: 0.05in; page-break-inside: avoid; break-inside: avoid; overflow: hidden; }
+.card h1, h2, h3, h4 { line-height: 0.05; }
+.card.tarot	{ font-size: 9pt; }
+.card.tarot.vertical	{ width: 2.75in; height: 4.75in; }
+.card.tarot.horizontal	{ width: 4.75in; height: 2.75in; }
+.card.poker	{ font-size: 9pt; }
+.card.poker.vertical	{ width: 2.5in; height: 3.5in; }
+.card.poker.horizontal	{ width: 3.5in; height: 2.5in; }
+.card.business	{ font-size: 8pt; }
+.card.business.vertical		{ width: 2.0in; height: 3.5in; }
+.card.business.horizontal	{ width: 3.5in; height: 2.0in; }
+.card.notecard	{ font-size: 10pt; }
+.card.notecard.vertical		{ width: 5.0in; height: 7.0in; }
+.card.notecard.horizontal	{ width: 7.0in; height: 5.0in; }
+.card.a6	{ font-size: 10pt; }
+.card.a6.vertical		{ width: 4.13in; height: 5.83in; padding-left: 0.5in; }
+.card.a6.horizontal		{ width: 5.83in; height: 4.13in; }
+.card .back .image	{ padding-top: 10%; }
+.card .back .image img	{ height: 100%; width: 100%; max-height: 100%; max-width: 100%; }
 
-/* Based on standard 1" */
+/* Actual booklet size is theoretically 4.25"x5.5", but in the real world we need to go slightly bigger (although the page size below has to be right to prevent overflow) */
+.booklet-sheet	{ display: grid; gap: 0.04in; justify-content: center; page-break-after: always; break-after: always; width: 8.5in; height: 11in; box-sizing: border-box; z-index: 1; grid-template-columns: repeat(2, 4.4in); grid-auto-rows: 5.8in; margin: 0 0.1in; }
+.page		{ position: relative; width: 4.25in; height: 5.5in; box-sizing: border-box; padding: 0.05in 0.1in; page-break-inside: avoid; break-inside: avoid; overflow: hidden; font-size: 9pt; }
+
+/* Circular chips - based on standard 1" grid */
 .grid-container-chip { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 10px; }
 .chip { position: relative; width: 96px; height: 96px; border-radius: 50%; border: dashed 1px #000; }
 .circle-img { position: absolute; left: 0; top: 0; width: 65px; height: 65px; padding: 15px; }
@@ -78,12 +128,40 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
 .leaflet-icon-3 { background:red; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
 .leaflet-icon-2 { background:orange; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
 .leaflet-icon-1 { background:yellow; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
-.leaflet-icon0 { background:white; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
-.leaflet-icon1 { background:green; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
-.leaflet-icon2 { background:teal; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
-.leaflet-icon3 { background:blue; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
-.leaflet-icon4 { background:indigo; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
-.leaflet-icon5 { background:darkviolet; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon0	{ background:white; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon1	{ background:green; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon2	{ background:teal; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon3	{ background:blue; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon4	{ background:indigo; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+.leaflet-icon5	{ background:darkviolet; opacity: 0.7; border:5px solid rgba(255,255,255,0.5); border-radius:50%; }
+
+.spell-layout	{ display: grid; font-size: 11px; gap: 0px 0px; grid-auto-flow: row; width: 100%; height: 100%;
+  grid-template-columns: repeat(6, auto);
+  grid-template-rows: repeat(5, auto);
+  grid-template-areas:
+    "spell-school spell-name spell-name spell-name spell-name spell-icons"
+    "spell-time spell-duration spell-duration spell-range spell-range spell-components"
+    "spell-description spell-description spell-description spell-description spell-description spell-description"
+    "spell-description spell-description spell-description spell-description spell-description spell-description"
+    "spell-description spell-description spell-description spell-description spell-description spell-description";
+}
+.spell-school { grid-area: spell-school; }
+.spell-school i { width: 28px !important; height: 28px !important; }
+.spell-name { grid-area: spell-name; margin-left: 10px; }
+.spell-icons { grid-area: spell-icons; text-align: right; padding: 5px; }
+.spell-icons i { width: 16px !important; height: 16px !important; padding-left: 4px; }
+.spell-time { grid-area: spell-time; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
+.spell-duration { grid-area: spell-duration; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
+.spell-range { grid-area: spell-range; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
+.spell-components { grid-area: spell-components; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
+.spell-description { grid-area: spell-description; }
+.spell-description p { margin: 1px; }
+.spell-footer-left { grid-area: spell-footer-left; }
+.spell-footer-right { grid-area: spell-footer-right; text-align: right; }
+.spell-icon { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
+
+/* .row label { position: absolute; top: 75%; right: 20px; width: 100%; text-align: right; line-height: 0px; font-size: 10px; color: grey; } */
+.soft-edges:before { display: block; content: ""; position: absolute; width: 100%; height: 100%; -moz-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); -webkit-box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); box-shadow: inset 0px 0px 6px 6px rgba(255,255,255,1); }
 
 /* ------------------------------------------------------------------------- */
 /* Sections */
@@ -252,42 +330,14 @@ header li a { color: black; font-weight: bold; text-decoration: none; }
     color: ForestGreen;
 }
 
-
-/* ------------------------------------------------------------------------- */
-/* Page container */
-/* ------------------------------------------------------------------------- */
-
-body {
-    display: flex;
-    justify-content:center;
-    align-content:center;
-}
-
 /* ------------------------------------------------------------------------- */
 /* Misc */
 /* ------------------------------------------------------------------------- */
 
-.hidden {
-    display: none;
-}
-
-ul {
-    padding-left: 20px;
-}
-
-p, hr {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-}
-
-hr {
-    border: 0px;
-    border-top: 1px solid gray;
-}
-
-p:first-child {
-    margin-top: 1em;
-}
+.hidden { display: none; }
+ul { padding-left: 20px; }
+p, hr { margin-top: 0.5em; margin-bottom: 0.5em; }
+hr { border: 0px; border-top: 1px solid gray; }
 
 /* ------------------------------------------------------------------------- */
 /* Modal */

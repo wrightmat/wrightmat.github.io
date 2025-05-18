@@ -1,0 +1,11 @@
+{
+  "LG": { "title": "Lawful Good", "tags": { "lawful": 2, "good": 2 } },
+  "LN": { "title": "Lawful Neutral", "tags": { "lawful": 2 } },
+  "LE": { "title": "Lawful Evil", "tags": { "lawful": 2, "evil": 2 } },
+  "NG": { "title": "Neutral Good", "tags": { "good": 2 } },
+  "N": { "title": "Neutral" },
+  "NE": { "title": "Neutral Evil", "tags": { "evil": 2 } },
+  "CG": { "title": "Chaotic Good", "tags": { "chaotic": 2, "good": 2 } },
+  "CN": { "title": "Chaotic Neutral", "tags": { "chaotic": 2 } },
+  "CE": { "title": "Chaotic Evil", "tags": { "chaotic": 2, "evil": 2 } }
+}

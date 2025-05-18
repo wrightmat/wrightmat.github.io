@@ -1,0 +1,32 @@
+<!--
+@name: Item Card (General)
+@size: poker
+@orientation: vertical
+-->
+
+<li id="cards_item-{{index}}-{{id}}">
+  <div class="card {{preferences.size}} {{preferences.orientation}}" id="card-{{index}}-{{id}}">
+    <div class="back" id="card_back-{{index}}-{{id}}">
+      <div class="image" id="card_back-image-{{index}}-{{id}}"><img src="{{imageBack}}" class="card-image" /></div>
+      <div class="header" id="card_back-header-{{index}}-{{id}}">
+	<p class="info"></p>
+      </div>
+      <div class="imagetext" id="card_back-imagetext-{{index}}-{{id}}">
+	<p></p>
+      </div>
+      <div class="footer" id="card_back-footer-{{index}}-{{id}}">
+      </div>
+    </div>
+    <div class="front" id="card_front-{{index}}-{{id}}">
+      <div class="card_icon" id="card_icon-{{index}}-{{id}}"><img src="{{imageFront}}" /></div>
+      <h4>{{name}}</h4>
+      <p class="info">{{desc.0}}</p>
+      <div class="content">{{{desc.1}}}</div>
+      <div class="content">{{{desc.2}}}</div>
+      <div class="content">{{{desc.3}}}</div>
+      <div class="content">{{{desc.4}}}</div>
+      <div class="content">{{{desc.5}}}</div>
+      <div class="content">{{{desc.6}}}</div>
+    </div>
+  </div>
+</li>

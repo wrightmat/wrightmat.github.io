@@ -1,0 +1,107 @@
+<!--
+@name: Character Page - Details
+@size: a6
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <h3>{{race.fullName}} {{classes.0.definition.name}}{{#classes.0.subclassDefinition}} ({{classes.0.subclassDefinition.name}}){{/classes.0.subclassDefinition}} {{level}}</h3>
+    <p>{{traits.gender}}, {{background.definition.name}}</p>
+    <p><i>{{traits.personalityTraits}}</i></p>
+    <div class="columns">
+      <div class="column" id="ability-scores">
+        <div class="ability-block str"><span class="name">Str</span><span class="modifier">{{stats.0.str}}</span><span class="score">{{stats.0.value}}</span></div>
+        <div class="ability-block dex"><span class="name">Dex</span><span class="modifier">{{stats.1.str}}</span><span class="score">{{stats.1.value}}</span></div>
+        <div class="ability-block con"><span class="name">Con</span><span class="modifier">{{stats.2.str}}</span><span class="score">{{stats.2.value}}</span></div>
+        <div class="ability-block int"><span class="name">Int</span><span class="modifier">{{stats.3.str}}</span><span class="score">{{stats.3.value}}</span></div>
+        <div class="ability-block wis"><span class="name">Wis</span><span class="modifier">{{stats.4.str}}</span><span class="score">{{stats.4.value}}</span></div>
+        <div class="ability-block cha"><span class="name">Cha</span><span class="modifier">{{stats.5.str}}</span><span class="score">{{stats.5.value}}</span></div>
+      </div>
+      <div class="column" id="saves-skills">
+	<p class="section">Saving Throws</p>
+        <ul class="item-list">
+	{{#saves}}
+          <li class="skill stat-{{stat}}"><span class="circle p{{proficiency}}"></span><span class="modifier">{{str}}</span><span class="name">{{friendlyName}}</span></li>
+	{{/saves}}
+	</ul><br />
+	<p class="section">Skills</p>
+        <ul class="item-list">
+	{{#skills}}
+          <li class="skill stat-{{stat}}"><span class="circle p{{proficiency}}"></span><span class="modifier">{{str}}</span><span class="name">{{friendlyName}}</span>{{#icon}}&nbsp;<i class="{{icon}}"></i>{{/icon}}</li>
+	{{/skills}}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <div class="trait-grid">
+      <div class="trait-box">
+	<svg viewBox="0 0 24 24" class="trait-icon shield"><path d="M12 2L4 5v6c0 5.5 4 10.5 8 11 4-0.5 8-5.5 8-11V5l-8-3z" />
+	  <text x="12" y="12" text-anchor="middle" fill="#333"> {{ac.value}} </text>
+	</svg>
+	<span>AC</span>
+      </div>
+      <div class="trait-box">
+	<svg viewBox="0 0 24 24" class="trait-icon heart"><path d="M12 21C12 21 4 14.5 4 8.5C4 5.5 6.5 4 8.5 4C10 4 11 5 12 6C13 5 14 4 15.5 4C17.5 4 20 5.5 20 8.5C20 14.5 12 21 12 21Z" />
+	  <text x="12" y="12" text-anchor="middle" fill="#333"> {{hp.max}} </text>
+	</svg>
+	<span>HP</span>
+      </div>
+      <div>
+	<p class="section">({{hp.hitDieSize}} x {{hp.hitDice}})</p><br /><br /><br />
+	<p class="section">Temp:</p>
+      </div>
+      <div class="trait-box">
+	<svg viewBox="0 0 24 24" class="trait-icon hexagon"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" />
+	  <text x="12" y="12" text-anchor="middle" fill="#333"> {{init.str}} <i class="{{init.icon}}"></i> </text>
+	</svg>
+	<span>Initiative</span>
+      </div>
+      <div class="trait-box">
+	<svg viewBox="0 0 24 24" class="trait-icon square"><rect x="4" y="4" width="16" height="16" rx="2" />
+	  <text x="12" y="12" text-anchor="middle" fill="#333"> {{pb.str}} </text>
+	</svg>
+	<span>Prof. Bonus</span>
+      </div>
+      <div class="trait-box">
+	<svg viewBox="0 0 24 24" class="trait-icon square"><rect x="4" y="4" width="16" height="16" rx="2" />
+	  <text x="12" y="12" text-anchor="middle" fill="#333"> {{weightSpeeds.normal.walk}} </text>
+	</svg>
+	<span>Speed</span>
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="column">
+	<p class="section">Senses</p>
+	<p>Passive Percept.: {{passives.perception}}</p>
+	<p>Passive Investig.: {{passives.investigation}}</p>
+	<p>Passive Insight: {{passives.insight}}</p>
+	{{#proficiencies.senses}}<p>{{friendlySubtypeName}}: {{value}} ft.</p>{{/proficiencies.senses}}<br />
+	<p class="section">Defenses</p> {{#proficiencies.defenses}}<i class="ddb-{{type}}"></i> {{friendlySubtypeName}} {{/proficiencies.defenses}}
+      </div>
+      <div class="column">
+	<p class="section">Proficiencies</p>
+	<p><b>Armor:</b><br />{{#proficiencies.armor}}{{friendlySubtypeName}}<br />{{/proficiencies.armor}}</p>
+	<p><b>Weapons:</b><br />{{#proficiencies.weapons}}{{friendlySubtypeName}}<br />{{/proficiencies.weapons}}</p>
+	<p><b>Tools:</b><br />{{#proficiencies.tools}}{{friendlySubtypeName}}<br />{{/proficiencies.tools}}</p>
+	<p><b>Languages:</b><br />{{#proficiencies.languages}}{{friendlySubtypeName}}<br />{{/proficiencies.languages}}</p><br />
+      </div>
+      <div class="column">
+	<p><b>Alignment:</b><br />{{alignment.description}}</p>
+	{{#traits.height}}<p><b>Height:</b><br />{{traits.height}}</p>{{/traits.height}}
+	{{#traits.weight}}<p><b>Weight:</b><br />{{traits.weight}}</p>{{/traits.weight}}
+	{{#traits.age}}<p><b>Age:</b><br />{{traits.age}}</p>{{/traits.age}}
+	{{#traits.size}}<p><b>Size:</b><br />{{traits.size}}</p>{{/traits.size}}
+	{{#traits.appearance}}<p><b>Appearance:</b><br />{{traits.appearance}}</p>{{/traits.appearance}}
+	{{#traits.hair}}<p><b>Hair:</b><br />{{traits.hair}}</p>{{/traits.hair}}
+	{{#traits.eyes}}<p><b>Eyes:</b><br />{{traits.eyes}}</p>{{/traits.eyes}}
+	{{#traits.ideals}}<p><b>Ideals:</b><br />{{traits.ideals}}</p>{{/traits.ideals}}
+	{{#traits.bonds}}<p><b>Bonds:</b><br />{{traits.bonds}}</p>{{/traits.bonds}}
+	{{#traits.flaws}}<p><b>Flaws:</b><br />{{traits.flaws}}</p>{{/traits.flaws}}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+{
+  "changeling": { "pansexual": 0.4, "bisexual": 0.3, "homosexual": 0.1, "asexual": 0.1, "heterosexual": 0.1 },
+  "tiefling": { "bisexual": 0.3, "pansexual": 0.25, "heterosexual": 0.2, "homosexual": 0.2, "asexual": 0.05 },
+  "aasimar": { "asexual": 0.3, "heterosexual": 0.25, "pansexual": 0.2, "homosexual": 0.15, "bisexual": 0.1 },
+  "warforged": { "heterosexual": 0.1, "homosexual": 0.1, "bisexual": 0.1, "pansexual": 0.1, "asexual": 0.6 },
+  "kalashtar": { "asexual": 0.4, "heterosexual": 0.2, "pansexual": 0.2, "bisexual": 0.1, "homosexual": 0.1 },
+  "elf": { "bisexual": 0.3, "pansexual": 0.25, "heterosexual": 0.25, "homosexual": 0.15, "asexual": 0.05 },
+  "_default": { "heterosexual": 0.55, "homosexual": 0.2, "bisexual": 0.15, "asexual": 0.05, "pansexual": 0.05 }
+}

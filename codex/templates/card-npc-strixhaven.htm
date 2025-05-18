@@ -1,0 +1,52 @@
+<!--
+@name: NPC Card (Strixhaven)
+@size: tarot
+@orientation: vertical
+-->
+
+<li id="cards_item-{{index}}-{{id}}">
+  <div class="card {{preferences.size}} {{preferences.orientation}}" id="card-{{index}}-{{id}}">
+    <div class="back" id="card_back-{{index}}-{{id}}">
+      <div class="image" id="card_back-image-{{index}}-{{id}}"><img src="{{imageBack}}" class="card-image" /></div>
+      <div class="header" id="card_back-header-{{index}}-{{id}}">
+	<h4>{{name}}</h4>
+	<p class="info">{{traits.genderPronouns}}</p>
+	<div class="topright"><i class="bi {{decorations.icon}}"></i></div>
+      </div>
+      <div class="imagetext" id="card_back-imagetext-{{index}}-{{id}}">
+	<p>{{alignment.name}} {{race.fullName}} {{background.definition.name}}</p>
+      </div>
+      <div class="footer" id="card_back-footer-{{index}}-{{id}}">
+	<p>{{#notes.extracurriculars}}<b>Extracurriculars:</b> {{notes.extracurriculars}}{{/notes.extracurriculars}}</p>
+	<p>{{#notes.job}}<b>Job:</b> {{notes.job}}{{/notes.job}}</p>
+      </div>
+    </div>
+    <div class="front" id="card_front-{{index}}-{{id}}">
+      <div class="card_icon" id="card_icon-{{index}}-{{id}}"><img src="{{imageFront}}" /></div>
+      <h4>{{name}}</h4>
+      <p class="info">{{race.fullName}} {{background.definition.name}}, {{alignment.description}}</p>
+      {{#traits.personaityTraits}}<p class="info">{{traits.personaityTraits}}</p>{{/traits.personaityTraits}}
+      {{#traits.saying}}<p class="content-small"><q>{{traits.saying}}</q></p>{{/traits.saying}}
+      <p class="content">{{{notes.backstory}}}</p>
+      <p class="content">{{#traits.age}}<b>Age:</b> {{traits.age}} {{#traits.ageGroup}}, {{traits.ageGroup}}){{/traits.ageGroup}}{{/traits.age}}</p>
+      <p class="content">{{#traits.appearance}}<b>Appearance:</b> {{traits.appearance}}{{/traits.appearance}}{{#traits.eyes}}, Eyes: {{traits.eyes}}{{/traits.eyes}}{{#traits.hair}}, Hair: {{traits.hair}}{{/traits.hair}}{{#traits.skin}}, Skin: {{traits.skin}}{{/traits.skin}}</p>
+      <p class="content">{{#traits.attitude}}<b>Attitude:</b> {{traits.attitude}} {{/traits.attitude}}</p>
+      <p class="content">{{#traits.interactionTraits}}<b>Interaction Traits:</b> {{traits.interactionTraits}} {{/traits.interactionTraits}}</p>
+      <p class="content">{{#traits.mannerisms}}<b>Mannerisms:</b> {{traits.mannerisms}} {{/traits.mannerisms}}</p>
+      <p class="content">{{#traits.relationship}}<b>Relationship:</b> {{traits.relationship}} {{#traits.orientation}}({{traits.orientation}}){{/traits.orientation}}{{/traits.relationship}}</p>
+      <p class="content">{{#traits.talents}}<b>Talents:</b> {{traits.talents}} {{/traits.talents}}</p>
+
+      <p class="content">{{#traits.ideals}}<b>Ideal(s):</b> {{traits.ideals}} {{/traits.ideals}}</p>
+      <p class="content">{{#traits.bonds}}<b>Bond(s):</b> {{traits.bonds}} {{/traits.bonds}}</p>
+      <p class="content">{{#traits.flaws}}<b>Flaw(s):</b> {{traits.flaws}} {{/traits.flaws}}</p>
+      <p class="content">{{#traits.goals}}<b>Goal(s):</b> {{traits.goals}} {{/traits.goals}}</p
+
+      <!-- {{#stats.0}} --><table style="font-size: 12px; text-align: center; border: 1px solid black; border-spacing: 20px -2px; margin: 8px;">
+	<tr><td><b>STR</b></td><td><b>DEX</b></td><td><b>CON</b></td><td><b>INT</b></td><td><b>WIS</b></td><td><b>CHA</b></td></tr>
+	<tr><td>{{stats.0.value}} ({{stats.0.str}})</td><td>{{stats.1.value}} ({{stats.1.str}})</td><td>{{stats.2.value}} ({{stats.2.str}})</td><td>{{stats.3.value}} ({{stats.3.str}})</td><td>{{stats.4.value}} ({{stats.4.str}})</td><td>{{stats.5.value}} ({{stats.5.str}})</td></tr>
+      </table><!-- {{/stats.0}} -->
+      {{#ac.value}}<p class="content"><b>AC:</b> {{ac.value}} {{#ac.description}}({{ac.description}}){{/ac.description}}</p>{{/ac.value}}
+      {{#hp.value}}<p class="content"><b>HP:</b> {{hp.value}} {{#hp.hitDieSize}}({{hp.hitDieSize}}){{/hp.hitDieSize}}</p>{{/hp.value}}
+    </div>
+  </div>
+</li>

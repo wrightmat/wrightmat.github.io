@@ -1,0 +1,291 @@
+<div class="booklet" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+  <div class="page" id="page1">
+    <p class="heading">Backstory</p> <p class="small">{{notes.backstory}}</p>
+    <p class="heading">Additional Notes</p> <p class="small">{{notes.otherNotes}}</p>
+  </div>
+
+  <div class="page" id="page2">
+    <br /><h1 style="text-align:center">Strixhaven University</h1><br />
+    <img class="center" src="https://www.worldanvil.com/uploads/images/72a25579602be0b1ade9b58210f14604.png" /><br />
+    <h2 style="text-align:center">Mage-Student Handbook</h2><br /><br />
+    <h3 style="text-align:center">{{name}}</h3>
+    <div style="position:absolute;left:10px;bottom:10px;">
+      {{#decorations.avatarUrl}}<img src="{{decorations.avatarUrl}}" style="width:100px;height:100px;" />{{/decorations.avatarUrl}}
+    </div>
+  </div>
+
+  <div class="page" id="page3">
+    <p class="heading">Attacks & Spells</p>
+    {{#limitedUses.0}}
+    <div id="limitedUses0" style="position:absolute;right:15px;top:10px;"><b>{{name}}:</b> {{remainingUses}} / {{maxUses}}</div>
+    {{/limitedUses.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">Actions</p></span><span class="float-right-60"><p><b>Attacks Per Action:</b> {{attacking.attacksPerAction}}</p></span></div>
+
+    <table><tr class="table-header">
+      <th width="35%">Attack Name</th><th width="15%">To Hit</th><th width="20%">Damage</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#attacks.1}} -->
+      <tr class="table-item"><td>{{definition.name}}</td><td>{{hit.str}}</td><td class="no-wrap">{{damage.str}} <i class="{{damage.icon}}"></i></td><td>{{range.str}}</td><td class="notes"><span class="notes">{{notes}}</span></td></tr>
+      <!-- {{/attacks.1}} -->
+    </table><br />
+    {{#attacks.3.0}}
+    <p class="section">Bonus Actions</p>
+    <table><tr class="table-header">
+      <th width="35%">Attack Name</th><th width="15%">To Hit</th><th width="20%">Damage</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#attacks.3}} -->
+      <tr class="table-item"><td>{{definition.name}}</td><td>{{hit.str}}</td><td class="no-wrap">{{damage.str}} <i class="{{damage.icon}}"></i></td><td>{{range.str}}</td><td class="notes"><span class="notes">{{notes}}</span></td></tr>
+      <!-- {{/attacks.3}} -->
+    </table><br />
+    {{/attacks.3.0}}
+    {{#attacks.4.0}}
+    <p class="section">Reactions</p>
+    <table><tr class="table-header">
+      <th width="50%">Attack Name</th><th width="15%">To Hit</th><th width="20%">Damage</th><th width="15%">Notes</th></tr>
+      <!-- {{#attacks.4}} -->
+      <tr class="table-item"><td>{{definition.name}}</td><td>{{hit.str}}</td><td class="no-wrap">{{damage.str}} <i class="{{damage.icon}}"></i></td><td class="notes"><span class="notes">{{notes}}</span></td></tr>
+      <!-- {{/attacks.4}} -->
+    </table><br />
+    {{/attacks.4.0}}
+    {{#spells.0.0}}
+    <p class="section">Cantrips</p>
+    <table><tbody><tr class="table-header" id="spells-0">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.0}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.0}} -->
+    </table>
+    {{/spells.0.0}}
+  </div>
+
+  <div class="page" id="page4">
+    <p class="heading">Student Information</p>
+    <div class="columns">
+      <div class="column" id="ability-scores">
+        <div class="ability-block str"><span class="name">Str</span><span class="modifier">{{stats.0.str}}</span><span class="score">{{stats.0.value}}</span></div>
+        <div class="ability-block dex"><span class="name">Dex</span><span class="modifier">{{stats.1.str}}</span><span class="score">{{stats.1.value}}</span></div>
+        <div class="ability-block con"><span class="name">Con</span><span class="modifier">{{stats.2.str}}</span><span class="score">{{stats.2.value}}</span></div>
+        <div class="ability-block int"><span class="name">Int</span><span class="modifier">{{stats.3.str}}</span><span class="score">{{stats.3.value}}</span></div>
+        <div class="ability-block wis"><span class="name">Wis</span><span class="modifier">{{stats.4.str}}</span><span class="score">{{stats.4.value}}</span></div>
+        <div class="ability-block cha"><span class="name">Cha</span><span class="modifier">{{stats.5.str}}</span><span class="score">{{stats.5.value}}</span></div>
+      </div>
+      <div class="column" id="saves-misc">
+	<p class="section">Saving Throws</p>
+        <ul class="item-list">
+	{{#saves}}
+          <li class="skill stat-{{stat}}"><span class="circle p{{proficiency}}"></span><span class="modifier">{{str}}</span><span class="name">{{friendlyName}}</span></li>
+	{{/saves}}
+	</ul><br />
+	<p class="section">Senses</p>
+	<p>Passive Percept.:{{passives.perception}}</p>
+	<p>Passive Investig.: {{passives.investigation}}</p>
+	<p>Passive Insight: {{passives.insight}}</p>
+	{{#proficiencies.senses}}<p>{{friendlySubtypeName}}: {{value}} ft.</p>{{/proficiencies.senses}}
+	<br /><p class="section">Death Saves</p>
+	<p>Successes</p><span class="circle"></span><span class="circle"></span><span class="circle"></span>
+	<p>Failures</p><span class="circle"></span><span class="circle"></span><span class="circle"></span>
+	<br /><br /><p class="section">Inspiration</p>
+	<span class="circle"></span><span class="circle"></span><span class="circle"></span><span class="circle"></span><span class="circle"></span>
+      </div>
+      <div class="column" id="skills">
+	<p class="section">Skills</p>
+        <ul class="item-list">
+	{{#skills}}
+          <li class="skill stat-{{stat}}"><span class="circle p{{proficiency}}"></span><span class="modifier">{{str}}</span><span class="name">{{friendlyName}}</span>{{#icon}}&nbsp;<i class="{{icon}}"></i>{{/icon}}</li>
+	{{/skills}}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+
+  <div class="page" id="page5">
+    <p class="heading">Student Information</p>
+    <div class="float-flex-container">
+      <span class="float-left"><p class="section">Species</p> <p>{{race.fullName}}</p></span>
+      <span class="float-right"><p class="section">Class & Level</p> <p>{{classes.0.definition.name}} {{level}} {{#subclasses}}({{subclasses.0.name}}){{/subclasses}}</p></span>
+    </div>
+    <div class="float-flex-container">
+      <span class="float-left"><p class="section">Background</p> <p>{{background.definition.name}}</p></span>
+      <span class="float-right"><p class="section">Hit Points</p> <p class="large">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / {{hp.max}}</p></span>
+    </div>
+    <div style="position:absolute;right:20px;top:90px;">(Dice: {{hp.hitDieSize}} • {{hp.hitDice}})</div>
+    <div style="position:absolute;right:65px;top:130px;">Temp: </div>
+    <p style="clear:both;"></p>
+    <div class="float-flex-container">
+      <span class="float-left"><p class="section">Proficiency</p> <p>{{pb.str}}</p></span>
+      <span class="float-right"><p class="section">Speed</p> <p>{{weightSpeeds.normal.walk}} ft.{{#weightSpeeds.normal.fly}} ({{weightSpeeds.normal.fly}} ft. fly){{/weightSpeeds.normal.fly}}{{#weightSpeeds.normal.swim}} ({{weightSpeeds.normal.swim}} ft. swim) {{/weightSpeeds.normal.swim}}</p></span>
+    </div>
+    <div class="float-flex-container">
+      <span class="float-left"><p class="section">Initiative</p> <p>{{init.str}} <i class="{{init.icon}}"></i></p></span>
+      <span class="float-right"><p class="section">Armor Class</p> <p>{{ac.value}}</p></span>
+    </div>
+    <p style="clear:both;"></p>
+    <div class="float-flex-container">
+      <span class="float-left"><p class="section">Defenses</p> {{#proficiencies.defenses}}<i class="ddb-{{type}}"></i> {{friendlySubtypeName}} {{/proficiencies.defenses}}</span>
+      <span class="float-right"><p class="section">Conditions</p> {{#conditions}} {{name}} {{/conditions}}</span>
+    </div>
+    <p style="clear:both;"><br /></p>
+    <p class="section">Proficiencies & Training</p>
+    <p>Armor: {{#proficiencies.armor}}{{friendlySubtypeName}} {{/proficiencies.armor}}</p>
+    <p>Weapons: {{#proficiencies.weapons}}{{friendlySubtypeName}} {{/proficiencies.weapons}}</p>
+    <p>Tools: {{#proficiencies.tools}}{{friendlySubtypeName}} {{/proficiencies.tools}}</p>
+    <p>Languages: {{#proficiencies.languages}}{{friendlySubtypeName}} {{/proficiencies.languages}}</p>
+  </div>
+
+  <div class="page" id="page6">
+    <p class="heading">Attacks & Spells</p>
+    {{#spellCasting.ability}}
+    <div style="position:absolute;right:10px;top:10px;">
+      <b>Spellcasting:</b> {{spellCasting.ability}} ({{spellCasting.mod}})<br />
+      <b>Spell Attack:</b> {{spellCasting.attack}}<br />
+      <b>Spell Save DC:</b> {{spellCasting.save}}
+    </div>
+    {{/spellCasting.ability}}
+    {{#spells.1.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">1st Level</p></span>{{#limitedUses.1.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.1.str}}}</p></span>{{/limitedUses.1.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-1">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.1}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.1}} -->
+    </table>
+    {{/spells.1.0}}
+    {{#spells.2.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">2nd Level</p></span>{{#limitedUses.2.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.1.str}}}</p></span>{{/limitedUses.2.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-2">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.2}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.2}} -->
+    </table>
+    {{/spells.2.0}}
+    {{#spells.3.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">3rd Level</p></span>{{#limitedUses.3.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.3.str}}}</p></span>{{/limitedUses.3.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-3">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.3}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.3}} -->
+    </table>
+    {{/spells.3.0}}
+    {{#spells.4.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">4th Level</p></span>{{#limitedUses.4.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.4.str}}}</p></span>{{/limitedUses.4.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-3">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.4}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.4}} -->
+    </table>
+    {{/spells.4.0}}
+    {{#spells.5.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">5th Level</p></span>{{#limitedUses.5.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.5.str}}}</p></span>{{/limitedUses.5.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-3">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.5}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.5}} -->
+    </table>
+    {{/spells.5.0}}
+    {{#spells.6.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">6th Level</p></span>{{#limitedUses.6.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.6.str}}}</p></span>{{/limitedUses.6.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-3">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.6}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.6}} -->
+    </table>
+    {{/spells.6.0}}
+    {{#spells.7.0}}
+    <div class="float-flex-container"><span class="float-left-40"><p class="section">7th Level</p></span>{{#limitedUses.7.available}}<span class="float-right-60"><p class="section-short">{{{limitedUses.7.str}}}</p></span>{{/limitedUses.7.available}}</div>
+    <table><tbody><tr class="table-header" id="spells-3">
+      <th width="30%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="15%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.7}} -->
+      <tr class="table-item">
+	<td class="no-wrap"><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.7}} -->
+    </table>
+    {{/spells.7.0}}
+  </div>
+
+  <div class="page" id="page7">
+    <p class="heading">Student Information</p>
+    <div class="columns">
+      <div class="column">
+	<p class="section">Gender</p> <p>{{traits.gender}}</p>
+	<p class="section">Size</p> <p>{{traits.size}}</p>
+	<p class="section">Age</p> <p>{{traits.age}}</p>
+	<p class="section">Height</p> <p>{{traits.height}}</p>
+	<p class="section">Weight</p> <p>{{#traits.weight}}{{traits.weight}} lbs.{{/traits.weight}}</p>
+	<p class="section">Hair</p> <p>{{traits.hair}}</p>
+	<p class="section">Skin</p> <p>{{traits.skin}}</p>
+	<p class="section">Eyes</p> <p>{{traits.eyes}}</p>
+	<p class="section">Alignment</p> <p>{{alignment.description}}</p>
+      </div>
+      <div class="column">
+	<p class="section">Personality</p> <p class="small">{{traits.personalityTraits}}</p>
+	<p class="section">Ideals</p> <p class="small">{{traits.ideals}}</p>
+	<p class="section">Bonds</p> <p class="small">{{traits.bonds}}</p>
+	<p class="section">Flaws</p> <p class="small">{{traits.flaws}}</p>
+      </div>
+      <div class="column">
+	<p class="section">Features & Traits</p>
+	{{#feats}}
+	<p><ul>{{definition.name}}</ul></p>
+	{{/feats}}
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page8">
+    <p class="heading">Inventory</p><br />
+    <div style="position:absolute;right:20px;top:12px;font-size:1.2em;"><b>CP:</b> {{currencies.cp}} &nbsp;&nbsp; <b>SP:</b> {{currencies.sp}} &nbsp;&nbsp; <b>GP:</b> {{currencies.gp}}</div>
+    <table><tbody><tr class="table-header" id="inventory">
+      <th width="5%"></th><th width="40%">Equipment Name</th><th width="10%">Qty</th><th width="10%">Weight</th><th width="35%">Notes</th></tr>
+      <!-- {{#inventory}} -->
+      <tr class="table-item"><td><span class="equip"><span class="circle {{equipped}}"></span></span></td><td>{{name}} <i class="{{icon}}"></i></td><td>{{quantity}}</td><td>{{weight.str}}</td><td><span class="notes">{{notes}}</span></td></tr>
+      <!-- {{/inventory}} -->
+    </table>
+  </div>
+  </div>
+</div>

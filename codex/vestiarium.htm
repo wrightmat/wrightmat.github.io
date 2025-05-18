@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Codex Vestiarium: TTRPG Character Creator</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="images/icon_V_32.png" rel="icon" type="image/png" sizes="32x32">
+  <link href="common.css" rel="stylesheet" type="text/css">
+  <link href="ddb.css" rel="stylesheet" type="text/css">
+  <link href="images/icons.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.rawgit.com/fponticelli/dicefont/fc6b8c47/dist/dicefont/dicefont.css" rel="stylesheet">
+  <link href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.min.js" integrity="sha256-AlTido85uXPlSyyaZNsjJXeCs07eSv3r43kyCVc8ChI=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" type="text/javascript"></script>
+  <script src="https://unpkg.com/mustache@latest" type="text/javascript"></script>
+  <script src="common.js" type="text/javascript"></script>
+  <script src="ddb_parser.js" type="text/javascript"></script>
+</head>
+
+<body>
+<header id="header"></header>
+
+<div id="controls" class="controls">
+  <div id="controls-header">☰ Controls</div>
+  <div id="controls-toolbar" class="button-toolbar"></div>
+
+  <div class="form-group" id="controls-location">
+    <label for="char-locations"><label class="star-checkbox"><input type="checkbox" id="focus-location" name="focus" /><span class="star"></span></label> Location</label>
+    <select name="char-locations" class="form-control" id="char-locations">
+      <option id="" value=""></option>
+    </select>
+  </div>
+
+  <div class="form-group" id="controls-species">
+    <label for="char-species"><label class="star-checkbox"><input type="checkbox" id="focus-species" name="focus" /><span class="star"></span></label> Species</label>
+    <select name="char-species" class="form-control" id="char-species">
+      <option id="" value=""></option>
+    </select>
+  </div>
+
+  <div class="form-group" id="controls-background">
+    <label for="char-backgrounds"><label class="star-checkbox"><input type="checkbox" id="focus-background" name="focus" /><span class="star"></span></label> Background</label>
+    <select name="char-backgrounds" class="form-control" id="char-backgrounds">
+      <option id="" value=""></option>
+    </select>
+  </div>
+
+  <div class="form-group" id="controls-class">
+    <label for="char-classes"><label class="star-checkbox"><input type="checkbox" id="focus-class" name="focus" /><span class="star"></span></label> Class</label>
+    <select name="char-classes" class="form-control" id="char-classes">
+      <option id="" value=""></option>
+    </select>
+  </div>
+
+  <div class="form-group" id="controls-alignment">
+    <label for="char-alignments"><label class="star-checkbox"><input type="checkbox" id="focus-alignment" name="focus" /><span class="star"></span></label> Alignment</label>
+    <select name="char-alignments" class="form-control" id="char-alignments">
+      <option id="" value=""></option>
+    </select>
+  </div>
+
+  <div class="form-group" id="controls-gender">
+    <label for="char-genders"><label class="star-checkbox"><input type="checkbox" id="focus-gender" name="focus" /><span class="star"></span></label> Gender</label>
+    <select name="char-genders" class="form-control" id="char-genders">
+      <option id="" value=""></option>
+    </select>
+  </div>
+
+  <div class="controls-subheader">Recent Characters:</div>
+  <select id="recent-chars" class="form-control" onchange="loadRecentCharacter(this.value)">
+    <option value=""></option>
+  </select><br /><br />
+</div>
+
+<div id="container" class="container" style="padding:10px;margin-top:0;"></div>
+
+<div id="dialog-import" class="modal">
+  <textarea id="markdownInput" placeholder="Paste your markdown here..." style="width: 100%; height: 400px;"></textarea>
+</div>
+
+
+<script type="text/javascript">
+  const featureTypes = [ "location", "species", "background", "class", "alignment", "gender" ];
+
+  function decayTagPool( tagPool, factor = 0.8 ) {
+    const decayed = {};
+    for ( const [tag, weight] of Object.entries(tagPool) ) { decayed[tag] = weight * factor; }
+    return decayed;
+  };
+
+  function getDataByType( type ) {
+    switch ( type ) {
+      case "location": return char_locations;
+      case "species": return char_species;
+      case "background": return char_backgrounds;
+      case "class": return char_classes;
+      case "gender": return char_genders;
+      case "alignment": return char_alignments;
+      default: return {};
+    }
+  };
+
+  function loadRecentCharacter( index ) {
+    const recent_chars = codexStorage.get("recent_characters", []);
+    const npc = recent_chars[Number(index)];
+    if (!npc) return;
+    window.latest_char = structuredClone(npc); // or JSON deep copy
+    renderCharacter(window.latest_char);
+  }
+
+  function updateRecentCharacters() {
+    const recent_chars = codexStorage.get("recent_characters", []);
+    const select = document.getElementById("recent-chars");
+    select.innerHTML = `<option value=""></option>`;
+    recent_chars.forEach((npc, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = npc.name || `NPC ${i + 1}`;
+      select.appendChild(opt);
+    });
+  };
+
+  function mergeTagsFrom( data, key ) {
+    const pool = {};
+    const tags = data[key]?.tags || {};
+    for ( const [tag, weight] of Object.entries(tags) ) { pool[tag] = ( pool[tag] || 0 ) + weight; }
+    return pool;
+  };
+
+  function sampleTags( tags, count = 6 ) {
+    const entries = Object.entries(tags);
+    const shuffled = entries.sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, count);
+    const result = {};
+    for ( const [tag, weight] of selected ) { result[tag] = weight; }
+    return result;
+  };
+
+  function scoreOptions( data, tagPool, fuzz = 0.2 ) {
+    const scores = [];
+    for ( const [key, entry] of Object.entries(data) ) {
+      if ( entry.tags ) {
+	let score = 0;
+	for ( const [tag, weight] of Object.entries(entry.tags) ) { score += ( tagPool[tag] || 0 ) * weight; }
+	score += (Math.random() * 2 - 1) * fuzz;	// Add randomness scaled to the fuzz factor
+	scores.push({ key, score });
+      }
+    }
+    scores.sort((a, b) => b.score - a.score);
+    return scores.map(s => s.key);
+  };
+
+  function selectAgeGroup( age, range ) {
+    const [min, max] = range;
+    const lifespan = max - min;
+    const relativeAge = (age - min) / lifespan;
+    if (relativeAge < 0.2) return "Young Adult";
+    if (relativeAge < 0.4) return "Adult";
+    if (relativeAge < 0.6) return "Middle Aged";
+    if (relativeAge < 0.8) return "Older Adult";
+    return "Elderly";
+  }
+
+  function selectCentered( min, max ) {
+    const mean = (min + max) / 2;
+    const stddev = (max - min) / 6; // 99% of values within range
+    let val;
+    do {
+      val = Math.round(gaussianRandom(mean, stddev));
+    } while ( val < min || val > max );
+    return val;
+  }
+
+  function selectWeighted( weightMap ) {
+    const entries = Object.entries(weightMap);
+    const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
+    const roll = Math.random() * total;
+
+    let cumulative = 0;
+    for ( const [value, weight] of entries ) {
+      cumulative += weight;
+      if ( roll <= cumulative ) return value;
+    }
+    return entries[0][0]; // fallback
+  };
+
+  function selectMissingFeatures( character, tagPool ) {
+    for ( const type of featureTypes ) {
+      if ( !character[type] ) {
+	const data = getDataByType(type);
+	if ( type === "gender" ) {
+	  var genderWeights = char_species[character.species]?.gender || { "male": 0.45, "female": 0.47, "nonbinary": 0.08 };
+	  character.gender = selectWeighted(genderWeights);
+	} else if ( Array.isArray(data) ) {
+	  character[type] = getRandomElement(data);
+	} else {
+	  const scored = scoreOptions(data, tagPool);
+	  character[type] = scored[0];
+	  Object.assign(tagPool, mergeTagsFrom(data, scored[0]));
+	}
+      }
+    }
+    return character;
+  };
+
+  function conjugateVerb( verb, form = "base" ) {
+    const base = verb.split(" ")[0]; // e.g. "adjusts grip" → "adjusts"
+    if ( form === "gerund" ) return base + (base.endsWith("e") ? "ing" : "ing");
+    if ( form === "third" ) return base + (base.endsWith("s") ? "es" : "s");
+    return base;
+  };
+  function formatTrigger( trigger, mode = "clause" ) {
+    if (mode === "clause") return trigger.startsWith("when") ? trigger : `when ${trigger}`;
+    return trigger;
+  };
+
+  function generateAppearance( species, tags = [], ageGroup = "" ) {
+    const base = getRandomElement(char_appearances.speciesTemplates[species?.toLowerCase()]);
+    const tagMod = getRandomElement(
+      char_appearances.tagModifiers[tags[0]] || char_appearances.tagModifiers["_default"]
+    );
+    const ageMod = getRandomElement(char_appearances.ageGroupModifiers[ageGroup]);
+    return [base, tagMod, ageMod].filter(Boolean).join(" ");
+  };
+
+  function generateAttitude( character ) {
+    const tagList = character.tags || [];
+    const attitudes = { Friendly: 0, Indifferent: 0, Hostile: 0 };
+    for ( const tag of tagList ) {
+      const weights = char_attitudes.baseWeightsByTag[tag] || char_attitudes.baseWeightsByTag["_default"]
+      attitudes.Friendly += weights.Friendly;
+      attitudes.Indifferent += weights.Indifferent;
+      attitudes.Hostile += weights.Hostile;
+    }
+    const attitude = selectWeighted(attitudes);
+    return attitude;
+  };
+
+  function generateOrientation( character ) {
+    const weights = char_orientations[character.species.title?.toLowerCase()] || char_orientations["_default"];
+    const orientation = selectWeighted(weights);
+    return orientation;
+  };
+
+  function generateRelationship( character ) {
+    const ageGroup = character.traits.ageGroup || "Adult";
+    const tag = character.tags?.[0] || null;
+    const baseOptions = char_relationships.baseByAgeGroup[ageGroup] || [];
+    const tagOptions = tag && char_relationships.modifiersByTag[tag] ? char_relationships.modifiersByTag[tag] : [];
+    let relationship;
+    if ( tagOptions.length > 0 && Math.random() < 0.3 ) {
+      relationship = getRandomElement(tagOptions);
+    } else {
+      relationship = getRandomElement(baseOptions);
+    }
+    return relationship;
+  };
+
+  function generateQuirk( character ) {
+    var tag = ( character.tags && character.tags[0] ) || "_default";
+    var items = character.background.equipment_objects || ["pouch", "ring", "amulet", "coin", "flask", "journal", "weapon"];
+    var template = getRandomElement(char_quirks.quirkTemplates);
+    var backgroundTalents = character.background.talents || [];
+    var classTalents = character.class.talents || [];
+    var talentList = [...backgroundTalents, ...classTalents];
+
+    return template.replace(/\{(\w+)(?::(\w+))?\}/g, (_, key, modifier) => {
+      if ( key === "verb" ) {
+        const pool = char_quirks.verbsByTag[tag] || char_quirks.verbsByTag["_default"];
+        const verb = getRandomElement(pool);
+        return verb?.[modifier] || verb?.base || "fiddles";
+      }
+      if ( key === "trigger" ) {
+        const triggers = char_quirks.triggersByTag[tag] || char_quirks.triggersByTag["_default"];
+        const trigger = getRandomElement(triggers);
+        return modifier === "clause" ? `when ${trigger.replace(/^when\s+/, "")}` : trigger;
+      }
+      if ( key === "style" ) {
+        const styles = char_quirks.stylesByTag[tag] || char_quirks.stylesByTag["_default"];
+        return getRandomElement(styles);
+      }
+      if ( key === "object" ) { return getRandomElement(items); }
+      if ( key === "talent" ) { return getRandomElement(talentList) || "do card tricks"; }
+      return "";
+    });
+  }
+
+  function generateMarkovName( seedList, minLength = 4, maxLength = 8 ) {
+    const pieces = [];
+    for ( const name of seedList ) {	// Build trigram pool
+      for ( let i = 0; i < name.length - 2; i++ ) { pieces.push(name.substring(i, i + 3)); }
+    }
+    let name = pieces[Math.floor(Math.random() * pieces.length)];
+    while (name.length < minLength || (name.length < maxLength && Math.random() > 0.3)) {
+      const candidates = pieces.filter(p => p[0] === name[name.length - 1]);
+      if (candidates.length === 0) break;
+      name += candidates[Math.floor(Math.random() * candidates.length)][2];
+    }
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  };
+
+  function generateName( character, options = {} ) {
+    const gender = character.gender?.toLowerCase();
+    const species = character.species?.toLowerCase();
+    const data = char_names[species] || {};
+    // defaults, which can be overridden in options
+    const chanceClan = options.chanceClan ?? 0.4;
+    const chanceNickname = options.chanceNickname ?? 0.5;
+    const chanceMarkov = options.chanceMarkov ?? 0.3;
+
+    let pool = [];
+    if ( Array.isArray(data) ) { pool = data;
+    } else if ( data[gender] ) { pool = data[gender];
+    } else if ( data["neutral"] ) { pool = data["neutral"];
+    } else if ( data["_default"] ) { pool = data["_default"];
+    } else {  // catch case: generally this is a non-binary character where only gendered names are defined - so we just create a new name!
+      pool = [...data.male, ...data.female];
+      return generateMarkovName(pool);
+    }
+
+    const firstName = Math.random() < chanceMarkov ? generateMarkovName(pool) : getRandomElement(pool);
+    let nickname = "";  // Optional Nickname
+    if ( Array.isArray(data.nickname) && Math.random() < chanceNickname ) { nickname = getRandomElement(data.nickname); }
+    let clan = "";  // Optional Clan Name
+    if ( Array.isArray(data.clan) && Math.random() < chanceClan ) { clan = getRandomElement(data.clan); }
+
+    const parts = [firstName];
+    if ( nickname ) parts.push(nickname);
+    if ( clan ) parts.push(clan);
+    return parts.join(" ");
+  };
+
+  function generateUniqueIndex( character ) {
+    const name = (character.name || "Unnamed").toLowerCase();
+    const safe = name.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const hash = Array.from(name).reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 10000;
+    return `${safe || "unnamed"}-${hash.toString().padStart(4, "0")}`;
+  };
+
+
+  function ddbConvertCharacter( character ) {
+    return {
+      index: character.index,
+      name: character.name,
+      group: {
+        name: character.location?.group,
+        subgroupDefinition: character.location?.title
+      },
+      ac: {
+        value: character.ac?.value || 10,
+        description: character.ac?.description || ""
+      },
+      alignment: {
+        name: character.alignment.abbreviation || character.alignment.title,
+        description: character.alignment.title
+      },
+      background: {
+        definition: { name: character.background.title }
+      },
+      classes: [
+        {
+          definition: { name: character.class.title },
+          subclassDefinition: { name: "" }
+        }
+      ],
+      decorations: {
+        avatarUrl: character.avatarUrl || ""
+      },
+      hp: {
+        hitDieSize: character.hp?.hitDice || "1d8",
+        value: character.hp?.value || 1
+      },
+      level: character.level || 1,
+      cr: character.cr || 1,
+      race: {
+        fullName: character.species.title,
+        baseName: "Base",
+        weightSpeeds: {
+          normal: {
+            walk: character.species.speed?.walk || 30,
+            fly: character.species.speed?.fly || 0,
+            burrow: character.species.speed?.burrow || 0,
+            swim: character.species.speed?.swim || 0,
+            climb: character.species.speed?.climb || 0
+          }
+        }
+      },
+      skills: character.skills || [],
+      stats: character.stats || [],
+      notes: {
+        backstory: character.background?.description || ""
+      },
+      tags: ["NPC"],
+      traits: {
+	age: character.traits?.age !== undefined ? `${character.traits.age}${character.traits.ageGroup ? ` (${character.traits.ageGroup})` : ""}` : character.age || undefined,
+        appearance: character.traits?.appearance || character.appearance,
+        attitude: character.traits?.attitude || character.attitude,
+        bonds: character.traits?.bond || character.bonds,
+        eyes: capitalizeFirstLetter(character.traits?.eyes || character.eyes),
+        flaws: character.traits?.flaw || character.flaws,
+	gender: character.gender?.title ? character.gender.title + (Array.isArray(character.gender.pronouns) ? ` (${character.gender.pronouns.join("/")})` : "") : undefined,
+        hair: capitalizeFirstLetter(character.traits?.hair || character.hair),
+        height: character.traits?.height || character.height,
+        ideals: character.traits?.ideal || character.ideals,
+        orientation: capitalizeFirstLetter(character.traits?.orientation || character.orientation),
+        personalityTraits: character.personality || character.tags?.join(", "),
+	quirk: character.traits?.quirk || character.quirk,
+        relationship: capitalizeFirstLetter(character.traits?.relationship || character.relationship),
+        skin: capitalizeFirstLetter(character.traits?.skin || character.skin),
+        weight: character.traits?.weight || character.weight,
+        saying: undefined	// we don't generate a saying, but leave space for one to be added later
+      },
+      preferences: {
+	tagPool: character.tagPool,
+	userSelectedFocus: character.userSelectedFocus,
+	userSelectedFields: character.userSelectedFields
+      }
+    };
+  }
+
+  function renderCharacter( character ) {
+    function formatHeaderValue( value, key, character ) {
+      if ( !value ) return "";
+      if ( character.preferences.userSelectedFocus === key ) {
+        return `<span class="user-focus">${value}</span>`;
+      } else if ( character.preferences.userSelectedFields?.includes(key) ) {
+        return `<span class="user-selected">${value}</span>`;
+      } else {
+        return value;
+      }
+    };
+    function generateHeader( character ) {
+      return [
+        formatHeaderValue(character.group?.subgroupDefinition, "locations", character),
+        formatHeaderValue(character.race?.fullName, "species", character),
+        formatHeaderValue(character.background?.definition?.name, "backgrounds", character),
+        formatHeaderValue(character.classes[0]?.definition?.name, "classes", character),
+        formatHeaderValue(character.alignment?.name, "alignments", character)
+      ].filter(Boolean).join(" · ");
+    };
+
+    const output = document.getElementById("container");
+    output.innerHTML = `
+    <form id="form-char-edit">
+      <span class="section">${generateHeader(character)}</span><br /><br />
+      <div class="form-horizontal">
+      <div class="form-row"><label for="char-edit-name">Name: </label><input type="text" class="form-control" name="char-edit-name" value="${character.name || ""}"></div>
+      <div class="form-row"><label for="char-edit-gender">Gender: </label><input type="text" class="form-control" name="char-edit-gender" value="${character.traits?.gender || ""}"></div>
+      <div class="form-row"><label for="char-edit-age">Age: </label><input type="text" class="form-control" name="char-edit-age" value="${character.traits?.age || ""}"></div>
+      <div class="form-row"><label for="char-edit-appearance">Appearance: </label><textarea class="form-control" name="char-edit-appearance">${character.traits?.appearance || ""}</textarea></div>
+      <div class="form-row"><label for="char-edit-eyes">Eyes: </label><input type="text" class="form-control" name="char-edit-eyes" value="${character.traits?.eyes || ""}"></div>
+      <div class="form-row"><label for="char-edit-hair">Hair: </label><input type="text" class="form-control" name="char-edit-hair" value="${character.traits?.hair || ""}"></div>
+      <div class="form-row"><label for="char-edit-skin">Skin: </label><input type="text" class="form-control" name="char-edit-skin" value="${character.traits?.skin || ""}"></div>
+      <div class="form-row"><label for="char-edit-height">Height: </label><input type="text" class="form-control" name="char-edit-height" value="${character.traits?.height || ""}"></div>
+      <div class="form-row"><label for="char-edit-weight">Weight: </label><input type="text" class="form-control" name="char-edit-weight" value="${character.traits?.weight || ""}"></div>
+      <div class="form-row"><label for="char-edit-personityTraits">Personality Traits: </label><input type="text" class="form-control" name="char-edit-personalityTraits" value="${character.traits?.personalityTraits || ""}"></div>
+      <div class="form-row"><label for="char-edit-quirk">Quirk: </label><input type="text" class="form-control" name="char-edit-quirk" value="${character.traits?.quirk || ""}"></div>
+      <div class="form-row"><label for="char-edit-ideals">Ideals: </label><input type="text" class="form-control" name="char-edit-ideals" value="${character.traits?.ideals || ""}"></div>
+      <div class="form-row"><label for="char-edit-bonds">Bonds: </label><input type="text" class="form-control" name="char-edit-bonds" value="${character.traits?.bonds || ""}"></div>
+      <div class="form-row"><label for="char-edit-flaws">Flaws: </label><input type="text" class="form-control" name="char-edit-flaws" value="${character.traits?.flaws || ""}"></div>
+      <div class="form-row"><label for="char-edit-attitude">Attitude: </label><input type="text" class="form-control" name="char-edit-attitude" value="${character.traits?.attitude || ""}"></div>
+      <div class="form-row"><label for="char-edit-orientation">Orientation: </label><input type="text" class="form-control" name="char-edit-orientation" value="${character.traits?.orientation || ""}"></div>
+      <div class="form-row"><label for="char-edit-relationship">Relationship: </label><input type="text" class="form-control" name="char-edit-relationship" value="${character.traits?.relationship || ""}"></div>
+      <div class="form-row"><label for="char-edit-backstory">Backstory: </label><textarea class="form-control" name="char-edit-backstory">${character.notes?.backstory || ""}</textarea></div>
+      <div class="form-row"><label for="char-edit-additional">Additional Notes: </label><textarea class="form-control" name="char-edit-additional">${character.notes?.additional || ""}</textarea></div>
+      </div>
+    </form>
+    `;
+
+    if ( window.latest_char ) {	  // keep a history of recently generated characters, so we don't have to save all of them
+      const recent_chars = codexStorage.get("recent_characters", []);
+      recent_chars.unshift(window.latest_char); // add to front
+      codexStorage.set("recent_characters", recent_chars.slice(0, 10));
+      updateRecentCharacters();
+    }
+
+    toolbarShowItem('item-actions');	// Show additional toolbar icons
+  };
+
+  function saveCharacterEdits() {
+    const form = document.getElementById("form-char-edit");
+    const data = new FormData(form);
+
+    const updated = {
+      ...window.latest_char,
+      name: data.get("char-edit-name"),
+      traits: {
+        age: data.get("char-edit-age"),
+        appearance: data.get("char-edit-appearance"),
+        eyes: data.get("char-edit-eyes"),
+        hair: data.get("char-edit-hair"),
+        skin: data.get("char-edit-skin"),
+        height: data.get("char-edit-height"),
+        weight: data.get("char-edit-weight"),
+        gender: data.get("char-edit-gender"),
+        personalityTraits: data.get("char-edit-personalityTraits"),
+        quirk: data.get("char-edit-quirk"),
+        ideals: data.get("char-edit-ideals"),
+        bonds: data.get("char-edit-bonds"),
+        flaws: data.get("char-edit-flaws"),
+        attitude: data.get("char-edit-attitude"),
+        orientation: data.get("char-edit-orientation"),
+        relationship: data.get("char-edit-relationship")
+      },
+      notes: {
+        backstory: data.get("char-edit-backstory"),
+        additional: data.get("char-edit-additional")
+      }
+    };
+    window.latest_char = updated;
+    saveCharacterJSON(window.latest_char);
+  };
+
+  function copyCharacterMarkdown() {
+    const c = window.latest_char;
+    const t = c.traits || {};
+    const n = c.notes || {};
+    const md = `## ${c.name}
+---
+name: ${c.name}
+species: ${c.race.fullName}
+class: ${c.classes[0].definition.name}
+background: ${c.background.definition.name}
+alignment: ${c.alignment?.description || c.alignment?.name}
+gender: ${t.gender || ""}
+age: ${t.age || ""}
+orientation: ${t.orientation || ""}
+relationship: ${t.relationship || ""}
+attitude: ${t.attitude || ""}
+location: ${c.group?.subgroupDefinition || ""}
+---
+
+**Personality:** ${t.personalityTraits || ""}
+**Appearance:** ${t.appearance || ""}
+**Quirk:** ${t.quirk || ""}
+**Ideals:** ${t.ideals || ""}  
+**Bonds:** ${t.bonds || ""}  
+**Flaws:** ${t.flaws || ""}
+
+**Backstory:** ${n.backstory || ""}
+${n.additional ? `\n**Notes:** ${n.additional}` : ""}`.trim();
+
+    navigator.clipboard.writeText(md);
+    toolbarUpdateButton('btn-copy-md', '<i class="bi bi-clipboard-check"></i>', { revertAfter: '2000' });
+  };
+
+  function printCharacter() {
+    const encoded = toBase64Unicode(window.latest_char);
+    window.location.href = `scriptorium.htm?data=${encoded}&set=controls-sources:json-characters`;
+  };
+
+  function saveCharacterJSON( character ) {
+    fetch("http://localhost:8000/write?file=characters.json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([character]) // send as a list to allow appending
+    })
+    .then(res => {
+      if ( !res.ok ) throw new Error(`Server error: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      console.log("Character saved:", data);
+      toolbarUpdateButton('btn-save-json', '<i class="bi bi-floppy-fill"></i>', { revertAfter: '2000' });
+    })
+    .catch(err => {
+      console.error("Save failed:", err);
+      toolbarUpdateButton('btn-save-json', '<i class="bi bi-x-square"></i>', { revertAfter: '2000' });
+    });
+  };
+
+
+  function generateCharacter() {
+    var tagPool = {};
+
+    var character = {	// Build initial character attributes based on input
+      location: $('#char-locations option:selected').attr('id'),
+      species: $('#char-species option:selected').attr('id'),
+      background: $('#char-backgrounds option:selected').attr('id'),
+      class: $('#char-classes option:selected').attr('id'),
+      gender: $('#char-genders option:selected').attr('id'),
+      alignment: $('#char-alignments option:selected').attr('id'),
+      userSelectedFocus: null
+    };
+    const checkedFocus = document.querySelector('input[name="focus"]:checked');
+    if ( checkedFocus ) { character.userSelectedFocus = checkedFocus.id.replace('focus-',''); }
+    const userSelectedFields = [];
+    ["locations", "species", "backgrounds", "classes", "alignments", "genders"].forEach(key => {
+      const el = document.getElementById(`char-${key}`);
+      if (el && el.value) userSelectedFields.push(key);
+    });
+    character.userSelectedFields = userSelectedFields;
+
+    // Pull tags from the focused area, or combine all provided tags
+    if ( character.userSelectedFocus ) {
+      const data = getDataByType(character.userSelectedFocus);
+      const focusKey = $(`#npc-${character.userSelectedFocus} option:selected`).attr('id');
+      const rawTags = data[focusKey]?.tags || {};
+      tagPool = sampleTags(rawTags, 8);
+    } else {
+      let merged = {};
+      for ( const type of featureTypes ) {
+	if ( character[type] ) {
+	  const data = getDataByType(type);
+	  const tags = data[character[type]]?.tags || {};
+	  for ( const [tag, weight] of Object.entries(tags) ) { merged[tag] = (merged[tag] || 0) + weight; }
+	}
+      }
+      tagPool = sampleTags(merged, 8);
+    }
+
+    // Fill in features that weren't selected by the user, based on tagPool scoring
+    selectMissingFeatures(character, decayTagPool(tagPool));
+
+    // Pick 5 defining tags based on weighted pool
+    character.tagPool = tagPool;
+    character.tags = Object.entries(tagPool).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag);
+
+    // Generate a name based on either a random selected or Markov generation (and optionally add a last name)
+    character.name = generateName(character);
+
+    // Get the full NPC monster stat block from D&D Beyond, based on the character's class (type)
+    character.monsterId = char_classes[character.class].monsterId;
+    var monster = ddbParseMonster( ddbGetFromEndpoint('monster', character.monsterId)['data'] );
+
+    // Transfer relevent information from the monster to the character
+    character.ac = monster.ac;
+    character.cr = monster.cr;
+    character.hp = monster.hp;
+    character.size = monster.size;
+    character.skills = monster.skills;
+    character.stats = monster.stats;
+
+    // Replace ids with full objects
+    character.location = char_locations[character.location];
+    character.species = char_species[character.species];
+    character.background = char_backgrounds[character.background];
+    character.class = char_classes[character.class];
+    character.gender = char_genders[character.gender];
+    character.alignment = char_alignments[character.alignment];
+
+    // Traits from other features like background and species
+    character.traits = {};
+    character.traits.bond = getRandomElement(character.background.bonds);
+    character.traits.flaw = getRandomElement(character.background.flaws);
+    character.traits.ideal = getRandomElement(character.background.ideals);
+    const species = char_species[character.species.title?.toLowerCase()];
+    if ( species.age ) { character.traits.age = selectCentered(...species.age); character.traits.ageGroup = selectAgeGroup(character.traits.age, species.age); }
+    if ( species.height ) character.traits.height = selectCentered(...species.height);
+    if ( species.weight ) character.traits.weight = selectCentered(...species.weight);
+    if ( species.speed ) { character.speed = { walk: species.speed[0], fly: species.speed[1], swim: species.speed[2], climb: species.speed[3], burrow: species.speed[4] }; }
+    if ( species.eyes ) character.traits.eyes = selectWeighted(species.eyes);
+    if ( species.hair ) character.traits.hair = selectWeighted(species.hair);
+    if ( species.skin ) character.traits.skin = selectWeighted(species.skin);
+    character.traits.appearance = generateAppearance(character.species.title, tagPool, character.traits.ageGroup);
+    character.traits.quirk = generateQuirk(character);
+    character.traits.orientation = generateOrientation(character);
+    character.traits.relationship = generateRelationship(character);
+    character.traits.attitude = generateAttitude(character);
+    character.index = generateUniqueIndex(character);
+
+    var ddb_character = ddbConvertCharacter(character);
+    window.latest_char = ddb_character;
+    renderCharacter(ddb_character);
+    toolbarUpdateButton('btn-generate', '<i class="bi bi-patch-check-fill"></i>', { revertAfter: '2000' });
+  };
+
+
+  function init() {
+    // Populate selects from JSON data
+    Object.keys(char_locations).forEach(key => { if ( char_locations[key].title ) $('#char-locations').append(`<option id="${key}">${char_locations[key].title}</option>`); });
+    Object.keys(char_species).forEach(key => { if ( char_species[key].title ) $('#char-species').append(`<option id="${key}">${char_species[key].title}</option>`); });
+    Object.keys(char_backgrounds).forEach(key => { if ( char_backgrounds[key].title ) $('#char-backgrounds').append(`<option id="${key}">${char_backgrounds[key].title}</option>`); });
+    Object.keys(char_classes).forEach(key => { if ( char_classes[key].title ) $('#char-classes').append(`<option id="${key}">${char_classes[key].title}</option>`); });
+    Object.keys(char_genders).forEach(key => { if ( char_genders[key].title ) $('#char-genders').append(`<option id="${key}">${char_genders[key].title}</option>`); });
+    Object.keys(char_alignments).forEach(key => { if ( char_alignments[key].title ) $('#char-alignments').append(`<option id="${key}">${char_alignments[key].title}</option>`); });
+
+    toolbarAddButton('controls-toolbar', 'btn-generate', '<i class="bi bi-patch-check"></i>', { title: 'Generate Character', class: 'btn-primary', onClick: () => generateCharacter() });
+    toolbarAddButton('controls-toolbar', 'btn-import', '<i class="bi bi-upload"></i>', { title: 'Import Markdown', class: 'btn-info', onClick: () => $('#dialog-import').dialog('open') });
+    toolbarAddButton('controls-toolbar', 'btn-save-json', '<i class="bi bi-floppy"></i>', { group: 'item-actions', title: 'Save to JSON', class: 'btn-info', onClick: () => saveCharacterEdits() });
+    toolbarAddButton('controls-toolbar', 'btn-copy-md', '<i class="bi bi-clipboard"></i>', { group: 'item-actions', title: 'Copy as Markdown', class: 'btn-info', onClick: () => copyCharacterMarkdown() });
+    toolbarAddButton('controls-toolbar', 'btn-print-s', '<img src="images/icon_S_32.png" />', { group: 'item-actions', title: 'Print in Scriptorium', class: 'btn-info', onClick: () => printCharacter() });
+    toolbarHideItem('item-actions');
+
+    // Initialize modal window
+    const npc_template = { name: '', location: '', race: '', species: '', class: '', background: '', alignment: '', gender: '', age: '', orientation: '', relationship: '', attitude: '', tags: [], personality: '', appearance: '', quirk: '', ideals: '', bonds: '', flaws: '', backstory: '' };
+    $('#dialog-import').dialog({ autoOpen: false, resizable: true, height: "auto", width: 400, modal: true,
+      buttons: {
+        Cancel: function() { $(this).dialog('close'); },
+        "Import": function() {
+	  const $modal = $('#markdownModal');
+	  const rawMarkdown = $('#markdownInput').val().trim();
+	  if ( rawMarkdown ) {
+	    const json_character = parseMarkdownToJSON(rawMarkdown, npc_template);
+	    // Replace ids with full objects
+	    json_character.location = jsonSearch(char_locations, 'title', json_character.location)[0];
+	    json_character.race = jsonSearch(char_species, 'title', json_character.species || json_character.race)[0];
+	    json_character.background = jsonSearch(char_backgrounds, 'title', json_character.background)[0];
+	    json_character.class = jsonSearch(char_classes, 'title', json_character.class || json_character.type)[0];
+	    json_character.gender = jsonSearch(char_genders, 'title', json_character.gender.substring(0, json_character.gender.indexOf(' ')))[0];
+	    json_character.alignment = jsonSearch(char_alignments, 'title', json_character.alignment)[0];
+console.log(json_character);
+	    // Encode and render character
+	    var ddb_character = ddbConvertCharacter(json_character);
+	    window.latest_char = ddb_character;
+	    renderCharacter(ddb_character);
+console.log(ddb_character);
+	  }
+          $(this).dialog('close');
+        }
+      }
+    });
+
+    // Display any recent characters from localStorage
+    updateRecentCharacters();
+  };
+
+  let char_locations, char_species, char_backgrounds, char_classes, char_alignments, char_genders, char_names, char_appearances, char_attitudes, char_orientations, char_relationships, char_quirks;
+  loadJSONFiles({
+    char_locations: "data/char_locations.json",
+    char_species: "data/char_species.json",
+    char_backgrounds: "data/char_backgrounds.json",
+    char_classes: "data/char_classes.json",
+    char_alignments: "data/char_alignments.json",
+    char_genders: "data/char_genders.json",
+    char_names: "data/char_names.json",
+    char_appearances: "data/char_appearances.json",
+    char_attitudes: "data/char_attitudes.json",
+    char_orientations: "data/char_orientations.json",
+    char_relationships: "data/char_relationships.json",
+    char_quirks: "data/char_quirks.json"
+  }).then(data => { ({ char_locations, char_species, char_backgrounds, char_classes, char_alignments, char_genders, char_names, char_appearances, char_attitudes, char_orientations, char_relationships, char_quirks } = data);
+    init();
+  }).catch(err => console.error("Failed to load JSON:", err));
+  parsePassedData((parsed, context) => {
+    console.log("Loaded via:", context.source, "Mode:", context.mode);
+    renderCharacter(parsed);
+  });
+</script>
+
+</body>
+</html>

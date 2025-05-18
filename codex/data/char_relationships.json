@@ -1,0 +1,16 @@
+{
+  "baseByAgeGroup": {
+    "Young Adult": ["single and seeking", "in love but unrequited", "newly partnered", "happily unattached"],
+    "Adult": ["sharing a home with a partner", "in a complicated relationship", "quietly pining"],
+    "Middle Aged": ["divorced and not looking", "in a long-term bond", "discreetly seeing someone"],
+    "Older Adult": ["separated by duty", "partnered for decades", "quietly mourning a lost love"],
+    "Elderly": ["widowed", "lives with an old flame", "long single and content"]
+  },
+  "modifiersByTag": {
+    "romantic": ["obsessed with love stories", "actively pursuing multiple suitors"],
+    "jealous": ["in a toxic on-off relationship", "deeply envious of others’ partners"],
+    "lonely": ["wants connection but can’t express it"],
+    "friendly": ["part of a polycule", "deeply bonded to their partner"],
+    "secretive": ["in a relationship no one knows about"]
+  }
+}

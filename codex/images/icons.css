@@ -1,0 +1,479 @@
+.icons { height: 150px; width: 150px; background-image: url("spells_bg3.png"); background-repeat: no-repeat; background-size: 1950px 5400px; /* 13 cols × 36 rows */ }
+
+.icon-0, .icon-blank			{ background-position: 0 0; }
+.icon-1, .acid-splash			{ background-position: -150px 0; }
+.icon-2, .blade-ward			{ background-position: -300px 0; }
+.icon-3, .chill-touch			{ background-position: -450px 0; }
+.icon-4, .dancing-lights		{ background-position: -600px 0; }
+.icon-5, .eldritch-blast		{ background-position: -750px 0; }
+.icon-6, .continual-flame		{ background-position: -900px 0; }
+.icon-7, .friends			{ background-position: -1050px 0; }
+.icon-8, .guidance			{ background-position: -1200px 0; }
+.icon-9, .light				{ background-position: -1350px 0; }
+.icon-10, .mage-hand, .arcane-hand	{ background-position: -1500px 0; }
+.icon-11, .minor-illusion		{ background-position: -1650px 0; }
+.icon-12, .poison-spray			{ background-position: -1800px 0; }
+.icon-13, .produce-flame		{ background-position: 0 -150px; }
+.icon-14, .ray-of-frost			{ background-position: -150px -150px; }
+.icon-15, .resistance			{ background-position: -300px -150px; }
+.icon-16, .sacred-flame			{ background-position: -450px -150px; }
+.icon-17, .shillelagh			{ background-position: -600px -150px; }
+.icon-18, .shocking-grasp		{ background-position: -750px -150px; }
+.icon-19, .thaumaturgy			{ background-position: -900px -150px; }
+.icon-20, .thorn-whip			{ background-position: -1050px -150px; }
+.icon-21, .true-strike			{ background-position: -1200px -150px; }
+.icon-22, .vicious-mockery		{ background-position: -1350px -150px; }
+.icon-23, .animal-friendship		{ background-position: -1500px -150px; }
+.icon-24, .armor-of-agathys		{ background-position: -1650px -150px; }
+.icon-25, .booming-blade		{ background-position: -1800px -150px; }
+.icon-26, .arms-of-hadar		{ background-position: 0 -300px; }
+.icon-27, .bane				{ background-position: -150px -300px; }
+.icon-28, .bless			{ background-position: -300px -300px; }
+.icon-29, .burning-hands		{ background-position: -450px -300px; }
+.icon-30, .charm-person			{ background-position: -600px -300px; }
+.icon-31, .chromatic-orb		{ background-position: -750px -300px; }
+.icon-32, .chromatic-orb-thunder	{ background-position: -900px -300px; }
+.icon-33, .chromatic-orb-acid		{ background-position: -1050px -300px; }
+.icon-34, .chromatic-orb-cold		{ background-position: -1200px -300px; }
+.icon-35, .chromatic-orb-fire		{ background-position: -1350px -300px; }
+.icon-36, .chromatic-orb-lightning	{ background-position: -1500px -300px; }
+.icon-37, .detect-poison-and-disease	{ background-position: -1650px -300px; }
+.icon-38, .toll-the-dead		{ background-position: -1800px -300px; }
+.icon-39, .color-spray			{ background-position: 0 -450px; }
+.icon-40, .command			{ background-position: -150px -450px; }
+.icon-41, .compel-duel			{ background-position: -300px -450px; }
+.icon-42, .control-water, .create-or-destroy-water	{ background-position: -450px -450px; }
+.icon-43, .cure-wounds			{ background-position: -600px -450px; }
+.icon-44, .disguise-self		{ background-position: -750px -450px; }
+.icon-45, .dissonant-whispers		{ background-position: -900px -450px; }
+.icon-46, .divine-favor			{ background-position: -1050px -450px; }
+.icon-47, .enhance-ability		{ background-position: -1200px -450px; }
+.icon-48, .ensnaring-strike		{ background-position: -1350px -450px; }
+.icon-49, .entangle			{ background-position: -1500px -450px; }
+.icon-50, .expeditious-retreat		{ background-position: -1650px -450px; }
+.icon-51, .jump				{ background-position: -1800px -450px; }
+.icon-52, .faerie-fire			{ background-position: 0 -600px; }
+.icon-53, .false-life			{ background-position: -150px -600px; }
+.icon-54, .feather-fall			{ background-position: -300px -600px; }
+.icon-55, .find-familiar		{ background-position: -450px -600px; }
+.icon-56, .find-familiar-crab		{ background-position: -600px -600px; }
+.icon-57, .find-familiar-frog		{ background-position: -750px -600px; }
+.icon-58, .find-familiar-rat		{ background-position: -900px -600px; }
+.icon-59, .find-familiar-raven		{ background-position: -1050px -600px; }
+.icon-60, .find-familiar-spider		{ background-position: -1200px -600px; }
+.icon-61, .dust-devil			{ background-position: -1350px -600px; }
+.icon-62, .fog-cloud			{ background-position: -1500px -600px; }
+.icon-63, .goodberry			{ background-position: -1650px -600px; }
+.icon-64, .find-steed			{ background-position: -1800px -600px; }
+.icon-65, .grease			{ background-position: 0 -750px; }
+.icon-66, .guiding-bolt			{ background-position: -150px -750px; }
+.icon-67, .hail-of-thorns		{ background-position: -300px -750px; }
+.icon-68, .healing-word			{ background-position: -450px -750px; }
+.icon-69, .hellish-rebuke		{ background-position: -600px -750px; }
+.icon-70, .heroism			{ background-position: -750px -750px; }
+.icon-71, .hex				{ background-position: -900px -750px; }
+.icon-72, .hex-str			{ background-position: -1050px -750px; }
+.icon-73, .hex-dex			{ background-position: -1200px -750px; }
+.icon-74, .hex-con			{ background-position: -1350px -750px; }
+.icon-75, .hex-int			{ background-position: -1500px -750px; }
+.icon-76, .hex-wis			{ background-position: -1650px -750px; }
+.icon-77, .phantom-steed		{ background-position: -1800px -750px; }
+.icon-78, .hex-cha			{ background-position: 0 -900px; }
+.icon-79, .hunters-mark			{ background-position: -150px -900px; }
+.icon-80, .ice-knife			{ background-position: -300px -900px; }
+.icon-81, .inflict-wounds		{ background-position: -450px -900px; }
+.icon-82, .longstrider			{ background-position: -600px -900px; }
+.icon-83, .mage-armor			{ background-position: -750px -900px; }
+.icon-84, .magic-missile		{ background-position: -900px -900px; }
+.icon-85, .protection-from-evil-good	{ background-position: -1050px -900px; }
+.icon-86, .ray-of-sickness		{ background-position: -1200px -900px; }
+.icon-87, .sanctuary			{ background-position: -1350px -900px; }
+.icon-88, .searing-smite		{ background-position: -1500px -900px; }
+.icon-89, .shield			{ background-position: -1650px -900px; }
+.icon-90, .absorb-elements		{ background-position: -1800px -900px; }
+.icon-91, .shield-of-faith		{ background-position: 0 -1050px; }
+.icon-92, .sleep			{ background-position: -150px -1050px; }
+.icon-93, .speak-with-animals, .animal-messenger	{ background-position: -300px -1050px; }
+.icon-94, .hideous-laughter		{ background-position: -450px -1050px; }
+.icon-95, .thunderous-smite		{ background-position: -600px -1050px; }
+.icon-96, .thunderwave			{ background-position: -750px -1050px; }
+.icon-97, .witch-bolt			{ background-position: -900px -1050px; }
+.icon-98, .wrathful-smite		{ background-position: -1050px -1050px; }
+.icon-99, .aid				{ background-position: -1200px -1050px; }
+.icon-100, .arcane-lock			{ background-position: -1350px -1050px; }
+.icon-101, .barkskin			{ background-position: -1500px -1050px; }
+.icon-102, .blindness			{ background-position: -1650px -1050px; }
+.icon-103, .zephyr-strike		{ background-position: -1800px -1050px; }
+.icon-104, .blur			{ background-position: 0 -1200px; }
+.icon-105, .branding-smite		{ background-position: -150px -1200px; }
+.icon-106, .calm-emotions		{ background-position: -300px -1200px; }
+.icon-107, .cloud-of-daggers		{ background-position: -450px -1200px; }
+.icon-108, .crown-of-madness		{ background-position: -600px -1200px; }
+.icon-109, .darkness			{ background-position: -750px -1200px; }
+.icon-110, .darkvision			{ background-position: -900px -1200px; }
+.icon-111, .detect-thoughts		{ background-position: -1050px -1200px; }
+.icon-112, .enhance-ability		{ background-position: -1200px -1200px; }
+.icon-113, .enhance-ability-bear, .animal-shapes	{ background-position: -1350px -1200px; }
+.icon-114, .enhance-ability-bull	{ background-position: -1500px -1200px; }
+.icon-115, .enhance-ability-cat		{ background-position: -1650px -1200px; }
+.icon-116, .mass-heal			{ background-position: -1800px -1200px; }
+.icon-117, .enhance-ability-eagle	{ background-position: 0 -1350px; }
+.icon-118, .enhance-ability-fox		{ background-position: -150px -1350px; }
+.icon-119, .enhance-ability-owl		{ background-position: -300px -1350px; }
+.icon-120, .enlarge-reduce		{ background-position: -450px -1350px; }
+.icon-121, .enlarge-reduce-enlarge	{ background-position: -600px -1350px; }
+.icon-122, .enlarge-reduce-reduce	{ background-position: -750px -1350px; }
+.icon-123, .enthrall			{ background-position: -900px -1350px; }
+.icon-124, .flame-blade, .green-flame-blade	{ background-position: -1050px -1350px; }
+.icon-125, .flaming-sphere		{ background-position: -1200px -1350px; }
+.icon-126, .gust-of-wind, .gust		{ background-position: -1350px -1350px; }
+.icon-127, .heat-metal			{ background-position: -1500px -1350px; }
+.icon-128, .hold-person			{ background-position: -1650px -1350px; }
+.icon-129, .etherealness		{ background-position: -1800px -1350px; }
+.icon-130, .invisibility		{ background-position: 0 -1500px; }
+.icon-131, .knock			{ background-position: -150px -1500px; }
+.icon-132, .lesser-restoration		{ background-position: -300px -1500px; }
+.icon-133, .magic-weapon		{ background-position: -450px -1500px; }
+.icon-134, .acid-arrow			{ background-position: -600px -1500px; }
+.icon-135, .minor-image			{ background-position: -750px -1500px; }
+.icon-136, .misty-step, .kinetic-jaunt	{ background-position: -900px -1500px; }
+.icon-137, .moonbeam			{ background-position: -1050px -1500px; }
+.icon-138, .pass-without-trace		{ background-position: -1200px -1500px; }
+.icon-139, .phantasmal-force		{ background-position: -1350px -1500px; }
+.icon-140, .prayer-of-healing		{ background-position: -1500px -1500px; }
+.icon-141, .protection-from-poison	{ background-position: -1650px -1500px; }
+.icon-142, .feeblemind			{ background-position: -1800px -1500px; }
+.icon-143, .ray-of-enfeeblement		{ background-position: 0 -1650px; }
+.icon-144, .scorching-ray		{ background-position: -150px -1650px; }
+.icon-145, .see-invisibility		{ background-position: -300px -1650px; }
+.icon-146, .shatter			{ background-position: -450px -1650px; }
+.icon-147, .silence			{ background-position: -600px -1650px; }
+.icon-148, .spike-growth		{ background-position: -750px -1650px; }
+.icon-149, .spiritual-weapon-halberd	{ background-position: -900px -1650px; }
+.icon-150, .spiritual-weapon-greataxe	{ background-position: -1050px -1650px; }
+.icon-151, .spiritual-weapon-greatsword, .arcane-sword	{ background-position: -1200px -1650px; }
+.icon-152, .spiritual-weapon-maul	{ background-position: -1350px -1650px; }
+.icon-153, .spiritual-weapon-spear	{ background-position: -1500px -1650px; }
+.icon-154, .spiritual-weapon-trident	{ background-position: -1650px -1650px; }
+.icon-155, .fire-storm			{ background-position: -1800px -1650px; }
+.icon-156, .warding-bond		{ background-position: 0 -1800px; }
+.icon-157, .web				{ background-position: -150px -1800px; }
+.icon-158, .animate-dead		{ background-position: -300px -1800px; }
+.icon-159, .animate-dead-ghoul		{ background-position: -450px -1800px; }
+.icon-160, .animate-dead-zombie		{ background-position: -600px -1800px; }
+.icon-161, .beacon-of-hope		{ background-position: -750px -1800px; }
+.icon-162, .bestow-curse		{ background-position: -900px -1800px; }
+.icon-163, .bestow-curse-dread		{ background-position: -1050px -1800px; }
+.icon-164, .bestow-curse-damage		{ background-position: -1200px -1800px; }
+.icon-165, .bestow-curse-disadvantage	{ background-position: -1350px -1800px; }
+.icon-166, .bestow-curse-debuff		{ background-position: -1500px -1800px; }
+.icon-167, .blinding-smite		{ background-position: -1650px -1800px; }
+.icon-168, .giant-insect		{ background-position: -1800px -1800px; }
+.icon-169, .blink			{ background-position: 0 -1950px; }
+.icon-170, .call-lightning		{ background-position: -150px -1950px; }
+.icon-171, .conjure-barrage		{ background-position: -300px -1950px; }
+.icon-172, .counterspell		{ background-position: -450px -1950px; }
+.icon-173, .crusaders-mantle		{ background-position: -600px -1950px; }
+.icon-174, .daylight			{ background-position: -750px -1950px; }
+.icon-175, .daylight-item		{ background-position: -900px -1950px; }
+.icon-176, .daylight-sphere		{ background-position: -1050px -1950px; }
+.icon-177, .elemental-weapon		{ background-position: -1200px -1950px; }
+.icon-178, .elemental-weapon-acid	{ background-position: -1350px -1950px; }
+.icon-179, .elemental-weapon-cold	{ background-position: -1500px -1950px; }
+.icon-180, .elemental-weapon-fire	{ background-position: -1650px -1950px; }
+.icon-181, .conjure-animals		{ background-position: -1800px -1950px; }
+.icon-182, .elemental-weapon-lightning	{ background-position: 0 -2100px; }
+.icon-183, .elemental-weapon-thunder	{ background-position: -150px -2100px; }
+.icon-184, .fear			{ background-position: -300px -2100px; }
+.icon-185, .feign-death			{ background-position: -450px -2100px; }
+.icon-186, .fireball, .delayed-blast-fireball		{ background-position: -600px -2100px; }
+.icon-187, .gaseous-form		{ background-position: -750px -2100px; }
+.icon-188, .glyph-of-warding		{ background-position: -900px -2100px; }
+.icon-189, .glyph-of-warding-sleep	{ background-position: -1050px -2100px; }
+.icon-190, .glyph-of-warding-detonate	{ background-position: -1200px -2100px; }
+.icon-191, .guards-and-wards		{ background-position: -1350px -2100px; }
+.icon-192, .glyph-of-warding-lightning	{ background-position: -1500px -2100px; }
+.icon-193, .glyph-of-warding-fire	{ background-position: -1650px -2100px; }
+.icon-194, .detect-evil-and-good	{ background-position: -1800px -2100px; }
+.icon-195, .glyph-of-warding-cold	{ background-position: 0 -2250px; }
+.icon-196, .glyph-of-warding-acid	{ background-position: -150px -2250px; }
+.icon-197, .fly				{ background-position: -300px -2250px; }
+.icon-198, .haste			{ background-position: -450px -2250px; }
+.icon-199, .hunger-of-hadar		{ background-position: -600px -2250px; }
+.icon-200, .hypnotic-pattern		{ background-position: -750px -2250px; }
+.icon-201, .lightning-arrow		{ background-position: -900px -2250px; }
+.icon-202, .lightning-bolt		{ background-position: -1050px -2250px; }
+.icon-203, .mass-healing-word		{ background-position: -1200px -2250px; }
+.icon-204, .plant-growth		{ background-position: -1350px -2250px; }
+.icon-205, .protection-from-energy	{ background-position: -1500px -2250px; }
+.icon-206, .protection-from-energy-acid { background-position: -1650px -2250px; }
+.icon-207, .maddening-darkness		{ background-position: -1800px -2250px; }
+.icon-208, .protection-from-energy-cold { background-position: 0 -2400px; }
+.icon-209, .protection-from-energy-fire { background-position: -150px -2400px; }
+.icon-210, .protection-from-energy-lightning { background-position: -300px -2400px; }
+.icon-211, .protection-from-energy-thunder { background-position: -450px -2400px; }
+.icon-212, .remove-curse		{ background-position: -600px -2400px; }
+.icon-213, .revivify			{ background-position: -750px -2400px; }
+.icon-214, .sleet-storm			{ background-position: -900px -2400px; }
+.icon-215, .slow			{ background-position: -1050px -2400px; }
+.icon-216, .speak-with-dead		{ background-position: -1200px -2400px; }
+.icon-217, .spirit-guardians		{ background-position: -1350px -2400px; }
+.icon-218, .stinking-cloud		{ background-position: -1500px -2400px; }
+.icon-219, .vampiric-touch		{ background-position: -1650px -2400px; }
+.icon-220, .summon-fiend		{ background-position: -1800px -2400px; }
+.icon-221, .aura-of-vitality		{ background-position: 0 -2550px; }
+.icon-222, .restore-vitality		{ background-position: -150px -2550px; }
+.icon-223, .banishment			{ background-position: -300px -2550px; }
+.icon-224, .blight			{ background-position: -450px -2550px; }
+.icon-225, .confusion			{ background-position: -600px -2550px; }
+.icon-226, .conjure-minor-elementals	{ background-position: -750px -2550px; }
+.icon-227, .conjure-minor-elemental-1	{ background-position: -900px -2550px; }
+.icon-228, .conjure-minor-elemental-2	{ background-position: -1050px -2550px; }
+.icon-229, .conjure-woodland-beings, .awaken	{ background-position: -1200px -2550px; }
+.icon-230, .death-ward			{ background-position: -1350px -2550px; }
+.icon-231, .dimension-door, .demiplane	{ background-position: -1500px -2550px; }
+.icon-232, .dominate-beast		{ background-position: -1650px -2550px; }
+.icon-233, .faithful-hound		{ background-position: -1800px -2550px; }
+.icon-234, .black-tentacles		{ background-position: 0 -2700px; }
+.icon-235, .fire-shield			{ background-position: -150px -2700px; }
+.icon-236, .fire-shield-warm		{ background-position: -300px -2700px; }
+.icon-237, .fire-shield-cold		{ background-position: -450px -2700px; }
+.icon-238, .freedom-of-movement		{ background-position: -600px -2700px; }
+.icon-239, .grasping-vines		{ background-position: -750px -2700px; }
+.icon-240, .greater-invisibility	{ background-position: -900px -2700px; }
+.icon-241, .guardian-of-faith		{ background-position: -1050px -2700px; }
+.icon-242, .ice-storm			{ background-position: -1200px -2700px; }
+.icon-243, .resilient-sphere		{ background-position: -1350px -2700px; }
+.icon-244, .phantasmal-killer		{ background-position: -1500px -2700px; }
+.icon-245, .polymorph			{ background-position: -1650px -2700px; }
+.icon-246, .soul-cage			{ background-position: -1800px -2700px; }
+.icon-247, .stoneskin			{ background-position: 0 -2850px; }
+.icon-248, .wall-of-fire		{ background-position: -150px -2850px; }
+.icon-249, .artistry-of-war		{ background-position: -300px -2850px; }
+.icon-250, .banishing-smite		{ background-position: -450px -2850px; }
+.icon-251, .cloudkill			{ background-position: -600px -2850px; }
+.icon-252, .cone-of-cold		{ background-position: -750px -2850px; }
+.icon-253, .conjure-elemental		{ background-position: -900px -2850px; }
+.icon-254, .conjure-elemental-air	{ background-position: -1050px -2850px; }
+.icon-255, .conjure-elemental-earth, .mold-earth	{ background-position: -1200px -2850px; }
+.icon-256, .conjure-elemental-fire	{ background-position: -1350px -2850px; }
+.icon-257, .conjure-elemental-water	{ background-position: -1500px -2850px; }
+.icon-258, .contagion			{ background-position: -1650px -2850px; }
+.icon-259, .synaptic-static		{ background-position: -1800px -2850px; }
+.icon-260, .contagion-2			{ background-position: 0 -3000px; }
+.icon-261, .contagion-3			{ background-position: -150px -3000px; }
+.icon-262, .contagion-4			{ background-position: -300px -3000px; }
+.icon-263, .contagion-5			{ background-position: -450px -3000px; }
+.icon-264, .contagion-6			{ background-position: -600px -3000px; }
+.icon-265, .destructive-wave		{ background-position: -750px -3000px; }
+.icon-266, .dethrone			{ background-position: -900px -3000px; }
+.icon-267, .dispel-evil-and-good	{ background-position: -1050px -3000px; }
+.icon-268				{ background-position: -1200px -3000px; }
+.icon-269, .dominate-person		{ background-position: -1350px -3000px; }
+.icon-270, .flame-strike		{ background-position: -1500px -3000px; }
+.icon-271, .greater-restoration		{ background-position: -1650px -3000px; }
+.icon-272				{ background-position: -1800px -3000px; }
+.icon-273, .hold-monster		{ background-position: 0 -3150px; }
+.icon-274, .insect-plague		{ background-position: -150px -3150px; }
+.icon-275, .mass-cure-wounds		{ background-position: -300px -3150px; }
+.icon-276, .planar-binding		{ background-position: -450px -3150px; }
+.icon-277, .seeming			{ background-position: -600px -3150px; }
+.icon-278, .telekinesis			{ background-position: -750px -3150px; }
+.icon-279, .wall-of-stone, .hallucinatory-terrain	{ background-position: -900px -3150px; }
+.icon-280, .arcane-gate, .gate		{ background-position: -1050px -3150px; }
+.icon-281, .blade-barrier		{ background-position: -1200px -3150px; }
+.icon-282, .chain-lightning		{ background-position: -1350px -3150px; }
+.icon-283, .circle-of-death		{ background-position: -1500px -3150px; }
+.icon-284, .create-undead		{ background-position: -1650px -3150px; }
+.icon-285				{ background-position: -1800px -3150px; }
+.icon-286, .disintegrate		{ background-position: 0 -3300px; }
+.icon-287, .eyebite			{ background-position: -150px -3300px; }
+.icon-288, .eyebite-2			{ background-position: -300px -3300px; }
+.icon-289, .eyebite-3			{ background-position: -450px -3300px; }
+.icon-290, .flesh-to-stone, meld-into-stone	{ background-position: -600px -3300px; }
+.icon-291, .globe-of-invulnerability, .forcecage	{ background-position: -750px -3300px; }
+.icon-292, .harm			{ background-position: -900px -3300px; }
+.icon-293, .heal			{ background-position: -1050px -3300px; }
+.icon-294, .create-food-and-water, .heroes-feast	{ background-position: -1200px -3300px; }
+.icon-295, .freezing-sphere		{ background-position: -1350px -3300px; }
+.icon-296, .floating-disk		{ background-position: -1500px -3300px; }
+.icon-297, .irresistable-dance		{ background-position: -1650px -3300px; }
+.icon-298				{ background-position: -1800px -3300px; }
+.icon-299, .planar-ally			{ background-position: 0 -3450px; }
+.icon-300, .sunbeam			{ background-position: -150px -3450px; }
+.icon-301, .wall-of-ice			{ background-position: -300px -3450px; }
+.icon-302, .wall-of-thorns		{ background-position: -450px -3450px; }
+.icon-303, .wind-walk			{ background-position: -600px -3450px; }
+.icon-304, .power-word-kill		{ background-position: -750px -3450px; }
+.icon-305, .karsus-compulsion		{ background-position: -900px -3450px; }
+.icon-306, .formsculpt-tressym		{ background-position: -1050px -3450px; }
+.icon-307, .power-word-ruin		{ background-position: -1200px -3450px; }
+.icon-308, .divine-revelry		{ background-position: -1350px -3450px; }
+.icon-309, .fabricate, .finger-of-death	{ background-position: -1500px -3450px; }
+.icon-310, .prestidigitation		{ background-position: -1650px -3450px; }
+.icon-311				{ background-position: -1800px -3450px; }
+.icon-312				{ background-position: 0 -3600px; }
+.icon-313, .staggering-smite		{ background-position: -150px -3600px; }
+.icon-314				{ background-position: -300px -3600px; }
+.icon-315, .lunar-smite			{ background-position: -450px -3600px; }
+.icon-316, .selunes-dream		{ background-position: -600px -3600px; }
+.icon-317, .danse-macabre		{ background-position: -750px -3600px; }
+.icon-318, .shadow-blade		{ background-position: -900px -3600px; }
+.icon-319				{ background-position: -1050px -3600px; }
+.icon-320				{ background-position: -1200px -3600px; }
+.icon-321				{ background-position: -1350px -3600px; }
+.icon-322				{ background-position: -1500px -3600px; }
+.icon-323				{ background-position: -1650px -3600px; }
+.icon-324				{ background-position: -1800px -3600px; }
+.icon-325				{ background-position: 0 -3750px; }
+.icon-326				{ background-position: -150px -3750px; }
+.icon-327				{ background-position: -300px -3750px; }
+.icon-328				{ background-position: -450px -3750px; }
+.icon-329				{ background-position: -600px -3750px; }
+.icon-330, .flesh-to-gold		{ background-position: -750px -3750px; }
+.icon-331				{ background-position: -900px -3750px; }
+.icon-332 				{ background-position: -1050px -3750px; }
+.icon-333 				{ background-position: -1200px -3750px; }
+.icon-334, .howl-of-the-dead		{ background-position: -1350px -3750px; }
+.icon-335, .conjure-celestial		{ background-position: -1500px -3750px; }
+.icon-336, .magic-jar			{ background-position: -1650px -3750px; }
+.icon-337, .bardic-inspiration		{ background-position: -1800px -3750px; }
+.icon-338, .dispel-magic		{ background-position: 0 -3900px; }
+.icon-339, .magic-circle		{ background-position: -150px -3900px; }
+.icon-340, .identify			{ background-position: -300px -3900px; }
+.icon-341, .clairvoyance		{ background-position: -450px -3900px; }
+.icon-342, .comprehend-languages	{ background-position: -600px -3900px; }
+.icon-343, .blindness-deafness		{ background-position: -750px -3900px; }
+.icon-344, .levitate			{ background-position: -900px -3900px; }
+.icon-345, .mending			{ background-position: -1050px -3900px; }
+.icon-346				{ background-position: -1200px -3900px; }
+.icon-347, .alter-self			{ background-position: -1350px -3900px; }
+.icon-348, .alarm			{ background-position: -1500px -3900px; }
+.icon-349				{ background-position: -1650px -3900px; }
+.icon-350				{ background-position: -1800px -3900px; }
+
+.icon-351				{ background-position: 0 -4050px; }
+.icon-352, .augury			{ background-position: -150px -4050px; }
+.icon-353, .astral-projection		{ background-position: -300px -4050px; }
+.icon-354				{ background-position: -450px -4050px; }
+.icon-355, .arcanists-magic-aura	{ background-position: -600px -4050px; }
+.icon-356, .creation			{ background-position: -750px -4050px; }
+.icon-357, .teleport			{ background-position: -900px -4050px; }
+.icon-358, .find-the-path		{ background-position: -1050px -4050px; }
+.icon-359, .divination			{ background-position: -1200px -4050px; }
+.icon-360				{ background-position: -1350px -4050px; }
+.icon-361				{ background-position: -1500px -4050px; }
+.icon-362				{ background-position: -1650px -4050px; }
+.icon-363, .conjure-fey			{ background-position: -1800px -4050px; }
+
+.icon-364				{ background-position: 0 -4200px; }
+.icon-365				{ background-position: -150px -4200px; }
+.icon-366, .sorcerous-burst		{ background-position: -300px -4200px; }
+.icon-367, .wither-and-bloom		{ background-position: -450px -4200px; }
+.icon-368, .suggestion, .compulsion	{ background-position: -600px -4200px; }
+.icon-369, .silvery-barbs		{ background-position: -750px -4200px; }
+.icon-370				{ background-position: -900px -4200px; }
+.icon-371, .glibness			{ background-position: -1050px -4200px; }
+.icon-372, .clone			{ background-position: -1200px -4200px; }
+.icon-373				{ background-position: -1350px -4200px; }
+.icon-374				{ background-position: -1500px -4200px; }
+.icon-375				{ background-position: -1650px -4200px; }
+.icon-376				{ background-position: -1800px -4200px; }
+
+.icon-377				{ background-position: 0 -4350px; }
+.icon-378, .arcane-eye			{ background-position: -150px -4350px; }
+.icon-379, .antipathy-sympathy, .mind-spike	{ background-position: -300px -4350px; }
+.icon-380				{ background-position: -450px -4350px; }
+.icon-381, .message			{ background-position: -600px -4350px; }
+.icon-382				{ background-position: -750px -4350px; }
+.icon-383				{ background-position: -900px -4350px; }
+.icon-384				{ background-position: -1050px -4350px; }
+.icon-385				{ background-position: -1200px -4350px; }
+.icon-386				{ background-position: -1350px -4350px; }
+.icon-387				{ background-position: -1500px -4350px; }
+.icon-388, .detect-magic		{ background-position: -1650px -4350px; }
+.icon-389, .summon-shadowspawn		{ background-position: -1800px -4350px; }
+
+.icon-390				{ background-position: 0 -4500px; }
+.icon-391, .catapult			{ background-position: -150px -4500px; }
+.icon-392				{ background-position: -300px -4500px; }
+.icon-393				{ background-position: -450px -4500px; }
+.icon-394				{ background-position: -600px -4500px; }
+.icon-395				{ background-position: -750px -4500px; }
+.icon-396				{ background-position: -900px -4500px; }
+.icon-397				{ background-position: -1050px -4500px; }
+.icon-398				{ background-position: -1200px -4500px; }
+.icon-399				{ background-position: -1350px -4500px; }
+.icon-400				{ background-position: -1500px -4500px; }
+.icon-401				{ background-position: -1650px -4500px; }
+.icon-402				{ background-position: -1800px -4500px; }
+
+.icon-403, .druidcraft			{ background-position: 0 -4650px; }
+.icon-404, .control-weather		{ background-position: -150px -4650px; }
+.icon-405, .earthquake			{ background-position: -300px -4650px; }
+.icon-406				{ background-position: -450px -4650px; }
+.icon-407				{ background-position: -600px -4650px; }
+.icon-408				{ background-position: -750px -4650px; }
+.icon-409, .gentle-repose		{ background-position: -900px -4650px; }
+.icon-410, .turn-undead			{ background-position: -1050px -4650px; }
+.icon-411, .hallow			{ background-position: -1200px -4650px; }
+.icon-412, .antilife-shell		{ background-position: -1350px -4650px; }
+.icon-413				{ background-position: -1500px -4650px; }
+.icon-414, .contingency			{ background-position: -1650px -4650px; }
+.icon-415				{ background-position: -1800px -4650px; }
+
+.icon-416, .commune-with-nature		{ background-position: 0 -4800px; }
+.icon-417				{ background-position: -150px -4800px; }
+.icon-418, .word-of-radiance		{ background-position: -300px -4800px; }
+.icon-419				{ background-position: -450px -4800px; }
+.icon-420				{ background-position: -600px -4800px; }
+.icon-421, .forbiddance			{ background-position: -750px -4800px; }
+.icon-422				{ background-position: -900px -4800px; }
+.icon-423, .commune, .contact-other-plane	{ background-position: -1050px -4800px; }
+.icon-424, .divine-word			{ background-position: -1200px -4800px; }
+.icon-425, .foresight			{ background-position: -1350px -4800px; }
+.icon-426, .healing-spirit		{ background-position: -1500px -4800px; }
+.icon-427				{ background-position: -1650px -4800px; }
+.icon-428				{ background-position: -1800px -4800px; }
+
+.icon-429, .dream			{ background-position: 0 -4950px; }
+.icon-430				{ background-position: -150px -4950px; }
+.icon-431, .fire-bolt			{ background-position: -300px -4950px; }
+.icon-432				{ background-position: -450px -4950px; }
+.icon-433, .antimagic-field		{ background-position: -600px -4950px; }
+.icon-434, .geas			{ background-position: -750px -4950px; }
+.icon-435, .frostbite			{ background-position: -900px -4950px; }
+.icon-436				{ background-position: -1050px -4950px; }
+.icon-437				{ background-position: -1200px -4950px; }
+.icon-438				{ background-position: -1350px -4950px; }
+.icon-439, .animate-objects		{ background-position: -1500px -4950px; }
+.icon-440				{ background-position: -1650px -4950px; }
+.icon-441				{ background-position: -1800px -4950px; }
+
+.icon-442, .find-traps			{ background-position: 0 -5100px; }
+.icon-443				{ background-position: -150px -5100px; }
+.icon-444				{ background-position: -300px -5100px; }
+.icon-445				{ background-position: -450px -5100px; }
+.icon-446				{ background-position: -600px -5100px; }
+.icon-447				{ background-position: -750px -5100px; }
+.icon-448				{ background-position: -900px -5100px; }
+.icon-449, .dominate-monster		{ background-position: -1050px -5100px; }
+.icon-450				{ background-position: -1200px -5100px; }
+.icon-451				{ background-position: -1350px -5100px; }
+.icon-452				{ background-position: -1500px -5100px; }
+.icon-453				{ background-position: -1650px -5100px; }
+.icon-454				{ background-position: -1800px -5100px; }
+
+.icon-455				{ background-position: 0 -5250px; }
+.icon-456, .holy-aura			{ background-position: -150px -5250px; }
+.icon-457				{ background-position: -300px -5250px; }
+.icon-459				{ background-position: -450px -5250px; }
+.icon-460				{ background-position: -600px -5250px; }
+.icon-461				{ background-position: -750px -5250px; }
+.icon-462				{ background-position: -900px -5250px; }
+.icon-463				{ background-position: -1050px -5250px; }
+.icon-464				{ background-position: -1200px -5250px; }
+.icon-465				{ background-position: -1350px -5250px; }
+.icon-466				{ background-position: -1500px -5250px; }
+.icon-467				{ background-position: -1650px -5250px; }
+.icon-468				{ background-position: -1800px -5250px; }

@@ -1,0 +1,204 @@
+{
+  "quirkTemplates": [
+    "Often {verb:third} when idle",
+    "Constantly {verb:third} without realizing it",
+    "Sometimes {verb:third} during conversation",
+    "{trigger:clause} makes them {verb:base} their {object}",
+    "Always {verb:gerund} a {object}",
+    "They {verb:third} their {object} when {trigger:clause}",
+    "Can effortlessly {talent}",
+    "Known for their ability to {talent}",
+    "Has an uncanny talent to {talent} in strange situations",
+    "Carries a {object} and claims it brings good luck — but only on odd days",
+    "Writes cryptic notes in a hidden journal whenever {trigger:clause}",
+    "Collects {object}s from every town they visit and categorizes them meticulously",
+    "Rehearses conversations out loud before having them — even if someone is listening",
+    "Keeps a list of every person they've met, and updates it obsessively",
+    "Believes their {object} speaks to them and occasionally consults it aloud"
+  ],
+
+  "verbsByTag": {
+    "stoic": [
+      { "base": "adjust", "third": "adjusts", "gerund": "adjusting" },
+      { "base": "press", "third": "presses", "gerund": "pressing" },
+      { "base": "fold arms", "third": "folds arms", "gerund": "folding arms" },
+      { "base": "steady their stance", "third": "steadies their stance", "gerund": "steadying their stance" },
+      { "base": "fix gaze", "third": "fixes gaze", "gerund": "fixing gaze" }
+    ],
+    "nervous": [
+      { "base": "fidget", "third": "fidgets", "gerund": "fidgeting" },
+      { "base": "tap fingers", "third": "taps fingers", "gerund": "tapping fingers" },
+      { "base": "adjust collar", "third": "adjusts collar", "gerund": "adjusting collar" },
+      { "base": "glance around", "third": "glances around", "gerund": "glancing around" },
+      { "base": "bite lip", "third": "bites lip", "gerund": "biting lip" }
+    ],
+    "flamboyant": [
+      { "base": "twirl", "third": "twirls", "gerund": "twirling" },
+      { "base": "flourish", "third": "flourishes", "gerund": "flourishing" },
+      { "base": "flash a smile", "third": "flashes a smile", "gerund": "flashing a smile" },
+      { "base": "pose dramatically", "third": "poses dramatically", "gerund": "posing dramatically" },
+      { "base": "flip hair", "third": "flips hair", "gerund": "flipping hair" }
+    ],
+    "friendly": [
+      { "base": "offer a smile", "third": "offers a smile", "gerund": "offering a smile" },
+      { "base": "pat someone’s shoulder", "third": "pats someone’s shoulder", "gerund": "patting someone’s shoulder" },
+      { "base": "laugh", "third": "laughs", "gerund": "laughing" },
+      { "base": "greet cheerfully", "third": "greets cheerfully", "gerund": "greeting cheerfully" },
+      { "base": "wave", "third": "waves", "gerund": "waving" }
+    ],
+    "gruff": [
+      { "base": "grunt", "third": "grunts", "gerund": "grunting" },
+      { "base": "tighten grip", "third": "tightens grip", "gerund": "tightening grip" },
+      { "base": "snort", "third": "snorts", "gerund": "snorting" },
+      { "base": "clear throat", "third": "clears throat", "gerund": "clearing throat" },
+      { "base": "cross arms", "third": "crosses arms", "gerund": "crossing arms" }
+    ],
+    "reserved": [
+      { "base": "shift", "third": "shifts", "gerund": "shifting" },
+      { "base": "sigh", "third": "sighs", "gerund": "sighing" },
+      { "base": "look away", "third": "looks away", "gerund": "looking away" },
+      { "base": "clench", "third": "clenches", "gerund": "clenching" },
+      { "base": "withdraw", "third": "withdraws", "gerund": "withdrawing" }
+    ],
+    "aggressive": [
+      { "base": "slap", "third": "slaps", "gerund": "slapping" },
+      { "base": "strike", "third": "strikes", "gerund": "striking" },
+      { "base": "lean in", "third": "leans in", "gerund": "leaning in" },
+      { "base": "bark", "third": "barks", "gerund": "barking" },
+      { "base": "press forward", "third": "presses forward", "gerund": "pressing forward" }
+    ],
+    "cunning": [
+      { "base": "slide", "third": "slides", "gerund": "sliding" },
+      { "base": "flick", "third": "flicks", "gerund": "flicking" },
+      { "base": "glance over", "third": "glances over", "gerund": "glancing over" },
+      { "base": "roll", "third": "rolls", "gerund": "rolling" },
+      { "base": "smooth", "third": "smooths", "gerund": "smoothing" }
+    ],
+    "chaotic": [
+      { "base": "throw", "third": "throws", "gerund": "throwing" },
+      { "base": "drop", "third": "drops", "gerund": "dropping" },
+      { "base": "flail", "third": "flails", "gerund": "flailing" },
+      { "base": "spin", "third": "spins", "gerund": "spinning" },
+      { "base": "yank", "third": "yanks", "gerund": "yanking" }
+    ],
+    "romantic": [
+      { "base": "touch", "third": "touches", "gerund": "touching" },
+      { "base": "caress", "third": "caresses", "gerund": "caressing" },
+      { "base": "smooth", "third": "smooths", "gerund": "smoothing" },
+      { "base": "admire", "third": "admires", "gerund": "admiring" },
+      { "base": "blush", "third": "blushes", "gerund": "blushing" }
+    ],
+    "dramatic": [
+      { "base": "flourish", "third": "flourishes", "gerund": "flourishing" },
+      { "base": "declare", "third": "declares", "gerund": "declaring" },
+      { "base": "brandish", "third": "brandishes", "gerund": "brandishing" },
+      { "base": "collapse", "third": "collapses", "gerund": "collapsing" },
+      { "base": "grab", "third": "grabs", "gerund": "grabbing" }
+    ],
+    "boisterous": [
+      { "base": "pound", "third": "pounds", "gerund": "pounding" },
+      { "base": "laugh", "third": "laughs", "gerund": "laughing" },
+      { "base": "clap", "third": "claps", "gerund": "clapping" },
+      { "base": "stomp", "third": "stomps", "gerund": "stomping" },
+      { "base": "bump", "third": "bumps", "gerund": "bumping" }
+    ],
+    "dignified": [
+      { "base": "straighten", "third": "straightens", "gerund": "straightening" },
+      { "base": "dust", "third": "dusts", "gerund": "dusting" },
+      { "base": "smooth", "third": "smooths", "gerund": "smoothing" },
+      { "base": "clear throat", "third": "clears throat", "gerund": "clearing throat" },
+      { "base": "nod", "third": "nods", "gerund": "nodding" }
+    ],
+    "optimistic": [
+      { "base": "gesture", "third": "gestures", "gerund": "gesturing" },
+      { "base": "grin", "third": "grins", "gerund": "grinning" },
+      { "base": "wave", "third": "waves", "gerund": "waving" },
+      { "base": "offer help", "third": "offers help", "gerund": "offering help" },
+      { "base": "chuckle", "third": "chuckles", "gerund": "chuckling" }
+    ],
+    "pessimistic": [
+      { "base": "scoff", "third": "scoffs", "gerund": "scoffing" },
+      { "base": "frown", "third": "frowns", "gerund": "frowning" },
+      { "base": "mutter", "third": "mutters", "gerund": "muttering" },
+      { "base": "shrug", "third": "shrugs", "gerund": "shrugging" },
+      { "base": "avoid eye contact", "third": "avoids eye contact", "gerund": "avoiding eye contact" }
+    ],
+    "jealous": [
+      { "base": "glare", "third": "glares", "gerund": "glaring" },
+      { "base": "size up", "third": "sizes up", "gerund": "sizing up" },
+      { "base": "dismiss", "third": "dismisses", "gerund": "dismissing" },
+      { "base": "clutch", "third": "clutches", "gerund": "clutching" },
+      { "base": "interrupt", "third": "interrupts", "gerund": "interrupting" }
+    ],
+    "protective": [
+      { "base": "position self", "third": "positions self", "gerund": "positioning self" },
+      { "base": "guard", "third": "guards", "gerund": "guarding" },
+      { "base": "watch closely", "third": "watches closely", "gerund": "watching closely" },
+      { "base": "step between", "third": "steps between", "gerund": "stepping between" },
+      { "base": "reach toward", "third": "reaches toward", "gerund": "reaching toward" }
+    ],
+    "_default": [
+      { "base": "fiddle", "third": "fiddles", "gerund": "fiddling" },
+      { "base": "adjust", "third": "adjusts", "gerund": "adjusting" },
+      { "base": "stare", "third": "stares", "gerund": "staring" },
+      { "base": "hum softly", "third": "hums softly", "gerund": "humming softly" },
+      { "base": "pace", "third": "paces", "gerund": "pacing" }
+    ]
+  },
+
+  "triggersByTag": {
+    "gruff": ["they're annoyed", "someone gets too close"],
+    "stoic": ["they're alone", "they're challenged"],
+    "flamboyant": ["they're complimented", "someone enters the room"],
+    "friendly": ["they're greeted", "someone shares a joke"],
+    "vain": ["they're ignored", "they see a reflection"],
+    "eccentric": ["they get bored", "they're misunderstood"],
+    "nervous": ["they're anxious", "someone watches them"],
+    "reserved": ["they're spoken to", "they're in a crowd"],
+    "aggressive": ["someone challenges them", "they're contradicted"],
+    "cunning": ["they're planning", "they spot a mark"],
+    "chaotic": ["they get excited", "they’re surprised"],
+    "romantic": ["they’re flustered", "they’re near a crush"],
+    "dramatic": ["they get attention", "something minor happens"],
+    "boisterous": ["someone laughs", "they're in a tavern"],
+    "dignified": ["they’re watched", "they’re correcting someone"],
+    "optimistic": ["they make a new friend", "they succeed at something"],
+    "pessimistic": ["something goes wrong", "they’re proven right"],
+    "jealous": ["someone else is praised", "they're compared"],
+    "protective": ["someone is threatened", "their friend is insulted"],
+    "fearful": ["they hear a noise", "they're alone at night"],
+    "loyal": ["someone insults their ally", "they’re needed"],
+    "curious": ["they hear a story", "they see something odd"],
+    "scholarly": ["a detail is off", "they hear a mistake"],
+    "wild": ["they get excited", "the situation escalates"],
+    "_default": ["they’re distracted", "they’re thinking"]
+  },
+
+  "stylesByTag": {
+    "gruff": ["with a grunt", "abruptly", "roughly"],
+    "stoic": ["without emotion", "with precision", "quietly"],
+    "flamboyant": ["dramatically", "with flair", "loudly"],
+    "friendly": ["cheerfully", "with a smile", "lightly"],
+    "vain": ["gracefully", "with pride", "carefully"],
+    "eccentric": ["without warning", "absentmindedly", "gleefully"],
+    "nervous": ["frantically", "hesitantly", "without realizing it"],
+    "reserved": ["quietly", "timidly", "with restraint"],
+    "aggressive": ["forcefully", "loudly", "boldly"],
+    "cunning": ["subtly", "carefully", "with a smirk"],
+    "chaotic": ["messily", "with energy", "suddenly"],
+    "romantic": ["gently", "dreamily", "blushingly"],
+    "dramatic": ["with flair", "overly", "theatrically"],
+    "boisterous": ["loudly", "enthusiastically", "with a slap"],
+    "dignified": ["elegantly", "measuredly", "formally"],
+    "optimistic": ["brightly", "eagerly", "with cheer"],
+    "pessimistic": ["grumpily", "wearily", "doubtfully"],
+    "jealous": ["with narrowed eyes", "passively", "tensely"],
+    "protective": ["carefully", "firmly", "with vigilance"],
+    "fearful": ["shakily", "timidly", "softly"],
+    "loyal": ["steadily", "confidently", "quietly"],
+    "curious": ["intently", "with wonder", "eagerly"],
+    "scholarly": ["methodically", "while murmuring", "absently"],
+    "wild": ["noisily", "recklessly", "with abandon"],
+    "_default": ["absentmindedly", "quietly", "deliberately"]
+  }
+}
