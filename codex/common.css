@@ -123,7 +123,7 @@ header li.current	{ text-decoration: underline; }
 .booklet-sheet	{ display: grid; gap: 0.04in; justify-content: center; page-break-after: always; break-after: always; width: 8.5in; height: 11in; box-sizing: border-box; z-index: 1; grid-template-columns: repeat(2, 4.4in); grid-auto-rows: 5.8in; margin: 0 0.1in; }
 .page		{ position: relative; width: 4.25in; height: 5.5in; box-sizing: border-box; padding: 0.05in 0.1in; page-break-inside: avoid; break-inside: avoid; overflow: hidden; font-size: 9pt; }
 
-.spell-layout	{ display: grid; gap: 0px 0px; grid-auto-flow: row; width: 100%; height: 100%;
+.spell-layout	{ display: grid; gap: 0px 0px; grid-auto-flow: row; width: 100%; height: 100%; align-items: flex-start;
   grid-template-columns: repeat(6, auto);
   grid-template-rows: repeat(5, auto);
   grid-template-areas:
@@ -148,7 +148,7 @@ header li.current	{ text-decoration: underline; }
 .spell-icons i { width: 16px !important; height: 16px !important; padding-left: 4px; }
 .spell-time { grid-area: spell-time; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
 .spell-duration { grid-area: spell-duration; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
-.spell-range { grid-area: spell-range; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; display: grid; grid-template-columns: 1fr 1fr; align-items: center; max-height: 0.5in; }
+.spell-range { grid-area: spell-range; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
 .spell-range-main, .spell-range-aoe { display: flex; flex-direction: column; justify-content: center; }
 .spell-range-aoe i { width: 1.2em !important; height: 1.2em !important; }
 .spell-components { grid-area: spell-components; border: solid 1px #000; margin: 2px; padding: 2px; line-height: 0.8; }
@@ -191,6 +191,12 @@ header li.current	{ text-decoration: underline; }
 .entry-block.label { flex: 0 0 4em; display: flex; justify-content: center; align-items: center; }
 .entry-block.inline-boxes { display: flex; flex-wrap: nowrap; }
 
+.attuned-item { display: flex; flex-direction: row; align-items: flex-start; width: auto; }
+.attuned-img { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; margin-right: 0.75em; border: 1px solid #ccc; }
+.attuned-text { display: flex; flex-direction: column; justify-content: center; }
+.attuned-name { font-weight: bold; margin-bottom: 0.25em; }
+.attuned-notes { font-size: 0.85em; color: #666; }
+
 
 /* Vestiarium */
 .star-checkbox { display: inline-flex; align-items: center; cursor: pointer; line-height: 0.7em; vertical-align: middle; margin-right: 0.25em; }
@@ -214,7 +220,7 @@ header li.current	{ text-decoration: underline; }
 .heading		{ flex: 0 0 auto; font-size: 1.3em; text-decoration: underline; font-weight: bold; line-height: 1.0em; }
 .content		{ line-height: 1em; padding: 0; }
 .info			{ font-size: 0.9em; line-height: 0.9; font-style: italic; padding-top: 2px; }
-.notes			{ font-size: 0.7em; line-height: 0.8em; }
+.notes			{ font-size: 0.7em; line-height: 0.8; display: inline-block; }
 .section-large		{ font-size: 1.4em; font-weight: bold; }
 .section		{ font-size: 1.2em; font-weight: bold; }
 .section-short		{ font-size: 1.1em; font-weight: bold; line-height: 1.0em; }
@@ -231,52 +237,52 @@ header li.current	{ text-decoration: underline; }
 
 
 /* D&D Related */
-.ability-block { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 70%; height: 15%; border: 2px solid #000; border-radius: 8px; background: #f8f8f8; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 6px; }
-.ability-block .name { font-size: 1em; font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
+.ability-block		{ display: flex; flex-direction: column; align-items: center; justify-content: center; width: 70%; height: 15%; border: 2px solid #000; border-radius: 8px; background: #f8f8f8; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 6px; }
+.ability-block .name	{ font-size: 1em; font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
 .ability-block .modifier { font-size: 2em; font-weight: bold; color: #000; padding-bottom: 5px; line-height: 1em; }
-.ability-block .score { font-size: 1.2em; font-weight: bold; color: #333; }
-.ability-table { font-size: 1.1em; text-align: center; border: 1px solid black; margin: 8px 1px 0 1px; }
-.ability-table tr { line-height: 0.9em; }
-.columns { flex: 1 1 auto; display: flex; gap: 2px; }
-.column { flex: 1 1 0; padding: 0 2px; }
-.item-list { list-style-position: inside; padding: 0; margin: 0; }
+.ability-block .score	{ font-size: 1.2em; font-weight: bold; color: #333; }
+.ability-table		{ font-size: 1.1em; text-align: center; border: 1px solid black; margin: 8px 1px 0 1px; }
+.ability-table tr	{ line-height: 0.9em; }
+.columns		{ flex: 1 1 auto; display: flex; gap: 2px; }
+.column			{ flex: 1 1 0; padding: 0 2px; }
+.item-list		{ list-style-position: inside; padding: 0; margin: 0; }
 .skill, .spell, .equipment, .weapon { display: flex; align-items: center; margin: 2px 0; font-size: 1.1em; }
-.skill { line-height: 1.2em; }
-.skill .modifier { padding: 0 8px; }
-.skill .expert { background-color: #36454f; }	.skill .p4 { background-color: #36454f; }
-.skill .proficient { background-color: #b2beb5; }   .skill .p3 { background-color: #b2beb5; }
+.skill			{ line-height: 1.2em; }
+.skill .modifier	{ padding: 0 8px; }
+.skill .expert		{ background-color: #36454f; }	.skill .p4 { background-color: #36454f; }
+.skill .proficient	{ background-color: #b2beb5; } 	.skill .p3 { background-color: #b2beb5; }
 .skill .half-proficient { background-color: #e8e8e8; }	.skill .p1 { background-color: #e8e8e8; }
-.equip .true { background-color: #b2beb5; }
-.spell .true { background-color: #b2beb5; }
-.circle { width: 10px; height: 10px; border: 2px solid #333; border-radius: 50%; background-color: #fff; margin-right: 2px; display: inline-block; flex-shrink: 0; }
+.equip .true		{ background-color: #b2beb5; }
+.spell .true		{ background-color: #b2beb5; }
+.circle			{ width: 10px; height: 10px; border: 2px solid #333; border-radius: 50%; background-color: #fff; margin-right: 2px; display: inline-block; flex-shrink: 0; }
 .ddb-concentration, .ddb-ritual { height: 12px !important; width: 12px !important; }
-.stat-0, .str { color: red; }
-.stat-1, .dex { color: gold; }
-.stat-2, .con { color: darkorange; }
-.stat-3, .int { color: blue; }
-.stat-4, .wis { color: green; }
-.stat-5, .cha { color: purple; }
-i.school-abjuration { filter: invert(7%) sepia(100%) saturate(7408%) hue-rotate(248deg) brightness(106%) contrast(142%); }
+.stat-0, .str		{ color: red; }
+.stat-1, .dex		{ color: gold; }
+.stat-2, .con		{ color: darkorange; }
+.stat-3, .int		{ color: blue; }
+.stat-4, .wis		{ color: green; }
+.stat-5, .cha		{ color: purple; }
+i.school-abjuration	{ filter: invert(7%) sepia(100%) saturate(7408%) hue-rotate(248deg) brightness(106%) contrast(142%); }
 .spell-school i.school-conjuration { filter: invert(100%) sepia(92%) saturate(2349%) hue-rotate(358deg) brightness(105%) contrast(107%); }
 .spell-icon   i.school-conjuration { filter: grayscale(100%) sepia(100%) brightness(90%) hue-rotate(15deg) saturate(900%); }
 .spell-school i.school-divination  { filter: invert(100%) sepia(100%) saturate(1500%) hue-rotate(170deg) brightness(100%) contrast(100%); }
 .spell-icon   i.school-divination  { filter: grayscale(100%) brightness(115%) sepia(100%) saturate(800%) hue-rotate(165deg); }
-i.school-enchantment { filter: invert(18%) sepia(100%) saturate(3500%) hue-rotate(310deg) brightness(95%) contrast(130%); }
-i.school-evocation { filter: invert(11%) sepia(81%) saturate(5657%) hue-rotate(358deg) brightness(121%) contrast(118%); }
-i.school-illusion { filter: invert(20%) sepia(100%) saturate(3000%) hue-rotate(270deg) brightness(105%) contrast(125%); }
-i.school-necromancy { filter: invert(54%) sepia(73%) saturate(3232%) hue-rotate(86deg) brightness(125%) contrast(118%); }
-i.school-transmutation { filter: invert(46%) sepia(99%) saturate(1286%) hue-rotate(1deg) brightness(103%) contrast(102%); }
-i.school-artifice { filter: invert(51%) sepia(36%) saturate(5626%) hue-rotate(39deg) brightness(89%) contrast(101%); }
-i.school-dunamancy { filter: invert(35%) sepia(98%) saturate(447%) hue-rotate(131deg) brightness(91%) contrast(102%); }
-i.school-psionics { filter: invert(11%) sepia(83%) saturate(6783%) hue-rotate(254deg) brightness(57%) contrast(106%); }
-i.school-entropomancy { filter: invert(9%) sepia(2%) saturate(9%) hue-rotate(333deg) brightness(103%) contrast(89%); }
-i.school-sangromancy { filter: invert(15%) sepia(78%) saturate(3279%) hue-rotate(350deg) brightness(98%) contrast(88%); }
+i.school-enchantment	{ filter: invert(18%) sepia(100%) saturate(3500%) hue-rotate(310deg) brightness(95%) contrast(130%); }
+i.school-evocation	{ filter: invert(11%) sepia(81%) saturate(5657%) hue-rotate(358deg) brightness(121%) contrast(118%); }
+i.school-illusion	{ filter: invert(20%) sepia(100%) saturate(3000%) hue-rotate(270deg) brightness(105%) contrast(125%); }
+i.school-necromancy	{ filter: invert(54%) sepia(73%) saturate(3232%) hue-rotate(86deg) brightness(125%) contrast(118%); }
+i.school-transmutation	{ filter: invert(46%) sepia(99%) saturate(1286%) hue-rotate(1deg) brightness(103%) contrast(102%); }
+i.school-artifice	{ filter: invert(51%) sepia(36%) saturate(5626%) hue-rotate(39deg) brightness(89%) contrast(101%); }
+i.school-dunamancy	{ filter: invert(35%) sepia(98%) saturate(447%) hue-rotate(131deg) brightness(91%) contrast(102%); }
+i.school-psionics	{ filter: invert(11%) sepia(83%) saturate(6783%) hue-rotate(254deg) brightness(57%) contrast(106%); }
+i.school-entropomancy	{ filter: invert(9%) sepia(2%) saturate(9%) hue-rotate(333deg) brightness(103%) contrast(89%); }
+i.school-sangromancy	{ filter: invert(15%) sepia(78%) saturate(3279%) hue-rotate(350deg) brightness(98%) contrast(88%); }
 
-.trait-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.2rem 1.2rem; width: fit-content; margin: 0.1em auto 1.4em auto; }
-.trait-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 90px; }
-.trait-box .trait-icon { width: 120px; height: 90px; stroke: #333; fill: none; stroke-width: 1; }
-.trait-box span { margin-top: 0; font-size: 0.9rem; text-align: center; font-weight: bold; }
-.trait-icon text { font-family: sans-serif; dominant-baseline: middle; font-size: 0.8em; }
+.trait-grid		{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.2rem 1.2rem; width: fit-content; margin: 0.1em auto 1.4em auto; }
+.trait-box		{ display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 90px; }
+.trait-box .trait-icon	{ width: 120px; height: 90px; stroke: #333; fill: none; stroke-width: 1; }
+.trait-box span		{ margin-top: 0; font-size: 0.9rem; text-align: center; font-weight: bold; }
+.trait-icon text	{ font-family: sans-serif; dominant-baseline: middle; font-size: 0.8em; }
 
 
 /* Dice */

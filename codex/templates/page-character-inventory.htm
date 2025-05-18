@@ -7,16 +7,58 @@
 <div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
   <div class="front" id="item_front-{{index}}-{{id}}">
     <p class="heading">Inventory</p>
-    <table><tbody><tr class="table-header" id="inventory">
-    <th width="5%"></th><th width="40%">Equipment Name</th><th width="10%">Qty</th><th width="10%">Weight</th><th width="35%">Notes</th></tr>
-    <!-- {{#inventory}} -->
-      <tr class="table-item"><td><span class="equip"><span class="circle {{equipped}}"></span></span></td><td>{{name}} <i class="{{icon}}"></i></td><td>{{quantity}}</td><td>{{weight.str}}</td><td><span class="notes">{{notes}}</span></td></tr>
-    <!-- {{/inventory}} -->
-    </table>
+    <table><tbody>
+    <tr class="table-header" id="inventory">
+      <th width="5%"></th><th width="40%">Equipment Name</th><th width="10%">Qty</th><th width="10%">Weight</th><th width="35%">Notes</th>
+    </tr>
+
+    <!-- {{#inventory_containers}} -->
+      <!-- {{^isContainer}} -->
+        <tr class="table-item">
+          <td><span class="equip"><span class="circle {{equipped}}"></span></span></td>
+          <td>{{name}} <i class="{{icon}}"></i></td>
+          <td>{{quantity}}</td>
+          <td>{{weight.str}}</td>
+          <td><span class="notes">{{notes}}</span></td>
+        </tr>
+      <!-- {{/isContainer}} -->
+    <!-- {{/inventory_containers}} -->
+    </tbody></table>
+    {{#inventory_containers}}
+      {{#isContainer}}
+        <h4><span class="equip"><span class="circle {{equipped}}"></span></span> {{name}}</h4>
+        <table><tbody>
+        <tr class="table-header">
+          <th width="5%"></th><th width="40%">Equipment Name</th><th width="10%">Qty</th><th width="10%">Weight</th><th width="35%">Notes</th>
+        </tr>
+        <!-- {{#items}} -->
+          <tr class="table-item">
+            <td><span class="equip"><span class="circle {{equipped}}"></span></span></td>
+            <td>{{name}} <i class="{{icon}}"></i></td>
+            <td>{{quantity}}</td>
+            <td>{{weight.str}}</td>
+            <td><span class="notes">{{notes}}</span></td>
+          </tr>
+        <!-- {{/items}} -->
+        </tbody></table>
+      {{/isContainer}}
+    {{/inventory_containers}}
   </div>
 
   <div class="back" id="item_back-{{index}}-{{id}}">
     <p class="heading">Inventory</p><br />
-    <b>CP:</b> {{currencies.cp}} &nbsp;&nbsp; <b>SP:</b> {{currencies.sp}} &nbsp;&nbsp; <b>GP:</b> {{currencies.gp}}</div>
+    <b>CP:</b> {{currencies.cp}} &nbsp;&nbsp; <b>SP:</b> {{currencies.sp}} &nbsp;&nbsp; <b>GP:</b> {{currencies.gp}}
+    <br /><br /><p class="section">Attuned Items</p><br />
+    {{#inventory}}
+      {{#isAttuned}}
+      <div class="attuned-item">
+        <img src="{{definition.largeAvatarUrl}}" class="attuned-img" alt="{{name}}">
+        <div class="attuned-text">
+          <div class="attuned-name">{{name}}</div>
+          <div class="attuned-notes">{{definition.filterType}} - {{definition.rarity}} -  {{notes}}</div>
+        </div>
+      </div>
+      {{/isAttuned}}
+    {{/inventory}}
   </div>
 </div>

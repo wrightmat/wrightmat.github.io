@@ -198,6 +198,34 @@ function parsePassedData( loadCallback ) {
   }
 };
 
+function adjustFontSizeByLength(el, options = {}) {
+  const {
+    charThresholds = [800, 1000, 1200, 1400, 1600],
+    scaleFactors = [0.95, 0.9, 0.8, 0.7, 0.6],
+    minScale = 0.6
+  } = options;
+
+  if ( el.dataset.fontScaled === "true" ) return; // skip if already scaled
+
+  const length = el.textContent.length;
+  const style = window.getComputedStyle(el);
+  const currentSize = parseFloat(style.fontSize); // in px
+
+  let scale = 1;
+  for ( let i = 0; i < charThresholds.length; i++ ) {
+    if ( length > charThresholds[i] ) {
+      scale = scaleFactors[i];
+    } else {
+      break; // stop at first non-matching threshold
+    }
+  }
+console.log(length);
+console.log(scale);
+  scale = Math.max(scale, minScale);
+  el.style.fontSize = (currentSize * scale).toFixed(3) + 'px';
+  el.dataset.fontScaled = "true";
+};
+
 function toolbarAddButton( tb, id, label, options = {} ) {
   const toolbar = typeof tb === 'string' ? document.getElementById(tb) : tb;
   if ( !toolbar ) return;

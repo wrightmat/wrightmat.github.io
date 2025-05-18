@@ -439,5 +439,654 @@
 	"subclasses": [],
 	"url": "/api/2024/spells/mass-heal",
 	"updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+    "index": "chill-touch",
+    "name": "Chill Touch",
+    "desc": [
+      "Channeling the chill of the grave, make a melee spell attack against a target within reach. On a hit, the target takes 1d10 Necrotic damage, and it can’t regain Hit Points until the end of your next turn.",
+      "***Cantrip Upgrade.*** The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10)."
+    ],
+    "range": "Touch",
+    "components": ["V", "S"],
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 0,
+    "attack_type": "melee",
+    "damage": {
+      "damage_type": {
+        "index": "necrotic",
+        "name": "Necrotic",
+        "url": "/api/2014/damage-types/necrotic"
+      },
+      "damage_at_character_level": {
+        "1": "1d10",
+        "5": "2d10",
+        "11": "3d10",
+        "17": "4d10"
+      }
+    },
+    "school": {
+      "index": "necromancy",
+      "name": "Necromancy",
+      "url": "/api/2014/magic-schools/necromancy"
+    },
+    "classes": [
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2618965-chill-touch"
+  },
+  {
+    "index": "minor-illusion",
+    "name": "Minor Illusion",
+    "desc": [
+      "You create a sound or an image of an object within range that lasts for the duration. The illusion ends if you cast this spell again.",
+      "If a creature takes a Study action to examine the sound or image, the creature can determine that it is an illusion with a successful Intelligence (Investigation) check against your spell save DC. If a creature discerns the illusion for what it is, the illusion becomes faint to the creature.",
+      "***Sound.*** If you create a sound, its volume can range from a whisper to a scream. It can be your voice, someone else’s voice, a lion’s roar, a beating of drums, or any other sound you choose. The sound continues unabated throughout the duration, or you can make discrete sounds at different times before the spell ends.",
+      "***Image.*** If you create an image of an object—such as a chair, muddy footprints, or a small chest—it must be no larger than a 5-foot Cube. The image can’t create sound, light, smell, or any other sensory effect. Physical interaction with the image reveals it to be an illusion, since things can pass through it."
+    ],
+    "range": "30 feet",
+    "components": ["S", "M"],
+    "material": "A bit of fleece.",
+    "ritual": false,
+    "duration": "1 minute",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 0,
+    "school": {
+      "index": "illusion",
+      "name": "Illusion",
+      "url": "/api/2014/magic-schools/illusion"
+    },
+    "classes": [
+      {
+        "index": "bard",
+        "name": "Bard",
+        "url": "/api/2014/classes/bard"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2619039-minor-illusion"
+  },
+  {
+    "index": "poison-spray",
+    "name": "Poison Spray",
+    "desc": [
+      "You spray toxic mist at a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d12 Poison damage.",
+      "***Cantrip Upgrade.*** The damage increases by 1d12 when you reach levels 5 (2d12), 11 (3d12), and 17 (4d12)."
+    ],
+    "range": "30 feet",
+    "components": ["V", "S"],
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 0,
+    "attack_type": "ranged",
+    "damage": {
+      "damage_type": {
+        "index": "poison",
+        "name": "Poison",
+        "url": "/api/2014/damage-types/poison"
+      },
+      "damage_at_character_level": {
+        "1": "1d12",
+        "5": "2d12",
+        "11": "3d12",
+        "17": "4d12"
+      }
+    },
+    "school": {
+      "index": "necromancy",
+      "name": "Necromancy",
+      "url": "/api/2014/magic-schools/necromancy"
+    },
+    "classes": [
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      },
+      {
+        "index": "druid",
+        "name": "Druid",
+        "url": "/api/2014/classes/druid"
+      },
+      {
+        "index": "artificer",
+        "name": "Artificer",
+        "url": "/api/2014/classes/artificer"
+      }
+    ],
+    "subclasses": [],
+    "url": "https://www.dndbeyond.com/spells/2618875-poison-spray"
+  },
+  {
+    "index": "find-familiar",
+    "name": "Find Familiar",
+    "desc": [
+      "You gain the service of a familiar, a spirit that takes an animal form you choose: Bat, Cat, Frog, Hawk, Lizard, Octopus, Owl, Rat, Raven, Spider, Weasel, or another Beast that has a Challenge Rating of 0. Appearing in an unoccupied space within range, the familiar has the statistics of the chosen form, though it is a Celestial, Fey, or Fiend (your choice) instead of a Beast. Your familiar acts independently of you, but it obeys your commands.",
+      "Telepathic Connection. While your familiar is within 100 feet of you, you can communicate with it telepathically. Additionally, as a Bonus Action, you can see through the familiar’s eyes and hear what it hears until the start of your next turn, gaining the benefits of any special senses it has.",
+      "Finally, when you cast a spell with a range of touch, your familiar can deliver the touch. Your familiar must be within 100 feet of you, and it must take a Reaction to deliver the touch when you cast the spell.",
+      "Combat. The familiar is an ally to you and your allies. It rolls its own Initiative and acts on its own turn. A familiar can’t attack, but it can take other actions as normal.",
+      "Disappearance of the Familiar. When the familiar drops to 0 Hit Points, it disappears. It reappears after you cast this spell again. As a Magic action, you can temporarily dismiss the familiar to a pocket dimension. Alternatively, you can dismiss it forever. As a Magic action while it is temporarily dismissed, you can cause it to reappear in an unoccupied space within 30 feet of you. Whenever the familiar drops to 0 Hit Points or disappears into the pocket dimension, it leaves behind in its space anything it was wearing or carrying.",
+      "One Familiar Only. You can’t have more than one familiar at a time. If you cast this spell while you have a familiar, you instead cause it to adopt a new eligible form."
+    ],
+    "range": "10 feet",
+    "components": ["V", "S", "M"],
+    "material": "10gp worth of charcoal, incense, and herbs that must be consumed by fire in a brass brazier.",
+    "ritual": true,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 hour",
+    "level": 1,
+    "school": {
+      "index": "conjuration",
+      "name": "Conjuration",
+      "url": "/api/2014/magic-schools/conjuration"
+    },
+    "classes": [
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [],
+    "url": "/api/2014/spells/find-familiar"
+  },
+  {
+    "index": "suggestion",
+    "name": "Suggestion",
+    "desc": [
+      "You suggest a course of activity—described in no more than 25 words—to one creature you can see within range that can hear and understand you. The suggestion must sound achievable and not involve anything that would obviously deal damage to the target or its allies. For example, you could say, “Fetch the key to the cult’s treasure vault, and give the key to me.” Or you could say, “Stop fighting, leave this library peacefully, and don’t return.”",
+      "The target must succeed on a Wisdom saving throw or have the Charmed condition for the duration or until you or your allies deal damage to the target. The Charmed target pursues the suggestion to the best of its ability. The suggested activity can continue for the entire duration, but if the suggested activity can be completed in a shorter time, the spell ends for the target upon completing it."
+    ],
+    "range": "30 feet",
+    "components": ["V", "M"],
+    "material": "A drop of honey",
+    "ritual": false,
+    "duration": "Up to 8 hours",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 2,
+    "dc": {
+      "dc_type": {
+        "index": "wis",
+        "name": "WIS",
+        "url": "/api/2014/ability-scores/wis"
+      },
+      "dc_success": "none"
+    },
+    "school": {
+      "index": "enchantment",
+      "name": "Enchantment",
+      "url": "/api/2014/magic-schools/enchantment"
+    },
+    "classes": [
+      {
+        "index": "bard",
+        "name": "Bard",
+        "url": "/api/2014/classes/bard"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2619101-suggestion"
+  },
+  {
+    "index": "speak-with-animals",
+    "name": "Speak with Animals",
+    "desc": [
+      "For the duration, you can comprehend and verbally communicate with Beasts, and you can use any of the Influence action’s skill options with them.",
+      "Most Beasts have little to say about topics that don’t pertain to survival or companionship, but at minimum, a Beast can give you information about nearby locations and monsters, including whatever it has perceived within the past day."
+    ],
+    "range": "Self",
+    "components": ["V", "S"],
+    "ritual": true,
+    "duration": "10 minutes",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 1,
+    "school": {
+      "index": "divination",
+      "name": "Divination",
+      "url": "/api/2014/magic-schools/divination"
+    },
+    "classes": [
+      {
+        "index": "bard",
+        "name": "Bard",
+        "url": "/api/2014/classes/bard"
+      },
+      {
+        "index": "druid",
+        "name": "Druid",
+        "url": "/api/2014/classes/druid"
+      },
+      {
+        "index": "ranger",
+        "name": "Ranger",
+        "url": "/api/2014/classes/ranger"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "tags": [ "Communication", "Social" ],
+    "url": "https://www.dndbeyond.com/spells/2619059-speak-with-animals"
+  },
+  {
+    "index": "counterspell",
+    "name": "Counterspell",
+    "desc": [
+      "You attempt to interrupt a creature in the process of casting a spell. The creature makes a Constitution saving throw. On a failed save, the spell dissipates with no effect, and the action, Bonus Action, or Reaction used to cast it is wasted. If that spell was cast with a spell slot, the slot isn’t expended.",
+      "* - which you take when you see a creature within 60 feet of yourself casting a spell with Verbal, Somatic, or Material components"
+    ],
+    "range": "60 feet",
+    "components": ["S"],
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 reaction*",
+    "level": 3,
+    "dc": {
+      "dc_type": {
+        "index": "con",
+        "name": "CON",
+        "url": "/api/2014/ability-scores/con"
+      },
+      "dc_success": "negate"
+    },
+    "school": {
+      "index": "abjuration",
+      "name": "Abjuration",
+      "url": "/api/2014/magic-schools/abjuration"
+    },
+    "classes": [
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [],
+    "url": "https://www.dndbeyond.com/spells/2619072-counterspell"
+  },
+  {
+    "index": "dancing-lights",
+    "name": "Dancing Lights",
+    "desc": [
+      "You create up to four torch-size lights within range, making them appear as torches, lanterns, or glowing orbs that hover for the duration. Alternatively, you combine the four lights into one glowing Medium form that is vaguely humanlike. Whichever form you choose, each light sheds Dim Light in a 10-foot radius.",
+      "As a Bonus Action, you can move the lights up to 60 feet to a space within range. A light must be within 20 feet of another light created by this spell, and a light vanishes if it exceeds the spell’s range."
+    ],
+    "range": "120 feet",
+    "components": ["V", "S", "M"],
+    "material": "A bit of phosphorus",
+    "ritual": false,
+    "duration": "Up to 1 minute",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 0,
+    "school": {
+      "index": "illusion",
+      "name": "Illusion",
+      "url": "/api/2014/magic-schools/illusion"
+    },
+    "classes": [
+      {
+        "index": "artificer",
+        "name": "Artificer",
+        "url": "/api/2014/classes/artificer"
+      },
+      {
+        "index": "bard",
+        "name": "Bard",
+        "url": "/api/2014/classes/bard"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "tags": [ "Utility" ],
+    "url": "https://www.dndbeyond.com/spells/2619058-dancing-lights"
+  },
+  {
+    "index": "shocking-grasp",
+    "name": "Shocking Grasp",
+    "desc": [
+      "Lightning springs from you to a creature that you try to touch. Make a melee spell attack against the target. On a hit, the target takes 1d8 Lightning damage, and it can’t make Opportunity Attacks until the start of its next turn.",
+      "***Cantrip Upgrade.*** The damage increases by 1d8 when you reach levels 5 (2d8), 11 (3d8), and 17 (4d8)."
+    ],
+    "range": "Touch",
+    "components": ["V", "S"],
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 0,
+    "attack_type": "melee",
+    "damage": {
+      "damage_type": {
+        "index": "lightning",
+        "name": "Lightning",
+        "url": "/api/2014/damage-types/lightning"
+      },
+      "damage_at_character_level": {
+        "1": "1d8",
+        "5": "2d8",
+        "11": "3d8",
+        "17": "4d8"
+      }
+    },
+    "school": {
+      "index": "evocation",
+      "name": "Evocation",
+      "url": "/api/2014/magic-schools/evocation"
+    },
+    "classes": [
+      {
+        "index": "artificer",
+        "name": "Artificer",
+        "url": "/api/2014/classes/artificer"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "/api/2014/spells/shocking-grasp"
+  },
+  {
+    "index": "chromatic-orb",
+    "name": "Chromatic Orb",
+    "desc": [
+      "You hurl an orb of energy at a target within range. Choose Acid, Cold, Fire, Lightning, Poison, or Thunder for the type of orb you create, and then make a ranged spell attack against the target. On a hit, the target takes 3d8 damage of the chosen type.",
+      "If you roll the same number on two or more of the d8s, the orb leaps to a different target of your choice within 30 feet of the target. Make an attack roll against the new target, and make a new damage roll. The orb can’t leap again unless you cast the spell with a level 2+ spell slot."
+    ],
+    "higher_level": [
+      "The damage increases by 1d8 for each spell slot level above 1. The orb can leap a maximum number of times equal to the level of the slot expended, and a creature can be targeted only once by each casting of this spell."
+    ],
+    "range": "90 feet",
+    "components": [ "V", "S", "M" ],
+    "material": "A diamond worth 50+ GP",
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 1,
+    "attack_type": "ranged",
+    "damage": {
+      "damage_type": {
+        "index": "choice",
+        "name": "Varies",
+        "url": "/api/2014/damage-types"
+      },
+      "damage_at_slot_level": {
+        "1": "3d8",
+        "2": "4d8",
+        "3": "5d8",
+        "4": "6d8",
+        "5": "7d8",
+        "6": "8d8",
+        "7": "9d8",
+        "8": "10d8",
+        "9": "11d8"
+      }
+    },
+    "school": {
+      "index": "evocation",
+      "name": "Evocation",
+      "url": "/api/2014/magic-schools/evocation"
+    },
+    "classes": [
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2618966-chromatic-orb",
+    "updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+    "index": "false-life",
+    "name": "False Life",
+    "desc": [
+      "You gain 2d4 + 4 Temporary Hit Points."
+    ],
+    "higher_level": [
+      "You gain 5 additional Temporary Hit Points for each spell slot level above 1."
+    ],
+    "range": "Self",
+    "components": ["V", "S", "M"],
+    "material": "A drop of alcohol",
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 1,
+    "heal_at_slot_level": {
+      "1": "2d4 + 4",
+      "2": "2d4 + 9",
+      "3": "2d4 + 14",
+      "4": "2d4 + 19",
+      "5": "2d4 + 24",
+      "6": "2d4 + 29",
+      "7": "2d4 + 34",
+      "8": "2d4 + 39",
+      "9": "2d4 + 44"
+    },
+    "school": {
+      "index": "necromancy",
+      "name": "Necromancy",
+      "url": "/api/2014/magic-schools/necromancy"
+    },
+    "classes": [
+      {
+        "index": "artificer",
+        "name": "Artificer",
+        "url": "/api/2014/classes/artificer"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2618866-false-life"
+  },
+  {
+    "index": "darkness",
+    "name": "Darkness",
+    "desc": [
+      "For the duration, magical Darkness spreads from a point within range and fills a 15-foot-radius Sphere. Darkvision can’t see through it, and nonmagical light can’t illuminate it.",
+      "Alternatively, you cast the spell on an object that isn’t being worn or carried, causing the Darkness to fill a 15-foot Emanation originating from that object. Covering that object with something opaque, such as a bowl or helm, blocks the Darkness.",
+      "If any of this spell’s area overlaps with an area of Bright Light or Dim Light created by a spell of level 2 or lower, that other spell is dispelled."
+    ],
+    "range": "60 feet",
+    "components": ["V", "M"],
+    "material": "Bat fur and a piece of coal",
+    "ritual": false,
+    "duration": "Up to 10 minutes",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 2,
+    "area_of_effect": {
+      "type": "sphere",
+      "size": 15
+    },
+    "school": {
+      "index": "evocation",
+      "name": "Evocation",
+      "url": "/api/2014/magic-schools/evocation"
+    },
+    "classes": [
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      },
+      {
+        "index": "land",
+        "name": "Land",
+        "url": "/api/2014/subclasses/land"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2619080-darkness"
   }
 ]

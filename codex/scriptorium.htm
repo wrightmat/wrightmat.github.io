@@ -111,7 +111,7 @@
     return txt.replaceAll(' ','-').replaceAll('"','').replaceAll("'","").replaceAll('(','').replaceAll(')','')
   }
 
-  function setPreferences(el) {
+  function setPreferences( el ) {
     if ( el && el.name ) {	  // If a specific element is passed, just update that one
       preferences[el.name] = el.value;
       return;
@@ -155,9 +155,7 @@
     if ( !print ) return print;
     print.icons = [];
     print.preferences = preferences;
-
-    // Markdown conversion
-    if ( print.desc ) {
+    if ( print.desc ) {	    // Markdown conversion
       print.descList = '';
       print.desc.forEach(d => print.descList += marked.parse(d));
       print.desc = print.desc.map((v, i) => (i > 0 && v ? marked.parse(v) : v));
@@ -175,8 +173,8 @@
     if ( print.school ) {
       const baseSchool = print.school?.index ?? null;
       const additionalSchools = [];
-      for (const [school, list] of Object.entries(spell_additional_schools)) {
-        if (list.includes(print.id)) additionalSchools.push(school);
+      for ( const [school, list] of Object.entries(spell_additional_schools) ) {
+        if ( list.includes(print.id) ) additionalSchools.push(school);
       }
       print.schools = baseSchool ? [baseSchool, ...additionalSchools] : [...additionalSchools];
     }
@@ -195,7 +193,7 @@
     if ( !rawPrint ) return;
     const print = parsePrintData(rawPrint);
 
-    $.get('templates/' + print.template + '.htm', function(templateHtml) {
+    $.get('templates/' + print.template + '.htm', function( templateHtml ) {
       const rendered = Mustache.render(templateHtml, print);
       const wrapper = $('<div>').html(rendered);
 
@@ -217,6 +215,8 @@
         wrapper.find('.booklet .back .page').each((i, el) => backSheet.append($(el)));
         $('[id^="card"]').remove();
       }
+
+      document.querySelectorAll('.spell-description').forEach(el => { adjustFontSizeByLength(el); });
     });
   };
 
@@ -354,13 +354,14 @@
   };
 
   function generatePrint( el ) {
-      var sel = $("#controls-select option:selected").val()
+    var sel = $("#controls-select option:selected").val()
     if ( sel ) {
       createPrint( getPrintData(sel) );
     } else {
       var charId = $('#controls-id').val();
       var char = ddbGetFromEndpoint('character', charId)['data'];
       char = ddbParseCharacter(char);
+console.log(char);
       createPrint(char);
     }
     toolbarShowItem('item-actions');

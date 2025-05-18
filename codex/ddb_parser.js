@@ -580,6 +580,7 @@ const passthrough_keys = {
   char.ac = {}; char.ac.value = 0;
   char.attacks = []; let prevAdded = [];
   char.inventory = character.inventory;
+
   let hasArmor = false; let shieldEquipped = false;
   if ( character.inventory ) {
     let fightingStylesSelected = new Set()
@@ -785,6 +786,25 @@ const passthrough_keys = {
   }
   if ( ac_bonus && ac_bonus.subType == 'armor-class' ) { char.ac.value += Number(ac_bonus.fixedValue); }
 
+  // Create a Mustache-friendly containerized version of inventory as well
+  const inventoryOutput = [];
+  const containerIds = new Set(character.inventory.filter(i => i.definition.isContainer).map(i => i.id));
+  char.inventory.forEach(i => { i.isContained = containerIds.has(i.containerEntityId); });
+
+  char.inventory.forEach(container => {
+    if ( !container.definition.isContainer ) return;
+    const containerId = container.id;
+    const containedItems = char.inventory.filter(item => item.containerEntityId === containerId);
+    if ( containedItems && containedItems.length > 0 ) inventoryOutput.push({ isContainer: true, isContained: false, ...container, items: containedItems });
+  });
+  char.inventory.forEach(item => {
+    if ( item.definition.isContainer ) return;
+    if ( item.isContained ) return;
+    if ( item.isAttuned ) return;
+    inventoryOutput.push({ isContainer: false, ...item });
+  });
+  char.inventory_containers = inventoryOutput;
+
 
   // Actions
   for ( var source in character.actions ) {
@@ -826,7 +846,7 @@ const passthrough_keys = {
 
   // Spellcasting and Spells
   char.spellCasting.abilityId = ( char.classes[0].subclassDefinition && char.classes[0].subclassDefinition.spellCastingAbilityId ) ? char.classes[0].subclassDefinition.spellCastingAbilityId : char.classes[0].definition.spellCastingAbilityId
-  if ( char.spellCasting.abilityId ) char.spellCasting.ability = ABILITIES[char.spellCasting.abilityId].shortName;
+  if ( char.spellCasting.abilityId ) char.spellCasting.ability = getObjectById(ABILITIES, char.spellCasting.abilityId).shortName;
   if ( char.levels_monk > 0 ) {
     char.spellCasting.save = 8 + Number(char.stats[4].mod) + char.pb.value;
   } else if ( char.spellCasting.ability ) {
