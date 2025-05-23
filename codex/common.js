@@ -1,5 +1,5 @@
 const codexStorage = {
-  get(key, fallback = null) {
+  get( key, fallback = null ) {
     try {
       const data = localStorage.getItem(`codex.${key}`);
       return data ? JSON.parse(data) : fallback;
@@ -9,7 +9,7 @@ const codexStorage = {
     }
   },
 
-  set(key, value) {
+  set( key, value ) {
     try {
       localStorage.setItem(`codex.${key}`, JSON.stringify(value));
     } catch (e) {
@@ -17,7 +17,7 @@ const codexStorage = {
     }
   },
 
-  remove(key) {
+  remove( key ) {
     localStorage.removeItem(`codex.${key}`);
   }
 };

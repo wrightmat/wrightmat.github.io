@@ -48,7 +48,7 @@ label { display: inline-flex; font-weight: 500; margin-bottom: 0.25rem; }
 @keyframes scale-feedback {  0%   { transform: scale(1); }  50%  { transform: scale(1.2); }  100% { transform: scale(1); } }
 
 
-/* Codex */
+/* Codex (General) */
 header			{ position: fixed; left: 0; right: 0; top: 0px; height: 30px; display: flex; align-items: center; box-shadow: 0 0 25px 0 #bbb; background-color: #bbb; padding-left: 35px; z-index: 2000; }
 header *		{ display: inline; }
 header li		{ margin: 20px; }
@@ -97,13 +97,13 @@ header li.current	{ text-decoration: underline; }
 .card-sheet.tarot.vertical		{ grid-template-columns: repeat(2, 2.75in); grid-auto-rows: 4.75in; }
 .card.tarot.horizontal			{ width: 4.75in; height: 2.75in; --card-height: 2.75in; }
 .card.tarot.vertical			{ width: 2.75in; height: 4.75in; --card-height: 4.75in; }
-.card.tarot				{ font-size: 9pt; }
+.card.tarot				{ font-size: 8pt; }
 
 .card-sheet.notecard.horizontal		{ grid-template-columns: repeat(1, 7in); grid-auto-rows: 5in; }
 .card-sheet.notecard.vertical		{ grid-template-columns: repeat(1, 5in); grid-auto-rows: 7in; }
 .card.notecard.horizontal		{ width: 7.65in; height: 5.40in; --card-height: 5.0in; }
 .card.notecard.vertical			{ width: 5.40in; height: 7.65in; --card-height: 7.0in; }
-.card.notecard				{ font-size: 10pt; }
+.card.notecard				{ font-size: 9pt; }
 
 .card-sheet.a6.horizontal		{ grid-template-columns: repeat(1, 5.83in); grid-auto-rows: 4.13in; }
 .card-sheet.a6.vertical			{ grid-template-columns: repeat(1, 4.13in); grid-auto-rows: 5.83in; }

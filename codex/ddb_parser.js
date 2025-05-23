@@ -247,8 +247,8 @@ const passthrough_keys = {
   const getAbilityScore = ( character, scoreId ) => {
     let index = scoreId - 1;
     let base = ( character.stats[index].value == null ? 10 : character.stats[index].value ),
-      bonus = (character.bonusStats[index].value == null ? 0 : character.bonusStats[index].value),
-      override = (character.overrideStats[index].value == null ? 0 : character.overrideStats[index].value),
+      bonus = ( character.bonusStats[index].value == null ? 0 : character.bonusStats[index].value ),
+      override = ( character.overrideStats[index].value == null ? 0 : character.overrideStats[index].value ),
       total = base + bonus,
       modifiers = getObjects(character, '', getObjectById(ABILITIES, scoreId).name + "-score");
     if ( override > 0 ) total = override;
@@ -402,18 +402,40 @@ const passthrough_keys = {
   };
 
   function parseTags( character, text, feat ) {
-    return text.replace(/\{\{(\w+)(?::([^}]+))?\}\}/g, ( match, tag, options ) => {
-      switch ( tag ) {
+    return text.replace(/\{\{([^}]+)\}\}/g, (match, rawContent) => {
+      let tag = rawContent; let qualifier = null; let modifiers = [];
+      const hashParts = rawContent.split("#");
+      if ( hashParts.length > 1 ) modifiers = hashParts.slice(1);
+      const colonParts = hashParts[0].split(":");
+      tag = colonParts[0];
+      if (colonParts.length > 1) qualifier = colonParts[1];
+
+      switch (tag) {
         case "modifier":
-          return processModifier(options, character);
+          return formatValue(processModifier(qualifier, character), modifiers);
         case "scalevalue":
           return processScaleValue(feat);
         case "proficiency":
-          return character.pb.value;
+          return formatValue(character.pb.value, modifiers);
+        case "savedc":
+          return processSaveDC(qualifier, character);
+        case "classlevel":
+          return formatValue(character.classes[0]?.level ?? 0, modifiers);
         default:
-          return match; // Return unchanged if tag is unknown
+          if (tag.match(/^\(.+\)@round(?:down|up)$/)) {
+            return formatValue(processMathExpression(tag, character), modifiers);
+          }
+          return match;
       }
     });
+
+    function formatValue(value, modifiers) {
+      if (modifiers.includes("unsigned")) {
+        if (typeof value === "number") return Math.abs(value);
+        if (typeof value === "string" && /^[+-]\d+$/.test(value)) return value.replace(/^[-+]/, '');
+      }
+      return value;
+    };
 
     function processModifier( options, char ) {
       const [stat, ...modifiers] = options.split(/[@#]/); // Extract base stat and options
@@ -438,6 +460,29 @@ const passthrough_keys = {
       }
       return "{{scalevalue}}"; // Fail gracefully if no valid value
     };
+
+    function processSaveDC(optionString, char) {
+      const stats = optionString.split(",").map(s => s.trim().toUpperCase());
+      const mods = stats.map(stat => {
+        const index = ABILITIES.findIndex(a => a.shortName === stat);
+        return index !== -1 ? char.stats[index].mod : -Infinity;
+      });
+      const bestMod = Math.max(...mods);
+      return 8 + bestMod + char.pb.value;
+    }
+
+    function processMathExpression( exprTag, char ) {
+      const [expr, round] = exprTag.match(/^\((.+)\)@round(down|up)$/).slice(1, 3);
+      let value = expr.replace(/classlevel/gi, char.classes[0].level); // Support only primary class
+      try {
+        value = eval(value);
+        value = round === "down" ? Math.floor(value) : Math.ceil(value);
+        return value;
+      } catch (e) {
+        return `{{${exprTag}}}`;
+      }
+    };
+
   };
 
 
@@ -508,7 +553,7 @@ const passthrough_keys = {
   // Features & Traits
   char.feats = [];
   character.feats.forEach((feat, fi) => {
-    if ( !silent_features.includes(feat.definition.name) ) { char.feats.push(feat); }
+    if ( !silent_features.includes(feat.definition.name) ) char.feats.push(feat);
   });
   character.classes.forEach((cls, ci) => {
     cls.classFeatures.forEach((feat, fi) => {
@@ -530,7 +575,9 @@ const passthrough_keys = {
     if ( act && act.limitedUse ) {
       feat.definition.limitedUse = act.limitedUse;
       feat.limitedUse = {}; feat.limitedUse.str = '';
-      feat.limitedUse.maxUses = act.limitedUse.maxUses || ( act.limitedUse.useProficiencyBonus == true ? act.limitedUse.proficiencyBonusOperator + act.limitedUse.operator : act.limitedUse.operator );
+      feat.limitedUse.maxUses = act.limitedUse.maxUses > 0 ? act.limitedUse.maxUses : act.limitedUse.statModifierUsesId
+        ? char.stats[act.limitedUse.statModifierUsesId - 1].mod : act.limitedUse.useProficiencyBonus == true
+          ? char.pb.value : act.limitedUse.operator;
       for ( let i = 0; i < feat.limitedUse.maxUses; i++ ) { feat.limitedUse.str += '[ &nbsp; ] '; }
       feat.limitedUse.str += '/ ' + DURATIONS[act.limitedUse.resetType];
       feat.limitedUse.reset = DURATIONS[act.limitedUse.resetType];
@@ -560,14 +607,14 @@ const passthrough_keys = {
   for ( let expertise of getObjects(character.modifiers, 'type', 'expertise') ) {
     updateProficiency(char, expertise, PROFICIENCY_EXPERTISE);
   }
-  for ( let adv of getObjects(character, 'type', 'advantage') ) { updateProficiency(char, adv, PROFICIENCY_NONE); }
-  for ( let bonus of getObjects(character, 'type', 'bonus') ) { updateProficiency(char, bonus, PROFICIENCY_NONE); }
+  for ( let adv of getObjects(character, 'type', 'advantage') )		{ updateProficiency(char, adv, PROFICIENCY_NONE); }
+  for ( let bonus of getObjects(character, 'type', 'bonus') )		{ updateProficiency(char, bonus, PROFICIENCY_NONE); }
   for ( let bonus of getObjects(character, 'subType', 'bonus-damage') ) { updateProficiency(char, bonus, PROFICIENCY_NONE); }
-  for ( let def of getObjects(character, 'type', 'immunity') ) { updateProficiency(char, def, PROFICIENCY_NONE); }
-  for ( let def of getObjects(character, 'type', 'resistance') ) { updateProficiency(char, def, PROFICIENCY_NONE); }
-  for ( let lang of getObjects(character, 'type', 'language') ) { updateProficiency(char, lang, PROFICIENCY_NONE); }
-  for ( let sense of getObjects(character, 'type', 'sense') ) { updateProficiency(char, sense, PROFICIENCY_NONE); }
-  for ( let sense of getObjects(character, 'subType', 'darkvision') ) { updateProficiency(char, sense, PROFICIENCY_NONE); }
+  for ( let def of getObjects(character, 'type', 'immunity') )		{ updateProficiency(char, def, PROFICIENCY_NONE); }
+  for ( let def of getObjects(character, 'type', 'resistance') )	{ updateProficiency(char, def, PROFICIENCY_NONE); }
+  for ( let lang of getObjects(character, 'type', 'language') )		{ updateProficiency(char, lang, PROFICIENCY_NONE); }
+  for ( let sense of getObjects(character, 'type', 'sense') )		{ updateProficiency(char, sense, PROFICIENCY_NONE); }
+  for ( let sense of getObjects(character, 'subType', 'darkvision') )	{ updateProficiency(char, sense, PROFICIENCY_NONE); }
   var dv = getObjects(character, 'subType', 'darkvision');	// REVISIT: there has to be a better and more general way to combine multiple proficiency values!
   if ( dv.length > 1 ) {
     var dvTotal = combineObjects(dv[0], dv[1]);
@@ -619,9 +666,9 @@ const passthrough_keys = {
 	if ( isMartial ) properties += 'Martial, ';
 
         item.definition.properties.forEach((prop) => {
-          if ( prop.name == 'Two-Handed' ) twohanded = true; 
-          if ( prop.name == 'Range' ) ranged = true;
           if ( prop.name == 'Finesse' ) finesse = true;
+          if ( prop.name == 'Range' ) ranged = true;
+          if ( prop.name == 'Two-Handed' ) twohanded = true; 
           if ( prop.name == 'Versatile' ) versatile = true; versatileDice = prop.notes;
           properties += prop.name + ', ';
         });
@@ -845,7 +892,8 @@ const passthrough_keys = {
 
 
   // Spellcasting and Spells
-  char.spellCasting.abilityId = ( char.classes[0].subclassDefinition && char.classes[0].subclassDefinition.spellCastingAbilityId ) ? char.classes[0].subclassDefinition.spellCastingAbilityId : char.classes[0].definition.spellCastingAbilityId
+  char.spellCasting.abilityId = ( char.classes[0].subclassDefinition && char.classes[0].subclassDefinition.spellCastingAbilityId )
+    ? char.classes[0].subclassDefinition.spellCastingAbilityId : char.classes[0].definition.spellCastingAbilityId;
   if ( char.spellCasting.abilityId ) char.spellCasting.ability = getObjectById(ABILITIES, char.spellCasting.abilityId).shortName;
   if ( char.levels_monk > 0 ) {
     char.spellCasting.save = 8 + Number(char.stats[4].mod) + char.pb.value;
