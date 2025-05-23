@@ -179,10 +179,6 @@
       print.schools = baseSchool ? [baseSchool, ...additionalSchools] : [...additionalSchools];
     }
 
-    // Image handling
-    print.decorations.back = $('#controls-image-back-override').val() || print.decorations?.back;
-    print.decorations.front = $('#controls-image-front-override').val() || print.decorations?.front;
-
     print.template = preferences.template;
 console.log(print);
     return print;

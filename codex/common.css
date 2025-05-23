@@ -172,6 +172,9 @@ header li.current	{ text-decoration: underline; }
 .chip-life-back img { height: 15px; }
 .chip-life-back .img-bg { background: #ccc; border-radius: 50%; height: 20px; -webkit-print-color-adjust: exact !important; }
 
+.comma-list { display: inline; }
+.comma-item::after { content: ", "; }
+.comma-item:last-child::after { content: ""; }
 .written-list { list-style: none; padding-left: 0; margin: 0; }
 .written-entry { margin-bottom: 2em; margin-top: 2em; break-inside: avoid; }
 .entry-layout { display: flex; gap: 1em; align-items: stretch; }

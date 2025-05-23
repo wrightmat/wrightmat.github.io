@@ -38,22 +38,21 @@
       <div class="column" id="misc">
 	<p class="section">Hit Points</p>
 	<p class="larger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / {{hp.max}}</p>
-	<span class="float-left-60">({{hp.hitDieSize}} x {{hp.hitDice}})</span><span class="float-right-40"> <b>Temp:</b></span><br /><br />
-	<p class="section">Proficiency Bonus</p> <p>{{pb.str}}</p>
+	<span class="float-left-60">({{hp.hitDieSize}} x {{hp.hitDice}})</span><span class="float-right-40"> <b>Temp:</b></span><br /><br />	<p class="section">Proficiency Bonus</p> <p>{{pb.str}}</p>
 	<p class="section">Initiative</p> <p>{{init.str}} <i class="{{init.icon}}"></i></p>
 	<p class="section">Armor Class</p> <p>{{ac.value}}</p>
 	<p class="section">Speed</p> <p>{{weightSpeeds.normal.walk}} ft.{{#weightSpeeds.normal.fly}} ({{weightSpeeds.normal.fly}} ft.){{/weightSpeeds.normal.fly}}</p><br />
 	<p class="section">Proficiencies</p>
-	<p><b>Armor:</b> {{#proficiencies.armor}}{{friendlySubtypeName}} {{/proficiencies.armor}}</p>
-	<p><b>Weapons:</b> {{#proficiencies.weapons}}{{friendlySubtypeName}} {{/proficiencies.weapons}}</p>
-	<p><b>Tools:</b> {{#proficiencies.tools}}{{friendlySubtypeName}} {{/proficiencies.tools}}</p>
-	<p><b>Languages:</b> {{#proficiencies.languages}}{{friendlySubtypeName}} {{/proficiencies.languages}}</p><br />
+	<p><b>Armor:</b> <span class="comma-list">{{#proficiencies.armor}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.armor}}</span></p>
+	<p><b>Weapons:</b> <span class="comma-list">{{#proficiencies.weapons}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.weapons}}</span></p>
+	<p><b>Tools:</b> <span class="comma-list">{{#proficiencies.tools}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.tools}}</span></p>
+	<p><b>Languages:</b> <span class="comma-list">{{#proficiencies.languages}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.languages}}</span></p><br />
 	<p class="section">Senses</p>
 	<p>Passive Percept.: {{passives.perception}}</p>
 	<p>Passive Investig.: {{passives.investigation}}</p>
 	<p>Passive Insight: {{passives.insight}}</p>
 	{{#proficiencies.senses}}<p>{{friendlySubtypeName}}: {{value}} ft.</p>{{/proficiencies.senses}}<br />
-	<p class="section">Defenses</p> {{#proficiencies.defenses}}<i class="ddb-{{type}}"></i> {{friendlySubtypeName}} {{/proficiencies.defenses}}
+	<p class="section">Defenses</p> <span class="comma-list">{{#proficiencies.defenses}}<span class="comma-item"><i class="ddb-{{type}}"></i> {{friendlySubtypeName}}</span>{{/proficiencies.defenses}}</span>
       </div>
     </div>
     <div style="padding-top: 20px;">
