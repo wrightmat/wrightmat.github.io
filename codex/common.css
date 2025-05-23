@@ -72,29 +72,29 @@ header li.current	{ text-decoration: underline; }
 
 
 /* Scriptorium */
-.print-container { width: 8.5in; }
-.card-sheet { display: grid; justify-content: center; gap: 0; padding: 0; width: 8.5in; height: 11in; margin: 0; box-sizing: border-box; }
-.card { display: flex; justify-content: center; align-items: flex-start; overflow: hidden; box-sizing: border-box; border: 1px dashed black; padding: 0.2em; }
-.card .back { display: block; margin: 0; padding: 0.3em; box-sizing: border-box; }
+.print-container	{ width: 8.5in; }
+.card-sheet		{ display: grid; justify-content: center; gap: 0; padding: 0; width: 8.5in; height: 11in; margin: 0; box-sizing: border-box; }
+.card			{ display: flex; justify-content: center; align-items: flex-start; overflow: hidden; box-sizing: border-box; border: 1px dashed #ccc; padding: 0.2em; }
+.card .back		{ display: block; margin: 0; padding: 0.3em; box-sizing: border-box; }
 .card .back .image	{ padding-top: 10%; }
 .card .back .image img	{ height: 100%; width: 100%; max-height: 100%; max-width: 100%; }
-.card .front, .back { width: 100%; height: 100%; }
+.card .front, .back	{ height: 100%; width: 100%; }
 
 /* Card sizes - increase each by 5 to 10% over the physical size (based on real-world testing) to account for cut lines and such */
 .card-sheet.business.horizontal		{ grid-template-columns: repeat(2, 3.7in); grid-auto-rows: 2.2in; }
-.card-sheet.business.vertical		{ grid-template-columns: repeat(2, 2.2in); grid-auto-rows: 3.7in; }
+.card-sheet.business.vertical		{ grid-template-columns: repeat(3, 2.2in); grid-auto-rows: 3.7in; }
 .card.business.horizontal		{ width: 3.7in; height: 2.2in; --card-height: 2.2in; }
 .card.business.vertical			{ width: 2.2in; height: 3.7in; --card-height: 3.7in; }
 .card.business				{ font-size: 7pt; }
 
-.card-sheet.poker.horizontal		{ grid-template-columns: repeat(3, 3.5in); grid-auto-rows: 2.5in; }
+.card-sheet.poker.horizontal		{ grid-template-columns: repeat(2, 3.5in); grid-auto-rows: 2.5in; }
 .card-sheet.poker.vertical		{ grid-template-columns: repeat(3, 2.5in); grid-auto-rows: 3.5in; }
 .card.poker.horizontal			{ width: 3.5in; height: 2.5in; --card-height: 2.5in; }
 .card.poker.vertical			{ width: 2.5in; height: 3.5in; --card-height: 3.5in; }
 .card.poker				{ font-size: 8pt; }
 
-.card-sheet.tarot.horizontal		{ grid-template-columns: repeat(3, 4.75in); grid-auto-rows: 2.75in; }
-.card-sheet.tarot.vertical		{ grid-template-columns: repeat(3, 2.75in); grid-auto-rows: 4.75in; }
+.card-sheet.tarot.horizontal		{ grid-template-columns: repeat(1, 4.75in); grid-auto-rows: 2.75in; }
+.card-sheet.tarot.vertical		{ grid-template-columns: repeat(2, 2.75in); grid-auto-rows: 4.75in; }
 .card.tarot.horizontal			{ width: 4.75in; height: 2.75in; --card-height: 2.75in; }
 .card.tarot.vertical			{ width: 2.75in; height: 4.75in; --card-height: 4.75in; }
 .card.tarot				{ font-size: 9pt; }
@@ -117,8 +117,8 @@ header li.current	{ text-decoration: underline; }
 .card.b6.vertical			{ width: 5.3in; height: 7.4in; padding-left: 0.6in; }
 .card.b6				{ font-size: 9pt; }
 
-.card p { margin: 0.1em; }
-.card h1, h2, h3, h4 { line-height: 0.05; }
+.card p					{ margin: 0.1em; }
+.card h1, h2, h3, h4			{ line-height: 0.05; }
 
 .booklet-sheet	{ display: grid; gap: 0.04in; justify-content: center; page-break-after: always; break-after: always; width: 8.5in; height: 11in; box-sizing: border-box; z-index: 1; grid-template-columns: repeat(2, 4.4in); grid-auto-rows: 5.8in; margin: 0 0.1in; }
 .page		{ position: relative; width: 4.25in; height: 5.5in; box-sizing: border-box; padding: 0.05in 0.1in; page-break-inside: avoid; break-inside: avoid; overflow: hidden; font-size: 9pt; }

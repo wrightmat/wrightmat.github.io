@@ -180,11 +180,11 @@
     }
 
     // Image handling
-    const imgBase = print.image?.startsWith('/api/') ? 'https://www.dnd5eapi.co' + print.image : print.image;
-    print.imageBack = $('#controls-image-back-override').val() || print.decorations?.avatarUrl || imgBase;
-    print.imageFront = $('#controls-image-front-override').val() || print.decorations?.avatarUrl || imgBase;
+    print.decorations.back = $('#controls-image-back-override').val() || print.decorations?.back;
+    print.decorations.front = $('#controls-image-front-override').val() || print.decorations?.front;
 
     print.template = preferences.template;
+console.log(print);
     return print;
   };
 

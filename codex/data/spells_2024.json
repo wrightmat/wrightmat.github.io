@@ -1088,5 +1088,316 @@
       }
     ],
     "url": "https://www.dndbeyond.com/spells/2619080-darkness"
+  },
+  {
+    "index": "shillelagh",
+    "name": "Shillelagh",
+    "desc": [
+      "A Club or Quarterstaff you are holding is imbued with nature’s power. For the duration, you can use your spellcasting ability instead of Strength for the attack and damage rolls of melee attacks using that weapon, and the weapon’s damage die becomes a d8. If the attack deals damage, it can be Force damage or the weapon’s normal damage type (your choice).",
+      "The spell ends early if you cast it again or if you let go of the weapon.",
+      "***Cantrip Upgrade.*** The damage die changes when you reach levels 5 (d10), 11 (d12), and 17 (2d6)."
+    ],
+    "range": "Touch",
+    "components": [ "V", "S", "M" ],
+    "material": "Mistletoe",
+    "ritual": false,
+    "duration": "1 minute",
+    "concentration": false,
+    "casting_time": "1 bonus action",
+    "level": 0,
+    "school": {
+      "index": "transmutation",
+      "name": "Transmutation",
+      "url": "/api/2014/magic-schools/transmutation"
+    },
+    "classes": [
+      {
+        "index": "druid",
+        "name": "Druid",
+        "url": "/api/2014/classes/druid"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "/api/2014/spells/shillelagh"
+  },
+  {
+    "index": "moonbeam",
+    "name": "Moonbeam",
+    "desc": [
+      "A silvery beam of pale light shines down in a 5-foot-radius, 40-foot-high Cylinder centered on a point within range. Until the spell ends, Dim Light fills the Cylinder, and you can take a Magic action on later turns to move the Cylinder up to 60 feet.",
+      "When the Cylinder appears, each creature in it makes a Constitution saving throw. On a failed save, a creature takes 2d10 Radiant damage, and if the creature is shape-shifted (as a result of the Polymorph spell, for example), it reverts to its true form and can’t shape-shift until it leaves the Cylinder. On a successful save, a creature takes half as much damage only. A creature also makes this save when the spell’s area moves into its space and when it enters the spell’s area or ends its turn there. A creature makes this save only once per turn."
+    ],
+    "higher_level": [
+      "The damage increases by 1d10 for each spell slot level above 2."
+    ],
+    "range": "120 feet",
+    "components": ["V", "S", "M"],
+    "material": "A moonseed leaf",
+    "ritual": false,
+    "duration": "Up to 1 minute",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 2,
+    "damage": {
+      "damage_type": {
+        "index": "radiant",
+        "name": "Radiant",
+        "url": "/api/2014/damage-types/radiant"
+      },
+      "damage_at_slot_level": {
+        "2": "2d10",
+        "3": "3d10",
+        "4": "4d10",
+        "5": "5d10",
+        "6": "6d10",
+        "7": "7d10",
+        "8": "8d10",
+        "9": "9d10"
+      }
+    },
+    "dc": {
+      "dc_type": {
+        "index": "con",
+        "name": "CON",
+        "url": "/api/2014/ability-scores/con"
+      },
+      "dc_success": "half"
+    },
+    "area_of_effect": {
+      "type": "cylinder",
+      "size": 5
+    },
+    "school": {
+      "index": "evocation",
+      "name": "Evocation",
+      "url": "/api/2014/magic-schools/evocation"
+    },
+    "classes": [
+      {
+        "index": "druid",
+        "name": "Druid",
+        "url": "/api/2014/classes/druid"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "/api/2014/spells/moonbeam"
+  },
+  {
+    "index": "witch-bolt",
+    "name": "Witch Bolt",
+    "desc": [
+      "A beam of crackling energy lances toward a creature within range, forming a sustained arc of lightning between you and the target. Make a ranged spell attack against it. On a hit, the target takes 2d12 Lightning damage.",
+      "On each of your subsequent turns, you can take a Bonus Action to deal 1d12 Lightning damage to the target automatically, even if the first attack missed.",
+      "The spell ends if the target is ever outside the spell’s range or if it has Total Cover from you."
+    ],
+    "higher_level": [
+      "The initial damage increases by 1d12 for each spell slot level above 1."
+    ],
+    "range": "60 feet",
+    "components": [ "V", "S", "M" ],
+    "material": "A twig struck by lightning",
+    "ritual": false,
+    "duration": "Concentration, up to 1 minute",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 1,
+    "attack_type": "ranged",
+    "damage": {
+      "damage_type": {
+        "index": "lightning",
+        "name": "Lightning",
+        "url": "/api/2014/damage-types/lightning"
+      },
+      "damage_at_slot_level": {
+        "1": "1d12",
+        "2": "2d12",
+        "3": "3d12",
+        "4": "4d12",
+        "5": "5d12",
+        "6": "6d12",
+        "7": "7d12",
+        "8": "8d12",
+        "9": "9d12"
+      }
+    },
+    "school": {
+      "index": "evocation",
+      "name": "Evocation",
+      "url": "/api/2014/magic-schools/evocation"
+    },
+    "classes": [
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "warlock",
+        "name": "Warlock",
+        "url": "/api/2014/classes/warlock"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "url": "https://www.dndbeyond.com/spells/2619215-witch-bolt",
+    "updated_at": "2025-04-18T00:00:00.000Z"
+  },
+  {
+    "index": "blink",
+    "name": "Blink",
+    "desc": [
+      "Roll 1d6 at the end of each of your turns for the duration. On a roll of 4–6, you vanish from your current plane of existence and appear in the Ethereal Plane (the spell ends instantly if you are already on that plane). While on the Ethereal Plane, you can perceive the plane you left, which is cast in shades of gray, but you can’t see anything there more than 60 feet away. You can affect and be affected only by other creatures on the Ethereal Plane, and creatures on the other plane can’t perceive you unless they have a special ability that lets them perceive things on the Ethereal Plane.",
+      "You return to the other plane at the start of your next turn and when the spell ends if you are on the Ethereal Plane. You return to an unoccupied space of your choice that you can see within 10 feet of the space you left. If no unoccupied space is available within that range, you appear in the nearest unoccupied space."
+    ],
+    "range": "Self",
+    "components": ["V", "S"],
+    "ritual": false,
+    "duration": "1 minute",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 3,
+    "school": {
+      "index": "transmutation",
+      "name": "Transmutation",
+      "url": "/api/2014/magic-schools/transmutation"
+    },
+    "classes": [
+      {
+        "index": "artificer",
+        "name": "Artificer",
+        "url": "/api/2014/classes/artificer"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "/api/2014/spells/blink"
+  },
+  {
+    "index": "sleep",
+    "name": "Sleep",
+    "desc": [
+      "Each creature of your choice in a 5-foot-radius Sphere centered on a point within range must succeed on a Wisdom saving throw or have the Incapacitated condition until the end of its next turn, at which point it must repeat the save. If the target fails the second save, the target has the Unconscious condition for the duration. The spell ends on a target if it takes damage or someone within 5 feet of it takes an action to shake it out of the spell’s effect.",
+      "Creatures that don’t sleep, such as elves, or that have Immunity to the Exhaustion condition automatically succeed on saves against this spell."
+    ],
+    "range": "60 feet",
+    "components": [ "V", "S", "M" ],
+    "material": "A pinch of sand or rose petals",
+    "ritual": false,
+    "duration": "1 minute",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 1,
+    "dc": {
+      "dc_type": {
+        "index": "wis",
+        "name": "WIS",
+        "url": "/api/2014/ability-scores/wis"
+      },
+      "dc_success": "negate"
+    },
+    "area_of_effect": {
+      "type": "sphere",
+      "size": 5
+    },
+    "school": {
+      "index": "enchantment",
+      "name": "Enchantment",
+      "url": "/api/2014/magic-schools/enchantment"
+    },
+    "classes": [
+      {
+        "index": "bard",
+        "name": "Bard",
+        "url": "/api/2014/classes/bard"
+      },
+      {
+        "index": "sorcerer",
+        "name": "Sorcerer",
+        "url": "/api/2014/classes/sorcerer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "/api/2014/spells/sleep"
+  },
+  {
+    "index": "arcane-lock",
+    "name": "Arcane Lock",
+    "desc": [
+      "You touch a closed door, window, gate, container, or hatch and magically lock it for the duration. This lock can’t be unlocked by any nonmagical means. You and any creatures you designate when you cast the spell can open and close the object despite the lock. You can also set a password that, when spoken within 5 feet of the object, unlocks it for 1 minute."
+    ],
+    "range": "Touch",
+    "components": [ "V", "S", "M" ],
+    "material": "Gold dust worth 25+ gp, which the spell consumes",
+    "ritual": false,
+    "duration": "Until dispelled",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 2,
+    "school": {
+      "index": "abjuration",
+      "name": "Abjuration",
+      "url": "/api/2014/magic-schools/abjuration"
+    },
+    "classes": [
+      {
+        "index": "artificer",
+        "name": "Artificer",
+        "url": "/api/2014/classes/artificer"
+      },
+      {
+        "index": "wizard",
+        "name": "Wizard",
+        "url": "/api/2014/classes/wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore",
+        "url": "/api/2014/subclasses/lore"
+      }
+    ],
+    "url": "/api/2014/spells/arcane-lock"
   }
 ]
