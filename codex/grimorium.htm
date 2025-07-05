@@ -24,14 +24,720 @@
 <header id="header"></header>
 
 <div id="controls" class="controls">
-  <div id="controls-header" class="controls-header">☰ Controls</div>
-  <div id="controls-toolbar" class="controls-toolbar"></div>
+  <div id="controls-header" class="controls-header">☰ Controls <button class="btn btn-sm btn-toggle" id="toggle-controls" onclick="$('#controls-body').toggle();"><i class="bi bi-dash-square"></i></button></div>
+  <div id="controls-body">
+    <div id="controls-toolbar" class="controls-toolbar"></div>
+
+    <div class="form-group" id="controls-starting-sp">
+      <label for="starting-sp">Starting Spell Points:</label>
+      <input type="number" class="form-control" id="starting-sp" value="0" min="0" onchange="updateTotalSP()">
+    </div>
+    <div class="form-group" id="controls-creator-class">
+      <label for="creator-class">Creator Class:</label>
+      <select id="creator-class" class="form-control" onchange="updateClassFeatureFilter()"></select>
+    </div>
+    <fieldset>
+      <legend><b>Unlocked Sections</b></legend>
+      <label><input type="checkbox" id="unlock-components" onclick="$('#components-section').toggle(this.checked)"> Components</label><br />
+      <label><input type="checkbox" id="unlock-damage" onclick="$('#damage-section').toggle(this.checked)"> Damage / Healing</label><br />
+      <label><input type="checkbox" id="unlock-duration" onclick="$('#duration-section').toggle(this.checked)"> Duration / Casting Time</label><br />
+      <label><input type="checkbox" id="unlock-targeting" onclick="$('#targeting-section').toggle(this.checked)"> Targeting / Range / Area</label><br />
+      <label><input type="checkbox" id="unlock-features" onclick="$('#features-section').toggle(this.checked)"> Other Features</label>
+    </fieldset>
+  </div>
 </div>
 
-<div id="container" class="container" contenteditable="true">
+<div id="panel" class="panel">
+  <div id="panel-header" class="panel-header">Spell Points</div>
+  <div id="panel-body">
+    <div class="sp-item"><b>Starting:</b> <span id="base-cost">0</span> SP</div>
+    <div class="sp-item"><b>Gained:</b> <span id="gained-sp">0</span> SP</div>
+    <div class="sp-item"><b>Spent:</b> <span id="spent-sp">0</span> SP</div>
+    <div class="sp-item"><b>Total:</b> <span id="total-sp">0</span> SP</div>
+  </div>
+</div>
+
+<div id="container" class="container">
+  <section>
+    <div class="form-row-inline" id="controls-spell-name">
+      <label for="spell-name">Spell Name:</label>
+      <input type="text" id="spell-name" class="form-control">
+    </div>
+    <div class="form-group-horizontal" id="controls-spell-level-school">
+      <label for="spell-level">Level and School:</label>
+      <div class="form-row">
+        <select id="spell-level" class="form-control" onchange="updateLevelCost();updateDamageDisplay()"></select>
+        <select id="spell-school" class="form-control"></select>
+      </div>
+    </div>
+    <div class="form-row-inline" id="controls-spell-name">
+      <label for="spell-description">Description:</label>
+      <textarea id="spell-description" class="form-control" style="height: 80px; font-size: 0.9em;"></textarea>
+    </div>
+  </section>
+  <div id="components-section" class="unlockable-section">
+    <p class="section-short">Components</p>
+    <div class="form-check-row">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="component-material" onchange="updateMaterialControls(this)"> Material<br />
+      </div>
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="component-somatic" onchange="updateSP(this, 1, 'somatic')"> Somatic (+1 SP)<br />
+      </div>
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="component-verbal" onchange="updateSP(this, 1, 'verbal')"> Verbal (+1 SP)
+      </div>
+    </div>
+    <div class="form-row-inline">
+      <select id="component-material-select" class="form-control" onchange="updateMaterialSP()" style="width: 200px;"></select>
+      <input type="text" id="component-material-text" class="form-control" placeholder="e.g. diamond dust, incense..." style="width: 300px;" />
+      <label for="component-material-consumed"><input type="checkbox" id="component-material-consumed" onchange="updateMaterialSP()"> Consumed on use (double SP gain)</label>
+    </div>
+  </div>
+  <div id="damage-section" class="unlockable-section">
+    <p class="section-short"><span id="damage-label">Damage</span>: <select id="damage-dice-select" class="form-control" onchange="updateDamageDice()"><option value="">—</option></select></p>
+    <div class="form-row-inline">
+      <label for="damage-type">Damage Type:</label>
+      <select id="damage-type" class="form-control" onchange="updateSP(this, damageTypes, 'damageType')"></select>
+      <label for="is-healing"><input type="checkbox" id="is-healing" onchange="toggleHealingMode()"> Healing Spell</label>
+    </div>
+    <div class="form-row-inline">
+      <label for="damage-save-effect">Save Effect and Stat:</label>
+      <select id="damage-save-effect" class="form-control" onchange="updateSaveControls(this);"></select>
+      <select id="damage-save-stat" class="form-control"></select>
+    </div>
+  </div>
+  <div id="duration-section" class="unlockable-section">
+    <p class="section-short">Duration / Casting Time</p>
+    <div class="form-row-inline">
+      <label for="spell-duration">Duration</label>
+      <select id="spell-duration" class="form-control" onchange="updateDurationSP()"></select>
+      <label for="duration-concentration"><input type="checkbox" id="duration-concentration" onchange="updateDurationSP()"> Requires Concentration (+2 SP)</label>
+    </div>
+    <div class="form-row-inline">
+      <label for="spell-casting-time">Casting Time:</label>
+      <select id="spell-casting-time" class="form-control" onchange="updateSP(this, castingTimes, 'castingTime')"></select>
+    </div>
+  </div>
+  <div id="targeting-section" class="unlockable-section">
+    <p class="section-short">Targeting / Range / Area</p>
+    <div class="form-row-inline">
+      <label for="spell-target-type">Target Type:</label>
+      <select id="spell-target-type" class="form-control" onchange="updateTargetSP();updateDamageDisplay()"></select>
+      <div id="multi-targets-wrapper" style="display:none;">
+        <label for="multi-count">Number of Targets:</label>
+        <input type="number" id="multi-count" min="2" max="20" value="2" onchange="updateTargetSP()">
+      </div>
+    </div>
+    <div class="form-row-inline">
+      <label for="spell-range">Range:</label>
+      <select id="spell-range" class="form-control" onchange="updateSP(this, ranges, 'range')"></select>
+    </div>
+    <div class="form-row-inline">
+      <label for="spell-area">Area of Effect:</label>
+      <select id="spell-area" class="form-control" onchange="updateSP(this, areas, 'area')"></select>
+    </div>
+  </div>
+  <div id="features-section" class="unlockable-section">
+    <fieldset class="feature-grid">
+      <legend>Other Features</legend>
+      <!-- checkboxes inserted dynamically -->
+    </fieldset>
+  </div>
 </div>
 
 <script type="text/javascript">
+  const allDice = [ "1d4", "2d4", "3d4", "4d4", "5d4", "6d4", "7d4", "8d4", "9d4", "10d4", "1d6", "2d6", "3d6", "4d6", "5d6", "6d6", "7d6", "8d6", "9d6", "10d6", "1d8", "2d8", "3d8", "4d8", "5d8", "6d8", "7d8", "8d8", "9d8", "10d8", "1d10", "2d10", "3d10", "4d10", "5d10", "6d10", "7d10", "8d10", "9d10", "10d10", "1d12", "2d12", "3d12", "4d12", "5d12", "6d12", "7d12", "8d12", "9d12", "10d12" ];
+  const spellLevels = [...Array(10).keys()];
+  const spellSchools = [ "Abjuration", "Conjuration", "Divination", "Enchantment", "Evocation", "Illusion", "Necromancy", "Transmutation" ];
+  const castingClasses = [ "Wizard", "Warlock", "Sorcerer", "Cleric", "Druid", "Bard", "Paladin", "Ranger", "Artificer" ];
+  const materialComponents = [
+    { value: "10", label: "<= 10 gp (+1 SP)", sp: 1 },
+    { value: "100", label: "<= 100 gp (+2 SP)", sp: 2 },
+    { value: "1000", label: "<= 1,000 gp (+3 SP)", sp: 3 },
+    { value: "10000", label: "<= 10,000 gp (+4 SP)", sp: 4 }
+  ];
+  const saveStats = [
+    { value: "str", label: "Strength" },
+    { value: "dex", label: "Dexterity" },
+    { value: "con", label: "Constitution" },
+    { value: "int", label: "Intelligence" },
+    { value: "wis", label: "Wisdom" },
+    { value: "cha", label: "Charisma" }
+  ];
+  const damageTypes = [
+    { value: "acid", label: "Acid" },
+    { value: "cold", label: "Cold" },
+    { value: "fire", label: "Fire" },
+    { value: "force", label: "Force (-1 SP)", sp: -1 },
+    { value: "lightning", label: "Lightning" },
+    { value: "necrotic", label: "Necrotic" },
+    { value: "psychic", label: "Psychic" },
+    { value: "radiant", label: "Radiant" },
+    { value: "thunder", label: "Thunder" }
+  ];
+  const damageSaveEffects = [
+    { value: "half", label: "Save halves damage" },
+    { value: "negates", label: "Save negates damage (-2 SP)", sp: -2 },
+    { value: "none", label: "No save (-4 SP)", sp: -4 }
+  ]
+  const durations = [
+    { value: "instantaneous", label: "Instantaneous" },
+    { value: "1 round", label: "1 round (-1 SP)", sp: -1 },
+    { value: "1 minute", label: "1 minute (-2 SP)", sp: -2 },
+    { value: "10 minutes", label: "10 minutes (-3 SP)", sp: -3 },
+    { value: "1 hour", label: "1 hour (-4 SP)", sp: -4 },
+    { value: "8 hours", label: "8 hours (-5 SP)", sp: -5 },
+    { value: "24 hours", label: "24 hours (-6 SP)", sp: -6 }
+  ];
+  const castingTimes = [
+    { value: "1 action", label: "1 Action", sp: 0 },
+    { value: "1 bonus action", label: "1 Bonus Action (-3 SP)", sp: -3 },
+    { value: "1 reaction", label: "1 Reaction (-1 SP)", sp: -1 },
+    { value: "1 minute", label: "1 Minute (+1 SP)", sp: 1 },
+    { value: "10 minutes", label: "10 Minutes (+2 SP)", sp: 2 },
+    { value: "1 hour", label: "1 to 8 Hours (+3 SP)", sp: 3 },
+    { value: "12 hours", label: "12 to 24 Hours (+4 SP)", sp: 4 }
+  ];
+  const targetTypes = [
+    { value: "self", label: "Self", sp: 0 },
+    { value: "object", label: "Objects (-1 SP)", sp: -1 },
+    { value: "single", label: "Single Target (-1 SP)", sp: -1 },
+    { value: "any", label: "Any Targets in Range (-2 SP)", sp: -2 },
+    { value: "multi", label: "Multiple Visible Targets (-2 SP)", sp: -2 }
+  ];
+  const ranges = [
+    { value: "self", label: "Self", sp: 0 },
+    { value: "touch", label: "Touch / 5 ft (+2 SP)", sp: 2 },
+    { value: "30 feet", label: "≤ 30 ft", sp: 0 },
+    { value: "60 feet", label: "≤ 60 ft (-1 SP)", sp: -1 },
+    { value: "120 feet", label: "≤ 120 ft (-2 SP)", sp: -2 },
+    { value: "300 feet", label: "≤ 300 ft (-3 SP)", sp: -3 },
+    { value: "1/4 mile", label: "≤ 1/4 mile (-4 SP)", sp: -4 },
+    { value: "1/2 mile", label: "≤ 1/2 mile (-5 SP)", sp: -5 }
+  ];
+  const areas = [
+    { value: "none", label: "None: Targeted Spell", sp: 0 },
+    { value: "small", label: "Small: 5-ft radius or 10-ft line", sp: 0 },
+    { value: "medium", label: "Medium: 15-ft cone or 10-ft radius (-1 SP)", sp: -1 },
+    { value: "large", label: "Large: 30-ft cone or 20-ft radius (-2 SP)", sp: -2 },
+    { value: "huge", label: "Huge: 60-ft cone or 40-ft radius (-3 SP)", sp: -3 }
+  ];
+  const otherFeatures = [
+    { value: "ritual",			label: "Ritual (-1 SP)",				sp: -1,	 tags: ["ritual"] },
+    { value: "set-fire",		label: "Sets or extinguishes fire (-1 SP)",		sp: -1,	 tags: ["utility", "elemental", "fire"] },
+    { value: "obscure-light",		label: "Lightly obscures area (-1 SP)",			sp: -1,	 tags: ["utility", "obscurement"],  desc: "The effected area becomes lightly obscured for the duration." },
+    { value: "difficult-terrain",	label: "Difficult terrain (-1 SP)",			sp: -1,	 tags: ["control", "terrain", "movement"],  desc: "The effected area becomes difficult terrain for the duration." },
+    { value: "illusion-simple",		label: "Simple illusion or disguise (-1 SP)",		sp: -1,	 tags: ["utility", "illusion"] },
+    { value: "dispels-gas",		label: "Dispels gas or vapors (-1 SP)",			sp: -1,	 tags: ["utility", "cleansing", "environment"],  desc: "Any gas or vapor in the effected area is dispelled." },
+    { value: "rolling-effect",		label: "Effect rolls each turn (-1 SP)",		sp: -1,	 tags: ["utility", "environment", "movement"] },
+    { value: "move-action",		label: "Movable with action (-2 SP)",			sp: -2,	 tags: ["utility", "movement"],  desc: "The spell's effect can be moved within range as an action." },
+    { value: "obscure-heavy",		label: "Heavily obscures area (-2 SP)",			sp: -2,  tags: ["control", "obscurement"],  desc: "The effected area becomes heavily obscured for the duration." },
+    { value: "grant-adv",		label: "Grants advantage on next attack (-2 SP)",	sp: -2,	 tags: ["buff", "debuff", "combat"],  desc: "The next attack made on the target is made with advantage." },
+    { value: "grant-disadv",		label: "Grants disadvantage on next attack (-2 SP)",	sp: -2,	 tags: ["debuff", "combat"],  desc: "The next attack made on the target is made at disadvantage." },
+    { value: "buff-1d4",		label: "+1d4 to attacks and saves (-2 SP)",		sp: -2,	 tags: ["buff", "combat"],  desc: "Any creatures affected by the spell add 1d4 to their attacks and saves for the duration." },
+    { value: "knock-prone",		label: "Knocks prone (-2 SP)",				sp: -2,	 tags: ["status", "control", "prone"],  desc: "Any creatures affected are knocked prone." },
+    { value: "lose-concentration",	label: "Lose concentration (-2 SP)",			sp: -2,	 tags: ["disruption", "control"],  desc: "Any creatures affected lose concentration." },
+    { value: "save-ends",		label: "Effect ends on successful save (-2 SP)",	sp: -2,	 tags: ["conditional", "duration"] },
+    { value: "grappled",		label: "Inflicts grappled (-2 SP)",			sp: -2,	 tags: ["status", "grappled"],  desc: "Any creatures affected are grappled for the duration, unless they break free with a successful save." },
+    { value: "frightened",		label: "Inflicts frightened (1 round) (-2 SP)",		sp: -2,	 tags: ["status", "frightened"],  desc: "Any affected creatures gain the frightened condition for 1 round." },
+    { value: "illusion-advanced",	label: "Adjustable illusion (-3 SP)",			sp: -3,	 tags: ["illusion", "advanced"] },
+    { value: "move-bonus",		label: "Movable with bonus action (-3 SP)",		sp: -3,	 tags: ["utility", "movement"],  desc: "The spell's effect can be moved within range as a bonus action." },
+    { value: "persistent-effect",	label: "Effect lasts full duration (-3 SP)",		sp: -3,	 tags: ["duration", "persistent"],  desc: "The effect cannot be dispelled and lasts for the duration." },
+    { value: "restrained",		label: "Inflicts restrained (-4 SP)",			sp: -4,	 tags: ["status", "restrained"],  desc: "Any affected creatures gain the restrained condition." },
+    { value: "poisoned",		label: "Inflicts poisoned (-4 SP)",			sp: -4,	 tags: ["status", "poisoned"],  desc: "Any affected creatures gain the poisoned condition." },
+    { value: "frightened-persistent",	label: "Inflicts persistent frightened (-4 SP)",	sp: -4,	 tags: ["status", "frightened"],  desc: "Any affected creatures gain the frightened condition until dispelled." },
+    { value: "stunned",			label: "Inflicts stunned (-8 SP)",			sp: -8,	 tags: ["status", "stunned"],  desc: "Any affected creatures gain the stunned condition." },
+    { value: "paralyzed",		label: "Inflicts paralyzed (-8 SP)",			sp: -8,	 tags: ["status", "paralyzed"],  desc: "Any affected creatures gain the paralyzed condition." },
+    { value: "incapacitated",		label: "Inflicts incapacitated (-8 SP)",		sp: -8,	 tags: ["status", "incapacitated"],  desc: "Any affected creatures are incapacitated." },
+    { value: "petrified",		label: "Inflicts petrified (-10 SP)",			sp: -10, tags: ["status", "petrified"],  desc: "Any affected creatures are petrified." },
+    { value: "unconscious",		label: "Inflicts unconscious (-10 SP)",			sp: -10, tags: ["status", "unconscious"],  desc: "Any affected creatures fall unconscious." },
+    { value: "revive",			label: "Revives from death (-16 SP)",			sp: -16, tags: ["healing", "revival", "divine"],  desc: "Any creatures targeted by the spell are revived from death." }
+  ];
+  const classTagLimits = {
+    wizard:	[ "illusion", "utility", "control", "movement", "fire", "status", "buff", "combat", "elemental", "duration", "disruption", "ritual" ],
+    sorcerer:	[ "elemental", "fire", "lightning", "cold", "status", "control", "combat", "buff", "utility", "illusion", "ritual" ],
+    warlock:	[ "control", "status", "debuff", "dark", "curse", "buff", "illusion", "persistent", "duration", "ritual" ],
+    cleric:	[ "healing", "revival", "divine", "status", "buff", "utility", "light", "protection", "ritual" ],
+    druid:	[ "healing", "revival", "divine", "nature", "terrain", "utility", "control", "movement", "poisoned", "ritual" ],
+    paladin:	[ "healing", "divine", "buff", "combat", "status", "revival", "protection", "aura", "ritual" ],
+    bard:	[ "buff", "debuff", "illusion", "charm", "control", "healing", "utility", "status", "combat", "ritual" ],
+    ranger:	[ "utility", "movement", "terrain", "poisoned", "nature", "buff", "control", "combat", "ritual" ],
+    artificer:	[ "utility", "healing", "buff", "control", "disruption", "status", "construct", "restoration", "tech", "warding", "elemental", "ritual" ]
+  };
+  const spellDescTemplates = {
+    fire: [
+      "A surge of searing flames erupts from your hand, scorching everything in a {area}.",
+      "The air ripples with heat as fire bursts outward in a controlled blaze."
+    ],
+    healing: [
+      "Restorative energy knits wounds and mends flesh in an instant.",
+      "Golden light flows into the target, stitching their injuries with divine warmth."
+    ],
+    buff: [
+      "Arcane strength empowers your allies, enhancing their precision and resolve.",
+      "A surge of magic reinforces the target’s defenses and sharpens their senses."
+    ],
+    control: [
+      "Twisting forces seize the battlefield, redirecting enemy movement and action.",
+      "The terrain shifts at your will, confounding your enemies."
+    ],
+    utility: [
+      "You manipulate the environment subtly — adjusting light, terrain, or momentum.",
+      "A helpful magical effect takes shape to solve a temporary challenge."
+    ],
+    fear: [
+      "A shadow passes over the minds of your foes, driving fear into their hearts.",
+      "Unseen whispers ripple through the air, unraveling courage."
+    ]
+  };
+  const lastSP = {
+    level: 0,
+    duration: 0,
+    concentration: 0,
+    castingTime: 0,
+    damageDice: 0,
+    damageType: 0,
+    damageSave: 0,
+    material: 0,
+    verbal: 0,
+    somatic: 0,
+    target: 0,
+    range: 0,
+    area: 0,
+    multiCount: 0
+  };
+  let baseSP = 0;       // From input
+  let gainedSP = 0;     // From flaws/bonuses
+  let spentSP = 0;      // From spell features
+  let currentSpell = {};
+
+  function populateFeatureGrid( allowedTags = null ) {
+    const container = document.querySelector(".feature-grid");
+    container.innerHTML = "";
+    otherFeatures.forEach( f => {
+      // Skip if none of the feature's tags are allowed
+      if ( allowedTags && !f.tags.some(tag => allowedTags.includes(tag)) ) return;
+
+      const id = `feature-${f.value}`;
+      const label = document.createElement("label");
+      label.setAttribute("for", id);
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = id;
+      checkbox.onchange = function () { updateSP(this, f.sp, f.value); };
+
+      label.appendChild(checkbox);
+      label.append(f.label);
+      container.appendChild(label);
+   });
+  };
+
+  function toggleHealingMode() {
+    const isHealing = document.getElementById("is-healing").checked;
+    const saveEffect = document.getElementById("damage-save-effect");
+    const saveStat = document.getElementById("damage-save-stat");
+    const damageLabel = document.getElementById("damage-label");
+    const damageType = document.getElementById("damage-type");
+
+    damageLabel.textContent = isHealing ? "Healing" : "Damage";
+    damageType.disabled = isHealing;
+    saveEffect.disabled = isHealing;
+    saveStat.disabled = isHealing;
+
+    if ( isHealing ) {  // If healing, set Save Effect to "none" and remove SP label
+      saveEffect.value = "none";
+      if ( lastSP.damageSave ) {
+        unspendSpellPoints(Math.abs(lastSP.damageSave));
+       lastSP.damageSave = 0;
+      } 
+      if ( lastSP.damageType ) {
+        loseSpellPoints(lastSP.damageType);
+        lastSP.damageType = 0;
+      }
+      // Update displayed label to remove "(-4 SP)"
+      var noneOption = [...saveEffect.options].find(opt => opt.value === "none");
+      if ( noneOption ) noneOption.textContent = "No Save";
+    } else {
+      // Re-enable SP tracking and restore original label with SP note
+      updateSP(damageType, damageTypes, "damageType");
+      updateSP(saveEffect, damageSaveEffects, "damageSave");
+      var noneOption = [...saveEffect.options].find(opt => opt.value === "none");
+      if ( noneOption ) noneOption.textContent = "No Save (-4 SP)";
+    }
+    updateDamageDisplay();
+  };
+
+  function updateClassFeatureFilter() {
+    const classValue = document.getElementById("creator-class").value.toLowerCase();
+    const allowedTags = classTagLimits[classValue] || [];
+    populateFeatureGrid(allowedTags);
+  };
+
+  function updateSP( el, config, key ) {
+    if ( !el ) return;
+    const type = el.type;
+    let sp = 0;
+    if ( lastSP[key] ) {  // Remove previous SP effect
+      if ( lastSP[key] < 0 ) unspendSpellPoints(Math.abs(lastSP[key]));
+      else loseSpellPoints(lastSP[key]);
+    }
+    if ( type === "checkbox" && typeof config === "number" ) {
+      sp = el.checked ? config : 0;
+    } else if ( type === "select-one" && Array.isArray(config) ) {
+      const value = el.value;
+      const match = config.find(opt => opt.value === value);
+      sp = match?.sp ?? 0;
+    }
+    if ( sp < 0 ) spendSpellPoints(Math.abs(sp));
+    else if ( sp > 0 ) gainSpellPoints(sp);
+    lastSP[key] = sp;
+    updateCurrentSpell();
+  };
+
+  function updateMaterialControls( el ) {
+    updateSP(el, 1, 'material');
+    $('[id^="component-material-"]').prop('disabled', !el.checked);
+  };
+
+  function updateSaveControls( el ) {
+    updateSP(el, damageSaveEffects, 'damageSave');
+    $('[id^="damage-save-stat"]').prop('disabled', el.value == 'none');
+    updateDamageDisplay();
+  };
+
+  function updateLevelCost() {
+    if ( lastSP.level ) unspendSpellPoints(lastSP.level);
+    const level = parseInt(document.getElementById("spell-level").value) || 0;
+    const cost = 1 + (level * 2);
+    spendSpellPoints(cost);
+    lastSP.level = cost;
+    updateDamageDice();
+  };
+
+  function updateMaterialSP() {
+    if ( lastSP.material > 0 ) loseSpellPoints(lastSP.material);
+    lastSP.material = 0;
+    const used = document.getElementById("component-material").checked;
+    const cost = document.getElementById("component-material-select").value;
+    const consumed = document.getElementById("component-material-consumed").checked;
+    if ( !used || cost === "none" ) return;
+    const entry = materialComponents.find(opt => opt.value === cost);
+    let sp = entry?.sp ?? 0;
+    if ( consumed ) sp *= 2;
+    if ( sp > 0 ) {
+      gainSpellPoints(sp);
+      lastSP.material = sp;
+    }
+    updateCurrentSpell();
+  };
+
+  function updateDurationSP() {
+    updateSP(document.getElementById("spell-duration"), durations, "duration");
+
+    // Handle Concentration toggle separately
+    if ( lastSP.concentration ) unspendSpellPoints(lastSP.concentration);
+
+    const checked = document.getElementById("duration-concentration").checked;
+    if ( checked ) {
+      spendSpellPoints(2);
+      lastSP.concentration = 2;
+    } else {
+      lastSP.concentration = 0;
+    }
+    updateCurrentSpell();
+  };
+
+  function updateTargetSP() {
+    if ( lastSP.target ) unspendSpellPoints(Math.abs(lastSP.target));
+    if ( lastSP.multiCount ) unspendSpellPoints(lastSP.multiCount);
+    const type = document.getElementById("spell-target-type").value;
+    const entry = targetTypes.find(t => t.value === type);
+    let baseSP = entry?.sp ?? 0;
+    let extraSP = 0;
+    if ( type === "multi" ) {    // Handle multi-target bonus cost
+      document.getElementById("multi-targets-wrapper").style.display = "block";
+      const count = parseInt(document.getElementById("multi-count").value) || 2;
+      extraSP = count;
+      spendSpellPoints(extraSP);
+      lastSP.multiCount = extraSP;
+    } else {
+      document.getElementById("multi-targets-wrapper").style.display = "none";
+      lastSP.multiCount = 0;
+    }
+    if ( baseSP < 0 ) spendSpellPoints(Math.abs(baseSP));
+    else if ( baseSP > 0 ) gainSpellPoints(baseSP);
+    lastSP.target = baseSP;
+    updateCurrentSpell();
+  };
+
+  function updateDamageDice() {
+    const select = document.getElementById("damage-dice-select");
+    const selected = select.selectedOptions[0];
+    if ( !selected ) return;
+    const sp = parseInt(selected.dataset.sp || "0");
+    if ( lastSP.damageDice ) {
+      if ( lastSP.damageDice < 0 ) unspendSpellPoints(-lastSP.damageDice);
+      else if ( lastSP.damageDice > 0 ) loseSpellPoints(lastSP.damageDice);
+    }
+    if ( sp < 0 ) spendSpellPoints(-sp);
+    else if ( sp > 0 ) gainSpellPoints(sp);
+    lastSP.damageDice = sp;
+    updateCurrentSpell();
+  };
+
+  function updateDamageDisplay() {
+    const level = document.getElementById("spell-level").value;
+    const save = document.getElementById("damage-save-effect").value;
+    const targeting = document.getElementById("spell-target-type").value;
+    const isHealing = document.getElementById("is-healing").checked;
+    const mode = (targeting === "multi" || targeting === "any") ? "multi" : "single";
+    const tableDice = spell_damage?.level?.save?.mode;
+    const hasTableDice = !!tableDice;
+    const baseDice = tableDice || "1d4";
+    const select = document.getElementById("damage-dice-select");
+
+    select.innerHTML = "";
+    const baseAvg = getDiceAverage(baseDice);
+    const similar = getSimilarDice(baseDice, allDice);
+    const allOptions = hasTableDice ? [baseDice, ...similar.filter(d => d !== baseDice)] : [...similar];
+    const optionsMap = new Map();
+    const scaledSteps = [
+      { multiplier: 0.75, cost: 1 },   // downscale = gain 1 SP
+      { multiplier: 1.25, cost: -1 },  // upscale = spend 1 SP
+      { multiplier: 1.5, cost: -2 }    // further upscale = spend 2 SP
+    ];
+
+    if ( hasTableDice ) {  // Add recommended base option if available
+      optionsMap.set(baseDice, { dice: baseDice, label: `${baseDice} (avg ${getDiceAverage(baseDice)})`, sp: 0, recommended: true });
+    }
+
+    allOptions.forEach(dice => {    // Add scaled alternatives
+      const avg = getDiceAverage(dice);
+      scaledSteps.forEach(({ multiplier, cost }) => {
+        const scaledAvg = baseAvg * multiplier;
+        const match = allDice.find(d => {
+          const matchAvg = getDiceAverage(d);
+          return Math.abs(matchAvg - scaledAvg) <= 0.5 && d !== baseDice;
+        });
+        if (match && !optionsMap.has(match)) {
+          const label = `${match} (avg ${getDiceAverage(match)}, ${cost < 0 ? `-${Math.abs(cost)} SP` : `+${cost} SP`})`;
+          optionsMap.set(match, { dice: match, label, sp: cost, recommended: false });
+        }
+      });
+    });
+    const sortedOptions = Array.from(optionsMap.values()).sort((a, b) => {
+      if ( a.recommended ) return -1;
+      if ( b.recommended ) return 1;
+      return a.sp - b.sp;
+    });
+    if ( !hasTableDice ) {
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "—";
+      placeholder.selected = true;
+      select.appendChild(placeholder);
+    }
+    sortedOptions.forEach(({ dice, label, sp }) => {
+      const opt = document.createElement("option");
+      opt.value = dice;
+      opt.textContent = label;
+      opt.dataset.sp = sp;
+      select.appendChild(opt);
+    });
+    if ( hasTableDice ) select.value = baseDice;
+  };
+
+  function updateTotalSP() {
+    baseSP = parseInt(document.getElementById("starting-sp").value) || 0;
+    const total = baseSP + gainedSP - spentSP;
+    document.getElementById("base-cost").textContent = baseSP;
+    document.getElementById("gained-sp").textContent = gainedSP;
+    document.getElementById("spent-sp").textContent = spentSP;
+    document.getElementById("total-sp").textContent = total;
+
+    const totalElem = document.getElementById("total-sp");
+    if ( total < 0 ) {
+      totalElem.textContent = `(-${Math.abs(total)})`;
+      totalElem.classList.add("sp-negative");
+    } else {
+      totalElem.textContent = total;
+      totalElem.classList.remove("sp-negative");
+    }
+  };
+
+  function spendSpellPoints(cost)   { spentSP += cost; updateTotalSP(); }
+  function gainSpellPoints(bonus)   { gainedSP += bonus; updateTotalSP(); }
+  function unspendSpellPoints(cost) { spentSP -= cost; if (spentSP < 0) spentSP = 0; updateTotalSP(); }
+  function loseSpellPoints(bonus)   { gainedSP -= bonus; if (gainedSP < 0) gainedSP = 0; updateTotalSP(); }
+
+
+  function generateSpellDescription( tags, spell ) {
+    const pool = [];
+    tags.forEach( tag => { if (spellDescTemplates[tag]) pool.push(...spellDescTemplates[tag]); });
+    const features = document.querySelectorAll('[id^=feature][type=checkbox]');
+    var primary = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : "A magical effect unfolds according to your will.";
+
+    for ( const f of features ) {
+      const feature = otherFeatures.find(opt => opt.value === f.id.replace('feature-',''));
+      if ( f.checked ) primary += ' ' + ( feature.desc || '' );
+    }
+
+    const effectLineParts = [];
+    if ( spell.target_type === "self" ) effectLineParts.push("targets the caster");
+    if ( spell.target_type === "object" ) effectLineParts.push("affects any objects in range");
+    if ( spell.target_type === "single" ) effectLineParts.push("targets a single creature");
+    if ( spell.target_type === "any" ) effectLineParts.push("affects any targets in range");
+    if ( spell.target_type === "multi" )  effectLineParts.push("affects multiple targets");
+    if ( spell.dc ) {
+      var effLine = '';
+      effLine = `requiring a ${spell.dc.dc_type.name.toUpperCase()} saving throw`;
+      if ( spell.dc.dc_success == 'half' ) effLine += ` (success halves damage)`;
+      if ( spell.dc.dc_success == 'negates' ) effLine += ` (success negates damage)`;
+      effectLineParts.push(effLine);
+    }
+    if ( spell.save ) effectLineParts.push(`requiring a ${spell.dc.dc_type.name.toUpperCase()} saving throw`);
+    if ( spell.duration && spell.duration.toLowerCase() !== "instant" ) effectLineParts.push(`lasting for ${spell.duration.toLowerCase()}`);
+    const effectLine = `This spell ${effectLineParts.join(", ")}.`;
+
+    return `${primary}\n\n${effectLine}`;
+  };
+
+  function splitDescriptionToArray(text) {
+    return text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+  };
+
+  function updateCurrentSpell() {
+    const name = document.getElementById("spell-name").value || "Custom Spell";
+    const index = slugify(name);
+    const level = parseInt(document.getElementById("spell-level").value) || 0;
+    const schoolValue = document.getElementById("spell-school").value.toLowerCase();
+    const cls = document.getElementById("creator-class").value.toLowerCase();
+    const isHealing = document.getElementById("is-healing").checked;
+    const dcSuccess = document.getElementById("damage-save-effect").value;
+    const dmgDice = document.getElementById("damage-dice-select").value;
+    const dmgType = isHealing ? "healing" : document.getElementById("damage-type").value.toLowerCase();
+    const tags = buildFeatureTags(isHealing);
+    const descLines = [];
+
+    $.each($('#spell-description').val().split(/\n/), function( i, line ) {  if ( line && line.length ) descLines.push(line); });
+
+    currentSpell = {
+      index,
+      name,
+      desc: descLines,
+      higher_level: [],
+      range: document.getElementById("spell-range").value || "30 feet",
+      components: [
+        ...(document.getElementById("component-verbal").checked ? ["V"] : []),
+        ...(document.getElementById("component-somatic").checked ? ["S"] : []),
+        ...(document.getElementById("component-material").checked ? ["M"] : [])
+      ],
+      ...(document.getElementById("component-material").checked && {
+        material: document.getElementById("component-material-text").value
+      }),
+      ritual: isFeatureChecked("ritual"),
+      duration: document.getElementById("spell-duration").value || "Instantaneous",
+      concentration: document.getElementById("duration-concentration").checked,
+      casting_time: document.getElementById("spell-casting-time").value || "1 action",
+      target_type: document.getElementById("spell-target-type").value,
+      level,
+      school: {
+        index: schoolValue,
+        name: capitalize(schoolValue),
+        url: `/api/2014/magic-schools/${schoolValue}`
+      },
+      classes: [{
+        index: cls,
+        name: capitalize(cls),
+        url: `/api/2014/classes/${cls}`
+      }],
+      subclasses: [],
+      ...( (!isHealing && dcSuccess != 'none') && {
+        dc: {
+          dc_type: {
+            name: capitalize(document.getElementById("damage-save-stat").value)
+          },
+          dc_success: dcSuccess
+        }
+      }),
+      ...( dmgDice != '' && {
+        damage: {
+          damage_type: {
+	    index: dmgType,
+            name: capitalize(dmgType)
+          },
+          damage_at_character_level: {
+	    1: dmgDice
+	  }
+        }
+      }),
+      ...(document.getElementById("spell-target-type").value === "single" && { attack_type: "ranged" }),
+      tags: tags
+    };
+    // Auto-generate description (TODO: some indicator that the description shouldn't be overwritten - maybe a checkbox that's auto checked if the text is manually changed?)
+    const descBox = document.getElementById("spell-description");
+    descBox.value = generateSpellDescription(tags, currentSpell);
+  };
+
+  function buildFeatureTags( isHealing ) {
+    const tags = [];
+    document.querySelectorAll(".feature-grid input[type='checkbox']").forEach(box => {
+      if ( box.checked ) {
+        const feature = otherFeatures.find(f => `feature-${f.value}` === box.id);
+        if (feature?.tags) {
+          feature.tags.forEach(tag => { if (!tags.includes(tag)) tags.push(tag); });
+        }
+      }
+    });
+    if ( isHealing ) tags.push("healing");
+    if ( document.getElementById("duration-concentration").checked ) tags.push("concentration");
+    return tags;
+  };
+
+  function isFeatureChecked( val ) {
+    return !!document.getElementById(`feature-${val}`)?.checked;
+  };
+
+  function generateSpell() {
+    updateCurrentSpell();
+    console.log(currentSpell);
+  };
+
+
+  function init() {
+    // populate initial data
+    populateSelect("spell-level", spellLevels);
+    populateSelect("spell-school", spellSchools);
+    populateSelect("creator-class", castingClasses);
+    populateSelect("component-material-select", materialComponents);
+    populateSelect("damage-type", damageTypes);
+    populateSelect("damage-save-effect", damageSaveEffects);
+    populateSelect("damage-save-stat", saveStats);
+    populateSelect("spell-duration", durations);
+    populateSelect("spell-casting-time", castingTimes);
+    populateSelect("spell-target-type", targetTypes);
+    populateSelect("spell-range", ranges);
+    populateSelect("spell-area", areas);
+    populateFeatureGrid();
+
+    toolbarAddButton('controls-toolbar', 'btn-generate', '<i class="bi bi-patch-check"></i>', { title: 'Generate Spell', class: 'btn-primary', onClick: () => generateSpell() });
+
+    // set initial spell points and damage based on level 0
+    updateLevelCost();
+    updateDamageDisplay();
+    updateClassFeatureFilter();
+
+    // initially disable the material components details, since the box is unchecked
+    $('[id^="component-material-"]').prop('disabled', true);
+  };
+
+  let spell_damage;
+  loadJSONFiles({
+    spell_damage: "data/spell_damage.json"
+  }).then(data => { ({ spell_damage } = data);
+    init();
+  }).catch(err => console.error("Failed to load JSON:", err));
 </script>
 
 </body>

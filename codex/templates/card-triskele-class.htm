@@ -1,0 +1,27 @@
+<!--
+@name: Triskele Class Card
+@size: tarot
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <div class="top">
+      <i class="bi bi-stars" style="font-size:14pt;"></i> &nbsp;&nbsp; <span class="section-large">{{name}}</span>
+      <p class="info"><span class="comma-list">{{#tags}}<span class="comma-item">{{.}}</span>{{/tags}}</span></p><br />
+      <p class="section">Passives:</p>
+      {{#passives}}<p><b>{{name}}:</b> {{description}}</p>{{/passives}}<br />
+      <p class="section">Actions:</p>
+      {{#actions}}<p><b>{{name}}:</b> {{description}}</p>{{/actions}}<br />
+      <p class="section">Advanced Action (10+ SP):</p>
+      {{#advanced}}<p><b>{{name}}:</b> {{description}}</p>{{/advanced}}<br />
+    </div>
+    <div class="bottom">
+      <p class="info">{{description}}</p>
+    </div>
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+      <p>1) Make note of and use the abilities provided (both passive and active).</p><br />
+      <p>2) Select one Skill Tag based on your class, optionally from the list above.</p>
+  </div>
+</div>

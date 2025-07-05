@@ -287,17 +287,25 @@ const passthrough_keys = {
 
   const updateProficiency = ( character, prof, level ) => {
     // Saving Throws
-    if ( prof.subType.includes('-saving-throws') ) {
-      character.proficiencies.saves.push(prof);
-      let save = getObjects(character.saves, 'name', prof.subType)[0];
-      save.mod += character.pb.value; save.str = updateStrVal(save.mod);
-      save.proficiency = level;
+    if ( prof.subType.includes('saving-throws') ) {
+      if ( prof.type == 'proficiency' ) {
+        character.proficiencies.saves.push(prof);
+        let save = getObjects(character.saves, 'name', prof.subType)[0];
+        save.mod += character.pb.value; save.str = updateStrVal(save.mod);
+        save.proficiency = level;
+      } else {
+	character.proficiencies.saves_mod.push(prof);
+      }
     // Skills
     } else if ( prof.entityTypeId == 1958004211 ) {
-      character.proficiencies.skills.push(prof);
-      let skill = getObjects(character.skills, 'name', prof.subType)[0];
-      skill.mod += character.pb.value; skill.str = updateStrVal(skill.mod);
-      skill.proficiency = level;
+      if ( prof.type == 'proficiency' ) {
+        character.proficiencies.skills.push(prof);
+        let skill = getObjects(character.skills, 'name', prof.subType)[0];
+        skill.mod += character.pb.value; skill.str = updateStrVal(skill.mod);
+        skill.proficiency = level;
+      } else {
+	character.proficiencies.skills_mod.push(prof);
+      }
     // Scores
     } else if ( prof.entityTypeId == 1472902489 ) {
       character.proficiencies.scores.push(prof);
@@ -401,38 +409,38 @@ const passthrough_keys = {
     return spell;
   };
 
-  function parseTags( character, text, feat ) {
-    return text.replace(/\{\{([^}]+)\}\}/g, (match, rawContent) => {
+  function parseTags(character, text, feat) {
+    return text.replace(/\{\{([^}]+)\}\}/g, ( match, rawContent ) => {
       let tag = rawContent; let qualifier = null; let modifiers = [];
+      if ( tag.match(/^\(.+\)@round(?:down|up)?$/) ) {
+        return formatValue(processMathExpression(tag, character, feat));
+      }
       const hashParts = rawContent.split("#");
       if ( hashParts.length > 1 ) modifiers = hashParts.slice(1);
       const colonParts = hashParts[0].split(":");
       tag = colonParts[0];
-      if (colonParts.length > 1) qualifier = colonParts[1];
+      if ( colonParts.length > 1 ) qualifier = colonParts[1];
 
-      switch (tag) {
+      switch ( tag ) {
         case "modifier":
           return formatValue(processModifier(qualifier, character), modifiers);
         case "scalevalue":
-          return processScaleValue(feat);
+          return formatValue(processScaleValue(feat), modifiers);
         case "proficiency":
           return formatValue(character.pb.value, modifiers);
         case "savedc":
-          return processSaveDC(qualifier, character);
+          return formatValue(processSaveDC(qualifier, character), modifiers);
         case "classlevel":
           return formatValue(character.classes[0]?.level ?? 0, modifiers);
         default:
-          if (tag.match(/^\(.+\)@round(?:down|up)$/)) {
-            return formatValue(processMathExpression(tag, character), modifiers);
-          }
           return match;
       }
     });
 
-    function formatValue(value, modifiers) {
-      if (modifiers.includes("unsigned")) {
-        if (typeof value === "number") return Math.abs(value);
-        if (typeof value === "string" && /^[+-]\d+$/.test(value)) return value.replace(/^[-+]/, '');
+    function formatValue( value, modifiers ) {
+      if ( modifiers?.includes("unsigned") ) {
+        if ( typeof value === "number" ) return Math.abs(value);
+        if ( typeof value === "string" && /^[+-]\d+$/.test(value) ) return value.replace(/^[-+]/, '');
       }
       return value;
     };
@@ -461,7 +469,7 @@ const passthrough_keys = {
       return "{{scalevalue}}"; // Fail gracefully if no valid value
     };
 
-    function processSaveDC(optionString, char) {
+    function processSaveDC( optionString, char ) {
       const stats = optionString.split(",").map(s => s.trim().toUpperCase());
       const mods = stats.map(stat => {
         const index = ABILITIES.findIndex(a => a.shortName === stat);
@@ -469,15 +477,20 @@ const passthrough_keys = {
       });
       const bestMod = Math.max(...mods);
       return 8 + bestMod + char.pb.value;
-    }
+    };
 
-    function processMathExpression( exprTag, char ) {
-      const [expr, round] = exprTag.match(/^\((.+)\)@round(down|up)$/).slice(1, 3);
-      let value = expr.replace(/classlevel/gi, char.classes[0].level); // Support only primary class
+    function processMathExpression( exprTag, char, feat ) {
+      const match = exprTag.match(/^\((.+)\)@round(down|up)$/i);
+      if (!match) return `{{${exprTag}}}`;
+      const [expr, round] = match.slice(1, 3);
+      let value = expr
+        .replace(/classlevel/gi, char.classes[0]?.level ?? 0)
+        .replace(/proficiency/gi, char.pb?.value ?? 0)
+        .replace(/scalevalue/gi, processScaleValue(feat));
+
       try {
         value = eval(value);
-        value = round === "down" ? Math.floor(value) : Math.ceil(value);
-        return value;
+        return round === "down" ? Math.floor(value) : Math.ceil(value);
       } catch (e) {
         return `{{${exprTag}}}`;
       }
@@ -510,8 +523,8 @@ const passthrough_keys = {
 
   // Stats and Modifiers
   char.stats = character.stats;
-  char.stats.forEach((stat, si) => {
-    stat.name = ABILITIES[si + 1];
+  char.stats.forEach(( stat, si ) => {
+    stat.name = ABILITIES[si];
     stat.value = getAbilityScore(character, stat.id);
     stat.mod = Math.floor((stat.value - 10) / 2);
     stat.str = updateStrVal(stat.mod, stat.str);
@@ -534,11 +547,11 @@ const passthrough_keys = {
 
   // Saves and Skills
   char.saves = SAVES; char.skills = SKILLS;
-  char.saves.forEach((save, si) => {
+  char.saves.forEach(( save, si ) => {
     save.mod = char.stats[save.stat].mod;
     save.str = updateStrVal(save.mod);
   });
-  char.skills.forEach((skill, si) => {
+  char.skills.forEach(( skill, si ) => {
     skill.mod = char.stats[skill.stat].mod;
     skill.str = updateStrVal(skill.mod);
   });
@@ -552,23 +565,23 @@ const passthrough_keys = {
 
   // Features & Traits
   char.feats = [];
-  character.feats.forEach((feat, fi) => {
+  character.feats.forEach(( feat, fi ) => {
     if ( !silent_features.includes(feat.definition.name) ) char.feats.push(feat);
   });
-  character.classes.forEach((cls, ci) => {
-    cls.classFeatures.forEach((feat, fi) => {
+  character.classes.forEach(( cls, ci ) => {
+    cls.classFeatures.forEach(( feat, fi ) => {
       if ( !feat.definition.requiredLevel || ( feat.definition.requiredLevel && char.level >= feat.definition.requiredLevel ) ) {
 	if ( feat.definition.hideInSheet == false && !silent_features.includes(feat.definition.name) ) char.feats.push(feat);
       }
       if ( feat.definition.name.includes('Jack of All Trades') ) { jack_feature = feat; }
     })
   });
-  character.race.racialTraits.forEach((feat, fi) => {
+  character.race.racialTraits.forEach(( feat, fi ) => {
     if ( !feat.definition.requiredLevel || ( feat.definition.requiredLevel && char.level >= feat.definition.requiredLevel ) ) {
       if ( feat.definition.hideInSheet == false && !silent_features.includes(feat.definition.name) ) char.feats.push(feat);
     }
   });
-  char.feats.forEach((feat, fi) => {
+  char.feats.forEach(( feat, fi ) => {
     feat.name = feat.definition.name;
     var act = getObjects(character.actions, 'componentId', feat.definition.id)[0];
     if ( feat.definition.snippet ) feat.definition.snippet = parseTags( char, feat.definition.snippet, feat );
@@ -589,11 +602,11 @@ const passthrough_keys = {
 
   // Proficiencies
   char.proficiencies = {};
-  char.proficiencies.saves = []; char.proficiencies.skills = []; char.proficiencies.scores = [];
-  char.proficiencies.armor = []; char.proficiencies.weapons = []; char.proficiencies.tools = [];
+  char.proficiencies.saves = []; char.proficiencies.skills = []; char.proficiencies.saves_mod = []; char.proficiencies.skills_mod = [];
+  char.proficiencies.scores = []; char.proficiencies.armor = []; char.proficiencies.weapons = []; char.proficiencies.tools = [];
   char.proficiencies.languages = []; char.proficiencies.defenses = []; char.proficiencies.senses = []; char.proficiencies.other = [];
   for ( let half_proficiency of getObjects(character.modifiers, 'type', 'half-proficiency') ) {
-    if ( (jack_feature !== undefined) && (half_proficiency.componentId === jack_feature.id) && (half_proficiency.componentTypeId === 12168134) ) {
+    if ( ( jack_feature !== undefined ) && ( half_proficiency.componentId === jack_feature.id ) && ( half_proficiency.componentTypeId === 12168134 ) ) {
       continue;	// filter out all jack of all trade mods
     }
     updateProficiency(char, half_proficiency, PROFICIENCY_HALF);
@@ -607,7 +620,13 @@ const passthrough_keys = {
   for ( let expertise of getObjects(character.modifiers, 'type', 'expertise') ) {
     updateProficiency(char, expertise, PROFICIENCY_EXPERTISE);
   }
-  for ( let adv of getObjects(character, 'type', 'advantage') )		{ updateProficiency(char, adv, PROFICIENCY_NONE); }
+  for ( let adv of getObjects(character, 'type', 'advantage') )	{
+    const def = getObjects(character.inventory, 'id', adv.componentId)[0];
+    if ( adv.requiresAttunement && def ) {	// for inventory, check and see if the item is attuned
+      const item = character.inventory.find( inv => inv.definition?.id === def?.id );
+      if ( item.isAttuned )  updateProficiency(char, adv, PROFICIENCY_NONE);
+    } else { updateProficiency(char, adv, PROFICIENCY_NONE); }
+  }
   for ( let bonus of getObjects(character, 'type', 'bonus') )		{ updateProficiency(char, bonus, PROFICIENCY_NONE); }
   for ( let bonus of getObjects(character, 'subType', 'bonus-damage') ) { updateProficiency(char, bonus, PROFICIENCY_NONE); }
   for ( let def of getObjects(character, 'type', 'immunity') )		{ updateProficiency(char, def, PROFICIENCY_NONE); }
@@ -647,9 +666,12 @@ const passthrough_keys = {
       if ( item.equipped == true ) {
         if ( item.definition.type == 'Shield' ) shieldEquipped = true;
         if ( item.definition.stealthCheck == 2 ) char.skills[16].icon = 'ddb-disadvantage';  // REVISIT: is a value of 1 here anything? advantage?
-        item.definition.grantedModifiers.forEach((grantedMod) => {
+        item.definition.grantedModifiers.forEach(( grantedMod ) => {
           if ( grantedMod.type == 'bonus' && grantedMod.subType == 'saving-throws' ) {
 	    char.saves.forEach((save) => { save.mod += grantedMod.fixedValue; save.str = updateStrVal(save.mod); });
+	  }
+          if ( grantedMod.type == 'bonus' && grantedMod.subType == 'ability-checks' ) {
+	    char.skills.forEach((skill) => { skill.mod += grantedMod.fixedValue; skill.str = updateStrVal(skill.mod); });
 	  }
         });
       }
@@ -816,7 +838,7 @@ const passthrough_keys = {
         if ( ac > 0 ) char.ac.value = ac;
       }
     });
-    character.customItems.forEach((item, i) => {
+    character.customItems.forEach(( item, i ) => {
       item.definition = {};
       item.definition.weight = item.weight; item.definition.name = item.name; item.definition.description = item.description;
       item.weight = []; item.definition.isCustomItem = true; item.definition.isHomebrew = true;
@@ -838,16 +860,15 @@ const passthrough_keys = {
   const containerIds = new Set(character.inventory.filter(i => i.definition.isContainer).map(i => i.id));
   char.inventory.forEach(i => { i.isContained = containerIds.has(i.containerEntityId); });
 
-  char.inventory.forEach(container => {
+  char.inventory.forEach( container => {
     if ( !container.definition.isContainer ) return;
     const containerId = container.id;
     const containedItems = char.inventory.filter(item => item.containerEntityId === containerId);
     if ( containedItems && containedItems.length > 0 ) inventoryOutput.push({ isContainer: true, isContained: false, ...container, items: containedItems });
   });
-  char.inventory.forEach(item => {
+  char.inventory.forEach( item => {
     if ( item.definition.isContainer ) return;
     if ( item.isContained ) return;
-    if ( item.isAttuned ) return;
     inventoryOutput.push({ isContainer: false, ...item });
   });
   char.inventory_containers = inventoryOutput;
@@ -1044,7 +1065,7 @@ const passthrough_keys = {
 
 
   // Active Conditions
-  character.conditions.forEach((cond, ci) => { char.conditions.push(conditions[cond.id]); });
+  character.conditions.forEach(( cond, ci ) => { char.conditions.push(conditions[cond.id]); });
 
   return char;
 };

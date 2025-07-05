@@ -1,5 +1,5 @@
 <!--
-@name: NPC Card (General)
+@name: NPC Card (Companion)
 @size: tarot
 @orientation: vertical
 -->
@@ -7,9 +7,9 @@
 <div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
   <div class="front" id="item_front-{{index}}-{{id}}">
     <h2>{{name}}</h2>
-    <p class="info">{{race.fullName}} {{background.definition.name}}, {{alignment.description}}</p>
+    <p class="info">({{traits.genderPronouns}}) {{race.fullName}} {{background.definition.name}}, {{alignment.description}}</p>
     {{#traits.personaityTraits}}<p class="info">{{traits.personaityTraits}}</p>{{/traits.personaityTraits}}
-    {{#traits.saying}}<blockquote>{{traits.saying}}</blockquote>{{/traits.saying}}
+    {{#traits.saying}}<blockquote>{{traits.saying}}</blockquote>{{/traits.saying}}<br />
     <p class="content">{{{notes.backstory}}}</p>
     <p class="content">{{#traits.age}}<b>Age:</b> {{traits.age}} {{#traits.ageGroup}}, {{traits.ageGroup}}){{/traits.ageGroup}}{{/traits.age}}</p>
     <p class="content">{{#traits.appearance}}<b>Appearance:</b> {{traits.appearance}}{{/traits.appearance}}{{#traits.eyes}}, Eyes: {{traits.eyes}}{{/traits.eyes}}{{#traits.hair}}, Hair: {{traits.hair}}{{/traits.hair}}{{#traits.skin}}, Skin: {{traits.skin}}{{/traits.skin}}</p>
@@ -26,18 +26,25 @@
 
     <!-- {{#stats.0}} --><table class="ability-table">
       <tr><td><b>STR</b></td><td><b>DEX</b></td><td><b>CON</b></td><td><b>INT</b></td><td><b>WIS</b></td><td><b>CHA</b></td></tr>
-      <tr><td>{{stats.0.value}} ({{stats.0.str}})</td><td>{{stats.1.value}} ({{stats.1.str}})</td><td>{{stats.2.value}} ({{stats.2.str}})</td><td>{{stats.3.value}} ({{stats.3.str}})</td><td>{{stats.4.value}} ({{stats.4.str}})</td><td>{{stats.5.value}} ({{stats.5.str}})</td></tr>
+      <tr><td>{{stats.0.value}} ({{stats.0.str}})</td><td>{{stats.1.value}} ({{stats.1.str}})</td><td>{{stats.2.value}} ({{stats.2.str}})</td><td>{{stats.3.value}} ({{stats.3.str}})</td><td>{{stats.4.value}} ({{stats.4.str}})</td><td>{{stats.5.value}} ({{stats.5.str}})</td></tr><br />
     </table><!-- {{/stats.0}} -->
-    <span class="float-left">{{#ac.value}}<p class="content"><b>AC:</b> {{ac.value}} {{#ac.description}}({{ac.description}}){{/ac.description}}</p>{{/ac.value}}</span>
-    <span class="float-right">{{#hp.value}}<p class="content"><b>HP:</b> {{hp.value}} {{#hp.hitDieSize}}({{hp.hitDieSize}}){{/hp.hitDieSize}}</p>{{/hp.value}}</span>
+    <span class="float-left">Injuries: &nbsp; ☐ &nbsp; ☐ &nbsp; ☐</span>
+    <span class="float-right">&nbsp;</span><p style="clear:both;"></p><br />
+    {{#passives}}
+    <p><b>[Passive] {{name}}:</b> {{description}}</p>
+    {{/passives}}
+    {{#actions}}
+    <p><b>{{name}}:</b> {{description}}</p>
+    {{/actions}}
   </div>
   <div class="back" id="item_back-{{index}}-{{id}}">
     <div class="header" id="card_back-header-{{index}}-{{id}}">
       <h2>{{name}}</h2>
-      <p class="info">{{traits.genderPronouns}}</p>
+      <p class="info">({{traits.genderPronouns}})</p>
       <div class="topright"><i class="bi {{decorations.icon}}"></i></div>
     </div>
-    <div class="image" id="card_back-image-{{index}}-{{id}}" style="vertical-align: middle;"><img src="{{decorations.avatarUrl}}" style="border-radius: 5px;" /></div>
-    <div class="footer" id="card_back-footer-{{index}}-{{id}}"></div>
+    <div class="image" id="card_back-image-{{index}}-{{id}}" style="vertical-align: middle;">
+      <img src="{{decorations.avatarUrl}}" style="border-radius: 5px;" />
+    </div>
   </div>
 </div>

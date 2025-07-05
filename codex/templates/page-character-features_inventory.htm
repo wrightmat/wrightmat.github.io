@@ -1,0 +1,65 @@
+<!--
+@name: Character Page - Features / Inventory
+@size: a6
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <span class="float-left-40"><p class="heading">Attacks</p></span><span class="float-right-60"><p><b>Attacks per Action:</b> {{attacking.attacksPerAction}}{{#attacking.fightingStyle}}, <b>Fighting Style:</b> {{name}}{{/attacking.fightingStyle}}</p></span>
+    {{#limitedUses.0}}
+    <div id="limitedUses0" style="position:absolute;right:15px;top:10px;"><b>{{name}}:</b> {{remainingUses}} / {{maxUses}}</div>
+    {{/limitedUses.0}}
+    <p style="clear:both;"></p>
+    <table><tr class="table-header">
+      <th width="30%">Attack Name</th><th width="10%">Hit</th><th width="15%">Damage</th><th width="15%">Range</th><th width="30%">Notes</th></tr>
+      <!-- {{#attacks.1}} -->
+      <tr class="table-item"><td>{{definition.name}}</td><td>{{hit.str}}</td><td class="no-wrap">{{damage.str}} <i class="{{damage.icon}}"></i></td><td>{{range.str}}</td><td class="notes"><span class="notes">{{notes}}</span></td></tr>
+      <!-- {{/attacks.1}} -->
+    </table><br />
+    <p class="heading">Features</p>
+    {{#feats}} {{#isImportantDisplay}}
+    <span class="float-left-40"><p class="section-short">{{definition.name}}.</p></span><span class="float-right-60"></span><span class="float-right-60"><p class="section-short">{{{limitedUse.str}}}</p></span>
+    <p style="clear:both;"></p>
+    {{{definition.snippet}}}<br />
+    {{/isImportantDisplay}} {{/feats}}
+  </div>
+
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <span class="float-left-40"><p class="heading">Inventory</p></span>
+    <span class="float-right-60"><b>CP:</b> {{currencies.cp}} &nbsp;&nbsp; <b>SP:</b> {{currencies.sp}} &nbsp;&nbsp; <b>GP:</b> {{currencies.gp}}</span>
+    <p style="clear:both;"></p><br />
+    <table><tbody>
+    <tr class="table-header" id="inventory">
+      <th width="5%"></th><th width="40%">Equipment Name</th><th width="10%">Qty</th><th width="10%">Weight</th><th width="35%">Notes</th>
+    </tr>
+    <!-- {{#inventory_containers}} -->
+      <!-- {{^isContainer}} -->
+        <tr class="table-item">
+          <td><span class="equip"><span class="circle {{equipped}}"></span></span></td>
+          <td>{{name}} <i class="{{icon}}"></i>{{#isAttuned}}<i class="ddb-attunement"></i>{{/isAttuned}}</td>
+          <td>{{quantity}}</td>
+          <td>{{weight.str}}</td>
+          <td><span class="notes">{{notes}}</span></td>
+        </tr>
+      <!-- {{/isContainer}} -->
+    <!-- {{/inventory_containers}} -->
+    </tbody></table>
+    {{#inventory_containers}}
+      {{#isContainer}}
+        <h4><span class="equip"><span class="circle {{equipped}}"></span></span> {{name}}</h4>
+        <table><tbody>
+        <!-- {{#items}} -->
+          <tr class="table-item">
+            <td width="5%"><span class="equip"><span class="circle {{equipped}}"></span></span></td>
+            <td width="40%">{{name}} <i class="{{icon}}"></i>{{#isAttuned}}<i class="ddb-attunement"></i>{{/isAttuned}}</td>
+            <td width="10%">{{quantity}}</td>
+            <td width="10%">{{weight.str}}</td>
+            <td width="35%"><span class="notes">{{notes}}</span></td>
+          </tr>
+        <!-- {{/items}} -->
+        </tbody></table>
+      {{/isContainer}}
+    {{/inventory_containers}}
+  </div>
+</div>

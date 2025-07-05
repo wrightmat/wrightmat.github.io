@@ -1,0 +1,119 @@
+<!--
+@name: Character Page - Spells
+@size: a6
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <span class="float-left-40"><p class="heading">Spells ({{spellCasting.ability}})</p></span><span class="float-right-60"><p><b>Spell Attack:</b> {{spellCasting.attack}}, <b>Spell Save DC:</b> {{spellCasting.save}}</p></span>
+    <p style="clear:both;"></p><br />
+    {{#spells.0.0}}
+    <p class="section-short">Cantrips</p><p style="clear:both;"></p>
+    <table><tbody><tr class="table-header" id="spells-0">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.0}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.0}} -->
+    </table><br />
+    {{/spells.0.0}}
+    {{#spells.1.0}}
+    <span class="float-left-40"><p class="section-short">1st Level</p></span><span class="float-right-60">{{#limitedUses.1.available}}<p class="section-short">{{{limitedUses.1.str}}}</p>{{/limitedUses.1.available}}</span>
+    <span style="clear:both;"></span>
+    <table><tbody><tr class="table-header" id="spells-1">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.1}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.1}} -->
+    </table><br />
+    {{/spells.1.0}}
+  </div>
+
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    {{#spells.2.0}}
+    <span class="float-left-40"><p class="section-short">2nd Level</p></span><span class="float-right-60">{{#limitedUses.2.available}}<p class="section-short">{{{limitedUses.2.str}}}</p>{{/limitedUses.2.available}}</span>
+    <span style="clear:both;"></span>
+    <table><tbody><tr class="table-header" id="spells-2">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.2}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.2}} -->
+    </table><br />
+    {{/spells.2.0}}
+    {{#spells.3.0}}
+    <span class="float-left-40"><p class="section-short">3rd Level</p></span><span class="float-right-60">{{#limitedUses.3.available}}<p class="section-short">{{{limitedUses.3.str}}}</p>{{/limitedUses.3.available}}</span>
+    <span style="clear:both;"></span>
+    <table><tbody><tr class="table-header" id="spells-2">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.3}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.3}} -->
+    </table><br />
+    {{/spells.3.0}}
+    {{#spells.4.0}}
+    <span class="float-left-40"><p class="section-short">4th Level</p></span><span class="float-right-60">{{#limitedUses.4.available}}<p class="section-short">{{{limitedUses.4.str}}}</p>{{/limitedUses.4.available}}</span>
+    <span style="clear:both;"></span>
+    <table><tbody><tr class="table-header" id="spells-2">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.4}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.4}} -->
+    </table><br />
+    {{/spells.4.0}}
+    {{#spells.5.0}}
+    <span class="float-left-40"><p class="section-short">5th Level</p></span><span class="float-right-60">{{#limitedUses.5.available}}<p class="section-short">{{{limitedUses.5.str}}}</p>{{/limitedUses.5.available}}</span>
+    <span style="clear:both;"></span>
+    <table><tbody><tr class="table-header" id="spells-2">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.5}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.5}} -->
+    </table><br />
+    {{/spells.5.0}}
+    {{#spells.6.0}}
+    <span class="float-left-40"><p class="section-short">6th Level</p></span><span class="float-right-60">{{#limitedUses.6.available}}<p class="section-short">{{{limitedUses.6.str}}}</p>{{/limitedUses.6.available}}</span>
+    <span style="clear:both;"></span>
+    <table><tbody><tr class="table-header" id="spells-2">
+      <th width="35%">Spell Name</th><th width="15%">Hit/DC</th><th width="15%">Effect</th><th width="10%">Time</th><th width="10%">Range</th><th width="15%">Notes</th></tr>
+      <!-- {{#spells.6}} -->
+      <tr class="table-item">
+	<td><i class="{{icon_school}}"></i> {{definition.name}} <i class="{{icon}}"></i></td>
+	<td>{{hit}}</td> <td><span class="no-wrap">{{effect.value}} <i class="{{effect.icon}}"></i></span></td> <td>{{time}}</td>
+	<td>{{range.value}} {{#range.aoe}}<span class="no-wrap"><i class="{{range.aoe_icon}}"></i> {{range.aoe}}</span>{{/range.aoe}}</td>
+	<td class="notes"><span class="notes">{{notes}}</span></td>
+      </tr>
+      <!-- {{/spells.6}} -->
+    </table><br />
+    {{/spells.6.0}}
+  </div>
+</div>

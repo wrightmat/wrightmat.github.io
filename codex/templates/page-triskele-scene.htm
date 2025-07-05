@@ -1,0 +1,50 @@
+<!--
+@name: Triskele Scene Sheet
+@size: letter
+@orientation: horizontal
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <div id="header" style="height: 0.75in; min-height: 0.75in; max-height: 0.75in;">
+      <p class="heading">{{name}} - Level {{level}} {{type}}</p>
+      <p class="info" style="padding-bottom: 4px;">{{tags}}</p>
+      <p class="content">{{description}}</p><br />
+    </div>
+    <div id="columns" class="columns" style="height: 3in; min-height: 3in;">
+      <div class="column" id="environmental">
+        <p class="section-short">Environmental Mechanics</p>
+        <ul>{{#mechanics}}
+          <li><b>{{name}}</b>: {{description}}</li>
+        {{/mechanics}}</ul>
+        {{#mechanics}} {{#clock}} <div id="clock-container-{{.}}-0"></div> {{/clock}} {{/mechanics}}
+      </div>
+      <div class="column" id="encounters">
+	<p class="section-short">Random Encounters</p>
+        <table style="font-size:0.8em;"><tbody><tr class="table-header">
+          <th width="7%">1d20</th><th width="93%">Encounter</th></tr>
+          <!-- {{#encounters}} -->
+          <tr class="table-item">
+	    <td>{{roll}}</td> <td>{{description}}</td>
+          </tr>
+          <!-- {{/encounters}} -->
+        </table>
+      </div>
+    </div>
+    <p style="clear:both"></p>
+    <div id="cards-container" style="display:grid; grid-template-columns: repeat(4, 2.75in); grid-auto-rows: 4.75in; justify-content: center; gap: 0; padding: 0; margin: 0; box-sizing: border-box;">
+      {{#cards}}
+	{{> card-npc-triskele }}
+      {{/cards}}
+    </div>
+  </div>
+
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <div class="columns">
+      <div class="column">
+      </div>
+      <div class="column">
+      </div>
+    </div>
+  </div>
+</div>

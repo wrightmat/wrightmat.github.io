@@ -1,0 +1,26 @@
+<!--
+@name: Triskele Background Card
+@size: poker
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <div class="top">
+      <i class="bi bi-signpost-2-fill" style="font-size:14pt;"></i> &nbsp;&nbsp; <span class="section-large">{{name}}</span>
+      <p class="info"><span class="comma-list">{{#tags}}<span class="comma-item">{{.}}</span>{{/tags}}</span></p><br />
+      <p class="section">Equipment:</p>
+      <ul>{{#equipment}}<li>{{.}}</li>{{/equipment}}</ul>
+      <p class="section">Wealth: {{wealth}}</p><br />
+    </div>
+    <div class="bottom">
+      <p class="info">{{description}}</p>
+    </div>
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+      <p>1) Make note of the equipment provided, and transfer any with stats or tags to your Inventory.</p><br />
+      <p>2) Make note of your Wealth value.</p><br />
+      <p>3) Select one Skill Tag based on your background, optionally from the list above.</p><br />
+      <p>4) Create one relationship based on your background, such as a coworker/colleague, favorite customer/client, or friend.</p>
+  </div>
+</div>

@@ -24,7 +24,10 @@
 	{{#saves}}
           <li class="skill stat-{{stat}}"><span class="circle p{{proficiency}}"></span><span class="modifier">{{str}}</span><span class="name">{{friendlyName}}</span></li>
 	{{/saves}}
-	</ul><br />
+	</ul>
+	{{#proficiencies.saves_mod}}{{#restriction}}
+          <p><i class="ddb-{{type}}"></i> {{restriction}}</p>
+	{{/restriction}}{{/proficiencies.saves_mod}}<br />
 	<p class="section">Skills</p>
         <ul class="item-list">
 	{{#skills}}
@@ -80,27 +83,27 @@
 	<p>Passive Investig.: {{passives.investigation}}</p>
 	<p>Passive Insight: {{passives.insight}}</p>
 	{{#proficiencies.senses}}<p>{{friendlySubtypeName}}: {{value}} ft.</p>{{/proficiencies.senses}}<br />
-	<p class="section">Defenses</p> {{#proficiencies.defenses}}<i class="ddb-{{type}}"></i> {{friendlySubtypeName}} {{/proficiencies.defenses}}
+	<p class="section">Defenses</p> {{#proficiencies.defenses}}<i class="ddb-{{type}}"></i> {{friendlySubtypeName}}<br />{{/proficiencies.defenses}}
       </div>
       <div class="column">
 	<p class="section">Proficiencies</p>
-	<p><b>Armor:</b><br />{{#proficiencies.armor}}{{friendlySubtypeName}}<br />{{/proficiencies.armor}}</p>
-	<p><b>Weapons:</b><br />{{#proficiencies.weapons}}{{friendlySubtypeName}}<br />{{/proficiencies.weapons}}</p>
-	<p><b>Tools:</b><br />{{#proficiencies.tools}}{{friendlySubtypeName}}<br />{{/proficiencies.tools}}</p>
-	<p><b>Languages:</b><br />{{#proficiencies.languages}}{{friendlySubtypeName}}<br />{{/proficiencies.languages}}</p><br />
-      </div>
+	<p><b>Armor:</b><br /><span class="comma-list">{{#proficiencies.armor}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.armor}}</span></p>
+	<p><b>Weapons:</b><br /><span class="comma-list">{{#proficiencies.weapons}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.weapons}}</span</p>
+	<p><b>Tools:</b><br /><span class="comma-list">{{#proficiencies.tools}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.tools}}</span></p>
+	<p><b>Languages:</b><br /><span class="comma-list">{{#proficiencies.languages}}<span class="comma-item">{{friendlySubtypeName}}</span>{{/proficiencies.languages}}</span></p>
+      </div><br />
       <div class="column">
 	<p><b>Alignment:</b><br />{{alignment.description}}</p>
-	{{#traits.height}}<p><b>Height:</b><br />{{traits.height}}</p>{{/traits.height}}
-	{{#traits.weight}}<p><b>Weight:</b><br />{{traits.weight}}</p>{{/traits.weight}}
-	{{#traits.age}}<p><b>Age:</b><br />{{traits.age}}</p>{{/traits.age}}
-	{{#traits.size}}<p><b>Size:</b><br />{{traits.size}}</p>{{/traits.size}}
-	{{#traits.appearance}}<p><b>Appearance:</b><br />{{traits.appearance}}</p>{{/traits.appearance}}
-	{{#traits.hair}}<p><b>Hair:</b><br />{{traits.hair}}</p>{{/traits.hair}}
-	{{#traits.eyes}}<p><b>Eyes:</b><br />{{traits.eyes}}</p>{{/traits.eyes}}
-	{{#traits.ideals}}<p><b>Ideals:</b><br />{{traits.ideals}}</p>{{/traits.ideals}}
-	{{#traits.bonds}}<p><b>Bonds:</b><br />{{traits.bonds}}</p>{{/traits.bonds}}
-	{{#traits.flaws}}<p><b>Flaws:</b><br />{{traits.flaws}}</p>{{/traits.flaws}}
+	{{#traits.height}}<p><b>Height: </b>{{traits.height}}</p>{{/traits.height}}
+	{{#traits.weight}}<p><b>Weight: </b>{{traits.weight}}</p>{{/traits.weight}}
+	{{#traits.age}}<p><b>Age: </b>{{traits.age}}</p>{{/traits.age}}
+	{{#traits.size}}<p><b>Size: </b>{{traits.size}}</p>{{/traits.size}}
+	{{#traits.appearance}}<p><b>Appearance: </b>{{traits.appearance}}</p>{{/traits.appearance}}
+	{{#traits.hair}}<p><b>Hair: </b>{{traits.hair}}</p>{{/traits.hair}}
+	{{#traits.eyes}}<p><b>Eyes: </b>{{traits.eyes}}</p>{{/traits.eyes}}
+	{{#traits.ideals}}<p class="small"><b>Ideals: </b>{{traits.ideals}}</p>{{/traits.ideals}}
+	{{#traits.bonds}}<p class="small"><b>Bonds: </b>{{traits.bonds}}</p>{{/traits.bonds}}
+	{{#traits.flaws}}<p class="small"><b>Flaws: </b>{{traits.flaws}}</p>{{/traits.flaws}}
       </div>
     </div>
   </div>

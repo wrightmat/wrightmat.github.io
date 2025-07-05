@@ -1,0 +1,35 @@
+[
+    {
+	"index": "sunken-dunes",
+	"name": "Sunken Dunes",
+	"tags": [ "desert", "mirage", "shifting terrain", "ancient ruin" ],
+	"type": "Location",
+	"level": 3,
+	"description": "An arid expanse of constantly shifting dunes where mirages twist perception and buried horrors stir beneath the sand. The heat is unrelenting, and even the terrain seems determined to swallow the unwary.",
+	"mechanics": [
+		{ "name": "Sinking Sands", "description": "At the end of each round, any character on open sand must roll Body 10 or become Restrained." },
+		{ "name": "Mirage Clock", "description": "A hidden 4-tick clock that advances when the party argues, splits up, or fails a navigation check. When full, the dunes shift unpredictably.", "clock": "4" },
+		{ "name": "Scorching Sun", "description": "During travel, each character loses 1 HP unless using shade, protective gear, or magic." }
+	],
+	"encounters": [
+		{ "roll": "1–5", "description": "Nothing happens. The dunes stretch in every direction, eerily silent." },
+		{ "roll": "6–7", "description": "Mara of the Mirages offers water, warnings, and a test — always with a price." },
+		{ "roll": "8", "description": "1d4+1 War Beetles erupt from the sand, drawn by vibrations." },
+		{ "roll": "9", "description": "Buried Temple Ruins emerge from a windstorm. Inside waits a spirit that challenges your sense of self." },
+		{ "roll": "10", "description": "A Glass Scorpion bursts from a dune, reflecting the sun's rays." },
+		{ "roll": "11", "description": "Your own reflections approach you across the sand. They mimic your movements." },
+		{ "roll": "12", "description": "A forgotten pressure mine detonates — Spirit 12 or take 1d6 damage and gain Stunned 1." },
+		{ "roll": "13", "description": "A skeletal ribcage juts from the sand. Something moves inside — Mind 10 or panic." },
+		{ "roll": "14–15", "description": "2d4 Bonejackals with amber eyes stalk you. They vanish if watched." },
+		{ "roll": "16", "description": "A sandstorm wall builds. You have 3 rounds before it hits and Mirage Clock advances." },
+		{ "roll": "17", "description": "An Ancient Obelisk hums with planar tension. Touching it triggers a clock advance." },
+		{ "roll": "18–20", "description": "A Colossal Worm breaches the surface. Initiate boss encounter." }
+	],
+	"cards": [
+		{ "index": "war-beetle", "type": "monster" },
+		{ "index": "glass-scorpion", "type": "monster" },
+		{ "index": "colossal-worm", "type": "boss-monster" },
+		{ "index": "mara-mirages", "type": "npc" }
+	]
+    }
+]

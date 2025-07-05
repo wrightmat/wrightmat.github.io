@@ -3979,7 +3979,7 @@
     },
     "background": {
       "definition": {
-        "name": "Second Year (Witherbloom)"
+        "name": "Witherbloom Student"
       }
     },
     "classes": [
@@ -4008,8 +4008,17 @@
         }
       }
     },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 5, "name": "WIS", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 11, "mod": 0, "str": "+0" }
+    ],
     "notes": {
-      "backstory": "First to class, last to leave, and always asking for additional homework, Urzmaktok is a meticulous student. Despite his consistently high marks, Urzmaktok makes no attempt to show off, although his studies seem rudimentary to him. Rumor has it that he is completing enough credits to earn multiple degrees when he graduates.<br /><br />Urzmaktok works for the Campus Magic Labs as a specimen preparer. This additional access to the labs also allows him to run his personal experiments in peace. Unsurprisingly, he is also a member of the Fantastical Horticulture Club. There, he looks to develop new species of plants that might yield new ingredients for potions.<br /><br />Urzmaktok makes it clear he wants everyone to use his full first name. Should anyone use a nickname, he won\u2019t acknowledge the address.",
+      "backstory": "Utterly committed to study, Urzmaktok takes pride in preparation and precision. He disdains shortcuts and insists on academic correctness — including the full pronunciation of his name. While dry and formal, he’s an asset in any endeavor that benefits from exactitude, foresight, or rare flora.",
+      "backstory_full_strixhaven": "First to class, last to leave, and always asking for additional homework, Urzmaktok is a meticulous student. Despite his consistently high marks, Urzmaktok makes no attempt to show off, although his studies seem rudimentary to him. Rumor has it that he is completing enough credits to earn multiple degrees when he graduates.<br /><br />Urzmaktok works for the Campus Magic Labs as a specimen preparer. This additional access to the labs also allows him to run his personal experiments in peace. Unsurprisingly, he is also a member of the Fantastical Horticulture Club. There, he looks to develop new species of plants that might yield new ingredients for potions.<br /><br />Urzmaktok makes it clear he wants everyone to use his full first name. Should anyone use a nickname, he won\u2019t acknowledge the address.",
       "bane": "No one on campus who isn\u2019t another player character will study with you. If you ask, most shrug decline, saying you\u2019ll probably fail.",
       "boon": "No matter the subject, you can always find a partner to study with, whether it\u2019s Urzmaktok or a classmate doing him a favor.",
       "job": "Campus Magic Labs specimen preparer",
@@ -4026,7 +4035,19 @@
         "he",
         "him"
       ]
-    }
+    },
+    "passives": [
+	{
+	    "name": "Meticulous Preparation",
+	    "description": "While Urzmaktok is assigned to you, you may add +1 to Arcana and Nature checks. In addition, once per long rest, you may automatically succeed on an Arcana or Nature check with a DC of 20 or lower without rolling."
+	}
+    ],
+    "actions": [
+	{
+	    "name": "Reactive Reagent (1/rest)",
+	    "description": "When a creature within 30 ft fails a saving throw against a condition (poisoned, restrained, blinded, etc.), Urzmaktok produces a field antidote or counter-agent. That creature immediately rerolls the save with advantage. On success, the condition ends and they gain resistance to that condition’s damage type (if applicable) until the end of their next turn. Urzmaktok gains 1 injury when this ability is used."
+	}
+    ]
   },
   {
     "index": "zanther-bowen-1335",
@@ -6451,13 +6472,13 @@
     },
     "background": {
       "definition": {
-        "name": "First Year (Prismari)"
+        "name": "Prismari Student"
       }
     },
     "classes": [
       {
         "definition": {
-          "name": "Prismari Apprentice"
+          "name": "Prismari Pledgemage"
         },
         "subclassDefinition": {
           "name": ""
@@ -6480,17 +6501,23 @@
         }
       }
     },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 17, "mod": 3, "str": "+3" }
+    ],
     "notes": {
-      "backstory": "Teddy is a middle-aged blacksmith dad who had a mid-life crisis and decided to go back to school. He intends to use magic, specifically the elemental magic of Prismari, to further his smithing skills. Teddy gushes about his kids (Alice, age 11 and Junior, age 8) and his wife (Lyrissa Moonbeam, half-elf pastry chef) at any and all opportunities, and provides fatherly advice to wayward students. He's very serious about his studies, but has only average grades.",
+      "backstory": "A broad-shouldered blacksmith with soot-stained hands and a glowing heart. Teddy returned to school mid-life to study elemental magic and apply it to his forge craft. He talks about his wife and kids almost constantly, offers unsolicited but wholesome advice, and thinks you’re doing just fine — you just need to believe it.",
+      "backstory_full_strixhaven": "Teddy is a middle-aged blacksmith dad who had a mid-life crisis and decided to go back to school. He intends to use magic, specifically the elemental magic of Prismari, to further his smithing skills. Teddy gushes about his kids (Alice, age 11 and Junior, age 8) and his wife (Lyrissa Moonbeam, half-elf pastry chef) at any and all opportunities, and provides fatherly advice to wayward students. He's very serious about his studies, but has only average grades.",
       "bane": "You occasionally feel the weight of Teddy's disapproval, leading you to second guess yourself in important situations. You remember 'he's not mad, he's just disappointed'.",
       "boon": "While on campus, you feel more confident and supported. This manifests as a slight boost in morale, making you more likely to receive positive feedback from professors and peers when discussing studies or presenting projects. You are also more likely to get encouragement and minor assistance from other students who admire Teddy.",
       "job": "",
       "extracurriculars": ""
     },
-    "tags": [
-      "NPC",
-      "Student"
-    ],
+    "tags": [ "NPC", "Student" ],
     "traits": {
       "ageGroup": "Older Adult",
       "gender": "Male",
@@ -6498,7 +6525,19 @@
         "he",
         "him"
       ]
-    }
+    },
+    "passives": [
+	{
+	    "name": "Dad Mode",
+	    "description": "While Teddy is assigned to you, you gain +1 to Constitution saving throws and may ignore one level of exhaustion from non-magical sources (e.g., travel, hunger, etc)."
+	}
+    ],
+    "actions": [
+	{
+	    "name": "Reinforce (1/rest)",
+	    "description": "When an ally within 30 ft takes damage from a weapon, spell, or trap, Teddy channels elemental reinforcement into their gear or aura. That creature gains temporary HP equal to 1d6 + your proficiency bonus, and advantage on the next Strength or Constitution check or save before the end of their next turn. Teddy gains 1 injury when this is used."
+	}
+    ]
   },
   {
     "index": "farid-kahn-0968",
@@ -6893,13 +6932,13 @@
     },
     "background": {
       "definition": {
-        "name": "First Year (Silverquill)"
+        "name": "Silverquill Student"
       }
     },
     "classes": [
       {
         "definition": {
-          "name": "Silverquill Apprentice"
+          "name": "Silverquill Pledgemage"
         },
         "subclassDefinition": {
           "name": ""
@@ -6922,25 +6961,40 @@
         }
       }
     },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 3, "name": "CON", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 5, "name": "WIS", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 17, "mod": 3, "str": "+3" }
+    ],
     "notes": {
-      "backstory": "Nelson Dawoud is a reserved but insightful student whose mastery of shadow magic reflects the duality of light and darkness in his personality. Born into a family of poets, Nelson\u2019s creative flair shines through in his spellcasting, which often takes the form of shadowy verses swirling in the air. While he tends to keep to himself, his empathetic nature and deep understanding of others\u2019 emotions make him a trusted confidant. Nelson\u2019s quiet demeanor belies a fierce dedication to justice and fairness, and he will not hesitate to step into the spotlight when he believes someone has been wronged. His unique combination of introspection and courage earns him the respect of peers who take the time to know him.",
+      "backstory": "A quiet, sharp-eyed poet-historian from a war-touched corner of Valenar. Nelson rarely raises his voice, but notices everything. He journals in scraps of verse and lets silence linger where others might fill it. He’s loyal to those who share his search for truth — especially Mina, though he never presses.",
+      "backstory_full_strixhaven": "Nelson Dawoud is a reserved but insightful student whose mastery of shadow magic reflects the duality of light and darkness in his personality. Born into a family of poets, Nelson\u2019s creative flair shines through in his spellcasting, which often takes the form of shadowy verses swirling in the air. While he tends to keep to himself, his empathetic nature and deep understanding of others\u2019 emotions make him a trusted confidant. Nelson\u2019s quiet demeanor belies a fierce dedication to justice and fairness, and he will not hesitate to step into the spotlight when he believes someone has been wronged. His unique combination of introspection and courage earns him the respect of peers who take the time to know him.",
       "bane": "Shadows near you occasionally seem to stretch or flicker unnaturally, unnerving others around you.",
       "boon": "Shadows seem to work in your favor, subtly concealing you when you need to stay unnoticed.",
       "job": "",
       "extracurriculars": ""
     },
-    "tags": [
-      "NPC",
-      "Student"
-    ],
+    "tags": [ "NPC", "Student" ],
     "traits": {
       "ageGroup": "Young Adult",
       "gender": "Male",
-      "genderPronouns": [
-        "he",
-        "him"
-      ]
-    }
+      "genderPronouns": [ "he", "him" ]
+    },
+    "passives": [
+	{
+	    "name": "Historian’s Eye",
+	    "description": "While Nelson is assigned to you, you gain +1 to Insight and Investigation checks, and may ask the DM one “What do I notice?”-type question once per rest without a roll."
+	}
+    ],
+    "actions": [
+	{
+	    "name": "Poetic Timing (1/rest)",
+	    "description": "When a creature you can see (yourself or an ally within 30 ft) fails an ability check or saving throw, you quietly interject with a line of verse or a crucial observation. That creature may reroll the check, but must take the new result. Nelson then gains 1 injury."
+	}
+    ]
   },
   {
     "index": "rebecca-becca-dominic-8447",
@@ -7490,56 +7544,17 @@
       }
     },
     "stats": [
-      {
-        "id": 1,
-        "name": "STR",
-        "value": 16,
-        "mod": 3,
-        "str": "+3"
-      },
-      {
-        "id": 2,
-        "name": "DEX",
-        "value": 10,
-        "mod": 0,
-        "str": "+0"
-      },
-      {
-        "id": 3,
-        "name": "CON",
-        "value": 12,
-        "mod": 1,
-        "str": "+1"
-      },
-      {
-        "id": 4,
-        "name": "INT",
-        "value": 2,
-        "mod": -4,
-        "str": "-4"
-      },
-      {
-        "id": 5,
-        "name": "WIS",
-        "value": 11,
-        "mod": 0,
-        "str": "+0"
-      },
-      {
-        "id": 6,
-        "name": "CHA",
-        "value": 7,
-        "mod": -2,
-        "str": "-2"
-      }
+      { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 2, "name": "DEX", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 2, "mod": -4, "str": "-4" },
+      { "id": 5, "name": "WIS", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 6, "name": "CHA", "value": 7, "mod": -2, "str": "-2" }
     ],
     "notes": {
       "backstory": "A family horse that's way older than Octavian himself.<br /><br /><b><u>Actions</u></b><br /><b>Hooves.</b> Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 8 (2d4 + 3) bludgeoning damage."
     },
-    "tags": [
-      "NPC",
-      "Mount"
-    ],
+    "tags": [ "NPC", "Mount" ],
     "traits": {
       "ageGroup": "Elderly",
       "gender": "Male",
@@ -7547,6 +7562,2132 @@
         "he",
         "him"
       ]
+    }
+  },
+  {
+    "index": "malakar-draksang-001",
+    "name": "Malakar Draksang",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 17,
+      "description": ""
+    },
+    "alignment": {
+      "name": "NE",
+      "description": "Neutral Evil"
+    },
+    "background": {
+      "definition": {
+        "name": "Oriq Blood Mage"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Warlock"
+        },
+        "subclassDefinition": {
+          "name": "Blood Mage"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/STJyda6dAotBtnj/preview"
+    },
+    "hp": {
+      "value": 162,
+      "hitDieSize": "16d8 + 90"
+    },
+    "level": 16,
+    "race": {
+      "fullName": "Dragonborn",
+      "baseName": "Dragonborn",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 3,
+        "mod": 13,
+        "str": "+13"
+      },
+      {
+        "name": "intimidation",
+        "friendlyName": "Intimidation",
+        "stat": 5,
+        "mod": 15,
+        "str": "+15"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 5,
+        "mod": 15,
+        "str": "+15"
+      },
+      {
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 5,
+        "mod": 6,
+        "str": "+6"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 20, "mod": 5, "str": "+5" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 6, "name": "CHA", "value": 20, "mod": 5, "str": "+5" }
+    ],
+    "notes": {
+      "backstory": "Once a promising Silverquill student at Strixhaven, Malakar Draksang was passed over for Oracle and humiliated by the Dragonsguard. He abandoned the school, turned to forbidden arts, and now leads the Oriq. Obsessed with reclaiming what he believes is his by right, he seeks to awaken the Blood Avatar and destroy Strixhaven, seizing its arcane library for himself."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "A dark-scaled dragonborn in crimson robes, eyes glowing with cruel intellect and fury. His claws drip with arcane sigils carved into his own flesh.",
+      "bonds": "Will annihilate Strixhaven and rebuild it under his own doctrine.",
+      "eyes": "Red, narrow, always calculating",
+      "flaws": "Cannot tolerate disrespect; flies into violent rages when challenged.",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "None",
+      "ideals": "Power is wasted on the fearful. Only those willing to bleed for it deserve magic.",
+      "interactionTraits": "Speaks slowly until challenged — then erupts with fury.",
+      "mannerisms": "Flicks his fingers often, as though conducting invisible strings.",
+      "orientation": "Asexual",
+      "personalityTraits": "Grandiose, vengeful, coldly brilliant",
+      "relationship": "None",
+      "saying": "You may call me tyrant — I call it reclamation.",
+      "skin": "Dark crimson-black with glowing lines of carved runes",
+      "talents": "Blood ritual design, spell theft, destruction magic"
+    }
+  },
+  {
+    "index": "zaelith-tkaarn-002",
+    "name": "Zaelith T'Kaarn",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 17,
+      "description": ""
+    },
+    "alignment": {
+      "name": "NE",
+      "description": "Neutral Evil"
+    },
+    "background": {
+      "definition": {
+        "name": "Oriq Mage"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "Entropomancer"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/pbx2opGXsRp2E7t/preview"
+    },
+    "hp": {
+      "value": 112,
+      "hitDieSize": "14d8 + 56"
+    },
+    "level": 14,
+    "race": {
+      "fullName": "Githzerai",
+      "baseName": "Gith",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 3,
+        "mod": 13,
+        "str": "+13"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 5,
+        "mod": 13,
+        "str": "+13"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 3,
+        "mod": 9,
+        "str": "+9"
+      },
+      {
+        "name": "perception",
+        "friendlyName": "Perception",
+        "stat": 4,
+        "mod": 6,
+        "str": "+6"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 4, "name": "INT", "value": 20, "mod": 5, "str": "+5" },
+      { "id": 5, "name": "WIS", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 16, "mod": 3, "str": "+3" }
+    ],
+    "notes": {
+      "backstory": "A githzerai from Kythri, Zaelith once studied chaos theory and unstable magic at Strixhaven. Their experimentation with raw entropic energy caused a catastrophic explosion that shattered part of the campus and caught the attention of Malakar Draksang. Recruited as the Herald of Chaos, Zaelith now works to destabilize magical nexuses across Eberron in service of Malakar’s larger vision."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Ageless",
+      "appearance": "Tall and gaunt with ashen skin cracked like fractured stone, glowing from within like molten lava. Iridescent robes shimmer and shift constantly.",
+      "bonds": "Believes that order is a prison and only chaos allows truth to emerge.",
+      "eyes": "Liquid silver",
+      "flaws": "Their body and mind are partially unstable; sometimes flickers between thoughts or forms.",
+      "gender": "Non-gendered",
+      "genderPronouns": ["they", "them"],
+      "hair": "None",
+      "ideals": "The universe thrives on disorder; control is an illusion.",
+      "interactionTraits": "Speaks in fractured metaphors, often echoing itself mid-sentence.",
+      "mannerisms": "Flickers visually during heightened emotion, as if phasing between realities.",
+      "orientation": "Aromantic",
+      "personalityTraits": "Detached, brilliant, disturbingly serene",
+      "relationship": "None",
+      "saying": "Do you feel it? The unraveling? It's beautiful.",
+      "skin": "Cracked, ashen, glowing from within like a forge line",
+      "talents": "Entropy manipulation, battlefield destabilization, magical sabotage"
+    }
+  },
+  {
+    "index": "extus-narr-003",
+    "name": "Extus Narr",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 17,
+      "description": ""
+    },
+    "alignment": {
+      "name": "NE",
+      "description": "Neutral Evil"
+    },
+    "background": {
+      "definition": {
+        "name": "Oriq Mage"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "Dunamancer"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/LxffWytbKajBdDp/preview"
+    },
+    "hp": {
+      "value": 120,
+      "hitDieSize": "15d8 + 60"
+    },
+    "level": 15,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Human",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 3,
+        "mod": 13,
+        "str": "+13"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 5,
+        "mod": 13,
+        "str": "+13"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 3,
+        "mod": 9,
+        "str": "+9"
+      },
+      {
+        "name": "perception",
+        "friendlyName": "Perception",
+        "stat": 4,
+        "mod": 6,
+        "str": "+6"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 4, "name": "INT", "value": 20, "mod": 5, "str": "+5" },
+      { "id": 5, "name": "WIS", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 16, "mod": 3, "str": "+3" }
+    ],
+    "notes": {
+      "backstory": "Extus Narr is Malakar’s first lieutenant and a dunamancer who manipulates time to further the Oriq's goals. Once a respected scholar of magical theory, he turned against the arcane establishment, viewing institutionalized magic as stagnant and bloated. He leads Oriq operations to annihilate and suppress magical nexuses across Khorvaire, believing that only through collapse can true evolution be born."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Middle-aged",
+      "appearance": "Weathered human in a dark coat laced with thin silver thread, always standing unnaturally still — as though time forgets to move him.",
+      "bonds": "Wants to see every magical institution collapse under its own arrogance.",
+      "eyes": "Deep-set grey",
+      "flaws": "Detached from linear consequences; treats lives as variables in an equation.",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "None",
+      "ideals": "Stability is an illusion. Progress is born through destabilization.",
+      "interactionTraits": "Pauses for long seconds before answering, as though checking ahead.",
+      "mannerisms": "Taps two fingers in precise rhythm when thinking — a timing ritual.",
+      "personalityTraits": "Rational, distant, methodical",
+      "saying": "You think time protects you. It only observes.",
+      "skin": "Pale, faintly lined with silver",
+      "talents": "Temporal magic, predictive spellcasting, reality manipulation"
+    }
+  },
+  {
+    "index": "tibbin-fallowfist-1973",
+    "name": "Tibbin 'Taps' Fallowfist",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 12,
+      "description": "leather apron"
+    },
+    "alignment": {
+      "name": "N",
+      "description": "Neutral"
+    },
+    "background": {
+      "definition": {
+        "name": "Guild Artisan"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Commoner"
+        },
+        "subclassDefinition": {
+          "name": ""
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/ANAsZnt483Hod8s/preview"
+    },
+    "hp": {
+      "value": 22,
+      "hitDieSize": "4d8 + 4"
+    },
+    "level": 4,
+    "race": {
+      "fullName": "Halfling (Lightfoot)",
+      "baseName": "Halfling",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 25,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "sleight-of-hand",
+        "friendlyName": "Sleight of Hand",
+        "stat": 0,
+        "mod": 4,
+        "str": "+4"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "Tibbin, known as 'Taps' for his uncanny knack for always knowing what someone wants to drink before they order, runs a modest but popular taproom in Dragoneyes called Chance. A former smuggler with a heart of bronze, he left the underground behind — mostly — and now serves drinks, rumors, and occasional guidance to those who need a soft place to land. His establishment serves as a neutral zone, so long as no one breaks the unspoken rules."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Middle-aged",
+      "appearance": "Wiry halfling with a permanent five o'clock shadow, curly black hair in a ponytail, and one eye replaced by a polished brass monocle bolted to his skull",
+      "bonds": "Protects his bar and the people who rely on it — even if that means cutting deals with the darker corners of Sharn.",
+      "eyes": "Dark brown (one), brass monocle (other)",
+      "flaws": "Doesn’t get involved unless it directly affects his turf or his tab.",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Curly black, tied back",
+      "ideals": "Everyone deserves a chance and a drink. After that, you're on your own.",
+      "interactionTraits": "Blunt, sarcastic, but with an innate sense of fairness",
+      "mannerisms": "Always cleaning a glass, even when it's already clean; ends every sentence with a muttered 'eh?'",
+      "orientation": "Pansexual",
+      "personalityTraits": "Savvy, secretive, surprisingly wise",
+      "relationship": "Widower",
+      "skin": "Tanned and leathery from years of bar steam and smoke",
+      "talents": "Reads people like a book; master mixologist"
+    }
+  },
+  {
+    "index": "jorvax-tain-3472",
+    "name": "Jorvax Tain",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 13,
+      "description": "leather coat"
+    },
+    "alignment": {
+      "name": "LN",
+      "description": "Lawful Neutral"
+    },
+    "background": {
+      "definition": {
+        "name": "Guild Artisan"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Commoner"
+        },
+        "subclassDefinition": {
+          "name": ""
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/mt3bASm8NeRziFr/preview"
+    },
+    "hp": {
+      "value": 18,
+      "hitDieSize": "3d8 + 3"
+    },
+    "level": 3,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Human",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "vehicle-land",
+        "friendlyName": "Vehicles (Land)",
+        "stat": 0,
+        "mod": 4,
+        "str": "+4"
+      },
+      {
+        "name": "perception",
+        "friendlyName": "Perception",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "athletics",
+        "friendlyName": "Athletics",
+        "stat": 0,
+        "mod": 2,
+        "str": "+2"
+      },
+      {
+        "name": "intimidation",
+        "friendlyName": "Intimidation",
+        "stat": 0,
+        "mod": 2,
+        "str": "+2"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 11, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Jorvax Tain is a seasoned skycoach pilot whose entire life is measured in altitude and near-death misses. Born in the Cogs and determined to escape the depths of Sharn, they took to the skies young and never looked back. Known for cutting through the densest traffic of Skyway with finesse, Jorvax is perpetually frustrated by how often fate puts strange, unannounced passengers in their coach — but they never leave anyone behind, not even when the odds are against them."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "appearance": "Tall and wiry with a buzzed undercut, oil-streaked flight jacket, and mirrored sky goggles perched on their forehead",
+      "bonds": "Their skycoach is their only home and sanctuary — they will protect it at all costs.",
+      "eyes": "Hazel with stress lines",
+      "flaws": "Loses patience quickly, especially with people who don’t follow directions mid-air.",
+      "gender": "Non-binary",
+      "genderPronouns": ["they", "them"],
+      "hair": "Dust-blonde undercut with a braid",
+      "ideals": "A job done right, or not at all. And if you’re in my coach, follow my rules.",
+      "interactionTraits": "Sharp-tongued, sarcastic, but never lets a passenger fall",
+      "mannerisms": "Snaps fingers to emphasize orders; often muttering aerodynamic calculations under their breath",
+      "personalityTraits": "Gritty, tense, secretly proud of their work",
+      "relationship": "Single",
+      "skin": "Light olive, wind-chapped from constant exposure",
+      "talents": "Daredevil flying, urban navigation, tuning elemental rings"
+    }
+  },
+  {
+    "index": "brother-tern9-5914",
+    "name": "Brother Tern-9",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 17,
+      "description": ""
+    },
+    "alignment": {
+      "name": "LG",
+      "description": "Lawful Good"
+    },
+    "background": {
+      "definition": {
+        "name": "Acolyte"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Cleric"
+        },
+        "subclassDefinition": {
+          "name": "Knowledge Domain"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/qS7PTwzWn8GqRJd/preview"
+    },
+    "hp": {
+      "value": 27,
+      "hitDieSize": "5d8 + 5"
+    },
+    "level": 5,
+    "race": {
+      "fullName": "Warforged",
+      "baseName": "Warforged",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "religion",
+        "friendlyName": "Religion",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "medicine",
+        "friendlyName": "Medicine",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 2, "name": "DEX", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 6, "name": "CHA", "value": 11, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Brother Tern-9 is one of the last remaining ministers tending the ruins of the Fallen Bell, a once-grand temple toppled in a district collapse. He believes the Sovereign Host continues to speak, even through ruin. Tern-9 was not built for combat but awakened to divinity during the Last War. His metallic voice, tempered by decades of scripture and silence, offers wisdom to those who find themselves lost — physically or spiritually — in the depths of Sharn."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Elderly",
+      "appearance": "Burnished bronze plating adorned with prayer-etched scrollwork and a dangling rusted holy symbol shaped like a cracked bell",
+      "bonds": "Keeps the last rites and histories of the Fallen alive, refusing to let suffering go unnoticed.",
+      "eyes": "Soft blue glow from recessed sockets",
+      "flaws": "Refuses to abandon the ruins, even when danger rises",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "None",
+      "ideals": "Faith must be tested in broken places. That is where the gods speak loudest.",
+      "interactionTraits": "Speaks in slow, measured phrases; quotes scripture unexpectedly",
+      "mannerisms": "Pauses often to let silence carry weight; hands folded unless ministering",
+      "orientation": "Asexual",
+      "personalityTraits": "Wise, unhurried, deeply spiritual",
+      "relationship": "Single",
+      "skin": "Bronze-metallic with signs of rust and etching wear",
+      "talents": "Memorized scripture, battlefield chaplain, restorative rituals"
+    }
+  },
+  {
+    "index": "magister-olinna-veks-8821",
+    "name": "Magister Olinna Veks",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 12,
+      "description": "mage armor"
+    },
+    "alignment": {
+      "name": "NG",
+      "description": "Neutral Good"
+    },
+    "background": {
+      "definition": {
+        "name": "Sage"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "School of Abjuration"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/9GkLtBTQaoCRksG/preview"
+    },
+    "hp": {
+      "value": 40,
+      "hitDieSize": "7d6 + 14"
+    },
+    "level": 7,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Human",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 8,
+        "str": "+8"
+      },
+      {
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 10, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "A senior researcher at Morgrave University's Azure Gateway, Magister Veks oversees magical security and planar containment protocols. Lately, she's been plagued by cascading failures in the protective sigils — failures she can’t explain. Once known for poise and confidence in arcane defense, she now paces the halls in sweat-dampened robes, desperate for answers and fearing the unraveling of more than just spells."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Middle-aged",
+      "appearance": "Gaunt woman with hollow cheeks, pale skin slick with sweat, and ink-stained fingers; robes hang slightly askew as though hastily thrown on",
+      "bonds": "Believes that if Morgrave fails, it endangers all arcane scholarship in Khorvaire.",
+      "eyes": "Sunken blue",
+      "flaws": "Sleeps little, trusts less — increasingly convinced that sabotage is afoot.",
+      "gender": "Female",
+      "genderPronouns": ["she", "her"],
+      "hair": "Ash-blonde, tied back in a loose knot",
+      "ideals": "The strength of a society lies in its barriers. Protection is the first magic, not the last.",
+      "interactionTraits": "Bites fingernails mid-thought; speaks fast, with bursts of sharp logic and panic",
+      "mannerisms": "Pulls at her sleeves or collar when agitated; often forgets to blink when focusing",
+      "orientation": "Bisexual",
+      "personalityTraits": "Brilliant, paranoid, overburdened",
+      "relationship": "Divorced",
+      "saying": "The protections are unraveling. If Morgrave can’t hold its own wards, what does that mean for the rest of us?",
+      "skin": "Pale with freckled undertones, clammy",
+      "talents": "Sigil crafting, arcane reinforcement, counterspell theory"
+    }
+  },
+  {
+    "index": "sailen-valt-3340",
+    "name": "Sailen Valt",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 15,
+      "description": "studded leather"
+    },
+    "alignment": {
+      "name": "CN",
+      "description": "Chaotic Neutral"
+    },
+    "background": {
+      "definition": {
+        "name": "Criminal"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Rogue"
+        },
+        "subclassDefinition": {
+          "name": "Mastermind"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/p4bRNwWFNXZQmRP/preview"
+    },
+    "hp": {
+      "value": 45,
+      "hitDieSize": "6d8 + 12"
+    },
+    "level": 6,
+    "race": {
+      "fullName": "Drow",
+      "baseName": "Elf",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "stealth",
+        "friendlyName": "Stealth",
+        "stat": 0,
+        "mod": 8,
+        "str": "+8"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "sleight-of-hand",
+        "friendlyName": "Sleight of Hand",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 6, "name": "CHA", "value": 14, "mod": 2, "str": "+2" }
+    ],
+    "notes": {
+      "backstory": "Sailen Valt operates a thriving smuggling ring out of the Upper Cogs, using warforged labor, coded manifest illusions, and an extensive network of bribes. Known for his cold efficiency and strategic mind, he masks a surprising curiosity beneath his ruthless persona. Rumors claim he once studied at Morgrave before vanishing into the shadows — now, he pulls strings others don’t even see."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Slate-gray skin, tightly braided silver hair, and a matte black coat reinforced with light armor; thin lips always half-smirking",
+      "bonds": "The smuggling ring is his true family; he protects it with feral precision.",
+      "eyes": "Violet",
+      "flaws": "Underestimates threats when curious — which is often",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Silver",
+      "ideals": "Information is currency, and everyone has a price — even if they don’t know it yet.",
+      "interactionTraits": "Circles while talking, quietly narrates people’s expressions like a puzzle he's solving",
+      "mannerisms": "Flicks a small throwing knife between fingers absentmindedly",
+      "orientation": "Queer",
+      "personalityTraits": "Dangerous, observant, eerily charismatic",
+      "relationship": "Unattached",
+      "saying": "You’re either the worst spy in Sharn or just the dumbest. Either way, I want answers.",
+      "skin": "Dark gray with faint lavender undertones",
+      "talents": "Forgery, illusions, organized crime logistics"
+    }
+  },
+  {
+    "index": "madame-solvara-7170",
+    "name": "Madame Solvara",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 13,
+      "description": "(mage armor)"
+    },
+    "alignment": {
+      "name": "CG",
+      "description": "Chaotic Good"
+    },
+    "background": {
+      "definition": {
+        "name": "Entertainer"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "School of Illusion"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/qJTY2godCEaG6kT/preview"
+    },
+    "hp": {
+      "value": 33,
+      "hitDieSize": "6d6 + 6"
+    },
+    "level": 6,
+    "race": {
+      "fullName": "High Elf",
+      "baseName": "Elf",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "performance",
+        "friendlyName": "Performance",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 4,
+        "str": "+4"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "A former star of the Cyran stage, Madame Solvara fled to Sharn after the Mourning and has since reinvented herself as the mistress of Smoky Towers’ Classic Theater. She lives for flair, spectacle, and the drama of everyday life. Her illusions are masterpieces of artistic expression—used equally to enhance performances and stir emotion in her audience. To her, every stranger is a scene partner waiting for their cue."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Radiant elven woman draped in layers of shimmering fabric, gold makeup highlighting high cheekbones and expressive violet eyes",
+      "attitude": "Flamboyant and gracious",
+      "bonds": "The Classic Theater is her sanctuary and stage; she’ll defend it with flourish and flame if needed.",
+      "eyes": "Violet, ringed in gold liner",
+      "flaws": "Obsessed with aesthetics to the point of ignoring practical concerns",
+      "gender": "Female",
+      "genderPronouns": ["she", "her"],
+      "hair": "Flowing silver-blonde, braided with filigree wire and glowing beads",
+      "ideals": "Life is a stage—why not make it a beautiful one?",
+      "interactionTraits": "Narrates her own actions in the third person for dramatic effect",
+      "mannerisms": "Always twirls or flourishes her hands when casting or conversing",
+      "orientation": "Dramatically pansexual",
+      "personalityTraits": "Grandiose, warm, deeply empathetic—especially toward the lost or grieving",
+      "relationship": "Widowed (formerly married to a Cyran playwright)",
+      "saying": "What an entrance! Now, dear, what’s your monologue?",
+      "skin": "Porcelain-smooth, with a faint shimmer like moonlight",
+      "talents": "Illusory scenery, spotlight conjuration, compelling monologue critique"
+    }
+  },
+  {
+    "index": "kassiel-d-tarkanan-9091",
+    "name": "Kassiel d’Tarkanan",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 16,
+      "description": "(shimmerthread cloak)"
+    },
+    "alignment": {
+      "name": "N",
+      "description": "Neutral"
+    },
+    "background": {
+      "definition": {
+        "name": "Spy"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Rogue"
+        },
+        "subclassDefinition": {
+          "name": "Arcane Trickster"
+        }
+      },
+      {
+        "definition": {
+          "name": "Sorcerer"
+        },
+        "subclassDefinition": {
+          "name": "Aberrant Mind"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/m7HbdcNmSk8iQmA/preview"
+    },
+    "hp": {
+      "value": 72,
+      "hitDieSize": "8d8 + 32"
+    },
+    "level": 8,
+    "race": {
+      "fullName": "Half-Elf",
+      "baseName": "Half-Elf",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      },
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "stealth",
+        "friendlyName": "Stealth",
+        "stat": 0,
+        "mod": 8,
+        "str": "+8"
+      },
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 18, "mod": 4, "str": "+4" }
+    ],
+    "notes": {
+      "backstory": "A high-ranking agent of House Tarkanan, Kassiel bears an aberrant dragonmark capable of warping perception and energy alike. Tasked with identifying those who might carry latent aberrant marks, she offers transformation through a controlled ritual. Her presence is magnetic yet unobtrusive — she always offers, never demands. Her elegance and composure mask the burden of a power that demands control, consequence, and sacrifice."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Tall and poised with deep umber skin, jet-black hair in a swept braid, and a copper-wrapped left hand that pulses with hidden power",
+      "attitude": "Measured and composed",
+      "bonds": "Seeks to awaken others to their potential without condemning them to servitude or fear.",
+      "eyes": "Bright silver, flecked with arcs of violet static",
+      "flaws": "Believes that power is meant to be *offered*, not wielded — even when time is running out.",
+      "gender": "Female",
+      "genderPronouns": ["she", "her"],
+      "hair": "Jet black, swept braid with copper filaments woven through",
+      "ideals": "Choice defines identity. The mark is a mirror, not a chain.",
+      "interactionTraits": "Never raises her voice; always makes space for others to speak first",
+      "mannerisms": "Touches her wrapped hand when contemplating a serious truth",
+      "orientation": "Graysexual",
+      "personalityTraits": "Unflappable, curious, quietly intense",
+      "relationship": "Unknown",
+      "saying": "You always have a choice. I merely help you see it.",
+      "skin": "Dark umber with faint iridescent undertones",
+      "talents": "Aberrant mark rituals, psionic resistance training, subtle manipulations"
+    }
+  },
+  {
+    "index": "korynth-alshain-6011",
+    "name": "Professor Korynth Alshain",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 12,
+      "description": "(mage armor)"
+    },
+    "alignment": {
+      "name": "LN",
+      "description": "Lawful Neutral"
+    },
+    "background": {
+      "definition": {
+        "name": "Sage"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "School of Abjuration"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/39nf4DDKTmLe9Ga/preview"
+    },
+    "hp": {
+      "value": 46,
+      "hitDieSize": "8d6 + 16"
+    },
+    "level": 8,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Human",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 8,
+        "str": "+8"
+      },
+      {
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 10, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Professor Korynth Alshain is the architect behind the Aegis Matrix, an experimental arcane lattice meant to reinforce Sharn’s ward systems. He is devastated by its failure and the release of the Arcane Devourer. Though deeply reserved, his guilt pushes him to work tirelessly to locate the scattered fragments and prevent a city-wide collapse."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Late middle-aged",
+      "appearance": "Tall, thin, with high cheekbones and steel-grey hair; wears finely pressed robes with crisp angular trim",
+      "attitude": "Withdrawn but intensely focused",
+      "bonds": "Believes it is his personal duty to restore the Aegis Matrix at any cost.",
+      "eyes": "Pale blue, often bloodshot from sleepless nights",
+      "flaws": "Tends to disregard others’ emotional states while obsessing over magical fault analysis",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Steel grey, neatly combed back",
+      "ideals": "Order and protection are the purpose of abjuration. Everything else is commentary.",
+      "interactionTraits": "Pauses frequently to rephrase thoughts; occasionally mutters to himself while tracking ward logic mid-conversation",
+      "mannerisms": "Always straightens objects in the room as he talks — books, papers, even chairs",
+      "orientation": "Asexual",
+      "personalityTraits": "Meticulous, methodical, burdened by guilt",
+      "relationship": "Widower",
+      "saying": "There was a miscalculation — not in the math, but in what we assumed the Matrix could endure.",
+      "skin": "Pale, with faint age spots and sharp lines of stress",
+      "talents": "Warding theory, magical forensics, matrix design"
+    }
+  },
+  {
+    "index": "ryn-stormhold-8823",
+    "name": "Ryn Stormhold",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 17,
+      "description": "(chain shirt and shield)"
+    },
+    "alignment": {
+      "name": "NG",
+      "description": "Neutral Good"
+    },
+    "background": {
+      "definition": {
+        "name": "City Watch"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Fighter"
+        },
+        "subclassDefinition": {
+          "name": "Battle Master"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/ED5AAdsbYx9RkES/preview"
+    },
+    "hp": {
+      "value": 65,
+      "hitDieSize": "10d10 + 10"
+    },
+    "level": 10,
+    "race": {
+      "fullName": "Half-Orc",
+      "baseName": "Half-Orc",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "athletics",
+        "friendlyName": "Athletics",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      },
+      {
+        "name": "intimidation",
+        "friendlyName": "Intimidation",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "perception",
+        "friendlyName": "Perception",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "survival",
+        "friendlyName": "Survival",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 14, "mod": 2, "str": "+2" }
+    ],
+    "notes": {
+      "backstory": "Captain Ryn Stormhold leads the University Guard with military precision and unshakable focus. Once part of the Brelish garrison during the Last War, they now defend Morgrave’s faculty and students from threats both mundane and magical. Although wary of outsiders and mages who 'tamper with things they don’t understand,' Ryn respects courage and earns trust through grit, not words."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "appearance": "Broad-shouldered, slate-skinned half-orc with close-cropped hair and heavy jaw tusks; wears reinforced chain over a blue-grey uniform tabard",
+      "attitude": "Wary but protective",
+      "bonds": "Will not let another person die due to arcane negligence on their watch.",
+      "eyes": "Dark brown, alert and scanning at all times",
+      "flaws": "Quick to judge spellcasters who treat magic like a toy",
+      "gender": "Non-binary",
+      "genderPronouns": ["they", "them"],
+      "hair": "Black, cropped close at the sides",
+      "ideals": "Protection comes from structure and preparedness, not just good intentions.",
+      "interactionTraits": "Barks orders clearly; never repeats themselves unless you’re bleeding",
+      "mannerisms": "Cracks knuckles one finger at a time before fights; adjusts their belt when annoyed",
+      "orientation": "Bisexual",
+      "personalityTraits": "Grounded, unsentimental, loyal",
+      "relationship": "Single",
+      "saying": "If it eats spells, stop throwing spells at it. Think before you die.",
+      "skin": "Slate grey with faint scars across the cheek and neck",
+      "talents": "Field command, threat triage, magical suppression tactics"
+    }
+  },
+  {
+    "index": "thariel-archivist-9104",
+    "name": "Archivist Thariel",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": "Sharn"
+    },
+    "ac": {
+      "value": 11,
+      "description": "(mage armor)"
+    },
+    "alignment": {
+      "name": "NG",
+      "description": "Neutral Good"
+    },
+    "background": {
+      "definition": {
+        "name": "Cloistered Scholar"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "School of Divination"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/QRpeZxbZ7kdDiHL/preview"
+    },
+    "hp": {
+      "value": 39,
+      "hitDieSize": "7d6 + 14"
+    },
+    "level": 7,
+    "race": {
+      "fullName": "Elf",
+      "baseName": "Elf",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 4,
+        "str": "+4"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 10, "mod": 0, "str": "+0" }
+    ],
+    "notes": {
+      "backstory": "Thariel is the caretaker of the Vault of Forgotten Relics beneath Morgrave University. Brilliant but anxious, she keeps careful watch over unstable magical artifacts and has tracked unusual resonance patterns in those tied to the shattered Aegis Matrix. She suspects sabotage — and though she won’t speak the Oriq name aloud, her questions point there."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "appearance": "Thin-framed elf with sharply angled features and oversized spectacles; sleeves ink-stained from constant notetaking",
+      "attitude": "Timid but perceptive",
+      "bonds": "She considers the relics in her care more predictable than most people.",
+      "eyes": "Violet, with twitching glances to nearby glyph wards",
+      "flaws": "Tends to speak in riddles or academic jargon when nervous, even when clarity is needed",
+      "gender": "Female",
+      "genderPronouns": ["she", "her"],
+      "hair": "Pale blonde, bound in a fraying ribbon",
+      "ideals": "Magic must be preserved, not controlled. Everything has a resonance.",
+      "interactionTraits": "Talks too fast when stressed; wrings hands around a quill or book spine",
+      "mannerisms": "Looks over her shoulder before answering any direct question",
+      "orientation": "Demisexual",
+      "personalityTraits": "Brilliant, jumpy, hyperfocused",
+      "relationship": "Single",
+      "saying": "If it’s humming when it shouldn’t be... someone’s already touched it.",
+      "skin": "Pale with a soft violet undertone",
+      "talents": "Relic identification, glyph resonance mapping, arcane containment"
+    }
+  },
+  {
+    "index": "caleon-merris-7140",
+    "name": "Caleon Merris",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 12,
+      "description": "(mage armor)"
+    },
+    "alignment": {
+      "name": "LE",
+      "description": "Lawful Evil"
+    },
+    "background": {
+      "definition": {
+        "name": "Guild Artisan (Public Servant)"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Wizard"
+        },
+        "subclassDefinition": {
+          "name": "School of Enchantment"
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/mLBxipapNGxy4zR/preview"
+    },
+    "hp": {
+      "value": 49,
+      "hitDieSize": "9d6 + 18"
+    },
+    "level": 9,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Human",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "deception",
+        "friendlyName": "Deception",
+        "stat": 0,
+        "mod": 9,
+        "str": "+9"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 0,
+        "mod": 10,
+        "str": "+10"
+      },
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 7,
+        "str": "+7"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 4, "name": "INT", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 6, "name": "CHA", "value": 20, "mod": 5, "str": "+5" }
+    ],
+    "notes": {
+      "backstory": "Caleon Merris serves as mayor of a peaceful Aundairian village — a constructed illusion housing the player characters’ false lives. Beloved for his warmth and helpful nature, he checks in regularly with personal kindness. But beneath that charisma is a powerful Oriq enchanter tasked with maintaining the psychic veil. He uses charm magic with surgical precision to suppress doubts and reinforce the town's emotional security."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Middle-aged",
+      "appearance": "Well-groomed, golden-haired man with laugh lines and kind blue eyes; always dressed in tailored vests and a town sigil brooch",
+      "attitude": "Warm and thoughtful — until pushed",
+      "bonds": "His greatest pride is how ‘content’ the villagers are — even if he has to ensure that personally.",
+      "eyes": "Bright blue, with an uncanny sense of attentiveness",
+      "flaws": "Believes the illusion he maintains is more merciful than truth",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Golden blond, carefully parted",
+      "ideals": "A perfect life can be built — if people are guided to want it.",
+      "interactionTraits": "Uses names often when speaking; always finds something to compliment",
+      "mannerisms": "Clasps his hands when listening; adjusts his vest when thinking",
+      "orientation": "Heterosexual",
+      "personalityTraits": "Charming, exacting, disturbingly sincere",
+      "relationship": "Widower (his family never existed)",
+      "saying": "I’m only here to help — you know that, don’t you?",
+      "skin": "Rosy with a warm undertone, no visible blemishes",
+      "talents": "Emotional manipulation, memory reinforcement, illusion coordination"
+    }
+  },
+  {
+    "index": "mirin-thessarian-3082",
+    "name": "Mirin Thessarian",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 11,
+      "description": "(common clothes)"
+    },
+    "alignment": {
+      "name": "NG",
+      "description": "Neutral Good"
+    },
+    "background": {
+      "definition": {
+        "name": "Guild Artisan (Tavernkeeper)"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Commoner"
+        },
+        "subclassDefinition": {
+          "name": ""
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/Hj6P4iH5yNj9AsK/preview"
+    },
+    "hp": {
+      "value": 22,
+      "hitDieSize": "4d8 + 4"
+    },
+    "level": 4,
+    "race": {
+      "fullName": "Human",
+      "baseName": "Human",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 30,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "persuasion",
+        "friendlyName": "Persuasion",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "medicine",
+        "friendlyName": "Medicine",
+        "stat": 0,
+        "mod": 4,
+        "str": "+4"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 0,
+        "mod": 3,
+        "str": "+3"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 2, "name": "DEX", "value": 11, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 14, "mod": 2, "str": "+2" },
+      { "id": 5, "name": "WIS", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 16, "mod": 3, "str": "+3" }
+    ],
+    "notes": {
+      "backstory": "Mirin Thessarian runs The Drowsy Griffin Tavern, a cozy anchor point in the players’ false village. Gentle, nurturing, and effortlessly intuitive, she seems to always know what each person needs — emotionally or otherwise. Whether it’s a hot drink, a soft word, or quiet company, she provides it. The players may grow attached to her long before realizing she’s part of the illusion."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Middle-aged",
+      "appearance": "Matronly human woman with chestnut hair in a bun, a warm complexion, and soft crow’s feet at her eyes",
+      "attitude": "Kind, calming, gently curious",
+      "bonds": "Feels responsible for the emotional health of the whole town — even if she doesn’t fully know why.",
+      "eyes": "Soft brown with gold flecks, full of compassion",
+      "flaws": "So focused on others’ comfort that she often forgets her own story",
+      "gender": "Female",
+      "genderPronouns": ["she", "her"],
+      "hair": "Chestnut, usually in a braid or bun with a cloth tie",
+      "ideals": "Everyone deserves warmth, dignity, and a space to rest",
+      "interactionTraits": "Speaks softly, often punctuating sentences with a knowing smile or warm touch on the arm",
+      "mannerisms": "Always cleaning something with a cloth, often humming quietly while she works",
+      "orientation": "Heterosexual",
+      "personalityTraits": "Motherly, soothing, instinctively wise",
+      "relationship": "Widowed",
+      "saying": "You look like you’ve had a long day — sit, and I’ll bring you something hot.",
+      "skin": "Rosy and sun-warmed, with gentle lines",
+      "talents": "Comfort brewing, emotional disarmament, long memory for people’s preferences"
+    }
+  },
+  {
+    "index": "tobias-quill-4912",
+    "name": "Tobias Quill",
+    "group": {
+      "index": "eberron",
+      "name": "Eberron",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 10,
+      "description": "(common clothes)"
+    },
+    "alignment": {
+      "name": "LN",
+      "description": "Lawful Neutral"
+    },
+    "background": {
+      "definition": {
+        "name": "Scribe"
+      }
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Commoner"
+        },
+        "subclassDefinition": {
+          "name": ""
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/JsqW5DKrTkbspEN/preview"
+    },
+    "hp": {
+      "value": 18,
+      "hitDieSize": "3d8 + 3"
+    },
+    "level": 3,
+    "race": {
+      "fullName": "Gnome",
+      "baseName": "Gnome",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 25,
+          "fly": 0,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "skills": [
+      {
+        "name": "investigation",
+        "friendlyName": "Investigation",
+        "stat": 0,
+        "mod": 6,
+        "str": "+6"
+      },
+      {
+        "name": "history",
+        "friendlyName": "History",
+        "stat": 0,
+        "mod": 5,
+        "str": "+5"
+      },
+      {
+        "name": "insight",
+        "friendlyName": "Insight",
+        "stat": 0,
+        "mod": 4,
+        "str": "+4"
+      },
+      {
+        "name": "arcana",
+        "friendlyName": "Arcana",
+        "stat": 0,
+        "mod": 3,
+        "str": "+3"
+      }
+    ],
+    "stats": [
+      { "id": 1, "name": "STR", "value": 8, "mod": -1, "str": "-1" },
+      { "id": 2, "name": "DEX", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 3, "name": "CON", "value": 12, "mod": 1, "str": "+1" },
+      { "id": 4, "name": "INT", "value": 17, "mod": 3, "str": "+3" },
+      { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 6, "name": "CHA", "value": 9, "mod": -1, "str": "-1" }
+    ],
+    "notes": {
+      "backstory": "Tobias Quill serves as the town's record-keeper, obsessively maintaining census rolls, birth certificates, crop yields, and weather logs. Known for his biting comments and relentless eye for detail, he’s one of the few people capable of noticing minor inconsistencies in the players’ false reality — and grows increasingly suspicious as more errors pile up. He rarely makes accusations… but always writes them down."
+    },
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Elderly",
+      "appearance": "Short, stooped gnome with thick spectacles that magnify his eyes, ink-smudged sleeves, and a vest covered in quills and notepads",
+      "attitude": "Irritable and suspicious, but methodical",
+      "bonds": "Believes that well-kept records are the only honest legacy a society leaves behind.",
+      "eyes": "Grey, watery, and magnified 2x through his lenses",
+      "flaws": "Cannot ignore inconsistencies — even imaginary ones",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Wispy white with ink-stained streaks from hand habits",
+      "ideals": "The truth is in the margins, if someone’s willing to check",
+      "interactionTraits": "Mumbles constantly; punctuates his thoughts by snapping his fingers or scribbling",
+      "mannerisms": "Carries three quills behind his ear and one always in hand — always",
+      "orientation": "Aromantic",
+      "personalityTraits": "Pedantic, sharp-tongued, detail-obsessed",
+      "relationship": "Single",
+      "saying": "That number's wrong. I filed that ledger myself. Something’s missing.",
+      "skin": "Lightly freckled, ink-stained fingers and wrists",
+      "talents": "Memory retention, forgery detection, obsessive cross-referencing"
+    }
+  },
+{
+  "index": "veren-tann-5791",
+  "name": "Colonel Veren Tann",
+  "group": {
+    "index": "eberron",
+    "name": "Eberron",
+    "subgroupDefinition": ""
+  },
+  "ac": {
+    "value": 17,
+    "description": "(military half plate)"
+  },
+  "alignment": {
+    "name": "LN",
+    "description": "Lawful Neutral"
+  },
+  "background": {
+    "definition": {
+      "name": "Soldier (Commander)"
+    }
+  },
+  "classes": [
+    {
+      "definition": {
+        "name": "Fighter"
+      },
+      "subclassDefinition": {
+        "name": "Battle Master"
+      }
+    }
+  ],
+  "decorations": {
+    "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/9gXbKoQNnBdxNj6/preview"
+  },
+  "hp": {
+    "value": 82,
+    "hitDieSize": "11d10 + 22"
+  },
+  "level": 11,
+  "race": {
+    "fullName": "Half-Elf",
+    "baseName": "Humanoid",
+    "weightSpeeds": {
+      "normal": {
+        "walk": 30,
+        "fly": 0,
+        "burrow": 0,
+        "swim": 0,
+        "climb": 0
+      }
+    }
+  },
+  "skills": [
+    {
+      "name": "intimidation",
+      "friendlyName": "Intimidation",
+      "stat": 0,
+      "mod": 6,
+      "str": "+6"
+    },
+    {
+      "name": "athletics",
+      "friendlyName": "Athletics",
+      "stat": 0,
+      "mod": 7,
+      "str": "+7"
+    },
+    {
+      "name": "perception",
+      "friendlyName": "Perception",
+      "stat": 0,
+      "mod": 5,
+      "str": "+5"
+    },
+    {
+      "name": "insight",
+      "friendlyName": "Insight",
+      "stat": 0,
+      "mod": 4,
+      "str": "+4"
+    }
+  ],
+  "stats": [
+    { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+    { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+    { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+    { "id": 4, "name": "INT", "value": 12, "mod": 1, "str": "+1" },
+    { "id": 5, "name": "WIS", "value": 16, "mod": 3, "str": "+3" },
+    { "id": 6, "name": "CHA", "value": 14, "mod": 2, "str": "+2" }
+  ],
+  "notes": {
+    "backstory": "Colonel Veren Tann is a career soldier and drillmaster at Rekkenmark Academy. A veteran of the Last War, he now oversees simulation training — but views suffering as the price of strength. Though he knows something is wrong with the simulation system, he refuses to shut it down, believing the strong will survive, and the weak should not be coddled.",
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Elder",
+      "appearance": "Grim, weathered face with short steel-gray hair and beard. Wears dark military uniform with a brass monocle over one eye.",
+      "attitude": "Demanding but purposeful",
+      "bonds": "Believes in absolute discipline and survival through hardship.",
+      "eyes": "Dark with sharp corners, unblinking",
+      "flaws": "Views empathy as weakness. Won’t stop a simulation once it begins.",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Dark gray, trimmed close",
+      "ideals": "Only those who endure deserve to lead.",
+      "interactionTraits": "Rarely raises his voice — doesn’t have to.",
+      "mannerisms": "Constantly adjusts his coat or gloves as if preparing for review",
+      "orientation": "Heterosexual",
+      "personalityTraits": "Authoritative, cold, focused",
+      "relationship": "Widower",
+      "saying": "You don’t need luck. You need orders, and a spine.",
+      "skin": "Ash-pale with a scar across one cheek",
+      "talents": "Tactics, battlefield control, psychological pressure"
+    }
+  }
+},
+{
+  "index": "dain-rurik-3038",
+  "name": "Cadet Dain Rurik",
+  "group": {
+    "index": "eberron",
+    "name": "Eberron",
+    "subgroupDefinition": ""
+  },
+  "ac": {
+    "value": 16,
+    "description": "(chain shirt and training shield)"
+  },
+  "alignment": {
+    "name": "LG",
+    "description": "Lawful Good"
+  },
+  "background": {
+    "definition": {
+      "name": "Soldier (Cadet)"
+    }
+  },
+  "classes": [
+    {
+      "definition": {
+        "name": "Fighter"
+      },
+      "subclassDefinition": {
+        "name": "Battle Master"
+      }
+    }
+  ],
+  "decorations": {
+    "avatarUrl": "http://wizzle.tplinkdns.com:38090/index.php/s/Ze7pjLQpqAdfLaH/preview"
+  },
+  "hp": {
+    "value": 42,
+    "hitDieSize": "6d10 + 6"
+  },
+  "level": 6,
+  "race": {
+    "fullName": "Dwarf",
+    "baseName": "Dwarf",
+    "weightSpeeds": {
+      "normal": {
+        "walk": 25,
+        "fly": 0,
+        "burrow": 0,
+        "swim": 0,
+        "climb": 0
+      }
+    }
+  },
+  "skills": [
+    {
+      "name": "athletics",
+      "friendlyName": "Athletics",
+      "stat": 0,
+      "mod": 6,
+      "str": "+6"
+    },
+    {
+      "name": "perception",
+      "friendlyName": "Perception",
+      "stat": 0,
+      "mod": 4,
+      "str": "+4"
+    },
+    {
+      "name": "survival",
+      "friendlyName": "Survival",
+      "stat": 0,
+      "mod": 3,
+      "str": "+3"
+    },
+    {
+      "name": "insight",
+      "friendlyName": "Insight",
+      "stat": 0,
+      "mod": 2,
+      "str": "+2"
+    }
+  ],
+  "stats": [
+    { "id": 1, "name": "STR", "value": 16, "mod": 3, "str": "+3" },
+    { "id": 2, "name": "DEX", "value": 12, "mod": 1, "str": "+1" },
+    { "id": 3, "name": "CON", "value": 14, "mod": 2, "str": "+2" },
+    { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+    { "id": 5, "name": "WIS", "value": 14, "mod": 2, "str": "+2" },
+    { "id": 6, "name": "CHA", "value": 10, "mod": 0, "str": "+0" }
+  ],
+  "notes": {
+    "backstory": "Dain Rurik is a young Karrnathi cadet trying to prove his worth in a system that’s brutal by design. Raised with pride in Rekkenmark’s legacy, Dain signed up to follow orders — but the failing simulation is forcing him to think for himself. He may crack or rise to meet it depending on the example set by others.",
+    "tags": [ "NPC" ],
+    "traits": {
+      "ageGroup": "Young Adult",
+      "appearance": "Stocky dwarf with a blunt jaw and a red cadet sash, partially scorched. Chain shirt is hand-repaired and patched with personal pride.",
+      "attitude": "Alert and eager, but starting to question the chain of command",
+      "bonds": "Desperate to live up to his father's legacy, a decorated Rekkenmark officer.",
+      "eyes": "Amber-brown, intense but uncertain",
+      "flaws": "Struggles with hesitation under pressure; masks fear with bravado",
+      "gender": "Male",
+      "genderPronouns": ["he", "him"],
+      "hair": "Dark auburn, cropped short and uneven",
+      "ideals": "Strength comes from discipline, but loyalty must be earned.",
+      "interactionTraits": "Talks through battle steps like a training manual; instinctively salutes officers, even under fire",
+      "mannerisms": "Adjusts his gloves and shield strap constantly, like a ritual for courage",
+      "orientation": "Heterosexual",
+      "personalityTraits": "Earnest, stubborn, deeply moral",
+      "relationship": "Single",
+      "saying": "Orders are clear. But they’re not always right.",
+      "skin": "Pale, lightly freckled, with a fresh burn mark on the neck",
+      "talents": "Shield tactics, infantry strategy, frontline resilience"
+    }
+  }
+},
+  {
+    "index": "mara-mirages",
+    "name": "Mara Mirages",
+    "tags": [ "Nomad", "Illusionist", "Trader", "Desert" ],
+    "level": 3,
+    "stats": [
+      {
+        "id": 1,
+        "name": "Body",
+        "value": 2
+      },
+      {
+        "id": 2,
+        "name": "Mind",
+        "value": 4
+      },
+      {
+        "id": 3,
+        "name": "Spirit",
+        "value": 3
+      }
+    ],
+    "hp": {
+      "value": 4
+    },
+    "ip": {
+      "value": 8
+    },
+    "ap": {
+      "value": 3
+    },
+    "ac": {
+      "value": 11
+    },
+    "inventory": [
+      "Mirage Dust (create minor illusions in open air)",
+      "Glass Compass that spins at night",
+      "Folded trading map of the Sunken Dunes",
+      "Bundle of aromatic herbs from the Oasis Market",
+      "Letter from a mysterious contact in the Crystal City",
+      "Sun-bleached scarf that hides magical script"
+    ],
+    "appearance": "Tall and wiry with wind-burned skin and layered, flowing fabrics in faded jewel tones. Her eyes shimmer unnaturally, as if always reflecting a mirage. Speaks in hushed, melodic tones and gestures with exaggerated flair.",
+    "backstory": "A former court illusionist turned desert wanderer, Mara fled persecution in the mirrored cities and now trades secrets and goods across the dunes. Her illusions serve both as defense and disguise, and she offers guidance—if the price is right.",
+    "quirk": "Never walks in a straight line; always moves with subtle misdirection or spins.",
+    "quotes": [
+      "The dunes will bury fools and reveal the wise.",
+      "I can show you the way — if you can handle what you’ll find."
+    ],
+    "traits": {
+      "ageGroup": "Unknown",
+      "gender": "Female",
+      "genderPronouns": [ "she", "her" ]
     }
   }
 ]

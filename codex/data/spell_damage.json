@@ -1,0 +1,142 @@
+{
+  "0": {
+    "half": {
+      "single": null,
+      "multi": "1d6"
+    },
+    "negates": {
+      "single": "1d10",
+      "multi": null
+    },
+    "none": {
+      "single": null,
+      "multi": "1d4"
+    }
+  },
+  "1": {
+    "half": {
+      "single": "2d10",
+      "multi": "2d6"
+    },
+    "negates": {
+      "single": "3d8",
+      "multi": "2d8"
+    },
+    "none": {
+      "single": "2d4",
+      "multi": "3d4"
+    }
+  },
+  "2": {
+    "half": {
+      "single": "3d10",
+      "multi": "3d6"
+    },
+    "negates": {
+      "single": "6d6",
+      "multi": "2d12"
+    },
+    "none": {
+      "single": "3d4",
+      "multi": "4d4"
+    }
+  },
+  "3": {
+    "half": {
+      "single": "5d10",
+      "multi": "6d6"
+    },
+    "negates": {
+      "single": "6d10",
+      "multi": "4d12"
+    },
+    "none": {
+      "single": "4d4",
+      "multi": "5d4"
+    }
+  },
+  "4": {
+    "half": {
+      "single": "6d10",
+      "multi": "7d6"
+    },
+    "negates": {
+      "single": "10d8",
+      "multi": "9d6"
+    },
+    "none": {
+      "single": "5d4",
+      "multi": "6d4"
+    }
+  },
+  "5": {
+    "half": {
+      "single": "7d10",
+      "multi": "8d6"
+    },
+    "negates": {
+      "single": "9d10",
+      "multi": "10d6"
+    },
+    "none": {
+      "single": "6d4",
+      "multi": "7d4"
+    }
+  },
+  "6": {
+    "half": {
+      "single": "10d10",
+      "multi": "11d6"
+    },
+    "negates": {
+      "single": "15d8",
+      "multi": "14d6"
+    },
+    "none": {
+      "single": "7d4",
+      "multi": "8d4"
+    }
+  },
+  "7": {
+    "half": {
+      "single": "11d10",
+      "multi": "12d6"
+    },
+    "negates": {
+      "single": "17d8",
+      "multi": "15d6"
+    },
+    "none": {
+      "single": "8d4",
+      "multi": "9d4"
+    }
+  },
+  "8": {
+    "half": {
+      "single": "12d10",
+      "multi": "13d6"
+    },
+    "negates": {
+      "single": "15d10",
+      "multi": "16d6"
+    },
+    "none": {
+      "single": "9d4",
+      "multi": "10d4"
+    }
+  },
+  "9": {
+    "half": {
+      "single": "15d10",
+      "multi": "14d6"
+    },
+    "negates": {
+      "single": "16d12",
+      "multi": "11d10"
+    },
+    "none": {
+      "single": "10d4",
+      "multi": "11d4"
+    }
+  }
+}

@@ -1,0 +1,218 @@
+[
+  {
+    "index": "acolyte",
+    "name": "Acolyte",
+    "description": "You served in a temple, monastery, or religious order, tending to the faithful and studying sacred texts.",
+    "equipment": [
+      "Simple robes",
+      "Ceremonial dagger",
+      "Holy symbol"
+    ],
+    "tags": [
+      "Faithful",
+      "Learned",
+      "Ritualist",
+      "Healer",
+      "Devout"
+    ],
+    "wealth": "0"
+  },
+  {
+    "index": "artisan",
+    "name": "Artisan",
+    "description": "You practiced a craft or trade, creating goods with your hands and selling them in markets and shops.",
+    "equipment": [
+      "Work clothes",
+      "Belt knife",
+      "Craftsman's tools"
+    ],
+    "tags": [
+      "Skilled",
+      "Creative",
+      "Practical",
+      "Patient",
+      "Precise"
+    ],
+    "wealth": "+1"
+  },
+  {
+    "index": "criminal",
+    "name": "Criminal",
+    "description": "You lived on the wrong side of the law, whether as a thief, smuggler, fence, or member of a criminal organization.",
+    "equipment": [
+      "Dark clothing",
+      "Dagger",
+      "Lockpicks"
+    ],
+    "tags": [
+      "Sneaky",
+      "Streetwise",
+      "Untrustworthy",
+      "Cunning",
+      "Quick"
+    ],
+    "wealth": "0"
+  },
+  {
+    "index": "entertainer",
+    "name": "Entertainer",
+    "description": "You made your living performing for crowds - as a bard, actor, acrobat, or storyteller.",
+    "equipment": [
+      "Colorful clothes",
+      "Musical instrument",
+      "Costume jewelry"
+    ],
+    "tags": [
+      "Charismatic",
+      "Dramatic",
+      "Talented",
+      "Vain",
+      "Traveled"
+    ],
+    "wealth": "0"
+  },
+  {
+    "index": "folk_hero",
+    "name": "Folk Hero",
+    "description": "You're a champion of the common folk, known for standing up to tyranny or monsters that threatened your community.",
+    "equipment": [
+      "Simple clothes",
+      "Blacksmith's hammer",
+      "Token of gratitude"
+    ],
+    "tags": [
+      "Brave",
+      "Beloved",
+      "Humble",
+      "Strong",
+      "Protective"
+    ],
+    "wealth": "-1"
+  },
+  {
+    "index": "guard",
+    "name": "Guard",
+    "description": "You served as a city watch member, castle guard, or caravan escort, keeping the peace and protecting others.",
+    "equipment": [
+      "Studded leather armor",
+      "Club",
+      "Official badge"
+    ],
+    "tags": [
+      "Alert",
+      "Dutiful",
+      "Suspicious",
+      "Rigid",
+      "Protective"
+    ],
+    "wealth": "0"
+  },
+  {
+    "index": "merchant",
+    "name": "Merchant",
+    "description": "You traveled trade routes, buying and selling goods, learning the value of everything and the cost of trust.",
+    "equipment": [
+      "Fine clothes",
+      "Short sword",
+      "Merchant's scales"
+    ],
+    "tags": [
+      "Wealthy",
+      "Persuasive",
+      "Traveled",
+      "Calculating",
+      "Connected"
+    ],
+    "wealth": "+2"
+  },
+  {
+    "index": "noble",
+    "name": "Noble",
+    "description": "Born to privilege, you grew up in luxury with education, etiquette, and expectations of leadership.",
+    "equipment": [
+      "Fine clothes",
+      "Rapier",
+      "Signet ring"
+    ],
+    "tags": [
+      "Educated",
+      "Arrogant",
+      "Connected",
+      "Cultured",
+      "Commanding"
+    ],
+    "wealth": "+3"
+  },
+  {
+    "index": "outlander",
+    "name": "Outlander",
+    "description": "You lived far from civilization - as a hermit, wilderness guide, or tribal member - surviving by your connection to the natural world.",
+    "equipment": [
+      "Hide armor",
+      "Spear",
+      "Medicine pouch"
+    ],
+    "tags": [
+      "Hardy",
+      "Independent",
+      "Wise",
+      "Wild",
+      "Spiritual"
+    ],
+    "wealth": "-1"
+  },
+  {
+    "index": "sailor",
+    "name": "Sailor",
+    "description": "You worked aboard ships, whether as crew, officer, or perhaps even a pirate, learning the ways of wind and wave.",
+    "equipment": [
+      "Sailor's clothes",
+      "Cutlass",
+      "Lucky charm"
+    ],
+    "tags": [
+      "Traveled",
+      "Superstitious",
+      "Hardy",
+      "Loyal",
+      "Crude"
+    ],
+    "wealth": "0"
+  },
+  {
+    "index": "scholar",
+    "name": "Scholar",
+    "description": "You devoted yourself to learning, spending years in libraries, universities, or under the tutelage of wise masters.",
+    "equipment": [
+      "Robes",
+      "Quarterstaff",
+      "Ancient tome"
+    ],
+    "tags": [
+      "Intelligent",
+      "Bookish",
+      "Curious",
+      "Absent-minded",
+      "Verbose"
+    ],
+    "wealth": "+1"
+  },
+  {
+    "index": "urchin",
+    "name": "Urchin",
+    "description": "You grew up on the streets with no family to speak of, surviving through wit, speed, and knowing every back alley.",
+    "equipment": [
+      "Patched clothes",
+      "Small knife",
+      "Pet mouse"
+    ],
+    "tags": [
+      "Quick",
+      "Sneaky",
+      "Scrappy",
+      "Mistrustful",
+      "Resourceful"
+    ],
+    "wealth": "-1"
+  }
+]

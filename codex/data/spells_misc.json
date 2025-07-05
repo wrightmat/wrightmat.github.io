@@ -1,0 +1,396 @@
+[
+    {
+	"index": "bloodshot",
+	"name": "Bloodshot",
+	"desc": [
+		"You launch a jet of boiling blood from your eyes at a creature within range. You take 1d6 necrotic damage and make a ranged spell attack against the target. If the attack hits, the target takes 2d10 fire damage plus 2d8 psychic damage."
+	],
+	"higher_level": [
+		"When you cast this spell using a spell slot of 3rd level or higher, the fire damage increases by 1d10 and the psychic damage increases by 1d8 for each slot level above 2nd."
+	],
+	"range": "30 feet",
+	"components": [ "V", "S" ],
+	"material": null,
+	"ritual": false,
+	"duration": "Instantaneous",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 2,
+	"damage": {
+		"damage_type": [
+			{
+				"index": "fire",
+				"name": "Fire",
+				"url": "/api/2014/damage-types/fire"
+			},
+			{
+				"index": "psychic",
+				"name": "Psychic",
+				"url": "/api/2014/damage-types/psychic"
+			}
+		],
+		"damage_at_slot_level": {
+			"2": "2d10 fire + 2d8 psychic",
+			"3": "3d10 fire + 3d8 psychic",
+			"4": "4d10 fire + 4d8 psychic",
+			"5": "5d10 fire + 5d8 psychic",
+			"6": "6d10 fire + 6d8 psychic",
+			"7": "7d10 fire + 7d8 psychic",
+			"8": "8d10 fire + 8d8 psychic",
+			"9": "9d10 fire + 9d8 psychic"
+		}
+	},
+	"school": {
+		"index": "conjuration",
+		"name": "Conjuration",
+		"url": "/api/2014/magic-schools/conjuration"
+	},
+	"classes": [
+		{
+			"index": "sorcerer",
+			"name": "Sorcerer",
+			"url": "/api/2014/classes/sorcerer"
+		},
+		{
+			"index": "warlock",
+			"name": "Warlock",
+			"url": "/api/2014/classes/warlock"
+		},
+		{
+			"index": "wizard",
+			"name": "Wizard",
+			"url": "/api/2014/classes/wizard"
+		}
+	],
+	"subclasses": [],
+	"url": "https://www.5esrd.com/spellcasting/3pp-spells/spells-open-design-llc/bloodshot/",
+	"updated_at": "2025-06-19T00:00:00.000Z"
+    },
+    {
+	"index": "blood-tide",
+	"name": "Blood Tide",
+	"desc": [
+		"When you cast this spell, a creature you designate within range must succeed on a Constitution saving throw or bleed from its nose, eyes, ears, and mouth. This bleeding causes no damage but imposes a –2 penalty on all Intelligence, Wisdom, and Charisma-based checks while in effect.",
+		"A bleeding creature might also inadvertently attract the attention of creatures such as stirges, sharks, or giant mosquitoes, depending on the circumstances.",
+		"A cure light wounds spell or DC 10 Wisdom (Medicine) check can stop the bleeding created by this spell."
+	],
+	"higher_level": [
+		"The spell’s duration increases to 2 minutes when you reach 5th level, to 10 minutes when you reach 11th level, and to 1 hour when you reach 17th level."
+	],
+	"range": "25 feet",
+	"components": [ "V" ],
+	"ritual": false,
+	"duration": "4 rounds",
+	"concentration": false,
+	"casting_time": "1 action",
+	"level": 0,
+	"dc": {
+		"dc_type": {
+			"index": "con",
+			"name": "CON",
+			"url": "/api/2014/ability-scores/con"
+		},
+		"dc_success": "negates"
+	},
+	"damage": null,
+	"school": {
+		"index": "necromancy",
+		"name": "Necromancy",
+		"url": "/api/2014/magic-schools/necromancy"
+	},
+	"classes": [
+		{
+			"index": "sorcerer",
+			"name": "Sorcerer",
+			"url": "/api/2014/classes/sorcerer"
+		},
+		{
+			"index": "warlock",
+			"name": "Warlock",
+			"url": "/api/2014/classes/warlock"
+		},
+		{
+			"index": "wizard",
+			"name": "Wizard",
+			"url": "/api/2014/classes/wizard"
+		}
+	],
+	"subclasses": [],
+	"url": "https://www.5esrd.com/spellcasting/3pp-spells/spells-open-design-llc/blood-tide/",
+	"updated_at": "2025-06-19T00:00:00.000Z"
+    },
+    {
+	"index": "bloody-smite",
+	"name": "Bloody Smite",
+	"desc": [
+		"The next time during the spell’s duration that you hit a creature with a melee weapon attack, your weapon pulses with a dull red light, and the attack deals an extra 1d6 necrotic damage to the target. Until the spell ends, the target must make a Constitution saving throw at the start of each of its turns. On a failed save, it takes 1d6 necrotic damage, it bleeds profusely from the mouth, and it can’t speak intelligibly or cast spells that have a verbal component. On a successful save, the spell ends. If the target or an ally within 5 feet of it uses an action to tend the wound and makes a successful Wisdom (Medicine) check against your spell save DC, or if the target receives magical healing, the spell ends."
+	],
+	"higher_level": [],
+	"range": "Self",
+	"components": [ "V" ],
+	"ritual": false,
+	"duration": "Concentration, up to 1 minute",
+	"concentration": true,
+	"casting_time": "1 bonus action",
+	"level": 1,
+	"dc": {
+		"dc_type": {
+			"index": "con",
+			"name": "CON",
+			"url": "/api/2014/ability-scores/con"
+		},
+		"dc_success": "negates"
+	},
+	"damage": {
+		"damage_type": {
+			"index": "necrotic",
+			"name": "Necrotic",
+			"url": "/api/2014/damage-types/necrotic"
+		},
+		"damage_at_slot_level": {
+			"1": "1d6"
+		}
+	},
+	"school": {
+		"index": "necromancy",
+		"name": "Necromancy",
+		"url": "/api/2014/magic-schools/necromancy"
+	},
+	"classes": [
+		{
+			"index": "sorcerer",
+			"name": "Sorcerer",
+			"url": "/api/2014/classes/sorcerer"
+		},
+		{
+			"index": "warlock",
+			"name": "Warlock",
+			"url": "/api/2014/classes/warlock"
+		},
+		{
+			"index": "wizard",
+			"name": "Wizard",
+			"url": "/api/2014/classes/wizard"
+		}
+	],
+	"subclasses": [],
+	"url": "https://www.5esrd.com/spellcasting/3pp-spells/spells-open-design-llc/bloody-smite/",
+	"updated_at": "2025-06-19T00:00:00.000Z"
+    },
+  {
+    "index": "sage-hand",
+    "name": "Sage Hand",
+    "desc": [
+        "A spectral, floating hand appears at a point you choose within range. The hand lasts for the duration. The hand vanishes if it is ever more than 60 feet away from you or if you cast this spell again.",
+        "When you cast the spell, you can use the hand to manipulate an object, open an unlocked door or container, stow or retrieve an item from an open container, or pour the contents out of a vial. The hand can’t attack, activate magic items, or carry more than 30 pounds.",
+        "As a Magic action on your later turns, you can control the hand thus again. As part of that action, you can move the hand up to 60 feet."
+    ],
+    "higher_level": [],
+    "range": "60 feet",
+    "components": [ "V", "S" ],
+    "ritual": false,
+    "duration": "1 minute",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 0,
+    "school": {
+        "index": "conjuration",
+        "name": "Conjuration",
+        "url": "/api/2014/magic-schools/conjuration"
+    },
+    "classes": [
+        {
+            "index": "artificer",
+            "name": "Artificer",
+            "url": "/api/2014/classes/artificer"
+        },
+        {
+            "index": "bard",
+            "name": "Bard",
+            "url": "/api/2014/classes/bard"
+        },
+        {
+            "index": "sorcerer",
+            "name": "Sorcerer",
+            "url": "/api/2014/classes/sorcerer"
+        },
+        {
+            "index": "warlock",
+            "name": "Warlock",
+            "url": "/api/2014/classes/warlock"
+        },
+        {
+            "index": "wizard",
+            "name": "Wizard",
+            "url": "/api/2014/classes/wizard"
+        }
+    ],
+    "subclasses": [],
+    "tags": [ "Utility" ]
+  },
+  {
+    "index": "arms-of-gore",
+    "name": "Arms of Gore",
+    "desc": [
+        "Arm-like tendrils of your own blood erupt from you. Each creature in a 10-foot Emanation originating from you makes a Constitution saving throw. On a failed save, a target takes Necrotic damage equal to one of your hit die (which is not spent), and can’t take Reactions until the start of its next turn. On a successful save, a target takes half as much damage only.",
+        "You may choose to spend any number of additional hit dice to increase the damage of this spell. When doing so, roll the hit dice being expended and add the amount of damage rolled. Expended hit dice are no longer available to use for healing during a short rest, and are replenished as usual after a long rest."
+    ],
+    "higher_level": [],
+    "range": "Self",
+    "area_of_effect": {
+      "type": "sphere",
+      "size": 10
+    },
+    "components": [ "V", "S" ],
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 1,
+    "school": {
+        "index": "conjuration",
+        "name": "Conjuration",
+        "url": "/api/2014/magic-schools/conjuration"
+    },
+    "classes": [
+        {
+            "index": "warlock",
+            "name": "Warlock",
+            "url": "/api/2014/classes/warlock"
+        },
+        {
+            "index": "wizard",
+            "name": "Wizard",
+            "url": "/api/2014/classes/wizard"
+        }
+    ],
+    "subclasses": [],
+    "dc": {
+        "dc_type": {
+            "name": "Con"
+        },
+        "dc_success": "half"
+    },
+    "damage": {
+        "damage_type": {
+            "index": "necrotic",
+            "name": "Necrotic"
+        },
+        "damage_at_character_level": {
+            "1": "1d6"
+        }
+    },
+    "tags": [ "Damage", "Control" ]
+  },
+  {
+    "index": "beladros-call",
+    "name": "Beladros' Call",
+    "desc": [
+        "The aspect of a black dragon, with black feathered wings and eerie, bright eyes, appears above the caster, breathing out black and green energy in a 30 foot cone. Each creature of your choice in that cone must make a Constitution saving throw, taking 4d6 necrotic damage on a failed save, or half as much damage on a successful one. Nonmagical vegetation in that area withers.",
+        "In addition, one creature of your choice within 10 feet of you can spend and roll two of its unspent Hit Dice and regain a number of hit points equal to the roll plus your spellcasting ability modifier."
+    ],
+    "higher_level": [
+        "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 2d6 for each slot above the 2nd, and the number of Hit Dice that can be spent and added to the healing roll increases by one for each slot above 3rd."
+    ],
+    "range": "10 feet",
+    "area_of_effect": {
+      "type": "cone",
+      "size": 30
+    },
+    "components": [ "V", "S", "M" ],
+    "material": "A drop of your own blood",
+    "ritual": false,
+    "duration": "Instantaneous",
+    "concentration": false,
+    "casting_time": "1 action",
+    "level": 3,
+    "school": {
+        "index": "necromancy",
+        "name": "Necromancy",
+        "url": "/api/2014/magic-schools/necromancy"
+    },
+    "classes": [
+        {
+            "index": "druid",
+            "name": "Druid",
+            "url": "/api/2014/classes/druid"
+        },
+        {
+            "index": "sorcerer",
+            "name": "Sorcerer",
+            "url": "/api/2014/classes/sorcerer"
+        },
+        {
+            "index": "wizard",
+            "name": "Wizard",
+            "url": "/api/2014/classes/wizard"
+        }
+    ],
+    "subclasses": [],
+    "dc": {
+        "dc_type": {
+            "name": "Con"
+        },
+        "dc_success": "half"
+    },
+    "damage": {
+        "damage_type": {
+            "index": "necrotic",
+            "name": "Necrotic"
+        },
+        "damage_at_character_level": {
+            "1": "4d6"
+        }
+    }
+  },
+  {
+    "index": "hawthornes-tempest",
+    "name": "Hawthorne's Tempest",
+    "desc": [
+        "A planar storm cloud appears at a point within range that you can see above yourself. It takes the shape of a Cylinder that is 10 feet tall with a 60-foot radius.",
+        "When you cast the spell, choose a point you can see under the cloud. A lightning bolt shoots from the cloud to that point. Each creature within 5 feet of that point makes a Dexterity saving throw, taking 2d10 Lightning damage on a failed save or half as much damage on a successful one.",
+        "On a failed save, a sustained arc of lightning forms between the cloud and the target. On each of your subsequent turns, you can take a Bonus Action to deal 1d10 Lightning damage to any of these target automatically. An arc ends if the target is outside the spell’s range or if it has Total Cover from you."
+    ],
+    "higher_level": [
+        "The initial damage increases by 1d10 for each spell slot above 2nd."
+    ],
+    "range": "60 feet",
+    "area_of_effect": {
+      "type": "cylinder",
+      "size": 60
+    },
+    "components": [ "V", "S" ],
+    "ritual": false,
+    "duration": "1 minute",
+    "concentration": true,
+    "casting_time": "1 action",
+    "level": 2,
+    "school": {
+        "index": "evocation",
+        "name": "Evocation",
+        "url": "/api/2014/magic-schools/evocation"
+    },
+    "classes": [
+        {
+            "index": "druid",
+            "name": "Druid",
+            "url": "/api/2014/classes/druid"
+        },
+        {
+            "index": "wizard",
+            "name": "Wizard",
+            "url": "/api/2014/classes/wizard"
+        }
+    ],
+    "subclasses": [],
+    "dc": {
+        "dc_type": {
+            "name": "Dex"
+        },
+        "dc_success": "half"
+    },
+    "tags": [
+        "Damage"
+    ]
+  }
+]

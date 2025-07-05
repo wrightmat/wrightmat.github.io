@@ -30,13 +30,17 @@ function alphabetizeSelectList( el ) {
   el.val(selected);
   var opts = [];
   opts_list.each(function() {
-    if( $.inArray(this.value, opts) > -1 ) { $(this).remove() } else { opts.push(this.value); }
+    if ( $.inArray(this.value, opts) > -1 ) { $(this).remove() } else { opts.push(this.value); }
   });
 };
 
-function capitalizeFirstLetter( str ) {
+function capitalize( str ) {
   return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
 };
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
 
 function numberWithCommas( x ) {
   var parts = x.toString().split(".");
@@ -49,6 +53,21 @@ function gaussianRandom( mean = 0, stddev = 1 ) {
   while ( u === 0 ) u = Math.random(); // avoid 0
   while ( v === 0 ) v = Math.random();
   return mean + stddev * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+};
+
+function getDiceAverage( diceStr ) {
+  return diceStr
+    .split('+')
+    .map(part => {
+      const [count, sides] = part.split('d').map(Number);
+      return count * (sides + 1) / 2;
+    })
+    .reduce((a, b) => a + b, 0);
+};
+
+function getSimilarDice( baseDice, allDice, tolerance = 1.0 ) {
+  const baseAvg = getDiceAverage(baseDice);
+  return allDice.filter(d => d !== baseDice && Math.abs(getDiceAverage(d) - baseAvg) <= tolerance);
 };
 
 function getRandomInt( min, max ) {
@@ -97,7 +116,7 @@ function parseMarkdownToJSON( markdown, template = null ) {
       const key = boldMatch[1].toLowerCase().replace(/\s+/g, '_').replace(':','');
       const value = boldMatch[2].trim();
       // Handle multi-item fields like traits
-      if (['traits'].includes(key)) {
+      if ( ['traits'].includes(key) ) {
         bodyFields[key] = value ? value.split(/,\s*|\s+/).map(v => v.trim()).filter(Boolean) : [];
       } else { bodyFields[key] = value || ''; }
       currentKey = key;
@@ -105,7 +124,7 @@ function parseMarkdownToJSON( markdown, template = null ) {
     }
 
     // Append continuation lines to the most recent field (for multi-line paragraphs)
-    if (currentKey && line && !line.startsWith('**') && !line.startsWith('#')) {
+    if ( currentKey && line && !line.startsWith('**') && !line.startsWith('#') ) {
       bodyFields[currentKey] += (bodyFields[currentKey] ? ' ' : '') + line;
     }
   }
@@ -120,8 +139,7 @@ function parseMarkdownToJSON( markdown, template = null ) {
   }
 
   return result;
-}
-
+};
 
 function loadJSONFiles( fileMap ) {
   const entries = Object.entries(fileMap); // { key: url }
@@ -198,10 +216,26 @@ function parsePassedData( loadCallback ) {
   }
 };
 
-function adjustFontSizeByLength(el, options = {}) {
+function populateSelect( selectId, data, options = {} ) {
+  const select = document.getElementById(selectId);
+  const labelKey = options.labelKey || "label";
+  const valueKey = options.valueKey || "value";
+  select.innerHTML = data.map( item => {
+    if ( typeof item === "string" || typeof item === "number" ) {
+      return `<option value="${item}">${item}</option>`;
+    } else if ( typeof item === "object" && item !== null ) {
+      const label = item[labelKey] ?? item[valueKey] ?? "";
+      const value = item[valueKey] ?? item[labelKey] ?? "";
+      return `<option value="${value}">${label}</option>`;
+    }
+    return "";
+  }).join("");
+};
+
+function adjustFontSizeByLength( el, options = {} ) {
   const {
-    charThresholds = [800, 1000, 1200, 1400, 1600],
-    scaleFactors = [0.95, 0.9, 0.8, 0.7, 0.6],
+    charThresholds = [ 800, 1000, 1200, 1400, 1600 ],
+    scaleFactors = [ 0.95, 0.9, 0.8, 0.7, 0.6 ],
     minScale = 0.6
   } = options;
 
@@ -219,8 +253,6 @@ function adjustFontSizeByLength(el, options = {}) {
       break; // stop at first non-matching threshold
     }
   }
-console.log(length);
-console.log(scale);
   scale = Math.max(scale, minScale);
   el.style.fontSize = (currentSize * scale).toFixed(3) + 'px';
   el.dataset.fontScaled = "true";
@@ -249,10 +281,42 @@ function toolbarAddButton( tb, id, label, options = {} ) {
   if ( typeof label === 'string' && label.trim().startsWith('<') ) { button.innerHTML = label; } else { button.textContent = label; }
   button.id = id;
 
-  if (options.onClick) { button.addEventListener('click', options.onClick); }
+  if ( options.onClick ) button.addEventListener('click', options.onClick);
 
   container.appendChild(button);
 };
+
+function createClock( segments = 6, filled = 0, size = 100 ) {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", size);
+  svg.classList.add("clock");
+
+  const r = size / 2;
+  const cx = r, cy = r;
+  const radius = r - 1;
+
+  for ( let i = 0; i < segments; i++ ) {
+    const startAngle = (i / segments) * 2 * Math.PI;
+    const endAngle = ((i + 1) / segments) * 2 * Math.PI;
+    const x1 = cx + radius * Math.cos(startAngle);
+    const y1 = cy + radius * Math.sin(startAngle);
+    const x2 = cx + radius * Math.cos(endAngle);
+    const y2 = cy + radius * Math.sin(endAngle);
+    const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
+    const path = document.createElementNS(ns, "path");
+    const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    path.setAttribute("d", d);
+    path.setAttribute("fill", i < filled ? "black" : "white");
+    path.setAttribute("stroke", "black");
+    path.setAttribute("stroke-width", "1");
+    svg.appendChild(path);
+  }
+  return svg;
+}
+
 
 function toolbarUpdateButton( id, label, options = {} ) {
   const button = document.getElementById(id);
@@ -315,7 +379,7 @@ function rgbToHex( r, g, b ) {
 };
 
 function jsonConcat( o1, o2 ) {
-  for (var key in o2) { o1[key] = o2[key]; }
+  for ( var key in o2 ) { o1[key] = o2[key]; }
   return o1;
 };
 
@@ -345,7 +409,7 @@ function rollRandom( dice, sum = true ) {
   var num = dice.substring(0, d) || 1;
   if ( x >= 0 ) { var die = dice.substring(d+1, x); } else { var die = dice.substring(d+1, dice.length); }
   if ( x >= 0 ) { var mult = dice.substring(x+1, dice.length) } else { var mult = 1 };
-  if ( parseInt(d) == 0 ) { d = 1; }
+  if ( parseInt(d) == 0 ) d = 1;
   for ( let i = 0; i < num; i++ ) {
     arr.push(getRandomInt(d, die) * mult);
   }
@@ -359,19 +423,19 @@ function setCookie( name, value ) {
 
 function getCookie( name ) {
   var result = document.cookie.match(new RegExp(name + '=([^;]+)'));
-  result && (result = JSON.parse(result[1]));
+  result && ( result = JSON.parse(result[1]) );
   return result;
 };
 
 function deleteCookie( name ) {
-  document.cookie = [name, '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/; domain=.', window.location.host.toString()].join('');
+  document.cookie = [ name, '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; path=/; domain=.', window.location.host.toString() ].join('');
 };
 
 function getTableResult( table ) {
   // Returns a table result based on random roll as denoted in the table - either a string or array depending on the table
   if (typeof table[0] == "string") {
     return table[rollRandom(table[0])];    // simple table, without ranges
-  } else if (typeof table[0] == "object") {
+  } else if ( typeof table[0] == "object" ) {
     var ind;    // complex table, with ranges
     var roll = rollRandom(table[0][0]);
     table[0].forEach(function (item, index) {
@@ -421,7 +485,7 @@ function buildNavigation() {
 
   // Add hover behavior to each nav <li>
   document.querySelectorAll('header nav li').forEach((li, index) => {
-    const util = [currentTool, ...otherTools][index];
+    const util = [ currentTool, ...otherTools ][index];
     li.addEventListener('mouseenter', () => {
       infoDiv.innerHTML = `<div class="navbar-info-header"><img src="${util.icon}" alt="${util.title}"><span class="navbar-info-name">${util.title}</span><p>${util.subtitle}</p></div><div class="navbar-info-desc">${util.description || ''}</div>`;
       infoDiv.style.display = 'block';
@@ -436,8 +500,7 @@ function buildNavigation() {
 
 function toggleFullscreen( event ) {
   var element = document.body;
-
-  if (event instanceof HTMLElement) { element = event; }
+  if ( event instanceof HTMLElement ) element = event;
   var isFullscreen = document.webkitIsFullScreen || document.mozFullScreen || false;
   element.requestFullScreen = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || function() {
     return false;
@@ -445,7 +508,6 @@ function toggleFullscreen( event ) {
   document.cancelFullScreen = document.cancelFullScreen || document.webkitCancelFullScreen || document.mozCancelFullScreen || function() {
     return false;
   };
-
   isFullscreen ? document.cancelFullScreen() : element.requestFullScreen();
 };
 

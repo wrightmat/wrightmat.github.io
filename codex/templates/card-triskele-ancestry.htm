@@ -1,0 +1,27 @@
+<!--
+@name: Triskele Ancestry Card
+@size: poker
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <div class="top">
+      <i class="bi bi-diagram-3-fill" style="font-size:14pt;"></i> &nbsp;&nbsp; <span class="section-large">{{name}}</span>
+      <p class="info"><span class="comma-list">{{#tags}}<span class="comma-item">{{.}}</span>{{/tags}}</span></p><br />
+      {{#modifiers.body}}<p class="section">Body: {{modifiers.body}}</p>{{/modifiers.body}}
+      {{#modifiers.mind}}<p class="section">Mind: {{modifiers.mind}}</p>{{/modifiers.mind}}
+      {{#modifiers.spirit}}<p class="section">Spirit: {{modifiers.spirit}}</p>{{/modifiers.spirit}}<br />
+      <p class="section">Passives:</p>
+      {{#passives}}<p><b>{{name}}:</b> {{description}}</p>{{/passives}}<br />
+    </div>
+    <div class="bottom">
+      <p class="info">{{description}}</p>
+    </div>
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+      <p>1) Modify your attributes as denoted.</p><br />
+      <p>2) Select one Skill Tag based on your ancestry, optionally from the list at the top.</p><br />
+      <p>3) Create one relationship based on your ancestry, such as a parent or sibling, or an important member of your community growing up.</p><br />
+  </div>
+</div>

@@ -1,0 +1,38 @@
+<!--
+@name: NPC Card (Triskele)
+@size: tarot
+@orientation: vertical
+-->
+
+<div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
+  <div class="front" id="item_front-{{index}}-{{id}}">
+    <h2>{{name}} ({{traits.genderPronouns}})</h2>
+    <p class="info">{{tags}}</p>
+    {{#quotes}}<blockquote>{{.}}</blockquote>{{/quotes}}
+    <p class="content">{{{backstory}}}</p>
+    {{#appearance}}<p class="content"><b>Appearance</b>: {{{appearance}}}</p>{{/appearance}}
+    {{#quirk}}<p class="content"><b>Quirk</b>: {{{quirk}}}</p>{{/quirk}}
+    <br />
+    <!-- {{#stats.0}} --><table class="ability-table">
+      <tr><td><b>Body</b></td><td><b>Mind</b></td><td><b>Spirit</b></td></tr>
+      <tr><td>{{stats.0.value}} ({{hp.value}} HP)</td><td>{{stats.1.value}} ({{ip.value}} IP)</td><td>{{stats.2.value}} ({{ap.value}} AP)</td></tr>
+    </table><!-- {{/stats.0}} -->
+    <span class="float-left">{{#ac.value}}<p class="content"><b>Armor:</b> {{ac.value}}</p>{{/ac.value}}</span>
+    <span class="float-right">&nbsp;</span>
+    <span class="float-left">{{#dr.value}}<p class="content"><b>DR:</b> {{dr.value}}</p>{{/dr.value}}</span>
+    <span class="float-right">{{#dt.value}}<p class="content"><b>DT:</b> {{dt.value}}</p>{{/dt.value}}</span><br />
+    <p><b>Inventory</b>:</p>
+    <ul>{{#inventory}}
+      <li>{{.}}</li>
+    {{/inventory}}</ul>
+  </div>
+  <div class="back" id="item_back-{{index}}-{{id}}">
+    <div class="header" id="card_back-header-{{index}}-{{id}}">
+      <h2>{{name}}</h2>
+      <p class="info">{{traits.genderPronouns}}</p>
+      <div class="topright"><i class="bi {{decorations.icon}}"></i></div>
+    </div>
+    <div class="image" id="card_back-image-{{index}}-{{id}}" style="vertical-align: middle;"><img src="{{decorations.avatarUrl}}" style="border-radius: 5px;" /></div>
+    <div class="footer" id="card_back-footer-{{index}}-{{id}}"></div>
+  </div>
+</div>

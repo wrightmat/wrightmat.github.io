@@ -62,6 +62,7 @@
       <option value="notecard">Notecard (5" x 7")</option>
       <option value="a6">A6 Paper (4.1" x 5.8")</option>
       <option value="b6">B6 Paper (4.9" x 6.9")</option>
+      <option value="letter">Letter Paper (8.5" x 11")</option>
     </select>
   </div>
 
@@ -74,7 +75,7 @@
   </div>
 </div>
 
-<div id="print-container" class="print-container" contenteditable="true">
+<div id="print-container" class="container" contenteditable="true">
   <div id="card-front" class="card-sheet front-sheet"></div>
   <div id="card-back" class="card-sheet back-sheet"></div>
   <div id="booklet-front" class="booklet-sheet front-sheet"></div>
@@ -97,11 +98,17 @@
     { id: 'api-magic-items', name: 'Magic Items (API)', edition: '5e', system: 'DnD', type: 'magic-item', method: 'api', url: '/api/magic-items' },
     { id: 'api-monsters', name: 'Monsters (API)', edition: '5e', system: 'DnD', type: 'monster', method: 'api', url: '/api/monsters' },
     { id: 'ddb-monsters', name: 'Monsters (D&D Beyond)', edition: '5e', system: 'DnD', type: 'monster', method: 'ddb', function: 'parseMonster()' },
-    { id: 'api-races', name: 'Races (API)', edition: '5e', system: '5e', type: 'species', method: 'api', url: '/api/races' },
-    { id: 'json-spells-2014', name: 'Spells, 2014 (JSON)', edition: '5e-2014', system: '5e', type: 'spell', method: 'json', path: 'data/spells_2014.json' },
-    { id: 'json-spells-2024', name: 'Spells, 2024 (JSON)', edition: '5e-2024', system: '5e', type: 'spell', method: 'json', path: 'data/spells_2024.json' },
-    { id: 'api-subclasses', name: 'Subclasses (API)', edition: '5e', system: '5e', type: 'subclass', method: 'api', url: '/api/subclasses' },
-    { id: 'api-subraces', name: 'Subraces (API)', edition: '5e', system: '5e', type: 'subrace', method: 'api', url: '/api/subraces' },
+    { id: 'json-monsters', name: 'Monsters (JSON)', edition: '5e', system: 'DnD', type: 'monster', method: 'json', path: 'data/monsters.json' },
+    { id: 'api-races', name: 'Races (API)', edition: '5e', system: 'DnD', type: 'species', method: 'api', url: '/api/races' },
+    { id: 'json-spells-2014', name: 'Spells, 2014 (JSON)', edition: '5e-2014', system: 'DnD', type: 'spell', method: 'json', path: 'data/spells_2014.json' },
+    { id: 'json-spells-2024', name: 'Spells, 2024 (JSON)', edition: '5e-2024', system: 'DnD', type: 'spell', method: 'json', path: 'data/spells_2024.json' },
+    { id: 'json-spells-misc', name: 'Spells, Misc. (JSON)', type: 'spell', method: 'json', path: 'data/spells_misc.json' },
+    { id: 'api-subclasses', name: 'Subclasses (API)', edition: '5e', system: 'DnD', type: 'subclass', method: 'api', url: '/api/subclasses' },
+    { id: 'api-subraces', name: 'Subraces (API)', edition: '5e', system: 'DnD', type: 'subrace', method: 'api', url: '/api/subraces' },
+    { id: 'json-triskele-ancestries', name: 'Ancestries (Triskele)', system: 'triskele', type: 'ancestry', method: 'json', path: 'data/triskele_ancestries.json' },
+    { id: 'json-triskele-backgrounds', name: 'Backgrounds (Triskele)', system: 'triskele', type: 'background', method: 'json', path: 'data/triskele_backgrounds.json' },
+    { id: 'json-triskele-classes', name: 'Classes (Triskele)', system: 'triskele', type: 'class', method: 'json', path: 'data/triskele_classes.json' },
+    { id: 'json-triskele-scenes', name: 'Scenes (Triskele)', system: 'triskele', type: 'scene', method: 'json', path: 'data/triskele_scenes.json' }
   ];
   $('#controls-container-id').hide();
   $('#controls-container-groups').hide();
@@ -132,18 +139,19 @@
     return r_text;
   };
 
-  function getPrintData( id ) {
+  function getPrintData( id, sourceId = null ) {
     let print = {};
-    const selectedId = $('#controls-sources').val();
-    const source = sourceDefinitions.find(s => s.id === selectedId);
+    if ( !sourceId ) sourceId = $('#controls-sources').val();
+    const source = sourceDefinitions.find( s => s.id === sourceId );
     if ( !source ) return print;
 
-    const dataList = sourceCache[selectedId] || [];
+    const dataList = sourceCache[sourceId] || [];
+
     if ( source.method == 'json' ) {
-      print = dataList.find(item => item.index === id) || {};
+      print = dataList.find( item => item.index === id ) || {};
     } else if ( source.method == 'api' ) {
-      const itemMeta = dataList.find(item => item.index === id);
-      if ( itemMeta && itemMeta.url ) { print = getAPI(itemMeta.url); }
+      const itemMeta = dataList.find( item => item.index === id );
+      if ( itemMeta && itemMeta.url ) print = getAPI(itemMeta.url);
     }
 
     print.id = cleanText(id);
@@ -155,22 +163,38 @@
     if ( !print ) return print;
     print.icons = [];
     print.preferences = preferences;
+
     if ( print.desc ) {	    // Markdown conversion
       print.descList = '';
-      print.desc.forEach(d => print.descList += marked.parse(d));
-      print.desc = print.desc.map((v, i) => (i > 0 && v ? marked.parse(v) : v));
+      print.desc.forEach( d => print.descList += marked.parse(d) );
+      print.desc = print.desc.map((v, i) => ( i > 0 && v ? marked.parse(v) : v) );
     }
 
-    // Specific fields
-    if ( print.concentration ) print.icons.push('ddb-concentration');
+    if ( print.cards ) {    // Card-ception, so we need to parse each index and grab the card contents
+      print.cards.forEach(( c, ci ) => {
+	let source;
+        if ( !c.preferences) c.preferences = [];
+	c.preferences.size = c.preferences?.size || 'tarot';
+	c.preferences.orientation = c.preferences?.orientation || 'vertical';
+        if ( c.type == 'npc' ) {
+	  source = 'json-characters'
+          $.ajax({ url: 'data/characters.json', dataType: 'json', async: false, success: function(data) { sourceCache[source] = data; } });
+	} else if ( c.type == 'monster' ) {
+	  source = 'json-monsters'
+	  //$.ajax({ url: 'data/monsters.json', dataType: 'json', async: false, success: function(data) { sourceCache[source] = data; } });
+	}
+	print.cards[ci] = { ...c, ...getPrintData(c.index, source) };
+      });
+    }
+
     if ( print.ritual ) print.icons.push('ddb-ritual');
+    if ( print.concentration ) print.icons.push('ddb-concentration');
     if ( print.casting_time ) print.casting_time = print.casting_time.replace('bonus action', 'BA').replace('reaction', 'R').replace('action', 'A');
     if ( print.duration ) print.duration = print.duration.replace('Concentration', 'Conc').replace('minute', 'min');
-    if ( print.range ) print.range = print.range.replace('feet', 'ft.');
     if ( print.classes ) print.classList = print.classes.map(c => c.name).join(', ');
+    if ( print.range ) print.range = print.range.replace('feet', 'ft.');
 
-    // Spell school handling
-    if ( print.school ) {
+    if ( print.school ) {    // Spell school handling
       const baseSchool = print.school?.index ?? null;
       const additionalSchools = [];
       for ( const [school, list] of Object.entries(spell_additional_schools) ) {
@@ -178,48 +202,56 @@
       }
       print.schools = baseSchool ? [baseSchool, ...additionalSchools] : [...additionalSchools];
     }
-
-    print.template = preferences.template;
 console.log(print);
+    print.template = preferences.template;
     return print;
   };
-
 
   function createPrint( rawPrint ) {
     if ( !rawPrint ) return;
     const print = parsePrintData(rawPrint);
+    const neededPartials = [ 'card-npc', 'card-npc-triskele' ]; //'card-monster'
 
     $.get('templates/' + print.template + '.htm', function( templateHtml ) {
-      const rendered = Mustache.render(templateHtml, print);
-      const wrapper = $('<div>').html(rendered);
+      loadTemplatePartials( neededPartials, function(partials) {
+        const rendered = Mustache.render(templateHtml, print, partials);
+        const wrapper = $('<div>').html(rendered);
+        const isBooklet = wrapper.find('.booklet').length > 0;
+        const frontSheet = isBooklet ? $('.booklet-sheet.front-sheet') : $('.card-sheet.front-sheet');
+        const backSheet = isBooklet ? $('.booklet-sheet.back-sheet') : $('.card-sheet.back-sheet');
 
-      const isBooklet = wrapper.find('.booklet').length > 0;
-      const frontSheet = isBooklet ? $('.booklet-sheet.front-sheet') : $('.card-sheet.front-sheet');
-      const backSheet = isBooklet ? $('.booklet-sheet.back-sheet') : $('.card-sheet.back-sheet');
-
-      if ( !isBooklet ) {
-        if ( !frontSheet.hasClass(preferences.size) ) {
-          frontSheet.addClass(preferences.size).addClass(preferences.orientation);
-          backSheet.addClass(preferences.size).addClass(preferences.orientation);
+        if ( !isBooklet ) {
+          if ( !frontSheet.hasClass(preferences.size) ) {
+            frontSheet.addClass(preferences.size).addClass(preferences.orientation);
+            backSheet.addClass(preferences.size).addClass(preferences.orientation);
+          }
+          const front = wrapper.find('.card').first().clone().find('.back').remove().end();
+          const back = wrapper.find('.card').first().clone().find('.front').remove().end();
+          frontSheet.append(front);  backSheet.append(back);
+          $('[id^="booklet"]').remove();
+        } else {
+          wrapper.find('.booklet .front .page').each((i, el) => frontSheet.append($(el)));
+          wrapper.find('.booklet .back .page').each((i, el) => backSheet.append($(el)));
+          $('[id^="card"]').remove();
         }
-        const front = wrapper.find('.card').first().clone().find('.back').remove().end();
-        const back = wrapper.find('.card').first().clone().find('.front').remove().end();
-        frontSheet.append(front);  backSheet.append(back);
-        $('[id^="booklet"]').remove();
-      } else {
-        wrapper.find('.booklet .front .page').each((i, el) => frontSheet.append($(el)));
-        wrapper.find('.booklet .back .page').each((i, el) => backSheet.append($(el)));
-        $('[id^="card"]').remove();
-      }
 
-      document.querySelectorAll('.spell-description').forEach(el => { adjustFontSizeByLength(el); });
+        // Adjust dynamic content - font sizes, and add clocks
+        document.querySelectorAll('.spell-description').forEach(el => { adjustFontSizeByLength(el); });
+        document.querySelectorAll("[id^='clock-container-']").forEach(el => {
+          const parts = el.id.split("-");
+          const segments = parseInt(parts[2], 10);
+          const filled = parseInt(parts[3], 10);
+          if ( !isNaN(segments) && !isNaN(filled) ) el.appendChild(createClock(segments, filled, 75));
+        });
+      });
     });
   };
 
-
   function populateGroups( obj, prefix ) {
-    $('#controls-groups').children('option:not(:first-child)').remove();
+    if ( !obj ) return;
     groups = {};  const groupMap = {};
+    $('#controls-groups').children('option:not(:first-child)').remove();
+
     obj.forEach( item => {
       const grp = item.group || item.equipment_category || item.school;
       if ( grp && grp.index && !groupMap[grp.index] ) {
@@ -249,10 +281,10 @@ console.log(print);
 
   function populateTemplates() {
     fetch('/templates/list')
-      .then(res => res.json())
-      .then(templates => {
+      .then( res => res.json() )
+      .then( templates => {
         const select = document.getElementById('controls-template');
-        templates.forEach(t => {
+        templates.forEach( t => {
           const option = document.createElement('option');
           option.value = t.filename;
 	  option.textContent = t.name || t.filename;
@@ -265,7 +297,7 @@ console.log(print);
 
   function populateFromData( data ) {
     populateGroups(data);
-    data.forEach(item => {
+    data.forEach( item => {
       $('#controls-select').append( $('<option />').val(item.index).text(item.name) );
     });
     selectOptions = Array.from(document.getElementById('controls-select').options);
@@ -290,42 +322,37 @@ console.log(print);
     else if ( source.type == 'equipment' ) $('#controls-template').val('card-item').change();
     else if ( source.type == 'character' && source.method == 'json') $('#controls-template').val('card-npc').change();
     else if ( source.type == 'character' && source.method == 'ddb') $('#controls-template').val('notecard-character').change();
+    else if ( source.type == 'ancestry' && source.system == 'triskele') $('#controls-template').val('card-triskele-ancestry').change();
+    else if ( source.type == 'background' && source.system == 'triskele') $('#controls-template').val('card-triskele-background').change();
+    else if ( source.type == 'class' && source.system == 'triskele') $('#controls-template').val('card-triskele-class').change();
+    else if ( source.type == 'scene' && source.system == 'triskele') $('#controls-template').val('page-triskele-scene').change();
 
     // Handle content loading - utilizing cache if available
-    if (sourceCache[selectedId]) {
+    if ( sourceCache[selectedId] ) {
       populateFromData(sourceCache[selectedId]);
       return;
     }
 
     if ( source.method == 'json' ) {
       $.getJSON( source.path, data => {
-	if ( source.type == 'spell' ) spells = data;
-	else if ( source.type == 'equipment' ) equipment = data;
-	else if ( source.type == 'character' ) characters = data;
 	sourceCache[source.id] = data;
 	populateFromData(data);
       });
-    } else if (source.method === 'api') {
+    } else if ( source.method === 'api' ) {
       let apiItems = [];
       const data = getAPI(source.url).results;
       if ( source.childKey ) {	// Grouped data (like equipment categories)
         data.forEach(group => {
           const groupData = getAPI(`${source.url}/${group.index}`);
-          if (!groupData || !groupData[source.childKey]) return;
+          if ( !groupData || !groupData[source.childKey] ) return;
           const groupItems = groupData[source.childKey].map(item => ({
-            index: item.index,
-            name: item.name,
-            url: item.url,
+            index: item.index,  name: item.name,  url: item.url,
             group: { index: group.index, name: group.name }
           }));
           apiItems.push(...groupItems);
         });
       } else {	// Flat data (like spells, classes, monsters, etc.)
-        apiItems = data.map(item => ({
-          index: item.index,
-          name: item.name,
-          url: item.url
-        }));
+        apiItems = data.map(item => ({ index: item.index, name: item.name, url: item.url }));
       }
       sourceCache[source.id] = apiItems;
       populateFromData(apiItems);
@@ -350,14 +377,13 @@ console.log(print);
   };
 
   function generatePrint( el ) {
-    var sel = $("#controls-select option:selected").val()
+    var sel = $("#controls-select option:selected").val();
     if ( sel ) {
       createPrint( getPrintData(sel) );
     } else {
       var charId = $('#controls-id').val();
       var char = ddbGetFromEndpoint('character', charId)['data'];
       char = ddbParseCharacter(char);
-console.log(char);
       createPrint(char);
     }
     toolbarShowItem('item-actions');
@@ -378,6 +404,18 @@ console.log(char);
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     html2pdf().set(opt).from(element).save();
+  };
+
+  function loadTemplatePartials( filenames, callback ) {
+    const partials = {};
+    let remaining = filenames.length;
+    filenames.forEach( name => {
+      $.get('templates/' + name + '.htm', function( html ) {
+	partials[name] = html;
+	remaining--;
+	if ( remaining === 0 ) callback(partials);
+      });
+    });
   };
 
 
@@ -409,18 +447,18 @@ console.log(char);
     $('#controls-size').on('change', function() {
       const newSize = $(this).val();
       const sizeClasses = [ 'tarot', 'poker', 'business', 'notecard', 'a6', 'b6' ];
-      $('.card').each( function() {  $(this).removeClass(sizeClasses.join(' ')).addClass(newSize);  });
+      $('.card').each( function() { if ( !$(this).hasClass('nested') ) $(this).removeClass(sizeClasses.join(' ')).addClass(newSize); });
+      $('.card-sheet').each( function() { $(this).removeClass(sizeClasses.join(' ')).addClass(newSize); });
       setPreferences(this);
     });
     $('#controls-orientation').on('change', function() {
       const newOrient = $(this).val();
       const sizeClasses = [ 'horizontal', 'vertical' ];
-      $('.card').each( function() {  $(this).removeClass(sizeClasses.join(' ')).addClass(newOrient);  });
+      $('.card').each( function() { if ( !$(this).hasClass('nested') ) $(this).removeClass(sizeClasses.join(' ')).addClass(newOrient); });
+      $('.card-sheet').each( function() { $(this).removeClass(sizeClasses.join(' ')).addClass(newOrient); });
       setPreferences(this);
     });
-
-    // Handle dragging of controls box
-    let isDragging = false;
+    let isDragging = false;    // Handle dragging of controls box
     let offset = { x: 0, y: 0 };
     $('#controls-header').on('mousedown', function (e) {
       isDragging = true;
@@ -440,7 +478,7 @@ console.log(char);
     });
   };
 
-  let characters, equipment, spells;
+  let spell_additional_schools;
   loadJSONFiles({
     spell_additional_schools: "data/spell_additional_schools.json"
   }).then(data => { ({ spell_additional_schools } = data);

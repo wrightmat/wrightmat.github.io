@@ -1,0 +1,232 @@
+[
+  {
+    "index": "human",
+    "name": "Human",
+    "description": "Adaptable and resourceful people who thrive in diverse environments through ingenuity and determination.",
+    "modifiers": {
+      "body": "+1",
+      "mind": "+1",
+      "spirit": "+1"
+    },
+    "passives": [
+      {
+        "name": "Versatile Origins",
+        "description": "Once per rest, apply one of your Skill Tags to a check even if it wouldn't normally apply."
+      }
+    ],
+    "tags": [
+      "Leadership",
+      "Diplomacy",
+      "Trading",
+      "Innovation",
+      "Survival"
+    ]
+  },
+  {
+    "index": "elf",
+    "name": "Elf",
+    "description": "Ancient beings with deep connections to magic and nature, carrying the wisdom of countless generations.",
+    "modifiers": {
+      "body": "+0",
+      "mind": "+1",
+      "spirit": "+2"
+    },
+    "passives": [
+      {
+        "name": "Ancestral Memory",
+        "description": "Once per rest, you can access inherited knowledge to gain a relevant Skill Tag for one roll, even if you don't normally have it."
+      }
+    ],
+    "tags": [
+      "Arcane Lore",
+      "Nature Knowledge",
+      "Meditation",
+      "Ancient Languages",
+      "Artistry"
+    ]
+  },
+  {
+    "index": "dwarf",
+    "name": "Dwarf",
+    "description": "Sturdy folk renowned for their craftsmanship, resilience, and deep connection to stone and metal.",
+    "modifiers": {
+      "body": "+2",
+      "mind": "+1",
+      "spirit": "+0"
+    },
+    "passives": [
+      {
+        "name": "Stoneblood Resilience",
+        "description": "Once per rest, ignore the effects of a Condition (Weakened, Dazed, or Stunned) applied to you."
+      }
+    ],
+    "tags": [
+      "Smithing",
+      "Stonework",
+      "Engineering",
+      "Appraisal",
+      "Endurance"
+    ]
+  },
+  {
+    "index": "halfling",
+    "name": "Halfling",
+    "description": "Small, cheerful people who find strength in community, comfort, and shared good fortune.",
+    "modifiers": {
+      "body": "+1",
+      "mind": "+0",
+      "spirit": "+2"
+    },
+    "passives": [
+      {
+        "name": "Lucky",
+        "description": "After a rest, everyone within Near range gains 1 Luck."
+      }
+    ],
+    "tags": [
+      "Cooking",
+      "Hospitality",
+      "Stealth",
+      "Gardening",
+      "Storytelling"
+    ]
+  },
+  {
+    "index": "orc",
+    "name": "Orc",
+    "description": "Powerful warriors driven by passion and strength, living with intensity in all aspects of life.",
+    "modifiers": {
+      "body": "+3",
+      "mind": "+0",
+      "spirit": "+0"
+    },
+    "passives": [
+      {
+        "name": "Battle Fury",
+        "description": "When you take damage, gain +1 to your next attack roll for each point of damage taken (max +3)."
+      }
+    ],
+    "tags": [
+      "Intimidation",
+      "Athletics",
+      "Weapon Mastery",
+      "Tribal Lore",
+      "Rage"
+    ]
+  },
+  {
+    "index": "construct",
+    "name": "Construct",
+    "description": "Artificial beings powered by magic or technology, approaching problems with logic and precision.",
+    "modifiers": {
+      "body": "+0",
+      "mind": "+3",
+      "spirit": "+0"
+    },
+    "passives": [
+      {
+        "name": "Analytical Core",
+        "description": "Once per rest, when you fail a roll involving knowledge or reasoning, immediately make the roll again with a +2 bonus."
+      }
+    ],
+    "tags": [
+      "Investigation",
+      "Mathematics",
+      "Memory Palace",
+      "Pattern Recognition",
+      "Research"
+    ]
+  },
+  {
+    "index": "fairy",
+    "name": "Fairy",
+    "description": "Ethereal beings from otherworldly realms, existing partially between the material and spiritual planes.",
+    "modifiers": {
+      "body": "+0",
+      "mind": "+0",
+      "spirit": "+3"
+    },
+    "passives": [
+      {
+        "name": "Ephemeral",
+        "description": "Once per rest, you can become incorporeal until the end of the scene, allowing you to pass through objects and ignore physical damage (but not magical effects)."
+      }
+    ],
+    "tags": [
+      "Flight",
+      "Illusion",
+      "Dream Walking",
+      "Emotional Insight",
+      "Fey Politics"
+    ]
+  },
+  {
+    "index": "gnome",
+    "name": "Gnome",
+    "description": "Clever inventors and scholars who see the world as a puzzle to be solved through ingenuity and craft.",
+    "modifiers": {
+      "body": "+1",
+      "mind": "+2",
+      "spirit": "+0"
+    },
+    "passives": [
+      {
+        "name": "Tinker's Insight",
+        "description": "You can jury-rig temporary solutions. Once per rest, create a makeshift item that functions for one scene before breaking."
+      }
+    ],
+    "tags": [
+      "Invention",
+      "Alchemy",
+      "Clockwork",
+      "Problem Solving",
+      "Academia"
+    ]
+  },
+  {
+    "index": "beastfolk",
+    "name": "Beastfolk",
+    "description": "People who blend humanoid and animal traits, maintaining strong connections to their primal instincts.",
+    "modifiers": {
+      "body": "+1",
+      "mind": "+0",
+      "spirit": "+2"
+    },
+    "passives": [
+      {
+        "name": "Adaptive Senses",
+        "description": "Once per rest, you can enhance one of your senses (sight, hearing, smell, etc.) to gain a +3 bonus on any roll that would benefit from that enhanced perception."
+      }
+    ],
+    "tags": [
+      "Tracking",
+      "Pack Tactics",
+      "Territory Knowledge",
+      "Hunting",
+      "Animal Communication"
+    ]
+  },
+  {
+    "index": "changeling",
+    "name": "Changeling",
+    "description": "Shapeshifting beings who excel at adaptation and understanding others through their fluid nature.",
+    "modifiers": {
+      "body": "+0",
+      "mind": "+1",
+      "spirit": "+2"
+    },
+    "passives": [
+      {
+        "name": "Fluid Identity",
+        "description": "Once per rest, you can assume a different appearance and mannerisms, gaining a +3 bonus to rolls involving deception or fitting into social situations."
+      }
+    ],
+    "tags": [
+      "Acting",
+      "Mimicry",
+      "Psychology",
+      "Infiltration",
+      "Cultural Knowledge"
+    ]
+  }
+]

@@ -1,0 +1,452 @@
+[
+  {
+    "index": "fighter",
+    "name": "Fighter",
+    "description": "A disciplined warrior trained in all forms of physical combat and battlefield tactics.",
+    "tags": [
+      "Power Strikes",
+      "Tactician",
+      "Weapon Mastery"
+    ],
+    "passives": [
+      {
+        "name": "Combat Reflexes",
+        "description": "Once per long rest, take one Reaction without spending AP."
+      },
+      {
+        "name": "Armor Training",
+        "description": "Reduce armor penalties by 1 and gain +1 Armor while wearing any armor."
+      },
+      {
+        "name": "Weapon Specialist",
+        "description": "Choose a weapon type; gain +1 to all attacks made with it."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Power Attack",
+        "description": "Melee attack with double damage dice. On a miss, become Weakened.",
+        "ap": 2,
+        "type": "Action"
+      },
+      {
+        "name": "Brace",
+        "description": "Attack a foe who moves into Melee range.",
+        "ap": 1,
+        "type": "Reaction"
+      },
+      {
+        "name": "War Cry",
+        "description": "Ally gains +2 to their next attack or check.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Shield Slam",
+        "description": "If using a shield, attack and inflict Stunned on a failed Body check (DC 12).",
+        "ap": 2,
+        "type": "Action"
+      }
+    ],
+    "advanced": {
+      "name": "Master of the Field",
+      "description": "After an enemy misses you, move and make a +2 Attack. On crit, use another Fighter ability without AP.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  },
+  {
+    "index": "rogue",
+    "name": "Rogue",
+    "description": "A cunning operative who excels at stealth, misdirection, and exploiting weaknesses.",
+    "tags": [
+      "Quick Hands",
+      "Shadowstep",
+      "Bluff"
+    ],
+    "passives": [
+      {
+        "name": "Evasive Footwork",
+        "description": "If you move out of Melee while hidden, no opportunity attack is triggered."
+      },
+      {
+        "name": "Always Watching",
+        "description": "You always act first during ambushes or surprise scenarios."
+      },
+      {
+        "name": "Slip the Blade",
+        "description": "Deal +1d4 damage once per round to targets who haven\u2019t acted yet."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Sneak Attack",
+        "description": "Advantage on attacks against unaware or flanked targets; +1d6 damage.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Feint",
+        "description": "Target has disadvantage on next attack or save.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Smoke Bomb",
+        "description": "Create concealment and take Hide for free.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Tumbling Escape",
+        "description": "After an enemy misses you, move 1 band without provoking.",
+        "ap": 1,
+        "type": "Reaction"
+      }
+    ],
+    "advanced": {
+      "name": "Ghost in the Smoke",
+      "description": "After Hiding, reposition within Close range. If the Hide check succeeds, deal max damage and prevent reactions.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Reaction"
+    }
+  },
+  {
+    "index": "mage",
+    "name": "Mage",
+    "description": "A scholar of arcane forces who manipulates reality through study and spellcraft.",
+    "tags": [
+      "Arcana",
+      "Mystic Theory",
+      "Precision Casting"
+    ],
+    "passives": [
+      {
+        "name": "Spellbook",
+        "description": "Can store 4 spells that don\u2019t count against item slots. Must be Interacted with before use."
+      },
+      {
+        "name": "Arcane Focus",
+        "description": "Reroll one failed spellcasting (Mind) check per round."
+      },
+      {
+        "name": "Attunement",
+        "description": "One spell in your inventory can be used without the Interact action."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Overload",
+        "description": "+2 to casting check, but inflict Dazed if failed.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Counterspell",
+        "description": "Cancel enemy spell on successful Mind vs Passive Mind.",
+        "ap": 2,
+        "type": "Reaction"
+      },
+      {
+        "name": "Runic Trap",
+        "description": "Delayed-cast spell inscribed on surface with a trigger.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Quick Cast",
+        "description": "Cast without Interact action, but with disadvantage.",
+        "ap": 1,
+        "type": "Action"
+      }
+    ],
+    "advanced": {
+      "name": "Mastery of Forms",
+      "description": "Cast the same spell twice in one round; if both succeed, it isn\u2019t expended.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  },
+  {
+    "index": "priest",
+    "name": "Priest",
+    "description": "A spiritual conduit who calls upon divine powers to heal, protect, or smite.",
+    "tags": [
+      "Sacred Rites",
+      "Soothing Presence",
+      "Conviction"
+    ],
+    "passives": [
+      {
+        "name": "Sanctified Touch",
+        "description": "Stabilize without a check or AP; +2 to all healing effects."
+      },
+      {
+        "name": "Divine Conduit",
+        "description": "Once per rest, cast a healing/protection/banishment spell without expending it."
+      },
+      {
+        "name": "Aura of Faith",
+        "description": "Allies in Close range get +1 to saves vs conditions."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Healing Word",
+        "description": "Heal nearby ally for Mind (min 1), even if unconscious.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Turn",
+        "description": "Stun and repel unnatural enemy with failed Spirit check.",
+        "ap": 2,
+        "type": "Action"
+      },
+      {
+        "name": "Channel Radiance",
+        "description": "Heal 1 HP to allies or deal 1 damage to enemies in Close range.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Blessing",
+        "description": "Target gains +1 to all rolls and immunity to Dazed/Stunned.",
+        "ap": 1,
+        "type": "Action"
+      }
+    ],
+    "advanced": {
+      "name": "Miracle",
+      "description": "Prevent an ally from dropping to 0 HP; cleanse all conditions and give them 1 AP.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  },
+  {
+    "index": "monk",
+    "name": "Monk",
+    "description": "A disciplined martial artist who channels inner focus into powerful unarmed strikes.",
+    "tags": [
+      "Striking Form",
+      "Inner Calm",
+      "Balance"
+    ],
+    "passives": [
+      {
+        "name": "Unarmored Grace",
+        "description": "+1 Armor and +1 range per Move action while unarmored and shieldless."
+      },
+      {
+        "name": "Fluid Rhythm",
+        "description": "After a melee attack, take a free Move once per round."
+      },
+      {
+        "name": "Tranquil Mind",
+        "description": "Advantage on your first Mind or Spirit check each round."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Palm Strike",
+        "description": "Melee attack that pushes or Stuns. If already Stunned, may disarm or knock prone.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Flurry",
+        "description": "Two unarmed attacks; if both hit, take a free Hide, Move, or Defend.",
+        "ap": 2,
+        "type": "Action"
+      },
+      {
+        "name": "Centering Breath",
+        "description": "Remove a condition and heal 1 HP.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Deflect Projectile",
+        "description": "Block a ranged attack with Body check; negate damage.",
+        "ap": 1,
+        "type": "Reaction"
+      }
+    ],
+    "advanced": {
+      "name": "Flow State",
+      "description": "For 3 rounds, gain 1 free Action each round and immunity to Stunned.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  },
+  {
+    "index": "artificer",
+    "name": "Artificer",
+    "description": "A crafty inventor who relies on gadgets, traps, and tinkered tools.",
+    "tags": [
+      "Tinker",
+      "Trapmaking",
+      "Gadgeteer"
+    ],
+    "passives": [
+      {
+        "name": "Utility Belt",
+        "description": "3 bonus slots for non-weapon items."
+      },
+      {
+        "name": "Auto-Stow",
+        "description": "Use non-weapon, non-spell items without Interact."
+      },
+      {
+        "name": "Jury-Rigged Arsenal",
+        "description": "Create a one-use item during long rest. Lasts until next rest."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Deploy Turret",
+        "description": "Place an item-based turret that fires once per round for 1d4 damage.",
+        "ap": 2,
+        "type": "Action"
+      },
+      {
+        "name": "Tinker Upgrade",
+        "description": "Temporarily grant an item a new tag.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Trap Set",
+        "description": "Lay a damaging or debuffing trap; max two active.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Clockwork Companion",
+        "description": "Deploy a small utility familiar for 10 minutes.",
+        "ap": 2,
+        "type": "Action"
+      }
+    ],
+    "advanced": {
+      "name": "Masterwork Cache",
+      "description": "For 3 items: ignore slot limits, make them unbreakable, and gain +1 on checks involving them.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  },
+  {
+    "index": "witch",
+    "name": "Witch",
+    "description": "A nature-bound spellcaster who communes with beasts, weaves herbs, and hexes foes.",
+    "tags": [
+      "Herbalism",
+      "Animal Kinship",
+      "Nature Magic"
+    ],
+    "passives": [
+      {
+        "name": "Witch\u2019s Satchel",
+        "description": "Carry 3 extra natural items (spells, potions, herbs)."
+      },
+      {
+        "name": "Familiar Bond",
+        "description": "Familiar can deliver spells, trigger objects, or absorb 1 condition."
+      },
+      {
+        "name": "Hexmarked",
+        "description": "After hitting with a spell or attack, target has disadvantage on checks to resist your effects."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Entangling Roots",
+        "description": "Weaken and immobilize enemies in Close range.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Curse",
+        "description": "Inflict Stunned, disadvantage, or +1 damage taken on a failed Mind vs Passive Spirit check.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Fungal Bloom",
+        "description": "Daze foes and create light concealment.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Brew Elixir",
+        "description": "Craft an herbal potion that heals, debuffs, or removes a condition.",
+        "ap": null,
+        "type": "Downtime"
+      }
+    ],
+    "advanced": {
+      "name": "Nature\u2019s Wrath",
+      "description": "Designate one foe as Out of Balance: gain advantage, +1 damage, and ignore terrain against them.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  },
+  {
+    "index": "expert",
+    "name": "Expert",
+    "description": "A resourceful generalist whose versatility and cunning outmatch specialization.",
+    "tags": [
+      "Jack of All Trades",
+      "Improvisation",
+      "Charming"
+    ],
+    "passives": [
+      {
+        "name": "Versatile",
+        "description": "Once per round, apply any tag creatively with justification."
+      },
+      {
+        "name": "Fast Learner",
+        "description": "Roll advancement for unmarked tags during long rest."
+      },
+      {
+        "name": "Well-Connected",
+        "description": "Once per scene, declare a helpful contact, reputation, or detail."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Jackknife",
+        "description": "Swap or add tags after rolling. If successful, mark both.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Read the Room",
+        "description": "Learn a target\u2019s stat, set up advantage, or discover a tactical detail.",
+        "ap": 1,
+        "type": "Action"
+      },
+      {
+        "name": "Cover for Me",
+        "description": "After an ally fails, roll your own check using a tag. On success, convert their failure into a mixed success.",
+        "ap": 1,
+        "type": "Reaction"
+      }
+    ],
+    "advanced": {
+      "name": "Signature Style",
+      "description": "Choose a Skill Tag: it applies to all checks, always marks on success, and can be advanced immediately after the scene.",
+      "uses": 1,
+      "use_reset": "Long Rest",
+      "type": "Free"
+    }
+  }
+]

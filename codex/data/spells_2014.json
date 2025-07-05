@@ -17040,7 +17040,7 @@
 		"If you cast this spell using a spell slot of 2nd level or higher, the initial and ongoing damage increase by 1d6 for each slot level above 1st."
 	],
 	"range": "Self",
-	"components": ["V"],
+	"components": [ "V" ],
 	"material": null,
 	"ritual": false,
 	"duration": "Concentration, up to 1 minute",
@@ -17102,7 +17102,7 @@
 		"When you cast this spell using a spell slot of 3rd or 4th level, you can maintain your concentration on the spell for up to 8 hours. When you use a spell slot of 5th level or higher, you can maintain your concentration on the spell for up to 24 hours."
 	],
 	"range": "90 feet",
-	"components": ["V","S","M"],
+	"components": [ "V", "S", "M" ],
 	"material": "The petrified eye of a newt.",
 	"ritual": false,
 	"duration": "Concentration, up to 1 hour",

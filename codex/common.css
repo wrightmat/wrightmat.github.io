@@ -1,7 +1,7 @@
 @media print {
   @page { size: 8.5in 11in; margin: 0; }
   html, body { margin: 0; padding: 0; width: 8.5in; height: auto; overflow: hidden; }
-  .print-container { margin: 0; width: 8.5in; height: auto; }
+  .container { margin: 0; width: 8.5in; height: auto; }
   .card-sheet { margin: 0; padding-top: 0.25in !important; padding-bottom: 0; page-break-before: auto; page-break-after: auto; page-break-inside: avoid; }
   .front-sheet { page-break-after: always; }
   .back-sheet { transform: scaleX(-1); transform-origin: center center; }
@@ -10,7 +10,7 @@
   header, .controls { display: none !important; }
 }
 @media screen {
-  .print-container { position: fixed; top: 45px; left: 15px; bottom: 0; overflow-y: auto; overflow-x: hidden; }
+  .container { position: fixed; top: 45px; left: 15px; bottom: 0; overflow-y: auto; overflow-x: hidden; min-width: 70%; }
 }
 
 
@@ -26,11 +26,18 @@ label { display: inline-flex; font-weight: 500; margin-bottom: 0.25rem; }
 .form-control { display: block; width: 100%; padding: 0.5em 0.75em; border: 1px solid #ced4da; border-radius: 0.375em; background-color: #fff; color: #212529; }
 .form-control:focus { border-color: #0d6efd; outline: none; box-shadow: 0 0 0 0.2em rgba(13, 110, 253, 0.25); }
 .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
-.form-horizontal { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-row { display: flex; align-items: center; margin-bottom: 0.5rem; }
-.form-row label { min-width: 150px; margin-right: 1rem; font-weight: 500; }
-.form-row input, .form-row select, .form-row textarea { flex: 1; padding: 0.5em 0.75em; border: 1px solid #ced4da; border-radius: 0.375em; background-color: #fff; color: #212529; box-sizing: border-box; }
-.form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: #0d6efd; outline: none; box-shadow: 0 0 0 0.2em rgba(13, 110, 253, 0.25); }
+.form-group-horizontal { margin-bottom: 1em; }
+.form-group-horizontal label { display: block; margin-bottom: 0.25em; font-weight: 500; }
+.form-row { display: flex; gap: 0.5em; }
+.form-row .form-control { flex: 1; }
+.form-row-inline { display: flex; align-items: center; margin-bottom: 0.6em; gap: 1em; }
+.form-row-inline label { min-width: 100px; }
+.form-row-inline .form-control { flex: 1; }
+.form-check { display: flex; align-items: center; gap: 0.5em; margin-bottom: 0.5em; }
+.form-check-input { flex-shrink: 0; width: 1em; height: 1em; margin: 0; cursor: pointer; }
+.form-check-label { font-weight: 500; cursor: pointer; }
+.form-check-row { display: flex; gap: 5em; flex-wrap: wrap; }
+.form-check { display: flex; align-items: center; gap: 0.5em; }
 .btn { display: inline-block; font-weight: 500; text-align: center; text-decoration: none; vertical-align: middle; cursor: pointer; border: 1px solid transparent; padding: 0.5em 1em; border-radius: 0.375em; transition: background-color 0.15s ease-in-out; color: #fff; margin: 2px; }
 .btn:disabled { opacity: 0.65; cursor: not-allowed; }
 .btn-primary { background-color: #0d6efd; border-color: #0d6efd; }			.btn-primary:hover { background-color: #0b5ed7; }
@@ -64,58 +71,73 @@ header li.current	{ text-decoration: underline; }
 @keyframes icon-bounce	{ from { transform: translateY(0px); }	to   { transform: translateY(9px); } /* Float up a bit */ }
 
 .controls		{ position: fixed; top: 45px; right: 15px; width: 300px; background-color: #fff; border: 1px solid #ccc; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); z-index: 1000; padding: 10px; cursor: default; user-select: none; }
-.controls-header	{ background-color: #eee; padding: 5px 10px; font-weight: bold; cursor: move; border-bottom: 1px solid #ccc; }
+.controls-header	{ background-color: #eee; padding: 5px 10px; font-weight: bold; cursor: move; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+.controls-header .btn-toggle	{ color: #000; padding: 0.1em; cursor: pointer; }
 .controls-toolbar	{ display: flex; gap: 0.02em; margin-bottom: 1em; align-items: center; }
 .controls-toolbar .btn	{ font-size: 1.5em; line-height: 1; width: 2em; height: 2em; display: inline-flex; align-items: center; justify-content: center; border-radius: 0; transition: background-color 0.3s ease, transform 0.2s ease; }
 .controls-toolbar .btn img { width: 1.5em; height: 1.5em; vertical-align: middle; }
 .controls-subheader	{ background-color: #f5f5f5; padding: 5px 10px; font-weight: 500; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
 
+.panel			{ position: fixed; bottom: 45px; right: 15px; width: 300px; background-color: #fff; border: 1px solid #ccc; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); z-index: 1000; padding: 10px; cursor: default; user-select: none; }
+.panel-header		{ background-color: #eee; padding: 5px 10px; font-weight: bold; cursor: move; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+.panel-header .btn-toggle	{ color: #000; padding: 0.1em; cursor: pointer; }
+.panel-toolbar		{ display: flex; gap: 0.02em; margin-bottom: 1em; align-items: center; }
+.panel-toolbar .btn	{ font-size: 1.5em; line-height: 1; width: 2em; height: 2em; display: inline-flex; align-items: center; justify-content: center; border-radius: 0; transition: background-color 0.3s ease, transform 0.2s ease; }
+.panel-toolbar .btn img { width: 1.5em; height: 1.5em; vertical-align: middle; }
+.panel-subheader	{ background-color: #f5f5f5; padding: 5px 10px; font-weight: 500; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
+
 
 /* Scriptorium */
-.print-container	{ width: 8.5in; }
-.card-sheet		{ display: grid; justify-content: center; gap: 0; padding: 0; width: 8.5in; height: 11in; margin: 0; box-sizing: border-box; }
+.card-sheet		{ display: grid; justify-content: center; gap: 0; padding: 0; margin: 0; box-sizing: border-box; }
 .card			{ display: flex; justify-content: center; align-items: flex-start; overflow: hidden; box-sizing: border-box; border: 1px dashed #ccc; padding: 0.2em; }
 .card .back		{ display: block; margin: 0; padding: 0.3em; box-sizing: border-box; }
 .card .back .image	{ padding-top: 10%; }
 .card .back .image img	{ height: 100%; width: 100%; max-height: 100%; max-width: 100%; }
 .card .front, .back	{ height: 100%; width: 100%; }
+/* .card .top { flex: 1; }	.card .bottom { flex: none; } */
 
 /* Card sizes - increase each by 5 to 10% over the physical size (based on real-world testing) to account for cut lines and such */
-.card-sheet.business.horizontal		{ grid-template-columns: repeat(2, 3.7in); grid-auto-rows: 2.2in; }
-.card-sheet.business.vertical		{ grid-template-columns: repeat(3, 2.2in); grid-auto-rows: 3.7in; }
+.card-sheet.business.horizontal		{ grid-template-columns: repeat(2, 3.7in); grid-auto-rows: 2.2in; width: 8.5in; height: 11in; }
+.card-sheet.business.vertical		{ grid-template-columns: repeat(3, 2.2in); grid-auto-rows: 3.7in; width: 8.5in; height: 11in; }
 .card.business.horizontal		{ width: 3.7in; height: 2.2in; --card-height: 2.2in; }
 .card.business.vertical			{ width: 2.2in; height: 3.7in; --card-height: 3.7in; }
 .card.business				{ font-size: 7pt; }
 
-.card-sheet.poker.horizontal		{ grid-template-columns: repeat(2, 3.5in); grid-auto-rows: 2.5in; }
-.card-sheet.poker.vertical		{ grid-template-columns: repeat(3, 2.5in); grid-auto-rows: 3.5in; }
+.card-sheet.poker.horizontal		{ grid-template-columns: repeat(2, 3.5in); grid-auto-rows: 2.5in; width: 8.5in; height: 11in; }
+.card-sheet.poker.vertical		{ grid-template-columns: repeat(3, 2.5in); grid-auto-rows: 3.5in; width: 8.5in; height: 11in; }
 .card.poker.horizontal			{ width: 3.5in; height: 2.5in; --card-height: 2.5in; }
 .card.poker.vertical			{ width: 2.5in; height: 3.5in; --card-height: 3.5in; }
-.card.poker				{ font-size: 8pt; }
+.card.poker				{ font-size: 7.5pt; }
 
-.card-sheet.tarot.horizontal		{ grid-template-columns: repeat(1, 4.75in); grid-auto-rows: 2.75in; }
-.card-sheet.tarot.vertical		{ grid-template-columns: repeat(2, 2.75in); grid-auto-rows: 4.75in; }
+.card-sheet.tarot.horizontal		{ grid-template-columns: repeat(1, 4.75in); grid-auto-rows: 2.75in; width: 8.5in; height: 11in; }
+.card-sheet.tarot.vertical		{ grid-template-columns: repeat(2, 2.75in); grid-auto-rows: 4.75in; width: 8.5in; height: 11in; }
 .card.tarot.horizontal			{ width: 4.75in; height: 2.75in; --card-height: 2.75in; }
 .card.tarot.vertical			{ width: 2.75in; height: 4.75in; --card-height: 4.75in; }
 .card.tarot				{ font-size: 8pt; }
 
-.card-sheet.notecard.horizontal		{ grid-template-columns: repeat(1, 7in); grid-auto-rows: 5in; }
-.card-sheet.notecard.vertical		{ grid-template-columns: repeat(1, 5in); grid-auto-rows: 7in; }
-.card.notecard.horizontal		{ width: 7.65in; height: 5.40in; --card-height: 5.0in; }
-.card.notecard.vertical			{ width: 5.40in; height: 7.65in; --card-height: 7.0in; }
-.card.notecard				{ font-size: 9pt; }
+.card-sheet.notecard.horizontal		{ grid-template-columns: repeat(1, 7.3in); grid-auto-rows: 5.1in; width: 8.5in; height: 11in; }
+.card-sheet.notecard.vertical		{ grid-template-columns: repeat(1, 5.1in); grid-auto-rows: 7.3in; width: 8.5in; height: 11in; }
+.card.notecard.horizontal		{ width: 7.3in; height: 5.1in; --card-height: 5.1in; }
+.card.notecard.vertical			{ width: 5.1in; height: 7.3in; --card-height: 7.3in; }
+.card.notecard				{ font-size: 8.5pt; }
 
-.card-sheet.a6.horizontal		{ grid-template-columns: repeat(1, 5.83in); grid-auto-rows: 4.13in; }
-.card-sheet.a6.vertical			{ grid-template-columns: repeat(1, 4.13in); grid-auto-rows: 5.83in; }
+.card-sheet.a6.horizontal		{ grid-template-columns: repeat(1, 5.83in); grid-auto-rows: 4.13in; width: 8.5in; height: 11in; }
+.card-sheet.a6.vertical			{ grid-template-columns: repeat(1, 4.13in); grid-auto-rows: 5.83in; width: 8.5in; height: 11in; }
 .card.a6.horizontal			{ width: 6.3in; height: 4.6in; }
 .card.a6.vertical			{ width: 4.6in; height: 6.3in; padding-left: 0.6in; }
 .card.a6				{ font-size: 9pt; }
 
-.card-sheet.b6.horizontal		{ grid-template-columns: repeat(1, 6.9in); grid-auto-rows: 4.9in; }
-.card-sheet.b6.vertical			{ grid-template-columns: repeat(1, 4.9in); grid-auto-rows: 6.9in; }
+.card-sheet.b6.horizontal		{ grid-template-columns: repeat(1, 6.9in); grid-auto-rows: 4.9in; width: 8.5in; height: 11in; }
+.card-sheet.b6.vertical			{ grid-template-columns: repeat(1, 4.9in); grid-auto-rows: 6.9in; width: 8.5in; height: 11in; }
 .card.b6.horizontal			{ width: 7.4in; height: 5.3in; }
 .card.b6.vertical			{ width: 5.3in; height: 7.4in; padding-left: 0.6in; }
 .card.b6				{ font-size: 9pt; }
+
+.card-sheet.letter.horizontal		{ grid-template-columns: repeat(1, 11in); grid-auto-rows: 8.5in; width: 11in; height: 8.5in; }
+.card-sheet.letter.vertical		{ grid-template-columns: repeat(1, 8.5in); grid-auto-rows: 11in; width: 8.5in; height: 11in; }
+.card.letter.horizontal			{ width: 11in; height: 8.5in; border: 0px; }
+.card.letter.vertical			{ width: 8.5in; height: 11in; border: 0px; }
+.card.letter				{ font-size: 10pt; }
 
 .card p					{ margin: 0.1em; }
 .card h1, h2, h3, h4			{ line-height: 0.05; }
@@ -173,8 +195,7 @@ header li.current	{ text-decoration: underline; }
 .chip-life-back .img-bg { background: #ccc; border-radius: 50%; height: 20px; -webkit-print-color-adjust: exact !important; }
 
 .comma-list { display: inline; }
-.comma-item::after { content: ", "; }
-.comma-item:last-child::after { content: ""; }
+.comma-item::after { content: ", "; }   .comma-item:last-child::after { content: ""; }
 .written-list { list-style: none; padding-left: 0; margin: 0; }
 .written-entry { margin-bottom: 2em; margin-top: 2em; break-inside: avoid; }
 .entry-layout { display: flex; gap: 1em; align-items: stretch; }
@@ -206,6 +227,23 @@ header li.current	{ text-decoration: underline; }
 .star-checkbox input[type="checkbox"] {	position: absolute; opacity: 0; width: 0; height: 0; }
 .star-checkbox .star::before { content: "☆"; font-size: 1.75em; color: #ccc; transition: color 0.2s ease-in-out; }
 .star-checkbox input[type="checkbox"]:checked + .star::before {	content: "★"; color: gold; }
+
+
+/* Grimorium */
+.unlockable-section { margin-top: 1em; display: none; }
+.sp-tracker { display: flex; gap: 5em; padding: 0.5em 1em; border: 2px solid #666; border-radius: 0.5em; justify-content: flex-start; flex-wrap: wrap; align-items: center; }
+.sp-item { display: flex; gap: 0.5em; align-items: center; }
+.sp-negative { color: red; font-weight: bold; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.5em; max-height: 9em; overflow-y: auto; border: 1px solid #666; padding: 1em; }
+.feature-grid label { display: flex; gap: 0.5em; align-items: center; font-size: 0.9em; }
+
+
+/* Tabularium */
+.tabs { display: flex; gap: 4px; margin-bottom: 0.5em; }
+.tab { background: #333; color: #ccc; border: none; padding: 4px 10px; cursor: pointer; }
+.tab.active { background: #555; font-weight: bold; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
 
 
 /* Misc and Helpers */
@@ -244,7 +282,7 @@ header li.current	{ text-decoration: underline; }
 .ability-block .name	{ font-size: 1em; font-weight: bold; text-transform: uppercase; padding-bottom: 5px; }
 .ability-block .modifier { font-size: 2em; font-weight: bold; color: #000; padding-bottom: 5px; line-height: 1em; }
 .ability-block .score	{ font-size: 1.2em; font-weight: bold; color: #333; }
-.ability-table		{ font-size: 1.1em; text-align: center; border: 1px solid black; margin: 8px 1px 0 1px; }
+.ability-table		{ font-size: 1.1em; text-align: center; border: 1px solid black; margin: 2px auto; margin-top: 8px; min-width:90%; }
 .ability-table tr	{ line-height: 0.9em; }
 .columns		{ flex: 1 1 auto; display: flex; gap: 2px; }
 .column			{ flex: 1 1 0; padding: 0 2px; }

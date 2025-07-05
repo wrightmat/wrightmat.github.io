@@ -10,7 +10,7 @@
 .icon-7, .friends			{ background-position: -1050px 0; }
 .icon-8, .guidance			{ background-position: -1200px 0; }
 .icon-9, .light				{ background-position: -1350px 0; }
-.icon-10, .mage-hand, .arcane-hand	{ background-position: -1500px 0; }
+.icon-10, .mage-hand, .arcane-hand, .sage-hand	{ background-position: -1500px 0; }
 .icon-11, .minor-illusion		{ background-position: -1650px 0; }
 .icon-12, .poison-spray			{ background-position: -1800px 0; }
 .icon-13, .produce-flame		{ background-position: 0 -150px; }
@@ -369,7 +369,7 @@
 .icon-364				{ background-position: 0 -4200px; }
 .icon-365				{ background-position: -150px -4200px; }
 .icon-366, .sorcerous-burst		{ background-position: -300px -4200px; }
-.icon-367, .wither-and-bloom		{ background-position: -450px -4200px; }
+.icon-367, .wither-and-bloom, .beladros-call	{ background-position: -450px -4200px; }
 .icon-368, .suggestion, .compulsion	{ background-position: -600px -4200px; }
 .icon-369, .silvery-barbs		{ background-position: -750px -4200px; }
 .icon-370				{ background-position: -900px -4200px; }
@@ -409,7 +409,7 @@
 .icon-402				{ background-position: -1800px -4500px; }
 
 .icon-403, .druidcraft			{ background-position: 0 -4650px; }
-.icon-404, .control-weather		{ background-position: -150px -4650px; }
+.icon-404, .control-weather, .hawthornes-tempest	{ background-position: -150px -4650px; }
 .icon-405, .earthquake			{ background-position: -300px -4650px; }
 .icon-406				{ background-position: -450px -4650px; }
 .icon-407				{ background-position: -600px -4650px; }
@@ -420,7 +420,7 @@
 .icon-412, .antilife-shell		{ background-position: -1350px -4650px; }
 .icon-413				{ background-position: -1500px -4650px; }
 .icon-414, .contingency			{ background-position: -1650px -4650px; }
-.icon-415				{ background-position: -1800px -4650px; }
+.icon-415, .arms-of-gore, .bloodshot, .bloody-smite, .blood-tide	{ background-position: -1800px -4650px; }
 
 .icon-416, .commune-with-nature		{ background-position: 0 -4800px; }
 .icon-417				{ background-position: -150px -4800px; }
