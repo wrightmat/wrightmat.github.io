@@ -1,0 +1,46 @@
+{
+  "id": "template_17209d78-4481-4a99-a79b-2eaccb118e4f",
+  "created": "2025-07-01T20:00:00.000Z",
+  "modified": "2025-07-04T20:00:00.000Z",
+  "version": 1,
+  "index": "bitd-default",
+  "title": "BitD Default Sheet",
+  "schema": "bitd",
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Group",
+      "label": "Character Info",
+      "layout": "horizontal",
+      "elements": [
+        { "type": "Control", "scope": "#/properties/name", "label": "Name", "controlType": "text" },
+        { "type": "Control", "scope": "#/properties/playbook", "label": "Playbook", "controlType": "text" },
+        { "type": "Control", "scope": "#/properties/heritage", "label": "Heritage", "controlType": "text" },
+        { "type": "Control", "scope": "#/properties/background", "label": "Background", "controlType": "text" }
+      ]
+    },
+    {
+      "type": "Group",
+      "label": "Stress & Progress",
+      "layout": "horizontal",
+      "elements": [
+        {
+          "type": "LinearTrack",
+          "label": "Stress",
+          "scope": "#/properties/stress",
+          "segments": 9,
+          "theme": "stress",
+          "showCounter": true
+        },
+        {
+          "type": "CircularTrack",
+          "label": "Investigation Clock",
+          "scope": "#/properties/investigationClock",
+          "segments": 6,
+          "theme": "default",
+          "showCounter": true
+        }
+      ]
+    }
+  ]
+}

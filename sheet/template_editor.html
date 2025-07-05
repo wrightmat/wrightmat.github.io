@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en" class="template-editor">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTRPG Template Editor</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="data.js"></script>
+  <script src="utils.js"></script>
+</head>
+
+<body x-data="templateEditor()">
+
+<div class="character-editor-container" :class="{ 'left-collapsed': leftPaneCollapsed, 'right-collapsed': rightPaneCollapsed, 'both-collapsed': leftPaneCollapsed && rightPaneCollapsed }">
+        
+    <!-- Unified Toolbar -->
+    <div class="toolbar">
+        <button class="toolbar-toggle" @click="toggleLeftPane" :class="{ 'active': !leftPaneCollapsed }">
+            <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+            <span class="text-sm">Palette</span>
+        </button>
+        
+        <h1>📝 Template Editor</h1>
+        
+	<div class="toolbar-actions">
+	    <select x-model="selectedSchemaId" @change="selectSchema($event.target.value)" class="form-control">
+	        <option value="">Select System...</option>
+	        <template x-for="(schema, id) in schemas">
+	            <option :value="id" x-text="schema.title"></option>
+	        </template>
+	    </select>
+	    <select x-model="selectedTemplateId" @change="selectTemplate($event.target.value)" class="form-control" :disabled="!selectedSchemaId">
+	        <option value="">Select Template...</option>
+	        <option value="_new">+ Create New Template</option>
+	        <template x-for="(template, id) in availableTemplates">
+	            <option :value="id" x-text="template.title"></option>
+	        </template>
+	    </select>
+	    <button class="btn btn-secondary" @click="previewTemplate" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">👁️ Preview</button>
+	    <button class="btn btn-secondary" @click="exportTemplate" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">📤 Export</button>
+	    <button class="btn btn-primary" @click="saveTemplate" :disabled="!currentTemplate">💾 Save</button>
+	</div>
+        
+        <button class="toolbar-toggle" @click="toggleRightPane" :class="{ 'active': !rightPaneCollapsed }">
+            <span class="text-sm">Properties</span>
+            <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+        </button>
+    </div>
+
+    <!-- Left Pane - Element Palette -->
+    <div class="left-pane" :class="{ 'collapsed': leftPaneCollapsed, 'show': leftPaneVisible }">
+        <div class="pane-header">
+            <h3 class="pane-title">🎨 Element Palette</h3>
+            <button class="pane-toggle" @click="toggleLeftPane">
+                <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+            </button>
+        </div>
+            
+        <div class="element-group">
+            <h4>Basic Elements</h4>
+            <template x-for="element in basicElements">
+                <div class="draggable-element" draggable="true" @dragstart="startDrag(element, $event)" @dragend="endDrag">
+                    <span class="element-icon" x-text="element.icon"></span>
+                    <span class="element-name" x-text="element.name"></span>
+                </div>
+            </template>
+        </div>
+        <div class="element-group">
+            <h4>Layout Elements</h4>
+            <template x-for="element in layoutElements">
+                <div class="draggable-element" draggable="true" @dragstart="startDrag(element, $event)" @dragend="endDrag">
+                    <span class="element-icon" x-text="element.icon"></span>
+                    <span class="element-name" x-text="element.name"></span>
+                </div>
+            </template>
+        </div>
+        <div class="element-group">
+            <h4>Advanced Elements</h4>
+            <template x-for="element in advancedElements">
+                <div class="draggable-element" draggable="true" @dragstart="startDrag(element, $event)" @dragend="endDrag">
+                    <span class="element-icon" x-text="element.icon"></span>
+                    <span class="element-name" x-text="element.name"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Main Canvas Area -->
+    <div class="main-content">
+        <div class="main-content-inner">
+            <template x-if="!currentTemplate">
+                <div class="empty-state">
+                    <h2>🎨 Template Editor</h2>
+                    <p>Select a system and template to start editing, or create a new template.</p>
+                    <div class="empty-state-actions">
+                        <button class="btn btn-primary" @click="this.createNewTemplate" :disabled="!selectedSchemaId">➕ Create New Template</button>
+                    </div>
+                </div>
+            </template>
+            <template x-if="currentTemplate">
+                <div>
+                    <div class="template-header">
+                        <input type="text" x-model="currentTemplate.title" @input="markAsModified" class="template-title-input" placeholder="Template Title">
+                        <span x-show="isModified" class="modified-indicator">• Modified</span>
+                    </div>
+                        
+                    <!-- Handle Tabs Layout at Template Level -->
+                    <template x-if="currentTemplate.type === 'Tabs'">
+                        <div class="template-layout-indicator">
+                            <div class="template-layout-header">
+                                <h3 class="template-layout-title">Tab Layout</h3>
+                                <button class="btn btn-secondary btn-small" @click="addTabToTemplate">➕ Add Tab</button>
+                            </div>
+                            <div class="tab-container">
+                                <div class="tab-header">
+                                    <template x-for="(tab, index) in currentTemplate.elements">
+                                        <button class="tab-button" :class="{ 'active': activeTemplateTab === index }" @click="activeTemplateTab = index" x-text="tab.label || ('Tab ' + (index + 1))"></button>
+                                    </template>
+                                </div>
+                                <template x-for="(tab, index) in currentTemplate.elements">
+                                    <div class="tab-content" :class="{ 'active': activeTemplateTab === index }">
+                                        <div class="tab-drop-zone" :class="{ 'drag-over': dragOver && activeTemplateTab === index }" @dragover.prevent="handleTabDragOver($event, index)" @dragleave="handleDragLeave($event)" @drop.prevent="handleTabDrop($event, index)">
+                                            <template x-if="!tab.elements || tab.elements.length === 0">
+                                                <div class="drop-zone-placeholder">🎯 Drop elements here for this tab</div>
+                                            </template>
+                                            <template x-for="(element, elemIndex) in (tab.elements || [])">
+                                                <div>
+                                                    <div class="drag-placeholder" :class="{ 'show': showPlaceholder === elemIndex && activeTemplateTab === index }"></div>
+                                                    <div x-html="renderElement(element, elemIndex)" @dragover.prevent.stop="handleElementDragOver($event, elemIndex)" @drop.prevent.stop="handleTabElementDrop($event, index, elemIndex)"></div>
+                                                </div>
+                                            </template>
+                                            <div class="drag-placeholder" :class="{ 'show': showPlaceholder === (tab.elements ? tab.elements.length : 0) && activeTemplateTab === index }"></div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                        
+                    <!-- Handle Non-Tabs Layout -->
+                    <template x-if="currentTemplate.type !== 'Tabs'">
+                        <div class="drop-zone" :class="{ 'drag-over': dragOver }" @dragover.prevent="handleDragOver($event)" @dragleave="handleDragLeave($event)" @drop.prevent="handleDrop($event, currentTemplate.elements)">
+                            <template x-if="currentTemplate.elements.length === 0">
+                                <div class="drop-zone-placeholder">🎯 Drop elements here to start building your template</div>
+                            </template>
+                            <template x-for="(element, index) in currentTemplate.elements">
+                                <div>
+                                    <div class="drag-placeholder" :class="{ 'show': showPlaceholder === index }"></div>
+                                    <div x-html="renderElement(element, index)" @dragover.prevent.stop="handleElementDragOver($event, index)" @drop.prevent.stop="handleElementDrop($event, index)"></div>
+                                </div>
+                            </template>
+                            <div class="drag-placeholder" :class="{ 'show': showPlaceholder === currentTemplate.elements.length }"></div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Right Pane - Properties Panel -->
+    <div class="right-pane" :class="{ 'collapsed': rightPaneCollapsed, 'show': rightPaneVisible }">
+        <div class="pane-header">
+            <h3 class="pane-title">⚙️ Properties</h3>
+            <button class="pane-toggle" @click="toggleRightPane">
+                <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+            </button>
+        </div>
+    
+        <div class="properties-scroll">
+            <template x-if="selectedElementId && currentTemplate">
+                <div>
+                    <div class="property-group">
+                        <h4 class="property-group-title">General</h4>
+                        <div class="form-group">
+                            <label class="property-label">Element Type</label>
+                            <input type="text" :value="getElementProperty('type')" class="form-control form-control-readonly" readonly>
+                        </div>
+                        <template x-if="getElementProperty('type') === 'Control'">
+                            <div class="form-group">
+                                <label class="property-label">Control Type</label>
+                                <select :value="getElementProperty('controlType')" @change="updateElementProperty('controlType', $event.target.value)" class="form-control">
+                                    <option value="text">Text Input</option>
+                                    <option value="number">Number Input</option>
+				    <option value="date">Date Input</option>
+                                    <option value="textarea">Textarea</option>
+                                    <option value="select">Select</option>
+                                    <option value="checkbox">Checkbox</option>
+                                    <option value="combo">Combo Field</option>
+                                </select>
+                            </div>
+                        </template>
+                        <div x-show="getElementProperty('type') === 'Control'">
+                            <div class="form-group">
+                                <label class="property-label">Field Path</label>
+                                <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+                                    <option value="">Select a field...</option>
+                                    <template x-for="field in availableFields">
+                                        <option :value="field.path" x-text="field.label"></option>
+                                    </template>
+                                 </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="property-label">Label</label>
+                            <input type="text" :value="getElementProperty('label')" @input="updateElementProperty('label', $event.target.value)" class="form-control">
+                        </div>
+			<div x-show="getElementProperty('type') === 'Control' && getElementProperty('controlType') === 'textarea'">
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('richText') === true" @change="updateElementProperty('richText', $event.target.checked)">
+			            <span>Rich Text (Markdown Editor)</span>
+			        </label>
+			    </div>
+			</div>
+			<div x-show="getElementProperty('type') === 'Group'">
+			    <div class="form-group">
+			        <label class="property-label">Layout</label>
+			        <select :value="getElementProperty('layout')" @change="updateElementProperty('layout', $event.target.value)" class="form-control">
+			            <option value="vertical">Vertical</option>
+			            <option value="horizontal">Horizontal</option>
+			            <option value="grid">Grid</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('collapsible') === true" @change="updateElementProperty('collapsible', $event.target.checked)">
+			            <span>Make Collapsible</span>
+			        </label>
+			    </div>
+			    <div x-show="getElementProperty('collapsible') === true" class="form-group">
+			        <label class="property-label">Default State</label>
+			        <select :value="getElementProperty('defaultCollapsed') || 'open'" @change="updateElementProperty('defaultCollapsed', $event.target.value)" class="form-control">
+			            <option value="open">Open</option>
+			            <option value="collapsed">Collapsed</option>
+			        </select>
+			    </div>
+			</div>
+                        <div x-show="getElementProperty('type') === 'Array'">
+                            <div class="form-group">
+                                <label class="property-label">Field Path</label>
+                                <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+                                    <option value="">Select a field...</option>
+                                    <template x-for="field in availableFields">
+                                        <option :value="field.path" x-text="field.label"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+			<div x-show="getElementProperty('type') === 'LinearTrack' || getElementProperty('type') === 'CircularTrack'">
+                            <div class="form-group">
+                                <label class="property-label">Field Path</label>
+                                <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+                                    <option value="">Select a field...</option>
+                                    <template x-for="field in availableFields">
+                                        <option :value="field.path" x-text="field.label"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="property-label">Number of Segments</label>
+                                <input type="number" :value="getElementProperty('segments') ? getElementProperty('segments') : 6" @input="updateElementProperty('segments', parseInt($event.target.value))" class="form-control" min="2" max="20">
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" :checked="getElementProperty('showCounter') !== false" @change="updateElementProperty('showCounter', $event.target.checked)">
+                                    <span>Show Counter Text</span>
+                                </label>
+                            </div>
+                        </div>
+			<div x-show="getElementProperty('type') === 'ComboField'">
+			    <div class="form-group">
+			        <label class="property-label">Field Path</label>
+			        <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+			            <option value="">Select a field...</option>
+			            <template x-for="field in availableFields">
+			                <option :value="field.path" x-text="field.label"></option>
+			            </template>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Layout</label>
+			        <select :value="getElementProperty('layout') || 'vertical'" @change="updateElementProperty('layout', $event.target.value)" class="form-control">
+			            <option value="vertical">Vertical</option>
+			            <option value="horizontal">Horizontal</option>
+			            <option value="compact">Compact</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Size</label>
+			        <select :value="getElementProperty('size') || 'medium'" @change="updateElementProperty('size', $event.target.value)" class="form-control">
+			            <option value="small">Small</option>
+			            <option value="medium">Medium</option>
+			            <option value="large">Large</option>
+			        </select>
+			    </div>
+			</div>
+
+			<div x-show="getElementProperty('type') === 'MultiStateToggle'">
+			    <div class="form-group">
+			        <label class="property-label">Field Path</label>
+			        <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+			            <option value="">Select a field...</option>
+			            <template x-for="field in availableFields">
+			                <option :value="field.path" x-text="field.label"></option>
+			            </template>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Number of States</label>
+			        <select :value="getElementProperty('states') || 2" @change="updateElementProperty('states', parseInt($event.target.value))" class="form-control">
+			            <option value="2">2 States (Off/On)</option>
+			            <option value="3">3 States (Off/On/Expert)</option>
+			            <option value="4">4 States (Custom)</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Shape</label>
+			        <select :value="getElementProperty('shape') || 'circle'" @change="updateElementProperty('shape', $event.target.value)" class="form-control">
+			            <option value="circle">Circle</option>
+			            <option value="square">Square</option>
+			            <option value="diamond">Diamond</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Size</label>
+			        <select :value="getElementProperty('size') || 'medium'" @change="updateElementProperty('size', $event.target.value)" class="form-control">
+			            <option value="small">Small</option>
+			            <option value="medium">Medium</option>
+			            <option value="large">Large</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Label Position</label>
+			        <select :value="getElementProperty('labelPosition') || 'right'" @change="updateElementProperty('labelPosition', $event.target.value)" class="form-control">
+			            <option value="left">Left</option>
+			            <option value="right">Right</option>
+			            <option value="above">Above</option>
+			            <option value="below">Below</option>
+			        </select>
+			    </div>
+			</div>
+
+			<div x-show="getElementProperty('type') === 'SelectGroup'">
+			    <div class="form-group">
+			        <label class="property-label">Options Source</label>
+			        <select :value="getElementProperty('optionsSource') || 'field'" @change="updateElementProperty('optionsSource', $event.target.value)" class="form-control">
+			            <option value="field">From Schema Field</option>
+			            <option value="static">Static List</option>
+			        </select>
+			    </div>
+			    <div x-show="getElementProperty('optionsSource') === 'field'" class="form-group">
+			        <label class="property-label">Field Path (Options)</label>
+			        <select :value="getElementProperty('optionsScope')" @change="updateElementProperty('optionsScope', $event.target.value)" class="form-control">
+			            <option value="">Select options field...</option>
+			            <template x-for="field in availableFields">
+			                <option :value="field.path" x-text="field.label"></option>
+			            </template>
+			        </select>
+			    </div>
+			    <div x-show="getElementProperty('optionsSource') === 'static'" class="form-group">
+			        <label class="property-label">Static Options (comma-separated)</label>
+			        <textarea :value="getElementProperty('staticOptions')" @input="updateElementProperty('staticOptions', $event.target.value)" class="form-control" placeholder="Option 1, Option 2, Option 3"></textarea>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Selected Values Field</label>
+			        <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+			            <option value="">Select field for selected values...</option>
+			            <template x-for="field in availableFields">
+			                <option :value="field.path" x-text="field.label"></option>
+			            </template>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Selection Type</label>
+			        <select :value="getElementProperty('selectionType') || 'multi'" @change="updateElementProperty('selectionType', $event.target.value)" class="form-control">
+			            <option value="single">Single Select</option>
+			            <option value="multi">Multi Select</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Display Mode</label>
+			        <select :value="getElementProperty('displayMode') || 'all'" @change="updateElementProperty('displayMode', $event.target.value)" class="form-control">
+			            <option value="all">Show All Options</option>
+			            <option value="selected-only">Show Selected Only</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Visual Style</label>
+			        <select :value="getElementProperty('style') || 'pills'" @change="updateElementProperty('style', $event.target.value)" class="form-control">
+			            <option value="pills">Pills</option>
+			            <option value="tags">Tags</option>
+			            <option value="buttons">Buttons</option>
+			        </select>
+			    </div>
+			</div>
+			<div x-show="getElementProperty('type') === 'Image'">
+			    <div class="form-group">
+			        <label class="property-label">Data Field (Optional)</label>
+			        <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
+			            <option value="">Static Image (URL only)</option>
+			            <template x-for="field in availableFields">
+			                <option :value="field.path" x-text="field.label"></option>
+			            </template>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Image Source (Static)</label>
+			        <input type="text" :value="getElementProperty('src')" @input="updateElementProperty('src', $event.target.value)" class="form-control" placeholder="Enter image URL">
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Alt Text</label>
+			        <input type="text" :value="getElementProperty('alt')" @input="updateElementProperty('alt', $event.target.value)" class="form-control" placeholder="Descriptive text">
+			    </div>
+			    <div class="form-group">
+			        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+			            <div>
+			                <label class="property-label">Width (px)</label>
+					<input type="number" :value="getElementProperty('width') || 150" @input="updateImageDimension('width', parseInt($event.target.value))" class="form-control" min="20" max="800">
+			            </div>
+			            <div>
+			                <label class="property-label">Height (px)</label>
+					<input type="number" :value="getElementProperty('height') || 150" @input="updateImageDimension('height', parseInt($event.target.value))" class="form-control" min="20" max="800">
+			            </div>
+			        </div>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Shape</label>
+			        <select :value="getElementProperty('shape') || 'square'" @change="updateElementProperty('shape', $event.target.value)" class="form-control">
+			            <option value="square">Square</option>
+			            <option value="circle">Circle</option>
+			            <option value="rounded">Rounded</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Border Style</label>
+			        <select :value="getElementProperty('borderStyle') || 'thin'" @change="updateElementProperty('borderStyle', $event.target.value)" class="form-control">
+			            <option value="none">No Border</option>
+			            <option value="thin">Thin Border</option>
+			            <option value="thick">Thick Border</option>
+			            <option value="accent">Accent Border</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('allowUpload') === true" @change="updateElementProperty('allowUpload', $event.target.checked)">
+			            <span>Allow Upload in Character Sheet</span>
+			        </label>
+			    </div>
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('maintainAspectRatio') === true" @change="updateElementProperty('maintainAspectRatio', $event.target.checked)">
+			            <span>Maintain Aspect Ratio</span>
+			        </label>
+			    </div>
+			</div>
+                        <div x-show="getElementProperty('type') === 'Tab'">
+                            <div class="form-group">
+                                <label class="property-label">Tab Label</label>
+                                <input type="text" :value="getElementProperty('label')" @input="updateElementProperty('label', $event.target.value)" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+<div class="property-group appearance-group" x-data="{ appearanceOpen: hasAnyColorSet() }">
+    <div class="property-group-header" @click="appearanceOpen = !appearanceOpen">
+        <h4 class="property-group-title collapsible-title">
+            <span class="collapse-icon" :class="{ 'collapsed': !appearanceOpen }" x-text="appearanceOpen ? '▼' : '▶'"></span>
+            Appearance
+        </h4>
+    </div>
+    
+    <div class="appearance-content" x-show="appearanceOpen">
+        <!-- Background Color -->
+        <div class="color-property-group">
+            <div class="color-property-header" x-show="elementSupportsBackgroundColor()">
+                <label class="property-label">Background Color</label>
+                <div class="color-value-display">
+                    <div class="color-swatch" :style="`background-color: ${getElementProperty('backgroundColor') || '#ffffff'}`"></div>
+                    <span class="color-value" x-text="getElementProperty('backgroundColor') || 'Default'"></span>
+                </div>
+            </div>
+            <div class="color-quick-picks">
+                <template x-for="color in colorPresets">
+                    <div class="color-preset-mini" 
+                         :style="`background-color: ${color.value}`" 
+                         :class="{ 'selected': getElementProperty('backgroundColor') === color.value }"
+                         @click="updateElementProperty('backgroundColor', color.value)"
+                         :title="color.name"></div>
+                </template>
+                <label class="color-picker-button" title="Custom Color">
+                    <input type="color" 
+                           :value="getElementProperty('backgroundColor') || '#ffffff'" 
+                           @input="updateElementProperty('backgroundColor', $event.target.value)"
+                           class="color-input-hidden">
+                    <span class="color-picker-icon">🎨</span>
+                </label>
+                <button class="btn-clear-mini" 
+                        @click="updateElementProperty('backgroundColor', '')"
+                        title="Clear Color">×</button>
+            </div>
+        </div>
+
+        <div x-show="elementSupportsBorderColor()" class="color-property-group">
+            <div class="color-property-header">
+                <label class="property-label">Border Color</label>
+                <div class="color-value-display">
+                    <div class="color-swatch" :style="`background-color: ${getElementProperty('borderColor') || '#e5e7eb'}`"></div>
+                    <span class="color-value" x-text="getElementProperty('borderColor') || 'Default'"></span>
+                </div>
+            </div>
+            <div class="color-quick-picks">
+                <template x-for="color in colorPresets">
+                    <div class="color-preset-mini" 
+                         :style="`background-color: ${color.value}`" 
+                         :class="{ 'selected': getElementProperty('borderColor') === color.value }"
+                         @click="updateElementProperty('borderColor', color.value)"
+                         :title="color.name"></div>
+                </template>
+                <label class="color-picker-button" title="Custom Color">
+                    <input type="color" 
+                           :value="getElementProperty('borderColor') || '#e5e7eb'" 
+                           @input="updateElementProperty('borderColor', $event.target.value)"
+                           class="color-input-hidden">
+                    <span class="color-picker-icon">🎨</span>
+                </label>
+                <button class="btn-clear-mini" 
+                        @click="updateElementProperty('borderColor', '')"
+                        title="Clear Color">×</button>
+            </div>
+        </div>
+
+        <!-- Text Color -->
+        <div x-show="elementSupportsTextColor()" class="color-property-group">
+            <div class="color-property-header">
+                <label class="property-label">Text Color</label>
+                <div class="color-value-display">
+                    <div class="color-swatch" :style="`background-color: ${getElementProperty('textColor') || '#374151'}`"></div>
+                    <span class="color-value" x-text="getElementProperty('textColor') || 'Default'"></span>
+                </div>
+            </div>
+            <div class="color-quick-picks">
+                <template x-for="color in textColorPresets">
+                    <div class="color-preset-mini" 
+                         :style="`background-color: ${color.value}`" 
+                         :class="{ 'selected': getElementProperty('textColor') === color.value }"
+                         @click="updateElementProperty('textColor', color.value)"
+                         :title="color.name"></div>
+                </template>
+                <label class="color-picker-button" title="Custom Color">
+                    <input type="color" 
+                           :value="getElementProperty('textColor') || '#374151'" 
+                           @input="updateElementProperty('textColor', $event.target.value)"
+                           class="color-input-hidden">
+                    <span class="color-picker-icon">🎨</span>
+                </label>
+                <button class="btn-clear-mini" 
+                        @click="updateElementProperty('textColor', '')"
+                        title="Clear Color">×</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+                    <div class="property-group">
+                        <h4 class="property-group-title">Actions</h4>
+                        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="duplicateElement(selectedElementId)">📋 Duplicate</button>
+                        <button class="btn btn-danger btn-full-width" @click="deleteElement(selectedElementId)">🗑️ Delete</button>
+                    </div>
+                </div>
+            </template>
+            <template x-if="!selectedElementId">
+                <div class="empty-state-small">Select an element to edit its properties</div>
+            </template>
+        </div>
+    </div>
+    
+    <template x-if="showCreateModal">
+        <div class="modal-overlay" @click="showCreateModal = false">
+            <div class="modal" @click.stop>
+                <div class="modal-header">
+                    <h3>Create New Template</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Template Title</label>
+                        <input type="text" x-model="newTemplate.title" class="form-control" placeholder="Enter template title">
+                    </div>
+                    <div class="form-group">
+                        <label>Game System</label>
+                        <select x-model="newTemplate.schema" class="form-control">
+                            <option value="">Select system...</option>
+                            <template x-for="(schema, id) in schemas">
+                                <option :value="id" x-text="schema.title"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Layout Type</label>
+                        <select x-model="newTemplate.type" class="form-control">
+                            <option value="VerticalLayout">Vertical Layout</option>
+                            <option value="HorizontalLayout">Horizontal Layout</option>
+                            <option value="Tabs">Tabs Layout</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @click="showCreateModal = false">Cancel</button>
+                    <button class="btn btn-primary" @click="createTemplate" :disabled="!newTemplate.title || !newTemplate.schema">Create Template</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <script>
+        function templateEditor() {
+            return {
+		Utils: Utils,
+                schemas: {},
+                currentTemplate: null,
+                selectedElementId: null,
+                selectedSchemaId: '',
+                selectedTemplateId: '',
+                availableTemplates: {},
+                availableFields: [],
+                dragOver: false,
+                showPlaceholder: -1,
+                draggedElement: null,
+                draggedElementId: null,
+                isDraggingFromPalette: false,
+                showCreateModal: false,
+                isModified: false,
+                activeTemplateTab: 0,
+                leftPaneCollapsed: false,
+                rightPaneCollapsed: false,
+                leftPaneVisible: true,
+                rightPaneVisible: true,
+                newTemplate: { title: '', schema: '', type: 'VerticalLayout' },
+                
+                basicElements: [
+                    { type: 'Control', name: 'Text Input', icon: '📝', controlType: 'text' },
+                    { type: 'Control', name: 'Number Input', icon: '🔢', controlType: 'number' },
+		    { type: 'Control', name: 'Date Input', icon: '📅', controlType: 'date' },
+                    { type: 'Control', name: 'Textarea', icon: '📄', controlType: 'textarea' },
+                    { type: 'Control', name: 'Select', icon: '📋', controlType: 'select' },
+                    //{ type: 'Control', name: 'Checkbox', icon: '☑️', controlType: 'checkbox' },
+                    { type: 'Label', name: 'Label', icon: '📝' },
+                    { type: 'Divider', name: 'Divider', icon: '➖' },
+                ],
+                layoutElements: [
+                    { type: 'Group', name: 'Group', icon: '📦' },
+                    { type: 'Tabs', name: 'Tabs', icon: '📑' },
+                ],
+                advancedElements: [
+                    { type: 'Array', name: 'Array/List', icon: '📚' },
+                    { type: 'ComboField', name: 'Combo Field', icon: '🔗' },
+                    { type: 'LinearTrack', name: 'Linear Track', icon: '▭' },
+                    { type: 'CircularTrack', name: 'Circular Clock', icon: '🕐' },
+		    { type: 'MultiStateToggle', name: 'Multi-State Toggle', icon: '🎯' },
+		    { type: 'SelectGroup', name: 'Select Group', icon: '🏷️' },
+		    { type: 'Image', name: 'Image', icon: '🖼️' },
+                ],
+
+		colorPresets: [
+		    { name: 'White', value: '#ffffff' },
+		    { name: 'Light Gray', value: '#f8fafc' },
+		    { name: 'Blue', value: '#3b82f6' },
+		    { name: 'Green', value: '#059669' },
+		    { name: 'Red', value: '#dc2626' },
+		    { name: 'Orange', value: '#d97706' },
+		    { name: 'Purple', value: '#7c3aed' },
+		    { name: 'Yellow', value: '#eab308' },
+		    { name: 'Pink', value: '#ec4899' },
+		    { name: 'Indigo', value: '#4f46e5' },
+		    { name: 'Teal', value: '#0d9488' },
+		    { name: 'Black', value: '#111827' }
+		],
+
+		textColorPresets: [
+		    { name: 'Dark Gray', value: '#374151' },
+		    { name: 'Black', value: '#111827' },
+		    { name: 'Blue', value: '#3b82f6' },
+		    { name: 'Green', value: '#059669' },
+		    { name: 'Red', value: '#dc2626' },
+		    { name: 'Orange', value: '#d97706' },
+		    { name: 'Purple', value: '#7c3aed' },
+		    { name: 'Yellow', value: '#eab308' },
+		    { name: 'Pink', value: '#ec4899' },
+		    { name: 'Indigo', value: '#4f46e5' },
+		    { name: 'Teal', value: '#0d9488' },
+		    { name: 'White', value: '#ffffff' }
+		],
+                
+async init() {
+    await DataManager.loadAll();
+    this.schemas = DataManager.getSchemas();
+    
+    // Handle URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const schemaParam = urlParams.get('schema');
+    const templateParam = urlParams.get('template');
+    
+    if ( schemaParam ) {
+        const schema = DataManager.getSchemaByIndex(schemaParam);
+        if ( schema ) {
+            this.selectedSchemaId = schema.id;
+            this.loadTemplatesForSchema();
+            
+            if ( templateParam ) {
+                await this.$nextTick();
+                const template = DataManager.getTemplateByIndex(templateParam);
+                if (template && this.availableTemplates[template.id]) {
+                    this.selectedTemplateId = template.id;
+                    this.loadTemplate();
+                }
+            }
+        }
+    }
+},
+
+elementSupportsBackgroundColor() {
+    const type = this.getElementProperty('type');
+    return ['Group', 'Control', 'Array', 'LinearTrack', 'CircularTrack', 'ComboField', 'MultiStateToggle', 'SelectGroup'].includes(type);
+},
+
+elementSupportsBorderColor() {
+    const type = this.getElementProperty('type');
+    return ['Group', 'Control', 'Array', 'LinearTrack', 'CircularTrack', 'ComboField', 'Image'].includes(type);
+},
+
+elementSupportsTextColor() {
+    const type = this.getElementProperty('type');
+    return ['Control', 'Label', 'ComboField', 'MultiStateToggle', 'SelectGroup'].includes(type);
+},
+
+hasAnyColorSet() {
+    return !!(this.getElementProperty('backgroundColor') || 
+              this.getElementProperty('borderColor') || 
+              this.getElementProperty('textColor'));
+},
+
+selectSchema(schemaId) {
+    this.selectedSchemaId = schemaId;
+    this.loadTemplatesForSchema();
+},
+
+selectTemplate(templateId) {
+    this.selectedTemplateId = templateId;
+    this.loadTemplate();
+},
+
+loadTemplatesForSchema() {
+    this.availableTemplates = {};
+    this.selectedTemplateId = '';
+    this.currentTemplate = null;
+    this.selectedElementId = null;
+    this.isModified = false;
+
+    if (!this.selectedSchemaId) {
+        this.availableFields = [];
+        return;
+    }
+
+    // Find templates that reference this schema by index
+    const schema = DataManager.getSchema(this.selectedSchemaId);
+    if (schema) {
+        const allTemplates = DataManager.getTemplates();
+        this.availableTemplates = Object.fromEntries(
+            Object.entries(allTemplates).filter(([_, template]) => 
+                template.schema === schema.index
+            )
+        );
+        this.availableFields = DataManager.generateFieldPaths(this.selectedSchemaId);
+    }
+},
+
+loadTemplate() {
+    if (this.selectedTemplateId === '_new') {
+        this.createNewTemplate();
+        return;
+    }
+    if (!this.selectedTemplateId) {
+        this.currentTemplate = null;
+        this.selectedElementId = null;
+        this.isModified = false;
+        return;
+    }
+    const template = DataManager.getTemplate(this.selectedTemplateId);
+    if (template) {
+        this.currentTemplate = Utils.deepClone(template);
+        this.selectedElementId = null;
+        this.isModified = false;
+        this.activeTemplateTab = 0;
+        this.ensureElementIds(this.currentTemplate.elements);
+    }
+},
+                
+                toggleLeftPane() {
+                    this.leftPaneCollapsed = !this.leftPaneCollapsed;
+                    this.leftPaneVisible = !this.leftPaneVisible;
+                },
+
+                toggleRightPane() {
+                    this.rightPaneCollapsed = !this.rightPaneCollapsed;
+                    this.rightPaneVisible = !this.rightPaneVisible;
+                },
+                
+                ensureElementIds(elements) {
+                    elements.forEach(element => {
+                        if (!element.id) element.id = Utils.generateId();
+                        if (element.elements) this.ensureElementIds(element.elements);
+                        if (element.type === 'Tab' && !element.id) {
+                            element.id = Utils.generateId();
+                        }
+                    });
+                },
+                
+                createNewTemplate() {
+                    this.newTemplate = { title: '', schema: this.selectedSchemaId || '', type: 'VerticalLayout' };
+                    this.showCreateModal = true;
+                },
+                
+                createTemplate() {
+                    if (!this.newTemplate.title || !this.newTemplate.schema) {
+                        Utils.showNotification('Please fill in all required fields', 'error');
+                        return;
+                    }
+                    const templateId = Utils.generateId();
+                    const template = { title: this.newTemplate.title, schema: this.newTemplate.schema, type: this.newTemplate.type, elements: [] };
+                    
+                    this.selectedSchemaId = this.newTemplate.schema;
+                    this.availableTemplates = DataManager.getTemplatesForSchema(this.selectedSchemaId);
+                    this.availableFields = DataManager.generateFieldPaths(this.selectedSchemaId);
+                    
+                    this.availableTemplates[templateId] = template;
+                    this.currentTemplate = template;
+                    this.selectedTemplateId = templateId;
+                    this.isModified = true;
+                    this.showCreateModal = false;
+                    
+                    this.$nextTick(() => {
+                        this.availableTemplates = { ...this.availableTemplates };
+                    });
+                    
+                    Utils.showNotification('New template created', 'success');
+                },
+                
+                markAsModified() { 
+                    this.isModified = true; 
+                },
+                
+                findElementById( id, elements = null ) {
+                    if (!elements) elements = this.currentTemplate.elements;
+                    for (let element of elements) {
+                        if (element.id === id) {
+                            return element;
+                        }
+                        if (element.elements) {
+                            const found = this.findElementById(id, element.elements);
+                            if (found) return found;
+                        }
+                    }
+                    return null;
+                },
+                
+                getElementProperty( property ) {
+                    if (!this.selectedElementId) return '';
+                    const element = this.findElementById(this.selectedElementId);
+                    return element ? (element[property] || '') : '';
+                },
+                
+updateElementProperty(property, value) {
+    if (!this.selectedElementId) return;
+    const element = this.findElementById(this.selectedElementId);
+    if (!element) return;
+    
+    // Auto-populate label when scope is selected
+    if (property === 'scope' && value) {
+        const schemaLabel = this.getSchemaFieldLabel(value);
+        
+        // Only auto-populate if the current label is empty or still default
+        if (schemaLabel) {
+            element.label = schemaLabel;
+        }
+    }
+    element[property] = value;
+    this.markAsModified();
+    this.currentTemplate = { ...this.currentTemplate };
+},
+
+getSchemaFieldLabel(fieldPath) {
+    if (!this.selectedSchemaId || !fieldPath) {
+        console.log('No schema ID or field path:', this.selectedSchemaId, fieldPath);
+        return null;
+    }
+    
+    const schema = DataManager.getSchema(this.selectedSchemaId);
+    if (!schema) {
+        console.log('No schema found for ID:', this.selectedSchemaId);
+        return null;
+    }
+    
+    // Parse the field path - handle both simple and nested paths
+    let pathParts;
+    if (fieldPath.startsWith('#/properties/')) {
+        // Remove the JSON Schema prefix and split on /properties/
+        const cleanPath = fieldPath.replace('#/properties/', '');
+        pathParts = cleanPath.split('/properties/');
+    } else {
+        // Fallback for paths that don't start with #/properties/
+        pathParts = fieldPath.split('/').filter(part => part && part !== 'properties');
+    }
+    
+    let current = schema.properties;
+    for (const part of pathParts) {
+        if (current && current[part]) {
+            current = current[part];
+        } else {
+            return this.generateFieldNameFromPath(fieldPath);
+        }
+    }
+    
+    // Return the label if it exists, otherwise generate from field name
+    const label = current.label || this.generateFieldNameFromPath(fieldPath);
+    return label;
+},
+
+generateFieldNameFromPath(path) {
+    const fieldName = path.split('/').pop();
+    return fieldName.replace(/([A-Z])/g, ' $1')
+                   .replace(/^./, str => str.toUpperCase())
+                   .replace(/([a-z])([A-Z])/g, '$1 $2');
+},
+
+                startDrag( element, event ) {
+                    this.draggedElement = element;
+                    this.isDraggingFromPalette = true;
+                    event.dataTransfer.effectAllowed = 'copy';
+                },
+                
+                startCanvasDrag( elementId, event ) {
+                    event.stopPropagation();
+                    this.draggedElementId = elementId;
+                    this.isDraggingFromPalette = false;
+                    event.dataTransfer.effectAllowed = 'move';
+                },
+                
+                endDrag() {
+                    this.draggedElement = null;
+                    this.draggedElementId = null;
+                    this.isDraggingFromPalette = false;
+                    this.dragOver = false;
+                    this.showPlaceholder = -1;
+                },
+                
+                handleDrop(event, targetArray) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const dropIndex = this.showPlaceholder >= 0 ? this.showPlaceholder : targetArray.length;
+                    if (this.isDraggingFromPalette && this.draggedElement) {
+                        const newElement = this.createElement(this.draggedElement);
+                        targetArray.splice(dropIndex, 0, newElement);
+                        this.markAsModified();
+                    } else if (!this.isDraggingFromPalette && this.draggedElementId) {
+                        const element = Utils.findElementById(this.currentTemplate.elements, this.draggedElementId);
+                        if (element) {
+                            Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
+                            targetArray.splice(dropIndex, 0, element);
+                            this.markAsModified();
+                        }
+                    }
+                    this.dragOver = false;
+                    this.showPlaceholder = -1;
+                    this.updateTemplate();
+                },
+                
+                handleDragOver(event) {
+                    this.dragOver = true;
+                    this.showPlaceholder = this.currentTemplate.elements.length;
+                },
+                
+                handleDragLeave(event) {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                        this.dragOver = false;
+                        this.showPlaceholder = -1;
+                    }
+                },
+                
+                handleElementDragOver(event, index) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    const midpoint = rect.top + rect.height / 2;
+                    this.showPlaceholder = event.clientY < midpoint ? index : index + 1;
+                },
+                
+                handleElementDrop(event, index) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.handleDrop(event, this.currentTemplate.elements);
+                },
+                
+                addTabToTemplate() {
+                    if (this.currentTemplate.type === 'Tabs') {
+                        const newTab = {
+                            id: Utils.generateId(),
+                            type: 'Tab',
+                            label: `Tab ${this.currentTemplate.elements.length + 1}`,
+                            elements: []
+                        };
+                        this.currentTemplate.elements.push(newTab);
+                        this.markAsModified();
+                        this.updateTemplate();
+			this.markAsModified();
+                    }
+                },
+                
+                handleTabDragOver(event, tabIndex) {
+                    this.dragOver = true;
+                    this.activeTemplateTab = tabIndex;
+                    this.showPlaceholder = this.currentTemplate.elements[tabIndex].elements ? this.currentTemplate.elements[tabIndex].elements.length : 0;
+                },
+                
+                handleTabDrop(event, tabIndex) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const tab = this.currentTemplate.elements[tabIndex];
+                    if (!tab.elements) tab.elements = [];
+                    
+                    const dropIndex = this.showPlaceholder >= 0 ? this.showPlaceholder : tab.elements.length;
+                    
+                    if (this.isDraggingFromPalette && this.draggedElement) {
+                        const newElement = this.createElement(this.draggedElement);
+                        tab.elements.splice(dropIndex, 0, newElement);
+                        this.markAsModified();
+                    } else if (!this.isDraggingFromPalette && this.draggedElementId) {
+                        const element = Utils.findElementById(this.currentTemplate.elements, this.draggedElementId);
+                        if (element) {
+                            Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
+                            tab.elements.splice(dropIndex, 0, element);
+                            this.markAsModified();
+                        }
+                    }
+                    
+                    this.dragOver = false;
+                    this.showPlaceholder = -1;
+                    this.updateTemplate();
+                },
+                
+                handleTabElementDrop(event, tabIndex, elemIndex) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const tab = this.currentTemplate.elements[tabIndex];
+                    if (!tab.elements) tab.elements = [];
+                    this.handleDrop(event, tab.elements);
+                },
+                
+                handleGroupDrop(event, groupId) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    const group = Utils.findElementById(this.currentTemplate.elements, groupId);
+                    if (!group || !group.elements) return;
+                    
+                    if (this.isDraggingFromPalette && this.draggedElement) {
+                        const newElement = this.createElement(this.draggedElement);
+                        group.elements.push(newElement);
+                        this.markAsModified();
+                        this.updateTemplate();
+                    } else if (!this.isDraggingFromPalette && this.draggedElementId) {
+                        const element = Utils.findElementById(this.currentTemplate.elements, this.draggedElementId);
+                        if (element) {
+                            Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
+                            group.elements.push(element);
+                            this.markAsModified();
+                            this.updateTemplate();
+                        }
+                    }
+                },
+                
+                createElement( template ) {
+		    const element = { 
+		        id: Utils.generateId(), 
+		        type: template.type, 
+		        label: template.name, 
+		        style: {},
+		        backgroundColor: '',
+		        borderColor: '',
+			textColor: ''
+		    };
+
+                    if ( template.type === 'Control' ) {
+                        element.scope = '';
+                        element.controlType = template.controlType || 'text';
+			if ( template.controlType === 'textarea' ) element.richText = false;
+                    } else if ( template.type === 'Group' ) {
+                        element.elements = [];
+                        element.layout = 'vertical';
+                    } else if ( template.type === 'Tabs' ) {
+                        element.elements = [{  id: Utils.generateId(), type: 'Tab', label: 'Tab 1', elements: [] }];
+                    } else if ( template.type === 'Array' ) {
+                        element.scope = '';
+                    } else if ( template.type === 'LinearTrack' || template.type === 'CircularTrack' ) {
+                        element.scope = '';
+                        element.segments = 6;
+                        element.showCounter = true;
+		    } else if ( template.type === 'ComboField' ) {
+			element.scope = '';
+			element.layout = 'vertical';
+			element.size = 'medium';
+		    } else if ( template.type === 'MultiStateToggle' ) {
+			element.scope = '';
+			element.states = 2;
+			element.shape = 'circle';
+			element.size = 'medium';
+			element.labelPosition = 'right';
+		    } else if ( template.type === 'SelectGroup' ) {
+			element.scope = '';
+			element.optionsSource = 'field';
+			element.optionsScope = '';
+			element.staticOptions = '';
+			element.selectionType = 'multi';
+			element.displayMode = 'all';
+			element.style = 'pills';
+		    } else if ( template.type === 'Image' ) {
+			element.scope = '';
+			element.src = '';
+			element.alt = '';
+			element.width = 150;
+			element.height = 150;
+			element.shape = 'square';
+			element.borderStyle = 'thin';
+			element.allowUpload = true;
+			element.maintainAspectRatio = true;
+                    }
+                    return element;
+                },
+                
+		selectElement( elementId ) {
+		    this.selectedElementId = elementId;
+		    if ( this.selectedSchemaId ) {
+		        this.availableFields = DataManager.generateFieldPaths(this.selectedSchemaId);
+		    }
+		},
+                
+                deleteElement( elementId ) {
+                    if ( elementId ) {
+                        Utils.removeElementById(this.currentTemplate.elements, elementId);
+                        if (this.selectedElementId === elementId) {
+                            this.selectedElementId = null;
+                        }
+                    }
+                    this.markAsModified();
+                    this.updateTemplate();
+                },
+                
+                duplicateElement( elementId ) {
+                    const element = this.findElementById(elementId);
+                    if ( !element ) return;
+                    const duplicate = Utils.deepClone(element);
+                    duplicate.id = Utils.generateId();
+                    duplicate.label = (duplicate.label || 'Element') + ' Copy';
+                    this.updateNestedIds(duplicate);
+                    this.currentTemplate.elements.push(duplicate);
+                    this.markAsModified();
+                    this.updateTemplate();
+                },
+                
+                updateNestedIds( element ) {
+                    if ( element.elements ) {
+                        element.elements.forEach(child => {
+                            child.id = Utils.generateId();
+                            this.updateNestedIds(child);
+                        });
+                    }
+                },
+                
+                updateTemplate() {
+                    this.markAsModified();
+                    this.currentTemplate = { ...this.currentTemplate };
+                    this.$nextTick(() => { window.editorInstance = this; });
+                },
+                
+async saveTemplate() {
+    if (!this.currentTemplate) {
+        Utils.showNotification('No template to save', 'error');
+        return;
+    }
+    
+    if (!this.currentTemplate.title) {
+        Utils.showNotification('Template must have a title', 'error');
+        return;
+    }
+
+    try {
+        Utils.showNotification('Saving template...', 'info');
+        
+        // Save template - DataManager will handle ID generation/updating
+        const templateId = await DataManager.saveTemplate(this.currentTemplate);
+        
+        // Update local references to use the returned ID
+        this.availableTemplates[templateId] = Utils.deepClone(this.currentTemplate);
+        this.selectedTemplateId = templateId;
+        this.isModified = false;
+        
+        Utils.showNotification(`Template saved successfully`, 'success');
+    } catch (error) {
+        Utils.showNotification(`Failed to save template: ${error.message}`, 'error');
+        console.error('Save template error:', error);
+    }
+},
+                
+                exportTemplate() {
+                    if (!this.currentTemplate) {
+                        Utils.showNotification('No template to export', 'error');
+                        return;
+                    }
+                    DataManager.exportTemplate(this.selectedTemplateId);
+                    Utils.showNotification('Template exported', 'success');
+                },
+                
+                previewTemplate() {
+                    if (!this.currentTemplate) {
+                        Utils.showNotification('No template to preview', 'error');
+                        return;
+                    }
+                    const templateJson = JSON.stringify(this.currentTemplate, null, 2);
+                    const previewWindow = window.open('', '_blank');
+                    previewWindow.document.write(`<html><head><title>Template Preview</title><style>body{font-family:Arial,sans-serif;padding:2rem}pre{background:#f5f5f5;padding:1rem;border-radius:4px;overflow:auto}</style></head><body><h1>Template Preview: ${this.currentTemplate.title}</h1><h2>JSON Output:</h2><pre>${templateJson}</pre></body></html>`);
+                },
+
+		updateImageDimension( dimension, value ) {
+		    if (!this.selectedElementId) return;
+		    const element = this.findElementById(this.selectedElementId);
+		    if (!element) return;
+    
+		    const oldWidth = element.width || 150;
+		    const oldHeight = element.height || 150;
+    
+		    element[dimension] = value;
+    
+		    if (element.maintainAspectRatio === true) {
+		        const aspectRatio = oldWidth / oldHeight;
+		        if (dimension === 'width') {
+		            element.height = Math.round(value / aspectRatio);
+		        } else if (dimension === 'height') {
+		            element.width = Math.round(value * aspectRatio);
+		        }
+		    }
+		    this.markAsModified();
+		    this.currentTemplate = { ...this.currentTemplate };
+		},
+                
+		renderElement( element, index ) {
+		    return Utils.ElementRenderer.renderElement(element, {
+		        isPreview: true,
+		        selectedElementId: this.selectedElementId,
+		        getValue: () => '',
+		        instanceRef: this
+		    });
+		}
+
+            };
+        }
+
+        document.addEventListener('alpine:init', () => { 
+            Alpine.data('templateEditor', templateEditor); 
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const appElement = document.querySelector('[x-data="templateEditor()"]');
+                if (appElement && appElement._x_dataStack) {
+                    window.editorInstance = appElement._x_dataStack[0];
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

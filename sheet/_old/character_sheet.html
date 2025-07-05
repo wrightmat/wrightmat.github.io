@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en" class="character-sheet">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTRPG Character Sheet</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="data.js"></script>
+  <script src="utils.js"></script>
+
+</head>
+
+<body x-data="characterApp()" class="character-sheet-body">
+  <div class="character-editor-container" :class="{ 'left-collapsed': leftPaneCollapsed, 'right-collapsed': rightPaneCollapsed, 'both-collapsed': leftPaneCollapsed && rightPaneCollapsed }">
+    
+    <!-- Unified Toolbar -->
+    <div class="toolbar">
+      <button class="toolbar-toggle" @click="toggleLeftPane" :class="{ 'active': !leftPaneCollapsed }">
+        <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        <span class="text-sm">Tools</span>
+      </button>
+      
+      <h1>⚔️ Character Sheet</h1>
+      
+      <div class="toolbar-actions">
+        <select x-model="selectedSchemaId" @change="resetTemplateAndCharacters" class="form-control">
+          <template x-for="(schema, id) in schemas">
+            <option :value="id" x-text="schema.title"></option>
+          </template>
+        </select>
+        
+        <select x-model="selectedTemplateId" @change="resetCharacter" class="form-control">
+          <template x-for="(template, id) in templates">
+            <option x-show="template.schema === selectedSchemaId" :value="id" x-text="template.title"></option>
+          </template>
+        </select>
+        
+	<select x-model="selectedCharacterId" @change="loadCharacter" class="form-control">
+          <option value="">Select Character...</option>
+	  <option x-show="!viewMode" value="_new">+ Create New Character</option>
+	  <template x-for="(char, id) in characters">
+	    <option :value="id" x-show="char.system === selectedSchemaId && char.template === selectedTemplateId" x-text="char.data.name"></option>
+	  </template>
+	</select>
+        
+        <button 
+          class="btn"
+          :class="viewMode ? 'btn-success' : 'btn-primary'"
+          @click="viewMode = !viewMode"
+          x-text="viewMode ? '👁️ View' : '✏️ Edit'"
+        ></button>
+        
+	<button class="btn btn-secondary" @click="openTemplateEditor">🎨 Edit Template</button>
+	<button class="btn btn-secondary" @click="exportCharacter">📤 Export</button>
+	<template x-if="!viewMode">
+	    <button class="btn btn-success" @click="saveCharacter">💾 Save</button>
+	</template>
+      </div>
+      
+      <button class="toolbar-toggle" @click="toggleRightPane" :class="{ 'active': !rightPaneCollapsed }">
+        <span class="text-sm">Data</span>
+        <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+      </button>
+    </div>
+
+    <!-- Left Pane - Reserved for Future Tools -->
+    <div class="left-pane" :class="{ 'collapsed': leftPaneCollapsed, 'show': leftPaneVisible }">
+      <div class="pane-header">
+        <h3 class="pane-title">🔧 Tools</h3>
+        <button class="pane-toggle" @click="toggleLeftPane">
+          <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        </button>
+      </div>
+      
+      <div class="empty-state-small">
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">🚧</div>
+          <p style="margin: 0; font-size: 0.875rem;">Tool palette coming soon!</p>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem;">Future features:</p>
+          <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 0; font-size: 0.75rem;">
+            <li>• Dice roller</li>
+            <li>• Quick references</li>
+            <li>• Character utilities</li>
+            <li>• Spell lookup</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <div class="main-content-inner" :class="{ 'view-mode': viewMode }">
+        <template x-if="templates[selectedTemplateId]">
+          <div>
+            <template x-if="templates[selectedTemplateId].type === 'Tabs'">
+              <div>
+                <div class="tab-nav">
+                  <template x-for="(tab, index) in templates[selectedTemplateId].elements">
+                    <button class="tab-button" :class="{ 'active': activeTab === index }" @click="activeTab = index" x-text="tab.label"></button>
+                  </template>
+                </div>
+                <template x-for="(tab, index) in templates[selectedTemplateId].elements">
+                  <div class="tab-content" :class="{ 'active': activeTab === index }">
+                    <template x-for="element in tab.elements">
+                      <div x-html="renderElement(element)"></div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="templates[selectedTemplateId].type !== 'Tabs'">
+              <template x-for="element in templates[selectedTemplateId].elements">
+                <div x-html="renderElement(element)"></div>
+              </template>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Right Pane - Live Character Data -->
+    <div class="right-pane" :class="{ 'collapsed': rightPaneCollapsed, 'show': rightPaneVisible }">
+      <div class="pane-header">
+        <h3 class="pane-title">📊 Live Character Data</h3>
+        <button class="pane-toggle" @click="toggleRightPane">
+          <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+        </button>
+      </div>
+      
+      <div class="data-content">
+        <pre x-text="JSON.stringify(character.data, null, 2)"></pre>
+      </div>
+    </div>
+  </div>
+
+<!-- Create Character Modal -->
+  <template x-if="showCreateCharacterModal">
+    <div class="modal-overlay" @click="showCreateCharacterModal = false">
+      <div class="modal" @click.stop>
+        <div class="modal-header">
+          <h3>Create New Character</h3>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" x-model="newCharacter.name" class="form-control" placeholder="Enter character name">
+          </div>
+          <div class="form-group">
+            <label>Game System</label>
+            <select x-model="newCharacter.system" @change="updateNewCharacterTemplates" class="form-control">
+              <option value="">Select system...</option>
+              <template x-for="(schema, id) in schemas">
+                <option :value="id" x-text="schema.title"></option>
+              </template>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Character Sheet Template</label>
+            <select x-model="newCharacter.template" class="form-control" :disabled="!newCharacter.system">
+              <option value="">Select template...</option>
+              <template x-for="(template, id) in newCharacterTemplates">
+                <option :value="id" x-text="template.title"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="showCreateCharacterModal = false">Cancel</button>
+          <button class="btn btn-primary" @click="createCharacter" :disabled="!newCharacter.name || !newCharacter.system || !newCharacter.template">Create Character</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    function characterApp() {
+        return {
+            schemas: {},
+            templates: {},
+            characters: {},
+            selectedCharacterId: '',
+            character: { system: '5e', template: '5e-default', data: {} },
+            selectedSchemaId: '5e',
+            selectedTemplateId: '5e-default',
+            leftPaneCollapsed: true,
+            rightPaneCollapsed: false,
+            leftPaneVisible: false,
+            rightPaneVisible: false,
+            viewMode: true,
+            activeTab: 0,
+	    isModified: false,
+	    showCreateCharacterModal: false,
+	    newCharacter: { name: '', system: '', template: '' },
+	    newCharacterTemplates: {},
+
+            async init() {
+                await DataManager.loadAll();
+                this.schemas = DataManager.getSchemas();
+                this.templates = DataManager.getTemplates();
+                this.characters = DataManager.getCharacters();
+                
+                const firstChar = this.characters[this.selectedCharacterId];
+                if (firstChar) {
+                    this.character = Alpine.reactive(Utils.deepClone(firstChar));
+                    this.selectedSchemaId = firstChar.system;
+                    this.selectedTemplateId = firstChar.template;
+                    Utils.evaluateFormulas(this.schemas[this.character.system], this.character.data);
+                }
+                
+                window.characterAppInstance = this;
+            },
+
+            toggleLeftPane() {
+                this.leftPaneCollapsed = !this.leftPaneCollapsed;
+                this.leftPaneVisible = !this.leftPaneVisible;
+            },
+
+            toggleRightPane() {
+                this.rightPaneCollapsed = !this.rightPaneCollapsed;
+                this.rightPaneVisible = !this.rightPaneVisible;
+            },
+
+            handleNumberClick(event, scope) {
+                if (this.viewMode && !this.isReadOnly(scope)) {
+                    Utils.showNotification(`Dice roller coming soon! Field: ${scope.split('/').pop()}, Value: ${this.getValue(scope)}`, 'info');
+                }
+            },
+
+            openTemplateEditor() {
+                const params = new URLSearchParams({ schema: this.selectedSchemaId, template: this.selectedTemplateId });
+                window.open(`template_editor.html?${params.toString()}`, '_blank');
+            },
+
+            exportCharacter() {
+                const filename = (this.character.data.name || 'character').toLowerCase().replace(/\s+/g, '_') + '.json';
+                Utils.exportAsJson(this.character, filename);
+                Utils.showNotification('Character exported successfully', 'success');
+            },
+
+saveCharacter() {
+    if (!this.selectedCharacterId || this.selectedCharacterId === '_new') {
+        Utils.showNotification('No character selected to save', 'error');
+        return;
+    }
+
+    try {
+        // Update the characters list with current data
+        this.characters[this.selectedCharacterId] = Utils.deepClone(this.character);
+        
+        // Show saving indicator
+        Utils.showNotification('Saving character...', 'info');
+        
+        // Save to DataManager (which would save to server in a real app)
+        DataManager.saveCharacter(this.selectedCharacterId, this.character);
+        
+        Utils.showNotification(`Character "${this.character.data.name}" saved successfully`, 'success');
+    } catch (error) {
+        Utils.showNotification(`Failed to save character: ${error.message}`, 'error');
+        console.error('Save character error:', error);
+    }
+},
+
+            renderElement(element) {
+                if (element.type === 'Control') return this.renderControl(element);
+                else if (element.type === 'Group') return this.renderGroup(element);
+                else if (element.type === 'Array') return this.renderArray(element);
+                else if (element.type === 'Label') return this.renderLabel(element);
+                else if (element.type === 'Divider') return this.renderDivider(element);
+                return '';
+            },
+
+            renderControl(element) {
+                const fieldName = element.label || Utils.generateFieldName(element.scope);
+                const value = this.getValue(element.scope);
+                const isReadOnly = this.isReadOnly(element.scope);
+                const controlType = element.controlType || 'text';
+                const isNumber = controlType === 'number' || typeof value === 'number';
+                let inputElement = '';
+                
+                switch (controlType) {
+                    case 'textarea': 
+                        inputElement = `<textarea name="${element.scope}" ${isReadOnly || this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" class="form-control textarea-control">${this.formatValue(element.scope, value)}</textarea>`; 
+                        break;
+                    case 'select': 
+                        inputElement = `<select name="${element.scope}" ${isReadOnly || this.viewMode ? 'disabled' : ''} onchange="window.characterAppInstance.updateValue(event, '${element.scope}')" class="form-control"><option value="${value}">${value || 'Select an option...'}</option></select>`; 
+                        break;
+                    case 'checkbox': 
+                        const checked = value === true || value === 'true' || value === 1; 
+                        inputElement = `<label class="checkbox-label"><input type="checkbox" name="${element.scope}" ${checked ? 'checked' : ''} ${isReadOnly || this.viewMode ? 'disabled' : ''} onchange="window.characterAppInstance.updateCheckbox(event, '${element.scope}')" class="checkbox-input"><span>${fieldName}</span></label>`; 
+                        break;
+                    case 'combo':
+                        const modifierScope = element.scope.replace('/properties/abilities/', '/properties/modifiers/');
+                        const modifier = this.getValue(modifierScope);
+                        return `<div class="ability-block">
+                            <div class="ability-label">${fieldName}</div>
+                            <input class="ability-score" type="number" name="${element.scope}" value="${value || 10}" 
+                                ${this.viewMode ? 'readonly onclick="window.characterAppInstance.handleNumberClick(event, \'' + element.scope + '\')"' : ''} 
+                                onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" 
+                                ${!this.viewMode ? 'oninput="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''}>
+                            <input class="ability-modifier" type="text" value="${this.formatValue(modifierScope, modifier)}" readonly>
+                        </div>`;
+                    default: 
+                        inputElement = `<input type="${controlType}" name="${element.scope}" value="${this.formatValue(element.scope, value)}" ${isReadOnly || this.viewMode ? 'readonly' : ''} ${this.viewMode && isNumber && !isReadOnly ? 'onclick="window.characterAppInstance.handleNumberClick(event, \'' + element.scope + '\')"' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" ${isNumber && !this.viewMode ? 'oninput="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''} class="form-control">`;
+                }
+                
+                return `<div class="field-group">${controlType !== 'checkbox' && controlType !== 'combo' ? `<label class="field-label">${fieldName}</label>` : ''}${inputElement}</div>`;
+            },
+
+            renderGroup(element) {
+                const layoutClass = element.layout === 'grid' ? 'grid-layout' : element.layout === 'horizontal' ? 'horizontal-layout' : 'vertical-layout';
+                let content = `<fieldset class="group-fieldset"><legend class="group-legend">${element.label || 'Group'}</legend><div class="${layoutClass}">`;
+                (element.elements || []).forEach(sub => {
+                    content += this.renderElement(sub);
+                });
+                content += '</div></fieldset>';
+                return content;
+            },
+
+            renderArray(element) {
+                const items = this.getValue(element.scope) || [];
+                let content = `<div class="field-group"><label class="field-label">${element.label || 'Array Field'}</label><div class="array-container">`;
+                
+                if (items.length === 0) {
+                    content += '<div class="array-empty">No items</div>';
+                } else {
+                    content += '<div class="array-header"><div>Name</div><div>Quantity</div><div>Weight</div><div>Description</div></div>';
+                    items.forEach((item, index) => {
+                        content += `<div class="array-item">
+                            <input type="text" value="${item.name || ''}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'name')" class="form-control">
+                            <input type="number" value="${item.quantity || 0}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'quantity')" class="form-control">
+                            <input type="number" step="0.1" value="${item.weight || 0}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'weight')" class="form-control">
+                            <input type="text" value="${item.description || ''}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'description')" class="form-control">
+                        </div>`;
+                    });
+                }
+                content += '</div></div>';
+                return content;
+            },
+
+            renderLabel(element) {
+                return `<div class="field-group"><h3 class="label-heading">${element.label || 'Label Text'}</h3></div>`;
+            },
+
+            renderDivider() {
+                return `<div class="field-group"><hr class="divider-line"></div>`;
+            },
+
+            // Event Handlers
+            updateArrayValue(event, scope, index, field) {
+                const items = this.getValue(scope) || [];
+                const input = event.target.value;
+                if (!items[index]) items[index] = {};
+                if (field === 'quantity' || field === 'weight') {
+                    items[index][field] = input === '' ? 0 : parseFloat(input);
+                } else {
+                    items[index][field] = input;
+                }
+                Utils.setNestedValue(this.character.data, scope, items);
+                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+            },
+
+            updateCheckbox(event, scope) {
+                Utils.setNestedValue(this.character.data, scope, event.target.checked);
+                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+            },
+
+            updateValue(event, scope) {
+                const input = event.target.value;
+                const value = input === '' ? '' : (isNaN(parseFloat(input)) ? input : parseFloat(input));
+                Utils.setNestedValue(this.character.data, scope, value);
+                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+            },
+
+            // Navigation Helpers
+            resetTemplateAndCharacters() {
+                const validTemplate = Object.entries(this.templates).find(([_, t]) => t.schema === this.selectedSchemaId);
+                if (validTemplate) this.selectedTemplateId = validTemplate[0];
+                this.resetCharacter();
+            },
+
+            resetCharacter() {
+                const matchingChar = Object.entries(this.characters).find(([_, c]) => 
+                    c.system === this.selectedSchemaId && c.template === this.selectedTemplateId
+                );
+                if (matchingChar) {
+                    this.selectedCharacterId = matchingChar[0];
+                    this.loadCharacter();
+                }
+            },
+
+	    loadCharacter() {
+	        if (this.selectedCharacterId === '_new') {
+	            this.createNewCharacter();
+	            return;
+	        }
+    
+		const char = this.characters[this.selectedCharacterId];
+		if (!char) return;
+
+		this.selectedSchemaId = char.system;
+		this.selectedTemplateId = char.template;
+		Object.assign(this.character, Utils.deepClone(char));
+		Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+	    },
+
+// Character Creation
+createNewCharacter() {
+    this.newCharacter = { 
+        name: '', 
+        system: this.selectedSchemaId || '', 
+        template: this.selectedTemplateId || '' 
+    };
+    this.updateNewCharacterTemplates();
+    this.showCreateCharacterModal = true;
+},
+
+updateNewCharacterTemplates() {
+    if (!this.newCharacter.system) {
+        this.newCharacterTemplates = {};
+        return;
+    }
+    this.newCharacterTemplates = Object.entries(this.templates)
+        .filter(([_, template]) => template.schema === this.newCharacter.system)
+        .reduce((obj, [id, template]) => {
+            obj[id] = template;
+            return obj;
+        }, {});
+    
+    // Auto-select first available template
+    const templateIds = Object.keys(this.newCharacterTemplates);
+    if (templateIds.length > 0 && !this.newCharacter.template) {
+        this.newCharacter.template = templateIds[0];
+    }
+},
+
+createCharacter() {
+    if (!this.newCharacter.name || !this.newCharacter.system || !this.newCharacter.template) {
+        Utils.showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Generate character ID from name
+    const characterId = this.newCharacter.name
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '');
+
+    // Check if character already exists
+    if (this.characters[characterId]) {
+        Utils.showNotification('A character with this name already exists', 'error');
+        return;
+    }
+
+    // Create basic character data structure
+    const characterData = this.createDefaultCharacterData(this.newCharacter.system);
+    characterData.name = this.newCharacter.name;
+
+    const newCharacterObj = {
+        system: this.newCharacter.system,
+        template: this.newCharacter.template,
+        data: characterData
+    };
+
+    // Add to characters list
+    this.characters[characterId] = newCharacterObj;
+    
+    // Switch to the new character
+    this.selectedSchemaId = this.newCharacter.system;
+    this.selectedTemplateId = this.newCharacter.template;
+    this.selectedCharacterId = characterId;
+    
+    // Load the new character
+    this.character = Alpine.reactive(Utils.deepClone(newCharacterObj));
+    Utils.evaluateFormulas(this.schemas[this.character.system], this.character.data);
+    
+    this.showCreateCharacterModal = false;
+    Utils.showNotification(`Character "${this.newCharacter.name}" created successfully`, 'success');
+},
+
+createDefaultCharacterData(systemId) {
+    const schema = this.schemas[systemId];
+    if (!schema) return {};
+
+    const data = {};
+
+    // Helper function to create default values based on schema
+    const createDefaults = (properties, target) => {
+        if (!properties) return;
+
+        for (const [key, prop] of Object.entries(properties)) {
+            if (prop.type === 'object' && prop.properties) {
+                target[key] = {};
+                createDefaults(prop.properties, target[key]);
+            } else if (prop.type === 'array') {
+                target[key] = [];
+            } else if (prop.type === 'integer' || prop.type === 'number') {
+                target[key] = prop.default || 0;
+            } else if (prop.type === 'boolean') {
+                target[key] = prop.default || false;
+            } else {
+                target[key] = prop.default || '';
+            }
+        }
+    };
+
+    createDefaults(schema.properties, data);
+
+    // Set some sensible defaults for common RPG systems
+    if (systemId === '5e') {
+        // D&D 5e defaults
+        if (data.abilities) {
+            Object.keys(data.abilities).forEach(ability => {
+                data.abilities[ability] = 10; // Default ability score
+            });
+        }
+        if (data.hitPoints) {
+            data.hitPoints.maximum = data.hitPoints.maximum || 8;
+            data.hitPoints.current = data.hitPoints.maximum;
+        }
+        data.level = data.level || 1;
+    } else if (systemId === 'bitd') {
+        // Blades in the Dark defaults
+        if (data.attributes) {
+            Object.keys(data.attributes).forEach(attr => {
+                data.attributes[attr] = 1;
+            });
+        }
+        if (data.actions) {
+            Object.keys(data.actions).forEach(action => {
+                data.actions[action] = 0;
+            });
+        }
+        data.stress = data.stress || 0;
+        data.trauma = data.trauma || [];
+    }
+
+    return data;
+},
+
+                markAsModified() { 
+                    this.isModified = true; 
+                },
+
+            // Utility Methods
+            getValue(scope) { 
+                return Utils.getNestedValue(this.character.data, scope); 
+            },
+            
+            isReadOnly(scope) { 
+                return Utils.isReadOnly(this.schemas[this.selectedSchemaId], scope); 
+            },
+            
+            formatValue(scope, value) {
+                if (scope && scope.includes('modifiers') && typeof value === 'number') {
+                    return Utils.formatModifier(value);
+                }
+                return value || '';
+            }
+        };
+    }
+
+    document.addEventListener('alpine:init', () => { 
+        Alpine.data('characterApp', characterApp); 
+    });
+  </script>
+</body>
+</html>

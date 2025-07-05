@@ -1,0 +1,403 @@
+{
+  "id": "schema_1ee51cc2-ecbb-4f66-aff0-a963480ed5a4",
+  "created": "2025-07-01T20:00:00.000Z",
+  "modified": "2025-07-04T20:00:00.000Z", 
+  "version": 1,
+  "index": "coc-7e",
+  "title": "Call of Cthulhu 7th Edition",
+  "type": "object",
+  "categories": {
+    "basic": { "label": "Basic Information", "order": 1 },
+    "characteristics": { "label": "Characteristics", "order": 2 },
+    "skills": { "label": "Skills", "order": 3 },
+    "health": { "label": "Health & Sanity", "order": 4 },
+    "combat": { "label": "Combat", "order": 5 },
+    "investigation": { "label": "Investigation", "order": 6 },
+    "equipment": { "label": "Equipment & Possessions", "order": 7 },
+    "backstory": { "label": "Background & History", "order": 8 }
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "label": "Investigator Name",
+      "category": "basic",
+      "description": "The investigator's full name"
+    },
+    "player": {
+      "type": "string",
+      "label": "Player Name",
+      "category": "basic",
+      "description": "Name of the player"
+    },
+    "occupation": {
+      "type": "string",
+      "label": "Occupation",
+      "category": "basic",
+      "description": "The investigator's profession or job"
+    },
+    "age": {
+      "type": "integer",
+      "minimum": 15,
+      "maximum": 90,
+      "label": "Age",
+      "category": "basic",
+      "description": "Investigator's current age"
+    },
+    "sex": {
+      "type": "string",
+      "label": "Sex",
+      "category": "basic",
+      "description": "Investigator's gender"
+    },
+    "residence": {
+      "type": "string",
+      "label": "Residence",
+      "category": "basic",
+      "description": "Where the investigator lives"
+    },
+    "birthplace": {
+      "type": "string",
+      "label": "Birthplace",
+      "category": "basic",
+      "description": "Where the investigator was born"
+    },
+    "characteristics": {
+      "type": "object",
+      "label": "Characteristics",
+      "category": "characteristics",
+      "description": "The eight core characteristics",
+      "properties": {
+        "strength": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 90,
+          "label": "Strength (STR)",
+          "category": "characteristics",
+          "description": "Physical power and muscle"
+        },
+        "constitution": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 90,
+          "label": "Constitution (CON)",
+          "category": "characteristics",
+          "description": "Health, stamina, and vitality"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 40,
+          "maximum": 90,
+          "label": "Size (SIZ)",
+          "category": "characteristics",
+          "description": "Height, weight, and overall mass"
+        },
+        "dexterity": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 90,
+          "label": "Dexterity (DEX)",
+          "category": "characteristics",
+          "description": "Agility, speed, and reflexes"
+        },
+        "appearance": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 90,
+          "label": "Appearance (APP)",
+          "category": "characteristics",
+          "description": "Physical attractiveness and charisma"
+        },
+        "intelligence": {
+          "type": "integer",
+          "minimum": 40,
+          "maximum": 90,
+          "label": "Intelligence (INT)",
+          "category": "characteristics",
+          "description": "Reasoning ability, memory, and analysis"
+        },
+        "power": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 90,
+          "label": "Power (POW)",
+          "category": "characteristics",
+          "description": "Mental strength, willpower, and magical potential"
+        },
+        "education": {
+          "type": "integer",
+          "minimum": 40,
+          "maximum": 90,
+          "label": "Education (EDU)",
+          "category": "characteristics",
+          "description": "Formal and informal learning"
+        }
+      }
+    },
+    "derivedAttributes": {
+      "type": "object",
+      "label": "Derived Attributes",
+      "category": "characteristics",
+      "description": "Calculated values from characteristics",
+      "properties": {
+        "hitPoints": {
+          "type": "integer",
+          "readOnly": true,
+          "x-formula": "Math.floor((characteristics.constitution + characteristics.size) / 10)",
+          "label": "Hit Points",
+          "category": "characteristics",
+          "description": "Physical damage capacity"
+        },
+        "magicPoints": {
+          "type": "integer",
+          "readOnly": true,
+          "x-formula": "Math.floor(characteristics.power / 5)",
+          "label": "Magic Points",
+          "category": "characteristics",
+          "description": "Magical energy for casting spells"
+        },
+        "sanity": {
+          "type": "integer",
+          "readOnly": true,
+          "x-formula": "characteristics.power",
+          "label": "Starting Sanity",
+          "category": "characteristics",
+          "description": "Initial sanity points (equal to POW)"
+        },
+        "luck": {
+          "type": "integer",
+          "readOnly": true,
+          "x-formula": "Math.floor(Math.random() * 6 + 1) * 5 + Math.floor(Math.random() * 6 + 1) * 5 + Math.floor(Math.random() * 6 + 1) * 5",
+          "label": "Luck",
+          "category": "characteristics",
+          "description": "Random luck value (3d6 × 5)"
+        },
+        "movementRate": {
+          "type": "integer",
+          "readOnly": true,
+          "x-formula": "characteristics.dexterity < characteristics.size && characteristics.strength < characteristics.size ? 7 : (characteristics.dexterity >= characteristics.size && characteristics.strength >= characteristics.size ? 9 : 8)",
+          "label": "Move",
+          "category": "characteristics",
+          "description": "Movement rate per round"
+        },
+        "build": {
+          "type": "integer",
+          "readOnly": true,
+          "x-formula": "Math.floor((characteristics.strength + characteristics.size - 64) / 20)",
+          "label": "Build",
+          "category": "characteristics",
+          "description": "Physical build modifier"
+        },
+        "damageBonus": {
+          "type": "string",
+          "readOnly": true,
+          "x-formula": "(() => { const build = Math.floor((characteristics.strength + characteristics.size - 64) / 20); return build <= -2 ? '-2' : build === -1 ? '-1' : build === 0 ? '+0' : build === 1 ? '+1d4' : build === 2 ? '+1d6' : '+' + build + 'd6'; })()",
+          "label": "Damage Bonus",
+          "category": "characteristics",
+          "description": "Extra damage from physical build"
+        }
+      }
+    },
+    "currentStatus": {
+      "type": "object",
+      "label": "Current Status",
+      "category": "health",
+      "description": "Current health and sanity levels",
+      "properties": {
+        "hitPoints": {
+          "type": "integer",
+          "minimum": 0,
+          "label": "Current Hit Points",
+          "category": "health",
+          "description": "Current physical damage taken"
+        },
+        "magicPoints": {
+          "type": "integer",
+          "minimum": 0,
+          "label": "Current Magic Points",
+          "category": "health",
+          "description": "Current magical energy remaining"
+        },
+        "sanity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "label": "Current Sanity",
+          "category": "health",
+          "description": "Current sanity points remaining"
+        },
+        "luck": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 99,
+          "label": "Current Luck",
+          "category": "health",
+          "description": "Current luck points (can be spent and recovered)"
+        },
+        "temporaryInsanity": {
+          "type": "boolean",
+          "default": false,
+          "label": "Temporary Insanity",
+          "category": "health",
+          "description": "Currently suffering from temporary insanity"
+        },
+        "indefiniteInsanity": {
+          "type": "boolean",
+          "default": false,
+          "label": "Indefinite Insanity",
+          "category": "health",
+          "description": "Currently suffering from indefinite insanity"
+        }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "label": "Skills",
+      "category": "skills",
+      "description": "Investigative and other skills (percentile values)",
+      "properties": {
+        "accounting": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Accounting", "category": "skills", "description": "Financial records and bookkeeping" },
+        "anthropology": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Anthropology", "category": "skills", "description": "Study of human cultures" },
+        "appraise": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Appraise", "category": "skills", "description": "Determining value of objects" },
+        "archaeology": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Archaeology", "category": "skills", "description": "Ancient civilizations and artifacts" },
+        "artCraft": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Art/Craft", "category": "skills", "description": "Artistic and craft skills" },
+        "charm": { "type": "integer", "minimum": 0, "maximum": 99, "default": 15, "label": "Charm", "category": "skills", "description": "Winning people over through personality" },
+        "climb": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Climb", "category": "skills", "description": "Scaling walls and obstacles" },
+        "creditRating": { "type": "integer", "minimum": 0, "maximum": 99, "default": 0, "label": "Credit Rating", "category": "skills", "description": "Wealth and social standing" },
+        "cthulhuMythos": { "type": "integer", "minimum": 0, "maximum": 99, "default": 0, "label": "Cthulhu Mythos", "category": "skills", "description": "Knowledge of cosmic horrors (reduces max Sanity)" },
+        "disguise": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Disguise", "category": "skills", "description": "Altering appearance to fool others" },
+        "dodge": { "type": "integer", "minimum": 0, "maximum": 99, "default": 0, "label": "Dodge", "category": "skills", "description": "Avoiding attacks and hazards" },
+        "driveAuto": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Drive Auto", "category": "skills", "description": "Operating motor vehicles" },
+        "electricalRepair": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Electrical Repair", "category": "skills", "description": "Fixing electrical devices" },
+        "electronics": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Electronics", "category": "skills", "description": "Understanding electronic devices" },
+        "fastTalk": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Fast Talk", "category": "skills", "description": "Confusing or misleading through rapid speech" },
+        "fightingBrawl": { "type": "integer", "minimum": 0, "maximum": 99, "default": 25, "label": "Fighting (Brawl)", "category": "skills", "description": "Unarmed combat" },
+        "firearmsHandgun": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Firearms (Handgun)", "category": "skills", "description": "Using pistols and revolvers" },
+        "firearmsRifle": { "type": "integer", "minimum": 0, "maximum": 99, "default": 25, "label": "Firearms (Rifle)", "category": "skills", "description": "Using rifles and shotguns" },
+        "firstAid": { "type": "integer", "minimum": 0, "maximum": 99, "default": 30, "label": "First Aid", "category": "skills", "description": "Basic medical treatment" },
+        "history": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "History", "category": "skills", "description": "Knowledge of historical events" },
+        "intimidate": { "type": "integer", "minimum": 0, "maximum": 99, "default": 15, "label": "Intimidate", "category": "skills", "description": "Frightening or coercing others" },
+        "jump": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Jump", "category": "skills", "description": "Leaping across distances" },
+        "languageOther": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Language (Other)", "category": "skills", "description": "Foreign language proficiency" },
+        "languageOwn": { "type": "integer", "minimum": 0, "maximum": 99, "default": 0, "label": "Language (Own)", "category": "skills", "description": "Native language proficiency" },
+        "law": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Law", "category": "skills", "description": "Legal knowledge and procedure" },
+        "libraryUse": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Library Use", "category": "skills", "description": "Research and information gathering" },
+        "listen": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Listen", "category": "skills", "description": "Hearing sounds and conversations" },
+        "locksmith": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Locksmith", "category": "skills", "description": "Picking locks and security systems" },
+        "mechanicalRepair": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Mechanical Repair", "category": "skills", "description": "Fixing mechanical devices" },
+        "medicine": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Medicine", "category": "skills", "description": "Advanced medical knowledge" },
+        "naturalWorld": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Natural World", "category": "skills", "description": "Knowledge of nature and wildlife" },
+        "navigate": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Navigate", "category": "skills", "description": "Finding direction and location" },
+        "occult": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Occult", "category": "skills", "description": "Knowledge of supernatural and mystical" },
+        "operateHeavyMachinery": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Operate Heavy Machinery", "category": "skills", "description": "Using large industrial equipment" },
+        "persuade": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Persuade", "category": "skills", "description": "Convincing others through logic" },
+        "pilotAircraft": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Pilot (Aircraft)", "category": "skills", "description": "Flying airplanes" },
+        "pilotBoat": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Pilot (Boat)", "category": "skills", "description": "Operating watercraft" },
+        "psychology": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Psychology", "category": "skills", "description": "Understanding human behavior" },
+        "psychoanalysis": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Psychoanalysis", "category": "skills", "description": "Treating mental disorders" },
+        "ride": { "type": "integer", "minimum": 0, "maximum": 99, "default": 5, "label": "Ride", "category": "skills", "description": "Controlling horses and similar animals" },
+        "science": { "type": "integer", "minimum": 0, "maximum": 99, "default": 1, "label": "Science", "category": "skills", "description": "Scientific knowledge and method" },
+        "sleightOfHand": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Sleight of Hand", "category": "skills", "description": "Manual dexterity and legerdemain" },
+        "spotHidden": { "type": "integer", "minimum": 0, "maximum": 99, "default": 25, "label": "Spot Hidden", "category": "skills", "description": "Noticing concealed objects and details" },
+        "stealth": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Stealth", "category": "skills", "description": "Moving without being detected" },
+        "survival": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Survival", "category": "skills", "description": "Surviving in wilderness conditions" },
+        "swim": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Swim", "category": "skills", "description": "Moving through water" },
+        "throw": { "type": "integer", "minimum": 0, "maximum": 99, "default": 20, "label": "Throw", "category": "skills", "description": "Hurling objects accurately" },
+        "track": { "type": "integer", "minimum": 0, "maximum": 99, "default": 10, "label": "Track", "category": "skills", "description": "Following trails and signs" }
+      }
+    },
+    "weapons": {
+      "type": "array",
+      "label": "Weapons",
+      "category": "combat",
+      "description": "Combat equipment and weapons",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "label": "Weapon Name", "description": "Name of the weapon" },
+          "skill": { "type": "string", "label": "Skill Used", "description": "Which skill is used with this weapon" },
+          "damage": { "type": "string", "label": "Damage", "description": "Damage dice and type" },
+          "range": { "type": "string", "label": "Range", "description": "Effective range of the weapon" },
+          "attacks": { "type": "integer", "default": 1, "label": "Attacks per Round", "description": "Number of attacks per combat round" },
+          "ammo": { "type": "integer", "default": 0, "label": "Ammo", "description": "Current ammunition count" },
+          "malfunction": { "type": "string", "label": "Malfunction", "description": "Malfunction number for firearms" }
+        }
+      }
+    },
+    "investigativeGear": {
+      "type": "array",
+      "label": "Investigative Gear",
+      "category": "investigation",
+      "description": "Tools and equipment for investigation",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": { "type": "string", "label": "Item Name", "description": "Name of the investigative tool" },
+          "description": { "type": "string", "label": "Description", "description": "What the item does" },
+          "quantity": { "type": "integer", "default": 1, "label": "Quantity", "description": "How many of this item" }
+        }
+      }
+    },
+    "possessions": {
+      "type": "array",
+      "label": "Possessions & Equipment",
+      "category": "equipment",
+      "description": "General belongings and equipment",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": { "type": "string", "label": "Item", "description": "Name of the possession" },
+          "quantity": { "type": "integer", "default": 1, "label": "Quantity", "description": "Number of items" },
+          "description": { "type": "string", "label": "Description", "description": "Details about the item" }
+        }
+      }
+    },
+    "cashAndAssets": {
+      "type": "object",
+      "label": "Cash & Assets",
+      "category": "equipment",
+      "description": "Financial resources and property",
+      "properties": {
+        "spendingLevel": { "type": "string", "label": "Spending Level", "category": "equipment", "description": "Standard of living and regular expenses" },
+        "cash": { "type": "integer", "default": 0, "label": "Cash", "category": "equipment", "description": "Money on hand" },
+        "assets": { "type": "string", "label": "Assets", "category": "equipment", "description": "Property, investments, and valuable possessions" }
+      }
+    },
+    "personalDetails": {
+      "type": "object",
+      "label": "Personal Details",
+      "category": "backstory",
+      "description": "Character background and personality",
+      "properties": {
+        "personalDescription": { "type": "string", "label": "Personal Description", "category": "backstory", "description": "Physical appearance and mannerisms" },
+        "ideologyBeliefs": { "type": "string", "label": "Ideology/Beliefs", "category": "backstory", "description": "Religious, political, or philosophical beliefs" },
+        "significantPeople": { "type": "string", "label": "Significant People", "category": "backstory", "description": "Important people in the investigator's life" },
+        "meaningfulLocations": { "type": "string", "label": "Meaningful Locations", "category": "backstory", "description": "Places of importance to the investigator" },
+        "treasuredPossessions": { "type": "string", "label": "Treasured Possessions", "category": "backstory", "description": "Items of special personal value" },
+        "traits": { "type": "string", "label": "Traits", "category": "backstory", "description": "Personality traits and quirks" },
+        "injuriesScars": { "type": "string", "label": "Injuries & Scars", "category": "backstory", "description": "Physical marks and old wounds" },
+        "phobiasManias": { "type": "string", "label": "Phobias & Manias", "category": "backstory", "description": "Fears and obsessions" },
+        "arcaneTomesSpells": { "type": "string", "label": "Arcane Tomes, Spells & Artifacts", "category": "backstory", "description": "Occult knowledge and mystical items" },
+        "encountersWithStrangeEntities": { "type": "string", "label": "Encounters with Strange Entities", "category": "backstory", "description": "Previous brushes with the mythos" }
+      }
+    },
+    "backstory": {
+      "type": "string",
+      "label": "Backstory",
+      "category": "backstory",
+      "description": "Character's full background story"
+    },
+    "notes": {
+      "type": "string",
+      "label": "Investigator Notes",
+      "category": "investigation",
+      "description": "Case notes, clues, and observations"
+    },
+    "portrait": {
+      "type": "string",
+      "label": "Portrait",
+      "category": "basic",
+      "description": "Character portrait image"
+    }
+  },
+  "required": ["name", "occupation", "age"]
+}

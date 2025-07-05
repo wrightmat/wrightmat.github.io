@@ -1,0 +1,288 @@
+{
+  "id": "template_b476a1a8-0098-4bc5-80ad-84384b612bcc",
+  "created": "2025-07-01T20:00:00.000Z",
+  "modified": "2025-07-05T19:09:36.038Z",
+  "version": 7,
+  "index": "5e-default",
+  "title": "5e Default Sheet",
+  "schema": "dd-5e",
+  "type": "Tabs",
+  "elements": [
+    {
+      "type": "Tab",
+      "label": "Character",
+      "elements": [
+        {
+          "type": "Group",
+          "label": "Basic Information",
+          "layout": "grid",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/name",
+              "label": "Character Name",
+              "controlType": "text",
+              "id": "elem_1751725921502_pq6r59v0a",
+              "textColor": ""
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/class",
+              "label": "Class",
+              "controlType": "text",
+              "id": "elem_1751725921502_w7lnikrok"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/level",
+              "label": "Level",
+              "controlType": "number",
+              "id": "elem_1751725921502_0asvgbwa1"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/race",
+              "label": "Race",
+              "controlType": "text",
+              "id": "elem_1751725921502_jqwp8legl"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/background",
+              "label": "Background",
+              "controlType": "text",
+              "id": "elem_1751725921502_iup2vk8ir"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/alignment",
+              "label": "Alignment",
+              "controlType": "text",
+              "id": "elem_1751725921502_os34qft72"
+            }
+          ],
+          "id": "elem_1751725921502_5329dzmh9",
+          "collapsible": true,
+          "backgroundColor": "",
+          "borderColor": ""
+        },
+        {
+          "type": "Group",
+          "label": "Abilities",
+          "layout": "grid",
+          "elements": [
+            {
+              "type": "ComboField",
+              "scope": "#/properties/abilities/properties/strength",
+              "label": "Strength",
+              "layout": "vertical",
+              "size": "medium",
+              "theme": "red",
+              "id": "elem_1751725921502_eeslz5ulg",
+              "borderColor": "#dc2626",
+              "textColor": ""
+            },
+            {
+              "type": "ComboField",
+              "scope": "#/properties/abilities/properties/dexterity",
+              "label": "Dexterity",
+              "layout": "vertical",
+              "size": "medium",
+              "theme": "yellow",
+              "id": "elem_1751725921502_4krnrud8x",
+              "borderColor": "#eab308"
+            },
+            {
+              "type": "ComboField",
+              "scope": "#/properties/abilities/properties/constitution",
+              "label": "Constitution",
+              "layout": "vertical",
+              "size": "medium",
+              "theme": "orange",
+              "id": "elem_1751725921502_2jk6pbepg",
+              "borderColor": "#d97706"
+            },
+            {
+              "type": "ComboField",
+              "scope": "#/properties/abilities/properties/intelligence",
+              "label": "Intelligence",
+              "layout": "vertical",
+              "size": "medium",
+              "theme": "blue",
+              "id": "elem_1751725921502_jptzxkf46",
+              "borderColor": "#3b82f6"
+            },
+            {
+              "type": "ComboField",
+              "scope": "#/properties/abilities/properties/wisdom",
+              "label": "Wisdom",
+              "layout": "vertical",
+              "size": "medium",
+              "theme": "green",
+              "id": "elem_1751725921502_xzlbuhqyd",
+              "borderColor": "#059669"
+            },
+            {
+              "type": "ComboField",
+              "scope": "#/properties/abilities/properties/charisma",
+              "label": "Charisma",
+              "layout": "vertical",
+              "size": "medium",
+              "theme": "purple",
+              "id": "elem_1751725921502_o2zz32is5",
+              "borderColor": "#7c3aed"
+            }
+          ],
+          "id": "elem_1751725921502_w55esy35j"
+        }
+      ],
+      "id": "elem_1751725921502_4712quwww"
+    },
+    {
+      "type": "Tab",
+      "label": "Skills",
+      "elements": [
+        {
+          "type": "Group",
+          "label": "Skills",
+          "layout": "grid",
+          "elements": [
+            {
+              "type": "MultiStateToggle",
+              "scope": "#/properties/skills/properties/acrobatics",
+              "label": "Acrobatics (Dex)",
+              "states": 3,
+              "shape": "circle",
+              "size": "small",
+              "labelPosition": "right",
+              "theme": "default",
+              "id": "elem_1751725921502_vor13ktut",
+              "backgroundColor": "#eab308"
+            },
+            {
+              "type": "MultiStateToggle",
+              "scope": "#/properties/skills/properties/animalHandling",
+              "label": "Animal Handling (Wis)",
+              "states": 3,
+              "shape": "circle",
+              "size": "small",
+              "labelPosition": "right",
+              "theme": "default",
+              "id": "elem_1751725921502_3ex4q94ny",
+              "backgroundColor": "#0d9488"
+            },
+            {
+              "type": "MultiStateToggle",
+              "scope": "#/properties/skills/properties/arcana",
+              "label": "Arcana (Int)",
+              "states": 3,
+              "shape": "circle",
+              "size": "small",
+              "labelPosition": "right",
+              "theme": "default",
+              "id": "elem_1751725921502_6y54sp42q",
+              "backgroundColor": "#3b82f6"
+            },
+            {
+              "type": "MultiStateToggle",
+              "scope": "#/properties/skills/properties/athletics",
+              "label": "Athletics (Str)",
+              "states": 3,
+              "shape": "circle",
+              "size": "small",
+              "labelPosition": "right",
+              "theme": "default",
+              "id": "elem_1751725921502_ji765he9t",
+              "backgroundColor": "#dc2626"
+            }
+          ],
+          "id": "elem_1751725921502_qlcf1zdj8"
+        },
+        {
+          "type": "Group",
+          "label": "Conditions",
+          "layout": "vertical",
+          "elements": [
+            {
+              "type": "SelectGroup",
+              "scope": "#/properties/conditions",
+              "label": "Current Conditions",
+              "optionsSource": "field",
+              "optionsScope": "#/properties/conditions",
+              "selectionType": "multi",
+              "displayMode": "all",
+              "style": "pills",
+              "theme": "warning",
+              "id": "elem_1751725921502_9hsn6md9c",
+              "backgroundColor": "#d97706"
+            }
+          ],
+          "id": "elem_1751725921502_2moxy4338"
+        }
+      ],
+      "id": "elem_1751725921502_gburx5eay"
+    },
+    {
+      "type": "Tab",
+      "label": "Combat",
+      "elements": [
+        {
+          "type": "Group",
+          "label": "Hit Points",
+          "layout": "horizontal",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/hitPoints/properties/current",
+              "label": "Current HP",
+              "controlType": "number",
+              "id": "elem_1751725921502_vhovhdfo9"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/hitPoints/properties/maximum",
+              "label": "Max HP",
+              "controlType": "number",
+              "id": "elem_1751725921502_qd99fpf32"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/hitPoints/properties/temporary",
+              "label": "Temp HP",
+              "controlType": "number",
+              "id": "elem_1751725921502_1vt5egc4s"
+            }
+          ],
+          "id": "elem_1751725921502_0axzn2jcb"
+        }
+      ],
+      "id": "elem_1751725921502_gmg0lebh1"
+    },
+    {
+      "type": "Tab",
+      "label": "Spells",
+      "elements": [
+        {
+          "type": "Array",
+          "scope": "#/properties/spells",
+          "label": "Spells",
+          "id": "elem_1751725921502_upc1hgjlw"
+        }
+      ],
+      "id": "elem_1751725921502_82lavm9yd"
+    },
+    {
+      "type": "Tab",
+      "label": "Inventory",
+      "elements": [
+        {
+          "type": "Array",
+          "scope": "#/properties/inventory",
+          "label": "Equipment",
+          "id": "elem_1751725921502_x6ik15vgs"
+        }
+      ],
+      "id": "elem_1751725921502_tgyr2z7kf"
+    }
+  ]
+}

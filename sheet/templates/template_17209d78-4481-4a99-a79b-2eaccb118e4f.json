@@ -1,0 +1,104 @@
+{
+  "id": "template_17209d78-4481-4a99-a79b-2eaccb118e4f",
+  "created": "2025-07-01T20:00:00.000Z",
+  "modified": "2025-07-05T18:32:54.303Z",
+  "version": 5,
+  "index": "bitd-default",
+  "title": "BitD Default Sheet",
+  "schema": "bitd",
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Group",
+      "label": "Character Info",
+      "layout": "horizontal",
+      "elements": [
+        {
+          "type": "Control",
+          "scope": "#/properties/name",
+          "label": "Name",
+          "controlType": "text",
+          "id": "elem_1751727184066_55korkt1z"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/playbook",
+          "label": "Playbook",
+          "controlType": "text",
+          "id": "elem_1751727184066_hlhym7yai"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/heritage",
+          "label": "Heritage",
+          "controlType": "text",
+          "id": "elem_1751727184066_t0m7gqbjj"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/background",
+          "label": "Background",
+          "controlType": "text",
+          "id": "elem_1751727184066_hiw5k1q19"
+        }
+      ],
+      "id": "elem_1751727184066_a5zbm8jzk"
+    },
+    {
+      "type": "Group",
+      "label": "Stress & Progress",
+      "layout": "horizontal",
+      "elements": [
+        {
+          "type": "LinearTrack",
+          "label": "Stress",
+          "scope": "#/properties/stress",
+          "segments": 9,
+          "theme": "stress",
+          "showCounter": true,
+          "id": "elem_1751727184066_pg94hvrst",
+          "backgroundColor": "#dc2626",
+          "borderColor": "#1f2937"
+        },
+        {
+          "type": "CircularTrack",
+          "label": "Investigation Clock",
+          "scope": "#/properties/investigationClock",
+          "segments": 6,
+          "theme": "default",
+          "showCounter": true,
+          "id": "elem_1751727184066_nxfn13wr7",
+          "backgroundColor": "#3b82f6"
+        }
+      ],
+      "id": "elem_1751727184066_4svxts7zr"
+    },
+    {
+      "id": "elem_1751728543340_3ttpy3mgt",
+      "type": "MultiStateToggle",
+      "label": "Multi-State Toggle",
+      "style": {},
+      "backgroundColor": "#d97706",
+      "borderColor": "",
+      "scope": "",
+      "states": 2,
+      "shape": "circle",
+      "size": "medium",
+      "labelPosition": "right"
+    },
+    {
+      "id": "elem_1751728547087_47xvhuwy6",
+      "type": "SelectGroup",
+      "label": "Select Group",
+      "style": "pills",
+      "backgroundColor": "#ec4899",
+      "borderColor": "",
+      "scope": "",
+      "optionsSource": "field",
+      "optionsScope": "#/properties/playbook",
+      "staticOptions": "",
+      "selectionType": "multi",
+      "displayMode": "all"
+    }
+  ]
+}

@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en" class="character-sheet">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTRPG Character Sheet</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="data.js"></script>
+  <script src="utils.js"></script>
+</head>
+
+<body x-data="characterApp()" class="character-sheet-body">
+
+  <div class="character-editor-container" :class="{ 'left-collapsed': leftPaneCollapsed, 'right-collapsed': rightPaneCollapsed, 'both-collapsed': leftPaneCollapsed && rightPaneCollapsed }">
+    
+    <!-- Unified Toolbar -->
+    <div class="toolbar">
+      <button class="toolbar-toggle" @click="toggleLeftPane" :class="{ 'active': !leftPaneCollapsed }">
+        <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        <span class="text-sm">Tools</span>
+      </button>
+      
+      <h1>⚔️ Character Sheet</h1>
+      
+	<div class="toolbar-actions">
+	    <select x-model="selectedSchemaId" @change="selectSchema($event.target.value)" class="form-control">
+	        <option value="">Select System...</option>
+	        <template x-for="(schema, id) in schemas">
+	            <option :value="id" x-text="schema.title"></option>
+	        </template>
+	    </select>
+	    <select x-model="selectedTemplateId" @change="selectTemplate($event.target.value)" class="form-control" :disabled="!selectedSchemaId">
+	        <option value="">Select Template...</option>
+	        <template x-for="(template, id) in availableTemplates">
+	            <option :value="id" x-text="template.title"></option>
+	        </template>
+	    </select>    
+	    <select x-model="selectedCharacterId" @change="selectCharacter($event.target.value)" class="form-control" :disabled="!selectedTemplateId">
+	        <option value="">Select Character...</option>
+	        <option x-show="!viewMode" value="_new">+ Create New Character</option>
+	        <template x-for="(char, id) in availableCharacters">
+	            <option :value="id" x-text="char.data.name"></option>
+	        </template>
+	    </select>
+	    <button class="btn" :class="viewMode ? 'btn-success' : 'btn-primary'" @click="viewMode = !viewMode" x-text="viewMode ? '👁️ View' : '✏️ Edit'"></button>
+	    <button class="btn btn-secondary" @click="openTemplateEditor">🎨 Edit Template</button>
+	    <button class="btn btn-secondary" @click="exportCharacter">📤 Export</button>
+	    <template x-if="!viewMode">
+	        <button class="btn btn-success" @click="saveCharacter" :disabled="!isModified">💾 Save</button>
+	    </template>
+	</div>
+      
+      <button class="toolbar-toggle" @click="toggleRightPane" :class="{ 'active': !rightPaneCollapsed }">
+        <span class="text-sm">Data</span>
+        <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+      </button>
+    </div>
+
+    <!-- Left Pane - Reserved for Future Tools -->
+    <div class="left-pane" :class="{ 'collapsed': leftPaneCollapsed, 'show': leftPaneVisible }">
+      <div class="pane-header">
+        <h3 class="pane-title">🔧 Tools</h3>
+        <button class="pane-toggle" @click="toggleLeftPane">
+          <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        </button>
+      </div>
+      
+      <div class="empty-state-small">
+        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">🚧</div>
+          <p style="margin: 0; font-size: 0.875rem;">Tool palette coming soon!</p>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem;">Future features:</p>
+          <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 0; font-size: 0.75rem;">
+            <li>• Dice roller</li>
+            <li>• Quick references</li>
+            <li>• Character utilities</li>
+            <li>• Spell lookup</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <div class="main-content-inner" :class="{ 'view-mode': viewMode }">
+        <template x-if="templates[selectedTemplateId]">
+          <div>
+            <template x-if="templates[selectedTemplateId].type === 'Tabs'">
+              <div>
+                <div class="tab-nav">
+                  <template x-for="(tab, index) in templates[selectedTemplateId].elements">
+                    <button class="tab-button" :class="{ 'active': activeTab === index }" @click="activeTab = index" x-text="tab.label"></button>
+                  </template>
+                </div>
+                <template x-for="(tab, index) in templates[selectedTemplateId].elements">
+                  <div class="tab-content" :class="{ 'active': activeTab === index }">
+                    <template x-for="element in tab.elements">
+                      <div x-html="renderElement(element)"></div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="templates[selectedTemplateId].type !== 'Tabs'">
+              <template x-for="element in templates[selectedTemplateId].elements">
+                <div x-html="renderElement(element)"></div>
+              </template>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Right Pane - Live Character Data -->
+    <div class="right-pane" :class="{ 'collapsed': rightPaneCollapsed, 'show': rightPaneVisible }">
+      <div class="pane-header">
+        <h3 class="pane-title">📊 Live Character Data</h3>
+        <span x-show="isModified && selectedCharacterId && selectedCharacterId !== '_new'" class="modified-indicator">• Modified</span>
+        <button class="pane-toggle" @click="toggleRightPane">
+          <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+        </button>
+      </div>
+      
+      <div class="data-content">
+        <pre x-text="JSON.stringify(character.data, null, 2)"></pre>
+      </div>
+    </div>
+  </div>
+
+<!-- Create Character Modal -->
+  <template x-if="showCreateCharacterModal">
+    <div class="modal-overlay" @click="showCreateCharacterModal = false">
+      <div class="modal" @click.stop>
+        <div class="modal-header">
+          <h3>Create New Character</h3>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" x-model="newCharacter.name" class="form-control" placeholder="Enter character name">
+          </div>
+          <div class="form-group">
+            <label>Game System</label>
+            <select x-model="newCharacter.system" @change="updateNewCharacterTemplates" class="form-control">
+              <option value="">Select system...</option>
+              <template x-for="(schema, id) in schemas">
+                <option :value="id" x-text="schema.title"></option>
+              </template>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Character Sheet Template</label>
+            <select x-model="newCharacter.template" class="form-control" :disabled="!newCharacter.system">
+              <option value="">Select template...</option>
+              <template x-for="(template, id) in newCharacterTemplates">
+                <option :value="id" x-text="template.title"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="showCreateCharacterModal = false">Cancel</button>
+          <button class="btn btn-primary" @click="createCharacter" :disabled="!newCharacter.name || !newCharacter.system || !newCharacter.template">Create Character</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    function characterApp() {
+        return {
+            schemas: {},
+            templates: {},
+            characters: {},
+            selectedCharacterId: '',
+            character: { system: '5e', template: '5e-default', data: {} },
+            selectedSchemaId: '5e',
+            selectedTemplateId: '5e-default',
+            leftPaneCollapsed: true,
+            rightPaneCollapsed: false,
+            leftPaneVisible: false,
+            rightPaneVisible: false,
+            viewMode: true,
+            activeTab: 0,
+	    isModified: false,
+	    showCreateCharacterModal: false,
+	    selectedSchemaId: '',
+	    selectedTemplateId: '',
+	    selectedCharacterId: '',
+	    availableTemplates: {},
+	    availableCharacters: {},
+	    newCharacter: { name: '', system: '', template: '' },
+	    newCharacterTemplates: {},
+
+	$watch: {
+            viewMode() {
+                this.cleanupRichTextEditors();
+                this.$nextTick(() => {
+                    this.character = { ...this.character };
+                });
+            }
+        },
+
+async init() {
+    await DataManager.loadAll();
+    this.schemas = DataManager.getSchemas();
+    this.templates = DataManager.getTemplates();
+    this.characters = DataManager.getCharacters();
+    window.characterAppInstance = this;
+},
+
+selectSchema(schemaId) {
+    this.selectedSchemaId = schemaId;
+    this.loadTemplatesForSchema();
+},
+
+selectTemplate(templateId) {
+    this.selectedTemplateId = templateId;
+    this.loadCharactersForTemplate();
+},
+
+selectCharacter(characterId) {
+    this.selectedCharacterId = characterId;
+    this.loadCharacter();
+},
+
+loadTemplatesForSchema() {
+    this.availableTemplates = {};
+    this.availableCharacters = {};
+    this.selectedTemplateId = '';
+    this.selectedCharacterId = '';
+    this.character = { system: '', template: '', data: {} };
+    this.isModified = false;
+
+    if (!this.selectedSchemaId) return;
+
+    const schema = DataManager.getSchema(this.selectedSchemaId);
+    if (schema) {
+        const allTemplates = DataManager.getTemplates();
+        this.availableTemplates = Object.fromEntries(
+            Object.entries(allTemplates).filter(([_, template]) => 
+                template.schema === schema.index
+            )
+        );
+    }
+},
+
+loadCharactersForTemplate() {
+    this.availableCharacters = {};
+    this.selectedCharacterId = '';
+    this.character = { system: '', template: '', data: {} };
+    this.isModified = false;
+
+    if (!this.selectedTemplateId) return;
+
+    const schema = DataManager.getSchema(this.selectedSchemaId);
+    const template = DataManager.getTemplate(this.selectedTemplateId);
+    
+    if (schema && template) {
+        const allCharacters = DataManager.getCharacters();
+        this.availableCharacters = Object.fromEntries(
+            Object.entries(allCharacters).filter(([_, character]) => 
+                character.system === schema.index && character.template === template.index
+            )
+        );
+    }
+},
+
+loadCharacter() {
+    if (this.selectedCharacterId === '_new') {
+        this.createNewCharacter();
+        return;
+    }
+
+    const char = DataManager.getCharacter(this.selectedCharacterId);
+    if (!char) {
+        this.isModified = false;
+        return;
+    }
+
+    this.cleanupRichTextEditors();
+    Object.assign(this.character, Utils.deepClone(char));
+    
+    const schema = DataManager.getSchemaByIndex(char.system);
+    if (schema) {
+        Utils.evaluateFormulas(schema, this.character.data);
+    }
+    
+    this.isModified = false;
+},
+
+            toggleLeftPane() {
+                this.leftPaneCollapsed = !this.leftPaneCollapsed;
+                this.leftPaneVisible = !this.leftPaneVisible;
+            },
+
+            toggleRightPane() {
+                this.rightPaneCollapsed = !this.rightPaneCollapsed;
+                this.rightPaneVisible = !this.rightPaneVisible;
+            },
+
+            handleNumberClick(event, scope) {
+                if (this.viewMode && !this.isReadOnly(scope)) {
+                    Utils.showNotification(`Dice roller coming soon! Field: ${scope.split('/').pop()}, Value: ${this.getValue(scope)}`, 'info');
+                }
+            },
+
+            openTemplateEditor() {
+                const params = new URLSearchParams({ schema: this.selectedSchemaId, template: this.selectedTemplateId });
+                window.open(`template_editor.html?${params.toString()}`, '_blank');
+            },
+
+            exportCharacter() {
+                const filename = (this.character.data.name || 'character').toLowerCase().replace(/\s+/g, '_') + '.json';
+                Utils.exportAsJson(this.character, filename);
+                Utils.showNotification('Character exported successfully', 'success');
+            },
+
+            markAsModified() {
+                this.isModified = true;
+            },
+
+	    saveCharacter() {
+		if (!this.selectedCharacterId || this.selectedCharacterId === '_new') {
+		    Utils.showNotification('No character selected to save', 'error');
+		    return;
+		}
+
+		try {
+		    this.characters[this.selectedCharacterId] = Utils.deepClone(this.character);
+		    Utils.showNotification('Saving character...', 'info');
+		    DataManager.saveCharacter(this.selectedCharacterId, this.character);
+		    this.isModified = false;
+		    Utils.showNotification(`Character "${this.character.data.name}" saved successfully`, 'success');
+		} catch (error) {
+		    Utils.showNotification(`Failed to save character: ${error.message}`, 'error');
+		    console.error('Save character error:', error);
+		}
+	    },
+
+	    getSchemaOptions( optionsScope ) {
+		const schema = this.schemas[this.selectedSchemaId];
+		if (!schema) return [];
+    
+		const pathParts = optionsScope.replace('#/properties/', '').split('/properties/');
+		let current = schema.properties;
+		for (const part of pathParts) {
+		    if (current && current[part]) {
+		        current = current[part];
+		    } else {
+		        return [];
+		    }
+		}
+		if (current.type === 'array' && current.items && current.items.enum) {
+		    return current.items.enum;
+		} else if (current.enum) {
+		    return current.enum;
+		}
+
+		return [];
+	    },
+
+	    applyElementColors( element ) {
+		let styles = [];
+		if ( element.backgroundColor) styles.push(`background-color: ${element.backgroundColor}`);
+		if (element.borderColor) styles.push(`border-color: ${element.borderColor}`);
+		return styles.length > 0 ? `style="${styles.join('; ')}"` : '';
+	    },
+
+	    renderElement(element) {
+	        return Utils.ElementRenderer.renderElement(element, {
+	            isPreview: false,
+	            viewMode: this.viewMode,
+	            getValue: (scope) => this.getValue(scope),
+	            instanceRef: this
+	        });
+	    },
+
+            renderControl( element ) {
+                const fieldName = element.label || Utils.generateFieldName(element.scope);
+                const value = this.getValue(element.scope);
+                const isReadOnly = this.isReadOnly(element.scope);
+                const controlType = element.controlType || 'text';
+                const isNumber = controlType === 'number' || typeof value === 'number';
+		const colorStyles = this.applyElementColors(element);
+                let inputElement = '';
+                
+                switch ( controlType ) {
+                    case 'textarea':
+			const isRichText = element.richText === true;
+			const textareaId = `textarea_${element.id || Math.random().toString(36).substr(2, 9)}`;
+			if ( isRichText ) {
+			    inputElement = `<div id="${textareaId}" class="rich-text-editor" data-scope="${element.scope}" data-readonly="${isReadOnly || this.viewMode}"></div>`;
+			    setTimeout(() => {
+			        window.characterAppInstance.initRichTextEditor(textareaId, element.scope, isReadOnly || this.viewMode);
+			    }, 100);
+			} else {
+			    inputElement = `<textarea name="${element.scope}" ${isReadOnly || this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" class="form-control textarea-control">${this.formatValue(element.scope, value)}</textarea>`;
+			}
+			break;
+                    case 'select': 
+                        inputElement = `<select name="${element.scope}" ${isReadOnly || this.viewMode ? 'disabled' : ''} onchange="window.characterAppInstance.updateValue(event, '${element.scope}')" class="form-control"><option value="${value}">${value || 'Select an option...'}</option></select>`; 
+                        break;
+                    case 'checkbox': 
+                        const checked = value === true || value === 'true' || value === 1; 
+                        inputElement = `<label class="checkbox-label"><input type="checkbox" name="${element.scope}" ${checked ? 'checked' : ''} ${isReadOnly || this.viewMode ? 'disabled' : ''} onchange="window.characterAppInstance.updateCheckbox(event, '${element.scope}')" class="checkbox-input"><span>${fieldName}</span></label>`; 
+                        break;
+		    case 'date':
+			inputElement = `<input type="date" name="${element.scope}" value="${value || ''}" ${isReadOnly || this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" ${!this.viewMode ? 'onchange="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''} class="form-control">`;
+			break;
+                    default: 
+                        inputElement = `<input type="${controlType}" name="${element.scope}" value="${this.formatValue(element.scope, value)}" ${isReadOnly || this.viewMode ? 'readonly' : ''} ${this.viewMode && isNumber && !isReadOnly ? 'onclick="window.characterAppInstance.handleNumberClick(event, \'' + element.scope + '\')"' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" ${isNumber && !this.viewMode ? 'oninput="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''} class="form-control">`;
+                }
+                
+		return `<div class="field-group" ${colorStyles}>${controlType !== 'checkbox' && controlType !== 'combo' ? `<label class="field-label">${fieldName}</label>` : ''}${inputElement}</div>`;
+            },
+
+renderGroup(element) {
+    const layoutClass = element.layout === 'grid' ? 'grid-layout' : element.layout === 'horizontal' ? 'horizontal-layout' : 'vertical-layout';
+    const isCollapsible = element.collapsible === true;
+    const defaultCollapsed = element.defaultCollapsed === 'collapsed';
+    const groupId = `group_${element.id || Math.random().toString(36).substr(2, 9)}`;
+    
+    // Apply background color to the group fieldset
+    const backgroundStyle = element.backgroundColor ? `style="background-color: ${element.backgroundColor};"` : '';
+    
+    let content = `<fieldset class="group-fieldset ${isCollapsible ? 'collapsible-group' : ''}" ${backgroundStyle} data-group-id="${groupId}">`;
+    
+    if (isCollapsible) {
+        content += `<legend class="group-legend collapsible-legend" onclick="window.characterAppInstance.toggleGroup('${groupId}')">
+            <span class="collapse-icon ${defaultCollapsed ? 'collapsed' : ''}">${defaultCollapsed ? '▶' : '▼'}</span>
+            ${element.label || 'Group'}
+        </legend>`;
+        content += `<div class="group-content ${defaultCollapsed ? 'collapsed' : ''}" id="${groupId}-content">`;
+    } else {
+        content += `<legend class="group-legend">${element.label || 'Group'}</legend>`;
+    }
+    
+    content += `<div class="${layoutClass}">`;
+    (element.elements || []).forEach(sub => {
+        content += this.renderElement(sub);
+    });
+    content += '</div>';
+    
+    if (isCollapsible) {
+        content += '</div>'; // Close group-content
+    }
+    
+    content += '</fieldset>';
+    return content;
+},
+
+toggleGroup( groupId ) {
+    const content = document.getElementById(`${groupId}-content`);
+    const icon = document.querySelector(`[data-group-id="${groupId}"] .collapse-icon`);
+    
+    if ( content && icon ) {
+        const isCollapsed = content.classList.contains('collapsed');
+        content.classList.toggle('collapsed', !isCollapsed);
+        icon.classList.toggle('collapsed', !isCollapsed);
+        icon.textContent = isCollapsed ? '▼' : '▶';
+    }
+},
+
+            renderArray( element)  {
+                const items = this.getValue(element.scope) || [];
+                let content = `<div class="field-group"><label class="field-label">${element.label || 'Array Field'}</label><div class="array-container">`;
+                
+                if ( items.length === 0 ) {
+                    content += '<div class="array-empty">No items</div>';
+                } else {
+                    content += '<div class="array-header"><div>Name</div><div>Quantity</div><div>Weight</div><div>Description</div></div>';
+                    items.forEach((item, index) => {
+                        content += `<div class="array-item">
+                            <input type="text" value="${item.name || ''}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'name')" class="form-control">
+                            <input type="number" value="${item.quantity || 0}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'quantity')" class="form-control">
+                            <input type="number" step="0.1" value="${item.weight || 0}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'weight')" class="form-control">
+                            <input type="text" value="${item.description || ''}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'description')" class="form-control">
+                        </div>`;
+                    });
+                }
+                content += '</div></div>';
+                return content;
+            },
+
+            renderLabel(element) {
+                return `<div class="field-group"><h3 class="label-heading">${element.label || 'Label Text'}</h3></div>`;
+            },
+
+            renderDivider() {
+                return `<div class="field-group"><hr class="divider-line"></div>`;
+            },
+
+// Helper functions for colors
+generateColorVariations(color) {
+    if (!color || color === '#ffffff') return '';
+    
+    // Convert hex to RGB for manipulation
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Create darker variant (multiply by 0.8)
+    const darkR = Math.round(r * 0.8);
+    const darkG = Math.round(g * 0.8);
+    const darkB = Math.round(b * 0.8);
+    const darkColor = `rgb(${darkR}, ${darkG}, ${darkB})`;
+    
+    // Create lighter variant (mix with white)
+    const lightR = Math.round(r + (255 - r) * 0.9);
+    const lightG = Math.round(g + (255 - g) * 0.9);
+    const lightB = Math.round(b + (255 - b) * 0.9);
+    const lightColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
+    
+    return `style="--element-color: ${color}; --element-color-dark: ${darkColor}; --element-color-light: ${lightColor};"`;
+},
+
+        getSegmentColors(element, filled = false) {
+            const bgColor = element.backgroundColor;
+            const borderColor = element.borderColor;
+            
+            if (filled) {
+                const fillColor = bgColor || '#3b82f6';
+                const fillBorderColor = borderColor || bgColor || '#2563eb';
+                return `background-color: ${fillColor}; border-color: ${fillBorderColor};`;
+            } else {
+                const emptyBorderColor = borderColor || '#d1d5db';
+                return `background-color: white; border-color: ${emptyBorderColor};`;
+            }
+        },
+
+        findElementByScope(scope) {
+            const template = this.templates[this.selectedTemplateId];
+            if (!template) return null;
+            
+            const findInElements = (elements) => {
+                for (const element of elements) {
+                    if (element.scope === scope) return element;
+                    if (element.elements) {
+                        const found = findInElements(element.elements);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+            
+            return findInElements(template.elements);
+        },
+
+getProgressTrackColors(element, filled = false) {
+    const bgColor = element.backgroundColor;
+    const borderColor = element.borderColor;
+    
+    if (filled) {
+        // For filled segments
+        const fillColor = bgColor || '#3b82f6';
+        const fillBorderColor = borderColor || bgColor || '#2563eb';
+        return `background-color: ${fillColor}; border-color: ${fillBorderColor};`;
+    } else {
+        // For empty segments
+        const emptyBorderColor = borderColor || '#d1d5db';
+        return `background-color: white; border-color: ${emptyBorderColor};`;
+    }
+},
+
+// Element Render Functions
+renderLinearTrack(element) {
+    const fieldName = element.label || Utils.generateFieldName(element.scope);
+    const value = this.getValue(element.scope) || 0;
+    const segments = element.segments || 6;
+    const showCounter = element.showCounter !== false;
+    const trackId = `track_${element.id || 'unknown'}`;
+    
+    let segmentsHtml = '';
+    for (let i = 0; i < segments; i++) {
+        const filled = i < value;
+        const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateTrackValue('${element.scope}', ${i + 1}, ${segments})"`;
+        const segmentStyles = this.getSegmentColors(element, filled);
+        segmentsHtml += `<div class="progress-segment ${filled ? 'filled' : ''}" style="${segmentStyles}" data-index="${i}" ${clickHandler}></div>`;
+    }
+    
+    const counterHtml = showCounter ? `<div class="progress-track-counter">${value}/${segments}</div>` : '';
+    
+    return `<div class="field-group">
+        <label class="progress-track-label">${fieldName}</label>
+        <div class="progress-linear" id="${trackId}" data-scope="${element.scope}" data-max="${segments}">
+            ${segmentsHtml}
+        </div>
+        ${counterHtml}
+    </div>`;
+},
+
+renderCircularTrack(element) {
+    const fieldName = element.label || Utils.generateFieldName(element.scope);
+    const value = this.getValue(element.scope) || 0;
+    const segments = element.segments || 6;
+    const showCounter = element.showCounter !== false;
+    const trackId = `clock_${element.id || 'unknown'}`;
+    
+    let segmentsHtml = '';
+    const centerX = 50;
+    const centerY = 50;
+    const radius = 35;
+    
+    for (let i = 0; i < segments; i++) {
+        const angle = (i * 360 / segments) - 90;
+        const radian = angle * Math.PI / 180;
+        const x = centerX + radius * Math.cos(radian);
+        const y = centerY + radius * Math.sin(radian);
+        const filled = i < value;
+        const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateTrackValue('${element.scope}', ${i + 1}, ${segments})"`;
+        const segmentColors = this.getSegmentColors(element, filled);
+        const positionStyle = `left: ${x}%; top: ${y}%;`;
+        
+        segmentsHtml += `<div class="progress-circle-segment ${filled ? 'filled' : ''}" 
+            style="${positionStyle} ${segmentColors}" 
+            data-index="${i}" 
+            ${clickHandler}></div>`;
+    }
+    
+    const counterHtml = showCounter ? `<div class="progress-track-counter">${value}/${segments}</div>` : '';
+    
+    return `<div class="field-group">
+        <label class="progress-track-label">${fieldName}</label>
+        <div class="progress-circular" id="${trackId}" data-scope="${element.scope}" data-max="${segments}">
+            <div class="progress-circle">
+                ${segmentsHtml}
+            </div>
+        </div>
+        ${counterHtml}
+    </div>`;
+},
+
+renderComboField(element) {
+    const fieldName = element.label || Utils.generateFieldName(element.scope);
+    const value = this.getValue(element.scope);
+    const modifierScope = element.scope.replace('/properties/abilities/', '/properties/modifiers/');
+    const modifier = this.getValue(modifierScope);
+    const isReadOnly = this.isReadOnly(element.scope);
+    const layout = element.layout || 'vertical';
+    const size = element.size || 'medium';
+    const colorStyle = this.generateColorVariations(element.borderColor || element.backgroundColor);
+    const colorAttr = (element.borderColor || element.backgroundColor) ? 'data-color="true"' : '';
+    
+    const layoutClass = `layout-${layout}`;
+    const sizeClass = `size-${size}`;
+    
+    return `<div class="field-group">
+        <div class="combo-field ${layoutClass} ${sizeClass}" ${colorAttr} ${colorStyle}>
+            <div class="combo-label">${fieldName}</div>
+            <input class="combo-score" type="number" name="${element.scope}" value="${value || 10}" 
+                ${this.viewMode ? 'readonly onclick="window.characterAppInstance.handleNumberClick(event, \'' + element.scope + '\')"' : ''} 
+                onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" 
+                ${!this.viewMode ? 'oninput="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''}>
+            <input class="combo-modifier" type="text" value="${this.formatValue(modifierScope, modifier)}" readonly>
+        </div>
+    </div>`;
+},
+
+renderMultiStateToggle(element) {
+    const fieldName = element.label || Utils.generateFieldName(element.scope);
+    const value = this.getValue(element.scope) || 0;
+    const states = element.states || 2;
+    const shape = element.shape || 'circle';
+    const size = element.size || 'medium';
+    const labelPosition = element.labelPosition || 'right';
+    const toggleId = `toggle_${element.id || 'unknown'}`;
+    const colorStyle = this.generateColorVariations(element.backgroundColor);
+    const colorAttr = element.backgroundColor ? 'data-color="true"' : '';
+    
+    const labelClass = `label-${labelPosition}`;
+    const sizeClass = size !== 'medium' ? size : '';
+    const shapeClass = shape !== 'circle' ? shape : '';
+    
+    const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateMultiStateValue('${element.scope}', ${states})"`;
+    
+    return `<div class="field-group">
+        <div class="multi-state-toggle ${labelClass}" id="${toggleId}" data-scope="${element.scope}" data-states="${states}" ${colorStyle}>
+            <div class="multi-state-control ${shapeClass} ${sizeClass} state-${value}" ${colorAttr} ${clickHandler}></div>
+            <div class="multi-state-label">${fieldName}</div>
+        </div>
+    </div>`;
+},
+
+renderSelectGroup(element) {
+    const fieldName = element.label || Utils.generateFieldName(element.scope);
+    const selectedValues = this.getValue(element.scope) || [];
+    const selectionType = element.selectionType || 'multi';
+    const displayMode = element.displayMode || 'all';
+    const style = element.style || 'pills';
+    const colorStyle = this.generateColorVariations(element.backgroundColor);
+    const colorAttr = element.backgroundColor ? 'data-color="true"' : '';
+    
+    // Get options from schema field or static list
+    let options = [];
+    if (element.optionsSource === 'field' && element.optionsScope) {
+        const schemaOptions = this.getSchemaOptions(element.optionsScope);
+        options = schemaOptions || [];
+    } else if (element.optionsSource === 'static' && element.staticOptions) {
+        options = element.staticOptions.split(',').map(opt => opt.trim()).filter(opt => opt);
+    }
+    
+    const styleClass = `style-${style}`;
+    const modeClass = `mode-${displayMode}`;
+    
+    let optionsHtml = '';
+    options.forEach(option => {
+        const isSelected = selectionType === 'single' 
+            ? selectedValues === option 
+            : Array.isArray(selectedValues) && selectedValues.includes(option);
+        
+        const selectedClass = isSelected ? 'selected' : '';
+        const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateSelectGroupValue('${element.scope}', '${option}', '${selectionType}')"`;
+        
+        optionsHtml += `<div class="select-group-option ${selectedClass}" ${clickHandler}>${option}</div>`;
+    });
+    
+    return `<div class="field-group">
+        <label class="field-label">${fieldName}</label>
+        <div class="select-group ${styleClass} ${modeClass}" ${colorAttr} data-scope="${element.scope}" data-selection-type="${selectionType}" ${colorStyle}>
+            ${optionsHtml}
+        </div>
+    </div>`;
+},
+
+renderImage( element ) {
+    const fieldName = element.label || 'Image';
+    const imageSrc = element.scope ? this.getValue(element.scope) : element.src;
+    const allowUpload = element.allowUpload === true && element.scope && !this.viewMode;
+    const shapeClass = `image-shape-${element.shape || 'square'}`;
+    const borderClass = `image-border-${element.borderStyle || 'thin'}`;
+    const containerStyle = `width: ${element.width || 150}px; height: ${element.height || 150}px;`;
+    const aspectRatioStyle = element.maintainAspectRatio === true ? 'object-fit: cover;' : 'object-fit: fill;';
+    
+    let imageContent;
+    if ( imageSrc ) {
+        imageContent = `<img src="${imageSrc}" alt="${element.alt || fieldName}" class="character-image" style="width: 100%; height: 100%; ${aspectRatioStyle}">`;
+        if (allowUpload) {
+            imageContent += `<div class="image-upload-overlay" onclick="window.characterAppInstance.uploadImage('${element.scope}', '${element.id}')">📤 Change Image</div>`;
+        }
+    } else {
+        if ( allowUpload ) {
+            imageContent = `<div class="character-image-placeholder" onclick="window.characterAppInstance.uploadImage('${element.scope}', '${element.id}')">
+                <div class="character-image-placeholder-icon">🖼️</div>
+                <div>Click to upload image</div>
+                <div style="font-size: 0.75rem; margin-top: 0.25rem;">${element.width || 150}×${element.height || 150}px</div>
+            </div>`;
+        } else {
+            imageContent = `<div class="character-image-placeholder">
+                <div class="character-image-placeholder-icon">🖼️</div>
+                <div>No image</div>
+            </div>`;
+        }
+    }
+    const containerClass = imageSrc ? 'has-image' : '';
+    return `<div class="field-group">
+        <label class="field-label">${fieldName}</label>
+        <div class="character-image-container ${containerClass} ${shapeClass} ${borderClass}" style="${containerStyle}">
+            ${imageContent}
+            ${imageSrc && allowUpload ? `<div class="image-controls">
+                <button class="image-control-btn" onclick="event.stopPropagation(); window.characterAppInstance.uploadImage('${element.scope}', '${element.id}')" title="Change Image">✏️</button>
+                <button class="image-control-btn delete" onclick="event.stopPropagation(); window.characterAppInstance.removeImage('${element.scope}')" title="Remove Image">🗑️</button>
+            </div>` : ''}
+        </div>
+    </div>`;
+},
+
+// Update Element functions
+updateTrackDisplay(scope, value, maxValue) {
+    const tracks = document.querySelectorAll(`[data-scope="${scope}"]`);
+    tracks.forEach(track => {
+        const segments = track.querySelectorAll('.progress-segment, .progress-circle-segment');
+        segments.forEach((segment, index) => {
+            const wasFilled = segment.classList.contains('filled');
+            const shouldBeFilled = index < value;
+            
+            if (shouldBeFilled !== wasFilled) {
+                segment.classList.toggle('filled', shouldBeFilled);
+                
+                // Re-apply colors based on the current element configuration
+                const element = this.findElementByScope(scope);
+                if (element) {
+                    const segmentColors = Utils.ElementRenderer.getElementColors(element, shouldBeFilled ? 'filled' : 'empty');
+                    
+                    // Preserve position for circular segments
+                    if (segment.classList.contains('progress-circle-segment')) {
+                        const currentStyle = segment.getAttribute('style') || '';
+                        const positionMatch = currentStyle.match(/(left:\s*[^;]+;\s*top:\s*[^;]+;)/);
+                        const positionStyle = positionMatch ? positionMatch[1] + ' ' : '';
+                        segment.setAttribute('style', positionStyle + segmentColors);
+                    } else {
+                        segment.setAttribute('style', segmentColors);
+                    }
+                }
+            }
+        });
+        
+        // Update counter if present
+        const counter = track.parentElement.querySelector('.progress-track-counter');
+        if (counter) {
+            counter.textContent = `${value}/${maxValue}`;
+        }
+    });
+},
+
+updateMultiStateDisplay(scope, value) {
+    const toggles = document.querySelectorAll(`[data-scope="${scope}"]`);
+    toggles.forEach(toggle => {
+        const control = toggle.querySelector('.multi-state-control');
+        if (control) {
+            // Remove all state classes
+            control.className = control.className.replace(/state-\d+/g, '');
+            // Add current state class
+            control.classList.add(`state-${value}`);
+            
+            // Update colors based on element configuration
+            const element = this.findElementByScope(scope);
+            if (element) {
+                const toggleColors = Utils.ElementRenderer.getElementColors(element, value > 0 ? 'selected' : 'unselected');
+                control.setAttribute('style', toggleColors);
+            }
+        }
+    });
+},
+
+updateSelectGroupDisplay(scope, selectedValues, selectionType) {
+    const selectGroups = document.querySelectorAll(`[data-scope="${scope}"]`);
+    selectGroups.forEach(group => {
+        const options = group.querySelectorAll('.select-group-option');
+        options.forEach(option => {
+            const optionText = option.textContent.trim();
+            const isSelected = selectionType === 'single' 
+                ? selectedValues === optionText
+                : Array.isArray(selectedValues) && selectedValues.includes(optionText);
+            
+            if (isSelected) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+            
+            // Update colors based on element configuration
+            const element = this.findElementByScope(scope);
+            if (element) {
+                const optionColors = Utils.ElementRenderer.getElementColors(element, isSelected ? 'selected' : 'unselected');
+                option.setAttribute('style', optionColors);
+            }
+        });
+    });
+},
+
+updateMultiStateValue( scope, maxStates ) {
+    const currentValue = this.getValue(scope) || 0;
+    const newValue = (currentValue + 1) % maxStates;
+    
+    Utils.setNestedValue(this.character.data, scope, newValue);
+    Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified();
+    
+    // Update visual display
+    this.updateMultiStateDisplay(scope, newValue);
+},
+
+updateSelectGroupValue( scope, option, selectionType ) {
+    let currentValues = this.getValue(scope) || (selectionType === 'single' ? '' : []);
+    
+    if ( selectionType === 'single' ) {
+        // Single select: toggle or set value
+        const newValue = currentValues === option ? '' : option;
+        Utils.setNestedValue(this.character.data, scope, newValue);
+    } else {
+        // Multi select: add/remove from array
+        if ( !Array.isArray(currentValues) ) currentValues = [];
+        const index = currentValues.indexOf(option);
+        if (index > -1) {
+            currentValues.splice(index, 1);
+        } else {
+            currentValues.push(option);
+        }
+        Utils.setNestedValue(this.character.data, scope, currentValues);
+    }
+    Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified();
+    
+    // Update visual display
+    this.updateSelectGroupDisplay(scope, this.getValue(scope), selectionType);
+},
+
+updateTrackValue( scope, newValue, maxValue ) {
+    const currentValue = this.getValue(scope) || 0;
+    
+    // Toggle behavior: if clicking on a filled segment, unfill from there
+    if (newValue <= currentValue) {
+        newValue = newValue - 1;
+    }
+    
+    newValue = Math.max(0, Math.min(newValue, maxValue));
+    Utils.setNestedValue(this.character.data, scope, newValue);
+    Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified();
+    
+    // Update the visual display
+    this.updateTrackDisplay(scope, newValue, maxValue);
+},
+
+uploadImage( scope, elementId ) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (event) => {
+        const file = event.target.files[0];
+        if ( file ) {
+            // Check file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Utils.showNotification('Image file too large. Please choose a file under 5MB.', 'error');
+                return;
+            }
+            if (!file.type.startsWith('image/')) {   // Check file type
+                Utils.showNotification('Please select a valid image file.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageDataUrl = e.target.result;
+                Utils.setNestedValue(this.character.data, scope, imageDataUrl);
+                this.markAsModified();
+                Utils.showNotification('Image uploaded successfully', 'success');
+            };
+            reader.onerror = () => {
+                Utils.showNotification('Error reading image file', 'error');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+},
+
+removeImage( scope ) {
+    if ( confirm('Are you sure you want to remove this image?') ) {
+        Utils.setNestedValue(this.character.data, scope, '');
+        this.markAsModified();
+        Utils.showNotification('Image removed', 'success');
+    }
+},
+
+            updateArrayValue( event, scope, index, field ) {
+                const items = this.getValue(scope) || [];
+                const input = event.target.value;
+                if ( !items[index] ) items[index] = {};
+                if ( field === 'quantity' || field === 'weight' ) {
+                    items[index][field] = input === '' ? 0 : parseFloat(input);
+                } else {
+                    items[index][field] = input;
+                }
+                Utils.setNestedValue(this.character.data, scope, items);
+                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+                this.markAsModified();
+            },
+
+            updateCheckbox( event, scope ) {
+                Utils.setNestedValue(this.character.data, scope, event.target.checked);
+                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+                this.markAsModified();
+            },
+
+            updateValue( event, scope ) {
+                const input = event.target.value;
+                const value = input === '' ? '' : (isNaN(parseFloat(input)) ? input : parseFloat(input));
+                Utils.setNestedValue(this.character.data, scope, value);
+                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+                this.markAsModified();
+            },
+
+// Character Creation
+createNewCharacter() {
+    this.newCharacter = { 
+        name: '', 
+        system: this.selectedSchemaId || '', 
+        template: this.selectedTemplateId || '' 
+    };
+    this.updateNewCharacterTemplates();
+    this.showCreateCharacterModal = true;
+},
+
+updateNewCharacterTemplates() {
+    if (!this.newCharacter.system) {
+        this.newCharacterTemplates = {};
+        return;
+    }
+    this.newCharacterTemplates = Object.entries(this.templates)
+        .filter(([_, template]) => template.schema === this.newCharacter.system)
+        .reduce((obj, [id, template]) => {
+            obj[id] = template;
+            return obj;
+        }, {});
+    
+    // Auto-select first available template
+    const templateIds = Object.keys(this.newCharacterTemplates);
+    if (templateIds.length > 0 && !this.newCharacter.template) {
+        this.newCharacter.template = templateIds[0];
+    }
+},
+
+createCharacter() {
+    if ( !this.newCharacter.name || !this.newCharacter.system || !this.newCharacter.template ) {
+        Utils.showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Generate character ID from name
+    const characterId = this.newCharacter.name
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '');
+
+    // Check if character already exists
+    if ( DataManager.getCharacterByIndex(characterId) ) {
+        Utils.showNotification('A character with this name already exists', 'error');
+        return;
+    }
+
+    // Get schema by index to create default data
+    const schema = DataManager.getSchemaByIndex(this.newCharacter.system);
+    const characterData = this.createDefaultCharacterData(schema);
+    characterData.name = this.newCharacter.name;
+
+    const newCharacterObj = {
+        index: characterId,
+        system: this.newCharacter.system,  // Store by index
+        template: this.newCharacter.template,  // Store by index  
+        data: characterData
+    };
+
+    // Save character - DataManager will add ID and metadata
+    DataManager.saveCharacter(newCharacterObj).then(savedId => {
+        // Switch to the new character
+        this.selectedCharacterId = savedId;
+        this.loadCharacter();
+        this.isModified = false;
+        this.showCreateCharacterModal = false;
+        Utils.showNotification(`Character "${this.newCharacter.name}" created successfully`, 'success');
+    }).catch(error => {
+        Utils.showNotification(`Failed to create character: ${error.message}`, 'error');
+    });
+},
+
+createDefaultCharacterData(systemId) {
+    const schema = this.schemas[systemId];
+    if ( !schema ) return {};
+
+    const data = {};
+
+    // Helper function to create default values based on schema
+    const createDefaults = (properties, target) => {
+        if (!properties) return;
+
+        for (const [key, prop] of Object.entries(properties)) {
+            if (prop.type === 'object' && prop.properties) {
+                target[key] = {};
+                createDefaults(prop.properties, target[key]);
+            } else if (prop.type === 'array') {
+                target[key] = [];
+            } else if (prop.type === 'integer' || prop.type === 'number') {
+                target[key] = prop.default || 0;
+            } else if (prop.type === 'boolean') {
+                target[key] = prop.default || false;
+            } else {
+                target[key] = prop.default || '';
+            }
+        }
+    };
+
+    createDefaults(schema.properties, data);
+
+    // Set some sensible defaults for common RPG systems
+    if (systemId === '5e') {
+        // D&D 5e defaults
+        if (data.abilities) {
+            Object.keys(data.abilities).forEach(ability => {
+                data.abilities[ability] = 10; // Default ability score
+            });
+        }
+        if (data.hitPoints) {
+            data.hitPoints.maximum = data.hitPoints.maximum || 8;
+            data.hitPoints.current = data.hitPoints.maximum;
+        }
+        data.level = data.level || 1;
+    } else if (systemId === 'bitd') {
+        // Blades in the Dark defaults
+        if (data.attributes) {
+            Object.keys(data.attributes).forEach(attr => {
+                data.attributes[attr] = 1;
+            });
+        }
+        if (data.actions) {
+            Object.keys(data.actions).forEach(action => {
+                data.actions[action] = 0;
+            });
+        }
+        data.stress = data.stress || 0;
+        data.trauma = data.trauma || [];
+    }
+
+    return data;
+},
+
+initRichTextEditor( editorId, scope, isReadOnly ) {
+    setTimeout(() => {
+        const editorElement = document.getElementById(editorId);
+        if ( !editorElement || editorElement.dataset.initialized === 'true' ) return;
+        
+        const currentValue = this.getValue(scope) || '';
+        
+        try {
+            if ( isReadOnly ) {
+                // In view mode, use the Viewer
+                const viewer = new toastui.Editor.factory({ el: editorElement, viewer: true, initialValue: currentValue, height: 'auto' });
+                editorElement.dataset.initialized = 'true';
+                editorElement.toastViewer = viewer;
+            } else {
+                // In edit mode, use full Editor
+                const editor = new toastui.Editor({
+                    el: editorElement,
+                    height: '300px',
+                    initialEditType: 'wysiwyg',
+                    initialValue: currentValue,
+                    previewStyle: 'vertical',
+                    toolbarItems: [
+                        ['heading', 'bold', 'italic', 'strike'],
+                        ['hr', 'quote'],
+                        ['ul', 'ol', 'task'],
+                        ['table', 'link'],
+                        ['code', 'codeblock']
+                    ]
+                });
+		const saveContent = () => {
+		    const markdown = editor.getMarkdown();
+		    const currentValue = Utils.getNestedValue(this.character.data, scope);
+		    if (currentValue !== markdown) {
+		        Utils.setNestedValue(this.character.data, scope, markdown);
+		        this.markAsModified();
+		        const scopeParts = scope.replace('#/properties/', '').split('/properties/');
+		        let target = this.character.data;
+		        for (let i = 0; i < scopeParts.length - 1; i++) {
+		            target = target[scopeParts[i]];
+		        }
+		        target[scopeParts[scopeParts.length - 1]] = markdown;
+		    }
+		};
+                
+                let blurTimeout;
+                editor.on('blur', () => {
+                    // Delay the blur action to see if focus moves to toolbar
+                    blurTimeout = setTimeout(() => {
+                        // Check if focus is still within the editor container
+                        const editorContainer = editorElement;
+                        const activeElement = document.activeElement;
+                        
+                        if (!editorContainer.contains(activeElement)) {
+                            // Focus really left the editor area
+                            saveContent();
+                        }
+                    }, 100);
+                });
+                
+                editor.on('focus', () => {
+                    // Cancel the blur timeout if focus returns quickly
+                    clearTimeout(blurTimeout);
+                });
+                
+                // Also save when switching modes or other editor events
+                editor.on('changeMode', saveContent);
+                
+                editorElement.dataset.initialized = 'true';
+                editorElement.toastEditor = editor;
+                
+                // Add a manual save when the editor is destroyed (mode switching, etc.)
+                const originalDestroy = editor.destroy;
+                editor.destroy = function() {
+                    saveContent();
+                    originalDestroy.call(this);
+                };
+            }
+            
+        } catch ( error ) {
+            console.error('Error initializing Toast UI Editor:', error);
+            // Fallback to regular textarea
+            const isReallyReadonly = isReadOnly ? 'readonly' : '';
+            editorElement.innerHTML = `<textarea class="form-control textarea-control" style="width: 100%; min-height: 200px;" ${isReallyReadonly}>${currentValue}</textarea>`;
+        }
+    }, 200);
+},
+
+cleanupRichTextEditors() {
+    document.querySelectorAll('.rich-text-editor[data-initialized="true"]').forEach(el => {
+        if (el.toastEditor) {
+            el.toastEditor.destroy();
+            delete el.toastEditor;
+        }
+        if (el.toastViewer) {
+            el.toastViewer.destroy();
+            delete el.toastViewer;
+        }
+        el.dataset.initialized = 'false';
+    });
+},
+
+            getValue( scope ) { 
+                return Utils.getNestedValue(this.character.data, scope); 
+            },
+            
+            isReadOnly( scope ) { 
+                return Utils.isReadOnly(this.schemas[this.selectedSchemaId], scope); 
+            },
+            
+            formatValue( scope, value ) {
+                if ( scope && scope.includes('modifiers') && typeof value === 'number' ) {
+                    return Utils.formatModifier(value);
+                }
+                return value || '';
+            }
+        };
+    }
+
+    document.addEventListener('alpine:init', () => { 
+        Alpine.data('characterApp', characterApp); 
+    });
+  </script>
+</body>
+</html>

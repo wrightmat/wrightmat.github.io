@@ -1,0 +1,70 @@
+{
+  "id": "character_db49c97f-2428-4cff-80ab-5d164a5eedcc",
+  "created": "2025-07-01T20:00:00.000Z", 
+  "modified": "2025-07-04T20:00:00.000Z",
+  "version": 1,
+  "system": "dd-5e",
+  "template": "5e-default",
+  "data": {
+    "name": "Branik",
+    "class": "Fighter",
+    "level": 5,
+    "race": "Human",
+    "background": "Soldier",
+    "alignment": "Lawful Good",
+    "abilities": {
+      "strength": 16,
+      "dexterity": 12,
+      "constitution": 14,
+      "intelligence": 8,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "hitPoints": {
+      "current": 28,
+      "maximum": 28,
+      "temporary": 0
+    },
+    "inventory": [
+      {
+        "name": "Longsword",
+        "quantity": 1,
+        "weight": 3,
+        "description": "A well-balanced blade"
+      },
+      {
+        "name": "Chain Mail",
+        "quantity": 1,
+        "weight": 55,
+        "description": "Heavy armor providing good protection"
+      },
+      {
+        "name": "Shield",
+        "quantity": 1,
+        "weight": 6,
+        "description": "Wooden shield with metal rim"
+      },
+      {
+        "name": "Rations",
+        "quantity": 10,
+        "weight": 2,
+        "description": "Trail rations for long journeys"
+      },
+      {
+        "name": "Rope (50 ft)",
+        "quantity": 1,
+        "weight": 10,
+        "description": "Hempen rope"
+      }
+    ],
+    "spells": [],
+    "modifiers": {
+      "strength": 3,
+      "dexterity": 1,
+      "constitution": 2,
+      "intelligence": -1,
+      "wisdom": 0,
+      "charisma": 0
+    }
+  }
+}
