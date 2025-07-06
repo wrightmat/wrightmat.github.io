@@ -345,63 +345,44 @@ generateFieldPaths(schemaId) {
     
     const paths = [];
     
-    function extractPaths(obj, basePath = '#/properties', parentLabel = '') {
+    const generatePaths = (obj, currentPath = '', parentLabel = '') => {
         if (!obj || !obj.properties) return;
         
-        for (const [key, prop] of Object.entries(obj.properties)) {
-            const currentPath = `${basePath}/${key}`;
-            const fieldLabel = prop.label || Utils.generateFieldName(key);
-            const fullLabel = parentLabel ? `${parentLabel} > ${fieldLabel}` : fieldLabel;
+        for (const [key, field] of Object.entries(obj.properties)) {
+            const path = currentPath ? `${currentPath}.${key}` : key;
+            const label = field.label || Utils.generateFieldName(key);
+            const fullLabel = parentLabel ? `${parentLabel} > ${label}` : label;
             
-            if (prop.type === 'object' && prop.properties) {
-                // Add the object itself if it has a meaningful label
-                if (prop.label) {
+            // Add the field itself - this will include arrays like "spells" and "inventory"
+            paths.push({
+                path: path,
+                label: fullLabel,
+                type: field.type,
+                category: field.category || 'general'
+            });
+            
+            // For objects, recurse into their properties
+            if (field.type === 'object' && field.properties) {
+                generatePaths(field, path, fullLabel);
+            }
+            
+            // For arrays with object items, also add common item properties
+            if (field.type === 'array' && field.items && field.items.properties) {
+                for (const [itemKey, itemField] of Object.entries(field.items.properties)) {
+                    const itemPath = `${path}.${itemKey}`;
+                    const itemLabel = itemField.label || Utils.generateFieldName(itemKey);
                     paths.push({
-                        path: currentPath,
-                        label: fullLabel,
-                        type: prop.type,
-                        category: prop.category,
-                        description: prop.description
+                        path: itemPath,
+                        label: `${fullLabel} > ${itemLabel}`,
+                        type: itemField.type,
+                        category: field.category || 'array-item'
                     });
                 }
-                
-                // Recursively add nested properties
-                extractPaths(prop, `${currentPath}/properties`, fullLabel);
-            } else if (prop.type !== 'array' || prop.items?.type !== 'object') {
-                // Add primitive properties and simple arrays
-                paths.push({
-                    path: currentPath,
-                    label: fullLabel,
-                    type: prop.type,
-                    category: prop.category,
-                    description: prop.description
-                });
-            } else {
-                // Add array properties
-                paths.push({
-                    path: currentPath,
-                    label: fullLabel + ' (Array)',
-                    type: prop.type,
-                    category: prop.category,
-                    description: prop.description
-                });
             }
         }
-    }
-    
-    extractPaths(schema);
-    
-    // Sort by category order, then by label
-    const categoryOrder = schema.categories || {};
-    return paths.sort((a, b) => {
-        const aCategoryOrder = categoryOrder[a.category]?.order || 999;
-        const bCategoryOrder = categoryOrder[b.category]?.order || 999;
-        
-        if (aCategoryOrder !== bCategoryOrder) {
-            return aCategoryOrder - bCategoryOrder;
-        }
-        return a.label.localeCompare(b.label);
-    });
+    };
+    generatePaths(schema);
+    return paths;
 }
 
     // Get all schemas

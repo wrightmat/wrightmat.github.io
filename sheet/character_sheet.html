@@ -45,12 +45,10 @@
 	            <option :value="id" x-text="char.data.name"></option>
 	        </template>
 	    </select>
+	    <div x-show="!viewMode">
+	        <button id="save-btn" class="btn btn-success" @click="saveCharacter" :disabled="!isModified">💾 Save</button>
+	    </div>
 	    <button class="btn" :class="viewMode ? 'btn-success' : 'btn-primary'" @click="viewMode = !viewMode" x-text="viewMode ? '👁️ View' : '✏️ Edit'"></button>
-	    <button class="btn btn-secondary" @click="openTemplateEditor">🎨 Edit Template</button>
-	    <button class="btn btn-secondary" @click="exportCharacter">📤 Export</button>
-	    <template x-if="!viewMode">
-	        <button class="btn btn-success" @click="saveCharacter" :disabled="!isModified">💾 Save</button>
-	    </template>
 	</div>
       
       <button class="toolbar-toggle" @click="toggleRightPane" :class="{ 'active': !rightPaneCollapsed }">
@@ -59,7 +57,7 @@
       </button>
     </div>
 
-    <!-- Left Pane - Reserved for Future Tools -->
+    <!-- Left Pane - Tools -->
     <div class="left-pane" :class="{ 'collapsed': leftPaneCollapsed, 'show': leftPaneVisible }">
       <div class="pane-header">
         <h3 class="pane-title">🔧 Tools</h3>
@@ -67,21 +65,60 @@
           <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
         </button>
       </div>
-      
-      <div class="empty-state-small">
-        <div style="text-align: center; padding: 2rem; color: #6b7280;">
-          <div style="font-size: 2rem; margin-bottom: 1rem;">🚧</div>
-          <p style="margin: 0; font-size: 0.875rem;">Tool palette coming soon!</p>
-          <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem;">Future features:</p>
-          <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 0; font-size: 0.75rem;">
-            <li>• Dice roller</li>
-            <li>• Quick references</li>
-            <li>• Character utilities</li>
-            <li>• Spell lookup</li>
-          </ul>
+
+<div class="tools-content">
+    <!-- File Operations -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">📂 File Operations</h4>
+        <button class="btn btn-primary btn-full-width btn-with-margin" @click="importCharacter" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">
+            📤 Import
+        </button>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="exportCharacter" :disabled="!selectedCharacterId || selectedCharacterId === '_new'">
+            📥 Export
+        </button>
+        <div class="tool-note">
+            <small>Import supports both complete character files and raw character data. Export creates a complete character file.</small>
         </div>
-      </div>
     </div>
+
+    <!-- Template & Design -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">🎨 Template & Design</h4>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="openTemplateEditor" :disabled="!selectedTemplateId">
+            ✏️ Edit Template
+        </button>
+        <p class="tool-description">Customize the layout and appearance of character sheets</p>
+    </div>
+
+    <!-- History Management -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">↶ History</h4>
+        <div class="undo-redo-controls">
+            <button  id="undo-btn" class="btn btn-secondary" @click="undo" :disabled="!canUndo">
+                ↶ Undo (<span x-text="undoManager ? undoManager.undoStack.length : 0"></span>)
+            </button>
+            <button  id="redo-btn" class="btn btn-secondary" @click="redo" :disabled="!canRedo">
+                ↷ Redo (<span x-text="undoManager ? undoManager.redoStack.length : 0"></span>)
+            </button>
+        </div>
+        <div class="tool-note">
+            <small>Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y (redo)</small>
+        </div>
+    </div>
+
+    <!-- Character Tools -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">🔧 Character Tools</h4>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="validateCharacter" :disabled="!selectedCharacterId || selectedCharacterId === '_new'">
+            ✓ Validate Character
+        </button>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="duplicateCharacter" :disabled="!selectedCharacterId || selectedCharacterId === '_new'">
+            📋 Duplicate Character
+        </button>
+        <p class="tool-description">Character management and quality assurance tools</p>
+    </div>
+</div>
+</div>
 
     <!-- Main Content Area -->
     <div class="main-content">
@@ -194,6 +231,13 @@
 	    availableCharacters: {},
 	    newCharacter: { name: '', system: '', template: '' },
 	    newCharacterTemplates: {},
+	    keyboardManager: null,
+	    undoManager: null,
+	    canUndo: false,
+	    canRedo: false,
+	    draggedArrayIndex: undefined,
+	    saveStateDebounced: null,
+	    lastStateSave: {},
 
 	$watch: {
             viewMode() {
@@ -210,6 +254,12 @@ async init() {
     this.templates = DataManager.getTemplates();
     this.characters = DataManager.getCharacters();
     window.characterAppInstance = this;
+    
+    // Initialize undo/redo system
+    this.initUndoRedo();
+
+    // Set up keyboard shortcuts
+    this.setupKeyboardShortcuts();
 },
 
 selectSchema(schemaId) {
@@ -286,10 +336,17 @@ loadCharacter() {
     
     const schema = DataManager.getSchemaByIndex(char.system);
     if (schema) {
-        Utils.evaluateFormulas(schema, this.character.data);
+	Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
     }
     
     this.isModified = false;
+    
+    // Clear undo/redo history and save the LOADED state as the initial state
+    if (this.undoManager) {
+        this.undoManager.clear();
+        // Save the fully loaded and evaluated state
+        this.undoManager.saveState(this.character, 'Character loaded');
+    }
 },
 
             toggleLeftPane() {
@@ -319,9 +376,9 @@ loadCharacter() {
                 Utils.showNotification('Character exported successfully', 'success');
             },
 
-            markAsModified() {
-                this.isModified = true;
-            },
+	    markAsModified(description = 'Character change') {
+		this.isModified = true;
+	    },
 
 	    saveCharacter() {
 		if (!this.selectedCharacterId || this.selectedCharacterId === '_new') {
@@ -363,95 +420,114 @@ loadCharacter() {
 		return [];
 	    },
 
+// Character Import
+importCharacter() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    this.handleCharacterImport(importedData);
+                } catch (error) {
+                    Utils.showNotification('Invalid JSON file. Please check the file format.', 'error');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.onerror = () => {
+                Utils.showNotification('Error reading file', 'error');
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+},
+
+handleCharacterImport(importedData) {
+    // Validate imported character data
+    if (!importedData || typeof importedData !== 'object') {
+        Utils.showNotification('Invalid character data format', 'error');
+        return;
+    }
+    
+    // Check if it's a complete character object or just character data
+    let characterData;
+    if (importedData.data && importedData.system && importedData.template) {
+        // Complete character object
+        characterData = importedData;
+    } else if (importedData.name || importedData.abilities || importedData.level) {
+        // Just character data - wrap it
+        characterData = {
+            system: this.selectedSchemaId || 'dd-5e',
+            template: this.selectedTemplateId || '5e-default',
+            data: importedData
+        };
+    } else {
+        Utils.showNotification('Unrecognized character data format', 'error');
+        return;
+    }
+    
+    this.saveState('Character import');
+    this.cleanupRichTextEditors();
+    Object.assign(this.character, Utils.deepClone(characterData));
+    
+    // Evaluate formulas if schema is available
+    const schema = this.schemas[this.selectedSchemaId];
+    if (schema) {
+	Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+    }
+    
+    this.isModified = true;
+    
+    this.$nextTick(() => {
+        this.character = { ...this.character };
+    });
+    
+    Utils.showNotification(`Character "${this.character.data.name || 'Unnamed'}" imported successfully`, 'success');
+},
+
+setupKeyboardShortcuts() {
+    this.keyboardManager = new Utils.KeyboardShortcuts();
+    this.keyboardManager.startListening();
+    
+    // Create action provider with all available actions
+    const actionProvider = {
+        actions: {
+            'save': () => { if (this.isModified && !this.viewMode) this.saveCharacter(); },
+            'import': this.importCharacter.bind(this),
+            'export': this.exportCharacter.bind(this),
+            'new': this.createNewCharacter.bind(this),
+            'undo': this.undo.bind(this),
+            'redo': this.redo.bind(this),
+            'toggle-view': () => { this.viewMode = !this.viewMode; },
+            'toggle-left-pane': this.toggleLeftPane.bind(this),
+            'toggle-right-pane': this.toggleRightPane.bind(this),
+            'roll-dice': this.handleDiceRoll?.bind(this)
+        },
+        getAction: (actionId) => actionProvider.actions[actionId],
+        getAvailableActions: () => Object.keys(actionProvider.actions)
+    };
+    
+    this.$nextTick(() => {
+        Utils.ActionRegistry.registerProvider('character', actionProvider, {
+            name: 'Character Sheet',
+            icon: '⚔️'
+        });
+        
+        Utils.applyShortcutsFromRegistry(this.keyboardManager, 'character', actionProvider);
+    });
+},
+
 	    applyElementColors( element ) {
 		let styles = [];
 		if ( element.backgroundColor) styles.push(`background-color: ${element.backgroundColor}`);
 		if (element.borderColor) styles.push(`border-color: ${element.borderColor}`);
 		return styles.length > 0 ? `style="${styles.join('; ')}"` : '';
 	    },
-
-	    renderElement(element) {
-	        return Utils.ElementRenderer.renderElement(element, {
-	            isPreview: false,
-	            viewMode: this.viewMode,
-	            getValue: (scope) => this.getValue(scope),
-	            instanceRef: this
-	        });
-	    },
-
-            renderControl( element ) {
-                const fieldName = element.label || Utils.generateFieldName(element.scope);
-                const value = this.getValue(element.scope);
-                const isReadOnly = this.isReadOnly(element.scope);
-                const controlType = element.controlType || 'text';
-                const isNumber = controlType === 'number' || typeof value === 'number';
-		const colorStyles = this.applyElementColors(element);
-                let inputElement = '';
-                
-                switch ( controlType ) {
-                    case 'textarea':
-			const isRichText = element.richText === true;
-			const textareaId = `textarea_${element.id || Math.random().toString(36).substr(2, 9)}`;
-			if ( isRichText ) {
-			    inputElement = `<div id="${textareaId}" class="rich-text-editor" data-scope="${element.scope}" data-readonly="${isReadOnly || this.viewMode}"></div>`;
-			    setTimeout(() => {
-			        window.characterAppInstance.initRichTextEditor(textareaId, element.scope, isReadOnly || this.viewMode);
-			    }, 100);
-			} else {
-			    inputElement = `<textarea name="${element.scope}" ${isReadOnly || this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" class="form-control textarea-control">${this.formatValue(element.scope, value)}</textarea>`;
-			}
-			break;
-                    case 'select': 
-                        inputElement = `<select name="${element.scope}" ${isReadOnly || this.viewMode ? 'disabled' : ''} onchange="window.characterAppInstance.updateValue(event, '${element.scope}')" class="form-control"><option value="${value}">${value || 'Select an option...'}</option></select>`; 
-                        break;
-                    case 'checkbox': 
-                        const checked = value === true || value === 'true' || value === 1; 
-                        inputElement = `<label class="checkbox-label"><input type="checkbox" name="${element.scope}" ${checked ? 'checked' : ''} ${isReadOnly || this.viewMode ? 'disabled' : ''} onchange="window.characterAppInstance.updateCheckbox(event, '${element.scope}')" class="checkbox-input"><span>${fieldName}</span></label>`; 
-                        break;
-		    case 'date':
-			inputElement = `<input type="date" name="${element.scope}" value="${value || ''}" ${isReadOnly || this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" ${!this.viewMode ? 'onchange="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''} class="form-control">`;
-			break;
-                    default: 
-                        inputElement = `<input type="${controlType}" name="${element.scope}" value="${this.formatValue(element.scope, value)}" ${isReadOnly || this.viewMode ? 'readonly' : ''} ${this.viewMode && isNumber && !isReadOnly ? 'onclick="window.characterAppInstance.handleNumberClick(event, \'' + element.scope + '\')"' : ''} onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" ${isNumber && !this.viewMode ? 'oninput="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''} class="form-control">`;
-                }
-                
-		return `<div class="field-group" ${colorStyles}>${controlType !== 'checkbox' && controlType !== 'combo' ? `<label class="field-label">${fieldName}</label>` : ''}${inputElement}</div>`;
-            },
-
-renderGroup(element) {
-    const layoutClass = element.layout === 'grid' ? 'grid-layout' : element.layout === 'horizontal' ? 'horizontal-layout' : 'vertical-layout';
-    const isCollapsible = element.collapsible === true;
-    const defaultCollapsed = element.defaultCollapsed === 'collapsed';
-    const groupId = `group_${element.id || Math.random().toString(36).substr(2, 9)}`;
-    
-    // Apply background color to the group fieldset
-    const backgroundStyle = element.backgroundColor ? `style="background-color: ${element.backgroundColor};"` : '';
-    
-    let content = `<fieldset class="group-fieldset ${isCollapsible ? 'collapsible-group' : ''}" ${backgroundStyle} data-group-id="${groupId}">`;
-    
-    if (isCollapsible) {
-        content += `<legend class="group-legend collapsible-legend" onclick="window.characterAppInstance.toggleGroup('${groupId}')">
-            <span class="collapse-icon ${defaultCollapsed ? 'collapsed' : ''}">${defaultCollapsed ? '▶' : '▼'}</span>
-            ${element.label || 'Group'}
-        </legend>`;
-        content += `<div class="group-content ${defaultCollapsed ? 'collapsed' : ''}" id="${groupId}-content">`;
-    } else {
-        content += `<legend class="group-legend">${element.label || 'Group'}</legend>`;
-    }
-    
-    content += `<div class="${layoutClass}">`;
-    (element.elements || []).forEach(sub => {
-        content += this.renderElement(sub);
-    });
-    content += '</div>';
-    
-    if (isCollapsible) {
-        content += '</div>'; // Close group-content
-    }
-    
-    content += '</fieldset>';
-    return content;
-},
 
 toggleGroup( groupId ) {
     const content = document.getElementById(`${groupId}-content`);
@@ -465,34 +541,89 @@ toggleGroup( groupId ) {
     }
 },
 
-            renderArray( element)  {
-                const items = this.getValue(element.scope) || [];
-                let content = `<div class="field-group"><label class="field-label">${element.label || 'Array Field'}</label><div class="array-container">`;
-                
-                if ( items.length === 0 ) {
-                    content += '<div class="array-empty">No items</div>';
-                } else {
-                    content += '<div class="array-header"><div>Name</div><div>Quantity</div><div>Weight</div><div>Description</div></div>';
-                    items.forEach((item, index) => {
-                        content += `<div class="array-item">
-                            <input type="text" value="${item.name || ''}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'name')" class="form-control">
-                            <input type="number" value="${item.quantity || 0}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'quantity')" class="form-control">
-                            <input type="number" step="0.1" value="${item.weight || 0}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'weight')" class="form-control">
-                            <input type="text" value="${item.description || ''}" ${this.viewMode ? 'readonly' : ''} onblur="window.characterAppInstance.updateArrayValue(event, '${element.scope}', ${index}, 'description')" class="form-control">
-                        </div>`;
-                    });
-                }
-                content += '</div></div>';
-                return content;
-            },
+// Array Management Methods
+addArrayItem(scope, arrayId) {
+    this.saveState('Add array item');
+    const items = this.getValue(scope) || [];
+    const newItem = {
+        name: '',
+        quantity: 1,
+        weight: 0,
+        description: ''
+    };
+    items.push(newItem);
+    Utils.setNestedValue(this.character.data, scope, items);
+    this.markAsModified('Add array item');
+    
+    // Re-render the array
+    this.$nextTick(() => {
+        this.character = { ...this.character };
+    });
+},
 
-            renderLabel(element) {
-                return `<div class="field-group"><h3 class="label-heading">${element.label || 'Label Text'}</h3></div>`;
-            },
+removeArrayItem(scope, index) {
+    this.saveState('Remove array item');
+    const items = this.getValue(scope) || [];
+    if (index >= 0 && index < items.length) {
+        items.splice(index, 1);
+        Utils.setNestedValue(this.character.data, scope, items);
+        this.markAsModified('Remove array item');
+        
+        // Re-render the array
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+        });
+    }
+},
 
-            renderDivider() {
-                return `<div class="field-group"><hr class="divider-line"></div>`;
-            },
+startArrayDrag(event, index) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', index.toString());
+    this.draggedArrayIndex = index;
+},
+
+handleArrayDragOver(event, index) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    
+    // Add visual feedback
+    const rows = event.currentTarget.parentElement.querySelectorAll('.draggable-array-item');
+    rows.forEach(row => row.classList.remove('drag-over'));
+    event.currentTarget.classList.add('drag-over');
+},
+
+handleArrayDrop(event, targetIndex) {
+    event.preventDefault();
+    
+    const sourceIndex = this.draggedArrayIndex;
+    if (sourceIndex === undefined || sourceIndex === targetIndex) return;
+    
+    // Find the array element and scope
+    const arrayContainer = event.currentTarget.closest('.array-container');
+    if (!arrayContainer) return;
+    
+    const scope = arrayContainer.getAttribute('data-scope');
+    const items = this.getValue(scope) || [];
+    
+    // Perform the reorder
+    if (sourceIndex >= 0 && sourceIndex < items.length && targetIndex >= 0 && targetIndex < items.length) {
+        const [movedItem] = items.splice(sourceIndex, 1);
+        items.splice(targetIndex, 0, movedItem);
+        
+        Utils.setNestedValue(this.character.data, scope, items);
+        this.markAsModified('Reorder array items');
+        
+        // Re-render the array
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+        });
+    }
+    
+    // Clean up
+    this.draggedArrayIndex = undefined;
+    const rows = arrayContainer.querySelectorAll('.draggable-array-item');
+    rows.forEach(row => row.classList.remove('drag-over'));
+},
 
 // Helper functions for colors
 generateColorVariations(color) {
@@ -565,208 +696,6 @@ getProgressTrackColors(element, filled = false) {
         const emptyBorderColor = borderColor || '#d1d5db';
         return `background-color: white; border-color: ${emptyBorderColor};`;
     }
-},
-
-// Element Render Functions
-renderLinearTrack(element) {
-    const fieldName = element.label || Utils.generateFieldName(element.scope);
-    const value = this.getValue(element.scope) || 0;
-    const segments = element.segments || 6;
-    const showCounter = element.showCounter !== false;
-    const trackId = `track_${element.id || 'unknown'}`;
-    
-    let segmentsHtml = '';
-    for (let i = 0; i < segments; i++) {
-        const filled = i < value;
-        const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateTrackValue('${element.scope}', ${i + 1}, ${segments})"`;
-        const segmentStyles = this.getSegmentColors(element, filled);
-        segmentsHtml += `<div class="progress-segment ${filled ? 'filled' : ''}" style="${segmentStyles}" data-index="${i}" ${clickHandler}></div>`;
-    }
-    
-    const counterHtml = showCounter ? `<div class="progress-track-counter">${value}/${segments}</div>` : '';
-    
-    return `<div class="field-group">
-        <label class="progress-track-label">${fieldName}</label>
-        <div class="progress-linear" id="${trackId}" data-scope="${element.scope}" data-max="${segments}">
-            ${segmentsHtml}
-        </div>
-        ${counterHtml}
-    </div>`;
-},
-
-renderCircularTrack(element) {
-    const fieldName = element.label || Utils.generateFieldName(element.scope);
-    const value = this.getValue(element.scope) || 0;
-    const segments = element.segments || 6;
-    const showCounter = element.showCounter !== false;
-    const trackId = `clock_${element.id || 'unknown'}`;
-    
-    let segmentsHtml = '';
-    const centerX = 50;
-    const centerY = 50;
-    const radius = 35;
-    
-    for (let i = 0; i < segments; i++) {
-        const angle = (i * 360 / segments) - 90;
-        const radian = angle * Math.PI / 180;
-        const x = centerX + radius * Math.cos(radian);
-        const y = centerY + radius * Math.sin(radian);
-        const filled = i < value;
-        const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateTrackValue('${element.scope}', ${i + 1}, ${segments})"`;
-        const segmentColors = this.getSegmentColors(element, filled);
-        const positionStyle = `left: ${x}%; top: ${y}%;`;
-        
-        segmentsHtml += `<div class="progress-circle-segment ${filled ? 'filled' : ''}" 
-            style="${positionStyle} ${segmentColors}" 
-            data-index="${i}" 
-            ${clickHandler}></div>`;
-    }
-    
-    const counterHtml = showCounter ? `<div class="progress-track-counter">${value}/${segments}</div>` : '';
-    
-    return `<div class="field-group">
-        <label class="progress-track-label">${fieldName}</label>
-        <div class="progress-circular" id="${trackId}" data-scope="${element.scope}" data-max="${segments}">
-            <div class="progress-circle">
-                ${segmentsHtml}
-            </div>
-        </div>
-        ${counterHtml}
-    </div>`;
-},
-
-renderComboField(element) {
-    const fieldName = element.label || Utils.generateFieldName(element.scope);
-    const value = this.getValue(element.scope);
-    const modifierScope = element.scope.replace('/properties/abilities/', '/properties/modifiers/');
-    const modifier = this.getValue(modifierScope);
-    const isReadOnly = this.isReadOnly(element.scope);
-    const layout = element.layout || 'vertical';
-    const size = element.size || 'medium';
-    const colorStyle = this.generateColorVariations(element.borderColor || element.backgroundColor);
-    const colorAttr = (element.borderColor || element.backgroundColor) ? 'data-color="true"' : '';
-    
-    const layoutClass = `layout-${layout}`;
-    const sizeClass = `size-${size}`;
-    
-    return `<div class="field-group">
-        <div class="combo-field ${layoutClass} ${sizeClass}" ${colorAttr} ${colorStyle}>
-            <div class="combo-label">${fieldName}</div>
-            <input class="combo-score" type="number" name="${element.scope}" value="${value || 10}" 
-                ${this.viewMode ? 'readonly onclick="window.characterAppInstance.handleNumberClick(event, \'' + element.scope + '\')"' : ''} 
-                onblur="window.characterAppInstance.updateValue(event, '${element.scope}')" 
-                ${!this.viewMode ? 'oninput="window.characterAppInstance.updateValue(event, \'' + element.scope + '\')"' : ''}>
-            <input class="combo-modifier" type="text" value="${this.formatValue(modifierScope, modifier)}" readonly>
-        </div>
-    </div>`;
-},
-
-renderMultiStateToggle(element) {
-    const fieldName = element.label || Utils.generateFieldName(element.scope);
-    const value = this.getValue(element.scope) || 0;
-    const states = element.states || 2;
-    const shape = element.shape || 'circle';
-    const size = element.size || 'medium';
-    const labelPosition = element.labelPosition || 'right';
-    const toggleId = `toggle_${element.id || 'unknown'}`;
-    const colorStyle = this.generateColorVariations(element.backgroundColor);
-    const colorAttr = element.backgroundColor ? 'data-color="true"' : '';
-    
-    const labelClass = `label-${labelPosition}`;
-    const sizeClass = size !== 'medium' ? size : '';
-    const shapeClass = shape !== 'circle' ? shape : '';
-    
-    const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateMultiStateValue('${element.scope}', ${states})"`;
-    
-    return `<div class="field-group">
-        <div class="multi-state-toggle ${labelClass}" id="${toggleId}" data-scope="${element.scope}" data-states="${states}" ${colorStyle}>
-            <div class="multi-state-control ${shapeClass} ${sizeClass} state-${value}" ${colorAttr} ${clickHandler}></div>
-            <div class="multi-state-label">${fieldName}</div>
-        </div>
-    </div>`;
-},
-
-renderSelectGroup(element) {
-    const fieldName = element.label || Utils.generateFieldName(element.scope);
-    const selectedValues = this.getValue(element.scope) || [];
-    const selectionType = element.selectionType || 'multi';
-    const displayMode = element.displayMode || 'all';
-    const style = element.style || 'pills';
-    const colorStyle = this.generateColorVariations(element.backgroundColor);
-    const colorAttr = element.backgroundColor ? 'data-color="true"' : '';
-    
-    // Get options from schema field or static list
-    let options = [];
-    if (element.optionsSource === 'field' && element.optionsScope) {
-        const schemaOptions = this.getSchemaOptions(element.optionsScope);
-        options = schemaOptions || [];
-    } else if (element.optionsSource === 'static' && element.staticOptions) {
-        options = element.staticOptions.split(',').map(opt => opt.trim()).filter(opt => opt);
-    }
-    
-    const styleClass = `style-${style}`;
-    const modeClass = `mode-${displayMode}`;
-    
-    let optionsHtml = '';
-    options.forEach(option => {
-        const isSelected = selectionType === 'single' 
-            ? selectedValues === option 
-            : Array.isArray(selectedValues) && selectedValues.includes(option);
-        
-        const selectedClass = isSelected ? 'selected' : '';
-        const clickHandler = this.viewMode ? '' : `onclick="window.characterAppInstance.updateSelectGroupValue('${element.scope}', '${option}', '${selectionType}')"`;
-        
-        optionsHtml += `<div class="select-group-option ${selectedClass}" ${clickHandler}>${option}</div>`;
-    });
-    
-    return `<div class="field-group">
-        <label class="field-label">${fieldName}</label>
-        <div class="select-group ${styleClass} ${modeClass}" ${colorAttr} data-scope="${element.scope}" data-selection-type="${selectionType}" ${colorStyle}>
-            ${optionsHtml}
-        </div>
-    </div>`;
-},
-
-renderImage( element ) {
-    const fieldName = element.label || 'Image';
-    const imageSrc = element.scope ? this.getValue(element.scope) : element.src;
-    const allowUpload = element.allowUpload === true && element.scope && !this.viewMode;
-    const shapeClass = `image-shape-${element.shape || 'square'}`;
-    const borderClass = `image-border-${element.borderStyle || 'thin'}`;
-    const containerStyle = `width: ${element.width || 150}px; height: ${element.height || 150}px;`;
-    const aspectRatioStyle = element.maintainAspectRatio === true ? 'object-fit: cover;' : 'object-fit: fill;';
-    
-    let imageContent;
-    if ( imageSrc ) {
-        imageContent = `<img src="${imageSrc}" alt="${element.alt || fieldName}" class="character-image" style="width: 100%; height: 100%; ${aspectRatioStyle}">`;
-        if (allowUpload) {
-            imageContent += `<div class="image-upload-overlay" onclick="window.characterAppInstance.uploadImage('${element.scope}', '${element.id}')">📤 Change Image</div>`;
-        }
-    } else {
-        if ( allowUpload ) {
-            imageContent = `<div class="character-image-placeholder" onclick="window.characterAppInstance.uploadImage('${element.scope}', '${element.id}')">
-                <div class="character-image-placeholder-icon">🖼️</div>
-                <div>Click to upload image</div>
-                <div style="font-size: 0.75rem; margin-top: 0.25rem;">${element.width || 150}×${element.height || 150}px</div>
-            </div>`;
-        } else {
-            imageContent = `<div class="character-image-placeholder">
-                <div class="character-image-placeholder-icon">🖼️</div>
-                <div>No image</div>
-            </div>`;
-        }
-    }
-    const containerClass = imageSrc ? 'has-image' : '';
-    return `<div class="field-group">
-        <label class="field-label">${fieldName}</label>
-        <div class="character-image-container ${containerClass} ${shapeClass} ${borderClass}" style="${containerStyle}">
-            ${imageContent}
-            ${imageSrc && allowUpload ? `<div class="image-controls">
-                <button class="image-control-btn" onclick="event.stopPropagation(); window.characterAppInstance.uploadImage('${element.scope}', '${element.id}')" title="Change Image">✏️</button>
-                <button class="image-control-btn delete" onclick="event.stopPropagation(); window.characterAppInstance.removeImage('${element.scope}')" title="Remove Image">🗑️</button>
-            </div>` : ''}
-        </div>
-    </div>`;
 },
 
 // Update Element functions
@@ -854,18 +783,27 @@ updateSelectGroupDisplay(scope, selectedValues, selectionType) {
 },
 
 updateMultiStateValue( scope, maxStates ) {
-    const currentValue = this.getValue(scope) || 0;
+    this.saveState('Multi-state toggle: ' + scope.split('/').pop());
+    
+    // Convert scope format if needed
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1); // Remove @ prefix for dot notation
+    } else if (scope.startsWith('#/properties/')) {
+        // Convert JSON Pointer to dot notation
+        normalizedScope = scope.replace('#/properties/', '').replace(/\/properties\//g, '.');
+    }
+    
+    const currentValue = this.getValue(normalizedScope) || 0;
     const newValue = (currentValue + 1) % maxStates;
-    
-    Utils.setNestedValue(this.character.data, scope, newValue);
-    Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
-    this.markAsModified();
-    
-    // Update visual display
-    this.updateMultiStateDisplay(scope, newValue);
+    Utils.setNestedValue(this.character.data, normalizedScope, newValue);
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Multi-state toggle: ' + normalizedScope.split('.').pop());
+    this.updateMultiStateDisplay(normalizedScope, newValue);
 },
 
 updateSelectGroupValue( scope, option, selectionType ) {
+    this.saveState('Selection change: ' + option);
     let currentValues = this.getValue(scope) || (selectionType === 'single' ? '' : []);
     
     if ( selectionType === 'single' ) {
@@ -883,27 +821,22 @@ updateSelectGroupValue( scope, option, selectionType ) {
         }
         Utils.setNestedValue(this.character.data, scope, currentValues);
     }
-    Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
-    this.markAsModified();
-    
-    // Update visual display
+    UUtils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Selection change: ' + option);
     this.updateSelectGroupDisplay(scope, this.getValue(scope), selectionType);
 },
 
 updateTrackValue( scope, newValue, maxValue ) {
+    this.saveState('Track change: ' + scope.split('/').pop());
     const currentValue = this.getValue(scope) || 0;
     
     // Toggle behavior: if clicking on a filled segment, unfill from there
-    if (newValue <= currentValue) {
-        newValue = newValue - 1;
-    }
+    if (newValue <= currentValue) newValue = newValue - 1;
     
     newValue = Math.max(0, Math.min(newValue, maxValue));
     Utils.setNestedValue(this.character.data, scope, newValue);
-    Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
-    this.markAsModified();
-    
-    // Update the visual display
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Track change: ' + scope.split('/').pop());
     this.updateTrackDisplay(scope, newValue, maxValue);
 },
 
@@ -927,7 +860,7 @@ uploadImage( scope, elementId ) {
             reader.onload = (e) => {
                 const imageDataUrl = e.target.result;
                 Utils.setNestedValue(this.character.data, scope, imageDataUrl);
-                this.markAsModified();
+                this.markAsModified('Image upload');
                 Utils.showNotification('Image uploaded successfully', 'success');
             };
             reader.onerror = () => {
@@ -942,12 +875,13 @@ uploadImage( scope, elementId ) {
 removeImage( scope ) {
     if ( confirm('Are you sure you want to remove this image?') ) {
         Utils.setNestedValue(this.character.data, scope, '');
-        this.markAsModified();
+        this.markAsModified('Image removed');
         Utils.showNotification('Image removed', 'success');
     }
 },
 
             updateArrayValue( event, scope, index, field ) {
+		this.saveState('Array item change');
                 const items = this.getValue(scope) || [];
                 const input = event.target.value;
                 if ( !items[index] ) items[index] = {};
@@ -957,23 +891,66 @@ removeImage( scope ) {
                     items[index][field] = input;
                 }
                 Utils.setNestedValue(this.character.data, scope, items);
-                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
-                this.markAsModified();
+                Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+                this.markAsModified('Array item change');
             },
 
-            updateCheckbox( event, scope ) {
-                Utils.setNestedValue(this.character.data, scope, event.target.checked);
-                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
-                this.markAsModified();
-            },
+handleInputFocus(scope) {
+    // Save state when user starts editing a field, but only if we haven't saved recently
+    if (!this.viewMode) {
+        const key = `focus_${scope}`;
+        const now = Date.now();
+        
+        if (!this.lastStateSave) this.lastStateSave = {};
+        
+        // Only save state if we haven't saved for this field in the last 2 seconds
+        if (!this.lastStateSave[key] || (now - this.lastStateSave[key]) > 2000) {
+            this.saveState('Field change: ' + scope.split('/').pop());
+            this.lastStateSave[key] = now;
+        }
+    }
+},
 
-            updateValue( event, scope ) {
-                const input = event.target.value;
-                const value = input === '' ? '' : (isNaN(parseFloat(input)) ? input : parseFloat(input));
-                Utils.setNestedValue(this.character.data, scope, value);
-                Utils.evaluateFormulas(this.schemas[this.selectedSchemaId], this.character.data);
-                this.markAsModified();
-            },
+updateCheckbox(event, scope) {
+    Utils.setNestedValue(this.character.data, scope, event.target.checked);
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Checkbox change: ' + scope.split('/').pop());
+},
+
+updateValue(event, scope) {
+    const input = event.target.value;
+    const value = input === '' ? '' : (isNaN(parseFloat(input)) ? input : parseFloat(input));
+    
+    // Handle scope format
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1);
+    }
+    
+    Utils.setNestedValue(this.character.data, normalizedScope, value);
+    
+    // Re-evaluate all formulas after any data change
+    const schema = this.schemas[this.selectedSchemaId];
+    if (schema) {
+        Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+    }
+    
+    this.markAsModified('Field change: ' + normalizedScope.split('.').pop());
+    
+    // Force re-render to update any formula-based fields
+    this.$nextTick(() => {
+        this.character = { ...this.character };
+    });
+},
+
+renderElement(element) {
+    return Utils.ElementRenderer.renderElement(element, {
+        isPreview: false,
+        viewMode: this.viewMode,
+        getValue: (scope) => this.getValue(scope),
+        instanceRef: this
+    });
+},
 
 // Character Creation
 createNewCharacter() {
@@ -1108,21 +1085,19 @@ createDefaultCharacterData(systemId) {
     return data;
 },
 
-initRichTextEditor( editorId, scope, isReadOnly ) {
+initRichTextEditor(editorId, scope, isReadOnly) {
     setTimeout(() => {
         const editorElement = document.getElementById(editorId);
-        if ( !editorElement || editorElement.dataset.initialized === 'true' ) return;
+        if (!editorElement || editorElement.dataset.initialized === 'true') return;
         
         const currentValue = this.getValue(scope) || '';
         
         try {
-            if ( isReadOnly ) {
-                // In view mode, use the Viewer
+            if (isReadOnly) {
                 const viewer = new toastui.Editor.factory({ el: editorElement, viewer: true, initialValue: currentValue, height: 'auto' });
                 editorElement.dataset.initialized = 'true';
                 editorElement.toastViewer = viewer;
             } else {
-                // In edit mode, use full Editor
                 const editor = new toastui.Editor({
                     el: editorElement,
                     height: '300px',
@@ -1137,48 +1112,53 @@ initRichTextEditor( editorId, scope, isReadOnly ) {
                         ['code', 'codeblock']
                     ]
                 });
-		const saveContent = () => {
-		    const markdown = editor.getMarkdown();
-		    const currentValue = Utils.getNestedValue(this.character.data, scope);
-		    if (currentValue !== markdown) {
-		        Utils.setNestedValue(this.character.data, scope, markdown);
-		        this.markAsModified();
-		        const scopeParts = scope.replace('#/properties/', '').split('/properties/');
-		        let target = this.character.data;
-		        for (let i = 0; i < scopeParts.length - 1; i++) {
-		            target = target[scopeParts[i]];
-		        }
-		        target[scopeParts[scopeParts.length - 1]] = markdown;
-		    }
-		};
+
+                let hasUnsavedChanges = false;
+                
+                editor.on('focus', () => {
+                    if (!hasUnsavedChanges) {
+                        this.saveState('Rich text change: ' + scope.split('/').pop());
+                        hasUnsavedChanges = true;
+                    }
+                });
+
+                const saveContent = () => {
+                    const markdown = editor.getMarkdown();
+                    const currentValue = Utils.getNestedValue(this.character.data, scope);
+                    if (currentValue !== markdown) {
+                        Utils.setNestedValue(this.character.data, scope, markdown);
+                        this.markAsModified();
+                        const scopeParts = scope.replace('#/properties/', '').split('/properties/');
+                        let target = this.character.data;
+                        for (let i = 0; i < scopeParts.length - 1; i++) {
+                            target = target[scopeParts[i]];
+                        }
+                        target[scopeParts[scopeParts.length - 1]] = markdown;
+                    }
+                    hasUnsavedChanges = false;
+                };
                 
                 let blurTimeout;
                 editor.on('blur', () => {
-                    // Delay the blur action to see if focus moves to toolbar
                     blurTimeout = setTimeout(() => {
-                        // Check if focus is still within the editor container
                         const editorContainer = editorElement;
                         const activeElement = document.activeElement;
                         
                         if (!editorContainer.contains(activeElement)) {
-                            // Focus really left the editor area
                             saveContent();
                         }
                     }, 100);
                 });
                 
                 editor.on('focus', () => {
-                    // Cancel the blur timeout if focus returns quickly
                     clearTimeout(blurTimeout);
                 });
                 
-                // Also save when switching modes or other editor events
                 editor.on('changeMode', saveContent);
                 
                 editorElement.dataset.initialized = 'true';
                 editorElement.toastEditor = editor;
                 
-                // Add a manual save when the editor is destroyed (mode switching, etc.)
                 const originalDestroy = editor.destroy;
                 editor.destroy = function() {
                     saveContent();
@@ -1186,11 +1166,10 @@ initRichTextEditor( editorId, scope, isReadOnly ) {
                 };
             }
             
-        } catch ( error ) {
+        } catch (error) {
             console.error('Error initializing Toast UI Editor:', error);
-            // Fallback to regular textarea
             const isReallyReadonly = isReadOnly ? 'readonly' : '';
-            editorElement.innerHTML = `<textarea class="form-control textarea-control" style="width: 100%; min-height: 200px;" ${isReallyReadonly}>${currentValue}</textarea>`;
+            editorElement.innerHTML = `<textarea class="form-control textarea-control" style="width: 100%; min-height: 200px;" ${isReallyReadonly} onfocus="window.characterAppInstance.saveState('Text change: ${scope.split('/').pop()}')" onblur="window.characterAppInstance.updateValue(event, '${scope}')">${currentValue}</textarea>`;
         }
     }, 200);
 },
@@ -1209,9 +1188,123 @@ cleanupRichTextEditors() {
     });
 },
 
-            getValue( scope ) { 
-                return Utils.getNestedValue(this.character.data, scope); 
-            },
+// Initialize Undo/Redo System
+initUndoRedo() {
+    this.undoManager = new Utils.UndoRedoManager(50);
+    
+    // Set up state getter
+    this.undoManager.setCurrentStateGetter(() => this.character);
+    
+    // Set up state change callback
+    this.undoManager.onStateChange = () => {
+        this.canUndo = this.undoManager.canUndo();
+        this.canRedo = this.undoManager.canRedo();
+    };
+},
+
+saveState(description = 'Character change') {
+    if (this.undoManager && !this.undoManager.isUndoRedoOperation) {
+        this.undoManager.saveState(this.character, description);
+    }
+},
+
+saveStateForInput(scope, eventType = 'change') {
+    // Only save if we haven't already saved for this field recently
+    const key = `${scope}_${eventType}`;
+    const now = Date.now();
+    
+    if (!this.lastStateSave) this.lastStateSave = {};
+    
+    // If we saved state for this field less than 1 second ago, don't save again
+    if (this.lastStateSave[key] && (now - this.lastStateSave[key]) < 1000) {
+        return;
+    }
+    
+    this.saveState(`Field change: ${scope.split('/').pop()}`);
+    this.lastStateSave[key] = now;
+},
+
+undo() {
+    if (!this.undoManager || !this.undoManager.canUndo()) {
+        Utils.showNotification('Nothing to undo', 'info');
+        return;
+    }
+    
+    const previousState = this.undoManager.undo();
+    if (previousState) {
+        this.cleanupRichTextEditors();
+        Object.assign(this.character, Utils.deepClone(previousState));
+        
+        // Re-evaluate formulas after restoring state
+        const schema = DataManager.getSchema(this.selectedSchemaId);
+        if (schema) {
+	    Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+        }
+        
+        this.isModified = true;
+        
+        // Force re-render
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+            this.undoManager.finishUndoRedo();
+        });
+    }
+},
+
+redo() {
+    if (!this.undoManager || !this.undoManager.canRedo()) {
+        Utils.showNotification('Nothing to redo', 'info');
+        return;
+    }
+    
+    const nextState = this.undoManager.redo();
+    if (nextState) {
+        this.cleanupRichTextEditors();
+        Object.assign(this.character, Utils.deepClone(nextState));
+        
+        // Re-evaluate formulas after restoring state
+        const schema = DataManager.getSchema(this.selectedSchemaId);
+        if (schema) {
+	    Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+        }
+        
+        this.isModified = true;
+        
+        // Force re-render
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+            this.undoManager.finishUndoRedo();
+        });
+    }
+},
+
+getValue(scope) {
+    if (!scope) return '';
+    
+    // Check if this is a formula
+    if (Utils.FormulaEngine.isFormula(scope)) {
+        // Evaluate the formula using the current character data
+        const schema = this.schemas[this.selectedSchemaId];
+        return Utils.FormulaEngine.evaluateFormula(scope, this.character.data, schema);
+    }
+    
+    // Handle @ prefix for dot notation field references
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1); // Remove @ prefix
+    }
+    
+    // Use dot notation to access nested values
+    const pathParts = normalizedScope.split('.');
+    let current = this.character.data;
+    
+    for (const part of pathParts) {
+        if (current === null || current === undefined) return '';
+        current = current[part];
+    }
+    
+    return current || '';
+},
             
             isReadOnly( scope ) { 
                 return Utils.isReadOnly(this.schemas[this.selectedSchemaId], scope); 
@@ -1223,6 +1316,7 @@ cleanupRichTextEditors() {
                 }
                 return value || '';
             }
+
         };
     }
 

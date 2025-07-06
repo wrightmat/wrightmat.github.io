@@ -1,8 +1,8 @@
 {
   "id": "template_b476a1a8-0098-4bc5-80ad-84384b612bcc",
   "created": "2025-07-01T20:00:00.000Z",
-  "modified": "2025-07-05T19:09:36.038Z",
-  "version": 7,
+  "modified": "2025-07-06T06:27:49.267Z",
+  "version": 23,
   "index": "5e-default",
   "title": "5e Default Sheet",
   "schema": "dd-5e",
@@ -19,7 +19,7 @@
           "elements": [
             {
               "type": "Control",
-              "scope": "#/properties/name",
+              "scope": "@name",
               "label": "Character Name",
               "controlType": "text",
               "id": "elem_1751725921502_pq6r59v0a",
@@ -27,35 +27,35 @@
             },
             {
               "type": "Control",
-              "scope": "#/properties/class",
+              "scope": "@class",
               "label": "Class",
               "controlType": "text",
               "id": "elem_1751725921502_w7lnikrok"
             },
             {
               "type": "Control",
-              "scope": "#/properties/level",
+              "scope": "@level",
               "label": "Level",
               "controlType": "number",
               "id": "elem_1751725921502_0asvgbwa1"
             },
             {
               "type": "Control",
-              "scope": "#/properties/race",
+              "scope": "@race",
               "label": "Race",
               "controlType": "text",
               "id": "elem_1751725921502_jqwp8legl"
             },
             {
               "type": "Control",
-              "scope": "#/properties/background",
+              "scope": "@background",
               "label": "Background",
               "controlType": "text",
               "id": "elem_1751725921502_iup2vk8ir"
             },
             {
               "type": "Control",
-              "scope": "#/properties/alignment",
+              "scope": "@alignment",
               "label": "Alignment",
               "controlType": "text",
               "id": "elem_1751725921502_os34qft72"
@@ -73,7 +73,7 @@
           "elements": [
             {
               "type": "ComboField",
-              "scope": "#/properties/abilities/properties/strength",
+              "scope": "@abilities.strength",
               "label": "Strength",
               "layout": "vertical",
               "size": "medium",
@@ -84,7 +84,7 @@
             },
             {
               "type": "ComboField",
-              "scope": "#/properties/abilities/properties/dexterity",
+              "scope": "@abilities.dexterity",
               "label": "Dexterity",
               "layout": "vertical",
               "size": "medium",
@@ -94,7 +94,7 @@
             },
             {
               "type": "ComboField",
-              "scope": "#/properties/abilities/properties/constitution",
+              "scope": "@abilities.constitution",
               "label": "Constitution",
               "layout": "vertical",
               "size": "medium",
@@ -104,7 +104,7 @@
             },
             {
               "type": "ComboField",
-              "scope": "#/properties/abilities/properties/intelligence",
+              "scope": "@abilities.intelligence",
               "label": "Intelligence",
               "layout": "vertical",
               "size": "medium",
@@ -114,7 +114,7 @@
             },
             {
               "type": "ComboField",
-              "scope": "#/properties/abilities/properties/wisdom",
+              "scope": "@abilities.wisdom",
               "label": "Wisdom",
               "layout": "vertical",
               "size": "medium",
@@ -124,7 +124,7 @@
             },
             {
               "type": "ComboField",
-              "scope": "#/properties/abilities/properties/charisma",
+              "scope": "@abilities.charisma",
               "label": "Charisma",
               "layout": "vertical",
               "size": "medium",
@@ -134,6 +134,268 @@
             }
           ],
           "id": "elem_1751725921502_w55esy35j"
+        },
+        {
+          "id": "elem_1751779224820_zp13795ib",
+          "type": "Group",
+          "label": "Saving Throws",
+          "style": "plain",
+          "backgroundColor": "",
+          "borderColor": "",
+          "textColor": "",
+          "elements": [
+            {
+              "id": "elem_1751779246178_crgqlvlgm",
+              "type": "Group",
+              "label": "Group",
+              "style": "plain",
+              "backgroundColor": "",
+              "borderColor": "",
+              "textColor": "",
+              "elements": [
+                {
+                  "id": "elem_1751779266927_4upblk7nh",
+                  "type": "MultiStateToggle",
+                  "label": "Strength",
+                  "style": {},
+                  "backgroundColor": "#dc2626",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrowProficiencies.strength",
+                  "states": 2,
+                  "shape": "circle",
+                  "size": "medium",
+                  "labelPosition": "right"
+                },
+                {
+                  "id": "elem_1751779311386_ngga6fycy",
+                  "type": "Control",
+                  "label": "",
+                  "style": {},
+                  "backgroundColor": "",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrows.strength",
+                  "controlType": "number"
+                }
+              ],
+              "layout": "combo-compact",
+              "columns": 2,
+              "gap": "medium",
+              "collapsible": false,
+              "defaultCollapsed": "open"
+            },
+            {
+              "id": "elem_1751781953578_tefbcl2cf",
+              "type": "Group",
+              "label": "Group Copy",
+              "style": "plain",
+              "backgroundColor": "",
+              "borderColor": "",
+              "textColor": "",
+              "elements": [
+                {
+                  "id": "elem_1751781953578_wunv25tm5",
+                  "type": "MultiStateToggle",
+                  "label": "Dexterity",
+                  "style": {},
+                  "backgroundColor": "#eab308",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrowProficiencies.dexterity",
+                  "states": 2,
+                  "shape": "circle",
+                  "size": "medium",
+                  "labelPosition": "right"
+                },
+                {
+                  "id": "elem_1751781953578_gkec1645k",
+                  "type": "Control",
+                  "label": "",
+                  "style": {},
+                  "backgroundColor": "",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrows.dexterity",
+                  "controlType": "number"
+                }
+              ],
+              "layout": "combo-compact",
+              "columns": 2,
+              "gap": "medium",
+              "collapsible": false,
+              "defaultCollapsed": "open"
+            },
+            {
+              "id": "elem_1751782748389_bugoqmeau",
+              "type": "Group",
+              "label": "Group Copy Copy",
+              "style": "plain",
+              "backgroundColor": "",
+              "borderColor": "",
+              "textColor": "",
+              "elements": [
+                {
+                  "id": "elem_1751782748389_dle9dv5jy",
+                  "type": "MultiStateToggle",
+                  "label": "Constitution",
+                  "style": {},
+                  "backgroundColor": "#d97706",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrowProficiencies.constitution",
+                  "states": 2,
+                  "shape": "circle",
+                  "size": "medium",
+                  "labelPosition": "right"
+                },
+                {
+                  "id": "elem_1751782748389_beysef9tq",
+                  "type": "Control",
+                  "label": "",
+                  "style": {},
+                  "backgroundColor": "",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrows.constitution",
+                  "controlType": "number"
+                }
+              ],
+              "layout": "combo-compact",
+              "columns": 2,
+              "gap": "medium",
+              "collapsible": false,
+              "defaultCollapsed": "open"
+            },
+            {
+              "id": "elem_1751782789828_1xu5xisk9",
+              "type": "Group",
+              "label": "Group Copy Copy Copy",
+              "style": "plain",
+              "backgroundColor": "",
+              "borderColor": "",
+              "textColor": "",
+              "elements": [
+                {
+                  "id": "elem_1751782789828_0bfbkpahz",
+                  "type": "MultiStateToggle",
+                  "label": "Intelligence",
+                  "style": {},
+                  "backgroundColor": "#3b82f6",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrowProficiencies.intelligence",
+                  "states": 2,
+                  "shape": "circle",
+                  "size": "medium",
+                  "labelPosition": "right"
+                },
+                {
+                  "id": "elem_1751782789828_vh3f1flmg",
+                  "type": "Control",
+                  "label": "",
+                  "style": {},
+                  "backgroundColor": "",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrows.intelligence",
+                  "controlType": "number"
+                }
+              ],
+              "layout": "combo-compact",
+              "columns": 2,
+              "gap": "medium",
+              "collapsible": false,
+              "defaultCollapsed": "open"
+            },
+            {
+              "id": "elem_1751783189564_wjaf7k4gc",
+              "type": "Group",
+              "label": "Group Copy Copy Copy Copy",
+              "style": "plain",
+              "backgroundColor": "",
+              "borderColor": "",
+              "textColor": "",
+              "elements": [
+                {
+                  "id": "elem_1751783189564_oqte1b4rj",
+                  "type": "MultiStateToggle",
+                  "label": "Wisdom",
+                  "style": {},
+                  "backgroundColor": "#059669",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrowProficiencies.wisdom",
+                  "states": 2,
+                  "shape": "circle",
+                  "size": "medium",
+                  "labelPosition": "right"
+                },
+                {
+                  "id": "elem_1751783189564_oob0fy94m",
+                  "type": "Control",
+                  "label": "",
+                  "style": {},
+                  "backgroundColor": "",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrows.wisdom",
+                  "controlType": "number"
+                }
+              ],
+              "layout": "combo-compact",
+              "columns": 2,
+              "gap": "medium",
+              "collapsible": false,
+              "defaultCollapsed": "open"
+            },
+            {
+              "id": "elem_1751783230405_rj8uonkio",
+              "type": "Group",
+              "label": "Group Copy Copy Copy Copy Copy",
+              "style": "plain",
+              "backgroundColor": "",
+              "borderColor": "",
+              "textColor": "",
+              "elements": [
+                {
+                  "id": "elem_1751783230405_87ik14gn1",
+                  "type": "MultiStateToggle",
+                  "label": "Charisma",
+                  "style": {},
+                  "backgroundColor": "#7c3aed",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrowProficiencies.charisma",
+                  "states": 2,
+                  "shape": "circle",
+                  "size": "medium",
+                  "labelPosition": "right"
+                },
+                {
+                  "id": "elem_1751783230405_rk5tx0dsj",
+                  "type": "Control",
+                  "label": "",
+                  "style": {},
+                  "backgroundColor": "",
+                  "borderColor": "",
+                  "textColor": "",
+                  "scope": "@savingThrows.charisma",
+                  "controlType": "number"
+                }
+              ],
+              "layout": "combo-compact",
+              "columns": 2,
+              "gap": "medium",
+              "collapsible": false,
+              "defaultCollapsed": "open"
+            }
+          ],
+          "layout": "horizontal",
+          "columns": 2,
+          "gap": "medium",
+          "collapsible": false,
+          "defaultCollapsed": "open"
         }
       ],
       "id": "elem_1751725921502_4712quwww"
@@ -143,81 +405,79 @@
       "label": "Skills",
       "elements": [
         {
-          "type": "Group",
-          "label": "Skills",
-          "layout": "grid",
+          "id": "elem_1751746046327_kyurxnauw",
+          "type": "Container",
+          "label": "Container",
+          "style": {},
+          "backgroundColor": "",
+          "borderColor": "",
+          "textColor": "",
           "elements": [
-            {
-              "type": "MultiStateToggle",
-              "scope": "#/properties/skills/properties/acrobatics",
-              "label": "Acrobatics (Dex)",
-              "states": 3,
-              "shape": "circle",
-              "size": "small",
-              "labelPosition": "right",
-              "theme": "default",
-              "id": "elem_1751725921502_vor13ktut",
-              "backgroundColor": "#eab308"
-            },
-            {
-              "type": "MultiStateToggle",
-              "scope": "#/properties/skills/properties/animalHandling",
-              "label": "Animal Handling (Wis)",
-              "states": 3,
-              "shape": "circle",
-              "size": "small",
-              "labelPosition": "right",
-              "theme": "default",
-              "id": "elem_1751725921502_3ex4q94ny",
-              "backgroundColor": "#0d9488"
-            },
-            {
-              "type": "MultiStateToggle",
-              "scope": "#/properties/skills/properties/arcana",
-              "label": "Arcana (Int)",
-              "states": 3,
-              "shape": "circle",
-              "size": "small",
-              "labelPosition": "right",
-              "theme": "default",
-              "id": "elem_1751725921502_6y54sp42q",
-              "backgroundColor": "#3b82f6"
-            },
-            {
-              "type": "MultiStateToggle",
-              "scope": "#/properties/skills/properties/athletics",
-              "label": "Athletics (Str)",
-              "states": 3,
-              "shape": "circle",
-              "size": "small",
-              "labelPosition": "right",
-              "theme": "default",
-              "id": "elem_1751725921502_ji765he9t",
-              "backgroundColor": "#dc2626"
-            }
+            [
+              {
+                "id": "elem_1751749999504_7z9egzgtg",
+                "type": "MultiStateToggle",
+                "label": "Animal Handling",
+                "style": {},
+                "backgroundColor": "",
+                "borderColor": "",
+                "textColor": "",
+                "scope": "@skills.animalHandling",
+                "states": 2,
+                "shape": "circle",
+                "size": "medium",
+                "labelPosition": "right"
+              },
+              {
+                "id": "elem_1751750003835_faa4kw4i4",
+                "type": "MultiStateToggle",
+                "label": "Multi-State Toggle",
+                "style": {},
+                "backgroundColor": "",
+                "borderColor": "",
+                "textColor": "",
+                "scope": "",
+                "states": 2,
+                "shape": "circle",
+                "size": "medium",
+                "labelPosition": "right"
+              },
+              {
+                "id": "elem_1751750005715_3ugafwqub",
+                "type": "MultiStateToggle",
+                "label": "Multi-State Toggle",
+                "style": {},
+                "backgroundColor": "",
+                "borderColor": "",
+                "textColor": "",
+                "scope": "",
+                "states": 2,
+                "shape": "circle",
+                "size": "medium",
+                "labelPosition": "right"
+              }
+            ],
+            [
+              {
+                "id": "elem_1751750010483_jpa9dn0sb",
+                "type": "SelectGroup",
+                "label": "Select Group",
+                "style": "pills",
+                "backgroundColor": "",
+                "borderColor": "",
+                "textColor": "",
+                "scope": "",
+                "optionsSource": "field",
+                "optionsScope": "",
+                "staticOptions": "",
+                "selectionType": "multi",
+                "displayMode": "all"
+              }
+            ]
           ],
-          "id": "elem_1751725921502_qlcf1zdj8"
-        },
-        {
-          "type": "Group",
-          "label": "Conditions",
-          "layout": "vertical",
-          "elements": [
-            {
-              "type": "SelectGroup",
-              "scope": "#/properties/conditions",
-              "label": "Current Conditions",
-              "optionsSource": "field",
-              "optionsScope": "#/properties/conditions",
-              "selectionType": "multi",
-              "displayMode": "all",
-              "style": "pills",
-              "theme": "warning",
-              "id": "elem_1751725921502_9hsn6md9c",
-              "backgroundColor": "#d97706"
-            }
-          ],
-          "id": "elem_1751725921502_2moxy4338"
+          "layout": "columns",
+          "columns": 2,
+          "gap": "medium"
         }
       ],
       "id": "elem_1751725921502_gburx5eay"
@@ -233,21 +493,21 @@
           "elements": [
             {
               "type": "Control",
-              "scope": "#/properties/hitPoints/properties/current",
+              "scope": "@hitPoints.current",
               "label": "Current HP",
               "controlType": "number",
               "id": "elem_1751725921502_vhovhdfo9"
             },
             {
               "type": "Control",
-              "scope": "#/properties/hitPoints/properties/maximum",
+              "scope": "@hitPoints.maximum",
               "label": "Max HP",
               "controlType": "number",
               "id": "elem_1751725921502_qd99fpf32"
             },
             {
               "type": "Control",
-              "scope": "#/properties/hitPoints/properties/temporary",
+              "scope": "@hitPoints.temporary",
               "label": "Temp HP",
               "controlType": "number",
               "id": "elem_1751725921502_1vt5egc4s"
@@ -264,9 +524,10 @@
       "elements": [
         {
           "type": "Array",
-          "scope": "#/properties/spells",
+          "scope": "@spells",
           "label": "Spells",
-          "id": "elem_1751725921502_upc1hgjlw"
+          "id": "elem_1751725921502_upc1hgjlw",
+          "displayStyle": "compact"
         }
       ],
       "id": "elem_1751725921502_82lavm9yd"
@@ -277,7 +538,7 @@
       "elements": [
         {
           "type": "Array",
-          "scope": "#/properties/inventory",
+          "scope": "@inventory",
           "label": "Equipment",
           "id": "elem_1751725921502_x6ik15vgs"
         }

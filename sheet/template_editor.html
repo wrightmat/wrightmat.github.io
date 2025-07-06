@@ -39,9 +39,7 @@
 	            <option :value="id" x-text="template.title"></option>
 	        </template>
 	    </select>
-	    <button class="btn btn-secondary" @click="previewTemplate" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">👁️ Preview</button>
-	    <button class="btn btn-secondary" @click="exportTemplate" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">📤 Export</button>
-	    <button class="btn btn-primary" @click="saveTemplate" :disabled="!currentTemplate">💾 Save</button>
+	    <button class="btn btn-primary" @click="saveTemplate" :disabled="!currentTemplate || !isModified">💾 Save</button>
 	</div>
         
         <button class="toolbar-toggle" @click="toggleRightPane" :class="{ 'active': !rightPaneCollapsed }">
@@ -52,13 +50,15 @@
 
     <!-- Left Pane - Element Palette -->
     <div class="left-pane" :class="{ 'collapsed': leftPaneCollapsed, 'show': leftPaneVisible }">
-        <div class="pane-header">
-            <h3 class="pane-title">🎨 Element Palette</h3>
-            <button class="pane-toggle" @click="toggleLeftPane">
-                <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
-            </button>
-        </div>
-            
+
+    <div class="pane-header">
+        <h3 class="pane-title">🎨 Element Palette</h3>
+        <button class="pane-toggle" @click="toggleLeftPane">
+            <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        </button>
+    </div>
+
+    <div class="palette-content">
         <div class="element-group">
             <h4>Basic Elements</h4>
             <template x-for="element in basicElements">
@@ -86,6 +86,54 @@
                 </div>
             </template>
         </div>
+    </div>
+
+    <div class="pane-header">
+        <h3 class="pane-title">🔧 Tools</h3>
+    </div>
+    <div class="tools-content">
+        <!-- File Operations -->
+        <div class="tool-section">
+            <h4 class="tool-section-title">📂 File Operations</h4>
+            <button class="btn btn-primary btn-full-width btn-with-margin" @click="importTemplate" :disabled="!selectedSchemaId">
+                📤 Import
+            </button>
+            <button class="btn btn-secondary btn-full-width btn-with-margin" @click="exportTemplate" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">
+                📥 Export
+            </button>
+            <div class="tool-note">
+                <small>Import template files or export current template design.</small>
+            </div>
+        </div>
+
+        <!-- Template & Design -->
+        <div class="tool-section">
+            <h4 class="tool-section-title">🎨 Template & Design</h4>
+            <button class="btn btn-secondary btn-full-width btn-with-margin" @click="previewTemplate" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">
+                👁️ Preview
+            </button>
+            <button class="btn btn-secondary btn-full-width btn-with-margin" @click="editSchema" :disabled="!selectedSchemaId">
+                📋 Edit Schema
+            </button>
+            <p class="tool-description">Preview templates and manage data schemas</p>
+        </div>
+
+        <!-- History Management -->
+        <div class="tool-section">
+            <h4 class="tool-section-title">↶ History</h4>
+            <div class="undo-redo-controls">
+                <button class="btn btn-secondary" @click="undo" :disabled="!canUndo" title="Undo last action (Ctrl+Z)">
+                    ↶ Undo (<span x-text="undoManager ? undoManager.undoStack.length : 0"></span>)
+                </button>
+                <button class="btn btn-secondary" @click="redo" :disabled="!canRedo" title="Redo last action (Ctrl+Y)">
+                    ↷ Redo (<span x-text="undoManager ? undoManager.redoStack.length : 0"></span>)
+                </button>
+            </div>
+            <div class="tool-note">
+                <small>Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y (redo)</small>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Main Canvas Area -->
@@ -171,11 +219,16 @@
     
         <div class="properties-scroll">
             <template x-if="selectedElementId && currentTemplate">
-                <div>
-                    <div class="property-group">
-                        <h4 class="property-group-title">General</h4>
-                        <div class="form-group">
-                            <label class="property-label">Element Type</label>
+		<div class="property-group appearance-group" x-data="{ generalOpen: true }">
+		    <div class="property-group-header" @click="generalOpen = !generalOpen">
+		        <h4 class="property-group-title collapsible-title">
+		            <span class="collapse-icon" :class="{ 'collapsed': !generalOpen }" x-text="generalOpen ? '▼' : '▶'"></span>
+		            General
+		        </h4>
+		    </div>
+		    <div class="appearance-content" x-show="generalOpen">
+		        <div class="form-group">
+		            <label class="property-label">Element Type</label>
                             <input type="text" :value="getElementProperty('type')" class="form-control form-control-readonly" readonly>
                         </div>
                         <template x-if="getElementProperty('type') === 'Control'">
@@ -192,17 +245,48 @@
                                 </select>
                             </div>
                         </template>
-                        <div x-show="getElementProperty('type') === 'Control'">
-                            <div class="form-group">
-                                <label class="property-label">Field Path</label>
-                                <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
-                                    <option value="">Select a field...</option>
-                                    <template x-for="field in availableFields">
-                                        <option :value="field.path" x-text="field.label"></option>
-                                    </template>
-                                 </select>
-                            </div>
+
+                        <div x-show="elementNeedsScope(getElementProperty('type'))">
+			    <div class="form-group">
+				<label class="property-label">Scope</label>
+				<div class="formula-input-container">
+			            <input 
+			            type="text" 
+			            :value="getElementProperty('scope')" 
+			            @input="updateElementProperty('scope', $event.target.value)"
+			            @keydown="handleFormulaKeydown($event)"
+			            @focus="showFieldSuggestions = true"
+				    @blur="setTimeout(() => showFieldSuggestions = false, 300)"
+			            class="form-control formula-input"
+			            placeholder="@field.path or formula..."
+			            autocomplete="off">
+        
+			            <!-- Field suggestions dropdown -->
+			            <div x-show="showFieldSuggestions && filteredFields.length > 0" 
+			             class="field-suggestions" 
+			             x-transition:enter="transition ease-out duration-100"
+			             x-transition:enter-start="opacity-0 scale-95"
+			             x-transition:enter-end="opacity-100 scale-100"
+			             x-transition:leave="transition ease-in duration-75"
+			             x-transition:leave-start="opacity-100 scale-100"
+			             x-transition:leave-end="opacity-0 scale-95">
+			            <template x-for="field in filteredFields.slice(0, 50)">
+			                <div class="field-suggestion" 
+			                     @click="insertFieldReference(field.path)"
+			                     x-text="field.label + ' (' + field.path + ')'">
+			                </div>
+			            </template>
+			            </div>
+			        </div>
+    
+			        <!-- Formula validation -->
+			        <div x-show="getElementProperty('scope') && !isValidFormula(getElementProperty('scope'))" class="formula-error"> Invalid formula syntax </div>
+    
+			        <!-- Formula preview -->
+			        <div x-show="getElementProperty('scope') && isFormula(getElementProperty('scope'))" class="formula-preview"> Formula: <code x-text="getElementProperty('scope')"></code> </div>
+			    </div>
                         </div>
+
                         <div class="form-group">
                             <label class="property-label">Label</label>
                             <input type="text" :value="getElementProperty('label')" @input="updateElementProperty('label', $event.target.value)" class="form-control">
@@ -215,13 +299,71 @@
 			        </label>
 			    </div>
 			</div>
+
+			<div x-show="getElementProperty('type') === 'Container'">
+			    <div class="form-group">
+			        <label class="property-label">Layout Type</label>
+			        <select :value="getElementProperty('layout') || 'columns'" @change="updateElementProperty('layout', $event.target.value)" class="form-control">
+			            <option value="columns">Columns</option>
+			            <option value="rows">Rows</option>
+			            <option value="grid">Grid</option>
+			            <option value="flexbox">Flexbox</option>
+			        </select>
+			    </div>
+			    <div x-show="getElementProperty('layout') === 'columns'" class="form-group">
+			        <label class="property-label">Number of Columns</label>
+			        <select :value="getElementProperty('columns') || 2" @change="updateElementProperty('columns', parseInt($event.target.value))" class="form-control">
+			            <option value="2">2 Columns</option>
+			            <option value="3">3 Columns</option>
+			            <option value="4">4 Columns</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Gap Size</label>
+			        <select :value="getElementProperty('gap') || 'medium'" @change="updateElementProperty('gap', $event.target.value)" class="form-control">
+			            <option value="small">Small</option>
+			            <option value="medium">Medium</option>
+			            <option value="large">Large</option>
+			        </select>
+			    </div>
+			</div>
+
 			<div x-show="getElementProperty('type') === 'Group'">
 			    <div class="form-group">
-			        <label class="property-label">Layout</label>
-			        <select :value="getElementProperty('layout')" @change="updateElementProperty('layout', $event.target.value)" class="form-control">
+			        <label class="property-label">Layout Type</label>
+			        <select :value="getElementProperty('layout') || 'vertical'" @change="updateElementProperty('layout', $event.target.value)" class="form-control">
 			            <option value="vertical">Vertical</option>
 			            <option value="horizontal">Horizontal</option>
 			            <option value="grid">Grid</option>
+			            <option value="columns">Columns</option>
+			            <option value="combo-row">Combo Row (Tight)</option>
+			            <option value="combo-compact">Combo Compact</option>
+			        </select>
+			    </div>
+			    <div x-show="getElementProperty('layout') === 'columns'" class="form-group">
+			        <label class="property-label">Number of Columns</label>
+			        <select :value="getElementProperty('columns') || 2" @change="updateElementProperty('columns', parseInt($event.target.value))" class="form-control">
+			            <option value="2">2 Columns</option>
+			            <option value="3">3 Columns</option>
+			            <option value="4">4 Columns</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Gap Size</label>
+			        <select :value="getElementProperty('gap') || 'medium'" @change="updateElementProperty('gap', $event.target.value)" class="form-control">
+			            <option value="none">None</option>
+			            <option value="small">Small</option>
+			            <option value="medium">Medium</option>
+			            <option value="large">Large</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="property-label">Visual Style</label>
+			        <select :value="getElementProperty('style') || 'plain'" @change="updateElementProperty('style', $event.target.value)" class="form-control">
+			            <option value="plain">Plain</option>
+			            <option value="fieldset">Fieldset (with border)</option>
+			            <option value="card">Card</option>
+			            <option value="subtle">Subtle Background</option>
 			        </select>
 			    </div>
 			    <div class="form-group">
@@ -238,17 +380,36 @@
 			        </select>
 			    </div>
 			</div>
-                        <div x-show="getElementProperty('type') === 'Array'">
-                            <div class="form-group">
-                                <label class="property-label">Field Path</label>
-                                <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
-                                    <option value="">Select a field...</option>
-                                    <template x-for="field in availableFields">
-                                        <option :value="field.path" x-text="field.label"></option>
-                                    </template>
-                                </select>
-                            </div>
-                        </div>
+
+			<div x-show="getElementProperty('type') === 'Array'">
+			    <div class="form-group">
+			        <label class="property-label">Display Style</label>
+			        <select :value="getElementProperty('displayStyle') || 'table'" @change="updateElementProperty('displayStyle', $event.target.value)" class="form-control">
+			            <option value="table">Table</option>
+			            <option value="cards">Cards</option>
+			            <option value="compact">Compact List</option>
+			        </select>
+			    </div>
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('allowAdd') !== false" @change="updateElementProperty('allowAdd', $event.target.checked)">
+			            <span>Allow Adding Items</span>
+			        </label>
+			    </div>
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('allowRemove') !== false" @change="updateElementProperty('allowRemove', $event.target.checked)">
+			            <span>Allow Removing Items</span>
+			        </label>
+			    </div>
+			    <div class="form-group">
+			        <label class="checkbox-label">
+			            <input type="checkbox" :checked="getElementProperty('allowReorder') !== false" @change="updateElementProperty('allowReorder', $event.target.checked)">
+			            <span>Allow Drag & Drop Reordering</span>
+			        </label>
+			    </div>
+			</div>
+
 			<div x-show="getElementProperty('type') === 'LinearTrack' || getElementProperty('type') === 'CircularTrack'">
                             <div class="form-group">
                                 <label class="property-label">Field Path</label>
@@ -270,16 +431,8 @@
                                 </label>
                             </div>
                         </div>
+
 			<div x-show="getElementProperty('type') === 'ComboField'">
-			    <div class="form-group">
-			        <label class="property-label">Field Path</label>
-			        <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
-			            <option value="">Select a field...</option>
-			            <template x-for="field in availableFields">
-			                <option :value="field.path" x-text="field.label"></option>
-			            </template>
-			        </select>
-			    </div>
 			    <div class="form-group">
 			        <label class="property-label">Layout</label>
 			        <select :value="getElementProperty('layout') || 'vertical'" @change="updateElementProperty('layout', $event.target.value)" class="form-control">
@@ -299,15 +452,6 @@
 			</div>
 
 			<div x-show="getElementProperty('type') === 'MultiStateToggle'">
-			    <div class="form-group">
-			        <label class="property-label">Field Path</label>
-			        <select :value="getElementProperty('scope')" @change="updateElementProperty('scope', $event.target.value)" class="form-control">
-			            <option value="">Select a field...</option>
-			            <template x-for="field in availableFields">
-			                <option :value="field.path" x-text="field.label"></option>
-			            </template>
-			        </select>
-			    </div>
 			    <div class="form-group">
 			        <label class="property-label">Number of States</label>
 			        <select :value="getElementProperty('states') || 2" @change="updateElementProperty('states', parseInt($event.target.value))" class="form-control">
@@ -396,6 +540,7 @@
 			        </select>
 			    </div>
 			</div>
+
 			<div x-show="getElementProperty('type') === 'Image'">
 			    <div class="form-group">
 			        <label class="property-label">Data Field (Optional)</label>
@@ -456,6 +601,7 @@
 			        </label>
 			    </div>
 			</div>
+
                         <div x-show="getElementProperty('type') === 'Tab'">
                             <div class="form-group">
                                 <label class="property-label">Tab Label</label>
@@ -464,7 +610,7 @@
                         </div>
                     </div>
 
-<div class="property-group appearance-group" x-data="{ appearanceOpen: hasAnyColorSet() }">
+<div class="property-group appearance-group" x-data="{ appearanceOpen: false }" x-init="$watch('selectedElementId', () => { appearanceOpen = hasAnyColorSet(); })">
     <div class="property-group-header" @click="appearanceOpen = !appearanceOpen">
         <h4 class="property-group-title collapsible-title">
             <span class="collapse-icon" :class="{ 'collapsed': !appearanceOpen }" x-text="appearanceOpen ? '▼' : '▶'"></span>
@@ -473,7 +619,6 @@
     </div>
     
     <div class="appearance-content" x-show="appearanceOpen">
-        <!-- Background Color -->
         <div class="color-property-group">
             <div class="color-property-header" x-show="elementSupportsBackgroundColor()">
                 <label class="property-label">Background Color</label>
@@ -637,7 +782,14 @@
                 rightPaneCollapsed: false,
                 leftPaneVisible: true,
                 rightPaneVisible: true,
+		dragTargetContainer: null,
+		dragTargetSubContainer: null,
+		groupPlaceholderIndex: -1,
                 newTemplate: { title: '', schema: '', type: 'VerticalLayout' },
+		undoManager: null,
+		canUndo: false,
+		canRedo: false,
+		showFieldSuggestions: false,
                 
                 basicElements: [
                     { type: 'Control', name: 'Text Input', icon: '📝', controlType: 'text' },
@@ -645,7 +797,6 @@
 		    { type: 'Control', name: 'Date Input', icon: '📅', controlType: 'date' },
                     { type: 'Control', name: 'Textarea', icon: '📄', controlType: 'textarea' },
                     { type: 'Control', name: 'Select', icon: '📋', controlType: 'select' },
-                    //{ type: 'Control', name: 'Checkbox', icon: '☑️', controlType: 'checkbox' },
                     { type: 'Label', name: 'Label', icon: '📝' },
                     { type: 'Divider', name: 'Divider', icon: '➖' },
                 ],
@@ -655,7 +806,6 @@
                 ],
                 advancedElements: [
                     { type: 'Array', name: 'Array/List', icon: '📚' },
-                    { type: 'ComboField', name: 'Combo Field', icon: '🔗' },
                     { type: 'LinearTrack', name: 'Linear Track', icon: '▭' },
                     { type: 'CircularTrack', name: 'Circular Clock', icon: '🕐' },
 		    { type: 'MultiStateToggle', name: 'Multi-State Toggle', icon: '🎯' },
@@ -718,27 +868,137 @@ async init() {
             }
         }
     }
+
+    // Initialize undo/redo system
+    this.initUndoRedo();
+
+    // Add keyboard shortcuts
+    this.setupKeyboardShortcuts();
+},
+
+// Formula and field suggestion handling
+get filteredFields() {
+    const input = this.getElementProperty('scope') || '';
+    const lastAtIndex = input.lastIndexOf('@');
+    if (lastAtIndex === -1) return [];
+    
+    const searchTerm = input.substring(lastAtIndex + 1).toLowerCase();
+    
+    const filtered = this.availableFields.filter(field => 
+        field.path.toLowerCase().includes(searchTerm) ||
+        field.label.toLowerCase().includes(searchTerm)
+    );
+    
+    // Sort results: exact matches first, then by path length (shorter first), then alphabetically
+    filtered.sort((a, b) => {
+        const aPath = a.path.toLowerCase();
+        const bPath = b.path.toLowerCase();
+        
+        // Exact path matches first
+        if (aPath === searchTerm && bPath !== searchTerm) return -1;
+        if (bPath === searchTerm && aPath !== searchTerm) return 1;
+        
+        // Paths that start with search term
+        if (aPath.startsWith(searchTerm) && !bPath.startsWith(searchTerm)) return -1;
+        if (bPath.startsWith(searchTerm) && !aPath.startsWith(searchTerm)) return 1;
+        
+        // Shorter paths first (root level fields like "spells" vs "spellcasting.spellSlots.level1")
+        const aDots = (a.path.match(/\./g) || []).length;
+        const bDots = (b.path.match(/\./g) || []).length;
+        if (aDots !== bDots) return aDots - bDots;
+        
+        // Alphabetical
+        return aPath.localeCompare(bPath);
+    });
+    
+    return filtered;
+},
+
+isFormula(scope) {
+    return Utils.FormulaEngine.isFormula(scope);
+},
+
+isValidFormula(scope) {
+    if (!scope) return true;
+    if (!this.isFormula(scope)) return scope.startsWith('@');
+    
+    try {
+        // Basic syntax validation - try to parse field references
+        const fieldRefs = Utils.FormulaEngine.parseFieldReferences(scope);
+        return fieldRefs.every(ref => this.availableFields.some(field => field.path === ref));
+    } catch (e) {
+        return false;
+    }
+},
+
+handleFormulaKeydown(event) {
+    if (event.key === '@') {
+        this.showFieldSuggestions = true;
+    } else if (event.key === 'Escape') {
+        this.showFieldSuggestions = false;
+    } else if (event.key === 'ArrowDown' && this.showFieldSuggestions) {
+        event.preventDefault();
+        // Focus first suggestion
+        const firstSuggestion = event.target.parentElement.querySelector('.field-suggestion');
+        if (firstSuggestion) firstSuggestion.focus();
+    }
+},
+
+insertFieldReference(fieldPath) {
+    const currentScope = this.getElementProperty('scope') || '';
+    const lastAtIndex = currentScope.lastIndexOf('@');
+    
+    let newValue;
+    if (lastAtIndex !== -1) {
+        // Replace the partial field reference after the last @
+        newValue = currentScope.substring(0, lastAtIndex) + '@' + fieldPath;
+    } else {
+        // No @ found, append the field reference
+        newValue = currentScope + (currentScope ? ' @' : '@') + fieldPath;
+    }
+    
+    this.updateElementProperty('scope', newValue);
+    this.showFieldSuggestions = false;
+    
+    // Re-focus the input after a short delay
+    this.$nextTick(() => {
+        const formulaInput = document.querySelector('.formula-input');
+        if (formulaInput) {
+            formulaInput.focus();
+            formulaInput.setSelectionRange(newValue.length, newValue.length);
+        }
+    });
+},
+
+elementNeedsScope(elementType) {
+    return ['Control', 'LinearTrack', 'CircularTrack', 'Array', 'MultiStateToggle', 'ComboField', 'Image'].includes(elementType);
 },
 
 elementSupportsBackgroundColor() {
     const type = this.getElementProperty('type');
-    return ['Group', 'Control', 'Array', 'LinearTrack', 'CircularTrack', 'ComboField', 'MultiStateToggle', 'SelectGroup'].includes(type);
+    return ['Group', 'Control', 'Array', 'LinearTrack', 'CircularTrack', 'MultiStateToggle', 'SelectGroup'].includes(type);
 },
 
 elementSupportsBorderColor() {
     const type = this.getElementProperty('type');
-    return ['Group', 'Control', 'Array', 'LinearTrack', 'CircularTrack', 'ComboField', 'Image'].includes(type);
+    return ['Group', 'Control', 'Array', 'LinearTrack', 'CircularTrack', 'Image'].includes(type);
 },
 
 elementSupportsTextColor() {
     const type = this.getElementProperty('type');
-    return ['Control', 'Label', 'ComboField', 'MultiStateToggle', 'SelectGroup'].includes(type);
+    return ['Control', 'Label', 'MultiStateToggle', 'SelectGroup'].includes(type);
 },
 
 hasAnyColorSet() {
-    return !!(this.getElementProperty('backgroundColor') || 
-              this.getElementProperty('borderColor') || 
-              this.getElementProperty('textColor'));
+    if (!this.selectedElementId) return false;
+    const element = this.findElementById(this.selectedElementId);
+    if (!element) return false;
+    return !!(element.backgroundColor || element.borderColor || element.textColor);
+},
+
+findElementById( id, elements = null ) {
+    if (!elements) elements = this.currentTemplate.elements;
+    return Utils.findElementById(elements, id);
 },
 
 selectSchema(schemaId) {
@@ -789,11 +1049,20 @@ loadTemplate() {
     }
     const template = DataManager.getTemplate(this.selectedTemplateId);
     if (template) {
-        this.currentTemplate = Utils.deepClone(template);
-        this.selectedElementId = null;
-        this.isModified = false;
-        this.activeTemplateTab = 0;
-        this.ensureElementIds(this.currentTemplate.elements);
+	this.currentTemplate = Utils.deepClone(template);
+	this.selectedElementId = null;
+	this.isModified = false;
+	this.activeTemplateTab = 0;
+	this.ensureElementIds(this.currentTemplate.elements);
+	// Clear undo/redo history and save the loaded state as initial state
+	if (this.undoManager) {
+	    this.undoManager.clear();
+	    this.undoManager.saveState(this.currentTemplate, 'Template loaded');
+	}
+	// Set up drop zone listeners after template loads
+	this.$nextTick(() => {
+	    this.setupDropZoneListeners();
+	});
     }
 },
                 
@@ -851,40 +1120,79 @@ loadTemplate() {
                     this.isModified = true; 
                 },
                 
-                findElementById( id, elements = null ) {
-                    if (!elements) elements = this.currentTemplate.elements;
-                    for (let element of elements) {
-                        if (element.id === id) {
-                            return element;
-                        }
-                        if (element.elements) {
-                            const found = this.findElementById(id, element.elements);
-                            if (found) return found;
-                        }
-                    }
-                    return null;
-                },
-                
                 getElementProperty( property ) {
                     if (!this.selectedElementId) return '';
                     const element = this.findElementById(this.selectedElementId);
                     return element ? (element[property] || '') : '';
                 },
                 
+getSchemaFieldLabelFromFormula(scopeOrFormula) {
+    if (!this.selectedSchemaId || !scopeOrFormula) {
+        return null;
+    }
+    
+    // If it's a formula, try to extract the primary field reference
+    if (Utils.FormulaEngine.isFormula(scopeOrFormula)) {
+        const fieldRefs = Utils.FormulaEngine.parseFieldReferences(scopeOrFormula);
+        if (fieldRefs.length === 1) {
+            // Single field reference in formula - use that field's label
+            return this.getSchemaFieldLabel(fieldRefs[0]);
+        } else if (fieldRefs.length > 1) {
+            // Multiple field references - create a generic label
+            return "Calculated Value";
+        }
+        return "Formula Result";
+    }
+    
+    // Simple field reference
+    if (scopeOrFormula.startsWith('@')) {
+        const fieldPath = scopeOrFormula.substring(1);
+        return this.getSchemaFieldLabel(fieldPath);
+    }
+    
+    // Legacy format - use existing method
+    return this.getSchemaFieldLabel(scopeOrFormula);
+},
+
 updateElementProperty(property, value) {
+    this.saveState('Property change: ' + property);
     if (!this.selectedElementId) return;
     const element = this.findElementById(this.selectedElementId);
     if (!element) return;
     
     // Auto-populate label when scope is selected
-    if (property === 'scope' && value) {
-        const schemaLabel = this.getSchemaFieldLabel(value);
-        
-        // Only auto-populate if the current label is empty or still default
-        if (schemaLabel) {
+// Auto-populate label when scope is selected
+if (property === 'scope' && value) {
+    // Only auto-populate if the current label is empty, default, or was previously auto-generated
+    const currentLabel = element.label || '';
+    const isEmpty = !currentLabel || currentLabel === 'Field Label';
+    
+    // Check if current label looks like it was auto-generated from scope
+    const wasAutoGenerated = currentLabel && value.includes('.') && 
+        (currentLabel.toLowerCase().includes(value.split('.').pop().toLowerCase()) ||
+         currentLabel === this.getSchemaFieldLabelFromFormula(value));
+    
+    if (isEmpty || wasAutoGenerated) {
+        const schemaLabel = this.getSchemaFieldLabelFromFormula(value);
+        if (schemaLabel && schemaLabel !== currentLabel) {
             element.label = schemaLabel;
         }
     }
+}
+    
+    // Handle layout changes for Groups
+    if (property === 'layout' && element.type === 'Group') {
+        element[property] = value;
+        // Ensure proper structure after layout change
+        this.ensureContainerStructure(element);
+        this.markAsModified();
+        this.currentTemplate = { ...this.currentTemplate };
+        this.$nextTick(() => {
+            this.setupDropZoneListeners();
+        });
+        return;
+    }
+    
     element[property] = value;
     this.markAsModified();
     this.currentTemplate = { ...this.currentTemplate };
@@ -892,38 +1200,57 @@ updateElementProperty(property, value) {
 
 getSchemaFieldLabel(fieldPath) {
     if (!this.selectedSchemaId || !fieldPath) {
-        console.log('No schema ID or field path:', this.selectedSchemaId, fieldPath);
         return null;
     }
     
     const schema = DataManager.getSchema(this.selectedSchemaId);
     if (!schema) {
-        console.log('No schema found for ID:', this.selectedSchemaId);
         return null;
     }
     
-    // Parse the field path - handle both simple and nested paths
-    let pathParts;
-    if (fieldPath.startsWith('#/properties/')) {
-        // Remove the JSON Schema prefix and split on /properties/
-        const cleanPath = fieldPath.replace('#/properties/', '');
-        pathParts = cleanPath.split('/properties/');
-    } else {
-        // Fallback for paths that don't start with #/properties/
-        pathParts = fieldPath.split('/').filter(part => part && part !== 'properties');
+    // Handle dot notation paths (new format)
+    if (fieldPath.includes('.')) {
+        const pathParts = fieldPath.split('.');
+        let current = schema;
+        let label = '';
+        
+        for (let i = 0; i < pathParts.length; i++) {
+            const part = pathParts[i];
+            if (current.properties && current.properties[part]) {
+                current = current.properties[part];
+                const partLabel = current.label || Utils.generateFieldName(part);
+                label = label ? `${label} > ${partLabel}` : partLabel;
+            } else {
+                // Path not found in schema
+                return Utils.generateFieldName(pathParts[pathParts.length - 1]);
+            }
+        }
+        
+        return label;
     }
     
-    let current = schema.properties;
-    for (const part of pathParts) {
-        if (current && current[part]) {
-            current = current[part];
+    // Handle legacy format (existing logic)
+    let pathParts;
+    if (fieldPath.startsWith('#/properties/')) {
+        pathParts = fieldPath.replace('#/properties/', '').split('/properties/');
+    } else {
+        pathParts = [fieldPath];
+    }
+    
+    let current = schema;
+    let label = '';
+    
+    for (let i = 0; i < pathParts.length; i++) {
+        const part = pathParts[i];
+        if (current.properties && current.properties[part]) {
+            current = current.properties[part];
+            const partLabel = current.label || Utils.generateFieldName(part);
+            label = label ? `${label} > ${partLabel}` : partLabel;
         } else {
-            return this.generateFieldNameFromPath(fieldPath);
+            return Utils.generateFieldName(part);
         }
     }
     
-    // Return the label if it exists, otherwise generate from field name
-    const label = current.label || this.generateFieldNameFromPath(fieldPath);
     return label;
 },
 
@@ -955,26 +1282,43 @@ generateFieldNameFromPath(path) {
                     this.showPlaceholder = -1;
                 },
                 
-                handleDrop(event, targetArray) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const dropIndex = this.showPlaceholder >= 0 ? this.showPlaceholder : targetArray.length;
-                    if (this.isDraggingFromPalette && this.draggedElement) {
-                        const newElement = this.createElement(this.draggedElement);
-                        targetArray.splice(dropIndex, 0, newElement);
-                        this.markAsModified();
-                    } else if (!this.isDraggingFromPalette && this.draggedElementId) {
-                        const element = Utils.findElementById(this.currentTemplate.elements, this.draggedElementId);
-                        if (element) {
-                            Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
-                            targetArray.splice(dropIndex, 0, element);
-                            this.markAsModified();
-                        }
-                    }
-                    this.dragOver = false;
-                    this.showPlaceholder = -1;
-                    this.updateTemplate();
-                },
+handleDrop(event, targetArray) {
+    this.saveState('Add/move element');
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // If we have a specific target container (including groups), handle it differently
+    if (this.dragTargetContainer) {
+        const container = this.findElementById(this.dragTargetContainer);
+        if (container) {
+            const actualTargetArray = this.getContainerTargetArray(container, this.dragTargetSubContainer);
+            if (actualTargetArray) {
+                targetArray = actualTargetArray;
+            }
+        }
+    }
+    
+    const dropIndex = this.showPlaceholder >= 0 ? this.showPlaceholder : targetArray.length;
+    
+    if (this.isDraggingFromPalette && this.draggedElement) {
+        const newElement = this.createElement(this.draggedElement);
+        targetArray.splice(dropIndex, 0, newElement);
+        this.markAsModified();
+    } else if (!this.isDraggingFromPalette && this.draggedElementId) {
+        const element = this.findElementById(this.currentTemplate.elements, this.draggedElementId);
+        if (element) {
+            Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
+            targetArray.splice(dropIndex, 0, element);
+            this.markAsModified();
+        }
+    }
+    
+    this.dragOver = false;
+    this.showPlaceholder = -1;
+    this.dragTargetContainer = null;
+    this.dragTargetSubContainer = null;
+    this.updateTemplate();
+},
                 
                 handleDragOver(event) {
                     this.dragOver = true;
@@ -1001,9 +1345,280 @@ generateFieldNameFromPath(path) {
                     event.stopPropagation();
                     this.handleDrop(event, this.currentTemplate.elements);
                 },
+
+// Replace dragTargetGroup, dragTargetContainer, etc. with:
+dragTargetContainer: null,
+dragTargetSubContainer: null, // For column index, etc.
+
+handleContainerDragOver(event, containerId, subIndex = null) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    this.dragTargetContainer = containerId;
+    this.dragTargetSubContainer = subIndex;
+    this.dragOver = true;
+    
+    // Add visual feedback
+    const selector = subIndex !== null 
+        ? `[data-container-id="${containerId}"][data-sub-index="${subIndex}"]`
+        : `[data-container-id="${containerId}"]`;
+    
+    // Remove drag-over class from all zones
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.classList.remove('drag-over');
+    });
+    
+    // Add drag-over class to current target
+    const targetZone = document.querySelector(selector);
+    if (targetZone) {
+        targetZone.classList.add('drag-over');
+    }
+    
+    const container = this.findElementById(containerId);
+    if (!container) return;
+    
+    // Get the target array for dropping
+    const targetArray = this.getContainerTargetArray(container, subIndex);
+    if (!targetArray) return;
+    
+    // Determine drop position based on mouse position
+    this.calculateDropPosition(event, targetArray);
+    this.updateAllPlaceholders();
+},
+
+handleContainerDrop(event, containerId, subIndex = null) {
+    this.saveState('Add/move element');
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const container = this.findElementById(containerId);
+    if (!container) return;
+    
+    const targetArray = this.getContainerTargetArray(container, subIndex);
+    if (!targetArray) return;
+    
+    const dropIndex = this.showPlaceholder >= 0 ? this.showPlaceholder : targetArray.length;
+    
+    if (this.isDraggingFromPalette && this.draggedElement) {
+        const newElement = this.createElement(this.draggedElement);
+        targetArray.splice(dropIndex, 0, newElement);
+        this.markAsModified();
+    } else if (!this.isDraggingFromPalette && this.draggedElementId) {
+        const element = this.findElementById(this.draggedElementId);
+        if (element) {
+            // More thorough removal - search everywhere
+            const removed = this.removeElementFromAnywhere(this.draggedElementId);
+            if (removed) {
+                targetArray.splice(dropIndex, 0, element);
+                this.markAsModified();
+            }
+        }
+    }
+    
+    this.cleanupDragState();
+},
+
+removeElementFromAnywhere(elementId) {
+    // Use the deep removal method directly
+    const removed = this.deepRemoveElement(this.currentTemplate.elements, elementId);
+    return removed;
+},
+
+deepRemoveElement(elements, targetId) {
+    for (let i = 0; i < elements.length; i++) {
+        const element = elements[i];
+        
+        if (element.id === targetId) {
+            elements.splice(i, 1);
+            return true;
+        }
+        
+        if (element.elements) {
+            if ((element.type === 'Group' || element.type === 'Container') && element.layout === 'columns') {
+                // Groups/Containers with columns have arrays of arrays
+                for (let j = 0; j < element.elements.length; j++) {
+                    if (Array.isArray(element.elements[j])) {
+                        if (this.deepRemoveElement(element.elements[j], targetId)) {
+                            return true;
+                        }
+                    }
+                }
+            } else if (element.type === 'Group' || element.type === 'Container') {
+                // Groups/Containers with other layouts have simple arrays
+                if (this.deepRemoveElement(element.elements, targetId)) {
+                    return true;
+                }
+            } else if (Array.isArray(element.elements)) {
+                // Fallback for other types with elements
+                if (this.deepRemoveElement(element.elements, targetId)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+},
+
+handleContainerDragLeave(event) {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+        this.dragTargetContainer = null;
+        this.dragTargetSubContainer = null;
+        this.updateAllPlaceholders();
+    }
+},
+
+getContainerTargetArray(container, subIndex = null) {
+    this.ensureContainerStructure(container);
+    
+    if (container.type === 'Group' && container.layout === 'columns' && subIndex !== null) {
+        // Group with columns layout - target specific column
+        return container.elements[subIndex];
+    } else if (container.type === 'Group') {
+        // Group with other layouts - target main elements array
+        if (!container.elements) container.elements = [];
+        return container.elements;
+    } else if (container.type === 'Container') {
+        // Legacy Container support - treat as Group
+        this.ensureContainerStructure(container);
+        if (container.layout === 'columns' && subIndex !== null) {
+            return container.elements[subIndex];
+        }
+        return container.elements;
+    }
+    return null;
+},
+
+ensureContainerStructure(container) {
+    if (!container.elements) container.elements = [];
+    
+    if ((container.type === 'Group' || container.type === 'Container') && container.layout === 'columns') {
+        const columns = container.columns || 2;
+        
+        // If switching TO columns layout and elements is a flat array, preserve elements
+        if (!Array.isArray(container.elements[0])) {
+            const flatElements = [...container.elements];
+            container.elements = [];
+            for (let i = 0; i < columns; i++) {
+                container.elements.push([]);
+            }
+            // Put all existing elements in the first column
+            if (flatElements.length > 0) {
+                container.elements[0] = flatElements;
+            }
+        } else {
+            // Ensure we have the right number of column arrays
+            while (container.elements.length < columns) {
+                container.elements.push([]);
+            }
+            
+            // Ensure each column is an array
+            for (let i = 0; i < columns; i++) {
+                if (!Array.isArray(container.elements[i])) {
+                    container.elements[i] = [];
+                }
+            }
+            
+            // Remove extra columns if we reduced the column count
+            if (container.elements.length > columns) {
+                // Move elements from removed columns to the last remaining column
+                const extraElements = container.elements.slice(columns).flat();
+                if (extraElements.length > 0) {
+                    container.elements[columns - 1].push(...extraElements);
+                }
+                container.elements = container.elements.slice(0, columns);
+            }
+        }
+    } else if (container.type === 'Group' || container.type === 'Container') {
+        // Groups/Containers with non-column layouts need simple arrays
+        if (container.elements.length > 0 && Array.isArray(container.elements[0])) {
+            // Switching FROM columns layout - flatten the arrays
+            container.elements = container.elements.flat();
+        }
+        if (!Array.isArray(container.elements)) {
+            container.elements = [];
+        }
+    }
+},
+
+calculateDropPosition(event, targetArray) {
+    // Find all rendered elements in the current drop target
+    const containerSelector = this.dragTargetSubContainer !== null 
+        ? `[data-container-id="${this.dragTargetContainer}"][data-sub-index="${this.dragTargetSubContainer}"]`
+        : `[data-container-id="${this.dragTargetContainer}"]`;
+    
+    const containerElement = document.querySelector(containerSelector);
+    if (!containerElement) {
+        this.showPlaceholder = targetArray.length;
+        return;
+    }
+    
+    const elementWrappers = containerElement.querySelectorAll('.element-wrapper, .group-element-wrapper, .container-element-wrapper');
+    
+    let dropIndex = targetArray.length; // Default to end
+    
+    for (let i = 0; i < elementWrappers.length; i++) {
+        const elemRect = elementWrappers[i].getBoundingClientRect();
+        const elemMidY = elemRect.top + elemRect.height / 2;
+        
+        if (event.clientY < elemMidY) {
+            dropIndex = i;
+            break;
+        }
+    }
+    
+    this.showPlaceholder = dropIndex;
+},
+
+updateAllPlaceholders() {
+    // Hide all placeholders
+    document.querySelectorAll('.drag-placeholder').forEach(p => {
+        p.classList.remove('show');
+    });
+    
+    // Show the appropriate placeholder
+    if (this.dragTargetContainer && this.showPlaceholder >= 0) {
+        const selector = this.dragTargetSubContainer !== null 
+            ? `[data-container-id="${this.dragTargetContainer}"][data-sub-index="${this.dragTargetSubContainer}"]`
+            : `[data-container-id="${this.dragTargetContainer}"]`;
+        
+        const containerElement = document.querySelector(selector);
+        if (containerElement) {
+            const elementWrappers = containerElement.querySelectorAll('.element-wrapper, .group-element-wrapper, .container-element-wrapper');
+            
+            if (this.showPlaceholder < elementWrappers.length) {
+                const placeholder = elementWrappers[this.showPlaceholder].querySelector('.drag-placeholder');
+                if (placeholder) placeholder.classList.add('show');
+            } else {
+                const finalPlaceholder = containerElement.querySelector('.final-placeholder');
+                if (finalPlaceholder) finalPlaceholder.classList.add('show');
+            }
+        }
+    }
+},
+
+cleanupDragState() {
+    this.dragOver = false;
+    this.showPlaceholder = -1;
+    this.dragTargetContainer = null;
+    this.dragTargetSubContainer = null;
+    
+    // Remove all drag-over classes
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.classList.remove('drag-over');
+    });
+    
+    this.updateAllPlaceholders();
+    this.updateTemplate();
+},
+
+isDraggingOverMainArea() {
+    // Check if we're still dragging over any valid drop area
+    return this.dragTargetGroup !== null;
+},
                 
                 addTabToTemplate() {
                     if (this.currentTemplate.type === 'Tabs') {
+			this.saveState('Add tab');
                         const newTab = {
                             id: Utils.generateId(),
                             type: 'Tab',
@@ -1024,6 +1639,7 @@ generateFieldNameFromPath(path) {
                 },
                 
                 handleTabDrop(event, tabIndex) {
+		    this.saveState('Add/move element');
                     event.preventDefault();
                     event.stopPropagation();
                     const tab = this.currentTemplate.elements[tabIndex];
@@ -1036,7 +1652,7 @@ generateFieldNameFromPath(path) {
                         tab.elements.splice(dropIndex, 0, newElement);
                         this.markAsModified();
                     } else if (!this.isDraggingFromPalette && this.draggedElementId) {
-                        const element = Utils.findElementById(this.currentTemplate.elements, this.draggedElementId);
+                        const element = this.findElementById(this.currentTemplate.elements, this.draggedElementId);
                         if (element) {
                             Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
                             tab.elements.splice(dropIndex, 0, element);
@@ -1061,7 +1677,7 @@ generateFieldNameFromPath(path) {
                     event.preventDefault();
                     event.stopPropagation();
                     
-                    const group = Utils.findElementById(this.currentTemplate.elements, groupId);
+                    const group = this.findElementById(this.currentTemplate.elements, groupId);
                     if (!group || !group.elements) return;
                     
                     if (this.isDraggingFromPalette && this.draggedElement) {
@@ -1070,7 +1686,7 @@ generateFieldNameFromPath(path) {
                         this.markAsModified();
                         this.updateTemplate();
                     } else if (!this.isDraggingFromPalette && this.draggedElementId) {
-                        const element = Utils.findElementById(this.currentTemplate.elements, this.draggedElementId);
+                        const element = this.findElementById(this.currentTemplate.elements, this.draggedElementId);
                         if (element) {
                             Utils.removeElementById(this.currentTemplate.elements, this.draggedElementId);
                             group.elements.push(element);
@@ -1095,13 +1711,26 @@ generateFieldNameFromPath(path) {
                         element.scope = '';
                         element.controlType = template.controlType || 'text';
 			if ( template.controlType === 'textarea' ) element.richText = false;
-                    } else if ( template.type === 'Group' ) {
-                        element.elements = [];
-                        element.layout = 'vertical';
+		    } else if ( template.type === 'Group' ) {
+			element.elements = [];
+			element.layout = 'vertical';
+			element.columns = 2;
+			element.gap = 'medium';
+			element.style = 'plain';
+			element.collapsible = false;
+			element.defaultCollapsed = 'open';
+			this.$nextTick(() => {
+			    this.$nextTick(() => { this.setupDropZoneListeners(); });
+			});
                     } else if ( template.type === 'Tabs' ) {
                         element.elements = [{  id: Utils.generateId(), type: 'Tab', label: 'Tab 1', elements: [] }];
                     } else if ( template.type === 'Array' ) {
                         element.scope = '';
+			element.displayStyle = 'table';
+			element.allowAdd = true;
+			element.allowRemove = true;
+			element.allowReorder = true;
+			element.itemTemplate = 'default';
                     } else if ( template.type === 'LinearTrack' || template.type === 'CircularTrack' ) {
                         element.scope = '';
                         element.segments = 6;
@@ -1145,43 +1774,102 @@ generateFieldNameFromPath(path) {
 		    }
 		},
                 
-                deleteElement( elementId ) {
-                    if ( elementId ) {
-                        Utils.removeElementById(this.currentTemplate.elements, elementId);
-                        if (this.selectedElementId === elementId) {
-                            this.selectedElementId = null;
-                        }
-                    }
-                    this.markAsModified();
-                    this.updateTemplate();
-                },
+deleteElement( elementId ) {
+    if ( elementId ) {
+        this.saveState('Delete element');
+        // Use the same deep removal method as drag and drop
+        const removed = this.removeElementFromAnywhere(elementId);
+        if (removed && this.selectedElementId === elementId) {
+            this.selectedElementId = null;
+        }
+        this.markAsModified();
+        this.updateTemplate();
+    }
+},
                 
-                duplicateElement( elementId ) {
-                    const element = this.findElementById(elementId);
-                    if ( !element ) return;
-                    const duplicate = Utils.deepClone(element);
-                    duplicate.id = Utils.generateId();
-                    duplicate.label = (duplicate.label || 'Element') + ' Copy';
-                    this.updateNestedIds(duplicate);
-                    this.currentTemplate.elements.push(duplicate);
-                    this.markAsModified();
-                    this.updateTemplate();
-                },
+duplicateElement( elementId ) {
+    this.saveState('Duplicate element');
+    const element = this.findElementById(elementId);
+    if ( !element ) return;
+    
+    const duplicate = Utils.deepClone(element);
+    duplicate.id = Utils.generateId();
+    
+    // Preserve the original element type and properties
+    if (duplicate.label) {
+        duplicate.label = duplicate.label + ' Copy';
+    } else {
+        duplicate.label = (duplicate.type || 'Element') + ' Copy';
+    }
+    
+    // Ensure nested elements get new IDs but preserve their structure
+    this.updateNestedIds(duplicate);
+    
+    // Find the parent container and add the duplicate
+    const parentContainer = Utils.findElementParent(this.currentTemplate.elements, elementId);
+    if (parentContainer) {
+        parentContainer.push(duplicate);
+    } else {
+        // Element is at root level
+        this.currentTemplate.elements.push(duplicate);
+    }
+    
+    this.markAsModified();
+    this.updateTemplate();
+},
                 
-                updateNestedIds( element ) {
-                    if ( element.elements ) {
-                        element.elements.forEach(child => {
-                            child.id = Utils.generateId();
-                            this.updateNestedIds(child);
-                        });
-                    }
-                },
-                
-                updateTemplate() {
-                    this.markAsModified();
-                    this.currentTemplate = { ...this.currentTemplate };
-                    this.$nextTick(() => { window.editorInstance = this; });
-                },
+updateNestedIds( element ) {
+    if ( element.elements ) {
+        element.elements.forEach(child => {
+            child.id = Utils.generateId();
+            this.updateNestedIds(child);
+        });
+    }
+},
+
+updateTemplate() {
+    this.markAsModified();
+    this.currentTemplate = { ...this.currentTemplate };
+    this.$nextTick(() => { 
+        window.editorInstance = this;
+        this.setupDropZoneListeners();
+    });
+},
+
+setupDropZoneListeners() {
+    // Remove existing listeners
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.replaceWith(zone.cloneNode(true));
+    });
+    
+    // Add unified drop zone listeners
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        const containerId = zone.getAttribute('data-container-id');
+        const subIndex = zone.getAttribute('data-sub-index');
+        
+        if (!containerId) return;
+        
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleContainerDragOver(e, containerId, subIndex ? parseInt(subIndex) : null);
+        });
+        
+        zone.addEventListener('dragleave', (e) => {
+            if (!zone.contains(e.relatedTarget)) {
+                this.handleContainerDragLeave(e);
+            }
+        });
+        
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleContainerDrop(e, containerId, subIndex ? parseInt(subIndex) : null);
+        });
+    });
+    
+    this.updateAllPlaceholders();
+},
                 
 async saveTemplate() {
     if (!this.currentTemplate) {
@@ -1252,6 +1940,188 @@ async saveTemplate() {
 		    this.markAsModified();
 		    this.currentTemplate = { ...this.currentTemplate };
 		},
+
+// Initialize Undo/Redo System
+initUndoRedo() {
+    this.undoManager = new Utils.UndoRedoManager(50);
+    
+    // Set up state getter
+    this.undoManager.setCurrentStateGetter(() => this.currentTemplate);
+    
+    // Set up state change callback
+    this.undoManager.onStateChange = () => {
+        this.canUndo = this.undoManager.canUndo();
+        this.canRedo = this.undoManager.canRedo();
+    };
+},
+
+saveState(description = 'Template change') {
+    if (this.undoManager && !this.undoManager.isUndoRedoOperation) {
+        this.undoManager.saveState(this.currentTemplate, description);
+    }
+},
+
+setupKeyboardShortcuts() {
+    this.keyboardManager = new Utils.KeyboardShortcuts();
+    this.keyboardManager.startListening();
+    
+    // Create action provider with all available actions
+    const actionProvider = {
+        actions: {
+            // File operations
+            'save': () => { if (this.isModified)  this.saveTemplate(); },
+            'import': this.importTemplate.bind(this),
+            'export': () => { if (this.selectedTemplateId && this.selectedTemplateId !== '_new')  this.exportTemplate(); },
+            'new': this.createNewTemplate.bind(this),
+            'undo': this.undo.bind(this),
+            'redo': this.redo.bind(this),
+            'toggle-left-pane': this.toggleLeftPane.bind(this),
+            'toggle-right-pane': this.toggleRightPane.bind(this),
+            'preview': this.previewTemplate.bind(this)
+        },
+        getAction: (actionId) => actionProvider.actions[actionId],
+        getAvailableActions: () => Object.keys(actionProvider.actions)
+    };
+    
+    this.$nextTick(() => {
+        Utils.ActionRegistry.registerProvider('template', actionProvider, {
+            name: 'Template Editor',
+            description: 'Actions available in the template editor',
+            icon: '📝'
+        });
+        
+        Utils.applyShortcutsFromRegistry(this.keyboardManager, 'template', actionProvider);
+    });
+},
+
+undo() {
+    if (!this.undoManager || !this.undoManager.canUndo()) {
+        Utils.showNotification('Nothing to undo', 'info');
+        return;
+    }
+    
+    const previousState = this.undoManager.undo();
+    if (previousState) {
+        Object.assign(this.currentTemplate, Utils.deepClone(previousState));
+        this.selectedElementId = null; // Clear selection since element might not exist
+        this.isModified = true;
+        
+        // Force re-render
+        this.$nextTick(() => {
+            this.currentTemplate = { ...this.currentTemplate };
+            this.undoManager.finishUndoRedo();
+        });
+    }
+},
+
+redo() {
+    if (!this.undoManager || !this.undoManager.canRedo()) {
+        Utils.showNotification('Nothing to redo', 'info');
+        return;
+    }
+    
+    const nextState = this.undoManager.redo();
+    if (nextState) {
+        Object.assign(this.currentTemplate, Utils.deepClone(nextState));
+        this.selectedElementId = null; // Clear selection since element might not exist
+        this.isModified = true;
+        
+        // Force re-render
+        this.$nextTick(() => {
+            this.currentTemplate = { ...this.currentTemplate };
+            this.undoManager.finishUndoRedo();
+        });
+    }
+},
+
+importTemplate() {
+    if (!this.selectedSchemaId) {
+        Utils.showNotification('Please select a system first', 'error');
+        return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    this.handleTemplateImport(importedData);
+                } catch (error) {
+                    Utils.showNotification('Invalid JSON file. Please check the file format.', 'error');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.onerror = () => {
+                Utils.showNotification('Error reading file', 'error');
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+},
+
+handleTemplateImport(importedData) {
+    // Validate imported template data
+    if (!importedData || typeof importedData !== 'object') {
+        Utils.showNotification('Invalid template data format', 'error');
+        return;
+    }
+    
+    // Check if it's a complete template object or validate required fields
+    if (!importedData.title) {
+        Utils.showNotification('Template must have a title', 'error');
+        return;
+    }
+    
+    if (!importedData.elements || !Array.isArray(importedData.elements)) {
+        Utils.showNotification('Template must have valid elements array', 'error');
+        return;
+    }
+    
+    // Check if schema matches or is compatible
+    const currentSchema = DataManager.getSchema(this.selectedSchemaId);
+    if (importedData.schema && importedData.schema !== currentSchema.index) {
+        const confirmMessage = `This template was designed for "${importedData.schema}" but you have "${currentSchema.index}" selected. Import anyway?`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+    }
+    
+    // Save current state for undo
+    this.saveState('Template import');
+    
+    // Prepare the template data
+    const templateData = {
+        title: importedData.title + (importedData.title.includes('(Imported)') ? '' : ' (Imported)'),
+        schema: currentSchema.index, // Use currently selected schema
+        type: importedData.type || 'VerticalLayout',
+        elements: importedData.elements || []
+    };
+    
+    // Ensure all elements have IDs
+    this.ensureElementIds(templateData.elements);
+    
+    // Import the template
+    this.currentTemplate = Utils.deepClone(templateData);
+    this.selectedTemplateId = '_new'; // Treat as new template
+    this.selectedElementId = null;
+    this.isModified = true;
+    this.activeTemplateTab = 0;
+    
+    // Update available fields for the current schema
+    this.availableFields = DataManager.generateFieldPaths(this.selectedSchemaId);
+    
+    this.$nextTick(() => {
+        this.currentTemplate = { ...this.currentTemplate };
+    });
+    
+    Utils.showNotification(`Template "${templateData.title}" imported successfully`, 'success');
+},
                 
 		renderElement( element, index ) {
 		    return Utils.ElementRenderer.renderElement(element, {
