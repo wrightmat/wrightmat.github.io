@@ -1,8 +1,8 @@
 {
   "id": "template_17209d78-4481-4a99-a79b-2eaccb118e4f",
   "created": "2025-07-01T20:00:00.000Z",
-  "modified": "2025-07-05T18:32:54.303Z",
-  "version": 5,
+  "modified": "2025-07-12T19:21:11.415Z",
+  "version": 11,
   "index": "bitd-default",
   "title": "BitD Default Sheet",
   "schema": "bitd",
@@ -15,7 +15,7 @@
       "elements": [
         {
           "type": "Control",
-          "scope": "#/properties/name",
+          "scope": "@name",
           "label": "Name",
           "controlType": "text",
           "id": "elem_1751727184066_55korkt1z"
@@ -72,33 +72,6 @@
         }
       ],
       "id": "elem_1751727184066_4svxts7zr"
-    },
-    {
-      "id": "elem_1751728543340_3ttpy3mgt",
-      "type": "MultiStateToggle",
-      "label": "Multi-State Toggle",
-      "style": {},
-      "backgroundColor": "#d97706",
-      "borderColor": "",
-      "scope": "",
-      "states": 2,
-      "shape": "circle",
-      "size": "medium",
-      "labelPosition": "right"
-    },
-    {
-      "id": "elem_1751728547087_47xvhuwy6",
-      "type": "SelectGroup",
-      "label": "Select Group",
-      "style": "pills",
-      "backgroundColor": "#ec4899",
-      "borderColor": "",
-      "scope": "",
-      "optionsSource": "field",
-      "optionsScope": "#/properties/playbook",
-      "staticOptions": "",
-      "selectionType": "multi",
-      "displayMode": "all"
     }
   ]
 }

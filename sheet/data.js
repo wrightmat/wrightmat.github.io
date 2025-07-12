@@ -1,15 +1,18 @@
-// TTRPG Data Manager - Handles loading JSON files and server communication for saving
+// TTRPG Data Manager - Handles loading JSON files and server communication for CRUD operations
 
 class DataManagerClass {
     constructor() {
         this.schemas = {};
         this.templates = {};
         this.characters = {};
+	this.schemaIndexMap = {};
+        this.templateIndexMap = {};
+        this.characterIndexMap = {};
         this.loaded = false;
         this.serverUrl = window.location.origin; // Use current origin for server requests
     }
 
-    // Load all data files
+    //============= Load Functions
     async loadAll() {
 	if ( this.loaded ) return;
     
@@ -24,124 +27,167 @@ class DataManagerClass {
 	}
     }
 
-async loadAllTemplates() {
-    try {
-        const response = await fetch('/list/templates');
-        if (response.ok) {
-            const templateIds = await response.json();
-            const templatePromises = templateIds.map(id => this.loadTemplate(id));
-            await Promise.all(templatePromises);
-            console.log(`Loaded ${templateIds.length} templates from filesystem`);
-        } else {
-            throw new Error('Failed to fetch template list');
-        }
-    } catch (error) {
-        console.warn('Could not load template list, falling back to hardcoded templates:', error);
-        // Fallback to hardcoded templates
-        await Promise.all([
-            this.loadTemplate('5e-default'),
-            this.loadTemplate('bitd-default')
-        ]);
-    }
-}
+    async loadAllSchemas() {
+        try {
+            const response = await fetch('/list/schemas');
+            if ( response.ok ) {
+                const schemaIds = await response.json();
+                const schemaPromises = schemaIds.map(id => this.loadSchema(id));
+                await Promise.all(schemaPromises);
+                console.log(`Loaded ${schemaIds.length} schemas from filesystem`);
+            } else {
+                throw new Error('Failed to fetch schema list');
+            }
 
-async loadAllCharacters() {
-    try {
-        const response = await fetch('/list/characters');
-        if (response.ok) {
-            const characterIds = await response.json();
-            const characterPromises = characterIds.map(id => this.loadCharacter(id));
-            await Promise.all(characterPromises);
-            console.log(`Loaded ${characterIds.length} characters from filesystem`);
-        } else {
-            throw new Error('Failed to fetch character list');
+        } catch (error) {
+            console.warn('Could not load schema list, falling back to hardcoded schemas:', error);
+            // Fallback to hardcoded schemas - TODO: UPDATE TO A SINGLE DUMMY/EXAMPLE SCHEMA
+            await Promise.all([
+                this.loadSchema('5e'),
+                this.loadSchema('bitd')
+            ]);
         }
-    } catch (error) {
-        console.warn('Could not load character list, falling back to hardcoded characters:', error);
-        // Fallback to hardcoded characters
-        await Promise.all([
-            this.loadCharacter('branik'),
-            this.loadCharacter('elandra')
-        ]);
     }
-}
 
-async loadAllSchemas() {
-    try {
-        const response = await fetch('/list/schemas');
-        if (response.ok) {
-            const schemaIds = await response.json();
-            const schemaPromises = schemaIds.map(id => this.loadSchema(id));
-            await Promise.all(schemaPromises);
-            console.log(`Loaded ${schemaIds.length} schemas from filesystem`);
-        } else {
-            throw new Error('Failed to fetch schema list');
+    async loadAllTemplates() {
+        try {
+            const response = await fetch('/list/templates');
+            if ( response.ok ) {
+                const templateIds = await response.json();
+                const templatePromises = templateIds.map(id => this.loadTemplate(id));
+                await Promise.all(templatePromises);
+                console.log(`Loaded ${templateIds.length} templates from filesystem`);
+            } else {
+                throw new Error('Failed to fetch template list');
+            }
+
+        } catch (error) {
+            console.warn('Could not load template list, falling back to hardcoded templates:', error);
+            // Fallback to hardcoded templates - TODO: UPDATE TO A SINGLE DUMMY/EXAMPLE TEMPLATE
+            await Promise.all([
+                this.loadTemplate('5e-default'),
+                this.loadTemplate('bitd-default')
+            ]);
         }
-    } catch (error) {
-        console.warn('Could not load schema list, falling back to hardcoded schemas:', error);
-        // Fallback to hardcoded schemas
-        await Promise.all([
-            this.loadSchema('5e'),
-            this.loadSchema('bitd')
-        ]);
     }
-}
 
-    async loadSchema(schemaId) {
+    async loadAllCharacters() {
+        try {
+            const response = await fetch('/list/characters');
+            if ( response.ok ) {
+                const characterIds = await response.json();
+                const characterPromises = characterIds.map(id => this.loadCharacter(id));
+                await Promise.all(characterPromises);
+                console.log(`Loaded ${characterIds.length} characters from filesystem`);
+            } else {
+                throw new Error('Failed to fetch character list');
+            }
+
+        } catch (error) {
+            console.warn('Could not load character list, falling back to hardcoded characters:', error);
+            // Fallback to hardcoded characters - TODO: UPDATE TO A SINGLE DUMMY/EXAMPLE CHARACTER
+            await Promise.all([
+                this.loadCharacter('branik'),
+                this.loadCharacter('elandra')
+            ]);
+        }
+    }
+
+    async loadSchema( schemaId ) {
         try {
             const response = await fetch(`schemas/${schemaId}.json`);
             if (!response.ok) throw new Error(`Failed to load schema: ${schemaId}`);
-            this.schemas[schemaId] = await response.json();
+            const schema = await response.json();
+            this.schemas[schemaId] = schema;
+            if ( schema.index )  this.schemaIndexMap[schema.index] = schemaId;
+
         } catch (error) {
             console.error(`Error loading schema ${schemaId}:`, error);
         }
     }
 
-    async loadTemplate(templateId) {
+    async loadTemplate( templateId ) {
         try {
             const response = await fetch(`templates/${templateId}.json`);
             if (!response.ok) throw new Error(`Failed to load template: ${templateId}`);
-            this.templates[templateId] = await response.json();
+            const template = await response.json();
+            this.templates[templateId] = template;
+            if ( template.index )  this.templateIndexMap[template.index] = templateId;
+
         } catch (error) {
             console.error(`Error loading template ${templateId}:`, error);
         }
     }
 
-    async loadCharacter(characterId) {
+    async loadCharacter( characterId ) {
         try {
             const response = await fetch(`characters/${characterId}.json`);
             if (!response.ok) throw new Error(`Failed to load character: ${characterId}`);
-            this.characters[characterId] = await response.json();
+            const character = await response.json();
+            this.characters[characterId] = character;
+            if ( character.index )  this.characterIndexMap[character.index] = characterId;
+
         } catch (error) {
             console.error(`Error loading character ${characterId}:`, error);
         }
     }
 
-    // Server communication helper
-    async makeServerRequest(endpoint, data = null) {
-        const url = `${this.serverUrl}/${endpoint}`;
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        };
 
-        try {
-            const response = await fetch(url, options);
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error(`Server request failed: ${endpoint}`, error);
-            throw error;
-        }
+    //========== Get Functions
+
+    getSchemas() {  return this.schemas;  }
+    getTemplates() {  return this.templates;  }
+    getCharacters() {  return this.characters;  }
+
+    getSchema( ref ) {
+        if ( this.schemas[ref] )  return this.schemas[ref];
+        return this.getSchemaByIndex(ref);    // Fall back to index lookup if direct ID lookup fails
     }
 
-// Save schema with metadata and actual server write
+    getTemplate( ref ) {
+        if ( this.templates[ref] )  return this.templates[ref];
+        return this.getTemplateByIndex(ref);    // Fall back to index lookup if direct ID lookup fails
+    }
+
+    getCharacter( ref ) {
+        if ( this.characters[ref] )  return this.characters[ref];
+        return this.getCharacterByIndex(ref);    // Fall back to index lookup if direct ID lookup fails
+    }
+
+    getSchemaByIndex( index ) {
+        const schemaId = this.schemaIndexMap[index];
+        return schemaId ? this.schemas[schemaId] : undefined;
+    }
+
+    getTemplateByIndex( index ) {
+        const templateId = this.templateIndexMap[index];
+        return templateId ? this.templates[templateId] : undefined;
+    }
+
+    getCharacterByIndex( index ) {
+        const characterId = this.characterIndexMap[index];
+        return characterId ? this.characters[characterId] : undefined;
+    }
+
+    getTemplatesForSchema( schemaId ) {
+        return Object.entries(this.templates)
+            .filter(([_, template]) => template.schema === schemaId)
+            .reduce((obj, [id, template]) => { obj[id] = template; return obj;
+            }, {});
+    }
+
+    getCharactersForTemplate( schemaId, templateId ) {
+        return Object.entries(this.characters)
+            .filter(([_, char]) => char.system === schemaId && char.template === templateId)
+            .reduce((obj, [id, char]) => { obj[id] = char; return obj;
+            }, {});
+    }
+
+
+    //========== CRUD Functions
+
+
+
 async saveSchema(schemaData) {
     // For new schemas without an ID, generate one
     if (!schemaData.id) {
@@ -193,7 +239,7 @@ async saveSchema(schemaData) {
 }
 
 // Save template with metadata and actual server write
-async saveTemplate(templateData) {
+async saveTemplate( templateData ) {
     // For new templates without an ID, generate one
     if (!templateData.id) {
         const dataWithMeta = Utils.addMetadata(templateData, 'template');
@@ -241,12 +287,14 @@ async saveTemplate(templateData) {
             throw error;
         }
     }
+
+    // Update index map after successful save
+    if ( template.index && savedId )  this.templateIndexMap[template.index] = savedId;
 }
 
-// Save character with metadata and actual server write
-async saveCharacter(characterData) {
+async saveCharacter( characterData ) {
     // For new characters without an ID, generate one
-    if (!characterData.id) {
+    if ( !characterData.id ) {
         const dataWithMeta = Utils.addMetadata(characterData, 'character');
         const filename = `${dataWithMeta.id}.json`;
         
@@ -292,13 +340,17 @@ async saveCharacter(characterData) {
             throw error;
         }
     }
+
+    // Update index map after successful save
+    if (character.index && savedId)  this.characterIndexMap[character.index] = savedId;
 }
 
-    // Delete schema from server
-    async deleteSchema(schemaId) {
+    async deleteSchema( schemaId ) {
         try {
+	    const schema = this.schemas[schemaId];
             await this.makeServerRequest(`delete?file=${schemaId}.json&dir=schemas`);
             delete this.schemas[schemaId];
+            if ( schema && schema.index )  delete this.schemaIndexMap[schema.index];
             console.log(`Schema ${schemaId} deleted from server`);
             return true;
         } catch (error) {
@@ -309,11 +361,12 @@ async saveCharacter(characterData) {
         }
     }
 
-    // Delete template from server
-    async deleteTemplate(templateId) {
+    async deleteTemplate( templateId ) {
         try {
+	    const template = this.templates[templateId];
             await this.makeServerRequest(`delete?file=${templateId}.json&dir=templates`);
             delete this.templates[templateId];
+            if ( template && template.index )  delete this.templateIndexMap[template.index];
             console.log(`Template ${templateId} deleted from server`);
             return true;
         } catch (error) {
@@ -324,11 +377,12 @@ async saveCharacter(characterData) {
         }
     }
 
-    // Delete character from server
-    async deleteCharacter(characterId) {
+    async deleteCharacter( characterId ) {
         try {
+	    const character = this.characters[characterId];
             await this.makeServerRequest(`delete?file=${characterId}.json&dir=characters`);
             delete this.characters[characterId];
+            if ( character && character.index )  delete this.characterIndexMap[character.index];
             console.log(`Character ${characterId} deleted from server`);
             return true;
         } catch (error) {
@@ -339,136 +393,12 @@ async saveCharacter(characterData) {
         }
     }
 
-generateFieldPaths(schemaId) {
-    const schema = this.getSchema(schemaId);
-    if (!schema) return [];
-    
-    const paths = [];
-    
-    const generatePaths = (obj, currentPath = '', parentLabel = '') => {
-        if (!obj || !obj.properties) return;
-        
-        for (const [key, field] of Object.entries(obj.properties)) {
-            const path = currentPath ? `${currentPath}.${key}` : key;
-            const label = field.label || Utils.generateFieldName(key);
-            const fullLabel = parentLabel ? `${parentLabel} > ${label}` : label;
-            
-            // Add the field itself - this will include arrays like "spells" and "inventory"
-            paths.push({
-                path: path,
-                label: fullLabel,
-                type: field.type,
-                category: field.category || 'general'
-            });
-            
-            // For objects, recurse into their properties
-            if (field.type === 'object' && field.properties) {
-                generatePaths(field, path, fullLabel);
-            }
-            
-            // For arrays with object items, also add common item properties
-            if (field.type === 'array' && field.items && field.items.properties) {
-                for (const [itemKey, itemField] of Object.entries(field.items.properties)) {
-                    const itemPath = `${path}.${itemKey}`;
-                    const itemLabel = itemField.label || Utils.generateFieldName(itemKey);
-                    paths.push({
-                        path: itemPath,
-                        label: `${fullLabel} > ${itemLabel}`,
-                        type: itemField.type,
-                        category: field.category || 'array-item'
-                    });
-                }
-            }
-        }
-    };
-    generatePaths(schema);
-    return paths;
-}
 
-    // Get all schemas
-    getSchemas() {
-        return this.schemas;
-    }
+    //=============== Import/Export (JSON) Functions
 
-    // Get all templates
-    getTemplates() {
-        return this.templates;
-    }
-
-    // Get templates for a specific schema
-    getTemplatesForSchema(schemaId) {
-        return Object.entries(this.templates)
-            .filter(([_, template]) => template.schema === schemaId)
-            .reduce((obj, [id, template]) => {
-                obj[id] = template;
-                return obj;
-            }, {});
-    }
-
-    // Get all characters
-    getCharacters() {
-        return this.characters;
-    }
-
-    // Get characters for a specific system and template
-    getCharactersForTemplate(schemaId, templateId) {
-        return Object.entries(this.characters)
-            .filter(([_, char]) => char.system === schemaId && char.template === templateId)
-            .reduce((obj, [id, char]) => {
-                obj[id] = char;
-                return obj;
-            }, {});
-    }
-
-// Get schema by index or ID
-getSchemaByIndex(index) {
-    return Object.values(this.schemas).find(schema => schema.index === index);
-}
-
-// Get template by index or ID  
-getTemplateByIndex(index) {
-    return Object.values(this.templates).find(template => template.index === index);
-}
-
-// Get character by index or ID
-getCharacterByIndex(index) {
-    return Object.values(this.characters).find(character => character.index === index);
-}
-
-// Update existing getSchema to handle both ID and index
-getSchema(ref) {
-    // Try direct ID lookup first
-    if (this.schemas[ref]) {
-        return this.schemas[ref];
-    }
-    // Fall back to index lookup
-    return this.getSchemaByIndex(ref);
-}
-
-// Update existing getTemplate to handle both ID and index
-getTemplate(ref) {
-    // Try direct ID lookup first
-    if (this.templates[ref]) {
-        return this.templates[ref];
-    }
-    // Fall back to index lookup
-    return this.getTemplateByIndex(ref);
-}
-
-// Update existing getCharacter to handle both ID and index
-getCharacter(ref) {
-    // Try direct ID lookup first
-    if (this.characters[ref]) {
-        return this.characters[ref];
-    }
-    // Fall back to index lookup
-    return this.getCharacterByIndex(ref);
-}
-
-    // Export data as downloadable files (unchanged)
-    exportSchema(schemaId) {
+    exportSchema( schemaId ) {
         const schema = this.getSchema(schemaId);
-        if (!schema) return false;
+        if ( !schema ) return false;
         
         const blob = new Blob([JSON.stringify(schema, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -482,9 +412,9 @@ getCharacter(ref) {
         return true;
     }
 
-    exportTemplate(templateId) {
+    exportTemplate( templateId ) {
         const template = this.getTemplate(templateId);
-        if (!template) return false;
+        if ( !template ) return false;
         
         const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -498,9 +428,9 @@ getCharacter(ref) {
         return true;
     }
 
-    exportCharacter(characterId) {
+    exportCharacter( characterId ) {
         const character = this.getCharacter(characterId);
-        if (!character) return false;
+        if ( !character ) return false;
         
         const blob = new Blob([JSON.stringify(character, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -514,8 +444,7 @@ getCharacter(ref) {
         return true;
     }
 
-    // Import data from files (unchanged)
-    importSchema(file, schemaId) {
+    importSchema( file, schemaId ) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -532,7 +461,7 @@ getCharacter(ref) {
         });
     }
 
-    importTemplate(file, templateId) {
+    importTemplate( file, templateId ) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -549,7 +478,7 @@ getCharacter(ref) {
         });
     }
 
-    importCharacter(file, characterId) {
+    importCharacter( file, characterId ) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -565,12 +494,83 @@ getCharacter(ref) {
             reader.readAsText(file);
         });
     }
+
+
+    //========== Helper Functions
+
+    generateFieldPaths( schemaId ) {
+        const schema = this.getSchema(schemaId);
+        if ( !schema ) return [];
+
+        const paths = [];
+        const generatePaths = (obj, currentPath = '', parentLabel = '') => {
+            if (!obj || !obj.properties) return;
+            for (const [key, field] of Object.entries(obj.properties)) {
+                const path = currentPath ? `${currentPath}.${key}` : key;
+                const label = field.label || Utils.generateFieldName(key);
+                const fullLabel = parentLabel ? `${parentLabel} > ${label}` : label;
+            
+                // Add the field itself - this will include arrays like "spells" and "inventory"
+	        const fieldData = {
+		    path: path,
+		    label: fullLabel,
+		    type: field.type,
+		    category: field.category || 'general'
+	        };
+	        if ( field.enum )  fieldData.enum = field.enum;
+	        paths.push(fieldData);
+            
+                // For objects, recurse into their properties
+                if ( field.type === 'object' && field.properties ) {
+                    generatePaths(field, path, fullLabel);
+                }
+            
+                // For arrays with object items, also add common item properties
+                if ( field.type === 'array' && field.items && field.items.properties ) {
+                    for (const [itemKey, itemField] of Object.entries(field.items.properties)) {
+                        const itemPath = `${path}.${itemKey}`;
+                        const itemLabel = itemField.label || Utils.generateFieldName(itemKey);
+		        const itemFieldData = {
+			    path: itemPath,
+			    label: `${fullLabel} > ${itemLabel}`,
+			    type: itemField.type,
+			    category: field.category || 'array-item'
+		        };
+		        if ( itemField.enum )  itemFieldData.enum = itemField.enum;
+		        paths.push(itemFieldData);
+                    }
+                }
+            }
+        };
+        generatePaths(schema);
+        return paths;
+    }
+
+    async makeServerRequest(endpoint, data = null) {
+        const url = `${this.serverUrl}/${endpoint}`;
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        };
+
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Server request failed: ${endpoint}`, error);
+            throw error;
+        }
+    }
+
 }
 
-// Create global instance
+// Create global instance and export for use in other files
 const DataManager = new DataManagerClass();
-
-// Export for use in other files
-if (typeof window !== 'undefined') {
-    window.DataManager = DataManager;
-}
+if ( typeof window !== 'undefined' )  window.DataManager = DataManager;
