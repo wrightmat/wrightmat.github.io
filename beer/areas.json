@@ -1,0 +1,79 @@
+areas = [
+	{
+		"name": "Downtown",
+		"location": "CoMo",
+		"venue_ids": [ 927804, 3563780, 12474675, 37915, 3422, 67943, 11221227, 16073, 16214, 5522235, 44360, 981772, 65522, 10321, 26029, 65116, 1026172, 1389623 ],
+		"venue_details": [ "image|https://wsrv.nl/?url=69.28.91.151/itapcolumbia/columbia_1.jpg", "frame|https://www.taphunter.com/location/44-canteen/5923147940364288", "embed|26704,102454", "frame|https://sycamorerestaurant.com/beer", "frame|https://www.flatbranch.com/beer", "frame|https://www.taphunter.com/location/billiards-on-broadway/4736074143760384", "embed|39610,153942", "", "", "", "", "", "", "", "", "", "", "" ],
+		"venue_names": [ "International Taphouse", "44 Canteen", "Twain: Missouri BBQ & Taproom", "Sycamore", "Flat Branch Pub & Brewing", "Billiards on Broadway", "Broadway Brewery on 9th", "Broadway Brewery", "Addison's American Grill", "Barred Owl Butcher & Table", "Gumby's Pizza", "Gunter Hans", "McNally's Irish Pub", "Shakespeare's Pizza", "Teller's Gallery & Bar", "The Heidelberg", "Uprise/Ragtag Bar", "9th Street Public House" ]
+	},
+	{
+		"name": "North Village",
+		"location": "CoMo",
+		"venue_ids": [ 1578573, 12035561, 10699733 ],
+		"venue_details": [ "frame|https://www.logboatbrewing.com/menu", "images|https://images.squarespace-cdn.com/content/v1/6261cbe654bd6608c9243f3b/34d8347d-54fb-4404-be5b-ef81b9df7b7c/Beer+Screen+2-2-2.png|https://images.squarespace-cdn.com/content/v1/6261cbe654bd6608c9243f3b/1159f968-d9db-4d4b-baf7-202d4a184bea/Beer+Screen+2-2.png", "frame|https://lh7-us.googleusercontent.com/VdbArdZBmk_8kaZw7lZ9g4g3pY61WihK39vuXnhCwNCMM6BMqtJZq6qhjQfKf0XutobY5n7NCX6IG_Lc3yKNNtMBaSXeR7399nbatc9xfESkCchemZpsIXFzvCFyjsvjVlfrcY3Qb2CgMd6roQ9S_tDA5g=s2048" ],
+		"venue_names": [ "Logboat Brewing Co.", "Irene's", "Ozark Mountain Biscuit & Bar" ]
+	},
+	{
+		"name": "South",
+		"location": "CoMo",
+		"venue_ids": [ 71664, 8697485, 77148, 9563092, 335476 ],
+		"venue_details": [ "frame|https://1839taphouse.com/#on-tap", "", "", "", "" ],
+		"venue_names": [ "1839 Taphouse", "Addison's", "Hy-Vee (Nifong)", "Pappo's Pizzeria And Pub", "Shakespeare's Pizza" ]
+	},
+	{
+		"name": "Other",
+		"location": "CoMo",
+		"venue_ids": [ 2161776, 383022, 6692086, 1540835, 587860, 1622320, 249638, 51126, 61930 ],
+		"venue_details": [ "", "", "", "", "", "", "", "", "" ],
+		"venue_names": [ "Bur Oak Brewing Company", "Cooper's Landing General Store", "Gerbes (Paris)", "Gerbes (W Broadway)", "Hy-Vee (Conley)", "Hy-Vee (W Broadway)", "McGinty's", "Shakespeare's West", "Truman's Bar & Grill" ]
+	},
+	{
+		"name": "All",
+		"location": "JC",
+		"venue_ids": [ 10477646, 7152 ],
+		"venue_details": [ "", "" ],
+		"venue_names": [ "Last Flight Brewing Company", "Prison Brews Brewery & Restaurant" ]
+	},
+	{
+		"name": "Crossroads",
+		"location": "KC",
+		"venue_ids": [ 2607357, 5715554, 7332506, 8639215, 3194589, 6364793, 9976689, 10739397, 2142579, 11135398 ],
+		"venue_details": [ "embed|2208,5308", "", "frame|https://www.casualanimalbrewing.com/our-beer", "", "embed|2967,8344", "", "", "embed|36597,141917", "", "embed|41721,162370" ],
+		"venue_names": [ "Border Brewing Company", "Brewery Emperial", "Casual Animal Brewing Company", "City Barrel Brewing Company", "Double Shift Brewing Company", "International Taphouse", "Nimble Brewing", "Red Sash Brewing", "Torn Label Brewing Company", "Vine Street Brewing" ]
+	},
+	{
+		"name": "Westside",
+		"location": "KC",
+		"venue_ids": [ 8835517, 5001676, 9256868, 4609738 ],
+		"venue_details": [ "frame|https://www.almamaderbrewing.com/beer", "", "embed|30231,116454", "frame|https://stockyardsbrewing.com/beer/" ],
+		"venue_names": [ "Alma Mader Brewing", "Boulevard Brewing Beer Hall", "Rochester Brewing and Roasting Company", "Stockyards Brewing Co." ]
+	},
+	{
+		"name": "River Market",
+		"location": "KC",
+		"venue_ids": [ 11155058, 7141276 ],
+		"venue_details": [ "", "" ],
+		"venue_names": [ "River Bluff Brewing", "Strange Days Brewing Co." ]
+	},
+	{
+		"name": "North KC",
+		"location": "KC",
+		"venue_ids": [ 738628, 7948447, 800922 ],
+		"venue_details": [ "frame|https://bigripbrewing.com/beer/menu/the-big-rip-taproom-list/", "", "frame|https://cinderblockbrewery.com/beer/" ],
+		"venue_names": [ "Big Rip Brewing Company", "Callsign Brewing", "Cinder Block Brewery" ]
+	},
+	{
+		"name": "Mission and Shawnee",
+		"location": "KC",
+		"venue_ids": [ 9985434, 9829435, 8888537, 8386350, 8213105 ],
+		"venue_details": [ "frame|https://www.pathlightbrewing.com/menu", "", "frame|https://sandhillsbrewing.com/taproom/mission-taproom/mission-taplist/", "embed|22967,87669", "" ],
+		"venue_names": [ "Pathlight Brewing", "Rockcreek Brewing Company", "Sandhills Brewing", "Servaes Brewing Co.", "Transport Brewery" ]
+	},
+	{
+		"name": "Other",
+		"location": "KC",
+		"venue_ids": [ 5108815, 3202742 ],
+		"venue_details": [ "embed|38168,148195", "embed|1880,4e3" ],
+		"venue_names": [ "BKS Artisan Ales", "Crane Brewing Company" ]
+	}
+]
