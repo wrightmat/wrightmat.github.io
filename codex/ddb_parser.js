@@ -461,10 +461,11 @@ const passthrough_keys = {
     };
 
     function processScaleValue( feat ) {
-      if ( feat.levelScale.fixedValue ) {
+      if ( !feat ) return
+      if ( feat.levelScale?.fixedValue ) {
         return feat.levelScale.fixedValue;
-      } else if ( feat.levelScale.dice && feat.levelScale.dice.diceString ) {
-        return feat.levelScale.dice.diceString;
+      } else if ( feat.levelScale?.dice && feat.levelScale?.dice.diceString ) {
+        return feat.levelScale?.dice.diceString;
       }
       return "{{scalevalue}}"; // Fail gracefully if no valid value
     };

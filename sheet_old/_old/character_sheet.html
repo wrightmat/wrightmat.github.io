@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en" class="character-sheet">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTRPG Character Sheet</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="data.js"></script>
+  <script src="utils.js"></script>
+</head>
+
+<body x-data="characterApp()" class="character-sheet-body">
+
+  <div class="character-editor-container" :class="{ 'left-collapsed': leftPaneCollapsed, 'right-collapsed': rightPaneCollapsed, 'both-collapsed': leftPaneCollapsed && rightPaneCollapsed }">
+    
+    <!-- Unified Toolbar -->
+    <div class="toolbar">
+      <button class="toolbar-toggle" @click="toggleLeftPane" :class="{ 'active': !leftPaneCollapsed }">
+        <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        <span class="text-sm">Tools</span>
+      </button>
+      
+      <h1>⚔️ Character Sheet</h1>
+      
+	<div class="toolbar-actions">
+	    <select x-model="selectedSchemaId" @change="selectSchema($event.target.value)" class="form-control">
+	        <option value="">Select System...</option>
+		<template x-for="schema in Utils.SelectSorting.sortObjectEntries(schemas, 'schemas')">
+		    <option :value="schema.id" x-text="schema.title"></option>
+		</template>
+	    </select>
+	    <select x-model="selectedTemplateId" @change="selectTemplate($event.target.value)" class="form-control" :disabled="!selectedSchemaId">
+	        <option value="">Select Template...</option>
+		<template x-for="template in Utils.SelectSorting.sortObjectEntries(availableTemplates, 'templates')">
+		    <option :value="template.id" x-text="template.title"></option>
+		</template>
+	    </select>    
+	    <select x-model="selectedCharacterId" @change="selectCharacter($event.target.value)" class="form-control" :disabled="!selectedTemplateId">
+	        <option value="">Select Character...</option>
+	        <option x-show="!viewMode" value="_new">+ Create New Character</option>
+		<template x-for="char in Utils.SelectSorting.sortObjectEntries(availableCharacters, 'characters')">
+		    <option :value="char.id" x-text="char.data.name"></option>
+		</template>
+	    </select>
+	    <div x-show="!viewMode">
+	        <button id="save-btn" class="btn btn-success" @click="saveCharacter" :disabled="!isModified">💾 Save</button>
+	    </div>
+	    <button class="btn" :class="viewMode ? 'btn-success' : 'btn-primary'" @click="viewMode = !viewMode" x-text="viewMode ? '👁️ View' : '✏️ Edit'"></button>
+	</div>
+      
+      <button class="toolbar-toggle" @click="toggleRightPane" :class="{ 'active': !rightPaneCollapsed }">
+        <span class="text-sm">Data</span>
+        <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+      </button>
+    </div>
+
+    <!-- Left Pane - Tools -->
+    <div class="left-pane" :class="{ 'collapsed': leftPaneCollapsed, 'show': leftPaneVisible }">
+      <div class="pane-header">
+        <h3 class="pane-title">🔧 Tools</h3>
+        <button class="pane-toggle" @click="toggleLeftPane">
+          <span x-text="leftPaneCollapsed ? '▶' : '◀'"></span>
+        </button>
+      </div>
+
+<div class="tools-content">
+    <!-- File Operations -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">📂 File Operations</h4>
+        <button class="btn btn-primary btn-full-width btn-with-margin" @click="importCharacter" :disabled="!selectedTemplateId || selectedTemplateId === '_new'">
+            📤 Import
+        </button>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="exportCharacter" :disabled="!selectedCharacterId || selectedCharacterId === '_new'">
+            📥 Export
+        </button>
+        <div class="tool-note">
+            <small>Import supports both complete character files and raw character data. Export creates a complete character file.</small>
+        </div>
+    </div>
+
+    <!-- Template & Design -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">🎨 Template & Design</h4>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="openTemplateEditor" :disabled="!selectedTemplateId">
+            ✏️ Edit Template
+        </button>
+        <p class="tool-description">Customize the layout and appearance of character sheets</p>
+    </div>
+
+    <!-- History Management -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">↶ History</h4>
+        <div class="undo-redo-controls">
+            <button  id="undo-btn" class="btn btn-secondary" @click="undo" :disabled="!canUndo">
+                ↶ Undo (<span x-text="undoManager ? undoManager.undoStack.length : 0"></span>)
+            </button>
+            <button  id="redo-btn" class="btn btn-secondary" @click="redo" :disabled="!canRedo">
+                ↷ Redo (<span x-text="undoManager ? undoManager.redoStack.length : 0"></span>)
+            </button>
+        </div>
+        <div class="tool-note">
+            <small>Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y (redo)</small>
+        </div>
+    </div>
+
+    <!-- Character Tools -->
+    <div class="tool-section">
+        <h4 class="tool-section-title">🔧 Character Tools</h4>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="validateCharacter" :disabled="!selectedCharacterId || selectedCharacterId === '_new'">
+            ✓ Validate Character
+        </button>
+        <button class="btn btn-secondary btn-full-width btn-with-margin" @click="duplicateCharacter" :disabled="!selectedCharacterId || selectedCharacterId === '_new'">
+            📋 Duplicate Character
+        </button>
+        <p class="tool-description">Character management and quality assurance tools</p>
+    </div>
+</div>
+</div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <div class="main-content-inner" :class="{ 'view-mode': viewMode }">
+        <template x-if="templates[selectedTemplateId]">
+          <div>
+            <template x-if="templates[selectedTemplateId].type === 'Tabs'">
+              <div>
+                <div class="tab-nav">
+                  <template x-for="(tab, index) in templates[selectedTemplateId].elements">
+                    <button class="tab-button" :class="{ 'active': activeTab === index }" @click="activeTab = index" x-text="tab.label"></button>
+                  </template>
+                </div>
+                <template x-for="(tab, index) in templates[selectedTemplateId].elements">
+                  <div class="tab-content" :class="{ 'active': activeTab === index }">
+                    <template x-for="element in tab.elements">
+                      <div x-html="renderElement(element)"></div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="templates[selectedTemplateId].type !== 'Tabs'">
+              <template x-for="element in templates[selectedTemplateId].elements">
+                <div x-html="renderElement(element)"></div>
+              </template>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Right Pane - Live Character Data -->
+    <div class="right-pane" :class="{ 'collapsed': rightPaneCollapsed, 'show': rightPaneVisible }">
+      <div class="pane-header">
+        <h3 class="pane-title">📊 Live Character Data</h3>
+        <span x-show="isModified && selectedCharacterId && selectedCharacterId !== '_new'" class="modified-indicator">• Modified</span>
+        <button class="pane-toggle" @click="toggleRightPane">
+          <span x-text="rightPaneCollapsed ? '◀' : '▶'"></span>
+        </button>
+      </div>
+      
+      <div class="data-content">
+        <pre x-text="JSON.stringify(character.data, null, 2)"></pre>
+      </div>
+    </div>
+  </div>
+
+<!-- Create Character Modal -->
+  <template x-if="showCreateCharacterModal">
+    <div class="modal-overlay" @click="showCreateCharacterModal = false">
+      <div class="modal" @click.stop>
+        <div class="modal-header">
+          <h3>Create New Character</h3>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Character Name</label>
+            <input type="text" x-model="newCharacter.name" class="form-control" placeholder="Enter character name">
+          </div>
+          <div class="form-group">
+            <label>Game System</label>
+            <select x-model="newCharacter.system" @change="updateNewCharacterTemplates" class="form-control">
+              <option value="">Select system...</option>
+              <template x-for="(schema, id) in schemas">
+                <option :value="id" x-text="schema.title"></option>
+              </template>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Character Sheet Template</label>
+            <select x-model="newCharacter.template" class="form-control" :disabled="!newCharacter.system">
+              <option value="">Select template...</option>
+              <template x-for="(template, id) in newCharacterTemplates">
+                <option :value="id" x-text="template.title"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="showCreateCharacterModal = false">Cancel</button>
+          <button class="btn btn-primary" @click="createCharacter" :disabled="!newCharacter.name || !newCharacter.system || !newCharacter.template">Create Character</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    function characterApp() {
+        return {
+            schemas: {},
+            templates: {},
+            characters: {},
+            selectedCharacterId: '',
+            character: { system: '5e', template: '5e-default', data: {} },
+            selectedSchemaId: '5e',
+            selectedTemplateId: '5e-default',
+            leftPaneCollapsed: true,
+            rightPaneCollapsed: false,
+            leftPaneVisible: false,
+            rightPaneVisible: false,
+            viewMode: true,
+            activeTab: 0,
+	    isModified: false,
+	    showCreateCharacterModal: false,
+	    selectedSchemaId: '',
+	    selectedTemplateId: '',
+	    selectedCharacterId: '',
+	    availableTemplates: {},
+	    availableCharacters: {},
+	    newCharacter: { name: '', system: '', template: '' },
+	    newCharacterTemplates: {},
+	    keyboardManager: null,
+	    undoManager: null,
+	    canUndo: false,
+	    canRedo: false,
+	    draggedArrayIndex: undefined,
+	    saveStateDebounced: null,
+	    lastStateSave: {},
+
+	$watch: {
+            viewMode() {
+                this.cleanupRichTextEditors();
+                this.$nextTick(() => {
+                    this.character = { ...this.character };
+                });
+            }
+        },
+
+async init() {
+    await DataManager.loadAll();
+    this.schemas = DataManager.getSchemas();
+    this.templates = DataManager.getTemplates();
+    this.characters = DataManager.getCharacters();
+    window.characterAppInstance = this;
+    
+    // Initialize undo/redo system
+    this.initUndoRedo();
+
+    // Set up keyboard shortcuts
+    this.setupKeyboardShortcuts();
+},
+
+selectSchema(schemaId) {
+    this.selectedSchemaId = schemaId;
+    this.loadTemplatesForSchema();
+},
+
+selectTemplate(templateId) {
+    this.selectedTemplateId = templateId;
+    this.loadCharactersForTemplate();
+},
+
+selectCharacter(characterId) {
+    this.selectedCharacterId = characterId;
+    this.loadCharacter();
+},
+
+loadTemplatesForSchema() {
+    this.availableTemplates = {};
+    this.availableCharacters = {};
+    this.selectedTemplateId = '';
+    this.selectedCharacterId = '';
+    this.character = { system: '', template: '', data: {} };
+    this.isModified = false;
+
+    if (!this.selectedSchemaId) return;
+
+    const schema = DataManager.getSchema(this.selectedSchemaId);
+    if (schema) {
+        const allTemplates = DataManager.getTemplates();
+        this.availableTemplates = Object.fromEntries(
+            Object.entries(allTemplates).filter(([_, template]) => 
+                template.schema === schema.index
+            )
+        );
+    }
+},
+
+loadCharactersForTemplate() {
+    this.availableCharacters = {};
+    this.selectedCharacterId = '';
+    this.character = { system: '', template: '', data: {} };
+    this.isModified = false;
+
+    if (!this.selectedTemplateId) return;
+
+    const schema = DataManager.getSchema(this.selectedSchemaId);
+    const template = DataManager.getTemplate(this.selectedTemplateId);
+    
+    if (schema && template) {
+        const allCharacters = DataManager.getCharacters();
+        this.availableCharacters = Object.fromEntries(
+            Object.entries(allCharacters).filter(([_, character]) => 
+                character.system === schema.index && character.template === template.index
+            )
+        );
+    }
+},
+
+loadCharacter() {
+    if (this.selectedCharacterId === '_new') {
+        this.createNewCharacter();
+        return;
+    }
+
+    const char = DataManager.getCharacter(this.selectedCharacterId);
+    if (!char) {
+        this.isModified = false;
+        return;
+    }
+
+    this.cleanupRichTextEditors();
+    Object.assign(this.character, Utils.deepClone(char));
+    
+    const schema = DataManager.getSchemaByIndex(char.system);
+    if (schema) {
+	Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+    }
+    
+    this.isModified = false;
+    
+    // Clear undo/redo history and save the LOADED state as the initial state
+    if (this.undoManager) {
+        this.undoManager.clear();
+        // Save the fully loaded and evaluated state
+        this.undoManager.saveState(this.character, 'Character loaded');
+    }
+},
+
+            toggleLeftPane() {
+                this.leftPaneCollapsed = !this.leftPaneCollapsed;
+                this.leftPaneVisible = !this.leftPaneVisible;
+            },
+
+            toggleRightPane() {
+                this.rightPaneCollapsed = !this.rightPaneCollapsed;
+                this.rightPaneVisible = !this.rightPaneVisible;
+            },
+
+            handleNumberClick(event, scope) {
+                if (this.viewMode && !this.isReadOnly(scope)) {
+                    Utils.showNotification(`Dice roller coming soon! Field: ${scope.split('/').pop()}, Value: ${this.getValue(scope)}`, 'info');
+                }
+            },
+
+            openTemplateEditor() {
+                const params = new URLSearchParams({ schema: this.selectedSchemaId, template: this.selectedTemplateId });
+                window.open(`template_editor.html?${params.toString()}`, '_blank');
+            },
+
+            exportCharacter() {
+                const filename = (this.character.data.name || 'character').toLowerCase().replace(/\s+/g, '_') + '.json';
+                Utils.exportAsJson(this.character, filename);
+                Utils.showNotification('Character exported successfully', 'success');
+            },
+
+	    markAsModified(description = 'Character change') {
+		this.isModified = true;
+	    },
+
+	    saveCharacter() {
+		if (!this.selectedCharacterId || this.selectedCharacterId === '_new') {
+		    Utils.showNotification('No character selected to save', 'error');
+		    return;
+		}
+
+		try {
+		    this.characters[this.selectedCharacterId] = Utils.deepClone(this.character);
+		    Utils.showNotification('Saving character...', 'info');
+		    DataManager.saveCharacter(this.selectedCharacterId, this.character);
+		    this.isModified = false;
+		    Utils.showNotification(`Character "${this.character.data.name}" saved successfully`, 'success');
+		} catch (error) {
+		    Utils.showNotification(`Failed to save character: ${error.message}`, 'error');
+		    console.error('Save character error:', error);
+		}
+	    },
+
+// Character Import
+importCharacter() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    this.handleCharacterImport(importedData);
+                } catch (error) {
+                    Utils.showNotification('Invalid JSON file. Please check the file format.', 'error');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.onerror = () => {
+                Utils.showNotification('Error reading file', 'error');
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+},
+
+handleCharacterImport(importedData) {
+    // Validate imported character data
+    if (!importedData || typeof importedData !== 'object') {
+        Utils.showNotification('Invalid character data format', 'error');
+        return;
+    }
+    
+    // Check if it's a complete character object or just character data
+    let characterData;
+    if (importedData.data && importedData.system && importedData.template) {
+        // Complete character object
+        characterData = importedData;
+    } else if (importedData.name || importedData.abilities || importedData.level) {
+        // Just character data - wrap it
+        characterData = {
+            system: this.selectedSchemaId || 'dd-5e',
+            template: this.selectedTemplateId || '5e-default',
+            data: importedData
+        };
+    } else {
+        Utils.showNotification('Unrecognized character data format', 'error');
+        return;
+    }
+    
+    this.saveState('Character import');
+    this.cleanupRichTextEditors();
+    Object.assign(this.character, Utils.deepClone(characterData));
+    
+    // Evaluate formulas if schema is available
+    const schema = this.schemas[this.selectedSchemaId];
+    if (schema) {
+	Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+    }
+    
+    this.isModified = true;
+    
+    this.$nextTick(() => {
+        this.character = { ...this.character };
+    });
+    
+    Utils.showNotification(`Character "${this.character.data.name || 'Unnamed'}" imported successfully`, 'success');
+},
+
+setupKeyboardShortcuts() {
+    this.keyboardManager = new Utils.KeyboardShortcuts();
+    this.keyboardManager.startListening();
+    
+    // Create action provider with all available actions
+    const actionProvider = {
+        actions: {
+            'save': () => { if (this.isModified && !this.viewMode) this.saveCharacter(); },
+            'import': this.importCharacter.bind(this),
+            'export': this.exportCharacter.bind(this),
+            'new': this.createNewCharacter.bind(this),
+            'undo': this.undo.bind(this),
+            'redo': this.redo.bind(this),
+            'toggle-view': () => { this.viewMode = !this.viewMode; },
+            'toggle-left-pane': this.toggleLeftPane.bind(this),
+            'toggle-right-pane': this.toggleRightPane.bind(this),
+            'roll-dice': this.handleDiceRoll?.bind(this)
+        },
+        getAction: (actionId) => actionProvider.actions[actionId],
+        getAvailableActions: () => Object.keys(actionProvider.actions)
+    };
+    
+    this.$nextTick(() => {
+        Utils.ActionRegistry.registerProvider('character', actionProvider, {
+            name: 'Character Sheet',
+            icon: '⚔️'
+        });
+        
+        Utils.applyShortcutsFromRegistry(this.keyboardManager, 'character', actionProvider);
+    });
+},
+
+	    applyElementColors( element ) {
+		let styles = [];
+		if ( element.backgroundColor) styles.push(`background-color: ${element.backgroundColor}`);
+		if (element.borderColor) styles.push(`border-color: ${element.borderColor}`);
+		return styles.length > 0 ? `style="${styles.join('; ')}"` : '';
+	    },
+
+toggleGroup( groupId ) {
+    const content = document.getElementById(`${groupId}-content`);
+    const icon = document.querySelector(`[data-group-id="${groupId}"] .collapse-icon`);
+    
+    if ( content && icon ) {
+        const isCollapsed = content.classList.contains('collapsed');
+        content.classList.toggle('collapsed', !isCollapsed);
+        icon.classList.toggle('collapsed', !isCollapsed);
+        icon.textContent = isCollapsed ? '▼' : '▶';
+    }
+},
+
+// Array Management Methods
+addArrayItem(scope, arrayId) {
+    this.saveState('Add array item');
+    const items = this.getValue(scope) || [];
+    const newItem = {
+        name: '',
+        quantity: 1,
+        weight: 0,
+        description: ''
+    };
+    items.push(newItem);
+    Utils.setNestedValue(this.character.data, scope, items);
+    this.markAsModified('Add array item');
+    
+    // Re-render the array
+    this.$nextTick(() => {
+        this.character = { ...this.character };
+    });
+},
+
+removeArrayItem(scope, index) {
+    this.saveState('Remove array item');
+    const items = this.getValue(scope) || [];
+    if (index >= 0 && index < items.length) {
+        items.splice(index, 1);
+        Utils.setNestedValue(this.character.data, scope, items);
+        this.markAsModified('Remove array item');
+        
+        // Re-render the array
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+        });
+    }
+},
+
+startArrayDrag(event, index) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', index.toString());
+    this.draggedArrayIndex = index;
+},
+
+handleArrayDragOver(event, index) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    
+    // Add visual feedback
+    const rows = event.currentTarget.parentElement.querySelectorAll('.draggable-array-item');
+    rows.forEach(row => row.classList.remove('drag-over'));
+    event.currentTarget.classList.add('drag-over');
+},
+
+handleArrayDrop(event, targetIndex) {
+    event.preventDefault();
+    
+    const sourceIndex = this.draggedArrayIndex;
+    if (sourceIndex === undefined || sourceIndex === targetIndex) return;
+    
+    // Find the array element and scope
+    const arrayContainer = event.currentTarget.closest('.array-container');
+    if (!arrayContainer) return;
+    
+    const scope = arrayContainer.getAttribute('data-scope');
+    const items = this.getValue(scope) || [];
+    
+    // Perform the reorder
+    if (sourceIndex >= 0 && sourceIndex < items.length && targetIndex >= 0 && targetIndex < items.length) {
+        const [movedItem] = items.splice(sourceIndex, 1);
+        items.splice(targetIndex, 0, movedItem);
+        
+        Utils.setNestedValue(this.character.data, scope, items);
+        this.markAsModified('Reorder array items');
+        
+        // Re-render the array
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+        });
+    }
+    
+    // Clean up
+    this.draggedArrayIndex = undefined;
+    const rows = arrayContainer.querySelectorAll('.draggable-array-item');
+    rows.forEach(row => row.classList.remove('drag-over'));
+},
+
+        getSegmentColors(element, filled = false) {
+            const bgColor = element.backgroundColor;
+            const borderColor = element.borderColor;
+            
+            if (filled) {
+                const fillColor = bgColor || '#3b82f6';
+                const fillBorderColor = borderColor || bgColor || '#2563eb';
+                return `background-color: ${fillColor}; border-color: ${fillBorderColor};`;
+            } else {
+                const emptyBorderColor = borderColor || '#d1d5db';
+                return `background-color: white; border-color: ${emptyBorderColor};`;
+            }
+        },
+
+        findElementByScope(scope) {
+            const template = this.templates[this.selectedTemplateId];
+            if (!template) return null;
+            
+            const findInElements = (elements) => {
+                for (const element of elements) {
+                    if (element.scope === scope) return element;
+                    if (element.elements) {
+                        const found = findInElements(element.elements);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+            
+            return findInElements(template.elements);
+        },
+
+getProgressTrackColors(element, filled = false) {
+    const bgColor = element.backgroundColor;
+    const borderColor = element.borderColor;
+    
+    if (filled) {
+        // For filled segments
+        const fillColor = bgColor || '#3b82f6';
+        const fillBorderColor = borderColor || bgColor || '#2563eb';
+        return `background-color: ${fillColor}; border-color: ${fillBorderColor};`;
+    } else {
+        // For empty segments
+        const emptyBorderColor = borderColor || '#d1d5db';
+        return `background-color: white; border-color: ${emptyBorderColor};`;
+    }
+},
+
+// Update Element functions
+updateTrackDisplay(scope, value, maxValue) {
+    const tracks = document.querySelectorAll(`[data-scope="${scope}"]`);
+    tracks.forEach(track => {
+        const segments = track.querySelectorAll('.progress-segment, .progress-circle-segment');
+        segments.forEach((segment, index) => {
+            const wasFilled = segment.classList.contains('filled');
+            const shouldBeFilled = index < value;
+            
+            if (shouldBeFilled !== wasFilled) {
+                segment.classList.toggle('filled', shouldBeFilled);
+                
+                // Re-apply colors based on the current element configuration
+                const element = this.findElementByScope(scope);
+                if (element) {
+                    const segmentColors = Utils.ElementRenderer.getElementColors(element, shouldBeFilled ? 'filled' : 'empty');
+                    
+                    // Preserve position for circular segments
+                    if (segment.classList.contains('progress-circle-segment')) {
+                        const currentStyle = segment.getAttribute('style') || '';
+                        const positionMatch = currentStyle.match(/(left:\s*[^;]+;\s*top:\s*[^;]+;)/);
+                        const positionStyle = positionMatch ? positionMatch[1] + ' ' : '';
+                        segment.setAttribute('style', positionStyle + segmentColors);
+                    } else {
+                        segment.setAttribute('style', segmentColors);
+                    }
+                }
+            }
+        });
+        
+        // Update counter if present
+        const counter = track.parentElement.querySelector('.progress-track-counter');
+        if (counter) {
+            counter.textContent = `${value}/${maxValue}`;
+        }
+    });
+},
+
+updateMultiStateDisplay(scope, value) {
+    const toggles = document.querySelectorAll(`[data-scope="${scope}"]`);
+    toggles.forEach(toggle => {
+        const control = toggle.querySelector('.multi-state-control');
+        if (control) {
+            // Remove all state classes
+            control.className = control.className.replace(/state-\d+/g, '');
+            // Add current state class
+            control.classList.add(`state-${value}`);
+            
+            // Update colors based on element configuration
+            const element = this.findElementByScope(scope);
+            if (element) {
+                const toggleColors = Utils.ElementRenderer.getElementColors(element, value > 0 ? 'selected' : 'unselected');
+                control.setAttribute('style', toggleColors);
+            }
+        }
+    });
+},
+
+updateSelectGroupDisplay( scope, selectedValues, selectionType ) {
+    const selectGroups = document.querySelectorAll(`[data-scope="${scope}"]`);
+    selectGroups.forEach(group => {
+        const options = group.querySelectorAll('.select-group-option');
+        options.forEach(option => {
+            const optionText = option.textContent.trim();
+            const isSelected = selectionType === 'single' 
+                ? selectedValues === optionText
+                : Array.isArray(selectedValues) && selectedValues.includes(optionText);
+            
+            if (isSelected) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+            
+            // Update colors based on element configuration
+            const element = this.findElementByScope(scope);
+            if (element) {
+                const optionColors = Utils.ElementRenderer.getElementColors(element, isSelected ? 'selected' : 'unselected');
+                option.setAttribute('style', optionColors);
+            }
+        });
+    });
+},
+
+updateMultiStateValue( scope, maxStates ) {
+    this.saveState('Multi-state toggle: ' + scope.split('/').pop());
+    // Convert scope format if needed
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1); // Remove @ prefix for dot notation
+    } else if (scope.startsWith('#/properties/')) {
+        // Convert JSON Pointer to dot notation
+        normalizedScope = scope.replace('#/properties/', '').replace(/\/properties\//g, '.');
+    }
+    const currentValue = this.getValue(normalizedScope) || 0;
+    const newValue = (currentValue + 1) % maxStates;
+    Utils.setNestedValue(this.character.data, normalizedScope, newValue);
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Multi-state toggle: ' + normalizedScope.split('.').pop());
+    this.updateMultiStateDisplay(normalizedScope, newValue);
+},
+
+updateSelectGroupValue( scope, option, selectionType ) {
+    this.saveState('Selection change: ' + option);
+    // Convert scope format if needed
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1);
+    }
+    let currentValues = this.getValue(scope) || (selectionType === 'single' ? '' : []);
+    if ( selectionType === 'single' ) {
+        // Single select: toggle or set value
+        const newValue = currentValues === option ? '' : option;
+        Utils.setNestedValue(this.character.data, normalizedScope, newValue);
+    } else {
+        // Multi select: add/remove from array
+        if ( !Array.isArray(currentValues) ) currentValues = [];
+        const index = currentValues.indexOf(option);
+        if (index > -1) {
+            currentValues.splice(index, 1);
+        } else {
+            currentValues.push(option);
+        }
+        Utils.setNestedValue(this.character.data, normalizedScope, currentValues);
+    }
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Selection change: ' + option);
+    this.updateSelectGroupDisplay(scope, this.getValue(scope), selectionType);
+},
+
+updateTrackValue( scope, newValue, maxValue ) {
+    this.saveState('Track change: ' + scope.split('/').pop());
+    const currentValue = this.getValue(scope) || 0;
+    
+    // Toggle behavior: if clicking on a filled segment, unfill from there
+    if (newValue <= currentValue) newValue = newValue - 1;
+    
+    newValue = Math.max(0, Math.min(newValue, maxValue));
+    Utils.setNestedValue(this.character.data, scope, newValue);
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Track change: ' + scope.split('/').pop());
+    this.updateTrackDisplay(scope, newValue, maxValue);
+},
+
+uploadImage( scope, elementId ) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (event) => {
+        const file = event.target.files[0];
+        if ( file ) {
+            // Check file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Utils.showNotification('Image file too large. Please choose a file under 5MB.', 'error');
+                return;
+            }
+            if (!file.type.startsWith('image/')) {   // Check file type
+                Utils.showNotification('Please select a valid image file.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageDataUrl = e.target.result;
+                Utils.setNestedValue(this.character.data, scope, imageDataUrl);
+                this.markAsModified('Image upload');
+                Utils.showNotification('Image uploaded successfully', 'success');
+            };
+            reader.onerror = () => {
+                Utils.showNotification('Error reading image file', 'error');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+},
+
+removeImage( scope ) {
+    if ( confirm('Are you sure you want to remove this image?') ) {
+        Utils.setNestedValue(this.character.data, scope, '');
+        this.markAsModified('Image removed');
+        Utils.showNotification('Image removed', 'success');
+    }
+},
+
+            updateArrayValue( event, scope, index, field ) {
+		this.saveState('Array item change');
+                const items = this.getValue(scope) || [];
+                const input = event.target.value;
+                if ( !items[index] ) items[index] = {};
+                if ( field === 'quantity' || field === 'weight' ) {
+                    items[index][field] = input === '' ? 0 : parseFloat(input);
+                } else {
+                    items[index][field] = input;
+                }
+                Utils.setNestedValue(this.character.data, scope, items);
+                Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+                this.markAsModified('Array item change');
+            },
+
+handleInputFocus(scope) {
+    // Save state when user starts editing a field, but only if we haven't saved recently
+    if (!this.viewMode) {
+        const key = `focus_${scope}`;
+        const now = Date.now();
+        
+        if (!this.lastStateSave) this.lastStateSave = {};
+        
+        // Only save state if we haven't saved for this field in the last 2 seconds
+        if (!this.lastStateSave[key] || (now - this.lastStateSave[key]) > 2000) {
+            this.saveState('Field change: ' + scope.split('/').pop());
+            this.lastStateSave[key] = now;
+        }
+    }
+},
+
+updateCheckbox(event, scope) {
+    Utils.setNestedValue(this.character.data, scope, event.target.checked);
+    Utils.FormulaEngine.evaluateAllFormulas(this.schemas[this.selectedSchemaId], this.character.data);
+    this.markAsModified('Checkbox change: ' + scope.split('/').pop());
+},
+
+updateValue(event, scope) {
+    const input = event.target.value;
+    const value = input === '' ? '' : (isNaN(parseFloat(input)) ? input : parseFloat(input));
+    
+    // Handle scope format
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1);
+    }
+    
+    Utils.setNestedValue(this.character.data, normalizedScope, value);
+    
+    // Re-evaluate all formulas after any data change
+    const schema = this.schemas[this.selectedSchemaId];
+    if (schema) {
+        Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+    }
+    
+    this.markAsModified('Field change: ' + normalizedScope.split('.').pop());
+    
+    // Force re-render to update any formula-based fields
+    this.$nextTick(() => {
+        this.character = { ...this.character };
+    });
+},
+
+renderElement(element) {
+    return Utils.ElementRenderer.renderElement(element, {
+        isPreview: false,
+        viewMode: this.viewMode,
+        getValue: (scope) => this.getValue(scope),
+        instanceRef: this
+    });
+},
+
+// Character Creation
+createNewCharacter() {
+    this.newCharacter = { 
+        name: '', 
+        system: this.selectedSchemaId || '', 
+        template: this.selectedTemplateId || '' 
+    };
+    this.updateNewCharacterTemplates();
+    this.showCreateCharacterModal = true;
+},
+
+updateNewCharacterTemplates() {
+    if (!this.newCharacter.system) {
+        this.newCharacterTemplates = {};
+        return;
+    }
+    this.newCharacterTemplates = Object.entries(this.templates)
+        .filter(([_, template]) => template.schema === this.newCharacter.system)
+        .reduce((obj, [id, template]) => {
+            obj[id] = template;
+            return obj;
+        }, {});
+    
+    // Auto-select first available template
+    const templateIds = Object.keys(this.newCharacterTemplates);
+    if (templateIds.length > 0 && !this.newCharacter.template) {
+        this.newCharacter.template = templateIds[0];
+    }
+},
+
+createCharacter() {
+    if ( !this.newCharacter.name || !this.newCharacter.system || !this.newCharacter.template ) {
+        Utils.showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Generate character ID from name
+    const characterId = this.newCharacter.name
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '');
+
+    // Check if character already exists
+    if ( DataManager.getCharacterByIndex(characterId) ) {
+        Utils.showNotification('A character with this name already exists', 'error');
+        return;
+    }
+
+    // Get schema by index to create default data
+    const schema = DataManager.getSchemaByIndex(this.newCharacter.system);
+    const characterData = this.createDefaultCharacterData(schema);
+    characterData.name = this.newCharacter.name;
+
+    const newCharacterObj = {
+        index: characterId,
+        system: this.newCharacter.system,  // Store by index
+        template: this.newCharacter.template,  // Store by index  
+        data: characterData
+    };
+
+    // Save character - DataManager will add ID and metadata
+    DataManager.saveCharacter(newCharacterObj).then(savedId => {
+        // Switch to the new character
+        this.selectedCharacterId = savedId;
+        this.loadCharacter();
+        this.isModified = false;
+        this.showCreateCharacterModal = false;
+        Utils.showNotification(`Character "${this.newCharacter.name}" created successfully`, 'success');
+    }).catch(error => {
+        Utils.showNotification(`Failed to create character: ${error.message}`, 'error');
+    });
+},
+
+createDefaultCharacterData(systemId) {
+    const schema = this.schemas[systemId];
+    if ( !schema ) return {};
+
+    const data = {};
+
+    // Helper function to create default values based on schema
+    const createDefaults = (properties, target) => {
+        if (!properties) return;
+
+        for (const [key, prop] of Object.entries(properties)) {
+            if (prop.type === 'object' && prop.properties) {
+                target[key] = {};
+                createDefaults(prop.properties, target[key]);
+            } else if (prop.type === 'array') {
+                target[key] = [];
+            } else if (prop.type === 'integer' || prop.type === 'number') {
+                target[key] = prop.default || 0;
+            } else if (prop.type === 'boolean') {
+                target[key] = prop.default || false;
+            } else {
+                target[key] = prop.default || '';
+            }
+        }
+    };
+
+    createDefaults(schema.properties, data);
+
+    // Set some sensible defaults for common RPG systems
+    if (systemId === '5e') {
+        // D&D 5e defaults
+        if (data.abilities) {
+            Object.keys(data.abilities).forEach(ability => {
+                data.abilities[ability] = 10; // Default ability score
+            });
+        }
+        if (data.hitPoints) {
+            data.hitPoints.maximum = data.hitPoints.maximum || 8;
+            data.hitPoints.current = data.hitPoints.maximum;
+        }
+        data.level = data.level || 1;
+    } else if (systemId === 'bitd') {
+        // Blades in the Dark defaults
+        if (data.attributes) {
+            Object.keys(data.attributes).forEach(attr => {
+                data.attributes[attr] = 1;
+            });
+        }
+        if (data.actions) {
+            Object.keys(data.actions).forEach(action => {
+                data.actions[action] = 0;
+            });
+        }
+        data.stress = data.stress || 0;
+        data.trauma = data.trauma || [];
+    }
+
+    return data;
+},
+
+initRichTextEditor(editorId, scope, isReadOnly) {
+    setTimeout(() => {
+        const editorElement = document.getElementById(editorId);
+        if (!editorElement || editorElement.dataset.initialized === 'true') return;
+        
+        const currentValue = this.getValue(scope) || '';
+        
+        try {
+            if (isReadOnly) {
+                const viewer = new toastui.Editor.factory({ el: editorElement, viewer: true, initialValue: currentValue, height: 'auto' });
+                editorElement.dataset.initialized = 'true';
+                editorElement.toastViewer = viewer;
+            } else {
+                const editor = new toastui.Editor({
+                    el: editorElement,
+                    height: '300px',
+                    initialEditType: 'wysiwyg',
+                    initialValue: currentValue,
+                    previewStyle: 'vertical',
+                    toolbarItems: [
+                        ['heading', 'bold', 'italic', 'strike'],
+                        ['hr', 'quote'],
+                        ['ul', 'ol', 'task'],
+                        ['table', 'link'],
+                        ['code', 'codeblock']
+                    ]
+                });
+
+                let hasUnsavedChanges = false;
+                
+                editor.on('focus', () => {
+                    if (!hasUnsavedChanges) {
+                        this.saveState('Rich text change: ' + scope.split('/').pop());
+                        hasUnsavedChanges = true;
+                    }
+                });
+
+                const saveContent = () => {
+                    const markdown = editor.getMarkdown();
+                    const currentValue = Utils.getNestedValue(this.character.data, scope);
+                    if (currentValue !== markdown) {
+                        Utils.setNestedValue(this.character.data, scope, markdown);
+                        this.markAsModified();
+                        const scopeParts = scope.replace('#/properties/', '').split('/properties/');
+                        let target = this.character.data;
+                        for (let i = 0; i < scopeParts.length - 1; i++) {
+                            target = target[scopeParts[i]];
+                        }
+                        target[scopeParts[scopeParts.length - 1]] = markdown;
+                    }
+                    hasUnsavedChanges = false;
+                };
+                
+                let blurTimeout;
+                editor.on('blur', () => {
+                    blurTimeout = setTimeout(() => {
+                        const editorContainer = editorElement;
+                        const activeElement = document.activeElement;
+                        
+                        if (!editorContainer.contains(activeElement)) {
+                            saveContent();
+                        }
+                    }, 100);
+                });
+                
+                editor.on('focus', () => {
+                    clearTimeout(blurTimeout);
+                });
+                
+                editor.on('changeMode', saveContent);
+                
+                editorElement.dataset.initialized = 'true';
+                editorElement.toastEditor = editor;
+                
+                const originalDestroy = editor.destroy;
+                editor.destroy = function() {
+                    saveContent();
+                    originalDestroy.call(this);
+                };
+            }
+            
+        } catch (error) {
+            console.error('Error initializing Toast UI Editor:', error);
+            const isReallyReadonly = isReadOnly ? 'readonly' : '';
+            editorElement.innerHTML = `<textarea class="form-control textarea-control" style="width: 100%; min-height: 200px;" ${isReallyReadonly} onfocus="window.characterAppInstance.saveState('Text change: ${scope.split('/').pop()}')" onblur="window.characterAppInstance.updateValue(event, '${scope}')">${currentValue}</textarea>`;
+        }
+    }, 200);
+},
+
+cleanupRichTextEditors() {
+    document.querySelectorAll('.rich-text-editor[data-initialized="true"]').forEach(el => {
+        if (el.toastEditor) {
+            el.toastEditor.destroy();
+            delete el.toastEditor;
+        }
+        if (el.toastViewer) {
+            el.toastViewer.destroy();
+            delete el.toastViewer;
+        }
+        el.dataset.initialized = 'false';
+    });
+},
+
+// Initialize Undo/Redo System
+initUndoRedo() {
+    this.undoManager = new Utils.UndoRedoManager(50);
+    
+    // Set up state getter
+    this.undoManager.setCurrentStateGetter(() => this.character);
+    
+    // Set up state change callback
+    this.undoManager.onStateChange = () => {
+        this.canUndo = this.undoManager.canUndo();
+        this.canRedo = this.undoManager.canRedo();
+    };
+},
+
+saveState(description = 'Character change') {
+    if (this.undoManager && !this.undoManager.isUndoRedoOperation) {
+        this.undoManager.saveState(this.character, description);
+    }
+},
+
+saveStateForInput(scope, eventType = 'change') {
+    // Only save if we haven't already saved for this field recently
+    const key = `${scope}_${eventType}`;
+    const now = Date.now();
+    
+    if (!this.lastStateSave) this.lastStateSave = {};
+    
+    // If we saved state for this field less than 1 second ago, don't save again
+    if (this.lastStateSave[key] && (now - this.lastStateSave[key]) < 1000) {
+        return;
+    }
+    
+    this.saveState(`Field change: ${scope.split('/').pop()}`);
+    this.lastStateSave[key] = now;
+},
+
+undo() {
+    if (!this.undoManager || !this.undoManager.canUndo()) {
+        Utils.showNotification('Nothing to undo', 'info');
+        return;
+    }
+    
+    const previousState = this.undoManager.undo();
+    if (previousState) {
+        this.cleanupRichTextEditors();
+        Object.assign(this.character, Utils.deepClone(previousState));
+        
+        // Re-evaluate formulas after restoring state
+        const schema = DataManager.getSchema(this.selectedSchemaId);
+        if (schema) {
+	    Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+        }
+        
+        this.isModified = true;
+        
+        // Force re-render
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+            this.undoManager.finishUndoRedo();
+        });
+    }
+},
+
+redo() {
+    if (!this.undoManager || !this.undoManager.canRedo()) {
+        Utils.showNotification('Nothing to redo', 'info');
+        return;
+    }
+    
+    const nextState = this.undoManager.redo();
+    if (nextState) {
+        this.cleanupRichTextEditors();
+        Object.assign(this.character, Utils.deepClone(nextState));
+        
+        // Re-evaluate formulas after restoring state
+        const schema = DataManager.getSchema(this.selectedSchemaId);
+        if (schema) {
+	    Utils.FormulaEngine.evaluateAllFormulas(schema, this.character.data);
+        }
+        
+        this.isModified = true;
+        
+        // Force re-render
+        this.$nextTick(() => {
+            this.character = { ...this.character };
+            this.undoManager.finishUndoRedo();
+        });
+    }
+},
+
+getValue(scope) {
+    if (!scope) return '';
+    
+    // Check if this is a formula
+    if (Utils.FormulaEngine.isFormula(scope)) {
+        // Evaluate the formula using the current character data
+        const schema = this.schemas[this.selectedSchemaId];
+        return Utils.FormulaEngine.evaluateFormula(scope, this.character.data, schema);
+    }
+    
+    // Handle @ prefix for dot notation field references
+    let normalizedScope = scope;
+    if (scope.startsWith('@')) {
+        normalizedScope = scope.substring(1); // Remove @ prefix
+    }
+    
+    // Use dot notation to access nested values
+    const pathParts = normalizedScope.split('.');
+    let current = this.character.data;
+    
+    for (const part of pathParts) {
+        if (current === null || current === undefined) return '';
+        current = current[part];
+    }
+    
+    return current !== null && current !== undefined ? current : '';
+},
+            
+            isReadOnly( scope ) { 
+                return Utils.isReadOnly(this.schemas[this.selectedSchemaId], scope); 
+            },
+            
+            formatValue( scope, value ) {
+                if ( scope && scope.includes('modifiers') && typeof value === 'number' ) {
+                    return Utils.formatModifier(value);
+                }
+                return value || '';
+            }
+
+        };
+    }
+
+    document.addEventListener('alpine:init', () => { 
+        Alpine.data('characterApp', characterApp); 
+    });
+  </script>
+</body>
+</html>

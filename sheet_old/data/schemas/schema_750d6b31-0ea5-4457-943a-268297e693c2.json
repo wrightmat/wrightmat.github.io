@@ -1,0 +1,666 @@
+{
+  "id": "schema_750d6b31-0ea5-4457-943a-268297e693c2",
+  "created": "2025-07-01T20:00:00.000Z",
+  "modified": "2025-08-07T01:18:47.189Z",
+  "version": 2,
+  "index": "bitd",
+  "title": "Blades in the Dark",
+  "type": "object",
+  "categories": {
+    "basic": {
+      "label": "Basic Information",
+      "order": 1
+    },
+    "attributes": {
+      "label": "Attributes & Actions",
+      "order": 2
+    },
+    "condition": {
+      "label": "Condition & Status",
+      "order": 3
+    },
+    "abilities": {
+      "label": "Abilities & Features",
+      "order": 4
+    },
+    "relationships": {
+      "label": "Contacts & Relationships",
+      "order": 5
+    },
+    "equipment": {
+      "label": "Equipment & Resources",
+      "order": 6
+    },
+    "advancement": {
+      "label": "Experience & Advancement",
+      "order": 7
+    },
+    "crew": {
+      "label": "Crew Information",
+      "order": 8
+    },
+    "character": {
+      "label": "Character Details",
+      "order": 9
+    }
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "label": "Character Name",
+      "category": "basic",
+      "description": "The scoundrel's name or alias"
+    },
+    "playbook": {
+      "type": "string",
+      "enum": [
+        "Cutter",
+        "Hound",
+        "Leech",
+        "Lurk",
+        "Slide",
+        "Spider",
+        "Whisper"
+      ],
+      "label": "Playbook",
+      "category": "basic",
+      "description": "Character archetype defining abilities and role"
+    },
+    "heritage": {
+      "type": "string",
+      "enum": [
+        "Akoros",
+        "Dagger Isles",
+        "Iruvia",
+        "Severos",
+        "Skovlan",
+        "Tycheros"
+      ],
+      "label": "Heritage",
+      "category": "basic",
+      "description": "Cultural background and homeland"
+    },
+    "background": {
+      "type": "string",
+      "enum": [
+        "Academic",
+        "Labor",
+        "Law",
+        "Trade",
+        "Military",
+        "Noble",
+        "Underworld"
+      ],
+      "label": "Background",
+      "category": "basic",
+      "description": "Previous life before becoming a scoundrel"
+    },
+    "vice": {
+      "type": "object",
+      "label": "Vice",
+      "category": "basic",
+      "description": "Character's addiction or compulsion for stress relief",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "Faith",
+            "Gambling",
+            "Luxury",
+            "Obligation",
+            "Pleasure",
+            "Stupor",
+            "Weird"
+          ],
+          "label": "Vice Type",
+          "category": "basic",
+          "description": "Category of vice"
+        },
+        "description": {
+          "type": "string",
+          "label": "Vice Description",
+          "category": "basic",
+          "description": "Specific details about the character's vice"
+        }
+      }
+    },
+    "stress": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9,
+      "default": 0,
+      "label": "Stress",
+      "category": "condition",
+      "description": "Current stress level (0-9, trauma at 9)"
+    },
+    "trauma": {
+      "type": "array",
+      "label": "Trauma",
+      "category": "condition",
+      "description": "Permanent psychological conditions from excessive stress",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Cold",
+          "Haunted",
+          "Obsessed",
+          "Paranoid",
+          "Reckless",
+          "Soft",
+          "Unstable",
+          "Vicious"
+        ]
+      }
+    },
+    "harm": {
+      "type": "object",
+      "label": "Harm",
+      "category": "condition",
+      "description": "Physical and mental injuries",
+      "properties": {
+        "lesser": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "label": "Lesser Harm",
+          "category": "condition",
+          "description": "Minor injuries (-1d to affected rolls)"
+        },
+        "moderate": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "label": "Moderate Harm",
+          "category": "condition",
+          "description": "Serious injuries (-1d to affected rolls)"
+        },
+        "severe": {
+          "type": "string",
+          "label": "Severe Harm",
+          "category": "condition",
+          "description": "Life-threatening injury (need help for most actions)"
+        },
+        "healingClock": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Healing Progress",
+          "category": "condition",
+          "description": "Progress clock for recovery (4 segments)"
+        }
+      }
+    },
+    "armor": {
+      "type": "object",
+      "label": "Armor",
+      "category": "equipment",
+      "description": "Protective equipment and special defenses",
+      "properties": {
+        "heavy": {
+          "type": "boolean",
+          "default": false,
+          "label": "Heavy Armor",
+          "category": "equipment",
+          "description": "Wearing heavy armor (+armor, but cumbersome)"
+        },
+        "special": {
+          "type": "boolean",
+          "default": false,
+          "label": "Special Armor",
+          "category": "equipment",
+          "description": "Has special armor against supernatural threats"
+        }
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "label": "Attributes",
+      "category": "attributes",
+      "description": "The three core attributes",
+      "properties": {
+        "insight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Insight",
+          "category": "attributes",
+          "description": "Perception, knowledge, and understanding"
+        },
+        "prowess": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Prowess",
+          "category": "attributes",
+          "description": "Physical capability and coordination"
+        },
+        "resolve": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Resolve",
+          "category": "attributes",
+          "description": "Mental strength and social influence"
+        }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "label": "Actions",
+      "category": "attributes",
+      "description": "Specific action ratings for dice pools",
+      "properties": {
+        "hunt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Hunt",
+          "category": "attributes",
+          "description": "Track, chase, and ambush (Insight)"
+        },
+        "study": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Study",
+          "category": "attributes",
+          "description": "Research, analyze, and learn (Insight)"
+        },
+        "survey": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Survey",
+          "category": "attributes",
+          "description": "Observe, assess, and gather information (Insight)"
+        },
+        "tinker": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Tinker",
+          "category": "attributes",
+          "description": "Create, modify, or disable devices (Insight)"
+        },
+        "finesse": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Finesse",
+          "category": "attributes",
+          "description": "Precise manipulation and sleight of hand (Prowess)"
+        },
+        "prowl": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Prowl",
+          "category": "attributes",
+          "description": "Move stealthily and traverse obstacles (Prowess)"
+        },
+        "skirmish": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Skirmish",
+          "category": "attributes",
+          "description": "Fight in close combat (Prowess)"
+        },
+        "wreck": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Wreck",
+          "category": "attributes",
+          "description": "Destroy, break, and use brute force (Prowess)"
+        },
+        "attune": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Attune",
+          "category": "attributes",
+          "description": "Use supernatural powers and commune with spirits (Resolve)"
+        },
+        "command": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Command",
+          "category": "attributes",
+          "description": "Lead, intimidate, and coordinate others (Resolve)"
+        },
+        "consort": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Consort",
+          "category": "attributes",
+          "description": "Socialize and build relationships (Resolve)"
+        },
+        "sway": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Sway",
+          "category": "attributes",
+          "description": "Persuade, lie, and manipulate (Resolve)"
+        }
+      }
+    },
+    "specialAbilities": {
+      "type": "array",
+      "label": "Special Abilities",
+      "category": "abilities",
+      "description": "Unique abilities gained from playbook advancement",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "label": "Ability Name",
+            "description": "Name of the special ability"
+          },
+          "description": {
+            "type": "string",
+            "label": "Description",
+            "description": "Full description of the ability's effects"
+          },
+          "veteran": {
+            "type": "boolean",
+            "default": false,
+            "label": "Veteran Ability",
+            "description": "Whether this is a veteran ability from another playbook"
+          },
+          "uses": {
+            "type": "integer",
+            "default": 0,
+            "label": "Uses",
+            "description": "Current uses remaining (if limited)"
+          },
+          "maxUses": {
+            "type": "integer",
+            "default": 0,
+            "label": "Max Uses",
+            "description": "Maximum uses per downtime/session"
+          }
+        }
+      }
+    },
+    "friends": {
+      "type": "array",
+      "label": "Friends & Rivals",
+      "category": "relationships",
+      "description": "Personal connections from the playbook",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "label": "Contact Name",
+            "description": "Name of the friend or rival"
+          },
+          "description": {
+            "type": "string",
+            "label": "Description",
+            "description": "Details about the contact and their role"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "friend",
+              "rival",
+              "neutral"
+            ],
+            "label": "Relationship Status",
+            "description": "Current relationship with this contact"
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "object",
+      "label": "Load & Items",
+      "category": "equipment",
+      "description": "Character's gear and encumbrance",
+      "properties": {
+        "load": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9,
+          "default": 0,
+          "label": "Current Load",
+          "category": "equipment",
+          "description": "Total load carried (affects action ratings when heavy)"
+        },
+        "equipment": {
+          "type": "array",
+          "label": "Equipment",
+          "category": "equipment",
+          "description": "Carried gear and items",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "label": "Item Name",
+                "description": "Name of the item"
+              },
+              "load": {
+                "type": "integer",
+                "minimum": 0,
+                "label": "Load Value",
+                "description": "How much load this item contributes"
+              },
+              "description": {
+                "type": "string",
+                "label": "Description",
+                "description": "Item description and special properties"
+              },
+              "carried": {
+                "type": "boolean",
+                "default": false,
+                "label": "Currently Carried",
+                "description": "Whether the item is currently being carried"
+              }
+            }
+          }
+        }
+      }
+    },
+    "coins": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "label": "Coin",
+      "category": "equipment",
+      "description": "Current spending money"
+    },
+    "stash": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "label": "Stash",
+      "category": "equipment",
+      "description": "Saved money in secure storage"
+    },
+    "playbookXP": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8,
+      "default": 0,
+      "label": "Playbook XP",
+      "category": "advancement",
+      "description": "Experience points for playbook advancement (8 to advance)"
+    },
+    "attributeXP": {
+      "type": "object",
+      "label": "Attribute XP",
+      "category": "advancement",
+      "description": "Experience points for attribute advancement",
+      "properties": {
+        "insight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 0,
+          "label": "Insight XP",
+          "category": "advancement",
+          "description": "XP for Insight attribute (6 to advance)"
+        },
+        "prowess": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 0,
+          "label": "Prowess XP",
+          "category": "advancement",
+          "description": "XP for Prowess attribute (6 to advance)"
+        },
+        "resolve": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 0,
+          "label": "Resolve XP",
+          "category": "advancement",
+          "description": "XP for Resolve attribute (6 to advance)"
+        }
+      }
+    },
+    "crew": {
+      "type": "object",
+      "label": "Crew",
+      "category": "crew",
+      "description": "Information about the character's crew",
+      "properties": {
+        "name": {
+          "type": "string",
+          "label": "Crew Name",
+          "category": "crew",
+          "description": "Name of the criminal crew"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Assassins",
+            "Bravos",
+            "Cult",
+            "Hawkers",
+            "Shadows",
+            "Smugglers"
+          ],
+          "label": "Crew Type",
+          "category": "crew",
+          "description": "Type of criminal organization"
+        },
+        "reputation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12,
+          "default": 0,
+          "label": "Crew Rep",
+          "category": "crew",
+          "description": "Crew's reputation level (0-12)"
+        },
+        "tier": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "default": 0,
+          "label": "Crew Tier",
+          "category": "crew",
+          "description": "Crew's tier of influence and resources (0-4)"
+        }
+      }
+    },
+    "contacts": {
+      "type": "array",
+      "label": "Contacts",
+      "category": "relationships",
+      "description": "Important NPCs and their relationships",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "label": "Contact Name",
+            "description": "Name of the contact"
+          },
+          "role": {
+            "type": "string",
+            "label": "Role/Position",
+            "description": "Contact's job or position in society"
+          },
+          "faction": {
+            "type": "string",
+            "label": "Faction",
+            "description": "Which faction or organization they belong to"
+          },
+          "relationship": {
+            "type": "integer",
+            "minimum": -3,
+            "maximum": 3,
+            "default": 0,
+            "label": "Relationship",
+            "description": "Relationship level (-3 hostile to +3 close ally)"
+          }
+        }
+      }
+    },
+    "goals": {
+      "type": "object",
+      "label": "Goals",
+      "category": "character",
+      "description": "Character's driving ambitions",
+      "properties": {
+        "shortTerm": {
+          "type": "string",
+          "label": "Short-term Goal",
+          "category": "character",
+          "description": "Immediate objective or desire"
+        },
+        "longTerm": {
+          "type": "string",
+          "label": "Long-term Goal",
+          "category": "character",
+          "description": "Ultimate ambition or life goal"
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "label": "Notes",
+      "category": "character",
+      "description": "Additional notes, reminders, and details"
+    },
+    "portrait": {
+      "type": "string",
+      "label": "Portrait",
+      "category": "character",
+      "description": "Character portrait image URL or data"
+    }
+  },
+  "required": [
+    "name",
+    "playbook"
+  ]
+}

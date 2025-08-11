@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="schema-editor">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTRPG Schema Editor</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <script src="data.js"></script>
+  <script src="utils.js"></script>
+  <script src="schema_editor.js"></script>
+</head>
+
+<body>
+
+<div class="editor-container" id="editor-container">
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button class="toolbar-toggle" id="toggle-left-pane">
+            <span class="toggle-icon">◀</span>
+            <span class="text-sm">Tools</span>
+        </button>
+        
+        <h1>⚙️ Schema Editor</h1>
+        
+        <div class="toolbar-actions">
+            <select id="schema-select" class="form-control">
+                <option value="">Select Schema...</option>
+                <option value="_new">+ Create New Schema</option>
+            </select>
+            <button id="save-schema-btn" class="btn btn-primary" disabled>💾 Save</button>
+	    <button id="validation-status-btn" class="btn btn-secondary" onclick="window.schemaEditorInstance.showValidationDetails()">⚪ No Schema</button>
+        </div>
+        
+        <button class="toolbar-toggle" id="toggle-right-pane">
+            <span class="text-sm">Properties</span>
+            <span class="toggle-icon">▶</span>
+        </button>
+    </div>
+
+    <!-- Left Pane - Tools & Importers -->
+    <div class="left-pane" id="left-pane">
+        <div class="pane-header">
+            <h3 class="pane-title">🛠️ Tools</h3>
+        </div>
+        <div class="tools-scroll" id="tools-panel">
+            <!-- Tools and importers content -->
+        </div>
+    </div>
+
+    <!-- Main Area - Schema Tree -->
+    <div class="main-content" id="main-content">
+        <div class="schema-header" id="schema-header">
+            <!-- Schema title and basic info -->
+        </div>
+        <div class="schema-tree-container" id="schema-tree-container">
+            <!-- Schema tree structure -->
+        </div>
+    </div>
+
+    <!-- Right Pane - Advanced Properties -->
+    <div class="right-pane" id="right-pane">
+        <div class="pane-header">
+            <h3 class="pane-title">⚙️ Properties</h3>
+            <span class="modified-indicator"></span>
+        </div>
+        <div class="properties-scroll" id="properties-panel">
+            <!-- Advanced property configuration -->
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

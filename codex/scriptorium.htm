@@ -283,6 +283,7 @@ console.log(print);
     fetch('/templates/list')
       .then( res => res.json() )
       .then( templates => {
+console.log(templates);
         const select = document.getElementById('controls-template');
         templates.forEach( t => {
           const option = document.createElement('option');

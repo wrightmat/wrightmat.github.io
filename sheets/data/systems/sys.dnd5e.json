@@ -1,0 +1,141 @@
+{
+  "id": "sys.dnd5e",
+  "title": "D&D 5e (Basic)",
+  "version": "0.1.0",
+  "fields": [
+    {
+      "key": "name",
+      "type": "string",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "key": "abilities",
+      "type": "group",
+      "children": [
+        {
+          "key": "strength",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "key": "dexterity",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "key": "constitution",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "key": "intelligence",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "key": "wisdom",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "key": "charisma",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30
+        }
+      ]
+    },
+    {
+      "key": "skills",
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10
+      }
+    },
+    {
+      "key": "inventory",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "qty": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    {
+      "key": "traits",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "key": "stance",
+      "type": "string",
+      "enum": [
+        "Aggressive",
+        "Defensive",
+        "Neutral"
+      ]
+    },
+    {
+      "key": "exhaustion",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 6
+    }
+  ],
+  "formulas": [
+    {
+      "key": "mod.str",
+      "expr": "floor((@abilities.strength-10)/2)"
+    },
+    {
+      "key": "mod.dex",
+      "expr": "floor((@abilities.dexterity-10)/2)"
+    }
+  ],
+  "importers": [
+    {
+      "id": "dndbeyond_v1",
+      "label": "D&D Beyond (JSON)",
+      "input": "json",
+      "detect": "$.character",
+      "map": [
+        {
+          "from": "$.character.name",
+          "to": "@name"
+        },
+        {
+          "from": "$.character.stats.STR.value",
+          "to": "@abilities.strength",
+          "transform": "int"
+        },
+        {
+          "from": "$.character.stats.DEX.value",
+          "to": "@abilities.dexterity",
+          "transform": "int"
+        },
+        {
+          "from": "$.character.inventory[*].name",
+          "to": "@inventory",
+          "transform": "asList"
+        }
+      ]
+    }
+  ]
+}
