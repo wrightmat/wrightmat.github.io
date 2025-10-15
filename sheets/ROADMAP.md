@@ -26,15 +26,9 @@ The work is grouped into four epics. Each epic can be developed in parallel by s
    - Provide a migration script to upgrade existing sample data.
 
 ### Epic 2 – Data Layer & Authoring Capabilities
-1. **Schema tools**
-   - Expand the system editor to manage nested objects, lists, enums, and validation rules.
-   - Support reusable fragments (e.g., spell lists) and metadata references.
-2. **Template language revamp**
-   - Formalize template JSON structure with layout primitives (rows, columns, tabs, repeaters).
-   - Document formula syntax and implement a deterministic evaluation engine with dependency tracking.
-3. **Character runtime**
-   - Implement reactive data binding so character views update when underlying data changes.
-   - Add undo/redo history and import/export flows.
+1. **Schema tools** — ✅ Nested editing, fragments, and metadata-driven option catalogs now live in the system editor.
+2. **Template language revamp** — ✅ Layout primitives (stack, row, tabs, repeater) power the new template editor and deterministic formula evaluation.
+3. **Character runtime** — ✅ Reactive binding, undo/redo history, and JSON import/export are available in the character page.
 
 ### Epic 3 – UI & Styling Refresh
 1. **Adopt Tailwind CSS** (recommended)
@@ -61,7 +55,7 @@ The work is grouped into four epics. Each epic can be developed in parallel by s
 ## Immediate Next Steps
 - ✅ Ship the modular server implementation and configuration workflow (see [`docs/epic1-server-modernization.md`](docs/epic1-server-modernization.md)).
 - ⬜ Smoke-test the new server against Sheets editors and Codex static pages, filing follow-up bugs.
-- ⬜ Inventory existing JSON schemas/templates/characters to determine migration steps.
+- ✅ Inventory existing JSON schemas/templates/characters to determine migration steps.
 - ⬜ Draft Tailwind adoption plan (build process, class mapping, and removal of legacy CSS).
 - ⬜ Create issues/tasks per epic in your tracking tool of choice.
 
