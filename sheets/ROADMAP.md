@@ -56,6 +56,6 @@ The work is grouped into four epics. Each epic can be developed in parallel by s
 - ✅ Ship the modular server implementation and configuration workflow (see [`docs/epic1-server-modernization.md`](docs/epic1-server-modernization.md)).
 - ⬜ Smoke-test the new server against Sheets editors and Codex static pages, filing follow-up bugs.
 - ✅ Inventory existing JSON schemas/templates/characters to determine migration steps.
-- ⬜ Draft Tailwind adoption plan (build process, class mapping, and removal of legacy CSS).
+- ✅ Draft Tailwind adoption plan (see [`docs/epic3-ui-plan.md`](docs/epic3-ui-plan.md)).
 - ⬜ Create issues/tasks per epic in your tracking tool of choice.
 
