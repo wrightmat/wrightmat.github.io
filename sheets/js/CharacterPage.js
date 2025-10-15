@@ -1,28 +1,127 @@
 import { DataManager } from './DataManager.js';
 import { RenderingEngine } from './RenderingEngine.js';
+import { CharacterStore } from './CharacterStore.js';
 import { newId } from './UID.js';
+import { initAppShell } from './ui/AppShell.js';
 
 const dm = new DataManager(location.origin);
-const elTools = document.getElementById('tools');
-const elSheet = document.getElementById('sheet');
-const elLog = document.getElementById('log');
+const shell = initAppShell({
+  title: 'Character',
+  subtitle: 'Play Session',
+  current: 'character',
+  panes: {
+    left: { title: 'Session Controls' },
+    center: { title: 'Character Sheet' },
+    right: { title: 'Play Tools', description: 'Utilities stay in sync with the active character.' }
+  }
+});
 
-let system=null, template=null, character=null;
+const elTools = shell.panes.left;
+const elSheet = shell.panes.center;
+const elLog = shell.panes.right;
+shell.actions.innerHTML = '';
 
-async function init(){
-  elTools.innerHTML = `<h3>Tools</h3>
-    <div class="form-row"><label>System ID</label><input id="sys" class="input" value="sys.dnd5e"/></div>
-    <div class="form-row"><label>Template ID</label><input id="tpl" class="input" value="tpl.5e.flex-basic"/></div>
-    <div class="form-row"><label>Character ID</label><input id="cha" class="input" placeholder="cha_* or leave empty to create"/></div>
-    <button class="btn" id="btnLoad">Load</button>
-    <button class="btn" id="btnCreate">Create New</button>
-    <button class="btn" id="btnSave">Save</button>
+let system = null;
+let template = null;
+let store = null;
+let engine = null;
+let storeSub = null;
+let baselinePointer = 0;
+
+function init(){
+  renderLeftPanel();
+  renderRightPanel();
+  bindLeftPanelActions();
+}
+
+function renderLeftPanel(){
+  elTools.innerHTML = `
+    <section class="panel-section">
+      <p class="section-heading">Source</p>
+      <div class="stack-sm">
+        <label for="sys">System ID</label>
+        <input id="sys" class="input-control" value="sys.dnd5e"/>
+      </div>
+      <div class="stack-sm">
+        <label for="tpl">Template ID</label>
+        <input id="tpl" class="input-control" value="tpl.5e.flex-basic"/>
+      </div>
+      <div class="stack-sm">
+        <label for="cha">Character ID</label>
+        <input id="cha" class="input-control" placeholder="cha_* or leave empty to create"/>
+      </div>
+      <div class="toolbar" role="group" aria-label="Session actions">
+        <button class="btn primary" id="btnLoad">Load</button>
+        <button class="btn" id="btnCreate">Create New</button>
+        <button class="btn" id="btnSave">Save</button>
+      </div>
+    </section>
+    <section class="panel-section">
+      <p class="section-heading">History</p>
+      <div class="toolbar" role="group" aria-label="Undo and redo">
+        <button class="btn" id="btnUndo" disabled>Undo</button>
+        <button class="btn" id="btnRedo" disabled>Redo</button>
+      </div>
+    </section>
+    <section class="panel-section">
+      <p class="section-heading">Import / Export</p>
+      <textarea id="ioArea" class="textarea-control" rows="8" placeholder="Paste character JSON"></textarea>
+      <div class="toolbar" role="group" aria-label="Import export actions">
+        <button class="btn" id="btnExport">Copy from sheet</button>
+        <button class="btn" id="btnImport">Apply to sheet</button>
+      </div>
+    </section>
   `;
-  elLog.innerHTML = `<h3>Roll Log</h3><div id="rolls" class="small"></div>`;
+}
 
+function renderRightPanel(){
+  elLog.innerHTML = `
+    <section class="panel-section">
+      <p class="section-heading">Dice log</p>
+      <div id="rolls" class="stack-sm muted-text"></div>
+    </section>
+    <section class="panel-section">
+      <p class="section-heading">Session notes</p>
+      <textarea id="sessionNotes" class="textarea-control" placeholder="Quick session notes (stored locally)"></textarea>
+    </section>
+  `;
+}
+
+function bindLeftPanelActions(){
   document.getElementById('btnLoad').onclick = loadAll;
   document.getElementById('btnCreate').onclick = createNew;
   document.getElementById('btnSave').onclick = saveChar;
+  document.getElementById('btnUndo').onclick = ()=> { if(store) store.undo(); updateHistoryButtons(); reflectDirtyState(); };
+  document.getElementById('btnRedo').onclick = ()=> { if(store) store.redo(); updateHistoryButtons(); reflectDirtyState(); };
+  document.getElementById('btnExport').onclick = ()=> {
+    if(!store) return;
+    const io = document.getElementById('ioArea');
+    io.value = JSON.stringify(store.exportData(), null, 2);
+  };
+  document.getElementById('btnImport').onclick = ()=> {
+    if(!store) return;
+    const io = document.getElementById('ioArea');
+    try{
+      const data = JSON.parse(io.value || '{}');
+      store.importData(data);
+      updateHistoryButtons();
+      reflectDirtyState();
+    }catch(err){
+      alert('Invalid JSON');
+    }
+  };
+}
+
+function attachStore(charObj){
+  if(storeSub) storeSub();
+  store = new CharacterStore(charObj);
+  storeSub = store.subscribe(()=>{
+    updateHistoryButtons();
+    syncIoArea();
+    reflectDirtyState();
+  });
+  baselinePointer = store.pointer;
+  reflectDirtyState();
 }
 
 async function loadAll(){
@@ -31,33 +130,101 @@ async function loadAll(){
   const chaId = document.getElementById('cha').value.trim();
   system = await dm.read('systems', sysId);
   template = await dm.read('templates', tplId);
+  let loadedChar = null;
   if(chaId){
-    character = await dm.read('characters', chaId);
+    loadedChar = await dm.read('characters', chaId);
   }else{
-    character = { id:newId('cha'), system: sysId, template: tplId, data:{ name:'New Hero' }, state:{ timers:{}, log:[] } };
+    loadedChar = createCharacter(sysId, tplId);
   }
-  const engine = new RenderingEngine(system, template, character, { log: (msg)=> log(msg) });
-  engine.mount(elSheet, 'runtime');
+  document.getElementById('cha').value = loadedChar.id;
+  attachStore(loadedChar);
+  mountEngine();
 }
 
 async function createNew(){
   const sysId = document.getElementById('sys').value.trim();
   const tplId = document.getElementById('tpl').value.trim();
-  character = { id:newId('cha'), system: sysId, template: tplId, data:{ name:'New Hero' }, state:{ timers:{}, log:[] } };
-  document.getElementById('cha').value = character.id;
-  const engine = new RenderingEngine(system || await dm.read('systems', sysId), template || await dm.read('templates', tplId), character, { log: log });
+  if(!system) system = await dm.read('systems', sysId);
+  if(!template) template = await dm.read('templates', tplId);
+  const fresh = createCharacter(sysId, tplId);
+  document.getElementById('cha').value = fresh.id;
+  attachStore(fresh);
+  mountEngine();
+}
+
+function mountEngine(){
+  if(engine) engine.dispose();
+  engine = new RenderingEngine(system, template, store, { log });
   engine.mount(elSheet, 'runtime');
+  syncIoArea();
+  updateHistoryButtons();
+  reflectDirtyState();
 }
 
 async function saveChar(){
-  if(!character) return;
-  const token = localStorage.getItem('token'); if(!token){ alert('Login first'); return; }
-  const res = await dm.save('characters', character.id, character);
+  if(!store) return;
+  const token = localStorage.getItem('token');
+  if(!token){
+    alert('Login first');
+    return;
+  }
+  const current = store.getCharacter();
+  const res = await dm.save('characters', current.id, current);
   alert(JSON.stringify(res));
+  baselinePointer = store.pointer;
+  reflectDirtyState(true);
+}
+
+function createCharacter(systemId, templateId){
+  return {
+    id: newId('cha'),
+    system: systemId,
+    template: templateId,
+    data: { name: 'New Hero' },
+    state: { timers: {}, log: [] }
+  };
+}
+
+function updateHistoryButtons(){
+  const undo = document.getElementById('btnUndo');
+  const redo = document.getElementById('btnRedo');
+  if(!store){
+    undo.disabled = true;
+    redo.disabled = true;
+    return;
+  }
+  undo.disabled = !store.canUndo();
+  redo.disabled = !store.canRedo();
+}
+
+function syncIoArea(){
+  const io = document.getElementById('ioArea');
+  if(!io || !store) return;
+  io.value = JSON.stringify(store.exportData(), null, 2);
 }
 
 function log(msg){
-  const r = document.getElementById('rolls'); const d = document.createElement('div'); d.textContent = msg; r.prepend(d);
+  const r = document.getElementById('rolls');
+  if(!r) return;
+  const d = document.createElement('div');
+  d.textContent = msg;
+  r.prepend(d);
+}
+
+function reflectDirtyState(saved = false){
+  if(!store){
+    shell.clearStatus();
+    return;
+  }
+  const dirty = store.pointer !== baselinePointer;
+  if(dirty){
+    shell.setStatus('Unsaved changes', 'warning');
+  }else if(saved){
+    shell.setStatus('Character saved', 'success');
+    setTimeout(()=> shell.clearStatus(), 1600);
+  }else{
+    shell.clearStatus();
+  }
 }
 
 init();

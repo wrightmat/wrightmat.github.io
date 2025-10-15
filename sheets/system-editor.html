@@ -1,23 +1,14 @@
 <!doctype html>
-<html><head>
+<html lang="en">
+<head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>System Editor</title>
+  <link rel="stylesheet" href="css/generated.css"/>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-<header class="topbar">
-  <h2>System Editor</h2>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="template-editor.html">Template Editor</a>
-    <a href="character.html">Character</a>
-  </nav>
-</header>
-<div class="panes">
-  <aside class="pane" id="tree"></aside>
-  <section class="pane" id="form"></section>
-  <aside class="pane" id="actions"></aside>
-</div>
-<script type="module" src="js/SystemEditor.js"></script>
-</body></html>
+  <div id="app" class="app-shell"></div>
+  <script type="module" src="js/SystemEditor.js"></script>
+</body>
+</html>
