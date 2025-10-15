@@ -8,7 +8,7 @@
     "log_level": "info"
   },
   "database": {
-    "path": "sheets/data/database.sqlite"
+    "path": "data/database.sqlite"
   },
   "mounts": [
     {
