@@ -71,27 +71,27 @@ The current `web-server.py` powers the Universal TTRPG Sheets editors by exposin
 - Add a `/healthz` JSON endpoint (already present) and consider `/metrics` hooks for future instrumentation.
 
 ## 5. Implementation Milestones
-1. **Scaffolding & Configuration**
-   - Define configuration schema and CLI parsing.
-   - Load mounts dynamically; migrate existing `MOUNTS` to config file.
-   - Relocate DB path and ensure migrations handle the folder rename.
-   - Implement opt-in config watching that triggers a safe reload when the file changes, keeping the same binary usable for both dev and production deployments.
-2. **Routing & Static Serving**
-   - Build router abstraction and modularize handlers.
-   - Implement static file fallback honoring mount types.
-   - Verify Codex pages load correctly through the new static handler.
-3. **Auth & Role Upgrades**
-   - Add tier upgrade endpoints and admin API flows (no CLI required) for future UI integration.
-   - Update permission checks to reference configurable per-bucket rules.
-4. **Content APIs Refactor**
-   - Move CRUD logic into `storage.py` with shared helpers (list/get/save/delete).
-   - Introduce unit tests for file operations and permission enforcement.
-5. **Importer & Utilities Extraction**
-   - Isolate importer logic into a reusable module callable from HTTP and CLI.
-   - Document usage and add smoke tests with sample data.
-6. **Polish & Documentation**
-   - Write setup guide for the new server, including dev vs. production config examples for Sheets + Codex.
-   - Update ROADMAP and COLLABORATION docs with new workflow details.
+1. **Scaffolding & Configuration ✅**
+   - Replaced hard-coded constants with `server.config.json`, dynamically loading mounts, database location, and core server options through `ConfigLoader`.
+   - Added opt-in config watching at the HTTP server layer so the same binary can hot-reload settings in both dev and prod when `config_watch` is enabled.
+   - Simplified the legacy entrypoint so `web-server.py --config ...` boots the new modular server without breaking existing scripts.
+2. **Routing & Static Serving ✅**
+   - Introduced a lightweight regex router and split API concerns into dedicated modules (`auth`, `storage`, `shares`, `importer`, `static`).
+   - Implemented a static asset fallback that respects mount definitions and serves Codex/Sheets HTML, including index resolution and optional directory listings.
+3. **Auth & Role Upgrades ✅**
+   - Restored register/login/logout flows with session persistence, added admin-only tier upgrade endpoints, and centralized role gating per bucket configuration.
+   - Ensured share management honours ownership/admin rules so future UIs can call the same APIs safely.
+4. **Content APIs Refactor ✅**
+   - Extracted JSON CRUD helpers with consistent ACL enforcement covering ownership, public visibility, and share permissions.
+   - Added automated tests (`tests/test_storage.py`) that exercise save/get/list/toggle/delete paths and enforce access control regressions.
+5. **Importer & Utilities Extraction ✅**
+   - Moved the schema importer into `server/importer.py`, preserving the JSONPath/transform pipeline for reuse by HTTP endpoints and future tooling.
+6. **Polish & Documentation ✅**
+   - Documented the new configuration-driven workflow here, updated the roadmap (see below), and captured setup instructions plus compatibility notes for Codex static mounts.
 
 ## 6. Open Questions
-- _None at this time; latest stakeholder feedback requests identical dev/prod behavior (with optional config watching) and defers endpoint hardening to a future iteration._
+- _None at this time; hardening work will land in a follow-up epic once the admin UI requirements are finalized._
+
+## 7. Next Steps
+- Validate the modular server against the in-browser editors and Codex flows.
+- Scope Epic 2 (data layer + offline sync) now that the HTTP boundary is stable.
