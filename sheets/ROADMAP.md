@@ -59,8 +59,8 @@ The work is grouped into four epics. Each epic can be developed in parallel by s
    - Maintain changelog and roadmap updates.
 
 ## Immediate Next Steps
-1. Audit `web-server.py` to design the modular host interface.
-2. Inventory existing JSON schemas/templates/characters to determine migration steps.
-3. Draft Tailwind adoption plan (build process, class mapping, and removal of legacy CSS).
-4. Create issues/tasks per epic in your tracking tool of choice.
+- ✅ Audit `web-server.py` to design the modular host interface (see [`docs/epic1-server-modernization.md`](docs/epic1-server-modernization.md)).
+- ⬜ Inventory existing JSON schemas/templates/characters to determine migration steps.
+- ⬜ Draft Tailwind adoption plan (build process, class mapping, and removal of legacy CSS).
+- ⬜ Create issues/tasks per epic in your tracking tool of choice.
 
