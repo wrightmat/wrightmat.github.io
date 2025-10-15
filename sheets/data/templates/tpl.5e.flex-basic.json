@@ -1,121 +1,142 @@
 {
   "id": "tpl.5e.flex-basic",
   "schema": "sys.dnd5e",
-  "title": "5e \u2014 Flex Basic",
-  "content": [
-    {
-      "el": "input",
-      "id": "name",
-      "label": "Name",
-      "bind": "@name",
-      "input": "text"
-    },
-    {
-      "el": "container",
-      "id": "coreGrid",
-      "layout": {
-        "mode": "grid",
-        "cols": 3,
-        "gap": 8
+  "title": "5e — Flex Basic",
+  "layout": {
+    "type": "stack",
+    "children": [
+      {
+        "type": "field",
+        "component": "input",
+        "label": "Name",
+        "bind": "@name",
+        "inputType": "text"
       },
-      "children": [
-        {
-          "el": "input",
-          "label": "STR",
-          "bind": "@abilities.strength",
-          "input": "number",
-          "min": 1,
-          "max": 30
-        },
-        {
-          "el": "text",
-          "label": "STR Mod",
-          "formula": "floor((@abilities.strength-10)/2)"
-        },
-        {
-          "el": "roller",
-          "label": "Attack",
-          "expr": "1d20+@mod.str"
-        }
-      ]
-    },
-    {
-      "el": "tabs",
-      "id": "lowerTabs",
-      "tabs": [
-        {
-          "label": "Inventory",
-          "content": [
-            {
-              "el": "list",
-              "label": "Inventory",
-              "bind": "@inventory",
-              "item": {
-                "content": [
-                  {
-                    "el": "input",
-                    "bind": "item.name",
-                    "label": "Item"
-                  },
-                  {
-                    "el": "input",
-                    "bind": "item.qty",
-                    "label": "Qty",
-                    "input": "number",
-                    "min": 0
+      {
+        "type": "row",
+        "gap": 8,
+        "columns": [
+          {
+            "span": 1,
+            "node": {
+              "type": "field",
+              "component": "input",
+              "label": "STR",
+              "bind": "@abilities.strength",
+              "inputType": "number",
+              "min": 1,
+              "max": 30
+            }
+          },
+          {
+            "span": 1,
+            "node": {
+              "type": "field",
+              "component": "text",
+              "label": "STR Mod",
+              "formula": "@mod.str"
+            }
+          },
+          {
+            "span": 1,
+            "node": {
+              "type": "field",
+              "component": "roller",
+              "label": "Attack",
+              "expr": "1d20 + @mod.str"
+            }
+          }
+        ]
+      },
+      {
+        "type": "tabs",
+        "tabs": [
+          {
+            "label": "Inventory",
+            "node": {
+              "type": "stack",
+              "children": [
+                {
+                  "type": "repeater",
+                  "label": "Inventory",
+                  "bind": "@inventory",
+                  "addLabel": "Add Item",
+                  "emptyText": "No equipment",
+                  "template": {
+                    "type": "row",
+                    "columns": [
+                      {
+                        "span": 2,
+                        "node": {
+                          "type": "field",
+                          "component": "input",
+                          "label": "Item",
+                          "bind": "@item.name"
+                        }
+                      },
+                      {
+                        "span": 1,
+                        "node": {
+                          "type": "field",
+                          "component": "input",
+                          "label": "Qty",
+                          "bind": "@item.qty",
+                          "inputType": "number",
+                          "min": 0
+                        }
+                      }
+                    ]
                   }
-                ]
-              },
-              "allowAdd": true,
-              "allowRemove": true,
-              "allowReorder": true
-            }
-          ]
-        },
-        {
-          "label": "States",
-          "content": [
-            {
-              "el": "toggle",
-              "label": "Stance",
-              "bind": "@stance",
-              "states": [
-                "Aggressive",
-                "Defensive",
-                "Neutral"
+                }
               ]
-            },
-            {
-              "el": "tags",
-              "label": "Traits",
-              "bind": "@traits",
-              "options": [
-                "brave",
-                "lucky",
-                "alert"
-              ],
-              "multi": true
-            },
-            {
-              "el": "clock",
-              "label": "Exhaustion",
-              "bind": "@exhaustion",
-              "max": 6
-            },
-            {
-              "el": "timer",
-              "label": "Concentration",
-              "bind": "@timers.concentration",
-              "mode": "up"
             }
-          ]
-        }
-      ]
+          },
+          {
+            "label": "States",
+            "node": {
+              "type": "stack",
+              "children": [
+                {
+                  "type": "field",
+                  "component": "toggle",
+                  "label": "Stance",
+                  "bind": "@stance",
+                  "optionsFrom": "traits.core"
+                },
+                {
+                  "type": "field",
+                  "component": "tags",
+                  "label": "Traits",
+                  "bind": "@traits",
+                  "optionsFrom": "traits.core",
+                  "multi": true
+                },
+                {
+                  "type": "field",
+                  "component": "clock",
+                  "label": "Exhaustion",
+                  "bind": "@exhaustion",
+                  "max": 6
+                },
+                {
+                  "type": "field",
+                  "component": "timer",
+                  "label": "Concentration",
+                  "bind": "@timers.concentration",
+                  "mode": "up"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "formulas": [
+    {
+      "key": "mod.prof",
+      "label": "Proficiency Bonus",
+      "expr": "floor((@abilities.strength + @abilities.dexterity)/10)"
     }
-  ],
-  "theme": {
-    "radius": 8,
-    "gap": 8,
-    "fontScale": 1.0
-  }
+  ]
 }
