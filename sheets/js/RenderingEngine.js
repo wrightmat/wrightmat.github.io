@@ -1,201 +1,404 @@
 import { FormulaEngine } from './FormulaEngine.js';
 import { DiceEngine } from './DiceEngine.js';
+import { CharacterStore } from './CharacterStore.js';
+
+const clone = (value) => (typeof structuredClone === 'function'
+  ? structuredClone(value)
+  : JSON.parse(JSON.stringify(value)));
 
 export class RenderingEngine{
-  constructor(system, template, character, hooks={}){
-    this.system = system;
-    this.template = template;
-    this.character = character;
+  constructor(system, template, source, hooks={}){
+    this.system = system || { metadata: [], formulas: [] };
+    this.template = template || { layout: { type: 'stack', children: [] }, formulas: [] };
+    if(source && typeof source.subscribe === 'function'){
+      this.store = source;
+    }else{
+      this.store = new CharacterStore(source || { data:{}, state:{ timers:{}, log:[] } });
+    }
     this.hooks = hooks;
     this.formulas = new FormulaEngine();
     this.dice = new DiceEngine();
+    this.container = null;
+    this.mode = 'runtime';
+    this.unsubscribe = null;
   }
   mount(container, mode='runtime'){
-    container.innerHTML='';
-    const ctx = this.buildCtx();
-    (this.template.content||[]).forEach(el=>{
-      container.appendChild(this.renderElement(el, ctx));
-    });
+    this.container = container;
+    this.mode = mode;
+    this.render();
+    if(this.unsubscribe) this.unsubscribe();
+    this.unsubscribe = this.store.subscribe(()=> this.render());
+  }
+  dispose(){
+    if(this.unsubscribe) this.unsubscribe();
+    this.unsubscribe = null;
+    if(this._timers){
+      this._timers.forEach(clearInterval);
+      this._timers = [];
+    }
+  }
+  updateTemplate(template){
+    this.template = template;
+    this.render();
   }
   buildCtx(){
-    const data = (this.character && this.character.data) ? this.character.data : this.character || {};
-    // Precompute system formulas into ctx.mod.*, etc. (simple pass)
-    const ctx = JSON.parse(JSON.stringify(data));
-    // crude mod precompute if system has formulas
-    (this.system.formulas||[]).forEach(f=>{
-      try{
-        const val = this.formulas.eval(f.expr, {thisCtx: ctx});
-        const path = f.key.split('.');
-        let node = ctx;
-        for(let i=0;i<path.length-1;i++){ node[path[i]] = node[path[i]]||{}; node = node[path[i]]; }
-        node[path[path.length-1]] = val;
-      }catch(e){}
-    });
+    const base = this.store.getData();
+    let ctx = clone(base);
+    ctx = this.formulas.applyFormulas(this.system.formulas, ctx);
+    ctx = this.formulas.applyFormulas(this.template.formulas, ctx);
     return ctx;
   }
-  renderElement(el, ctx){
-    if(el.visible){
-      try{ if(!this.formulas.eval(el.visible, {thisCtx: ctx})) return document.createComment('hidden'); }catch{}
+  render(){
+    if(!this.container) return;
+    if(this._timers){
+      this._timers.forEach(clearInterval);
     }
-    const wrap = document.createElement('div'); wrap.className='card';
-    const label = el.label ? `<div class="small">${el.label}</div>` : '';
-    switch(el.el){
+    this._timers = [];
+    this.container.innerHTML = '';
+    const ctx = this.buildCtx();
+    const root = this.template.layout || { type:'stack', children:[] };
+    const el = this.renderNode(root, ctx, {});
+    if(el) this.container.appendChild(el);
+  }
+  renderNode(node, ctx, locals){
+    if(!node) return null;
+    switch(node.type){
+      case 'stack':
+        return this.renderStack(node, ctx, locals);
+      case 'row':
+        return this.renderRow(node, ctx, locals);
+      case 'tabs':
+        return this.renderTabs(node, ctx, locals);
+      case 'repeater':
+        return this.renderRepeater(node, ctx, locals);
+      case 'field':
+        return this.renderField(node, ctx, locals);
+      default:
+        return this.renderUnknown(node);
+    }
+  }
+  renderStack(node, ctx, locals){
+    const wrap = document.createElement('div');
+    wrap.className = 'stack';
+    (node.children || []).forEach((child, idx)=>{
+      const el = this.renderNode(child, ctx, locals);
+      if(el) wrap.appendChild(el);
+    });
+    return wrap;
+  }
+  renderRow(node, ctx, locals){
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.display = 'flex';
+    row.style.gap = `${node.gap ?? 8}px`;
+    const columns = node.columns || [];
+    columns.forEach(col=>{
+      const colWrap = document.createElement('div');
+      colWrap.style.flex = String(col.span || 1);
+      const child = this.renderNode(col.node, ctx, locals);
+      if(child) colWrap.appendChild(child);
+      row.appendChild(colWrap);
+    });
+    return row;
+  }
+  renderTabs(node, ctx, locals){
+    const wrap = document.createElement('div');
+    wrap.className = 'tabs-card card';
+    const bar = document.createElement('div');
+    bar.className = 'tabbar';
+    const pane = document.createElement('div');
+    pane.className = 'tabpane';
+    const tabs = node.tabs || [];
+    const setTab = (idx)=>{
+      pane.innerHTML = '';
+      const tab = tabs[idx];
+      if(tab && tab.node){
+        const child = this.renderNode(tab.node, ctx, locals);
+        if(child) pane.appendChild(child);
+      }
+      [...bar.children].forEach((btn, i)=> btn.classList.toggle('active', i===idx));
+    };
+    tabs.forEach((tab, idx)=>{
+      const btn = document.createElement('button');
+      btn.className = 'btn small';
+      btn.textContent = tab.label || `Tab ${idx+1}`;
+      btn.onclick = ()=> setTab(idx);
+      bar.appendChild(btn);
+    });
+    wrap.appendChild(bar);
+    wrap.appendChild(pane);
+    setTab(0);
+    return wrap;
+  }
+  renderRepeater(node, ctx, locals){
+    const resolvedBind = this.resolveBind(node.bind, locals);
+    const values = this.readBind(ctx, resolvedBind) || [];
+    const wrap = document.createElement('div');
+    wrap.className = 'card repeater';
+    if(node.label){
+      const title = document.createElement('div');
+      title.className = 'small';
+      title.textContent = node.label;
+      wrap.appendChild(title);
+    }
+    const body = document.createElement('div');
+    body.className = 'repeater-body';
+    values.forEach((item, index)=>{
+      const itemLocals = { ...locals, itemPath: `${resolvedBind.slice(1)}.${index}` };
+      const row = document.createElement('div');
+      row.className = 'repeater-row';
+      const child = this.renderNode(node.template, ctx, itemLocals);
+      if(child) row.appendChild(child);
+      if(this.mode === 'runtime'){
+        const del = document.createElement('button');
+        del.className = 'btn small';
+        del.textContent = 'Remove';
+        del.onclick = ()=> this.store.removeAt(resolvedBind, index);
+        row.appendChild(del);
+      }
+      body.appendChild(row);
+    });
+    wrap.appendChild(body);
+    if(this.mode === 'runtime'){
+      const add = document.createElement('button');
+      add.className = 'btn small';
+      add.textContent = node.addLabel || 'Add';
+      add.onclick = ()=>{
+        this.store.transaction(draft=>{
+          const list = this.ensureListDraft(draft, resolvedBind);
+          list.push(node.initialItem ? clone(node.initialItem) : {});
+        });
+      };
+      wrap.appendChild(add);
+    }
+    if(values.length===0 && node.emptyText){
+      const empty = document.createElement('div');
+      empty.className = 'small';
+      empty.textContent = node.emptyText;
+      body.appendChild(empty);
+    }
+    return wrap;
+  }
+  renderField(node, ctx, locals){
+    const resolvedBind = this.resolveBind(node.bind, locals);
+    const wrap = document.createElement('div');
+    wrap.className = 'card field';
+    if(node.label){
+      const label = document.createElement('div');
+      label.className = 'small';
+      label.textContent = node.label;
+      wrap.appendChild(label);
+    }
+    switch(node.component){
       case 'input': {
-        const inp = document.createElement('input');
-        inp.type = (el.input||'text');
-        inp.value = this.readBind(ctx, el.bind) ?? '';
-        inp.onchange = (e)=> this.writeBind(el.bind, e.target.value);
-        wrap.innerHTML = label; wrap.appendChild(inp); return wrap;
+        const input = document.createElement('input');
+        input.type = node.inputType || 'text';
+        const current = this.readBind(ctx, resolvedBind);
+        input.value = current ?? '';
+        if(node.placeholder) input.placeholder = node.placeholder;
+        if(node.min != null) input.min = node.min;
+        if(node.max != null) input.max = node.max;
+        input.oninput = (e)=>{
+          const val = (input.type === 'number') ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value;
+          this.store.write(resolvedBind, val);
+        };
+        wrap.appendChild(input);
+        return wrap;
       }
       case 'text': {
-        const p = document.createElement('div');
-        let txt = '';
-        if(el.formula){ try{ txt = this.formulas.eval(el.formula, {thisCtx: ctx}); }catch{ txt='?'; } }
-        wrap.innerHTML = label; p.textContent = txt; wrap.appendChild(p); return wrap;
+        const div = document.createElement('div');
+        let value = '';
+        if(node.formula){
+          try{
+            value = this.formulas.eval(node.formula, { thisCtx: ctx });
+          }catch{
+            value = '?';
+          }
+        }else if(node.text){
+          value = node.text;
+        }else if(resolvedBind){
+          value = this.readBind(ctx, resolvedBind) ?? '';
+        }
+        div.textContent = value;
+        wrap.appendChild(div);
+        return wrap;
       }
       case 'roller': {
-        const btn = document.createElement('button'); btn.className='btn'; btn.textContent= el.label || 'Roll';
-        btn.onclick = ()=>{
-          const expr = (el.expr||'1d20').replace(/@([a-z0-9_$.]+)/ig,(m,p)=>{
-            const v = this.readBind(ctx, '@'+p); return (typeof v==='number'? v : 0);
-          });
-          const res = this.dice.roll(expr);
-          alert(`${expr} = ${res.total}`);
-        };
-        wrap.appendChild(btn); return wrap;
-      }
-      case 'container': {
-        const c = document.createElement('div');
-        if(el.children){ el.children.forEach(ch=> c.appendChild(this.renderElement(ch, ctx))); }
-        wrap.appendChild(c); return wrap;
-      }
-      case 'tabs': {
-        const tabs = document.createElement('div');
-        const bar = document.createElement('div'); bar.className='tabbar';
-        const pane = document.createElement('div');
-        const setTab = (idx)=>{
-          pane.innerHTML=''; (el.tabs[idx].content||[]).forEach(ch=> pane.appendChild(this.renderElement(ch, ctx)));
-          [...bar.children].forEach((b,i)=> b.classList.toggle('active', i===idx));
-        };
-        (el.tabs||[]).forEach((t,i)=>{
-          const b=document.createElement('button'); b.textContent=t.label; b.onclick=()=>setTab(i); bar.appendChild(b);
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = node.label || 'Roll';
+      btn.onclick = ()=>{
+        const expr = (node.expr || '1d20').replace(/@([a-zA-Z0-9_$.]+)/g, (_,p)=>{
+          const val = this.readPath(ctx, p);
+          return Number(val) || 0;
         });
-        tabs.appendChild(bar); tabs.appendChild(pane); wrap.appendChild(tabs); setTab(0); return wrap;
-      }
-      case 'list': {
-        const box = document.createElement('div');
-        const arr = this.readBind(ctx, el.bind) || [];
-        arr.forEach((item, idx)=>{
-          const row = document.createElement('div'); row.className='grid3';
-          (el.item?.content||[]).forEach(ch=>{
-            const inst = JSON.parse(JSON.stringify(ch));
-            if(inst.bind?.startsWith('item.')) inst.bind = el.bind + '.' + inst.bind.slice(5);
-            row.appendChild(this.renderElement(inst, ctx));
-          });
-          box.appendChild(row);
-        });
-        // controls
-        const add = document.createElement('button'); add.className='btn small'; add.textContent='Add';
-        add.onclick = ()=>{
-          const arr = this.ensureArrayPath(el.bind);
-          arr.push({});
-          location.reload();
-        };
-        if(el.allowAdd!==false) box.appendChild(add);
-        wrap.appendChild(box); return wrap;
-      }
+        const result = this.dice.roll(expr);
+        if(this.hooks.log){
+          this.hooks.log(`${expr} = ${result.total}`);
+        }
+      };
+      wrap.appendChild(btn);
+      return wrap;
+    }
       case 'toggle': {
-        const sel = document.createElement('select');
-        (el.states||[]).forEach(s=>{
-          const o = document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+        const select = document.createElement('select');
+        const options = this.resolveOptions(node);
+        options.forEach(opt=>{
+          const optEl = document.createElement('option');
+          if(typeof opt === 'object'){
+            optEl.value = opt.value;
+            optEl.textContent = opt.label ?? opt.value;
+          }else{
+            optEl.value = opt;
+            optEl.textContent = opt;
+          }
+          select.appendChild(optEl);
         });
-        sel.value = this.readBind(ctx, el.bind) ?? (el.states?.[0]||"");
-        sel.onchange = ()=> this.writeBind(el.bind, sel.value);
-        wrap.innerHTML = label; wrap.appendChild(sel); return wrap;
+        const current = this.readBind(ctx, resolvedBind);
+        if(current != null) select.value = current;
+        select.onchange = ()=> this.store.write(resolvedBind, select.value);
+        wrap.appendChild(select);
+        return wrap;
       }
       case 'tags': {
-        const options = Array.isArray(el.options)? el.options : [];
-        const current = new Set(this.readBind(ctx, el.bind) || []);
+        const options = this.resolveOptions(node);
+        const current = new Set(this.readBind(ctx, resolvedBind) || []);
         const box = document.createElement('div');
         options.forEach(opt=>{
-          const b = document.createElement('button'); b.className='btn small'; b.textContent=opt;
-          b.classList.toggle('primary', current.has(opt));
-          b.onclick = ()=>{ if(current.has(opt)) current.delete(opt); else current.add(opt);
-            this.writeBind(el.bind, Array.from(current)); b.classList.toggle('primary'); };
-          box.appendChild(b);
+          const value = typeof opt === 'object' ? opt.value : opt;
+          const label = typeof opt === 'object' ? opt.label ?? opt.value : opt;
+          const btn = document.createElement('button');
+          btn.className = 'btn small';
+          btn.textContent = label;
+          if(current.has(value)) btn.classList.add('primary');
+          btn.onclick = ()=>{
+            if(current.has(value)) current.delete(value); else current.add(value);
+            this.store.write(resolvedBind, Array.from(current));
+          };
+          box.appendChild(btn);
         });
-        wrap.innerHTML = label; wrap.appendChild(box); return wrap;
+        wrap.appendChild(box);
+        return wrap;
       }
       case 'clock': {
-        const max = el.max || 6;
-        const val = this.readBind(ctx, el.bind) || 0;
-        const b = document.createElement('div'); b.textContent = `Clock: ${val}/${max}`;
-        wrap.innerHTML = label; wrap.appendChild(b); return wrap;
+        const max = node.max || 6;
+        const val = Number(this.readBind(ctx, resolvedBind)) || 0;
+        const bar = document.createElement('div');
+        bar.textContent = `${val}/${max}`;
+        if(this.mode === 'runtime'){
+          const controls = document.createElement('div');
+          controls.className = 'clock-controls';
+          const dec = document.createElement('button'); dec.className='btn small'; dec.textContent='-';
+          const inc = document.createElement('button'); inc.className='btn small'; inc.textContent='+';
+          dec.onclick = ()=> this.store.write(resolvedBind, Math.max(0, val-1));
+          inc.onclick = ()=> this.store.write(resolvedBind, Math.min(max, val+1));
+          controls.appendChild(dec); controls.appendChild(inc);
+          wrap.appendChild(controls);
+        }
+        wrap.appendChild(bar);
+        return wrap;
       }
       case 'timer': {
-        const state = this.character?.state?.timers || {};
-        const path = el.bind || '@timers.timer';
         const row = document.createElement('div');
+        row.className = 'timer-row';
         const out = document.createElement('span'); out.style.marginRight='8px';
-        let running=false, accum=0, startedAt=null;
-        const cur = this.readStateTimer(path);
-        if(cur){ running = cur.running; accum = cur.accum; startedAt = cur.startedAt; }
+        let timer = this.store.readTimer(resolvedBind);
+        if(!timer) timer = { running:false, accum:0, startedAt:null };
         const tick = ()=>{
           const now = Date.now();
-          const ms = accum + (running && startedAt ? (now - startedAt) : 0);
-          out.textContent = msFormat(ms);
+          const elapsed = timer.accum + (timer.running && timer.startedAt ? (now - timer.startedAt) : 0);
+          out.textContent = this.formatMs(elapsed);
         };
-        const msFormat = (ms)=>{
-          const s = Math.floor(ms/1000); const m = Math.floor(s/60); const h = Math.floor(m/60);
-          return `${String(h).padStart(2,'0')}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+        tick();
+        const interval = setInterval(tick, 500);
+        this._timers.push(interval);
+        const toggle = document.createElement('button'); toggle.className='btn small'; toggle.textContent='Start/Pause';
+        toggle.onclick = ()=>{
+          if(timer.running){
+            timer = { running:false, accum: timer.accum + (Date.now() - timer.startedAt), startedAt:null };
+          }else{
+            timer = { running:true, accum: timer.accum, startedAt: Date.now() };
+          }
+          this.store.updateTimer(resolvedBind, timer);
         };
-        const i = setInterval(tick, 500); tick();
-        const btnStart = document.createElement('button'); btnStart.className='btn small'; btnStart.textContent='Start/Pause';
-        btnStart.onclick = ()=>{
-          if(!running){ running=true; startedAt=Date.now(); }
-          else { running=false; accum = accum + (Date.now()-startedAt); startedAt=null; }
-          this.writeStateTimer(path, {running, accum, startedAt});
+        const reset = document.createElement('button'); reset.className='btn small'; reset.textContent='Reset';
+        reset.onclick = ()=>{
+          timer = { running:false, accum:0, startedAt:null };
+          this.store.updateTimer(resolvedBind, timer);
+          tick();
         };
-        const btnReset = document.createElement('button'); btnReset.className='btn small'; btnReset.textContent='Reset';
-        btnReset.onclick = ()=>{ running=false; accum=0; startedAt=null; this.writeStateTimer(path, {running,accum,startedAt}); tick(); };
-        row.appendChild(out); row.appendChild(btnStart); row.appendChild(btnReset);
-        wrap.innerHTML = label; wrap.appendChild(row); return wrap;
+        row.appendChild(out);
+        row.appendChild(toggle);
+        row.appendChild(reset);
+        wrap.appendChild(row);
+        return wrap;
       }
       default:
-        wrap.textContent = `[${el.el}] not implemented`; return wrap;
+        return this.renderUnknown(node);
     }
+  }
+  renderUnknown(node){
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.textContent = `[${node.type || node.component}]`;
+    return wrap;
+  }
+  resolveBind(bind, locals){
+    if(!bind) return null;
+    if(locals?.itemPath){
+      return bind.replace(/^@item/, `@${locals.itemPath}`);
+    }
+    return bind;
   }
   readBind(ctx, bind){
     if(!bind || !bind.startsWith('@')) return null;
-    const path = bind.slice(1).split('.'); let node = ctx;
-    for(const k of path){ if(node==null) return null; node = node[k]; }
+    const parts = bind.slice(1).split('.');
+    let node = ctx;
+    for(const part of parts){
+      if(node==null || typeof node !== 'object') return null;
+      node = node[part];
+    }
     return node;
   }
-  ensureArrayPath(bind){
-    const ch = this.character;
-    const path = bind.slice(1).split('.');
-    let node = ch.data; for(let i=0;i<path.length;i++){ const k=path[i]; if(!node[k]) node[k]=(i===path.length-1? [] : {}); node=node[k]; }
-    return node;
+  ensureListDraft(draft, bind){
+    const parts = bind.slice(1).split('.');
+    let node = draft;
+    for(let i=0;i<parts.length;i++){
+      const key = parts[i];
+      if(i === parts.length-1){
+        if(!Array.isArray(node[key])) node[key] = [];
+        return node[key];
+      }
+      if(typeof node[key] !== 'object' || node[key] === null){
+        node[key] = {};
+      }
+      node = node[key];
+    }
+    return [];
   }
-  writeBind(bind, value){
-    if(!this.character) return;
-    if(!bind || !bind.startsWith('@')) return;
-    const path = bind.slice(1).split('.');
-    let node = this.character.data || (this.character.data={});
-    for(let i=0;i<path.length-1;i++){ const k=path[i]; node[k] = node[k] || {}; node = node[k]; }
-    node[path[path.length-1]] = value;
-    // NOTE: persist is caller's job
+  resolveOptions(node){
+    if(node.optionsFrom){
+      const entry = (this.system.metadata || []).find(m=>m.id === node.optionsFrom);
+      if(entry){
+        if(Array.isArray(entry.values)) return entry.values;
+      }
+    }
+    return node.options || node.states || [];
   }
-  readStateTimer(bind){
-    const ch = this.character;
-    const key = bind.slice(1).split('.').slice(1).join('.'); // drop 'timers.'
-    const t = (ch.state && ch.state.timers) ? ch.state.timers[key] : null;
-    return t || null;
+  readPath(ctx, path){
+    const parts = path.split('.');
+    let node = ctx;
+    for(const part of parts){
+      if(node==null || typeof node !== 'object') return 0;
+      node = node[part];
+    }
+    return node ?? 0;
   }
-  writeStateTimer(bind, obj){
-    const ch = this.character;
-    const key = bind.slice(1).split('.').slice(1).join('.');
-    if(!ch.state) ch.state = {}; if(!ch.state.timers) ch.state.timers = {};
-    ch.state.timers[key] = obj;
+  formatMs(ms){
+    const totalSeconds = Math.floor(ms/1000);
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds/60) % 60;
+    const hours = Math.floor(totalSeconds/3600);
+    return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
   }
 }
