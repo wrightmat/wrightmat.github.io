@@ -1,0 +1,51 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "cors_origin": "*",
+    "session_ttl_days": 7,
+    "config_watch": false,
+    "log_level": "info"
+  },
+  "database": {
+    "path": "sheets/data/database.sqlite"
+  },
+  "mounts": [
+    {
+      "name": "characters",
+      "type": "json",
+      "root": "sheets/data/characters",
+      "table": "characters",
+      "read_roles": ["free"],
+      "write_roles": ["free"]
+    },
+    {
+      "name": "templates",
+      "type": "json",
+      "root": "sheets/data/templates",
+      "table": "templates",
+      "read_roles": ["free"],
+      "write_roles": ["gm", "master", "creator", "admin"]
+    },
+    {
+      "name": "systems",
+      "type": "json",
+      "root": "sheets/data/systems",
+      "table": "systems",
+      "read_roles": ["free"],
+      "write_roles": ["creator", "admin"]
+    },
+    {
+      "name": "sheets",
+      "type": "static",
+      "root": "sheets",
+      "directory_listing": false
+    },
+    {
+      "name": "codex",
+      "type": "static",
+      "root": "codex",
+      "directory_listing": false
+    }
+  ]
+}
