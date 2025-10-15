@@ -25,3 +25,7 @@
   - One button to generate a unique location, with randomly rolled items, for any location type.
   - Future state: add things like descriptions and NPCs. Need to find a good source - possibly something like Eirengrau?
   - Future state: add other item types (e.g. books to create a library).
+
+**Server integration**
+
+- When running behind the unified server, Codex templates are exposed via the `/list/codex-templates` endpoint. The response contains a `files` array with metadata parsed from the first lines of each template. Update any legacy `fetch('/templates/list')` calls to use `fetch('/list/codex-templates')` and read from `response.files`.
