@@ -25,7 +25,13 @@ class ServerState:
         db.row_factory = sqlite3.Row
         mounts = dict(config.mounts)
         lock = threading.RLock()
-        return cls(config_loader=loader, config=config, db=db, mounts=mounts, lock=lock)
+        return cls(
+            config_loader=loader,
+            config=config,
+            db=db,
+            mounts=mounts,
+            lock=lock,
+        )
 
     def reload(self, new_config: ServerConfig | None = None) -> None:
         if new_config is None:

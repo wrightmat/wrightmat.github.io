@@ -88,6 +88,7 @@ The current `web-server.py` powers the Universal TTRPG Sheets editors by exposin
    - Moved the schema importer into `server/importer.py`, preserving the JSONPath/transform pipeline for reuse by HTTP endpoints and future tooling.
 6. **Polish & Documentation ✅**
    - Documented the new configuration-driven workflow here, updated the roadmap (see below), and captured setup instructions plus compatibility notes for Codex static mounts.
+   - Added a config-driven listing hook so legacy Codex calls to `/templates/list` keep working while allowing future projects to declare their own listings in `server.config.json`.
 
 ## 6. Open Questions
 - _None at this time; hardening work will land in a follow-up epic once the admin UI requirements are finalized._

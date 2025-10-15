@@ -46,6 +46,13 @@
       "type": "static",
       "root": "codex",
       "directory_listing": false
+    },
+    {
+      "name": "codex-templates",
+      "type": "static",
+      "root": "codex/templates",
+      "directory_listing": true,
+      "directory_extensions": [".htm", ".html"]
     }
   ]
 }
