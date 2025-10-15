@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import re
+
 from .auth import AuthError, User
 from .state import ServerState
 
@@ -37,6 +39,8 @@ else:  # pragma: no cover
 
 
 ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"]
+
+_METADATA_PATTERN = re.compile(r"@([\w-]+):\s*(.+)")
 
 
 def init_storage_db(conn: sqlite3.Connection) -> None:
@@ -138,12 +142,40 @@ def write_json(path: Path, payload: Any) -> None:
     temp_path.replace(path)
 
 
+def _parse_metadata(path: Path, line_limit: int = 20) -> Dict[str, str]:
+    metadata: Dict[str, str] = {}
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as handle:
+            for _, line in zip(range(line_limit), handle):
+                if "@" not in line:
+                    continue
+                match = _METADATA_PATTERN.search(line)
+                if not match:
+                    continue
+                key, value = match.groups()
+                metadata[key.strip()] = value.strip()
+    except FileNotFoundError:
+        return metadata
+    return metadata
+
+
 def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[str, Any]:
     mount = state.get_mount(bucket)
     if mount.type == "static":
-        files = []
-        for entry in sorted(mount.root.glob("*.json")):
-            files.append(entry.stem)
+        if not mount.directory_listing:
+            return {"files": []}
+        allowed = {ext.lower() for ext in mount.directory_extensions if ext}
+        files: List[Dict[str, Any]] = []
+        if not mount.root.exists():
+            return {"files": files}
+        for entry in sorted(mount.root.iterdir()):
+            if not entry.is_file():
+                continue
+            if allowed and entry.suffix.lower() not in allowed:
+                continue
+            item: Dict[str, Any] = {"filename": entry.stem}
+            item.update(_parse_metadata(entry))
+            files.append(item)
         return {"files": files}
     if mount.type != "json":
         return {"items": []}

@@ -22,6 +22,13 @@ class StorageTestCase(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         base = Path(self.temp_dir.name)
         config_path = base / "server.config.json"
+        templates_dir = base / "codex" / "templates"
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        templates_dir.joinpath("card.htm").write_text(
+            "@name: Card Template\n@size: tarot\n@orientation: vertical\n<template></template>",
+            encoding="utf-8",
+        )
+
         mounts = [
             {
                 "name": "characters",
@@ -30,7 +37,14 @@ class StorageTestCase(unittest.TestCase):
                 "table": "characters",
                 "read_roles": ["free"],
                 "write_roles": ["free"],
-            }
+            },
+            {
+                "name": "codex-templates",
+                "type": "static",
+                "root": str(templates_dir),
+                "directory_listing": True,
+                "directory_extensions": [".htm", ".html"],
+            },
         ]
         payload = {
             "server": {
@@ -81,6 +95,15 @@ class StorageTestCase(unittest.TestCase):
         delete_item(self.state, "characters", "rogue", self.user)
         with self.assertRaises(FileNotFoundError):
             get_item(self.state, "characters", "rogue", self.user)
+
+    def test_static_directory_listing(self):
+        listing = list_bucket(self.state, "codex-templates", None)
+        self.assertIn("files", listing)
+        self.assertEqual(len(listing["files"]), 1)
+        entry = listing["files"][0]
+        self.assertEqual(entry["filename"], "card")
+        self.assertEqual(entry.get("name"), "Card Template")
+        self.assertEqual(entry.get("size"), "tarot")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -18,6 +18,7 @@ class MountConfig:
     read_roles: List[str] = field(default_factory=lambda: ["free"])
     write_roles: List[str] = field(default_factory=lambda: ["master"])
     directory_listing: bool = False
+    directory_extensions: List[str] = field(default_factory=list)
 
     def validate(self) -> None:
         if self.type not in {"json", "static"}:
@@ -100,11 +101,16 @@ class ConfigLoader:
                 read_roles=list(mount.get("read_roles", ["free"])),
                 write_roles=list(mount.get("write_roles", ["master"])),
                 directory_listing=bool(mount.get("directory_listing", False)),
+                directory_extensions=list(mount.get("directory_extensions", [])),
             )
             cfg.validate()
             mounts[cfg.name] = cfg
 
-        config = ServerConfig(options=options, database=db_config, mounts=mounts)
+        config = ServerConfig(
+            options=options,
+            database=db_config,
+            mounts=mounts,
+        )
         config.ensure_directories()
         return config
 

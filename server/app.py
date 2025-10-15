@@ -34,8 +34,6 @@ from .storage import (
     save_item,
     toggle_public,
 )
-
-
 class SheetsHTTPServer(http.server.ThreadingHTTPServer):
     def __init__(self, server_address, RequestHandlerClass, state: ServerState):
         super().__init__(server_address, RequestHandlerClass)
@@ -118,7 +116,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 self.respond(Response.json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR))
                 return
         # static fallback: /{bucket}/path
-        path = request.handler.path.split("?")[0].lstrip("/")
+        path_only = request.handler.path.split("?")[0]
+        path = path_only.lstrip("/")
         if "/" in path:
             bucket, rel = path.split("/", 1)
         else:
