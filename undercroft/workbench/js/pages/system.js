@@ -17,41 +17,72 @@ const TYPE_DEFS = {
     label: "String",
     icon: "tabler:forms",
     description: "Free-form text value",
+    palette: true,
   },
-  integer: {
-    label: "Integer",
+  number: {
+    label: "Number",
     icon: "tabler:hash",
-    description: "Whole number value",
+    description: "Numeric value with limits",
+    palette: true,
   },
-  list: {
-    label: "List",
-    icon: "tabler:list-check",
-    description: "Pick from options",
+  boolean: {
+    label: "Boolean",
+    icon: "tabler:toggle-left",
+    description: "True or false value",
+    palette: true,
+  },
+  object: {
+    label: "Object",
+    icon: "tabler:braces",
+    description: "Keyed set of fields",
+    palette: true,
+  },
+  array: {
+    label: "Array",
+    icon: "tabler:brackets",
+    description: "Repeatable entries",
+    palette: true,
   },
   group: {
     label: "Group",
     icon: "tabler:stack-2",
     description: "Nest related fields",
   },
-  object: {
-    label: "Object",
-    icon: "tabler:braces",
-    description: "Keyed set of fields",
-  },
-  array: {
-    label: "Array",
-    icon: "tabler:brackets",
-    description: "Repeatable entries",
+  list: {
+    label: "List",
+    icon: "tabler:list-check",
+    description: "Pick from options",
   },
 };
+
+const TYPE_ALIASES = {
+  integer: "number",
+};
+
+function normalizeType(type) {
+  if (!type) return "string";
+  const raw = String(type).trim().toLowerCase();
+  const key = raw in TYPE_DEFS ? raw : TYPE_ALIASES[raw] || raw;
+  if (TYPE_DEFS[key]) {
+    return key;
+  }
+  return "string";
+}
+
+function isNumericType(type) {
+  return normalizeType(type) === "number";
+}
+
+function supportsChoices(type) {
+  const normalized = normalizeType(type);
+  return normalized === "string" || normalized === "list";
+}
 
 const elements = {
   select: document.querySelector("[data-system-select]"),
   canvasRoot: document.querySelector("[data-canvas-root]"),
   palette: document.querySelector("[data-palette]"),
   inspector: document.querySelector("[data-inspector]"),
-  outline: document.querySelector("[data-system-outline]"),
-  outlineToggle: document.querySelector('[data-action="expand-outline"]'),
   saveButton: document.querySelector('[data-action="save-system"]'),
   newButton: document.querySelector('[data-action="new-system"]'),
   importButton: document.querySelector('[data-action="import-system"]'),
@@ -60,6 +91,11 @@ const elements = {
   jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
   rightPane: document.querySelector('[data-pane="right"]'),
   rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+  newSystemModal: document.getElementById("new-system-modal"),
+  newSystemForm: document.querySelector("[data-new-system-form]"),
+  newSystemId: document.querySelector("[data-new-system-id]"),
+  newSystemTitle: document.querySelector("[data-new-system-title]"),
+  newSystemVersion: document.querySelector("[data-new-system-version]"),
 };
 
 const state = {
@@ -75,6 +111,17 @@ const paletteSortable = elements.palette
       fallbackOnBody: true,
     })
   : null;
+
+let newSystemModalInstance = null;
+if (elements.newSystemModal && window.bootstrap && typeof window.bootstrap.Modal === "function") {
+  newSystemModalInstance = new window.bootstrap.Modal(elements.newSystemModal);
+  elements.newSystemModal.addEventListener("shown.bs.modal", () => {
+    if (elements.newSystemId) {
+      elements.newSystemId.focus();
+      elements.newSystemId.select();
+    }
+  });
+}
 
 if (elements.select) {
   populateSelect(
@@ -100,6 +147,17 @@ if (elements.select) {
 
 if (elements.newButton) {
   elements.newButton.addEventListener("click", () => {
+    if (newSystemModalInstance && elements.newSystemForm) {
+      elements.newSystemForm.reset();
+      elements.newSystemForm.classList.remove("was-validated");
+      if (elements.newSystemVersion) {
+        const defaultVersion = elements.newSystemVersion.getAttribute("value") || "0.1";
+        elements.newSystemVersion.value = defaultVersion;
+      }
+      newSystemModalInstance.show();
+      return;
+    }
+
     const id = window.prompt("Enter a system ID", state.system.id || "");
     if (id === null) {
       return;
@@ -108,7 +166,7 @@ if (elements.newButton) {
     if (title === null) {
       return;
     }
-    const version = window.prompt("Enter a version", state.system.version || "0.1.0") || "0.1.0";
+    const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
     const blank = createBlankSystem({ id: id.trim(), title: title.trim(), version: version.trim() });
     applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
     ensureSelectOption(blank.id, blank.title);
@@ -118,26 +176,42 @@ if (elements.newButton) {
   });
 }
 
+if (elements.newSystemForm) {
+  elements.newSystemForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = elements.newSystemForm;
+    if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+      form.classList.add("was-validated");
+      return;
+    }
+
+    const id = (elements.newSystemId?.value || "").trim();
+    const title = (elements.newSystemTitle?.value || "").trim();
+    const version = ((elements.newSystemVersion?.value || "0.1").trim() || "0.1");
+
+    if (!id || !title) {
+      form.classList.add("was-validated");
+      return;
+    }
+
+    const blank = createBlankSystem({ id, title, version });
+    applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
+    ensureSelectOption(blank.id, blank.title);
+    if (elements.select) {
+      elements.select.value = blank.id || "";
+    }
+    if (newSystemModalInstance) {
+      newSystemModalInstance.hide();
+    }
+    form.reset();
+    form.classList.remove("was-validated");
+  });
+}
+
 if (elements.saveButton) {
   elements.saveButton.addEventListener("click", () => {
     undoStack.push({ type: "save" });
     status.show("System draft saved locally", { type: "success", timeout: 2000 });
-  });
-}
-
-if (elements.outlineToggle && elements.outline) {
-  elements.outlineToggle.addEventListener("click", () => {
-    const expanded = elements.outline.dataset.expanded === "true";
-    if (expanded) {
-      elements.outline.style.maxHeight = "";
-      elements.outline.classList.remove("overflow-auto");
-      elements.outline.dataset.expanded = "false";
-    } else {
-      elements.outline.style.maxHeight = "24rem";
-      elements.outline.classList.add("overflow-auto");
-      elements.outline.dataset.expanded = "true";
-    }
-    status.show("Toggled outline view", { timeout: 1500 });
   });
 }
 
@@ -194,7 +268,7 @@ if (elements.exportButton) {
 
 renderAll();
 
-function createBlankSystem({ id = "", title = "", version = "0.1.0" } = {}) {
+function createBlankSystem({ id = "", title = "", version = "0.1" } = {}) {
   return {
     id,
     title,
@@ -208,9 +282,10 @@ function createBlankSystem({ id = "", title = "", version = "0.1.0" } = {}) {
 }
 
 function createFieldNode(type = "string", overrides = {}) {
+  const normalizedType = normalizeType(type);
   const node = {
     id: generateId(),
-    type,
+    type: normalizedType,
     key: "",
     label: "",
     required: false,
@@ -235,7 +310,7 @@ function applySystemData(data = {}) {
   const hydrated = createBlankSystem({
     id: data.id || "",
     title: data.title || "",
-    version: data.version || "0.1.0",
+    version: data.version || "0.1",
   });
   hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
   hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
@@ -284,7 +359,6 @@ function hydrateFieldNode(field) {
 
 function renderAll() {
   renderCanvas();
-  renderOutline();
   renderInspector();
   renderPreview();
 }
@@ -317,6 +391,9 @@ function renderFieldCard(node) {
     card.classList.add("border-primary", "border-2");
   }
 
+  const normalizedType = normalizeType(node.type);
+  const typeMeta = TYPE_DEFS[normalizedType] || TYPE_DEFS.string;
+
   card.addEventListener("click", (event) => {
     event.stopPropagation();
     selectNode(node.id);
@@ -331,14 +408,14 @@ function renderFieldCard(node) {
 
   const icon = document.createElement("span");
   icon.className = "iconify text-primary fs-4";
-  icon.setAttribute("data-icon", (TYPE_DEFS[node.type] || TYPE_DEFS.string).icon);
+  icon.setAttribute("data-icon", typeMeta.icon || TYPE_DEFS.string.icon);
   icon.setAttribute("aria-hidden", "true");
   title.appendChild(icon);
 
   const text = document.createElement("div");
   const heading = document.createElement("div");
   heading.className = "fw-semibold";
-  heading.textContent = node.label || node.key || (TYPE_DEFS[node.type]?.label || node.type);
+  heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
   const subheading = document.createElement("div");
   subheading.className = "text-body-secondary small";
   subheading.textContent = formatNodeSubtitle(node);
@@ -352,7 +429,7 @@ function renderFieldCard(node) {
 
   const typeBadge = document.createElement("span");
   typeBadge.className = "badge text-bg-secondary text-uppercase";
-  typeBadge.textContent = node.type;
+  typeBadge.textContent = typeMeta.label || normalizedType;
   actions.appendChild(typeBadge);
 
   const removeButton = document.createElement("button");
@@ -409,11 +486,13 @@ function formatNodeSubtitle(node) {
   if (node.children && node.children.length && !supportsChildren(node.type)) {
     parts.push(`${node.children.length} nested`);
   }
-  return parts.join(" · ") || TYPE_DEFS[node.type]?.description || "";
+  const normalizedType = normalizeType(node.type);
+  return parts.join(" · ") || TYPE_DEFS[normalizedType]?.description || "";
 }
 
 function supportsChildren(type) {
-  return type === "group" || type === "object" || type === "array";
+  const normalized = normalizeType(type);
+  return normalized === "group" || normalized === "object" || normalized === "array";
 }
 
 function createPlaceholder(text) {
@@ -590,37 +669,6 @@ function findNode(nodeId, nodes = state.system.fields, parentId = "root") {
   return null;
 }
 
-function renderOutline() {
-  if (!elements.outline) return;
-  elements.outline.innerHTML = "";
-  const fields = state.system.fields || [];
-  if (!fields.length) {
-    const item = document.createElement("li");
-    item.className = "border border-dashed rounded-3 p-3 text-body-secondary";
-    item.textContent = "Canvas is empty. Drag in fields to begin.";
-    elements.outline.appendChild(item);
-    return;
-  }
-  fields.forEach((field) => {
-    elements.outline.appendChild(renderOutlineNode(field));
-  });
-}
-
-function renderOutlineNode(node) {
-  const item = document.createElement("li");
-  item.className = "border rounded-3 px-3 py-2 fs-6 shadow-sm bg-body-tertiary";
-  item.textContent = `${node.label || node.key || TYPE_DEFS[node.type]?.label || node.type} (${node.type})`;
-  if (Array.isArray(node.children) && node.children.length) {
-    const list = document.createElement("ul");
-    list.className = "list-unstyled ms-3 mt-2 d-flex flex-column gap-2";
-    node.children.forEach((child) => {
-      list.appendChild(renderOutlineNode(child));
-    });
-    item.appendChild(list);
-  }
-  return item;
-}
-
 function renderInspector() {
   if (!elements.inspector) return;
   const node = state.selectedNodeId ? findNode(state.selectedNodeId)?.node : null;
@@ -636,18 +684,20 @@ function renderInspector() {
   form.className = "d-flex flex-column gap-3";
   form.addEventListener("submit", (event) => event.preventDefault());
 
+  const normalizedType = normalizeType(node.type);
+
   form.appendChild(createTextInput(node, "Label", "label"));
   form.appendChild(createTextInput(node, "Key", "key"));
   form.appendChild(createTypeSelect(node));
   form.appendChild(createCheckbox(node, "Required", "required"));
   form.appendChild(createTextInput(node, "Formula", "formula", { placeholder: "Optional formula expression" }));
 
-  if (node.type === "integer") {
+  if (isNumericType(normalizedType)) {
     form.appendChild(createNumberInput(node, "Minimum", "minimum"));
     form.appendChild(createNumberInput(node, "Maximum", "maximum"));
   }
 
-  if (node.type === "array") {
+  if (normalizedType === "array") {
     form.appendChild(createNumberInput(node, "Minimum items", "minItems"));
     form.appendChild(createNumberInput(node, "Maximum items", "maxItems"));
     form.appendChild(createTextInput(node, "Item key", "itemKey"));
@@ -656,12 +706,12 @@ function renderInspector() {
     form.appendChild(createTextInput(node, "Options from", "optionsFrom"));
   }
 
-  if (node.type === "list" || node.type === "string") {
+  if (supportsChoices(normalizedType)) {
     form.appendChild(createTextarea(node, "Allowed values (one per line)", "enum"));
     form.appendChild(createTextInput(node, "Options from", "optionsFrom"));
   }
 
-  if (node.type === "object") {
+  if (normalizedType === "object") {
     form.appendChild(renderAdditionalFieldGroup(node));
   }
 
@@ -704,7 +754,7 @@ function createTextInput(node, labelText, property, { placeholder = "" } = {}) {
   input.className = "form-control";
   input.placeholder = placeholder;
   input.value = node[property] ?? "";
-  input.addEventListener("input", () => {
+  input.addEventListener("change", () => {
     updateNodeProperty(node.id, property, input.value);
   });
   wrapper.appendChild(label);
@@ -722,7 +772,7 @@ function createNumberInput(node, labelText, property) {
   input.type = "number";
   input.className = "form-control";
   input.value = node[property] ?? "";
-  input.addEventListener("input", () => {
+  input.addEventListener("change", () => {
     const value = input.value === "" ? null : Number(input.value);
     updateNodeProperty(node.id, property, Number.isNaN(value) ? null : value);
   });
@@ -761,7 +811,7 @@ function createTextarea(node, labelText, property) {
   textarea.className = "form-control";
   textarea.rows = 4;
   textarea.value = Array.isArray(node[property]) ? node[property].join("\n") : node[property] || "";
-  textarea.addEventListener("input", () => {
+  textarea.addEventListener("change", () => {
     const value = textarea.value
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -784,15 +834,16 @@ function renderAdditionalFieldGroup(node) {
   if (!node.additional) {
     node.additional = additional;
   }
+  const normalizedAdditionalType = normalizeType(additional.type);
   wrapper.appendChild(createTextInput(additional, "Key", "key"));
   wrapper.appendChild(createTextInput(additional, "Label", "label"));
   wrapper.appendChild(createTypeSelect(additional));
   wrapper.appendChild(createCheckbox(additional, "Required", "required"));
-  if (additional.type === "integer") {
+  if (isNumericType(normalizedAdditionalType)) {
     wrapper.appendChild(createNumberInput(additional, "Minimum", "minimum"));
     wrapper.appendChild(createNumberInput(additional, "Maximum", "maximum"));
   }
-  if (additional.type === "list" || additional.type === "string") {
+  if (supportsChoices(normalizedAdditionalType)) {
     wrapper.appendChild(createTextarea(additional, "Allowed values", "enum"));
   }
   return wrapper;
@@ -805,8 +856,8 @@ function updateNodeProperty(nodeId, property, value) {
   }
   found.node[property] = value;
   renderCanvas();
-  renderOutline();
   renderPreview();
+  renderInspector();
 }
 
 function changeNodeType(nodeId, nextType) {
@@ -846,7 +897,7 @@ function serializeSystem(system) {
   return {
     id: system.id || "",
     title: system.title || "",
-    version: system.version || "0.1.0",
+    version: system.version || "0.1",
     fields: Array.isArray(system.fields) ? system.fields.map(serializeFieldNode) : [],
     fragments: Array.isArray(system.fragments) ? system.fragments : [],
     metadata: Array.isArray(system.metadata) ? system.metadata : [],
@@ -856,8 +907,9 @@ function serializeSystem(system) {
 }
 
 function serializeFieldNode(node) {
+  const normalizedType = normalizeType(node.type);
   const output = {
-    type: node.type,
+    type: normalizedType,
   };
   if (node.key) output.key = node.key;
   if (node.label) output.label = node.label;
@@ -871,14 +923,14 @@ function serializeFieldNode(node) {
   if (node.itemFragment) output.itemFragment = node.itemFragment;
   if (Array.isArray(node.enum) && node.enum.length) output.enum = [...node.enum];
 
-  if (node.type === "object") {
+  if (normalizedType === "object") {
     if (node.additional) {
       output.additional = serializeFieldNode(node.additional);
     }
   }
 
-  if (supportsChildren(node.type) && Array.isArray(node.children) && node.children.length) {
-    if (node.type === "array") {
+  if (supportsChildren(normalizedType) && Array.isArray(node.children) && node.children.length) {
+    if (normalizedType === "array") {
       if (node.children.length === 1) {
         output.item = serializeFieldNode(node.children[0]);
         if (node.itemKey) output.item.key = node.itemKey;
