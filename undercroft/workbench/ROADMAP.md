@@ -56,11 +56,11 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 
 ### Epic 2 – UI Construction
 1. **App Shell & Layout**
-   - ⬜ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Tailwind utilities. Left and right panes should start collapsed, expand on demand, and collapse independently so the center pane reflows to occupy available space. Build out basic Index/Home page for future links to editors.
+   - ✅ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Tailwind utilities. Left and right panes should start collapsed, expand on demand, and collapse independently so the center pane reflows to occupy available space. Build out basic Index/Home page for future links to editors.
 2. **Shared Utilities**
-   - ⬜ Build reusable vanilla JS helpers for pane toggles, status messages, dropdown population, formula parsing, element rendering, undo/redo, and keyboard shortcuts. Undo/redo stacks should track up to the most recent 100 actions per page (system, template, or character) and persist locally so anonymous sessions retain history within the tab lifecycle.
+   - ✅ Build reusable vanilla JS helpers for pane toggles, status messages, dropdown population, formula parsing, element rendering, undo/redo, and keyboard shortcuts. Undo/redo stacks should track up to the most recent 100 actions per page (system, template, or character) and persist locally so anonymous sessions retain history within the tab lifecycle.
 3. **Drag-and-Drop Canvas**  
-   - ⬜ Integrate SortableJS for arranging components within system/template editors, ensuring the renderer powers both authoring and runtime views.
+   - ✅ Integrate SortableJS for arranging components within system/template editors, ensuring the renderer powers both authoring and runtime views.
 
 ### Epic 3 – Authoring Workflows
 1. **System Editor**  
