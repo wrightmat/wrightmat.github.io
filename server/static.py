@@ -3,7 +3,6 @@ from __future__ import annotations
 import mimetypes
 from http import HTTPStatus
 from pathlib import Path
-
 from urllib.parse import unquote
 
 from .router import Response
@@ -48,7 +47,7 @@ def _serve_from_base(
                 entries.append(path.name + ("/" if path.is_dir() else ""))
             return Response.json({"entries": entries})
         else:
-            raise FileNotFoundError(relative_path)
+            raise PermissionError(relative_path)
 
     if not target.exists():
         raise FileNotFoundError(relative_path)
@@ -58,6 +57,21 @@ def _serve_from_base(
         content_type = "application/octet-stream"
     data = target.read_bytes()
     return Response(status=HTTPStatus.OK, body=data, headers={"Content-Type": content_type})
+
+
+def serve_static(state: ServerState, bucket: str, relative_path: str) -> Response:
+    mount = state.get_mount(bucket)
+    try:
+        return _serve_from_base(
+            mount.root,
+            relative_path,
+            directory_listing=mount.directory_listing,
+            directory_extensions=mount.directory_extensions,
+        )
+    except PermissionError:
+        return Response.json({"error": "Directory listing disabled"}, status=HTTPStatus.FORBIDDEN)
+    except FileNotFoundError:
+        return Response.json({"error": "Not found"}, status=HTTPStatus.NOT_FOUND)
 
 
 def serve_from_root(state: ServerState, relative_path: str) -> Response:

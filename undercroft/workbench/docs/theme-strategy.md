@@ -25,8 +25,8 @@
 
 ## Recommended Path Forward
 1. **Adopt a compiled Tailwind build for Workbench** ✅
-   - `undercroft/workbench/css/tailwind.css` now defines the Tailwind entrypoint and `tailwind.config.js` watches the Workbench sources with `darkMode` configured for both the `dark` class and the data attribute.
-   - The new build helper (`scripts/build-workbench-css.mjs`) first attempts to run the Tailwind CLI; when unavailable (as in this environment) it falls back to a curated subset generator so `css/generated.css` always exists.
+   - `undercroft/workbench/css/tailwind.css` defines the Tailwind entrypoint and `tailwind.config.js` watches the Workbench sources with `darkMode` configured for both the `dark` class and the data attribute.
+   - The build helper (`scripts/build-workbench-css.mjs`) shells out to `npx tailwindcss` so the standard CLI generates `css/generated.css`. Running `npm install` once ensures the binary is available.
    - `npm run build:workbench` invokes the helper and keeps the compiled output in version control alongside the lightweight `styles.css` overrides.
 2. **Simplify runtime theme logic** ✅
    - The shared theme toggler now writes the resolved preference to `document.documentElement` and relies on Tailwind’s dark variants without duplicate CSS selectors.
