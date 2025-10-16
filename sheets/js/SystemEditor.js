@@ -5,7 +5,6 @@ import { createButton } from './ui/components.js';
 const dm = new DataManager(location.origin);
 const shell = initAppShell({
   title: 'System Editor',
-  subtitle: 'Schema Builder',
   current: 'system',
   panes: {
     left: { title: 'System metadata', description: 'Manage IDs, versions, and import/export.' },
@@ -19,7 +18,7 @@ const elForm = shell.panes.right;
 const elActions = shell.panes.left;
 let inspectorTarget = elForm;
 let treeTarget = elTree;
-shell.actions.innerHTML = '';
+shell.actionBar.innerHTML = '';
 
 const views = ['fields', 'fragments', 'metadata', 'formulas'];
 let currentView = 'fields';
@@ -282,6 +281,9 @@ function renderFieldBranch(field, path, depth, origin){
 }
 
 function renderInspector(){
+  if(selection){
+    shell.showPane('right');
+  }
   elForm.innerHTML = '<section class="panel-section"><p class="section-heading">Inspector</p><div id="systemInspector" class="stack-md"></div></section>';
   inspectorTarget = elForm.querySelector('#systemInspector');
   if(!selection || selection.view !== currentView){

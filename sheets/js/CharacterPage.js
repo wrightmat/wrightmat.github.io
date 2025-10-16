@@ -8,7 +8,6 @@ const dm = new DataManager(location.origin);
 const offlineKey = 'sessionNotes';
 const shell = initAppShell({
   title: 'Character',
-  subtitle: 'Play Session',
   current: 'character',
   panes: {
     left: { title: 'Session Controls' },
@@ -20,7 +19,7 @@ const shell = initAppShell({
 const elTools = shell.panes.left;
 const elSheet = shell.panes.center;
 const elLog = shell.panes.right;
-shell.actions.innerHTML = '';
+shell.actionBar.innerHTML = '';
 
 let system = null;
 let template = null;
