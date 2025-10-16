@@ -5,6 +5,7 @@ import { newId } from './UID.js';
 import { initAppShell } from './ui/AppShell.js';
 
 const dm = new DataManager(location.origin);
+const offlineKey = 'sessionNotes';
 const shell = initAppShell({
   title: 'Character',
   subtitle: 'Play Session',
@@ -32,6 +33,7 @@ function init(){
   renderLeftPanel();
   renderRightPanel();
   bindLeftPanelActions();
+  restoreNotes();
 }
 
 function renderLeftPanel(){
@@ -85,6 +87,10 @@ function renderRightPanel(){
       <textarea id="sessionNotes" class="textarea-control" placeholder="Quick session notes (stored locally)"></textarea>
     </section>
   `;
+  const notes = document.getElementById('sessionNotes');
+  if(notes){
+    notes.addEventListener('input', ()=> persistNotes(notes.value));
+  }
 }
 
 function bindLeftPanelActions(){
@@ -128,11 +134,17 @@ async function loadAll(){
   const sysId = document.getElementById('sys').value.trim();
   const tplId = document.getElementById('tpl').value.trim();
   const chaId = document.getElementById('cha').value.trim();
-  system = await dm.read('systems', sysId);
-  template = await dm.read('templates', tplId);
+  try{
+    system = await requireResource('systems', sysId);
+    template = await requireResource('templates', tplId);
+  }catch(err){
+    console.error(err);
+    shell.setStatus('Failed to load system or template', 'danger');
+    return;
+  }
   let loadedChar = null;
   if(chaId){
-    loadedChar = await dm.read('characters', chaId);
+    loadedChar = await loadCharacter(chaId, sysId, tplId);
   }else{
     loadedChar = createCharacter(sysId, tplId);
   }
@@ -144,8 +156,8 @@ async function loadAll(){
 async function createNew(){
   const sysId = document.getElementById('sys').value.trim();
   const tplId = document.getElementById('tpl').value.trim();
-  if(!system) system = await dm.read('systems', sysId);
-  if(!template) template = await dm.read('templates', tplId);
+  if(!system) system = await requireResource('systems', sysId);
+  if(!template) template = await requireResource('templates', tplId);
   const fresh = createCharacter(sysId, tplId);
   document.getElementById('cha').value = fresh.id;
   attachStore(fresh);
@@ -159,53 +171,26 @@ function mountEngine(){
   syncIoArea();
   updateHistoryButtons();
   reflectDirtyState();
+  syncNotes();
 }
 
 async function saveChar(){
   if(!store) return;
-  const token = localStorage.getItem('token');
-  if(!token){
-    alert('Login first');
-    return;
-  }
   const current = store.getCharacter();
   const res = await dm.save('characters', current.id, current);
-  alert(JSON.stringify(res));
-  baselinePointer = store.pointer;
-  reflectDirtyState(true);
-}
-
-function createCharacter(systemId, templateId){
-  return {
-    id: newId('cha'),
-    system: systemId,
-    template: templateId,
-    data: { name: 'New Hero' },
-    state: { timers: {}, log: [] }
-  };
-}
-
-function updateHistoryButtons(){
-  const undo = document.getElementById('btnUndo');
-  const redo = document.getElementById('btnRedo');
-  if(!store){
-    undo.disabled = true;
-    redo.disabled = true;
-    return;
+  if(res?.ok){
+    baselinePointer = store.pointer;
+    reflectDirtyState(true);
+    shell.setStatus(res.local ? 'Saved locally' : 'Character saved', res.local ? 'info' : 'success');
+    setTimeout(()=> shell.clearStatus(), 1600);
+  }else{
+    shell.setStatus(res?.error || 'Save failed', 'danger');
   }
-  undo.disabled = !store.canUndo();
-  redo.disabled = !store.canRedo();
 }
 
-function syncIoArea(){
-  const io = document.getElementById('ioArea');
-  if(!io || !store) return;
-  io.value = JSON.stringify(store.exportData(), null, 2);
-}
-
-function createCharacter(systemId, templateId){
+function createCharacter(systemId, templateId, forcedId){
   return {
-    id: newId('cha'),
+    id: forcedId || newId('cha'),
     system: systemId,
     template: templateId,
     data: { name: 'New Hero' },
@@ -247,12 +232,63 @@ function reflectDirtyState(saved = false){
   const dirty = store.pointer !== baselinePointer;
   if(dirty){
     shell.setStatus('Unsaved changes', 'warning');
-  }else if(saved){
-    shell.setStatus('Character saved', 'success');
-    setTimeout(()=> shell.clearStatus(), 1600);
-  }else{
+  }else if(!saved){
     shell.clearStatus();
   }
+}
+
+async function requireResource(bucket, id){
+  const payload = await dm.read(bucket, id);
+  if(payload && !payload.error){
+    return payload;
+  }
+  const local = dm.readLocal(bucket, id);
+  if(local){
+    return local;
+  }
+  throw new Error(payload?.error || `Missing ${bucket} ${id}`);
+}
+
+async function loadCharacter(id, systemId, templateId){
+  const payload = await dm.read('characters', id);
+  if(payload && !payload.error){
+    return payload;
+  }
+  const local = dm.readLocal('characters', id);
+  if(local){
+    return { ...local, system: local.system || systemId, template: local.template || templateId };
+  }
+  shell.setStatus(payload?.error || 'Character not accessible', 'danger');
+  return createCharacter(systemId, templateId, id);
+}
+
+function notesKey(){
+  const id = store?.getCharacter()?.id || 'scratch';
+  return `${offlineKey}:${id}`;
+}
+
+function restoreNotes(){
+  const el = document.getElementById('sessionNotes');
+  if(!el) return;
+  const existing = localStorage.getItem(notesKey());
+  if(existing){
+    el.value = existing;
+  }
+}
+
+function persistNotes(value){
+  try{
+    localStorage.setItem(notesKey(), value || '');
+  }catch(err){
+    console.warn('Failed to persist notes', err);
+  }
+}
+
+function syncNotes(){
+  const el = document.getElementById('sessionNotes');
+  if(!el) return;
+  const existing = localStorage.getItem(notesKey());
+  el.value = existing || '';
 }
 
 init();

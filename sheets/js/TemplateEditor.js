@@ -19,69 +19,7 @@ const elCanvas = shell.panes.center;
 const elInspector = shell.panes.right;
 shell.actions.innerHTML = '';
 let inspectorTarget = elInspector;
-
-let tpl = createTemplate();
-let view = 'layout';
-let selection = { path: ['layout'] };
-
-draw();
-
-function createTemplate(){
-  return {
-    id: 'tpl.new',
-    schema: 'sys.dnd5e',
-    title: 'New Template',
-    layout: { type: 'stack', children: [] },
-    formulas: []
-  };
-}
-
-function createLayoutNode(type){
-  switch(type){
-    case 'stack':
-      return { type: 'stack', children: [] };
-    case 'row':
-      return { type: 'row', gap: 8, columns: [] };
-    case 'tabs':
-      return { type: 'tabs', tabs: [] };
-    case 'repeater':
-      return { type: 'repeater', label: 'List', bind: '@items', addLabel: 'Add', emptyText: '', template: { type: 'stack', children: [] } };
-    default:
-      return { type: 'stack', children: [] };
-  }
-}
-
-function createFieldNode(component){
-  const base = { type: 'field', component, label: component.charAt(0).toUpperCase() + component.slice(1) };
-  switch(component){
-    case 'input':
-      return { ...base, bind: '@', inputType: 'text', placeholder: '' };
-    case 'text':
-      return { ...base, formula: '', text: '' };
-    case 'roller':
-      return { ...base, expr: '1d20 + @mod' };
-    case 'toggle':
-      return { ...base, bind: '@', states: ['A','B'], optionsFrom: '' };
-    case 'tags':
-      return { ...base, bind: '@', options: ['one','two'], multi: true, optionsFrom: '' };
-    case 'clock':
-      return { ...base, bind: '@', max: 6 };
-    case 'timer':
-      return { ...base, bind: '@timers.timer', mode: 'up' };
-    default:
-      return base;
-  }
-}
-
-function createFormula(){
-  return { key: 'derived.value', expr: '0', label: '' };
-}
-
-function draw(){
-  renderPalette();
-  renderCanvas();
-  renderInspector();
-}
+const offlineStatus = shell.setStatus;
 
 let tpl = createTemplate();
 let view = 'layout';
@@ -790,16 +728,33 @@ function refreshCanvas(){
 }
 
 async function saveTemplate(){
-  const token = localStorage.getItem('token');
-  if(!token){ alert('Login first'); return; }
   const res = await dm.save('templates', tpl.id, tpl);
-  alert(JSON.stringify(res));
+  if(res?.ok){
+    offlineStatus(res.local ? 'Template saved locally' : 'Template saved', res.local ? 'info' : 'success');
+    setTimeout(()=> shell.clearStatus(), 1600);
+  }else{
+    offlineStatus(res?.error || 'Save failed', 'danger');
+  }
 }
 
 async function loadTemplate(){
   const id = prompt('Template ID to load?', tpl.id);
   if(!id) return;
-  tpl = await dm.read('templates', id);
+  const payload = await loadTemplateResource(id);
+  if(!payload){
+    offlineStatus('Template not found', 'danger');
+    return;
+  }
+  tpl = payload;
   selection = { path:['layout'] };
   draw();
+  shell.clearStatus();
+}
+
+async function loadTemplateResource(id){
+  const payload = await dm.read('templates', id);
+  if(payload && !payload.error) return payload;
+  const local = dm.readLocal('templates', id);
+  if(local) return local;
+  return null;
 }

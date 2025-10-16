@@ -1,9 +1,45 @@
+import { createButton } from './components.js';
+
 const DEFAULT_NAV = [
   { href: 'index.html', label: 'Home', id: 'home' },
   { href: 'system-editor.html', label: 'System Editor', id: 'system' },
   { href: 'template-editor.html', label: 'Template Editor', id: 'template' },
   { href: 'character.html', label: 'Character', id: 'character' }
 ];
+
+const THEME_KEY = 'sheets:theme';
+const PANE_KEY = 'sheets:pane';
+
+function detectTheme(){
+  const stored = localStorage.getItem(THEME_KEY);
+  if(stored === 'light' || stored === 'dark') return stored;
+  if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    return 'dark';
+  }
+  return 'light';
+}
+
+function applyTheme(theme){
+  const next = theme === 'dark' ? 'dark' : 'light';
+  document.body.classList.remove('theme-dark', 'theme-light');
+  document.body.classList.add(`theme-${next}`);
+  document.body.dataset.theme = next;
+  localStorage.setItem(THEME_KEY, next);
+}
+
+function loadPaneState(){
+  try{
+    const stored = JSON.parse(localStorage.getItem(PANE_KEY) || '{}');
+    return { left: stored.left !== false, right: stored.right !== false };
+  }catch(err){
+    console.warn('Failed to parse pane state', err);
+    return { left: true, right: true };
+  }
+}
+
+function savePaneState(state){
+  localStorage.setItem(PANE_KEY, JSON.stringify(state));
+}
 
 function ensureStatusFooter(){
   let footer = document.querySelector('.status-footer');
@@ -41,6 +77,10 @@ export function initAppShell({
     throw new Error('AppShell requires an element with id="app".');
   }
 
+  const theme = detectTheme();
+  applyTheme(theme);
+  const paneState = loadPaneState();
+
   const footer = ensureStatusFooter();
 
   root.innerHTML = '';
@@ -67,9 +107,53 @@ export function initAppShell({
   renderNav(navEl, nav, current);
   header.appendChild(navEl);
 
+  let currentTheme = theme;
+  const updateLayout = ()=>{
+    main.dataset.leftCollapsed = paneState.left ? 'true' : 'false';
+    main.dataset.rightCollapsed = paneState.right ? 'true' : 'false';
+  };
+
+  const handleToggle = (position)=>{
+    if(position === 'left'){
+      paneState.left = !paneState.left;
+      setPaneCollapsed(leftPane.wrap, paneState.left);
+      updatePaneButton(leftToggle, paneState.left, 'Show left pane', 'Hide left pane');
+    }else if(position === 'right'){
+      paneState.right = !paneState.right;
+      setPaneCollapsed(rightPane.wrap, paneState.right);
+      updatePaneButton(rightToggle, paneState.right, 'Show right pane', 'Hide right pane');
+    }
+    updateLayout();
+    savePaneState(paneState);
+  };
+
+  const switchTheme = ()=>{
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(currentTheme);
+    themeToggle.textContent = currentTheme === 'dark' ? 'Light mode' : 'Dark mode';
+  };
+
   const actions = document.createElement('div');
   actions.className = 'app-actions';
-  actions.innerHTML = '<span class="small-text text-muted">Session</span>';
+  const leftToggle = createButton({
+    label: paneState.left ? 'Show left pane' : 'Hide left pane',
+    ariaLabel: 'Toggle left pane',
+    extraClasses: ['pane-toggle'],
+    onClick: ()=> handleToggle('left')
+  });
+  const rightToggle = createButton({
+    label: paneState.right ? 'Show right pane' : 'Hide right pane',
+    ariaLabel: 'Toggle right pane',
+    extraClasses: ['pane-toggle'],
+    onClick: ()=> handleToggle('right')
+  });
+  const themeToggle = createButton({
+    label: currentTheme === 'dark' ? 'Light mode' : 'Dark mode',
+    ariaLabel: 'Toggle color theme',
+    extraClasses: ['theme-toggle'],
+    onClick: switchTheme
+  });
+  actions.append(leftToggle, rightToggle, themeToggle);
   header.appendChild(actions);
 
   const main = document.createElement('main');
@@ -79,6 +163,12 @@ export function initAppShell({
   const leftPane = buildPane('left', panes.left || { title: 'Session Controls' });
   const centerPane = buildPane('center', panes.center || { title: 'Workspace' });
   const rightPane = buildPane('right', panes.right || { title: 'Tools' });
+
+  setPaneCollapsed(leftPane.wrap, paneState.left);
+  setPaneCollapsed(rightPane.wrap, paneState.right);
+  updatePaneButton(leftToggle, paneState.left, 'Show left pane', 'Hide left pane');
+  updatePaneButton(rightToggle, paneState.right, 'Show right pane', 'Hide right pane');
+  updateLayout();
 
   main.appendChild(leftPane.wrap);
   main.appendChild(centerPane.wrap);
@@ -96,6 +186,9 @@ export function initAppShell({
       left: leftPane.content,
       center: centerPane.content,
       right: rightPane.content
+    },
+    togglePane(position){
+      handleToggle(position);
     },
     setStatus(message, variant = 'info'){
       if(!message){
@@ -165,3 +258,13 @@ function buildPane(position, { title = '', description = '' } = {}){
   wrap.appendChild(content);
   return { wrap, content };
 }
+
+function setPaneCollapsed(node, collapsed){
+  node.dataset.collapsed = collapsed ? 'true' : 'false';
+}
+
+function updatePaneButton(button, collapsed, showLabel, hideLabel){
+  button.textContent = collapsed ? showLabel : hideLabel;
+  button.setAttribute('aria-pressed', collapsed ? 'false' : 'true');
+}
+

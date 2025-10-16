@@ -588,17 +588,30 @@ function isSelected(path, origin){
 }
 
 async function saveSystem(){
-  const token = localStorage.getItem('token');
-  if(!token){ alert('Login first'); return; }
   const res = await dm.save('systems', sys.id, sys);
-  alert(JSON.stringify(res));
+  if(res?.ok){
+    shell.setStatus(res.local ? 'System saved locally' : 'System saved', res.local ? 'info' : 'success');
+    setTimeout(()=> shell.clearStatus(), 1600);
+  }else{
+    shell.setStatus(res?.error || 'Save failed', 'danger');
+  }
 }
 
 async function loadSystem(){
   const id = prompt('System ID to load?', sys.id);
   if(!id) return;
-  const loaded = await dm.read('systems', id);
-  sys = loaded;
+  const payload = await dm.read('systems', id);
+  if(payload && !payload.error){
+    sys = payload;
+  }else{
+    const local = dm.readLocal('systems', id);
+    if(local){
+      sys = local;
+    }else{
+      shell.setStatus(payload?.error || 'System not found', 'danger');
+      return;
+    }
+  }
   selection = null;
   draw();
 }
