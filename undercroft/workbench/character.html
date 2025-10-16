@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Character Sheet – Undercroft Workbench</title>
+    <title>Undercroft Workbench - Character Sheet</title>
     <script>
       (function () {
         const storageKey = "undercroft.workbench.theme";
@@ -21,6 +21,10 @@
           console.warn("Unable to read theme preference", error);
         }
       })();
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: "class",
+      };
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link rel="stylesheet" href="css/styles.css" />
@@ -29,25 +33,26 @@
     <div class="flex min-h-screen flex-col">
       <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
         <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <div class="flex items-center gap-2">
-            <a href="index.html" class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">Home</a>
+          <div class="flex flex-1 items-center gap-3">
             <button class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-pane-toggle="left">
               <span class="iconify text-lg" data-icon="tabler:layout-sidebar-left" aria-hidden="true"></span>
               <span>Characters</span>
             </button>
-            <button class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-pane-toggle="right">
-              <span class="iconify text-lg" data-icon="tabler:clipboard-list" aria-hidden="true"></span>
-              <span>Session</span>
-            </button>
+            <h1 class="text-lg font-semibold tracking-tight">Undercroft Workbench <span class="font-normal text-slate-500 dark:text-slate-400">- Character Sheet</span></h1>
+            <a href="index.html" class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">Home</a>
           </div>
-          <h1 class="text-lg font-semibold tracking-tight">Character Sheet</h1>
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Theme toggle">
               <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="light">Light</button>
               <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="system">System</button>
               <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="dark">Dark</button>
             </div>
-            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="save-character">Save Draft</button>
+            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="auth">Login / Register</button>
+            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="save-character">Save Draft</button>
+            <button class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-pane-toggle="right">
+              <span class="iconify text-lg" data-icon="tabler:clipboard-list" aria-hidden="true"></span>
+              <span>Session</span>
+            </button>
           </div>
         </div>
       </header>
