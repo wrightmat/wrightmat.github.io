@@ -16,7 +16,7 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
   - Example: "strength": { "type": "integer", "minimum": 3, "maximum": 18 }
 - Templates - Define UI layout and field arrangement for character sheets
   - Visual composition of form elements, containers, and layouts
-  - References schema fields via scope paths like @abilities.strength
+  - References schema fields via scope paths like `@abilities.strength`; formulas always resolve values through the `@` syntax that mirrors the keys defined within the active system.
   - May include formulas that reference system elements as well as math operators and functions
 - Characters - Store actual character data instances
   - JSON objects containing values that conform to their schema
@@ -24,7 +24,7 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 
 ## Core Components
 - Data Layer:
-  - DataManager - Central data store, handles all file operations and server communication functions
+  - DataManager - Central data store, handles all file operations and server communication functions. All edits begin as local-only changes and can be promoted to the server whenever a logged-in user has permission to modify the resource, ensuring anonymous sessions remain functional offline.
   - FormulaEngine - Evaluates calculated fields (ability modifiers, derived stats)
   - RenderingEngine:
     - Converts template definitions into interactive HTML
@@ -47,18 +47,18 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 ## Epics
 
 ### Epic 1 – Backend Stability
-1. **Server Smoke Tests**  
-   - ⬜ Verify endpoints for anonymous access, catalog listings, and persistence using the rebooted front-end flows.  
-2. **Role & Session Hooks**  
-   - ⬜ Document how anonymous/local storage, registered tiers, and future admin endpoints interact so UI states remain aligned.  
-3. **Data Tooling**  
-   - ⬜ Build DataManager script to handle communication between tools and server, as well as LocalStorage. All data for unregistered users is stored in the browser only, with the option to save to the server later after registration.
+1. **Server Smoke Tests**
+    - ✅ Verify endpoints for anonymous access, catalog listings, and persistence using the rebooted front-end flows.
+2. **Role & Session Hooks**
+    - ✅ Document how anonymous/local storage, registered tiers, and future admin endpoints interact so UI states remain aligned.
+3. **Data Tooling**
+    - ✅ Build DataManager script to handle communication between tools and server, as well as LocalStorage. All data for unregistered users is stored in the browser only, with the option to save to the server later after registration.
 
 ### Epic 2 – UI Construction
-1. **App Shell & Layout**  
-   - ⬜ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Tailwind utilities. Build out basic Index/Home page for future links to editors.
-2. **Shared Utilities**  
-   - ⬜ Build reusable vanilla JS helpers for pane toggles, status messages, dropdown population, formula parsing, element rendering, undo/redo, and keyboard shortcuts.  
+1. **App Shell & Layout**
+   - ⬜ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Tailwind utilities. Left and right panes should start collapsed, expand on demand, and collapse independently so the center pane reflows to occupy available space. Build out basic Index/Home page for future links to editors.
+2. **Shared Utilities**
+   - ⬜ Build reusable vanilla JS helpers for pane toggles, status messages, dropdown population, formula parsing, element rendering, undo/redo, and keyboard shortcuts. Undo/redo stacks should track up to the most recent 100 actions per page (system, template, or character) and persist locally so anonymous sessions retain history within the tab lifecycle.
 3. **Drag-and-Drop Canvas**  
    - ⬜ Integrate SortableJS for arranging components within system/template editors, ensuring the renderer powers both authoring and runtime views.
 
@@ -79,9 +79,9 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
    - ⬜ Section for admins to adjust permissions for users (tier and other details), content (owner and other details), and anything else needed.
 
 ### Epic 5 – Quality & Delivery
-1. **Testing**  
-   - ⬜ Add unit tests for data managers, renderer utilities, and formula evaluation.  
-   - ⬜ Explore lightweight integration tests (e.g., Playwright) once the UI stabilises.  
+1. **Testing**
+   - ⬜ Add unit tests for data managers, renderer utilities, and formula evaluation.
+   - ⬜ Explore lightweight integration tests (e.g., Playwright) once the UI stabilises. Keep unit coverage in simple Python test modules without pulling in additional testing frameworks so the stack stays lightweight.
 2. **Tooling & Packaging**  
    - ⬜ Set up linting/formatting for Python and JavaScript.  
    - ⬜ Provide scripts/docs for running the server and syncing sample data.  
