@@ -1,119 +1,76 @@
 /*
  * Custom styles for Undercroft Workbench.
- * Keep additions minimal and rely on Tailwind utilities where possible.
+ * Keep additions minimal and rely on Bootstrap utilities where possible.
  */
 
 :root {
   color-scheme: light dark;
 }
 
-[data-theme="light"] .shadow-theme,
-html[data-theme="light"] .shadow-theme {
+html[data-theme="light"] .shadow-theme,
+body[data-theme="light"] .shadow-theme {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
-[data-theme="dark"] .shadow-theme,
-html.dark .shadow-theme {
+html[data-theme="dark"] .shadow-theme,
+body[data-theme="dark"] .shadow-theme {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-/*
- * Tailwind's CDN build only emits media-based dark variants. The Workbench
- * relies on class toggles, so we mirror the required utilities here using the
- * same selector semantics that Tailwind would normally generate. Each rule is
- * scoped to html[data-theme="dark"] so the theme switcher can flip palettes
- * without depending on prefers-color-scheme.
- */
-html[data-theme="dark"] .dark\:bg-slate-800 {
-  background-color: #1e293b !important;
+.shadow-theme {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-html[data-theme="dark"] .dark\:bg-slate-800\/90 {
-  background-color: rgba(30, 41, 59, 0.9) !important;
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-html[data-theme="dark"] .dark\:bg-slate-900 {
-  background-color: #0f172a !important;
+html[data-theme="light"] .hover-lift:hover,
+body[data-theme="light"] .hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
 }
 
-html[data-theme="dark"] .dark\:bg-slate-900\/40 {
-  background-color: rgba(15, 23, 42, 0.4) !important;
+html[data-theme="dark"] .hover-lift:hover,
+body[data-theme="dark"] .hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7);
 }
 
-html[data-theme="dark"] .dark\:bg-slate-900\/60 {
-  background-color: rgba(15, 23, 42, 0.6) !important;
+.border-dashed {
+  border-style: dashed !important;
 }
 
-html[data-theme="dark"] .dark\:bg-slate-900\/70 {
-  background-color: rgba(15, 23, 42, 0.7) !important;
+.min-h-24rem {
+  min-height: 24rem;
 }
 
-html[data-theme="dark"] .dark\:bg-slate-900\/80 {
-  background-color: rgba(15, 23, 42, 0.8) !important;
+.workbench-sidebar {
+  width: 18rem;
 }
 
-html[data-theme="dark"] .dark\:bg-slate-950\/40 {
-  background-color: rgba(2, 6, 23, 0.4) !important;
+.workbench-sidebar-lg {
+  width: 20rem;
 }
 
-html[data-theme="dark"] .dark\:border-emerald-500 {
-  border-color: #10b981 !important;
+.status-root {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem;
+  pointer-events: none;
+  z-index: 1050;
 }
 
-html[data-theme="dark"] .dark\:border-rose-500 {
-  border-color: #f43f5e !important;
+.status-root > * {
+  pointer-events: auto;
 }
 
-html[data-theme="dark"] .dark\:border-slate-700 {
-  border-color: #334155 !important;
-}
-
-html[data-theme="dark"] .dark\:hover\:bg-slate-700:hover {
-  background-color: #334155 !important;
-}
-
-html[data-theme="dark"] .dark\:hover\:bg-slate-800:hover {
-  background-color: #1e293b !important;
-}
-
-html[data-theme="dark"] .dark\:hover\:text-slate-100:hover {
-  color: #f1f5f9 !important;
-}
-
-html[data-theme="dark"] .dark\:hover\:text-white:hover {
-  color: #ffffff !important;
-}
-
-html[data-theme="dark"] .dark\:text-emerald-200 {
-  color: #a7f3d0 !important;
-}
-
-html[data-theme="dark"] .dark\:text-rose-200 {
-  color: #fecdd3 !important;
-}
-
-html[data-theme="dark"] .dark\:text-sky-300 {
-  color: #7dd3fc !important;
-}
-
-html[data-theme="dark"] .dark\:text-slate-100 {
-  color: #f1f5f9 !important;
-}
-
-html[data-theme="dark"] .dark\:text-slate-200 {
-  color: #e2e8f0 !important;
-}
-
-html[data-theme="dark"] .dark\:text-slate-300 {
-  color: #cbd5e1 !important;
-}
-
-html[data-theme="dark"] .dark\:text-slate-400 {
-  color: #94a3b8 !important;
-}
-
-html[data-theme="dark"] .dark\:text-slate-500 {
-  color: #64748b !important;
+.transition-all {
+  transition: all 0.2s ease;
 }
 
 .status-toast-enter {

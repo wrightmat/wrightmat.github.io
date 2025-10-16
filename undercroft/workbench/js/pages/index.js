@@ -13,7 +13,7 @@ function renderRecentCharacters(list) {
   target.innerHTML = "";
   list.slice(0, 5).forEach(({ id, payload }) => {
     const item = document.createElement("li");
-    item.className = "rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm shadow-sm transition hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900/70";
+    item.className = "border rounded-3 px-3 py-2 fs-6 shadow-sm bg-body-tertiary";
     const name = payload?.name || "Untitled Character";
     item.textContent = name;
     item.dataset.characterId = id;
