@@ -25,14 +25,14 @@
           if (root) {
             root.dataset.themePreference = preference;
             root.dataset.theme = resolved;
+            root.dataset.bsTheme = resolved;
             root.style.colorScheme = resolved;
-            root.classList.toggle("dark", resolved === "dark");
           }
           if (body) {
             body.dataset.themePreference = preference;
             body.dataset.theme = resolved;
+            body.dataset.bsTheme = resolved;
             body.style.colorScheme = resolved;
-            body.classList.toggle("dark", resolved === "dark");
           }
           return preference;
         };
@@ -44,189 +44,189 @@
           console.warn("Unable to read theme preference", error);
         }
       })();
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = {
-        darkMode: "class",
-      };
     </script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
-  <body class="bg-slate-100 text-slate-900 transition-colors dark:bg-slate-900 dark:text-slate-100">
-    <div class="flex min-h-screen flex-col">
-      <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-        <div class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3">
-          <div class="flex items-center gap-3">
+  <body class="bg-body text-body">
+    <div class="d-flex flex-column min-vh-100">
+      <header class="border-bottom bg-body-tertiary">
+        <div class="container-lg d-flex align-items-center gap-3 py-3">
+          <div class="d-flex align-items-center gap-3">
             <button
-              class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
               type="button"
               data-pane-toggle="left"
               aria-label="Toggle navigation pane"
             >
-              <span class="iconify text-lg" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-              <span class="sr-only">Toggle navigation pane</span>
+              <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle navigation pane</span>
             </button>
-            <h1 class="flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              <a
-                href="index.html"
-                class="font-semibold text-slate-900 no-underline transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
-              >
-                Undercroft Workbench
-              </a>
+            <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+              <a href="index.html" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Workbench</a>
             </h1>
           </div>
-          <div class="ml-auto flex items-center gap-4">
-            <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Theme toggle">
-              <button
-                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
-                type="button"
-                data-theme-option="light"
-                aria-label="Use light theme"
-              >
-                <span class="iconify text-lg" data-icon="tabler:sun" aria-hidden="true"></span>
-                <span class="sr-only">Light theme</span>
+          <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+            <div class="btn-group" role="group" aria-label="Theme toggle">
+              <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
+                <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
+                <span class="visually-hidden">Light theme</span>
               </button>
-              <button
-                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
-                type="button"
-                data-theme-option="system"
-              >
-                System
-              </button>
-              <button
-                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
-                type="button"
-                data-theme-option="dark"
-                aria-label="Use dark theme"
-              >
-                <span class="iconify text-lg" data-icon="tabler:moon" aria-hidden="true"></span>
-                <span class="sr-only">Dark theme</span>
+              <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
+              <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
+                <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
+                <span class="visually-hidden">Dark theme</span>
               </button>
             </div>
-            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="auth">Login / Register</button>
+            <button class="btn btn-outline-secondary" type="button" data-action="auth">Login / Register</button>
             <button
-              class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
               type="button"
               data-pane-toggle="right"
               aria-label="Toggle details pane"
             >
-              <span class="iconify text-lg" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-              <span class="sr-only">Toggle details pane</span>
+              <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle details pane</span>
             </button>
           </div>
         </div>
       </header>
-      <div class="flex flex-1 overflow-hidden">
+      <div class="d-flex flex-grow-1 overflow-hidden">
         <aside
-          class="hidden w-72 flex-shrink-0 flex-col gap-4 border-r border-slate-200 bg-white/70 p-4 shadow-theme transition-all dark:border-slate-700 dark:bg-slate-900/70"
+          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
           data-pane="left"
-          data-pane-collapsed-class="hidden"
-          data-pane-expanded-class="flex"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Quick Links</h2>
-          <nav class="flex flex-col gap-2 text-sm">
-            <a class="rounded-md px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800" href="system.html">System Editor</a>
-            <a class="rounded-md px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800" href="template.html">Template Builder</a>
-            <a class="rounded-md px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800" href="character.html">Character Sheet</a>
+          <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Quick Links</h2>
+          <nav class="nav nav-pills flex-column gap-2">
+            <a class="nav-link text-start link-body-emphasis" href="system.html">System Editor</a>
+            <a class="nav-link text-start link-body-emphasis" href="template.html">Template Builder</a>
+            <a class="nav-link text-start link-body-emphasis" href="character.html">Character Sheet</a>
           </nav>
           <div>
-            <h3 class="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">Recent Characters</h3>
-            <ul class="space-y-2 text-sm" data-recent-characters>
-              <li class="rounded-md border border-dashed border-slate-300 p-3 text-slate-400 dark:border-slate-700 dark:text-slate-500">No recent characters yet.</li>
+            <h3 class="fs-6 fw-semibold text-body-secondary mb-2">Recent Characters</h3>
+            <ul class="list-unstyled d-flex flex-column gap-2" data-recent-characters>
+              <li class="border border-dashed rounded-3 px-3 py-3 text-body-secondary">No recent characters yet.</li>
             </ul>
           </div>
         </aside>
-        <main class="flex-1 overflow-y-auto bg-slate-50/60 p-6 dark:bg-slate-950/40">
-          <section class="mx-auto flex max-w-5xl flex-col gap-8">
-            <div class="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-theme backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-              <h2 class="text-2xl font-bold tracking-tight">Welcome to the Workbench</h2>
-              <p class="mt-2 text-base text-slate-600 dark:text-slate-300">
-                Start by exploring the editors below. Systems define fields, templates design layouts, and characters bring everything to life. All tools share the same responsive workspace.
-              </p>
+        <main class="flex-grow-1 overflow-auto bg-body-secondary py-5">
+          <section class="container-lg d-flex flex-column gap-4">
+            <div class="card border-0 shadow-theme">
+              <div class="card-body">
+                <h2 class="card-title h3">Welcome to the Workbench</h2>
+                <p class="card-text">
+                  Start by exploring the editors below. Systems define fields, templates design layouts, and characters bring everything to life. All tools share the same responsive workspace.
+                </p>
+              </div>
             </div>
-            <div class="grid gap-6 md:grid-cols-2">
-              <a href="system.html" class="group flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-theme transition hover:-translate-y-1 hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900/80">
-                <div>
-                  <h3 class="text-xl font-semibold">System Editor</h3>
-                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    Define attributes, validations, and computed fields for any tabletop RPG. Drag-and-drop field ordering keeps everything organised.
-                  </p>
+            <div class="row g-4 row-cols-1 row-cols-md-2">
+              <div class="col d-flex">
+                <a href="system.html" class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift">
+                  <div class="card-body d-flex flex-column gap-2">
+                    <div>
+                      <h3 class="card-title h5 mb-0">System Editor</h3>
+                      <p class="card-text fs-6 text-body-secondary mb-0">
+                        Define attributes, validations, and computed fields for any tabletop RPG. Drag-and-drop field ordering keeps everything organised.
+                      </p>
+                    </div>
+                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
+                      Configure systems
+                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </a>
+              </div>
+              <div class="col d-flex">
+                <a href="template.html" class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift">
+                  <div class="card-body d-flex flex-column gap-2">
+                    <div>
+                      <h3 class="card-title h5 mb-0">Template Builder</h3>
+                      <p class="card-text fs-6 text-body-secondary mb-0">
+                        Arrange inputs, tracks, media, and repeaters into reusable sheets that match your system requirements.
+                      </p>
+                    </div>
+                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
+                      Design layouts
+                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </a>
+              </div>
+              <div class="col d-flex">
+                <a href="character.html" class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift">
+                  <div class="card-body d-flex flex-column gap-2">
+                    <div>
+                      <h3 class="card-title h5 mb-0">Character Sheets</h3>
+                      <p class="card-text fs-6 text-body-secondary mb-0">
+                        Load a template, fill in values, and keep track of adventures with offline-friendly drafts that can sync later.
+                      </p>
+                    </div>
+                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
+                      Manage characters
+                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </a>
+              </div>
+              <div class="col d-flex">
+                <div class="card border-0 shadow-theme flex-grow-1 text-reset">
+                  <div class="card-body d-flex flex-column gap-2">
+                    <div>
+                      <h3 class="card-title h5 mb-0">Shared Utilities</h3>
+                      <p class="card-text fs-6 text-body-secondary mb-0">
+                        Undo/redo, keyboard shortcuts, dropdown helpers, and formula parsing live in shared modules so every tool behaves consistently.
+                      </p>
+                    </div>
+                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-body-secondary fw-medium">
+                      Learn more in docs soon
+                      <span class="iconify" data-icon="tabler:book" aria-hidden="true"></span>
+                    </span>
+                  </div>
                 </div>
-                <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-sky-600 transition group-hover:text-sky-500 dark:text-sky-300">
-                  Configure systems
-                  <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                </span>
-              </a>
-              <a href="template.html" class="group flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-theme transition hover:-translate-y-1 hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900/80">
-                <div>
-                  <h3 class="text-xl font-semibold">Template Builder</h3>
-                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    Arrange inputs, tracks, media, and repeaters into reusable sheets that match your system requirements.
-                  </p>
-                </div>
-                <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-sky-600 transition group-hover:text-sky-500 dark:text-sky-300">
-                  Design layouts
-                  <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                </span>
-              </a>
-              <a href="character.html" class="group flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-theme transition hover:-translate-y-1 hover:border-sky-400 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900/80">
-                <div>
-                  <h3 class="text-xl font-semibold">Character Sheets</h3>
-                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    Load a template, fill in values, and keep track of adventures with offline-friendly drafts that can sync later.
-                  </p>
-                </div>
-                <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-sky-600 transition group-hover:text-sky-500 dark:text-sky-300">
-                  Manage characters
-                  <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                </span>
-              </a>
-              <div class="flex h-full flex-col justify-between rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-slate-500 shadow-theme dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
-                <div>
-                  <h3 class="text-xl font-semibold">Shared Utilities</h3>
-                  <p class="mt-2 text-sm">
-                    Undo/redo, keyboard shortcuts, dropdown helpers, and formula parsing live in shared modules so every tool behaves consistently.
-                  </p>
-                </div>
-                <span class="mt-4 inline-flex items-center gap-2 text-sm font-medium">
-                  Learn more in docs soon
-                  <span class="iconify" data-icon="tabler:book" aria-hidden="true"></span>
-                </span>
               </div>
             </div>
           </section>
         </main>
         <aside
-          class="hidden w-80 flex-shrink-0 flex-col gap-4 border-l border-slate-200 bg-white/70 p-4 shadow-theme transition-all dark:border-slate-700 dark:bg-slate-900/70"
+          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg"
           data-pane="right"
-          data-pane-collapsed-class="hidden"
-          data-pane-expanded-class="flex"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
           <div>
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</h2>
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Status</h2>
+            <p class="fs-6 text-body-secondary mb-0">
               Keep an eye on sync notifications, undo history, and collaboration tips here.
             </p>
           </div>
           <div>
-            <h3 class="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">Getting Started</h3>
-            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <li>Import the demo D&D 5e system to explore structure.</li>
-              <li>Try the template builder to arrange sections.</li>
+            <h3 class="fs-6 fw-semibold text-body-secondary mb-2">Getting Started</h3>
+            <ul class="fs-6 text-body-secondary mb-0 ps-3">
+              <li class="mb-1">Import the demo D&amp;D 5e system to explore structure.</li>
+              <li class="mb-1">Try the template builder to arrange sections.</li>
               <li>Create a character draft and test offline mode.</li>
             </ul>
           </div>
         </aside>
       </div>
     </div>
-    <div
-      class="pointer-events-none fixed inset-x-0 bottom-4 flex justify-center px-4"
-      data-status-root
-    ></div>
+    <div class="status-root" data-status-root></div>
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
     <script type="module" src="js/pages/index.js"></script>
   </body>
 </html>

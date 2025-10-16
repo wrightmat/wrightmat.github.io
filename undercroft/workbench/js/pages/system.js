@@ -48,7 +48,7 @@ function ensureCanvasState() {
     placeholder.remove();
   } else if (!items.length && !placeholder) {
     const empty = document.createElement("div");
-    empty.className = "rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400";
+    empty.className = "border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary";
     empty.setAttribute("data-canvas-placeholder", "true");
     empty.textContent = "Drag fields from the palette to begin building your system.";
     canvasRoot.appendChild(empty);
@@ -77,7 +77,7 @@ const addFieldButton = document.querySelector('[data-action="add-field"]');
 if (addFieldButton && canvasRoot) {
   addFieldButton.addEventListener("click", () => {
     const field = document.createElement("div");
-    field.className = "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-sky-400 dark:border-slate-700 dark:bg-slate-800";
+    field.className = "border rounded-3 p-2 shadow-sm bg-body";
     field.textContent = "New Field";
     field.setAttribute("data-sortable-handle", "true");
     canvasRoot.appendChild(field);
@@ -92,8 +92,16 @@ if (outlineButton) {
   outlineButton.addEventListener("click", () => {
     const outline = document.querySelector("[data-system-outline]");
     if (outline) {
-      outline.classList.toggle("max-h-64");
-      outline.classList.toggle("overflow-auto");
+      const expanded = outline.dataset.expanded === "true";
+      if (expanded) {
+        outline.style.maxHeight = "";
+        outline.classList.remove("overflow-auto");
+        outline.dataset.expanded = "false";
+      } else {
+        outline.style.maxHeight = "24rem";
+        outline.classList.add("overflow-auto");
+        outline.dataset.expanded = "true";
+      }
       status.show("Toggled outline view", { timeout: 1500 });
     }
   });
@@ -110,7 +118,7 @@ function renderOutline(system) {
 
 function renderFieldNode(field, depth = 0) {
   const item = document.createElement("li");
-  item.className = "rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900/60";
+  item.className = "border rounded-3 px-3 py-2 fs-6 shadow-sm bg-body-tertiary";
   item.style.marginLeft = depth ? `${depth * 12}px` : "0";
   item.textContent = `${field.label || field.key} (${field.type})`;
   if (Array.isArray(field.children) && field.children.length) {
@@ -124,7 +132,7 @@ function renderFieldNode(field, depth = 0) {
 function outlineInsert(parentItem, field, depth) {
   const list = parentItem.querySelector("ul") || (() => {
     const ul = document.createElement("ul");
-    ul.className = "mt-2 space-y-2";
+    ul.className = "list-unstyled ms-3 mt-2 d-flex flex-column gap-2";
     parentItem.appendChild(ul);
     return ul;
   })();

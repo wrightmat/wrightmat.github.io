@@ -4,7 +4,9 @@ let counter = 0;
 export class StatusManager {
   constructor(root) {
     this.root = root || document.createElement("div");
-    this.root.classList.add("pointer-events-none", "flex", "w-full", "max-w-xl", "justify-center");
+    if (!this.root.classList.contains("status-root")) {
+      this.root.classList.add("status-root");
+    }
     this.queue = [];
     this.active = null;
   }
@@ -31,26 +33,30 @@ export class StatusManager {
   _render(item) {
     const wrapper = document.createElement("div");
     wrapper.dataset.statusId = item.id;
-    wrapper.className = [
-      "pointer-events-auto",
+    const classes = [
+      "status-toast",
       "status-toast-enter",
-      "rounded-full",
+      "rounded-pill",
       "border",
       "px-4",
-      "py-2.5",
-      "text-sm",
-      "font-medium",
+      "py-2",
+      "fw-medium",
+      "fs-6",
       "shadow-theme",
-      "backdrop-blur",
-      "transition",
-      "status-toast",
-      item.type === "error" ? "border-rose-400 bg-rose-500/10 text-rose-700 dark:border-rose-500 dark:text-rose-200" : "",
-      item.type === "success" ? "border-emerald-400 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500 dark:text-emerald-200" : "",
-      item.type === "info" ? "border-slate-200 bg-white/90 text-slate-700 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+      "bg-body",
+      "text-body",
+    ];
 
+    if (item.type === "error") {
+      classes.push("border-danger-subtle", "bg-danger-subtle", "text-danger-emphasis");
+    } else if (item.type === "success") {
+      classes.push("border-success-subtle", "bg-success-subtle", "text-success-emphasis");
+    } else {
+      classes.push("border-body-tertiary", "bg-body-tertiary");
+    }
+
+    wrapper.className = classes.join(" ");
+    
     wrapper.textContent = item.message;
     return wrapper;
   }
