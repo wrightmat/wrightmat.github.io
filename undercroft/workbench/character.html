@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Undercroft Workbench - Character Sheet</title>
+    <script>
+      (function () {
+        const storageKey = "undercroft.workbench.theme";
+        try {
+          const stored = localStorage.getItem(storageKey);
+          const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const theme = stored || "system";
+          document.documentElement.dataset.theme = theme;
+          if (theme === "dark" || (theme === "system" && prefersDark)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (error) {
+          console.warn("Unable to read theme preference", error);
+        }
+      })();
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="bg-slate-100 text-slate-900 transition-colors dark:bg-slate-900 dark:text-slate-100">
+    <div class="flex min-h-screen flex-col">
+      <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+        <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
+          <div class="flex flex-1 items-center gap-3">
+            <button class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-pane-toggle="left">
+              <span class="iconify text-lg" data-icon="tabler:layout-sidebar-left" aria-hidden="true"></span>
+              <span>Characters</span>
+            </button>
+            <h1 class="text-lg font-semibold tracking-tight">Undercroft Workbench <span class="font-normal text-slate-500 dark:text-slate-400">- Character Sheet</span></h1>
+            <a href="index.html" class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">Home</a>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Theme toggle">
+              <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="light">Light</button>
+              <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="system">System</button>
+              <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="dark">Dark</button>
+            </div>
+            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="auth">Login / Register</button>
+            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="save-character">Save Draft</button>
+            <button class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-pane-toggle="right">
+              <span class="iconify text-lg" data-icon="tabler:clipboard-list" aria-hidden="true"></span>
+              <span>Session</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <div class="flex flex-1 overflow-hidden">
+        <aside class="hidden w-72 flex-shrink-0 flex-col gap-4 border-r border-slate-200 bg-white/70 p-4 shadow-theme transition-all dark:border-slate-700 dark:bg-slate-900/70" data-pane="left" data-pane-collapsed-class="hidden" data-pane-expanded-class="flex" data-pane-initial="collapsed">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Characters</h2>
+            <button class="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700" type="button" data-action="new-character">New</button>
+          </div>
+          <ul class="space-y-2 text-sm" data-character-list>
+            <li class="rounded-lg border border-dashed border-slate-300 p-3 text-slate-500 dark:border-slate-700 dark:text-slate-400">Select a character from the menu.</li>
+          </ul>
+        </aside>
+        <main class="flex-1 overflow-y-auto bg-slate-50/60 p-6 dark:bg-slate-950/40">
+          <div class="mx-auto flex h-full max-w-5xl flex-col gap-6">
+            <section class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-theme backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+              <div class="flex flex-wrap items-end gap-4">
+                <label class="flex flex-col text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Active character
+                  <select class="mt-1 w-72 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" data-character-select>
+                    <option value="" disabled selected>Select character</option>
+                  </select>
+                </label>
+                <button class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="export-character">Export JSON</button>
+                <button class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="reset-character">Reset Changes</button>
+              </div>
+            </section>
+            <section class="flex-1 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-theme dark:border-slate-700 dark:bg-slate-900/80" data-sheet-shell>
+              <div class="grid gap-6 md:grid-cols-2" data-sheet-root>
+                <p class="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">Select a character to load the sheet.</p>
+              </div>
+            </section>
+          </div>
+        </main>
+        <aside class="hidden w-80 flex-shrink-0 flex-col gap-4 border-l border-slate-200 bg-white/70 p-4 shadow-theme transition-all dark:border-slate-700 dark:bg-slate-900/70" data-pane="right" data-pane-collapsed-class="hidden" data-pane-expanded-class="flex" data-pane-initial="collapsed">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Session Tools</h2>
+          <div class="space-y-4 text-sm" data-session-tools>
+            <div>
+              <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Log entry</label>
+              <textarea class="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" rows="3" data-session-note placeholder="Record quick notes"></textarea>
+              <button class="mt-2 rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700" type="button" data-action="append-note">Add Note</button>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white/70 p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900/60" data-session-log>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Session log entries will appear here.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <div class="pointer-events-none fixed inset-x-0 bottom-4 flex justify-center px-4" data-status-root></div>
+    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script type="module" src="js/pages/character.js"></script>
+  </body>
+</html>
