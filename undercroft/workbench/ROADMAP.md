@@ -47,12 +47,12 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 ## Epics
 
 ### Epic 1 – Backend Stability
-1. **Server Smoke Tests**  
-   - ⬜ Verify endpoints for anonymous access, catalog listings, and persistence using the rebooted front-end flows.  
-2. **Role & Session Hooks**  
-   - ⬜ Document how anonymous/local storage, registered tiers, and future admin endpoints interact so UI states remain aligned.  
-3. **Data Tooling**  
-   - ⬜ Build DataManager script to handle communication between tools and server, as well as LocalStorage. All data for unregistered users is stored in the browser only, with the option to save to the server later after registration.
+1. **Server Smoke Tests**
+    - ✅ Verify endpoints for anonymous access, catalog listings, and persistence using the rebooted front-end flows.
+2. **Role & Session Hooks**
+    - ✅ Document how anonymous/local storage, registered tiers, and future admin endpoints interact so UI states remain aligned.
+3. **Data Tooling**
+    - ✅ Build DataManager script to handle communication between tools and server, as well as LocalStorage. All data for unregistered users is stored in the browser only, with the option to save to the server later after registration.
 
 ### Epic 2 – UI Construction
 1. **App Shell & Layout**
