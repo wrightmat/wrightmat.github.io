@@ -4,47 +4,60 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Universal TTRPG Sheets</title>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = { darkMode: 'class' };
+  </script>
+  <script src="https://cdn.tailwindcss.com/3.4.5"></script>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-  <header class="topbar">
-    <h1>Universal TTRPG Sheets</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="system-editor.html">System Editor</a>
-      <a href="template-editor.html">Template Editor</a>
-      <a href="character.html">Character</a>
-    </nav>
-    <div class="auth">
-      <button id="btnLogin">Login</button>
-      <button id="btnRegister">Register</button>
-      <span id="whoami"></span>
-    </div>
-  </header>
-
-  <main class="grid">
-    <section>
-      <h2>Get Started</h2>
-      <ol>
-        <li>Register or Login</li>
-        <li>Create or import a <strong>System</strong></li>
-        <li>Design a <strong>Template</strong></li>
-        <li>Create a <strong>Character</strong> and use it</li>
-      </ol>
-      <p class="hint">Server must be running: <code>python3 web-server.py</code></p>
-    </section>
-    <section>
-      <h3>Quick Actions</h3>
-      <div class="actions">
-        <button id="seed5e">Seed 5e demo</button>
-        <button id="listSystems">List Systems</button>
-        <button id="listTemplates">List Templates</button>
-        <button id="listCharacters">List Characters</button>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="stack-sm">
+        <p class="pane-title">Universal TTRPG Toolkit</p>
+        <h1 class="app-title">Universal TTRPG Sheets</h1>
       </div>
-      <pre id="output"></pre>
-    </section>
-  </main>
-
+      <nav class="app-nav" aria-label="Primary">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="system-editor.html">System Editor</a>
+        <a href="template-editor.html">Template Editor</a>
+        <a href="character.html">Character</a>
+      </nav>
+      <div class="app-actions">
+        <button class="btn" id="btnLogin">Login</button>
+        <button class="btn primary" id="btnRegister">Register</button>
+        <span class="small-text" id="whoami"></span>
+      </div>
+    </header>
+    <main class="pane-grid" aria-label="Landing content">
+      <section class="pane">
+        <div class="panel-section">
+          <p class="section-heading">Start</p>
+          <h2 class="section-title">Build your game stack</h2>
+          <ol class="stack-md">
+            <li>Open a shared link or browse your local content—no login required.</li>
+            <li>Create or import a <strong>System</strong> schema.</li>
+            <li>Design a <strong>Template</strong> layout.</li>
+            <li>Spin up a <strong>Character</strong> and start playing.</li>
+          </ol>
+          <p class="small-text">Server must be running locally: <code>python3 web-server.py</code></p>
+        </div>
+      </section>
+      <section class="pane">
+        <div class="panel-section">
+          <p class="section-heading">Quick actions</p>
+          <div class="toolbar" role="group" aria-label="Quick actions">
+            <button class="btn" id="seed5e">Seed 5e demo</button>
+            <button class="btn" id="listSystems">List Systems</button>
+            <button class="btn" id="listTemplates">List Templates</button>
+            <button class="btn" id="listCharacters">List Characters</button>
+          </div>
+          <pre id="output" aria-live="polite"></pre>
+        </div>
+      </section>
+    </main>
+  </div>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
