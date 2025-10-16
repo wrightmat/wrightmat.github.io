@@ -4,7 +4,11 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Universal TTRPG Sheets</title>
-  <link rel="stylesheet" href="css/generated.css"/>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = { darkMode: 'class' };
+  </script>
+  <script src="https://cdn.tailwindcss.com/3.4.5"></script>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
@@ -32,7 +36,7 @@
           <p class="section-heading">Start</p>
           <h2 class="section-title">Build your game stack</h2>
           <ol class="stack-md">
-            <li>Register or login so you can save content.</li>
+            <li>Open a shared link or browse your local content—no login required.</li>
             <li>Create or import a <strong>System</strong> schema.</li>
             <li>Design a <strong>Template</strong> layout.</li>
             <li>Spin up a <strong>Character</strong> and start playing.</li>

@@ -5,7 +5,6 @@ import { createButton } from './ui/components.js';
 const dm = new DataManager(location.origin);
 const shell = initAppShell({
   title: 'Template Editor',
-  subtitle: 'Layout Builder',
   current: 'template',
   panes: {
     left: { title: 'Template Actions', description: 'Manage metadata, versions, and bindings.' },
@@ -17,7 +16,7 @@ const shell = initAppShell({
 const elPalette = shell.panes.left;
 const elCanvas = shell.panes.center;
 const elInspector = shell.panes.right;
-shell.actions.innerHTML = '';
+shell.actionBar.innerHTML = '';
 let inspectorTarget = elInspector;
 const offlineStatus = shell.setStatus;
 
@@ -306,6 +305,9 @@ function renderNodeOutline(node, path, depth, host){
 }
 
 function renderInspector(){
+  if(selection && !(selection.path.length === 1 && selection.path[0] === 'layout')){
+    shell.showPane('right');
+  }
   elInspector.innerHTML = `
     <section class="panel-section">
       <p class="section-heading">Palette</p>
