@@ -23,7 +23,7 @@ from .importer import run_importer
 from .router import Request, Response, Router
 from .shares import list_shares, revoke_share, share_with_user
 from .state import ServerState, configure_logging
-from .static import serve_static
+from .static import serve_from_root
 from .storage import (
     AuthError as StorageAuthError,
     delete_item,
@@ -115,23 +115,15 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 logging.exception("GET handler error")
                 self.respond(Response.json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR))
                 return
-        # static fallback: /{bucket}/path
+        # static fallback: serve any file relative to the repository root
         path_only = request.handler.path.split("?")[0]
-        path = path_only.lstrip("/")
-        if "/" in path:
-            bucket, rel = path.split("/", 1)
-        else:
-            bucket, rel = path, "index.html"
+        relative_path = path_only.lstrip("/")
         try:
-            mount = self.server.state.get_mount(bucket)
-        except KeyError:
-            self.respond(Response.json({"error": "Not found"}, status=HTTPStatus.NOT_FOUND))
+            response = serve_from_root(self.server.state, relative_path)
+        except FileNotFoundError:
+            self.send_error(HTTPStatus.NOT_FOUND, "Not Found")
             return
-        if mount.type == "static":
-            response = serve_static(self.server.state, bucket, rel)
-            self.respond(response)
-            return
-        self.respond(Response.json({"error": "Not found"}, status=HTTPStatus.NOT_FOUND))
+        self.respond(response)
 
     def do_POST(self) -> None:
         request = self._request()
