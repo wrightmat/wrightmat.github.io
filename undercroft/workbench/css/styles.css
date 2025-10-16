@@ -1,0 +1,38 @@
+/*
+ * Custom styles for Undercroft Workbench.
+ * Keep additions minimal and rely on Tailwind utilities where possible.
+ */
+
+:root {
+  color-scheme: light dark;
+}
+
+[data-theme="light"] .shadow-theme,
+html[data-theme="light"] .shadow-theme {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="dark"] .shadow-theme,
+html.dark .shadow-theme {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.status-toast-enter {
+  transform: translateY(8px);
+  opacity: 0;
+}
+
+.status-toast-enter-active {
+  transition: transform 150ms ease, opacity 150ms ease;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.status-toast-exit {
+  opacity: 1;
+}
+
+.status-toast-exit-active {
+  transition: opacity 120ms ease;
+  opacity: 0;
+}
