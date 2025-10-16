@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Undercroft Workbench - System Editor</title>
+    <script>
+      (function () {
+        const storageKey = "undercroft.workbench.theme";
+        const THEMES = ["light", "system", "dark"];
+        const prefersDark = () =>
+          typeof window !== "undefined" &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolveTheme = (preference) => {
+          if (preference === "dark") return "dark";
+          if (preference === "light") return "light";
+          return prefersDark() ? "dark" : "light";
+        };
+        const apply = (value) => {
+          const preference = THEMES.includes(value) ? value : "system";
+          const resolved = resolveTheme(preference);
+          const root = document.documentElement;
+          const body = document.body;
+          if (root) {
+            root.dataset.themePreference = preference;
+            root.dataset.theme = resolved;
+            root.style.colorScheme = resolved;
+            root.classList.toggle("dark", resolved === "dark");
+          }
+          if (body) {
+            body.dataset.themePreference = preference;
+            body.dataset.theme = resolved;
+            body.style.colorScheme = resolved;
+            body.classList.toggle("dark", resolved === "dark");
+          }
+          return preference;
+        };
+        try {
+          const stored = localStorage.getItem(storageKey);
+          apply(stored);
+        } catch (error) {
+          apply("system");
+          console.warn("Unable to read theme preference", error);
+        }
+      })();
+      window.tailwind = window.tailwind || {};
+      window.tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="bg-slate-100 text-slate-900 transition-colors dark:bg-slate-900 dark:text-slate-100">
+    <div class="flex min-h-screen flex-col">
+      <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+        <div class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <button
+              class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              type="button"
+              data-pane-toggle="left"
+              aria-label="Toggle outline pane"
+            >
+              <span class="iconify text-lg" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+              <span class="sr-only">Toggle outline pane</span>
+            </button>
+            <h1 class="flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              <a
+                href="index.html"
+                class="font-semibold text-slate-900 no-underline transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
+              >
+                Undercroft Workbench
+              </a>
+              <span class="text-base font-normal text-slate-500 dark:text-slate-400">- System Editor</span>
+            </h1>
+          </div>
+          <div class="ml-auto flex items-center gap-4">
+            <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Theme toggle">
+              <button
+                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
+                type="button"
+                data-theme-option="light"
+                aria-label="Use light theme"
+              >
+                <span class="iconify text-lg" data-icon="tabler:sun" aria-hidden="true"></span>
+                <span class="sr-only">Light theme</span>
+              </button>
+              <button
+                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
+                type="button"
+                data-theme-option="system"
+              >
+                System
+              </button>
+              <button
+                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
+                type="button"
+                data-theme-option="dark"
+                aria-label="Use dark theme"
+              >
+                <span class="iconify text-lg" data-icon="tabler:moon" aria-hidden="true"></span>
+                <span class="sr-only">Dark theme</span>
+              </button>
+            </div>
+            <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="auth">Login / Register</button>
+            <button
+              class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              type="button"
+              data-pane-toggle="right"
+              aria-label="Toggle inspector pane"
+            >
+              <span class="iconify text-lg" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+              <span class="sr-only">Toggle inspector pane</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <div class="flex flex-1 overflow-hidden">
+        <aside class="hidden w-72 flex-shrink-0 flex-col gap-4 border-r border-slate-200 bg-white/70 p-4 shadow-theme transition-all dark:border-slate-700 dark:bg-slate-900/70" data-pane="left" data-pane-collapsed-class="hidden" data-pane-expanded-class="flex" data-pane-initial="collapsed">
+          <button class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="save-system">Save Draft</button>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">System Outline</h2>
+            <button class="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700" type="button" data-action="expand-outline">Expand</button>
+          </div>
+          <ul class="space-y-2 text-sm" data-system-outline>
+            <li class="rounded-lg border border-dashed border-slate-300 p-3 text-slate-500 dark:border-slate-700 dark:text-slate-400">Select a system to view its fields.</li>
+          </ul>
+        </aside>
+        <main class="flex-1 overflow-y-auto bg-slate-50/60 p-6 dark:bg-slate-950/40">
+          <div class="mx-auto flex h-full max-w-6xl flex-col gap-6">
+            <section class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-theme backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+              <div class="flex flex-wrap items-end gap-4">
+                <label class="flex flex-col text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Active system
+                  <select class="mt-1 w-72 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" data-system-select>
+                    <option value="" disabled selected>Select system</option>
+                  </select>
+                </label>
+                <button class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="add-field">Add Field</button>
+                <button class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="import-system">Import JSON</button>
+              </div>
+            </section>
+            <section class="grid flex-1 gap-6 lg:grid-cols-2">
+              <div class="flex min-h-[24rem] flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-theme dark:border-slate-700 dark:bg-slate-900/80">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">Palette</h2>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">Drag into canvas</span>
+                </div>
+                <div class="flex-1 space-y-3 overflow-auto" data-sortable-group="system-canvas" data-sortable-id="palette" data-sortable-root>
+                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" data-sortable-handle="true">Text Field</div>
+                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" data-sortable-handle="true">Number Field</div>
+                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" data-sortable-handle="true">Toggle</div>
+                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" data-sortable-handle="true">Group</div>
+                </div>
+              </div>
+              <div class="flex min-h-[24rem] flex-col gap-4 rounded-2xl border border-dashed border-slate-300 bg-white/70 p-4 shadow-theme dark:border-slate-700 dark:bg-slate-900/60">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">Canvas</h2>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">Drop fields here</span>
+                </div>
+                <div class="flex-1 space-y-3 overflow-auto" data-sortable-group="system-canvas" data-sortable-id="canvas" data-canvas-root>
+                  <div class="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400" data-canvas-placeholder="true">Drag fields from the palette to begin building your system.</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+        <aside class="hidden w-80 flex-shrink-0 flex-col gap-4 border-l border-slate-200 bg-white/70 p-4 shadow-theme transition-all dark:border-slate-700 dark:bg-slate-900/70" data-pane="right" data-pane-collapsed-class="hidden" data-pane-expanded-class="flex" data-pane-initial="collapsed">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Field Inspector</h2>
+          <div class="space-y-4 text-sm" data-inspector>
+            <p class="rounded-lg border border-dashed border-slate-300 p-4 text-slate-500 dark:border-slate-700 dark:text-slate-400">Select a field on the canvas to edit its configuration.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <div class="pointer-events-none fixed inset-x-0 bottom-4 flex justify-center px-4" data-status-root></div>
+    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script type="module" src="js/pages/system.js"></script>
+  </body>
+</html>

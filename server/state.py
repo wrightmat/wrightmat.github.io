@@ -17,6 +17,7 @@ class ServerState:
     db: sqlite3.Connection
     mounts: Dict[str, MountConfig]
     lock: threading.RLock
+    root_dir: Path
 
     @classmethod
     def from_loader(cls, loader: ConfigLoader) -> "ServerState":
@@ -31,6 +32,7 @@ class ServerState:
             db=db,
             mounts=mounts,
             lock=lock,
+            root_dir=loader.path.resolve().parent,
         )
 
     def reload(self, new_config: ServerConfig | None = None) -> None:
@@ -43,6 +45,7 @@ class ServerState:
                 self.db.row_factory = sqlite3.Row
             self.config = new_config
             self.mounts = dict(new_config.mounts)
+            self.root_dir = self.config_loader.path.resolve().parent
 
     def get_mount(self, name: str) -> MountConfig:
         try:
