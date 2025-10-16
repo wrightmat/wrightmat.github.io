@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: theme('fontFamily.sans');
+  }
+  :root {
+    color-scheme: light dark;
+    --surface-color: #0f1115;
+    --panel-color: #171a21;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --text-color: #f3f4f6;
+    --muted-color: #9aa4af;
+  }
+  body {
+    @apply min-h-screen transition-colors;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+  }
+  body.theme-light {
+    --surface-color: #f8fafc;
+    --panel-color: #ffffff;
+    --border-color: rgba(15, 23, 42, 0.12);
+    --text-color: #1f2933;
+    --muted-color: #4b5563;
+  }
+  body.theme-dark {
+    --surface-color: #0f1115;
+    --panel-color: #171a21;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --text-color: #f3f4f6;
+    --muted-color: #9aa4af;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply flex min-h-screen flex-col;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+  }
+  .app-header {
+    @apply flex flex-wrap items-center justify-between gap-4 border-b px-4 py-2;
+    border-color: var(--border-color);
+    background-color: var(--panel-color);
+  }
+  .app-title {
+    @apply text-lg font-semibold;
+  }
+  .app-nav {
+    @apply flex flex-wrap gap-4 text-sm;
+    color: var(--muted-color);
+  }
+  .app-nav a {
+    @apply transition-colors hover:text-white;
+  }
+  .pane-grid {
+    @apply grid flex-1 grid-cols-1 gap-4 p-4;
+  }
+  @media (min-width: 1280px) {
+    .pane-grid {
+      grid-template-columns: minmax(14rem, 18rem) 1fr minmax(14rem, 18rem);
+    }
+    .pane-grid[data-left-collapsed="true"] {
+      grid-template-columns: 1fr minmax(14rem, 18rem);
+    }
+    .pane-grid[data-right-collapsed="true"] {
+      grid-template-columns: minmax(14rem, 18rem) 1fr;
+    }
+    .pane-grid[data-left-collapsed="true"][data-right-collapsed="true"] {
+      grid-template-columns: 1fr;
+    }
+  }
+  .pane-grid > .pane {
+    @apply flex min-h-0 flex-col gap-4 rounded-xl border p-4;
+    border-color: var(--border-color);
+    background-color: var(--panel-color);
+  }
+  .pane[data-collapsed="true"] {
+    @apply hidden;
+  }
+  .pane-left {
+    @apply order-2 xl:order-1;
+  }
+  .pane-center {
+    @apply order-1 xl:order-2;
+  }
+  .pane-right {
+    @apply order-3 xl:order-3;
+  }
+  .scroll-pane {
+    @apply max-h-full overflow-y-auto;
+  }
+  .section-heading {
+    @apply text-xs font-semibold uppercase tracking-wider text-muted;
+  }
+  .section-title {
+    @apply text-lg font-semibold;
+  }
+  .panel-section {
+    @apply flex flex-col gap-3;
+  }
+  .toolbar {
+    @apply flex flex-wrap gap-2;
+  }
+  .toolbar-button {
+    @apply inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white transition hover:border-accent/60 hover:bg-accent/20;
+  }
+  .toolbar-button.primary {
+    @apply border-accent bg-accent/20 text-white;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white transition hover:border-accent/60 hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn.primary {
+    @apply border-accent bg-accent/20;
+  }
+  .btn.danger {
+    @apply border-danger/40 bg-danger/20 text-danger;
+  }
+  .btn.small {
+    @apply px-2 py-1 text-xs;
+  }
+  .input-control {
+    @apply w-full rounded-lg border border-white/10 bg-surface/60 px-3 py-2 text-sm text-white placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/50;
+  }
+  .input {
+    @apply input-control;
+  }
+  .form-row {
+    @apply flex flex-col gap-2;
+  }
+  .actions {
+    @apply flex flex-wrap gap-2;
+  }
+  .textarea-control {
+    @apply input-control min-h-[8rem] resize-y;
+  }
+  .status-footer {
+    @apply pointer-events-none fixed inset-x-0 bottom-4 flex justify-center px-4 transition;
+  }
+  .status-footer[data-visible="true"] {
+    @apply pointer-events-auto;
+  }
+  .status-chip {
+    @apply flex items-center gap-3 rounded-full border px-4 py-2 text-sm shadow-lg;
+    border-color: var(--border-color);
+    background-color: color-mix(in srgb, var(--panel-color) 90%, transparent);
+  }
+  .status-chip[data-variant="warning"] {
+    @apply border-warning/40 text-warning;
+  }
+  .status-chip[data-variant="danger"] {
+    @apply border-danger/40 text-danger;
+  }
+  .status-chip[data-variant="success"] {
+    @apply border-success/40 text-success;
+  }
+  .list-section {
+    @apply flex flex-col gap-2;
+  }
+  .list-card {
+    @apply rounded-xl border border-white/10 bg-surface/60 p-4;
+  }
+  .tab-bar {
+    @apply flex gap-2;
+  }
+  .tab-button {
+    @apply rounded-lg border border-transparent px-3 py-2 text-sm text-muted transition hover:text-white;
+  }
+  .tab-button[aria-selected="true"] {
+    @apply border-accent bg-accent/20 text-white;
+  }
+  .stack-block {
+    @apply flex flex-col gap-4;
+  }
+  .row-block {
+    @apply flex flex-wrap gap-4;
+  }
+  .tab-card {
+    @apply flex flex-col gap-4 rounded-2xl border border-white/10 bg-panel/90 p-4;
+  }
+  .tab-strip {
+    @apply flex gap-2;
+  }
+  .tab-pane {
+    @apply rounded-xl border border-white/5 bg-surface/60 p-4;
+  }
+  .repeater-card {
+    @apply flex flex-col gap-3 rounded-2xl border border-white/10 bg-surface/60 p-4;
+  }
+  .repeater-row {
+    @apply flex flex-col gap-3 rounded-xl border border-white/5 bg-panel/70 p-3 md:flex-row md:items-start md:gap-4;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full bg-white/10 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+  .tree-list {
+    @apply flex flex-col divide-y divide-white/5 rounded-xl border border-white/10 bg-surface/60;
+  }
+  .tree-row {
+    @apply cursor-pointer px-3 py-2 text-sm transition hover:bg-white/5;
+  }
+  .tree-row.selected {
+    @apply bg-accent/20 text-white;
+  }
+  .inspector-group {
+    @apply flex flex-col gap-3 rounded-xl border border-white/10 bg-surface/60 p-4;
+  }
+  .inspector-field {
+    @apply flex flex-col gap-2;
+  }
+}
+
+@layer utilities {
+  .pane-title {
+    @apply text-sm font-semibold uppercase tracking-[0.25em] text-muted;
+  }
+}
