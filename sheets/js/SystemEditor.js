@@ -1,6 +1,6 @@
 import { DataManager } from './DataManager.js';
 import { initAppShell } from './ui/AppShell.js';
-import { createButton } from './ui/components.js';
+import { createButton, populateSelect } from './ui/components.js';
 
 const dm = new DataManager(location.origin);
 const shell = initAppShell({
@@ -25,8 +25,15 @@ let currentView = 'fields';
 let selection = null;
 
 let sys = createSystem();
+const catalogs = {
+  systems: []
+};
+const controls = {
+  systemSelect: null
+};
+let selectedSystemId = '';
 
-draw();
+init();
 
 function createSystem(){
   return {
@@ -39,6 +46,23 @@ function createSystem(){
     formulas: [],
     importers: []
   };
+}
+
+async function init(){
+  await refreshCatalogs();
+  draw();
+}
+
+async function refreshCatalogs(){
+  try{
+    const systemCatalog = await dm.catalog('systems');
+    catalogs.systems = systemCatalog.entries;
+    if(!selectedSystemId && sys?.id){
+      selectedSystemId = sys.id;
+    }
+  }catch(err){
+    console.warn('Failed to refresh system catalog', err);
+  }
 }
 
 function createField(type='string'){
@@ -99,16 +123,20 @@ function renderActions(){
     <section class="panel-section">
       <p class="section-heading">System metadata</p>
       <div class="inspector-field">
+        <label for="sys_select">Load existing</label>
+        <select id="sys_select" class="input-control"></select>
+      </div>
+      <div class="inspector-field">
         <label for="sysid">System ID</label>
-        <input id="sysid" class="input" value="${sys.id}"/>
+        <input id="sysid" class="input-control" value="${sys.id}"/>
       </div>
       <div class="inspector-field">
         <label for="systitle">Title</label>
-        <input id="systitle" class="input" value="${sys.title || ''}"/>
+        <input id="systitle" class="input-control" value="${sys.title || ''}"/>
       </div>
       <div class="inspector-field">
         <label for="sysver">Version</label>
-        <input id="sysver" class="input" value="${sys.version || ''}"/>
+        <input id="sysver" class="input-control" value="${sys.version || ''}"/>
       </div>
       <div class="toolbar" role="group" aria-label="System actions">
         <button class="btn" id="save">Save</button>
@@ -121,12 +149,24 @@ function renderActions(){
       <div class="toolbar" id="nav" role="tablist"></div>
     </section>
   `;
+  controls.systemSelect = elActions.querySelector('#sys_select');
   elActions.querySelector('#sysid').oninput = (e)=> sys.id = e.target.value;
   elActions.querySelector('#systitle').oninput = (e)=> sys.title = e.target.value;
   elActions.querySelector('#sysver').oninput = (e)=> sys.version = e.target.value;
   elActions.querySelector('#save').onclick = saveSystem;
   elActions.querySelector('#load').onclick = loadSystem;
-  elActions.querySelector('#new').onclick = ()=>{ sys = createSystem(); selection = null; draw(); };
+  elActions.querySelector('#new').onclick = ()=>{
+    sys = createSystem();
+    selectedSystemId = sys.id;
+    selection = null;
+    draw();
+  };
+  configureSystemSelect();
+  if(controls.systemSelect){
+    controls.systemSelect.onchange = (e)=>{
+      selectedSystemId = e.target.value;
+    };
+  }
   const nav = elActions.querySelector('#nav');
   views.forEach(v=>{
     const btn = createButton({
@@ -138,6 +178,24 @@ function renderActions(){
     });
     nav.appendChild(btn);
   });
+}
+
+function configureSystemSelect(){
+  if(!controls.systemSelect) return;
+  const fallback = sys ? { id: sys.id, label: formatSystemLabel(sys) } : null;
+  const selection = populateSelect(controls.systemSelect, catalogs.systems, {
+    selected: selectedSystemId || fallback?.id,
+    fallback,
+    placeholder: 'Select system to load'
+  });
+  selectedSystemId = selection || '';
+}
+
+function formatSystemLabel(obj){
+  if(!obj) return '';
+  const id = obj.id;
+  const title = obj.title;
+  return title && title !== id ? `${title} (${id})` : id;
 }
 
 function renderTree(){
@@ -594,26 +652,34 @@ async function saveSystem(){
   if(res?.ok){
     shell.setStatus(res.local ? 'System saved locally' : 'System saved', res.local ? 'info' : 'success');
     setTimeout(()=> shell.clearStatus(), 1600);
+    selectedSystemId = sys.id;
+    await refreshCatalogs();
+    configureSystemSelect();
   }else{
     shell.setStatus(res?.error || 'Save failed', 'danger');
   }
 }
 
 async function loadSystem(){
-  const id = prompt('System ID to load?', sys.id);
-  if(!id) return;
-  const payload = await dm.read('systems', id);
-  if(payload && !payload.error){
-    sys = payload;
-  }else{
+  const id = controls.systemSelect?.value || selectedSystemId || sys.id;
+  if(!id){
+    shell.setStatus('Select a system to load', 'warning');
+    return;
+  }
+  let payload = await dm.read('systems', id);
+  if(payload?.error){
     const local = dm.readLocal('systems', id);
     if(local){
-      sys = local;
+      payload = local;
     }else{
       shell.setStatus(payload?.error || 'System not found', 'danger');
       return;
     }
   }
+  sys = payload;
+  selectedSystemId = id;
   selection = null;
+  await refreshCatalogs();
   draw();
+  shell.clearStatus();
 }

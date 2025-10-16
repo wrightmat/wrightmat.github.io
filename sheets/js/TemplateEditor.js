@@ -1,6 +1,6 @@
 import { DataManager } from './DataManager.js';
 import { initAppShell } from './ui/AppShell.js';
-import { createButton } from './ui/components.js';
+import { createButton, populateSelect } from './ui/components.js';
 
 const dm = new DataManager(location.origin);
 const shell = initAppShell({
@@ -20,16 +20,31 @@ shell.actionBar.innerHTML = '';
 let inspectorTarget = elInspector;
 const offlineStatus = shell.setStatus;
 
+const catalogs = {
+  systems: [],
+  templates: []
+};
+
+const controls = {
+  templateSelect: null,
+  systemSelect: null
+};
+
 let tpl = createTemplate();
 let view = 'layout';
 let selection = { path: ['layout'] };
+let selectedTemplateId = '';
 
-draw();
+init();
+
+function initialSystemId(){
+  return catalogs.systems[0]?.id || 'sys.dnd5e';
+}
 
 function createTemplate(){
   return {
     id: 'tpl.new',
-    schema: 'sys.dnd5e',
+    schema: initialSystemId(),
     title: 'New Template',
     layout: { type: 'stack', children: [] },
     formulas: []
@@ -77,6 +92,30 @@ function createFormula(){
   return { key: 'derived.value', expr: '0', label: '' };
 }
 
+async function init(){
+  await refreshCatalogs();
+  if(!tpl.schema && catalogs.systems.length){
+    tpl.schema = catalogs.systems[0].id;
+  }
+  draw();
+}
+
+async function refreshCatalogs(){
+  try{
+    const [systemCatalog, templateCatalog] = await Promise.all([
+      dm.catalog('systems'),
+      dm.catalog('templates')
+    ]);
+    catalogs.systems = systemCatalog.entries;
+    catalogs.templates = templateCatalog.entries;
+    if(!selectedTemplateId && tpl?.id){
+      selectedTemplateId = tpl.id;
+    }
+  }catch(err){
+    console.warn('Failed to refresh template catalogs', err);
+  }
+}
+
 function draw(){
   renderPalette();
   renderCanvas();
@@ -88,6 +127,10 @@ function renderPalette(){
     <section class="panel-section">
       <p class="section-heading">Template metadata</p>
       <div class="inspector-field">
+        <label for="tpl_select">Load existing</label>
+        <select id="tpl_select" class="input-control"></select>
+      </div>
+      <div class="inspector-field">
         <label for="tpl_id">Template ID</label>
         <input id="tpl_id" class="input-control" value="${tpl.id}"/>
       </div>
@@ -97,7 +140,7 @@ function renderPalette(){
       </div>
       <div class="inspector-field">
         <label for="tpl_schema">System</label>
-        <input id="tpl_schema" class="input-control" value="${tpl.schema || ''}"/>
+        <select id="tpl_schema" class="input-control"></select>
       </div>
       <div class="toolbar" id="tpl_actions" role="group" aria-label="Template actions">
         <button class="btn" id="tpl_save">Save</button>
@@ -115,12 +158,29 @@ function renderPalette(){
       <p class="small-text">Select nodes on the canvas to edit bindings and behavior in the inspector.</p>
     </section>
   `;
+  controls.templateSelect = elPalette.querySelector('#tpl_select');
+  controls.systemSelect = elPalette.querySelector('#tpl_schema');
   elPalette.querySelector('#tpl_id').oninput = (e)=> tpl.id = e.target.value;
   elPalette.querySelector('#tpl_title').oninput = (e)=> tpl.title = e.target.value;
-  elPalette.querySelector('#tpl_schema').oninput = (e)=> tpl.schema = e.target.value;
+  if(controls.systemSelect){
+    controls.systemSelect.onchange = (e)=>{
+      tpl.schema = e.target.value;
+    };
+  }
   elPalette.querySelector('#tpl_save').onclick = saveTemplate;
   elPalette.querySelector('#tpl_load').onclick = loadTemplate;
-  elPalette.querySelector('#tpl_new').onclick = ()=>{ tpl = createTemplate(); selection = { path:['layout'] }; draw(); };
+  elPalette.querySelector('#tpl_new').onclick = ()=>{
+    tpl = createTemplate();
+    selectedTemplateId = tpl.id;
+    selection = { path:['layout'] };
+    draw();
+  };
+  configureTemplateSelectors();
+  if(controls.templateSelect){
+    controls.templateSelect.onchange = (e)=>{
+      selectedTemplateId = e.target.value;
+    };
+  }
   const nav = elPalette.querySelector('#tpl_nav');
   ['layout','formulas'].forEach(v=>{
     const btn = createButton({
@@ -144,6 +204,42 @@ function renderPalette(){
     const host = elPalette.querySelector('#layoutControls');
     host.innerHTML = '<div class="small-text">Select a container and use the palette to add layout or field elements.</div>';
   }
+}
+
+function configureTemplateSelectors(){
+  if(controls.templateSelect){
+    const fallback = tpl ? { id: tpl.id, label: formatTemplateOption(tpl) } : null;
+    const selection = populateSelect(controls.templateSelect, catalogs.templates, {
+      selected: selectedTemplateId || fallback?.id,
+      fallback,
+      placeholder: 'Select template to load'
+    });
+    selectedTemplateId = selection || '';
+  }
+  if(controls.systemSelect){
+    const fallback = tpl?.schema ? { id: tpl.schema, label: formatSystemOption(tpl.schema) } : null;
+    const selection = populateSelect(controls.systemSelect, catalogs.systems, {
+      selected: tpl.schema || fallback?.id,
+      fallback
+    });
+    if(selection){
+      tpl.schema = selection;
+    }
+  }
+}
+
+function formatTemplateOption(obj){
+  if(!obj) return '';
+  const id = obj.id;
+  const title = obj.title;
+  return title && title !== id ? `${title} (${id})` : id;
+}
+
+function formatSystemOption(id){
+  if(!id) return '';
+  const entry = catalogs.systems.find(item => item.id === id);
+  if(entry) return entry.label || entry.id;
+  return id;
 }
 
 function renderLayoutControls(container){
@@ -734,21 +830,29 @@ async function saveTemplate(){
   if(res?.ok){
     offlineStatus(res.local ? 'Template saved locally' : 'Template saved', res.local ? 'info' : 'success');
     setTimeout(()=> shell.clearStatus(), 1600);
+    selectedTemplateId = tpl.id;
+    await refreshCatalogs();
+    configureTemplateSelectors();
   }else{
     offlineStatus(res?.error || 'Save failed', 'danger');
   }
 }
 
 async function loadTemplate(){
-  const id = prompt('Template ID to load?', tpl.id);
-  if(!id) return;
+  const id = controls.templateSelect?.value || selectedTemplateId || tpl.id;
+  if(!id){
+    offlineStatus('Select a template to load', 'warning');
+    return;
+  }
   const payload = await loadTemplateResource(id);
   if(!payload){
     offlineStatus('Template not found', 'danger');
     return;
   }
   tpl = payload;
+  selectedTemplateId = id;
   selection = { path:['layout'] };
+  await refreshCatalogs();
   draw();
   shell.clearStatus();
 }

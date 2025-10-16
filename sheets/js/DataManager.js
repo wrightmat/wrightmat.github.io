@@ -48,6 +48,78 @@ export class DataManager{
       return { error: 'List unavailable', items: [] };
     }
   }
+
+  flattenListPayload(payload){
+    if(!payload || typeof payload !== 'object') return [];
+    const entries = [];
+    const groups = ['items', 'files', 'owned', 'shared', 'public'];
+    for(const key of groups){
+      const value = payload[key];
+      if(Array.isArray(value)) entries.push(...value);
+    }
+    return entries;
+  }
+
+  buildCatalogEntry(bucket, item, source = 'remote'){
+    if(!item || typeof item !== 'object') return null;
+    const id = item.id || item.filename;
+    if(!id) return null;
+    let label = item.title || item.name || item.label || id;
+    if(bucket === 'templates' && item.title){
+      label = `${item.title} (${id})`;
+    }else if(bucket === 'systems' && item.title){
+      label = `${item.title} (${id})`;
+    }else if(bucket === 'characters' && item.name){
+      label = `${item.name} (${id})`;
+    }
+    return { id, label, source, meta: item, bucket };
+  }
+
+  localCatalog(bucket){
+    const prefix = this.localKey(bucket, '');
+    const entries = [];
+    for(let i = 0; i < localStorage.length; i += 1){
+      const key = localStorage.key(i);
+      if(!key || !key.startsWith(prefix)) continue;
+      const id = key.slice(prefix.length);
+      const meta = this.readLocal(bucket, id) || null;
+      const labelBase = meta?.title || meta?.name || id;
+      const label = bucket === 'templates' && meta?.title
+        ? `${meta.title} (${id})`
+        : bucket === 'characters' && meta?.data?.name
+          ? `${meta.data.name} (${id})`
+          : labelBase;
+      entries.push({ id, label, source: 'local', meta, bucket });
+    }
+    return entries;
+  }
+
+  async catalog(bucket){
+    const payload = await this.list(bucket);
+    if(payload?.error){
+      return { entries: this.localCatalog(bucket), payload };
+    }
+    const remoteItems = this.flattenListPayload(payload)
+      .map(item => this.buildCatalogEntry(bucket, item, 'remote'))
+      .filter(Boolean);
+    const merged = new Map();
+    remoteItems.forEach(entry => {
+      if(!merged.has(entry.id)){
+        merged.set(entry.id, entry);
+      }
+    });
+    this.localCatalog(bucket).forEach(entry => {
+      if(!merged.has(entry.id)){
+        merged.set(entry.id, entry);
+      }else{
+        const current = merged.get(entry.id);
+        if(!current.meta && entry.meta){
+          merged.set(entry.id, { ...current, meta: entry.meta });
+        }
+      }
+    });
+    return { entries: Array.from(merged.values()), payload };
+  }
   async read(bucket, id){
     try{
       const r = await fetch(`${this.baseUrl}/content/${bucket}/${id}`);
