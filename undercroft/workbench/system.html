@@ -99,20 +99,37 @@
       </header>
       <div class="d-flex flex-grow-1 overflow-hidden">
         <aside
-          class="d-none flex-column gap-3 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
+          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
           data-pane="left"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <button class="btn btn-primary w-100" type="button" data-action="save-system">Save Draft</button>
-          <div class="d-flex justify-content-between align-items-center">
-            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">System Outline</h2>
-            <button class="btn btn-outline-secondary btn-sm" type="button" data-action="expand-outline">Expand</button>
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary w-100" type="button" data-action="save-system">Save Draft</button>
+            <button class="btn btn-outline-secondary w-100" type="button" data-action="import-system">Import JSON</button>
+            <button class="btn btn-outline-secondary w-100" type="button" data-action="export-system">Export JSON</button>
           </div>
-          <ul class="list-unstyled d-flex flex-column gap-2 fs-6" data-system-outline>
-            <li class="border border-dashed rounded-3 p-3 text-body-secondary">Select a system to view its fields.</li>
-          </ul>
+          <section class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">JSON Preview</h2>
+              <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
+            </div>
+            <pre
+              class="border rounded-3 bg-body p-3 text-body-secondary small overflow-auto"
+              style="max-height: 16rem"
+              data-json-preview
+            >{}</pre>
+          </section>
+          <section class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">System Outline</h2>
+              <button class="btn btn-outline-secondary btn-sm" type="button" data-action="expand-outline">Expand</button>
+            </div>
+            <ul class="list-unstyled d-flex flex-column gap-2 fs-6" data-system-outline>
+              <li class="border border-dashed rounded-3 p-3 text-body-secondary">Select or create a system to view its fields.</li>
+            </ul>
+          </section>
         </aside>
         <main class="flex-grow-1 overflow-auto bg-body-secondary py-5">
           <div class="container-lg d-flex flex-column gap-4">
@@ -126,37 +143,74 @@
                     </select>
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary" type="button" data-action="add-field">Add Field</button>
-                    <button class="btn btn-outline-secondary" type="button" data-action="import-system">Import JSON</button>
+                    <button class="btn btn-outline-secondary" type="button" data-action="new-system">New System</button>
                   </div>
                 </div>
               </div>
             </section>
             <section class="row g-4 flex-grow-1">
-              <div class="col-12 col-lg-6 d-flex">
+              <div class="col-12 col-lg-3 d-flex">
                 <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
                   <div class="card-body d-flex flex-column gap-3">
                     <div class="d-flex justify-content-between align-items-center">
                       <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Palette</h2>
                       <span class="fs-6 text-body-secondary">Drag into canvas</span>
                     </div>
-                    <div class="flex-grow-1 overflow-auto d-grid gap-2" data-sortable-group="system-canvas" data-sortable-id="palette" data-sortable-root>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Text Field</div>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Number Field</div>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Toggle</div>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Group</div>
+                    <div class="flex-grow-1 overflow-auto d-grid gap-2" data-palette>
+                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="string" data-sortable-handle="true">
+                        <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
+                        <div>
+                          <div class="fw-semibold">String</div>
+                          <div class="text-body-secondary small">Free-form text value</div>
+                        </div>
+                      </div>
+                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="integer" data-sortable-handle="true">
+                        <span class="iconify fs-4 text-primary" data-icon="tabler:hash" aria-hidden="true"></span>
+                        <div>
+                          <div class="fw-semibold">Integer</div>
+                          <div class="text-body-secondary small">Whole number value</div>
+                        </div>
+                      </div>
+                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="list" data-sortable-handle="true">
+                        <span class="iconify fs-4 text-primary" data-icon="tabler:list-check" aria-hidden="true"></span>
+                        <div>
+                          <div class="fw-semibold">List</div>
+                          <div class="text-body-secondary small">Pick from options</div>
+                        </div>
+                      </div>
+                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="group" data-sortable-handle="true">
+                        <span class="iconify fs-4 text-primary" data-icon="tabler:stack-2" aria-hidden="true"></span>
+                        <div>
+                          <div class="fw-semibold">Group</div>
+                          <div class="text-body-secondary small">Nest related fields</div>
+                        </div>
+                      </div>
+                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="object" data-sortable-handle="true">
+                        <span class="iconify fs-4 text-primary" data-icon="tabler:braces" aria-hidden="true"></span>
+                        <div>
+                          <div class="fw-semibold">Object</div>
+                          <div class="text-body-secondary small">Keyed set of fields</div>
+                        </div>
+                      </div>
+                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="array" data-sortable-handle="true">
+                        <span class="iconify fs-4 text-primary" data-icon="tabler:brackets" aria-hidden="true"></span>
+                        <div>
+                          <div class="fw-semibold">Array</div>
+                          <div class="text-body-secondary small">Repeatable entries</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-12 col-lg-6 d-flex">
+              <div class="col-12 col-lg-9 d-flex">
                 <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
                   <div class="card-body d-flex flex-column gap-3">
                     <div class="d-flex justify-content-between align-items-center">
                       <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
                       <span class="fs-6 text-body-secondary">Drop fields here</span>
                     </div>
-                    <div class="flex-grow-1 overflow-auto d-grid gap-2" data-sortable-group="system-canvas" data-sortable-id="canvas" data-canvas-root>
+                    <div class="flex-grow-1 overflow-auto d-grid gap-2" data-canvas-root>
                       <div class="border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary" data-canvas-placeholder="true">
                         Drag fields from the palette to begin building your system.
                       </div>
