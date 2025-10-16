@@ -98,6 +98,14 @@ const elements = {
   newSystemVersion: document.querySelector("[data-new-system-version]"),
 };
 
+if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
+  const tooltipTriggers = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  tooltipTriggers.forEach((element) => {
+    // eslint-disable-next-line no-new
+    new window.bootstrap.Tooltip(element);
+  });
+}
+
 const state = {
   system: createBlankSystem(),
   selectedNodeId: null,
