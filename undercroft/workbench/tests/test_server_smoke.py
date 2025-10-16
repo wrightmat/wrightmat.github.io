@@ -69,6 +69,12 @@ class ServerSmokeTests(unittest.TestCase):
         }
         cls._config_path.write_text(json.dumps(config), encoding="utf-8")
 
+        cls._static_dir = cls._root / "public"
+        nested = cls._static_dir / "nested"
+        nested.mkdir(parents=True, exist_ok=True)
+        (cls._static_dir / "index.html").write_text("<h1>Root</h1>", encoding="utf-8")
+        (nested / "info.txt").write_text("static-ok", encoding="utf-8")
+
         cls._server = create_server(str(cls._config_path))
         cls._thread = threading.Thread(
             target=cls._server.serve_forever,
@@ -117,6 +123,14 @@ class ServerSmokeTests(unittest.TestCase):
             body = exc.read().decode("utf-8")
             payload = json.loads(body) if body else None
             raise AssertionError(f"{method} {path} failed with {exc.code}: {payload}") from exc
+
+    @classmethod
+    def _fetch_raw(cls, path):
+        url = f"http://{cls._host}:{cls._port}{path}"
+        request = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = response.read()
+            return response.status, response.headers, body
 
     def test_healthz_returns_ok(self):
         status, body = self._request("/healthz")
@@ -180,6 +194,17 @@ class ServerSmokeTests(unittest.TestCase):
         status, character = self._request(f"/content/characters/{character_id}", token=token)
         self.assertEqual(status, 200)
         self.assertEqual(character["name"], "Smoke Test")
+
+    def test_static_files_are_served_from_any_directory(self):
+        status, headers, body = self._fetch_raw("/public/")
+        self.assertEqual(status, 200)
+        self.assertIn("text/html", headers.get("Content-Type", ""))
+        self.assertIn(b"Root", body)
+
+        status, headers, body = self._fetch_raw("/public/nested/info.txt")
+        self.assertEqual(status, 200)
+        self.assertIn("text/plain", headers.get("Content-Type", ""))
+        self.assertEqual(body.decode("utf-8"), "static-ok")
 
 
 if __name__ == "__main__":
