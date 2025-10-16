@@ -3,6 +3,18 @@
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
+html[data-theme="light"],
+html[data-theme="light"] body {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background-color: #020617;
+  color: #e2e8f0;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -48,7 +60,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(148, 163, 184, 0.35);
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(6px);
