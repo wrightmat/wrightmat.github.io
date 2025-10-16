@@ -1,61 +1,68 @@
-# Universal TTRPG Sheets – Roadmap
+# Universal TTRPG Sheets – Roadmap (Reboot)
 
 ## Vision
-Build a modular three-layer platform (Schema → Template → Character) that lets tabletop RPG groups author systems, design sheets, and play directly in the browser with offline-friendly JSON storage and a lightweight Python server.
+Rebuild the Universal TTRPG Sheets platform with a lightweight, maintainable stack where schemas, templates, and characters flow through a unified authoring and play experience that runs entirely in the browser with optional server persistence.
 
 ## Guiding Principles
-- **Modularity:** Keep schema, template, and character tooling isolated yet interoperable through shared contracts.
-- **Simplicity:** Favor vanilla JavaScript modules and minimal build tooling.
-- **Flexibility:** Support arbitrary RPG systems by driving UI and validation from JSON definitions.
-- **User Experience:** Provide responsive, accessible editors with live preview, drag-and-drop, undo/redo, and formula support.
-- **Progressive Enhancement:** Ensure the core workflow functions offline with graceful degradation of optional features.
+- **Modularity:** Keep schema, template, and character tooling loosely coupled via JSON contracts.
+- **Simplicity:** Use vanilla JavaScript and HTML with Tailwind utilities delivered from a CDN—no bundlers or npm steps.
+- **Flexibility:** Support any RPG system through data-driven configuration and drag-and-drop layout composition.
+- **User Experience:** Provide responsive, accessible editors with undo/redo, live preview, and reusable components.
+- **Progressive Enhancement:** Ensure anonymous users can load and edit content locally, while registered tiers unlock persistence.
 
-## Roadmap Overview
-The work is grouped into four epics. Each epic can be developed in parallel by separate branches/PRs but should generally be approached in order to reduce rework.
+## Restart Strategy
+The previous iteration surfaced valuable lessons (server modularity, data abstractions, app-shell requirements) but accumulated complexity in the front-end. The reboot will:
+1. **Keep the modernised Python server and storage layer** as the baseline, with configuration pointing at `data/database.sqlite` and JSON buckets under `sheets/data/`.
+2. **Archive prior UI experiments** by capturing their takeaways in documentation, then rebuilding the editors with a smaller, utility-first approach.
+3. **Codify expectations in documentation** (this roadmap and `AGENTS.md`) so future contributors share the same constraints: vanilla JS, Tailwind via CDN, minimal custom CSS, and SortableJS for drag-and-drop.
+4. **Incrementally rebuild features**, validating each layer (system → template → character) before layering advanced tooling.
 
-### Epic 1 – Platform Infrastructure
-1. **Server modernization**
-   - Refactor `web-server.py` into a reusable static/JSON host with pluggable mounts.
-   - Add configuration for serving other repository projects alongside the sheets app.
-   - Implement role upgrade endpoints (free → player → GM → creator → admin) and persistence.
-2. **Storage abstraction**
-   - Define a shared storage interface that supports local (browser) persistence, JSON file buckets, and future APIs.
-   - Migrate current sheet CRUD logic to the abstraction.
-3. **Authentication & tier enforcement**
-   - Replace the hard-coded `master/creator` checks so feature gates respect user tiers.
-   - Provide a migration script to upgrade existing sample data.
+## Epics
 
-### Epic 2 – Data Layer & Authoring Capabilities
-1. **Schema tools** — ✅ Nested editing, fragments, and metadata-driven option catalogs now live in the system editor.
-2. **Template language revamp** — ✅ Layout primitives (stack, row, tabs, repeater) power the new template editor and deterministic formula evaluation.
-3. **Character runtime** — ✅ Reactive binding, undo/redo history, and JSON import/export are available in the character page.
+### Epic 0 – Foundation Reset
+1. **Documentation Refresh**  
+   - ✅ Update `AGENTS.md` with reboot guidance and constraints.  
+   - ⬜ Summarise the restart plan and lessons learned in `/docs/reboot-notes.md`.  
+2. **Configuration Audit**  
+   - ✅ Confirm `server.config.json` points to `data/database.sqlite` and desired mounts.  
+   - ⬜ Review sample data for parity with the new editor expectations (IDs, metadata).
 
-### Epic 3 – UI & Styling Refresh
-1. **Adopt Tailwind CSS** (recommended)
-   - Configure Tailwind build pipeline (CLI or JIT) while maintaining vanilla JS.
-   - Replace bespoke CSS with Tailwind utility classes and component patterns.
-2. **Component architecture**
-   - Break editors into reusable view components (panels, inspector, element palette).
-   - Ensure responsive layouts and accessible interactions.
-3. **Design system assets**
-   - Establish typography, color palette, and iconography guidelines.
-   - Provide shared Tailwind presets for dark/light themes.
+### Epic 1 – Backend Stability
+1. **Server Smoke Tests**  
+   - ⬜ Verify endpoints for anonymous access, catalog listings, and persistence using the rebooted front-end flows.  
+2. **Role & Session Hooks**  
+   - ⬜ Document how anonymous/local storage, registered tiers, and future admin endpoints interact so UI states remain aligned.  
+3. **Data Tooling**  
+   - ⬜ Provide lightweight scripts or notes for seeding example systems/templates/characters during development.
 
-### Epic 4 – Quality, Packaging & Deployment
-1. **Testing**
-   - Introduce unit tests for rendering engine, formula evaluation, and data validation.
-   - Add end-to-end tests for core authoring flows.
-2. **Tooling & DX**
-   - Set up linting/formatting for Python and JavaScript.
-   - Provide scripts for running the server, building assets, and packaging sample data.
-3. **Documentation**
-   - Publish setup guides, contribution instructions, and user documentation in `/docs`.
-   - Maintain changelog and roadmap updates.
+### Epic 2 – UI Reconstruction
+1. **App Shell & Layout**  
+   - ⬜ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Tailwind utilities.  
+2. **Shared Utilities**  
+   - ⬜ Build reusable vanilla JS helpers for pane toggles, status messages, dropdown catalog population, and keyboard shortcuts.  
+3. **Drag-and-Drop Canvas**  
+   - ⬜ Integrate SortableJS for arranging components within system/template editors, ensuring the renderer powers both authoring and runtime views.
+
+### Epic 3 – Authoring Workflows
+1. **System Editor**  
+   - ⬜ Support nested fields, fragments, validation rules, and metadata catalogs with clear inspector panels.  
+2. **Template Editor**  
+   - ⬜ Provide palette components (stacks, rows, tabs, repeaters) and binding to schema fields, leveraging shared renderer primitives.  
+3. **Character Experience**  
+   - ⬜ Deliver live character sheets with undo/redo, dice roller, session notes, and offline storage for anonymous play.
+
+### Epic 4 – Quality & Delivery
+1. **Testing**  
+   - ⬜ Add unit tests for data managers, renderer utilities, and formula evaluation.  
+   - ⬜ Explore lightweight integration tests (e.g., Playwright) once the UI stabilises.  
+2. **Tooling & Packaging**  
+   - ⬜ Set up linting/formatting for Python and JavaScript.  
+   - ⬜ Provide scripts/docs for running the server and syncing sample data.  
+3. **Documentation**  
+   - ⬜ Expand `/docs` with setup guides, contributor workflows, and user onboarding material.
 
 ## Immediate Next Steps
-- ✅ Ship the modular server implementation and configuration workflow (see [`docs/epic1-server-modernization.md`](docs/epic1-server-modernization.md)).
-- ⬜ Smoke-test the new server against Sheets editors and Codex static pages, filing follow-up bugs.
-- ✅ Inventory existing JSON schemas/templates/characters to determine migration steps.
-- ✅ Draft Tailwind adoption plan (see [`docs/epic3-ui-plan.md`](docs/epic3-ui-plan.md)).
-- ⬜ Create issues/tasks per epic in your tracking tool of choice.
+- ⬜ Draft `/docs/reboot-notes.md` capturing lessons and decisions from the restart.  
+- ⬜ Perform a backend smoke test checklist to validate anonymous workflows.  
+- ⬜ Define the UI reconstruction task list (wireframes, component inventory) before implementing Epic 2.
 
