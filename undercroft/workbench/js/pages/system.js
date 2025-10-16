@@ -103,6 +103,8 @@ const state = {
   selectedNodeId: null,
 };
 
+const drafts = new Map();
+
 const dropzones = new Map();
 const paletteSortable = elements.palette
   ? createSortable(elements.palette, {
@@ -129,8 +131,25 @@ if (elements.select) {
     SYSTEMS.map((system) => ({ value: system.id, label: system.title }))
   );
   elements.select.addEventListener("change", async () => {
-    const selected = SYSTEMS.find((system) => system.id === elements.select.value);
+    persistCurrentDraft();
+    const selectedId = elements.select.value;
+    if (!selectedId) {
+      return;
+    }
+    if (state.system.id === selectedId) {
+      return;
+    }
+
+    const draft = restoreDraft(selectedId);
+    if (draft) {
+      applySystemState(draft, { emitStatus: true, statusMessage: `Restored ${draft.title || selectedId}` });
+      return;
+    }
+
+    const selected = SYSTEMS.find((system) => system.id === selectedId);
     if (!selected) {
+      const fallback = createBlankSystem({ id: selectedId, title: selectedId });
+      applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
       return;
     }
     try {
@@ -141,6 +160,7 @@ if (elements.select) {
     } catch (error) {
       console.error("Unable to load system", error);
       status.show("Failed to load system", { type: "error", timeout: 2500 });
+      ensureSelectValue();
     }
   });
 }
@@ -167,6 +187,7 @@ if (elements.newButton) {
       return;
     }
     const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
+    persistCurrentDraft();
     const blank = createBlankSystem({ id: id.trim(), title: title.trim(), version: version.trim() });
     applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
     ensureSelectOption(blank.id, blank.title);
@@ -194,6 +215,7 @@ if (elements.newSystemForm) {
       return;
     }
 
+    persistCurrentDraft();
     const blank = createBlankSystem({ id, title, version });
     applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
     ensureSelectOption(blank.id, blank.title);
@@ -227,6 +249,7 @@ importInput.addEventListener("change", async (event) => {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
+    persistCurrentDraft();
     applySystemData(data, { source: "import" });
     ensureSelectOption(state.system.id, state.system.title);
     if (elements.select) {
@@ -321,7 +344,7 @@ function applySystemData(data = {}) {
 }
 
 function applySystemState(system, { emitStatus = false, statusMessage = "" } = {}) {
-  state.system = system;
+  state.system = cloneSystem(system);
   state.selectedNodeId = null;
   renderAll();
   ensureSelectValue();
@@ -505,7 +528,7 @@ function createPlaceholder(text) {
 
 function registerDropzones() {
   if (!elements.canvasRoot) return;
-  const zones = elements.canvasRoot.querySelectorAll("[data-dropzone]");
+  const zones = [elements.canvasRoot, ...elements.canvasRoot.querySelectorAll("[data-dropzone]")];
   zones.forEach((zone) => {
     const sortable = createSortable(zone, {
       group: { name: "system-canvas", pull: true, put: true },
@@ -891,6 +914,7 @@ function renderPreview() {
     const size = new Blob([text]).size;
     elements.jsonPreviewBytes.textContent = formatSize(size);
   }
+  rememberDraft(state.system);
 }
 
 function serializeSystem(system) {
@@ -1021,4 +1045,40 @@ function isDescendant(targetParentId, nodeId) {
     return false;
   }
   return isDescendant(target.parentId, nodeId);
+}
+
+function rememberDraft(system) {
+  if (!system) {
+    return;
+  }
+  drafts.set(getDraftKey(system.id), cloneSystem(system));
+}
+
+function persistCurrentDraft() {
+  if (!state.system) {
+    return;
+  }
+  drafts.set(getDraftKey(state.system.id), cloneSystem(state.system));
+}
+
+function restoreDraft(id) {
+  const draft = drafts.get(getDraftKey(id));
+  if (!draft) {
+    return null;
+  }
+  return cloneSystem(draft);
+}
+
+function cloneSystem(system) {
+  if (!system) {
+    return createBlankSystem();
+  }
+  if (typeof structuredClone === "function") {
+    return structuredClone(system);
+  }
+  return JSON.parse(JSON.stringify(system));
+}
+
+function getDraftKey(id) {
+  return id && String(id).trim() ? String(id).trim() : "__blank__";
 }
