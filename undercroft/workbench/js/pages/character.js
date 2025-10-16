@@ -73,7 +73,7 @@ if (list) {
   list.innerHTML = "";
   CHARACTER_DEFINITIONS.forEach((entry) => {
     const item = document.createElement("li");
-    item.className = "rounded-lg border border-slate-200 bg-white/70 px-3 py-2 text-sm shadow-sm transition hover:border-sky-400 dark:border-slate-700 dark:bg-slate-900/60";
+    item.className = "border rounded-3 px-3 py-2 fs-6 shadow-sm bg-body-tertiary";
     item.textContent = entry.title;
     item.dataset.characterId = entry.id;
     item.tabIndex = 0;
@@ -215,7 +215,7 @@ if (noteButton) {
       return;
     }
     const entry = document.createElement("p");
-    entry.className = "rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900/70";
+    entry.className = "border rounded-3 px-3 py-2 fs-6 shadow-sm bg-body";
     entry.textContent = value;
     log.appendChild(entry);
     textarea.value = "";
