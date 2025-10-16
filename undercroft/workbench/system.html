@@ -44,12 +44,8 @@
           console.warn("Unable to read theme preference", error);
         }
       })();
-      window.tailwind = window.tailwind || {};
-      window.tailwind.config = {
-        darkMode: "class",
-      };
     </script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link rel="stylesheet" href="css/generated.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-slate-100 text-slate-900 transition-colors dark:bg-slate-900 dark:text-slate-100">

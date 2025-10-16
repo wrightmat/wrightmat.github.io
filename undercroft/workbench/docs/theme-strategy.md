@@ -24,16 +24,15 @@
 - Cons: Significant CSS surface area to maintain, contradicts the “keep custom CSS minimal” principle, and slows future feature work that benefits from Tailwind’s utility ergonomics.
 
 ## Recommended Path Forward
-1. **Adopt a compiled Tailwind build for Workbench**
-   - Create `undercroft/workbench/css/tailwind.css` with the standard Tailwind directives.
-   - Extend `tailwind.config.js` (or add a Workbench-specific config) with the correct content paths and `darkMode: ['class', '[data-theme="dark"]']`.
-   - Add NPM scripts (e.g., `build:workbench`, `watch:workbench`) that compile to `undercroft/workbench/css/generated.css` alongside the existing Workbench stylesheet.
-2. **Simplify runtime theme logic**
-   - Update the theme toggler to apply a single source of truth (likely `document.documentElement.dataset.theme` plus toggling the `dark` class) so the compiled Tailwind utilities take effect without fallback CSS.
-   - Remove the manual `html[data-theme="dark"]` overrides after verifying the compiled CSS renders both palettes.
-3. **Document workflow updates**
-   - Add instructions to `ROADMAP.md` or a dedicated `docs/development.md` on running the Tailwind build step.
-   - Consider wiring the build into the Python smoke tests or a lightweight check to ensure generated CSS exists before serving.
+1. **Adopt a compiled Tailwind build for Workbench** ✅
+   - `undercroft/workbench/css/tailwind.css` now defines the Tailwind entrypoint and `tailwind.config.js` watches the Workbench sources with `darkMode` configured for both the `dark` class and the data attribute.
+   - The new build helper (`scripts/build-workbench-css.mjs`) first attempts to run the Tailwind CLI; when unavailable (as in this environment) it falls back to a curated subset generator so `css/generated.css` always exists.
+   - `npm run build:workbench` invokes the helper and keeps the compiled output in version control alongside the lightweight `styles.css` overrides.
+2. **Simplify runtime theme logic** ✅
+   - The shared theme toggler now writes the resolved preference to `document.documentElement` and relies on Tailwind’s dark variants without duplicate CSS selectors.
+   - Manual `html[data-theme="dark"]` overrides have been removed from `styles.css` now that the compiled stylesheet includes the necessary variants.
+3. **Document workflow updates** ✅
+   - This document captures the new workflow; future contributors can regenerate the stylesheet with `npm run build:workbench` and Tailwind will be used automatically when available.
 
 ## Future Enhancements
 - Once the compiled pipeline is in place, we can explore layering design tokens (via Tailwind’s theme extension) or integrating a component library like [DaisyUI](https://daisyui.com/) if we need higher-level widgets without abandoning Tailwind.
