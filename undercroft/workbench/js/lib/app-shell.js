@@ -12,11 +12,7 @@ export function initAppShell({ root = document, namespace = "default" } = {}) {
   }
 
   initThemeControls(root);
-  initPaneToggles(root, {
-    onChange({ key, state }) {
-      status.show(`${key.charAt(0).toUpperCase() + key.slice(1)} pane ${state}.`, { timeout: 2000 });
-    },
-  });
+  initPaneToggles(root);
 
   const undoStack = new UndoRedoStack({ storageKey: `undercroft.workbench.undo.${namespace}` });
   const keyboard = new KeyboardShortcuts();
