@@ -203,6 +203,34 @@ function syncIoArea(){
   io.value = JSON.stringify(store.exportData(), null, 2);
 }
 
+function createCharacter(systemId, templateId){
+  return {
+    id: newId('cha'),
+    system: systemId,
+    template: templateId,
+    data: { name: 'New Hero' },
+    state: { timers: {}, log: [] }
+  };
+}
+
+function updateHistoryButtons(){
+  const undo = document.getElementById('btnUndo');
+  const redo = document.getElementById('btnRedo');
+  if(!store){
+    undo.disabled = true;
+    redo.disabled = true;
+    return;
+  }
+  undo.disabled = !store.canUndo();
+  redo.disabled = !store.canRedo();
+}
+
+function syncIoArea(){
+  const io = document.getElementById('ioArea');
+  if(!io || !store) return;
+  io.value = JSON.stringify(store.exportData(), null, 2);
+}
+
 function log(msg){
   const r = document.getElementById('rolls');
   if(!r) return;

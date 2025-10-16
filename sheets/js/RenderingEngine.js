@@ -373,6 +373,19 @@ export class RenderingEngine{
     }
     return bind;
   }
+  renderUnknown(node){
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.textContent = `[${node.type || node.component}]`;
+    return wrap;
+  }
+  resolveBind(bind, locals){
+    if(!bind) return null;
+    if(locals?.itemPath){
+      return bind.replace(/^@item/, `@${locals.itemPath}`);
+    }
+    return bind;
+  }
   readBind(ctx, bind){
     if(!bind || !bind.startsWith('@')) return null;
     const parts = bind.slice(1).split('.');

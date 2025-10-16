@@ -83,6 +83,69 @@ function draw(){
   renderInspector();
 }
 
+let tpl = createTemplate();
+let view = 'layout';
+let selection = { path: ['layout'] };
+
+draw();
+
+function createTemplate(){
+  return {
+    id: 'tpl.new',
+    schema: 'sys.dnd5e',
+    title: 'New Template',
+    layout: { type: 'stack', children: [] },
+    formulas: []
+  };
+}
+
+function createLayoutNode(type){
+  switch(type){
+    case 'stack':
+      return { type: 'stack', children: [] };
+    case 'row':
+      return { type: 'row', gap: 8, columns: [] };
+    case 'tabs':
+      return { type: 'tabs', tabs: [] };
+    case 'repeater':
+      return { type: 'repeater', label: 'List', bind: '@items', addLabel: 'Add', emptyText: '', template: { type: 'stack', children: [] } };
+    default:
+      return { type: 'stack', children: [] };
+  }
+}
+
+function createFieldNode(component){
+  const base = { type: 'field', component, label: component.charAt(0).toUpperCase() + component.slice(1) };
+  switch(component){
+    case 'input':
+      return { ...base, bind: '@', inputType: 'text', placeholder: '' };
+    case 'text':
+      return { ...base, formula: '', text: '' };
+    case 'roller':
+      return { ...base, expr: '1d20 + @mod' };
+    case 'toggle':
+      return { ...base, bind: '@', states: ['A','B'], optionsFrom: '' };
+    case 'tags':
+      return { ...base, bind: '@', options: ['one','two'], multi: true, optionsFrom: '' };
+    case 'clock':
+      return { ...base, bind: '@', max: 6 };
+    case 'timer':
+      return { ...base, bind: '@timers.timer', mode: 'up' };
+    default:
+      return base;
+  }
+}
+
+function createFormula(){
+  return { key: 'derived.value', expr: '0', label: '' };
+}
+
+function draw(){
+  renderPalette();
+  renderCanvas();
+  renderInspector();
+}
+
 function renderPalette(){
   elPalette.innerHTML = `
     <section class="panel-section">
