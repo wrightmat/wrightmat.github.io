@@ -1,9 +1,87 @@
 import { DataManager } from './DataManager.js';
+import { initAppShell } from './ui/AppShell.js';
+import { createButton } from './ui/components.js';
 
 const dm = new DataManager(location.origin);
-const elPalette = document.getElementById('palette');
-const elCanvas = document.getElementById('canvas');
-const elInspector = document.getElementById('inspector');
+const shell = initAppShell({
+  title: 'Template Editor',
+  subtitle: 'Layout Builder',
+  current: 'template',
+  panes: {
+    left: { title: 'Template Actions', description: 'Manage metadata, versions, and bindings.' },
+    center: { title: 'Layout Canvas' },
+    right: { title: 'Palette & Inspector' }
+  }
+});
+
+const elPalette = shell.panes.left;
+const elCanvas = shell.panes.center;
+const elInspector = shell.panes.right;
+shell.actions.innerHTML = '';
+let inspectorTarget = elInspector;
+
+let tpl = createTemplate();
+let view = 'layout';
+let selection = { path: ['layout'] };
+
+draw();
+
+function createTemplate(){
+  return {
+    id: 'tpl.new',
+    schema: 'sys.dnd5e',
+    title: 'New Template',
+    layout: { type: 'stack', children: [] },
+    formulas: []
+  };
+}
+
+function createLayoutNode(type){
+  switch(type){
+    case 'stack':
+      return { type: 'stack', children: [] };
+    case 'row':
+      return { type: 'row', gap: 8, columns: [] };
+    case 'tabs':
+      return { type: 'tabs', tabs: [] };
+    case 'repeater':
+      return { type: 'repeater', label: 'List', bind: '@items', addLabel: 'Add', emptyText: '', template: { type: 'stack', children: [] } };
+    default:
+      return { type: 'stack', children: [] };
+  }
+}
+
+function createFieldNode(component){
+  const base = { type: 'field', component, label: component.charAt(0).toUpperCase() + component.slice(1) };
+  switch(component){
+    case 'input':
+      return { ...base, bind: '@', inputType: 'text', placeholder: '' };
+    case 'text':
+      return { ...base, formula: '', text: '' };
+    case 'roller':
+      return { ...base, expr: '1d20 + @mod' };
+    case 'toggle':
+      return { ...base, bind: '@', states: ['A','B'], optionsFrom: '' };
+    case 'tags':
+      return { ...base, bind: '@', options: ['one','two'], multi: true, optionsFrom: '' };
+    case 'clock':
+      return { ...base, bind: '@', max: 6 };
+    case 'timer':
+      return { ...base, bind: '@timers.timer', mode: 'up' };
+    default:
+      return base;
+  }
+}
+
+function createFormula(){
+  return { key: 'derived.value', expr: '0', label: '' };
+}
+
+function draw(){
+  renderPalette();
+  renderCanvas();
+  renderInspector();
+}
 
 let tpl = createTemplate();
 let view = 'layout';
@@ -69,16 +147,37 @@ function draw(){
 }
 
 function renderPalette(){
-  elPalette.innerHTML = `<h3>Template</h3>
-    <div class="form-row"><label>Template ID</label><input id="tpl_id" class="input" value="${tpl.id}"/></div>
-    <div class="form-row"><label>Title</label><input id="tpl_title" class="input" value="${tpl.title || ''}"/></div>
-    <div class="form-row"><label>System</label><input id="tpl_schema" class="input" value="${tpl.schema || ''}"/></div>
-    <div class="actions">
-      <button class="btn" id="tpl_save">Save</button>
-      <button class="btn" id="tpl_load">Load</button>
-      <button class="btn" id="tpl_new">New</button>
-    </div>
-    <div class="form-row"><label>View</label><div id="tpl_nav"></div></div>`;
+  elPalette.innerHTML = `
+    <section class="panel-section">
+      <p class="section-heading">Template metadata</p>
+      <div class="inspector-field">
+        <label for="tpl_id">Template ID</label>
+        <input id="tpl_id" class="input-control" value="${tpl.id}"/>
+      </div>
+      <div class="inspector-field">
+        <label for="tpl_title">Title</label>
+        <input id="tpl_title" class="input-control" value="${tpl.title || ''}"/>
+      </div>
+      <div class="inspector-field">
+        <label for="tpl_schema">System</label>
+        <input id="tpl_schema" class="input-control" value="${tpl.schema || ''}"/>
+      </div>
+      <div class="toolbar" id="tpl_actions" role="group" aria-label="Template actions">
+        <button class="btn" id="tpl_save">Save</button>
+        <button class="btn" id="tpl_load">Load</button>
+        <button class="btn" id="tpl_new">New</button>
+      </div>
+    </section>
+    <section class="panel-section">
+      <p class="section-heading">Workspace view</p>
+      <div class="toolbar" id="tpl_nav" role="tablist"></div>
+      <div id="layoutControls" class="stack-sm"></div>
+    </section>
+    <section class="panel-section">
+      <p class="section-heading">Data binding</p>
+      <p class="small-text">Select nodes on the canvas to edit bindings and behavior in the inspector.</p>
+    </section>
+  `;
   elPalette.querySelector('#tpl_id').oninput = (e)=> tpl.id = e.target.value;
   elPalette.querySelector('#tpl_title').oninput = (e)=> tpl.title = e.target.value;
   elPalette.querySelector('#tpl_schema').oninput = (e)=> tpl.schema = e.target.value;
@@ -87,10 +186,15 @@ function renderPalette(){
   elPalette.querySelector('#tpl_new').onclick = ()=>{ tpl = createTemplate(); selection = { path:['layout'] }; draw(); };
   const nav = elPalette.querySelector('#tpl_nav');
   ['layout','formulas'].forEach(v=>{
-    const btn = document.createElement('button');
-    btn.className = 'btn small';
-    btn.textContent = v.charAt(0).toUpperCase() + v.slice(1);
-    btn.classList.toggle('primary', view === v);
+    const btn = createButton({
+      label: v.charAt(0).toUpperCase() + v.slice(1),
+      size: 'small',
+      attributes: { role: 'tab' }
+    });
+    if(view === v){
+      btn.classList.add('primary');
+      btn.setAttribute('aria-selected', 'true');
+    }
     btn.onclick = ()=>{
       view = v;
       selection = v === 'layout' ? { path:['layout'] } : (tpl.formulas.length ? { path:['formulas',0] } : null);
@@ -100,118 +204,146 @@ function renderPalette(){
   });
 
   if(view === 'layout'){
-    renderLayoutControls(nav.parentElement);
+    const host = elPalette.querySelector('#layoutControls');
+    host.innerHTML = '<div class="small-text">Select a container and use the palette to add layout or field elements.</div>';
   }
 }
 
 function renderLayoutControls(container){
   const info = resolveSelection();
   const controls = document.createElement('div');
-  controls.innerHTML = '<h4>Add Elements</h4>';
+  controls.className = 'stack-sm';
+  const heading = document.createElement('p');
+  heading.className = 'section-heading';
+  heading.textContent = 'Add elements';
+  controls.appendChild(heading);
   if(info && info.kind === 'node'){
     const node = info.target;
     if(node.type === 'stack'){
       const layoutBar = document.createElement('div');
-      layoutBar.className = 'actions';
+      layoutBar.className = 'toolbar';
       ['stack','row','tabs','repeater'].forEach(type=>{
-        const btn = document.createElement('button');
-        btn.className = 'btn small';
-        btn.textContent = type;
-        btn.onclick = ()=> appendChild(info.path, createLayoutNode(type));
+        const btn = createButton({
+          label: type,
+          size: 'small',
+          onClick: ()=> appendChild(info.path, createLayoutNode(type))
+        });
         layoutBar.appendChild(btn);
       });
       controls.appendChild(layoutBar);
       const fieldBar = document.createElement('div');
-      fieldBar.className = 'actions';
+      fieldBar.className = 'toolbar';
       ['input','text','roller','toggle','tags','clock','timer'].forEach(type=>{
-        const btn = document.createElement('button');
-        btn.className = 'btn small';
-        btn.textContent = type;
-        btn.onclick = ()=> appendChild(info.path, createFieldNode(type));
+        const btn = createButton({
+          label: type,
+          size: 'small',
+          onClick: ()=> appendChild(info.path, createFieldNode(type))
+        });
         fieldBar.appendChild(btn);
       });
       controls.appendChild(fieldBar);
     }
     if(node.type === 'row'){
       const rowBar = document.createElement('div');
-      rowBar.className = 'actions';
-      const btn = document.createElement('button');
-      btn.className = 'btn small';
-      btn.textContent = 'Add column';
-      btn.onclick = ()=> addColumn(info.path, createFieldNode('input'));
+      rowBar.className = 'toolbar';
+      const btn = createButton({
+        label: 'Add column',
+        size: 'small',
+        onClick: ()=> addColumn(info.path, createFieldNode('input'))
+      });
       rowBar.appendChild(btn);
       controls.appendChild(rowBar);
     }
     if(node.type === 'tabs'){
       const tabBar = document.createElement('div');
-      tabBar.className = 'actions';
-      const btn = document.createElement('button');
-      btn.className = 'btn small';
-      btn.textContent = 'Add tab';
-      btn.onclick = ()=> addTab(info.path, createLayoutNode('stack'));
+      tabBar.className = 'toolbar';
+      const btn = createButton({
+        label: 'Add tab',
+        size: 'small',
+        onClick: ()=> addTab(info.path, createLayoutNode('stack'))
+      });
       tabBar.appendChild(btn);
       controls.appendChild(tabBar);
     }
     if(node.type === 'repeater' && !node.template){
-      const tmpl = document.createElement('button');
-      tmpl.className = 'btn small';
-      tmpl.textContent = 'Create template';
-      tmpl.onclick = ()=>{ node.template = createLayoutNode('stack'); selection = { path:[...info.path, 'template'] }; draw(); };
+      const tmpl = createButton({
+        label: 'Create template',
+        size: 'small',
+        onClick: ()=>{
+          node.template = createLayoutNode('stack');
+          selection = { path:[...info.path, 'template'] };
+          draw();
+        }
+      });
       controls.appendChild(tmpl);
     }
+  }
+  if(controls.children.length === 1){
+    const hint = document.createElement('div');
+    hint.className = 'small-text';
+    hint.textContent = 'Select a stack, row, tabs, or repeater to add elements.';
+    controls.appendChild(hint);
   }
   container.appendChild(controls);
 }
 
 function renderCanvas(){
   if(view === 'layout'){
-    elCanvas.innerHTML = '<h3>Layout</h3>';
-    renderNodeOutline(tpl.layout, ['layout'], 0);
+    elCanvas.innerHTML = '<section class="panel-section"><p class="section-heading">Layout</p></section>';
+    const tree = document.createElement('div');
+    tree.className = 'tree-list';
+    tree.setAttribute('role', 'tree');
+    elCanvas.appendChild(tree);
+    renderNodeOutline(tpl.layout, ['layout'], 0, tree);
   }else{
-    elCanvas.innerHTML = '<h3>Formulas</h3>';
+    elCanvas.innerHTML = '<section class="panel-section"><p class="section-heading">Formulas</p></section>';
+    const list = document.createElement('div');
+    list.className = 'tree-list';
+    elCanvas.appendChild(list);
     tpl.formulas.forEach((f, idx)=>{
       const row = document.createElement('div');
       row.className = 'tree-row';
       row.classList.toggle('selected', isSelected(['formulas', idx]));
       row.textContent = `${f.key}`;
       row.onclick = ()=>{ selection = { path:['formulas', idx] }; draw(); };
-      elCanvas.appendChild(row);
+      list.appendChild(row);
     });
-    const add = document.createElement('button');
-    add.className = 'btn';
-    add.textContent = 'Add formula';
-    add.onclick = ()=>{
-      tpl.formulas.push(createFormula());
-      selection = { path:['formulas', tpl.formulas.length-1] };
-      draw();
-    };
+    const add = createButton({
+      label: 'Add formula',
+      onClick: ()=>{
+        tpl.formulas.push(createFormula());
+        selection = { path:['formulas', tpl.formulas.length-1] };
+        draw();
+      }
+    });
     elCanvas.appendChild(add);
   }
 }
 
-function renderNodeOutline(node, path, depth){
+function renderNodeOutline(node, path, depth, host){
+  const container = host || elCanvas;
   const row = document.createElement('div');
   row.className = 'tree-row';
-  row.style.paddingLeft = `${depth*16}px`;
+  row.style.paddingLeft = `${depth*14}px`;
   row.classList.toggle('selected', isSelected(path));
   row.textContent = describeNode(node);
   row.onclick = ()=>{ selection = { path: [...path] }; draw(); };
-  elCanvas.appendChild(row);
+  container.appendChild(row);
   if(node.type === 'stack'){
-    (node.children || []).forEach((child, idx)=> renderNodeOutline(child, [...path, 'children', idx], depth+1));
+    (node.children || []).forEach((child, idx)=> renderNodeOutline(child, [...path, 'children', idx], depth+1, container));
   }
   if(node.type === 'row'){
     (node.columns || []).forEach((col, idx)=>{
       const colPath = [...path, 'columns', idx];
       const colRow = document.createElement('div');
       colRow.className = 'tree-row';
-      colRow.style.paddingLeft = `${(depth+1)*16}px`;
+      colRow.style.paddingLeft = `${(depth+1)*14}px`;
       colRow.classList.toggle('selected', isSelected(colPath));
       colRow.textContent = `Column span ${col.span || 1}`;
       colRow.onclick = ()=>{ selection = { path: colPath }; draw(); };
-      elCanvas.appendChild(colRow);
+      container.appendChild(colRow);
       if(col.node){
-        renderNodeOutline(col.node, [...colPath, 'node'], depth+2);
+        renderNodeOutline(col.node, [...colPath, 'node'], depth+2, container);
       }
     });
   }
@@ -220,31 +352,56 @@ function renderNodeOutline(node, path, depth){
       const tabPath = [...path, 'tabs', idx];
       const tabRow = document.createElement('div');
       tabRow.className = 'tree-row';
-      tabRow.style.paddingLeft = `${(depth+1)*16}px`;
+      tabRow.style.paddingLeft = `${(depth+1)*14}px`;
       tabRow.classList.toggle('selected', isSelected(tabPath));
       tabRow.textContent = `Tab ${tab.label || idx+1}`;
       tabRow.onclick = ()=>{ selection = { path: tabPath }; draw(); };
-      elCanvas.appendChild(tabRow);
+      container.appendChild(tabRow);
       if(tab.node){
-        renderNodeOutline(tab.node, [...tabPath, 'node'], depth+2);
+        renderNodeOutline(tab.node, [...tabPath, 'node'], depth+2, container);
       }
     });
   }
   if(node.type === 'repeater' && node.template){
-    renderNodeOutline(node.template, [...path, 'template'], depth+1);
+    renderNodeOutline(node.template, [...path, 'template'], depth+1, container);
   }
 }
 
 function renderInspector(){
-  elInspector.innerHTML = '<h3>Inspector</h3>';
+  elInspector.innerHTML = `
+    <section class="panel-section">
+      <p class="section-heading">Palette</p>
+      <div id="paletteControls" class="stack-sm"></div>
+    </section>
+    <section class="panel-section">
+      <p class="section-heading">Inspector</p>
+      <div id="inspectorContent" class="stack-md"></div>
+    </section>
+  `;
+  inspectorTarget = elInspector.querySelector('#inspectorContent');
+  const paletteTarget = elInspector.querySelector('#paletteControls');
+
+  if(view === 'layout'){
+    paletteTarget.innerHTML = '';
+    renderLayoutControls(paletteTarget);
+  }else{
+    paletteTarget.innerHTML = '<div class="small-text">Palette tools are available in layout view.</div>';
+  }
+
   if(!selection){
-    elInspector.innerHTML += '<div class="small">Select an element</div>';
+    const msg = document.createElement('div');
+    msg.className = 'small-text';
+    msg.textContent = 'Select an element to edit its properties.';
+    inspectorTarget.appendChild(msg);
     return;
   }
   if(view === 'layout'){
     const info = resolveSelection();
     if(!info){
-      elInspector.innerHTML += '<div class="small">Select an element</div>';
+      const msg = document.createElement('div');
+      msg.className = 'small-text';
+      msg.textContent = 'Select an element to edit its properties.';
+      inspectorTarget.appendChild(msg);
       return;
     }
     switch(info.kind){
@@ -258,7 +415,10 @@ function renderInspector(){
         renderTabInspector(info);
         break;
       default:
-        elInspector.innerHTML += '<div class="small">Select an element</div>';
+        const fallback = document.createElement('div');
+        fallback.className = 'small-text';
+        fallback.textContent = 'Select an element to edit its properties.';
+        inspectorTarget.appendChild(fallback);
     }
   }else{
     const target = getByPath(selection.path);
@@ -272,23 +432,27 @@ function renderNodeInspector(info){
   const node = info.target;
   if(node.type === 'stack'){
     const wrap = document.createElement('div');
+    wrap.className = 'inspector-group';
     wrap.innerHTML = `<div class="form-row"><label>Gap (px)</label><input type="number" id="stack_gap" class="input" value="${node.gap ?? 8}"/></div>`;
     wrap.querySelector('#stack_gap').oninput = (e)=>{ node.gap = Number(e.target.value || 0); refreshCanvas(); };
-    elInspector.appendChild(wrap);
+    inspectorTarget.appendChild(wrap);
   }
   if(node.type === 'row'){
     const wrap = document.createElement('div');
+    wrap.className = 'inspector-group';
     wrap.innerHTML = `<div class="form-row"><label>Gap (px)</label><input type="number" id="row_gap" class="input" value="${node.gap ?? 8}"/></div>`;
     wrap.querySelector('#row_gap').oninput = (e)=>{ node.gap = Number(e.target.value || 0); refreshCanvas(); };
-    elInspector.appendChild(wrap);
+    inspectorTarget.appendChild(wrap);
   }
   if(node.type === 'tabs'){
     const wrap = document.createElement('div');
+    wrap.className = 'inspector-group';
     wrap.innerHTML = `<div class="small">Tabs contain tab entries. Select a tab to edit.</div>`;
-    elInspector.appendChild(wrap);
+    inspectorTarget.appendChild(wrap);
   }
   if(node.type === 'repeater'){
     const wrap = document.createElement('div');
+    wrap.className = 'inspector-group';
     wrap.innerHTML = `
       <div class="form-row"><label>Label</label><input id="rep_label" class="input" value="${node.label || ''}"/></div>
       <div class="form-row"><label>Bind</label><input id="rep_bind" class="input" value="${node.bind || ''}"/></div>
@@ -298,45 +462,50 @@ function renderNodeInspector(info){
     wrap.querySelector('#rep_bind').oninput = (e)=>{ node.bind = e.target.value; refreshCanvas(); };
     wrap.querySelector('#rep_add').oninput = (e)=>{ node.addLabel = e.target.value; refreshCanvas(); };
     wrap.querySelector('#rep_empty').oninput = (e)=> node.emptyText = e.target.value;
-    elInspector.appendChild(wrap);
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'btn small';
-    clearBtn.textContent = 'Clear template';
-    clearBtn.onclick = ()=>{ node.template = undefined; selection = { path: info.path }; draw(); };
-    elInspector.appendChild(clearBtn);
+    inspectorTarget.appendChild(wrap);
+    const clearBtn = createButton({
+      label: 'Clear template',
+      size: 'small',
+      onClick: ()=>{
+        node.template = undefined;
+        selection = { path: info.path };
+        draw();
+      }
+    });
+    inspectorTarget.appendChild(clearBtn);
   }
   if(node.type === 'field'){
     renderFieldNodeInspector(node);
   }
   const path = info.path;
   if(canRemove(path)){
-    const del = document.createElement('button');
-    del.className = 'btn danger';
-    del.textContent = 'Delete';
-    del.onclick = ()=> removePath(path);
-    elInspector.appendChild(del);
+    const del = createButton({
+      label: 'Delete',
+      variant: 'danger',
+      onClick: ()=> removePath(path)
+    });
+    inspectorTarget.appendChild(del);
   }
   if(canReorder(path)){
     const move = document.createElement('div');
     move.className = 'actions';
-    const up = document.createElement('button'); up.className='btn small'; up.textContent='Move up';
-    const down = document.createElement('button'); down.className='btn small'; down.textContent='Move down';
-    up.onclick = ()=> moveEntry(path, -1);
-    down.onclick = ()=> moveEntry(path, 1);
+    const up = createButton({ label: 'Move up', size: 'small', onClick: ()=> moveEntry(path, -1) });
+    const down = createButton({ label: 'Move down', size: 'small', onClick: ()=> moveEntry(path, 1) });
     move.appendChild(up); move.appendChild(down);
-    elInspector.appendChild(move);
+    inspectorTarget.appendChild(move);
   }
 }
 
 function renderFieldNodeInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `
     <div class="form-row"><label>Label</label><input id="field_label" class="input" value="${node.label || ''}"/></div>
     <div class="form-row"><label>Bind</label><input id="field_bind" class="input" value="${node.bind || ''}"/></div>
   `;
   wrap.querySelector('#field_label').oninput = (e)=>{ node.label = e.target.value; refreshCanvas(); };
   wrap.querySelector('#field_bind').oninput = (e)=> node.bind = e.target.value;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
   switch(node.component){
     case 'input':
       renderInputInspector(node);
@@ -364,6 +533,7 @@ function renderFieldNodeInspector(node){
 
 function renderInputInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `
     <div class="form-row"><label>Input type</label>
       <select id="field_input_type" class="input">
@@ -377,38 +547,42 @@ function renderInputInspector(node){
   wrap.querySelector('#field_placeholder').oninput = (e)=> node.placeholder = e.target.value;
   wrap.querySelector('#field_min').oninput = (e)=> node.min = e.target.value === '' ? undefined : Number(e.target.value);
   wrap.querySelector('#field_max').oninput = (e)=> node.max = e.target.value === '' ? undefined : Number(e.target.value);
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderTextInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `
     <div class="form-row"><label>Formula</label><input id="field_formula" class="input" value="${node.formula || ''}"/></div>
     <div class="form-row"><label>Fallback text</label><input id="field_text" class="input" value="${node.text || ''}"/></div>`;
   wrap.querySelector('#field_formula').oninput = (e)=> node.formula = e.target.value;
   wrap.querySelector('#field_text').oninput = (e)=> node.text = e.target.value;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderRollerInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `<div class="form-row"><label>Expression</label><input id="field_expr" class="input" value="${node.expr || ''}"/></div>`;
   wrap.querySelector('#field_expr').oninput = (e)=> node.expr = e.target.value;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderToggleInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `
     <div class="form-row"><label>States (one per line)</label><textarea id="field_states" class="input" rows="3">${(node.states || []).join('\n')}</textarea></div>
     <div class="form-row"><label>Options from metadata</label><input id="field_options_from" class="input" value="${node.optionsFrom || ''}"/></div>`;
   wrap.querySelector('#field_states').oninput = (e)=> node.states = e.target.value.split('\n').map(v=>v.trim()).filter(Boolean);
   wrap.querySelector('#field_options_from').oninput = (e)=> node.optionsFrom = e.target.value;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderTagsInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `
     <div class="form-row"><label>Options (one per line)</label><textarea id="field_options" class="input" rows="3">${(node.options || []).join('\n')}</textarea></div>
     <div class="form-row"><label>Metadata source</label><input id="field_options_from" class="input" value="${node.optionsFrom || ''}"/></div>
@@ -416,60 +590,63 @@ function renderTagsInspector(node){
   wrap.querySelector('#field_options').oninput = (e)=> node.options = e.target.value.split('\n').map(v=>v.trim()).filter(Boolean);
   wrap.querySelector('#field_options_from').oninput = (e)=> node.optionsFrom = e.target.value;
   wrap.querySelector('#field_multi').onchange = (e)=> node.multi = e.target.checked;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderClockInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `<div class="form-row"><label>Max ticks</label><input type="number" id="field_max" class="input" value="${node.max ?? 6}"/></div>`;
   wrap.querySelector('#field_max').oninput = (e)=> node.max = Number(e.target.value || 0);
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderTimerInspector(node){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `<div class="form-row"><label>Mode</label>
     <select id="field_mode" class="input">
       ${['up','down'].map(m=>`<option value="${m}" ${node.mode===m?'selected':''}>${m}</option>`).join('')}
     </select></div>`;
   wrap.querySelector('#field_mode').onchange = (e)=> node.mode = e.target.value;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
 }
 
 function renderColumnInspector(info){
   const column = info.target;
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `<div class="form-row"><label>Span</label><input type="number" id="col_span" class="input" value="${column.span || 1}"/></div>`;
   wrap.querySelector('#col_span').oninput = (e)=>{ column.span = Number(e.target.value || 1); refreshCanvas(); };
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
   const actions = document.createElement('div');
   actions.className = 'actions';
-  const remove = document.createElement('button'); remove.className='btn danger'; remove.textContent='Delete column';
-  remove.onclick = ()=> removePath(info.path);
-  const up = document.createElement('button'); up.className='btn small'; up.textContent='Move up'; up.onclick = ()=> moveEntry(info.path, -1);
-  const down = document.createElement('button'); down.className='btn small'; down.textContent='Move down'; down.onclick = ()=> moveEntry(info.path, 1);
+  const remove = createButton({ label: 'Delete column', variant: 'danger', onClick: ()=> removePath(info.path) });
+  const up = createButton({ label: 'Move up', size: 'small', onClick: ()=> moveEntry(info.path, -1) });
+  const down = createButton({ label: 'Move down', size: 'small', onClick: ()=> moveEntry(info.path, 1) });
   actions.appendChild(remove); actions.appendChild(up); actions.appendChild(down);
-  elInspector.appendChild(actions);
+  inspectorTarget.appendChild(actions);
 }
 
 function renderTabInspector(info){
   const tab = info.target;
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `<div class="form-row"><label>Label</label><input id="tab_label" class="input" value="${tab.label || ''}"/></div>`;
   wrap.querySelector('#tab_label').oninput = (e)=>{ tab.label = e.target.value; refreshCanvas(); };
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
   const actions = document.createElement('div');
   actions.className = 'actions';
-  const remove = document.createElement('button'); remove.className='btn danger'; remove.textContent='Delete tab';
-  remove.onclick = ()=> removePath(info.path);
-  const up = document.createElement('button'); up.className='btn small'; up.textContent='Move up'; up.onclick = ()=> moveEntry(info.path, -1);
-  const down = document.createElement('button'); down.className='btn small'; down.textContent='Move down'; down.onclick = ()=> moveEntry(info.path, 1);
+  const remove = createButton({ label: 'Delete tab', variant: 'danger', onClick: ()=> removePath(info.path) });
+  const up = createButton({ label: 'Move up', size: 'small', onClick: ()=> moveEntry(info.path, -1) });
+  const down = createButton({ label: 'Move down', size: 'small', onClick: ()=> moveEntry(info.path, 1) });
   actions.appendChild(remove); actions.appendChild(up); actions.appendChild(down);
-  elInspector.appendChild(actions);
+  inspectorTarget.appendChild(actions);
 }
 
 function renderFormulaInspector(formula){
   const wrap = document.createElement('div');
+  wrap.className = 'inspector-group';
   wrap.innerHTML = `
     <div class="form-row"><label>Key</label><input id="formula_key" class="input" value="${formula.key}"/></div>
     <div class="form-row"><label>Label</label><input id="formula_label" class="input" value="${formula.label || ''}"/></div>
@@ -477,13 +654,12 @@ function renderFormulaInspector(formula){
   wrap.querySelector('#formula_key').oninput = (e)=> formula.key = e.target.value;
   wrap.querySelector('#formula_label').oninput = (e)=> formula.label = e.target.value;
   wrap.querySelector('#formula_expr').oninput = (e)=> formula.expr = e.target.value;
-  elInspector.appendChild(wrap);
+  inspectorTarget.appendChild(wrap);
   const actions = document.createElement('div');
   actions.className = 'actions';
-  const remove = document.createElement('button'); remove.className='btn danger'; remove.textContent='Delete formula';
-  remove.onclick = ()=> removePath(selection.path);
+  const remove = createButton({ label: 'Delete formula', variant: 'danger', onClick: ()=> removePath(selection.path) });
   actions.appendChild(remove);
-  elInspector.appendChild(actions);
+  inspectorTarget.appendChild(actions);
 }
 
 function appendChild(path, node){

@@ -1,6 +1,7 @@
 import { FormulaEngine } from './FormulaEngine.js';
 import { DiceEngine } from './DiceEngine.js';
 import { CharacterStore } from './CharacterStore.js';
+import { createButton } from './ui/components.js';
 
 const clone = (value) => (typeof structuredClone === 'function'
   ? structuredClone(value)
@@ -79,7 +80,7 @@ export class RenderingEngine{
   }
   renderStack(node, ctx, locals){
     const wrap = document.createElement('div');
-    wrap.className = 'stack';
+    wrap.className = 'stack-block';
     (node.children || []).forEach((child, idx)=>{
       const el = this.renderNode(child, ctx, locals);
       if(el) wrap.appendChild(el);
@@ -88,7 +89,7 @@ export class RenderingEngine{
   }
   renderRow(node, ctx, locals){
     const row = document.createElement('div');
-    row.className = 'row';
+    row.className = 'row-block';
     row.style.display = 'flex';
     row.style.gap = `${node.gap ?? 8}px`;
     const columns = node.columns || [];
@@ -103,11 +104,11 @@ export class RenderingEngine{
   }
   renderTabs(node, ctx, locals){
     const wrap = document.createElement('div');
-    wrap.className = 'tabs-card card';
+    wrap.className = 'tab-card';
     const bar = document.createElement('div');
-    bar.className = 'tabbar';
+    bar.className = 'tab-strip';
     const pane = document.createElement('div');
-    pane.className = 'tabpane';
+    pane.className = 'tab-pane';
     const tabs = node.tabs || [];
     const setTab = (idx)=>{
       pane.innerHTML = '';
@@ -119,10 +120,11 @@ export class RenderingEngine{
       [...bar.children].forEach((btn, i)=> btn.classList.toggle('active', i===idx));
     };
     tabs.forEach((tab, idx)=>{
-      const btn = document.createElement('button');
-      btn.className = 'btn small';
-      btn.textContent = tab.label || `Tab ${idx+1}`;
-      btn.onclick = ()=> setTab(idx);
+      const btn = createButton({
+        label: tab.label || `Tab ${idx+1}`,
+        size: 'small',
+        onClick: ()=> setTab(idx)
+      });
       bar.appendChild(btn);
     });
     wrap.appendChild(bar);
@@ -134,15 +136,15 @@ export class RenderingEngine{
     const resolvedBind = this.resolveBind(node.bind, locals);
     const values = this.readBind(ctx, resolvedBind) || [];
     const wrap = document.createElement('div');
-    wrap.className = 'card repeater';
+    wrap.className = 'repeater-card';
     if(node.label){
       const title = document.createElement('div');
-      title.className = 'small';
+      title.className = 'small-text';
       title.textContent = node.label;
       wrap.appendChild(title);
     }
     const body = document.createElement('div');
-    body.className = 'repeater-body';
+    body.className = 'stack-md';
     values.forEach((item, index)=>{
       const itemLocals = { ...locals, itemPath: `${resolvedBind.slice(1)}.${index}` };
       const row = document.createElement('div');
@@ -150,25 +152,27 @@ export class RenderingEngine{
       const child = this.renderNode(node.template, ctx, itemLocals);
       if(child) row.appendChild(child);
       if(this.mode === 'runtime'){
-        const del = document.createElement('button');
-        del.className = 'btn small';
-        del.textContent = 'Remove';
-        del.onclick = ()=> this.store.removeAt(resolvedBind, index);
+        const del = createButton({
+          label: 'Remove',
+          size: 'small',
+          onClick: ()=> this.store.removeAt(resolvedBind, index)
+        });
         row.appendChild(del);
       }
       body.appendChild(row);
     });
     wrap.appendChild(body);
     if(this.mode === 'runtime'){
-      const add = document.createElement('button');
-      add.className = 'btn small';
-      add.textContent = node.addLabel || 'Add';
-      add.onclick = ()=>{
-        this.store.transaction(draft=>{
-          const list = this.ensureListDraft(draft, resolvedBind);
-          list.push(node.initialItem ? clone(node.initialItem) : {});
-        });
-      };
+      const add = createButton({
+        label: node.addLabel || 'Add',
+        size: 'small',
+        onClick: ()=>{
+          this.store.transaction(draft=>{
+            const list = this.ensureListDraft(draft, resolvedBind);
+            list.push(node.initialItem ? clone(node.initialItem) : {});
+          });
+        }
+      });
       wrap.appendChild(add);
     }
     if(values.length===0 && node.emptyText){
@@ -182,10 +186,10 @@ export class RenderingEngine{
   renderField(node, ctx, locals){
     const resolvedBind = this.resolveBind(node.bind, locals);
     const wrap = document.createElement('div');
-    wrap.className = 'card field';
+    wrap.className = 'list-card stack-sm';
     if(node.label){
       const label = document.createElement('div');
-      label.className = 'small';
+      label.className = 'small-text uppercase';
       label.textContent = node.label;
       wrap.appendChild(label);
     }
@@ -224,24 +228,25 @@ export class RenderingEngine{
         return wrap;
       }
       case 'roller': {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = node.label || 'Roll';
-      btn.onclick = ()=>{
-        const expr = (node.expr || '1d20').replace(/@([a-zA-Z0-9_$.]+)/g, (_,p)=>{
-          const val = this.readPath(ctx, p);
-          return Number(val) || 0;
+        const btn = createButton({
+          label: node.label || 'Roll',
+          onClick: ()=>{
+            const expr = (node.expr || '1d20').replace(/@([a-zA-Z0-9_$.]+)/g, (_,p)=>{
+              const val = this.readPath(ctx, p);
+              return Number(val) || 0;
+            });
+            const result = this.dice.roll(expr);
+            if(this.hooks.log){
+              this.hooks.log(`${expr} = ${result.total}`);
+            }
+          }
         });
-        const result = this.dice.roll(expr);
-        if(this.hooks.log){
-          this.hooks.log(`${expr} = ${result.total}`);
-        }
-      };
-      wrap.appendChild(btn);
-      return wrap;
-    }
+        wrap.appendChild(btn);
+        return wrap;
+      }
       case 'toggle': {
         const select = document.createElement('select');
+        select.className = 'input-control';
         const options = this.resolveOptions(node);
         options.forEach(opt=>{
           const optEl = document.createElement('option');
@@ -264,17 +269,19 @@ export class RenderingEngine{
         const options = this.resolveOptions(node);
         const current = new Set(this.readBind(ctx, resolvedBind) || []);
         const box = document.createElement('div');
+        box.className = 'toolbar';
         options.forEach(opt=>{
           const value = typeof opt === 'object' ? opt.value : opt;
           const label = typeof opt === 'object' ? opt.label ?? opt.value : opt;
-          const btn = document.createElement('button');
-          btn.className = 'btn small';
-          btn.textContent = label;
+          const btn = createButton({
+            label,
+            size: 'small',
+            onClick: ()=>{
+              if(current.has(value)) current.delete(value); else current.add(value);
+              this.store.write(resolvedBind, Array.from(current));
+            }
+          });
           if(current.has(value)) btn.classList.add('primary');
-          btn.onclick = ()=>{
-            if(current.has(value)) current.delete(value); else current.add(value);
-            this.store.write(resolvedBind, Array.from(current));
-          };
           box.appendChild(btn);
         });
         wrap.appendChild(box);
@@ -284,14 +291,23 @@ export class RenderingEngine{
         const max = node.max || 6;
         const val = Number(this.readBind(ctx, resolvedBind)) || 0;
         const bar = document.createElement('div');
+        bar.className = 'badge';
         bar.textContent = `${val}/${max}`;
         if(this.mode === 'runtime'){
           const controls = document.createElement('div');
-          controls.className = 'clock-controls';
-          const dec = document.createElement('button'); dec.className='btn small'; dec.textContent='-';
-          const inc = document.createElement('button'); inc.className='btn small'; inc.textContent='+';
-          dec.onclick = ()=> this.store.write(resolvedBind, Math.max(0, val-1));
-          inc.onclick = ()=> this.store.write(resolvedBind, Math.min(max, val+1));
+          controls.className = 'toolbar';
+          const dec = createButton({
+            label: '-',
+            size: 'small',
+            ariaLabel: 'Decrease clock',
+            onClick: ()=> this.store.write(resolvedBind, Math.max(0, val-1))
+          });
+          const inc = createButton({
+            label: '+',
+            size: 'small',
+            ariaLabel: 'Increase clock',
+            onClick: ()=> this.store.write(resolvedBind, Math.min(max, val+1))
+          });
           controls.appendChild(dec); controls.appendChild(inc);
           wrap.appendChild(controls);
         }
@@ -300,8 +316,9 @@ export class RenderingEngine{
       }
       case 'timer': {
         const row = document.createElement('div');
-        row.className = 'timer-row';
-        const out = document.createElement('span'); out.style.marginRight='8px';
+        row.className = 'flex-row gap-sm';
+        const out = document.createElement('span');
+        out.className = 'badge';
         let timer = this.store.readTimer(resolvedBind);
         if(!timer) timer = { running:false, accum:0, startedAt:null };
         const tick = ()=>{
@@ -312,21 +329,27 @@ export class RenderingEngine{
         tick();
         const interval = setInterval(tick, 500);
         this._timers.push(interval);
-        const toggle = document.createElement('button'); toggle.className='btn small'; toggle.textContent='Start/Pause';
-        toggle.onclick = ()=>{
-          if(timer.running){
-            timer = { running:false, accum: timer.accum + (Date.now() - timer.startedAt), startedAt:null };
-          }else{
-            timer = { running:true, accum: timer.accum, startedAt: Date.now() };
+        const toggle = createButton({
+          label: 'Start/Pause',
+          size: 'small',
+          onClick: ()=>{
+            if(timer.running){
+              timer = { running:false, accum: timer.accum + (Date.now() - timer.startedAt), startedAt:null };
+            }else{
+              timer = { running:true, accum: timer.accum, startedAt: Date.now() };
+            }
+            this.store.updateTimer(resolvedBind, timer);
           }
-          this.store.updateTimer(resolvedBind, timer);
-        };
-        const reset = document.createElement('button'); reset.className='btn small'; reset.textContent='Reset';
-        reset.onclick = ()=>{
-          timer = { running:false, accum:0, startedAt:null };
-          this.store.updateTimer(resolvedBind, timer);
-          tick();
-        };
+        });
+        const reset = createButton({
+          label: 'Reset',
+          size: 'small',
+          onClick: ()=>{
+            timer = { running:false, accum:0, startedAt:null };
+            this.store.updateTimer(resolvedBind, timer);
+            tick();
+          }
+        });
         row.appendChild(out);
         row.appendChild(toggle);
         row.appendChild(reset);
@@ -336,6 +359,19 @@ export class RenderingEngine{
       default:
         return this.renderUnknown(node);
     }
+  }
+  renderUnknown(node){
+    const wrap = document.createElement('div');
+    wrap.className = 'list-card';
+    wrap.textContent = `[${node.type || node.component}]`;
+    return wrap;
+  }
+  resolveBind(bind, locals){
+    if(!bind) return null;
+    if(locals?.itemPath){
+      return bind.replace(/^@item/, `@${locals.itemPath}`);
+    }
+    return bind;
   }
   renderUnknown(node){
     const wrap = document.createElement('div');
