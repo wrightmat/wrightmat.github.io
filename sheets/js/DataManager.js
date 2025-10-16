@@ -9,6 +9,28 @@ export class DataManager{
     if(this.token) h['Authorization'] = `Bearer ${this.token}`;
     return h;
   }
+  localKey(bucket, id){
+    return `sheets:${bucket}:${id}`;
+  }
+  readLocal(bucket, id){
+    const raw = localStorage.getItem(this.localKey(bucket, id));
+    if(!raw) return null;
+    try{
+      return JSON.parse(raw);
+    }catch(err){
+      console.warn('Failed to parse local payload', bucket, id, err);
+      return null;
+    }
+  }
+  saveLocal(bucket, id, payload){
+    try{
+      localStorage.setItem(this.localKey(bucket, id), JSON.stringify(payload));
+      return { ok: true, local: true, id };
+    }catch(err){
+      console.warn('Local save failed', err);
+      return { ok: false, error: 'Local storage full?' };
+    }
+  }
   async register(email, username, password){
     const r = await fetch(`${this.baseUrl}/auth/register`, {method:'POST', headers:this.headers(), body:JSON.stringify({email, username, password})});
     return await r.json();
@@ -17,11 +39,128 @@ export class DataManager{
     const r = await fetch(`${this.baseUrl}/auth/login`, {method:'POST', headers:this.headers(), body:JSON.stringify({username_or_email, password})});
     return await r.json();
   }
-  async list(bucket){ const r = await fetch(`${this.baseUrl}/list/${bucket}`); return await r.json(); }
-  async read(bucket, id){ const r = await fetch(`${this.baseUrl}/content/${bucket}/${id}`); return await r.json(); }
+  async list(bucket){
+    try{
+      const r = await fetch(`${this.baseUrl}/list/${bucket}`);
+      return await r.json();
+    }catch(err){
+      console.warn('List request failed', bucket, err);
+      return { error: 'List unavailable', items: [] };
+    }
+  }
+
+  flattenListPayload(payload){
+    if(!payload || typeof payload !== 'object') return [];
+    const entries = [];
+    const groups = ['items', 'files', 'owned', 'shared', 'public'];
+    for(const key of groups){
+      const value = payload[key];
+      if(Array.isArray(value)) entries.push(...value);
+    }
+    return entries;
+  }
+
+  buildCatalogEntry(bucket, item, source = 'remote'){
+    if(!item || typeof item !== 'object') return null;
+    const id = item.id || item.filename;
+    if(!id) return null;
+    let label = item.title || item.name || item.label || id;
+    if(bucket === 'templates' && item.title){
+      label = `${item.title} (${id})`;
+    }else if(bucket === 'systems' && item.title){
+      label = `${item.title} (${id})`;
+    }else if(bucket === 'characters' && item.name){
+      label = `${item.name} (${id})`;
+    }
+    return { id, label, source, meta: item, bucket };
+  }
+
+  localCatalog(bucket){
+    const prefix = this.localKey(bucket, '');
+    const entries = [];
+    for(let i = 0; i < localStorage.length; i += 1){
+      const key = localStorage.key(i);
+      if(!key || !key.startsWith(prefix)) continue;
+      const id = key.slice(prefix.length);
+      const meta = this.readLocal(bucket, id) || null;
+      const labelBase = meta?.title || meta?.name || id;
+      const label = bucket === 'templates' && meta?.title
+        ? `${meta.title} (${id})`
+        : bucket === 'characters' && meta?.data?.name
+          ? `${meta.data.name} (${id})`
+          : labelBase;
+      entries.push({ id, label, source: 'local', meta, bucket });
+    }
+    return entries;
+  }
+
+  async catalog(bucket){
+    const payload = await this.list(bucket);
+    if(payload?.error){
+      return { entries: this.localCatalog(bucket), payload };
+    }
+    const remoteItems = this.flattenListPayload(payload)
+      .map(item => this.buildCatalogEntry(bucket, item, 'remote'))
+      .filter(Boolean);
+    const merged = new Map();
+    remoteItems.forEach(entry => {
+      if(!merged.has(entry.id)){
+        merged.set(entry.id, entry);
+      }
+    });
+    this.localCatalog(bucket).forEach(entry => {
+      if(!merged.has(entry.id)){
+        merged.set(entry.id, entry);
+      }else{
+        const current = merged.get(entry.id);
+        if(!current.meta && entry.meta){
+          merged.set(entry.id, { ...current, meta: entry.meta });
+        }
+      }
+    });
+    return { entries: Array.from(merged.values()), payload };
+  }
+  async read(bucket, id){
+    try{
+      const r = await fetch(`${this.baseUrl}/content/${bucket}/${id}`);
+      if(r.ok){
+        return await r.json();
+      }
+      try{
+        const data = await r.json();
+        data.status = r.status;
+        return data;
+      }catch(err){
+        return { error: r.statusText || 'Request failed', status: r.status };
+      }
+    }catch(err){
+      console.warn('Read request failed', bucket, id, err);
+      return { error: 'Network unavailable' };
+    }
+  }
   async save(bucket, id, obj){
-    const r = await fetch(`${this.baseUrl}/content/${bucket}/${id}`, {method:'POST', headers:this.headers(), body:JSON.stringify(obj)});
-    return await r.json();
+    if(!this.token){
+      return this.saveLocal(bucket, id, obj);
+    }
+    let r;
+    try{
+      r = await fetch(`${this.baseUrl}/content/${bucket}/${id}`, {method:'POST', headers:this.headers(), body:JSON.stringify(obj)});
+    }catch(err){
+      console.warn('Save request failed, using local fallback', bucket, id, err);
+      return this.saveLocal(bucket, id, obj);
+    }
+    if(r.ok){
+      return await r.json();
+    }
+    const status = r.status;
+    let payload = null;
+    try{ payload = await r.json(); }
+    catch(err){ payload = { error: r.statusText || 'Request failed' }; }
+    if(status === 401 || status === 403){
+      const fallback = this.saveLocal(bucket, id, obj);
+      return { ...fallback, error: payload?.error, status };
+    }
+    return { error: payload?.error || 'Save failed', status };
   }
   async del(bucket, id){
     const r = await fetch(`${this.baseUrl}/content/${bucket}/${id}/delete`, {method:'POST', headers:this.headers()});

@@ -1,23 +1,18 @@
 <!doctype html>
-<html><head>
+<html lang="en">
+<head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Template Editor</title>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = { darkMode: 'class' };
+  </script>
+  <script src="https://cdn.tailwindcss.com/3.4.5"></script>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-<header class="topbar">
-  <h2>Template Editor</h2>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="system-editor.html">System Editor</a>
-    <a href="character.html">Character</a>
-  </nav>
-</header>
-<div class="panes">
-  <aside class="pane palette" id="palette"></aside>
-  <section class="pane" id="canvas"></section>
-  <aside class="pane" id="inspector"></aside>
-</div>
-<script type="module" src="js/TemplateEditor.js"></script>
-</body></html>
+  <div id="app" class="app-shell"></div>
+  <script type="module" src="js/TemplateEditor.js"></script>
+</body>
+</html>
