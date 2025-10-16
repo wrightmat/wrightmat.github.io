@@ -9,6 +9,31 @@ function prefersDark() {
   );
 }
 
+function resolveTheme(preference) {
+  if (preference === "dark") return "dark";
+  if (preference === "light") return "light";
+  return prefersDark() ? "dark" : "light";
+}
+
+function applyThemeAttributes(preference, resolved) {
+  const root = document.documentElement;
+  const body = document.body;
+
+  if (root) {
+    root.dataset.themePreference = preference;
+    root.dataset.theme = resolved;
+    root.style.colorScheme = resolved;
+    root.classList.toggle("dark", resolved === "dark");
+  }
+
+  if (body) {
+    body.dataset.themePreference = preference;
+    body.dataset.theme = resolved;
+    body.style.colorScheme = resolved;
+    body.classList.toggle("dark", resolved === "dark");
+  }
+}
+
 export function getThemePreference() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -22,33 +47,28 @@ export function getThemePreference() {
 }
 
 export function applyTheme(theme) {
-  const safeTheme = THEMES.includes(theme) ? theme : "system";
-  const root = document.documentElement;
-  const body = document.body;
-  root.dataset.theme = safeTheme;
-  if (body) {
-    body.dataset.theme = safeTheme;
-  }
-  const darkMode = safeTheme === "dark" || (safeTheme === "system" && prefersDark());
-  root.classList.toggle("dark", darkMode);
-  if (body) {
-    body.classList.toggle("dark", darkMode);
-  }
+  const preference = THEMES.includes(theme) ? theme : "system";
+  const resolved = resolveTheme(preference);
+
+  applyThemeAttributes(preference, resolved);
+
   try {
-    if (safeTheme === "system") {
+    if (preference === "system") {
       localStorage.removeItem(STORAGE_KEY);
     } else {
-      localStorage.setItem(STORAGE_KEY, safeTheme);
+      localStorage.setItem(STORAGE_KEY, preference);
     }
   } catch (error) {
     console.warn("Theme: unable to persist preference", error);
   }
-  return safeTheme;
+
+  return preference;
 }
 
 export function initThemeControls(root = document) {
   const preference = getThemePreference();
-  applyTheme(preference);
+  const resolved = resolveTheme(preference);
+  applyThemeAttributes(preference, resolved);
   const controls = Array.from(root.querySelectorAll("[data-theme-option]"));
   controls.forEach((control) => {
     const option = control.getAttribute("data-theme-option");

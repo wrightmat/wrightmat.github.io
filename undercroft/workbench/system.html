@@ -8,23 +8,33 @@
       (function () {
         const storageKey = "undercroft.workbench.theme";
         const THEMES = ["light", "system", "dark"];
+        const prefersDark = () =>
+          typeof window !== "undefined" &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolveTheme = (preference) => {
+          if (preference === "dark") return "dark";
+          if (preference === "light") return "light";
+          return prefersDark() ? "dark" : "light";
+        };
         const apply = (value) => {
-          const theme = THEMES.includes(value) ? value : "system";
+          const preference = THEMES.includes(value) ? value : "system";
+          const resolved = resolveTheme(preference);
           const root = document.documentElement;
           const body = document.body;
-          root.dataset.theme = theme;
-          if (body) {
-            body.dataset.theme = theme;
+          if (root) {
+            root.dataset.themePreference = preference;
+            root.dataset.theme = resolved;
+            root.style.colorScheme = resolved;
+            root.classList.toggle("dark", resolved === "dark");
           }
-          const prefersDark =
-            typeof window !== "undefined" &&
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches;
-          const dark = theme === "dark" || (theme === "system" && prefersDark);
-          root.classList.toggle("dark", dark);
           if (body) {
-            body.classList.toggle("dark", dark);
+            body.dataset.themePreference = preference;
+            body.dataset.theme = resolved;
+            body.style.colorScheme = resolved;
+            body.classList.toggle("dark", resolved === "dark");
           }
+          return preference;
         };
         try {
           const stored = localStorage.getItem(storageKey);
