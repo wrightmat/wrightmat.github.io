@@ -4,6 +4,8 @@ import mimetypes
 from http import HTTPStatus
 from pathlib import Path
 
+from urllib.parse import unquote
+
 from .router import Response
 from .state import ServerState
 
@@ -24,11 +26,13 @@ def _serve_from_base(
     directory_extensions: list[str] | None = None,
 ) -> Response:
     base = base.resolve()
-    cleaned = _normalise_path(relative_path)
+    cleaned = _normalise_path(unquote(relative_path))
     target = base if not cleaned else (base / cleaned)
     target = target.resolve()
 
-    if not str(target).startswith(str(base)):
+    try:
+        target.relative_to(base)
+    except ValueError:
         raise FileNotFoundError(relative_path)
 
     if target.is_dir():

@@ -121,7 +121,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         try:
             response = serve_from_root(self.server.state, relative_path)
         except FileNotFoundError:
-            self.respond(Response.json({"error": "Not found"}, status=HTTPStatus.NOT_FOUND))
+            self.send_error(HTTPStatus.NOT_FOUND, "Not Found")
             return
         self.respond(response)
 
