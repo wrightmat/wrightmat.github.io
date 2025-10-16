@@ -75,6 +75,10 @@ class ServerSmokeTests(unittest.TestCase):
         (cls._static_dir / "index.html").write_text("<h1>Root</h1>", encoding="utf-8")
         (nested / "info.txt").write_text("static-ok", encoding="utf-8")
 
+        workbench_root = cls._root / "undercroft" / "workbench"
+        workbench_root.mkdir(parents=True, exist_ok=True)
+        (workbench_root / "index.html").write_text("<main>Workbench</main>", encoding="utf-8")
+
         cls._server = create_server(str(cls._config_path))
         cls._thread = threading.Thread(
             target=cls._server.serve_forever,
@@ -205,6 +209,19 @@ class ServerSmokeTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("text/plain", headers.get("Content-Type", ""))
         self.assertEqual(body.decode("utf-8"), "static-ok")
+
+        status, headers, body = self._fetch_raw("/undercroft/workbench/")
+        self.assertEqual(status, 200)
+        self.assertIn("text/html", headers.get("Content-Type", ""))
+        self.assertIn(b"Workbench", body)
+
+    def test_missing_static_file_returns_default_404(self):
+        url = f"http://{self._host}:{self._port}/missing/file.html"
+        request = urllib.request.Request(url, method="GET")
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(request, timeout=5)
+        self.assertEqual(ctx.exception.code, 404)
+        self.assertIn("text/html", ctx.exception.headers.get("Content-Type", ""))
 
 
 if __name__ == "__main__":
