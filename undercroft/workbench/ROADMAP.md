@@ -5,7 +5,7 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 
 ## Guiding Principles
 - **Modularity:** Keep schema, template, and character tooling loosely coupled via JSON contracts.
-- **Simplicity:** Use vanilla JavaScript and HTML with Tailwind utilities delivered from a CDN—no bundlers or npm steps.
+- **Simplicity:** Use vanilla JavaScript and HTML with Bootstrap 5 delivered from a CDN—no bundlers or npm steps.
 - **Flexibility:** Support any RPG system through data-driven configuration and drag-and-drop layout composition.
 - **User Experience:** Provide responsive, accessible editors with undo/redo, live preview, and reusable components.
 - **Progressive Enhancement:** Ensure anonymous users can load and edit content locally, while registered tiers unlock persistence.
@@ -56,7 +56,7 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 
 ### Epic 2 – UI Construction
 1. **App Shell & Layout**
-   - ✅ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Tailwind utilities. Left and right panes should start collapsed, expand on demand, and collapse independently so the center pane reflows to occupy available space. Build out basic Index/Home page for future links to editors.
+   - ✅ Implement the three-pane responsive layout with collapsible sidebars, floating status footer, and theme toggle using Bootstrap utilities. Left and right panes should start collapsed, expand on demand, and collapse independently so the center pane reflows to occupy available space. Build out basic Index/Home page for future links to editors while ensuring the Bootstrap-driven theme toggle handles light, dark, and system modes.
 2. **Shared Utilities**
    - ✅ Build reusable vanilla JS helpers for pane toggles, status messages, dropdown population, formula parsing, element rendering, undo/redo, and keyboard shortcuts. Undo/redo stacks should track up to the most recent 100 actions per page (system, template, or character) and persist locally so anonymous sessions retain history within the tab lifecycle.
 3. **Drag-and-Drop Canvas**  

@@ -18,7 +18,7 @@ function createInput(id, type, value) {
   input.id = id;
   input.type = type;
   input.value = value ?? "";
-  input.className = "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
+  input.className = "form-control";
   return input;
 }
 
@@ -27,14 +27,14 @@ function createTextarea(id, value) {
   textarea.id = id;
   textarea.value = value ?? "";
   textarea.rows = 3;
-  textarea.className = "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
+  textarea.className = "form-control";
   return textarea;
 }
 
 function createSelect(id, options, value) {
   const select = document.createElement("select");
   select.id = id;
-  select.className = "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
+  select.className = "form-select";
   (options || []).forEach((opt) => {
     const option = document.createElement("option");
     if (typeof opt === "string") {
@@ -53,32 +53,30 @@ function createSelect(id, options, value) {
 }
 
 function createCheckbox(id, value) {
-  const wrapper = document.createElement("label");
-  wrapper.className = "flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200";
+  const wrapper = document.createElement("div");
+  wrapper.className = "form-check form-switch d-flex align-items-center gap-2";
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.id = id;
   checkbox.checked = Boolean(value);
-  checkbox.className = "h-4 w-4 rounded border-slate-300 text-sky-500 focus:ring-sky-400";
-  const indicator = document.createElement("span");
-  indicator.textContent = "";
+  checkbox.className = "form-check-input";
   wrapper.appendChild(checkbox);
-  wrapper.appendChild(indicator);
   return wrapper;
 }
 
 function createToggle(options, value) {
   const wrapper = document.createElement("div");
-  wrapper.className = "flex flex-wrap gap-2";
+  wrapper.className = "btn-group flex-wrap";
+  wrapper.setAttribute("role", "group");
   (options || []).forEach((opt) => {
     const button = document.createElement("button");
     button.type = "button";
     const optionValue = opt.value || opt;
     button.textContent = opt.label || optionValue;
     const isActive = value === optionValue;
-    button.className = `rounded-full border px-4 py-1 text-sm transition ${
-      isActive ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
-    }`;
+    button.className = isActive
+      ? "btn btn-primary btn-sm active"
+      : "btn btn-outline-secondary btn-sm";
     wrapper.appendChild(button);
   });
   return wrapper;
@@ -86,11 +84,16 @@ function createToggle(options, value) {
 
 function createTrack(value, max = 100) {
   const wrapper = document.createElement("div");
-  wrapper.className = "h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800";
+  wrapper.className = "progress";
   const fill = document.createElement("div");
-  fill.className = "h-full rounded-full bg-sky-500 transition-all";
+  fill.className = "progress-bar bg-info";
   const percentage = Math.max(0, Math.min(1, Number(value || 0) / Number(max || 100)));
-  fill.style.width = `${percentage * 100}%`;
+  const percentValue = Math.round(percentage * 100);
+  fill.style.width = `${percentValue}%`;
+  fill.setAttribute("role", "progressbar");
+  fill.setAttribute("aria-valuenow", String(percentValue));
+  fill.setAttribute("aria-valuemin", "0");
+  fill.setAttribute("aria-valuemax", "100");
   wrapper.appendChild(fill);
   return wrapper;
 }
@@ -131,25 +134,29 @@ function createCircularTrack(value, max = 100, size = 96, color = "#0ea5e9") {
 
 function createImagePlaceholder(label) {
   const wrapper = document.createElement("div");
-  wrapper.className = "flex h-48 w-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400";
+  wrapper.className = "d-flex align-items-center justify-content-center border border-dashed rounded-4 bg-body-tertiary text-body-secondary fs-6";
+  wrapper.style.height = "12rem";
   wrapper.textContent = label || "Image";
   return wrapper;
 }
 
 function wrapField(node, element) {
   const wrapper = document.createElement("div");
-  wrapper.className = "space-y-2";
+  wrapper.className = "d-flex flex-column gap-2";
+  const control = element.matches?.("input, select, textarea") ? element : element.querySelector?.("input, select, textarea");
   if (node.label) {
     const label = document.createElement("label");
-    label.setAttribute("for", element.id);
-    label.className = "block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+    if (control && control.id) {
+      label.setAttribute("for", control.id);
+    }
+    label.className = "form-label text-uppercase fw-semibold text-body-secondary mb-0";
     label.textContent = node.label;
     wrapper.appendChild(label);
   }
   wrapper.appendChild(element);
   if (node.hint) {
-    const hint = document.createElement("p");
-    hint.className = "text-xs text-slate-500 dark:text-slate-400";
+    const hint = document.createElement("small");
+    hint.className = "text-body-secondary";
     hint.textContent = node.hint;
     wrapper.appendChild(hint);
   }
@@ -207,7 +214,7 @@ function renderField(node, context) {
       break;
     default:
       element = document.createElement("div");
-      element.className = "rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400";
+      element.className = "border border-dashed rounded-3 p-3 fs-6 text-body-secondary";
       element.textContent = `Unsupported component: ${node.component}`;
   }
 
@@ -221,7 +228,9 @@ function renderField(node, context) {
 
 function renderStack(node, context) {
   const container = document.createElement("div");
-  container.className = "flex flex-col gap-4";
+  container.className = "d-flex flex-column";
+  const gap = typeof node.gap === "number" ? node.gap : 4;
+  container.style.gap = `${gap * 0.25}rem`;
   (node.children || []).forEach((child) => {
     container.appendChild(renderNode(child, context));
   });
@@ -230,10 +239,16 @@ function renderStack(node, context) {
 
 function renderRow(node, context) {
   const container = document.createElement("div");
-  container.className = `grid gap-${node.gap || 4} sm:grid-cols-${node.columns?.length || 1}`;
+  container.className = "d-grid";
+  const columnCount = (node.columns && node.columns.length) || 1;
+  container.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
+  const gap = typeof node.gap === "number" ? node.gap : 4;
+  container.style.gap = `${gap * 0.25}rem`;
   (node.columns || []).forEach((column) => {
     const col = document.createElement("div");
-    col.className = column.span ? `sm:col-span-${column.span}` : "";
+    if (column.span) {
+      col.style.gridColumn = `span ${column.span}`;
+    }
     col.appendChild(renderNode(column.node, context));
     container.appendChild(col);
   });
@@ -242,37 +257,30 @@ function renderRow(node, context) {
 
 function renderTabs(node, context) {
   const wrapper = document.createElement("div");
-  wrapper.className = "rounded-2xl border border-slate-200 bg-white/70 shadow-theme dark:border-slate-700 dark:bg-slate-900/60";
+  wrapper.className = "card border-0 shadow-theme";
   const tabList = document.createElement("div");
-  tabList.className = "flex gap-2 border-b border-slate-200 px-4 py-2 text-sm dark:border-slate-700";
+  tabList.className = "nav nav-pills gap-2 px-3 pt-3";
   const panels = document.createElement("div");
-  panels.className = "p-4";
+  panels.className = "card-body";
   let activeIndex = 0;
   (node.tabs || []).forEach((tab, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = tab.label;
-    const isActive = index === activeIndex;
-    button.className = `rounded-full px-3 py-1 transition ${
-      isActive ? "bg-sky-500 text-white" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-    }`;
+    button.className = index === activeIndex ? "btn btn-primary btn-sm active" : "btn btn-outline-secondary btn-sm";
     button.addEventListener("click", () => {
       activeIndex = index;
       Array.from(tabList.children).forEach((child, childIndex) => {
-        child.className = `rounded-full px-3 py-1 transition ${
-          childIndex === activeIndex
-            ? "bg-sky-500 text-white"
-            : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-        }`;
+        child.className = childIndex === activeIndex ? "btn btn-primary btn-sm active" : "btn btn-outline-secondary btn-sm";
       });
       Array.from(panels.children).forEach((panel, panelIndex) => {
-        panel.classList.toggle("hidden", panelIndex !== activeIndex);
+        panel.classList.toggle("d-none", panelIndex !== activeIndex);
       });
     });
     tabList.appendChild(button);
 
     const panel = document.createElement("div");
-    panel.className = index === activeIndex ? "" : "hidden";
+    panel.className = index === activeIndex ? "" : "d-none";
     panel.appendChild(renderNode(tab.node, context));
     panels.appendChild(panel);
   });
@@ -284,15 +292,15 @@ function renderTabs(node, context) {
 
 function renderRepeater(node, context) {
   const wrapper = document.createElement("div");
-  wrapper.className = "space-y-3";
+  wrapper.className = "d-flex flex-column gap-3";
   const header = document.createElement("div");
-  header.className = "flex items-center justify-between";
+  header.className = "d-flex align-items-center justify-content-between";
   const title = document.createElement("span");
-  title.className = "text-sm font-medium text-slate-600 dark:text-slate-300";
+  title.className = "fs-6 fw-semibold text-body-secondary";
   title.textContent = node.label || "Repeater";
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700";
+  button.className = "btn btn-outline-secondary btn-sm";
   button.textContent = node.addLabel || "Add";
   header.appendChild(title);
   header.appendChild(button);
@@ -301,14 +309,17 @@ function renderRepeater(node, context) {
   const items = resolveBinding(node.bind, context) || [];
   if (!items.length) {
     const empty = document.createElement("p");
-    empty.className = "rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400";
+    empty.className = "border border-dashed rounded-3 p-3 fs-6 text-body-secondary";
     empty.textContent = node.emptyText || "No items";
     wrapper.appendChild(empty);
   } else {
     items.forEach((item) => {
       const card = document.createElement("div");
-      card.className = "rounded-xl border border-slate-200 bg-white/70 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900/60";
-      card.appendChild(renderNode(node.template, item));
+      card.className = "card border-0 shadow-sm";
+      const body = document.createElement("div");
+      body.className = "card-body";
+      body.appendChild(renderNode(node.template, item));
+      card.appendChild(body);
       wrapper.appendChild(card);
     });
   }
