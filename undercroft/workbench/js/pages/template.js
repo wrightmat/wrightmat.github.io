@@ -74,7 +74,7 @@ function ensureCanvasState() {
     placeholder.remove();
   } else if (!items.length && !placeholder) {
     const empty = document.createElement("div");
-    empty.className = "rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400";
+    empty.className = "border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary";
     empty.setAttribute("data-canvas-placeholder", "true");
     empty.textContent = "Drag components from the palette to design your template.";
     canvasRoot.appendChild(empty);
@@ -103,7 +103,7 @@ const addBlockButton = document.querySelector('[data-action="add-block"]');
 if (addBlockButton && canvasRoot) {
   addBlockButton.addEventListener("click", () => {
     const block = document.createElement("div");
-    block.className = "rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm transition hover:border-sky-400 dark:border-slate-700 dark:bg-slate-800";
+    block.className = "border rounded-3 px-3 py-2 shadow-sm bg-body";
     block.textContent = "New Block";
     block.setAttribute("data-sortable-handle", "true");
     canvasRoot.appendChild(block);

@@ -22,15 +22,15 @@ function applyThemeAttributes(preference, resolved) {
   if (root) {
     root.dataset.themePreference = preference;
     root.dataset.theme = resolved;
+    root.dataset.bsTheme = resolved;
     root.style.colorScheme = resolved;
-    root.classList.toggle("dark", resolved === "dark");
   }
 
   if (body) {
     body.dataset.themePreference = preference;
     body.dataset.theme = resolved;
+    body.dataset.bsTheme = resolved;
     body.style.colorScheme = resolved;
-    body.classList.toggle("dark", resolved === "dark");
   }
 }
 
@@ -74,6 +74,7 @@ export function initThemeControls(root = document) {
     const option = control.getAttribute("data-theme-option");
     control.dataset.active = option === preference ? "true" : "false";
     control.setAttribute("aria-pressed", option === preference ? "true" : "false");
+    control.classList.toggle("active", option === preference);
     control.addEventListener("click", () => {
       const selected = applyTheme(option);
       controls.forEach((btn) => {
@@ -81,6 +82,7 @@ export function initThemeControls(root = document) {
         const isActive = btnOption === selected;
         btn.dataset.active = isActive ? "true" : "false";
         btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+        btn.classList.toggle("active", isActive);
       });
     });
   });
@@ -95,6 +97,7 @@ export function initThemeControls(root = document) {
           const isActive = option === current;
           btn.dataset.active = isActive ? "true" : "false";
           btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+          btn.classList.toggle("active", isActive);
         });
       }
     };
