@@ -1,0 +1,13 @@
+{
+  "name": "universal-ttrpg-sheets",
+  "private": true,
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "tailwindcss": "^3.4.13"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -i sheets/css/tailwind.css -o sheets/css/generated.css",
+    "watch:css": "tailwindcss -i sheets/css/tailwind.css -o sheets/css/generated.css --watch"
+  }
+}
