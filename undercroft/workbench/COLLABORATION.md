@@ -17,7 +17,7 @@ This guide explains how we can collaborate on Project Undercroft: Workbench, how
 ## Tracking Work
 
 1. **Roadmap as the source of truth** – The `workbench/ROADMAP.md` document captures high-level epics and near-term tasks. We can expand it with status markers (`✅`, `🚧`, `📝`) or link out to deeper specifications as work progresses.
-2. **Task breakdown** – When you request new work, we can reference the roadmap section and agree on a concrete deliverable (e.g., “Tailwind base layout setup”). I will restate the scope before coding to ensure alignment.
+2. **Task breakdown** – When you request new work, we can reference the roadmap section and agree on a concrete deliverable (e.g., “Bootstrap base layout setup”). I will restate the scope before coding to ensure alignment.
 3. **Iteration cadence** – Each interaction should produce either:
    - A documented plan/spec update, or
    - A committed code/documentation change accompanied by tests/checks when feasible.
@@ -37,7 +37,7 @@ This guide explains how we can collaborate on Project Undercroft: Workbench, how
 
 ## Getting Started
 
-1. Identify the first roadmap task you want tackled (e.g., server generalization, Tailwind integration).
+1. Identify the first roadmap task you want tackled (e.g., server generalization, Bootstrap integration).
 2. Share any constraints or success criteria.
 3. I’ll confirm the task breakdown and begin the workflow above.
 
