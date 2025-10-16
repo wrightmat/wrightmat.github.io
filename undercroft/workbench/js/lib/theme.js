@@ -24,9 +24,16 @@ export function getThemePreference() {
 export function applyTheme(theme) {
   const safeTheme = THEMES.includes(theme) ? theme : "system";
   const root = document.documentElement;
+  const body = document.body;
   root.dataset.theme = safeTheme;
+  if (body) {
+    body.dataset.theme = safeTheme;
+  }
   const darkMode = safeTheme === "dark" || (safeTheme === "system" && prefersDark());
   root.classList.toggle("dark", darkMode);
+  if (body) {
+    body.classList.toggle("dark", darkMode);
+  }
   try {
     if (safeTheme === "system") {
       localStorage.removeItem(STORAGE_KEY);

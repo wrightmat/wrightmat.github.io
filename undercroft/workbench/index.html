@@ -7,17 +7,30 @@
     <script>
       (function () {
         const storageKey = "undercroft.workbench.theme";
+        const THEMES = ["light", "system", "dark"];
+        const apply = (value) => {
+          const theme = THEMES.includes(value) ? value : "system";
+          const root = document.documentElement;
+          const body = document.body;
+          root.dataset.theme = theme;
+          if (body) {
+            body.dataset.theme = theme;
+          }
+          const prefersDark =
+            typeof window !== "undefined" &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const dark = theme === "dark" || (theme === "system" && prefersDark);
+          root.classList.toggle("dark", dark);
+          if (body) {
+            body.classList.toggle("dark", dark);
+          }
+        };
         try {
           const stored = localStorage.getItem(storageKey);
-          const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-          const theme = stored || "system";
-          document.documentElement.dataset.theme = theme;
-          if (theme === "dark" || (theme === "system" && prefersDark)) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
+          apply(stored);
         } catch (error) {
+          apply("system");
           console.warn("Unable to read theme preference", error);
         }
       })();
@@ -32,32 +45,63 @@
   <body class="bg-slate-100 text-slate-900 transition-colors dark:bg-slate-900 dark:text-slate-100">
     <div class="flex min-h-screen flex-col">
       <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-        <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <div class="flex flex-1 items-center gap-3">
+        <div class="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3">
+          <div class="flex items-center gap-3">
             <button
-              class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               type="button"
               data-pane-toggle="left"
+              aria-label="Toggle navigation pane"
             >
-              <span class="iconify text-lg" data-icon="tabler:layout-sidebar-left" aria-hidden="true"></span>
-              <span>Navigation</span>
+              <span class="iconify text-lg" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+              <span class="sr-only">Toggle navigation pane</span>
             </button>
-            <h1 class="text-lg font-semibold tracking-tight">Undercroft Workbench</h1>
+            <h1 class="flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              <a
+                href="index.html"
+                class="font-semibold text-slate-900 no-underline transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
+              >
+                Undercroft Workbench
+              </a>
+            </h1>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="ml-auto flex items-center gap-4">
             <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800" role="group" aria-label="Theme toggle">
-              <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="light">Light</button>
-              <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="system">System</button>
-              <button class="rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white" type="button" data-theme-option="dark">Dark</button>
+              <button
+                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
+                type="button"
+                data-theme-option="light"
+                aria-label="Use light theme"
+              >
+                <span class="iconify text-lg" data-icon="tabler:sun" aria-hidden="true"></span>
+                <span class="sr-only">Light theme</span>
+              </button>
+              <button
+                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
+                type="button"
+                data-theme-option="system"
+              >
+                System
+              </button>
+              <button
+                class="inline-flex items-center justify-center rounded-full px-3 py-1 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 data-[active=true]:bg-sky-500 data-[active=true]:text-white"
+                type="button"
+                data-theme-option="dark"
+                aria-label="Use dark theme"
+              >
+                <span class="iconify text-lg" data-icon="tabler:moon" aria-hidden="true"></span>
+                <span class="sr-only">Dark theme</span>
+              </button>
             </div>
             <button class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-action="auth">Login / Register</button>
             <button
-              class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               type="button"
               data-pane-toggle="right"
+              aria-label="Toggle details pane"
             >
-              <span class="iconify text-lg" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-              <span>Details</span>
+              <span class="iconify text-lg" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+              <span class="sr-only">Toggle details pane</span>
             </button>
           </div>
         </div>
