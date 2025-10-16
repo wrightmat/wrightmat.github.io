@@ -280,12 +280,11 @@ console.log(print);
   };
 
   function populateTemplates() {
-    fetch('/templates/list')
+    fetch('/list/codex-templates')
       .then( res => res.json() )
       .then( templates => {
-console.log(templates);
         const select = document.getElementById('controls-template');
-        templates.forEach( t => {
+        templates.files.forEach( t => {
           const option = document.createElement('option');
           option.value = t.filename;
 	  option.textContent = t.name || t.filename;
