@@ -285,7 +285,7 @@ function clearActiveTab(component) {
 }
 
 const COLOR_FIELD_MAP = {
-  foreground: { label: "Foreground/Text", prop: "textColor" },
+  foreground: { label: "Foreground", prop: "textColor" },
   background: { label: "Background", prop: "backgroundColor" },
   border: { label: "Border", prop: "borderColor" },
 };
@@ -1684,6 +1684,111 @@ function createTextSizeControls(component) {
       draft.textSize = value;
     }, { rerenderCanvas: true });
   });
+  circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
+  const mask = document.createElement("div");
+  mask.className = "template-circular-track__mask";
+  circle.appendChild(mask);
+  const value = document.createElement("div");
+  value.className = "template-circular-track__value";
+  value.textContent = `${activeSegments.filter(Boolean).length}/${segments}`;
+  circle.appendChild(value);
+  wrapper.appendChild(circle);
+  return wrapper;
+}
+
+function renderSelectGroupPreview(component) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "d-flex flex-column gap-2";
+  const headingText = getComponentLabel(component, "Select");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
+
+  const sampleOptions = ["Option A", "Option B", "Option C"];
+  let control;
+  if (component.variant === "tags") {
+    control = document.createElement("div");
+    control.className = "template-select-tags d-flex flex-wrap gap-2";
+    sampleOptions.forEach((option, index) => {
+      const tag = document.createElement("span");
+      tag.className = "template-select-tag";
+      const slug = option.trim().toLowerCase().replace(/\s+/g, "-");
+      tag.textContent = `#${slug || "tag"}`;
+      if (component.multiple !== false && index < 2) {
+        tag.classList.add("is-active");
+      } else if (!component.multiple && index === 0) {
+        tag.classList.add("is-active");
+      }
+      control.appendChild(tag);
+    });
+  } else if (component.variant === "buttons") {
+    control = document.createElement("div");
+    control.className = "btn-group";
+    sampleOptions.forEach((option, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      const isActive = component.multiple ? index < 2 : index === 0;
+      button.className = `btn btn-outline-secondary${isActive ? " active" : ""}`;
+      if (component.readOnly) {
+        button.classList.add("disabled");
+      }
+      button.textContent = option;
+      control.appendChild(button);
+    });
+  } else {
+    control = document.createElement("div");
+    control.className = "d-flex flex-wrap gap-2";
+    sampleOptions.forEach((option, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      const isActive = component.multiple ? index < 2 : index === 0;
+      button.className = `btn btn-outline-secondary btn-sm rounded-pill${isActive ? " active" : ""}`;
+      if (component.readOnly) {
+        button.classList.add("disabled");
+      }
+      button.textContent = option;
+      control.appendChild(button);
+    });
+  }
+  wrapper.appendChild(control);
+  return wrapper;
+}
+
+function renderTogglePreview(component) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "d-flex flex-column gap-2";
+  const headingText = getComponentLabel(component, "Toggle");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
+
+  const states = Array.isArray(component.states) && component.states.length
+    ? component.states
+    : ["State 1", "State 2"];
+  const shape = component.shape || "circle";
+  const activeIndex = Math.max(0, Math.min(component.activeIndex ?? 0, states.length - 1));
+  const maxIndex = Math.max(states.length - 1, 1);
+  const progress = maxIndex > 0 ? activeIndex / maxIndex : 0;
+  const preview = document.createElement("div");
+  preview.className = `template-toggle-shape template-toggle-shape--${shape}`;
+  if (progress > 0) {
+    preview.classList.add("is-active");
+  }
+  preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
+  const opacity = 0.25 + progress * 0.55;
+  preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
+  preview.setAttribute("aria-label", states[activeIndex] || "Toggle state");
+  wrapper.appendChild(preview);
+
+  return wrapper;
 }
 
 function createTextStyleControls(component) {
@@ -1698,6 +1803,13 @@ function createTextStyleControls(component) {
       draft.textStyles[key] = checked;
     }, { rerenderCanvas: true });
   });
+  controls.appendChild(clear);
+  container.append(label, controls);
+  if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
+    // eslint-disable-next-line no-new
+    new window.bootstrap.Tooltip(clear);
+  }
+  return container;
 }
 
 function createAlignmentControls(component) {
@@ -1834,14 +1946,23 @@ function createRadioButtonGroup(component, labelText, options, currentValue, onC
     const label = document.createElement("label");
     label.className = "btn btn-outline-secondary btn-sm";
     label.setAttribute("for", id);
+
     if (option.icon) {
-      label.innerHTML = `<span class="iconify" data-icon="${option.icon}" aria-hidden="true"></span>`;
-      if (option.label) {
-        label.innerHTML += `<span class="ms-1">${option.label}</span>`;
-      }
-    } else {
-      label.textContent = option.label;
+      const icon = document.createElement("span");
+      icon.className = "iconify";
+      icon.dataset.icon = option.icon;
+      icon.setAttribute("aria-hidden", "true");
+      label.appendChild(icon);
     }
+
+    const labelTextNode = option.label ?? option.value;
+    if (labelTextNode) {
+      const text = document.createElement("span");
+      text.className = "template-radio-label";
+      text.textContent = labelTextNode;
+      label.appendChild(text);
+    }
+
     group.append(input, label);
   });
   wrapper.appendChild(group);
@@ -2102,11 +2223,11 @@ function renderTrackInspector(component) {
   const controls = [];
   controls.push(
     createNumberInput(component, "Segments", component.segments ?? 6, (value) => {
-      const next = clampInteger(value ?? 6, 1, 12);
+      const next = clampInteger(value ?? 6, 1, 16);
       updateComponent(component.uid, (draft) => {
         setSegmentCount(draft, next);
       }, { rerenderCanvas: true, rerenderInspector: true });
-    }, { min: 1, max: 12 })
+    }, { min: 1, max: 16 })
   );
   controls.push(createSegmentControls(component));
   return controls;
@@ -2304,7 +2425,7 @@ function ensureSegmentArray(component) {
   const desired = clampInteger(
     component.segments ?? (baseLength || 6),
     1,
-    12
+    16
   );
   if (!Array.isArray(component.activeSegments)) {
     component.activeSegments = Array.from({ length: desired }, (_, index) => index === 0);
