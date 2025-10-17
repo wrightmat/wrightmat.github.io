@@ -420,7 +420,6 @@ body[data-theme="dark"] .hover-lift:hover {
   margin: 0;
 }
 
-.template-drop-placeholder,
 .workbench-drop-placeholder {
   text-align: center;
   font-size: 0.85rem;
@@ -431,13 +430,11 @@ body[data-theme="dark"] .hover-lift:hover {
   pointer-events: none;
 }
 
-.template-drop-placeholder--compact,
 .workbench-drop-placeholder--compact {
   font-size: 0.75rem;
   padding: 0.25rem;
 }
 
-.template-drop-placeholder--root,
 .workbench-drop-placeholder--root {
   display: block;
   border: 0;

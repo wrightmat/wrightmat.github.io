@@ -1,7 +1,18 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
-import { createCanvasPlaceholder, initPaletteInteractions, setupDropzones } from "../lib/editor-canvas.js";
+import {
+  createCanvasPlaceholder,
+  initPaletteInteractions,
+  setupDropzones,
+} from "../lib/editor-canvas.js";
+import {
+  createCanvasCardElement,
+  createCardHeaderElement,
+  createCardActionsElement,
+  createTypeIconElement,
+  createDeleteButton,
+} from "../lib/canvas-card.js";
 import { updateJsonPreview } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 
@@ -536,60 +547,52 @@ function addFieldToRoot(type) {
 }
 
 function renderFieldCard(node) {
-  const card = document.createElement("div");
-  card.className = "workbench-canvas-card border rounded-3 bg-body shadow-sm p-3 d-flex flex-column gap-3";
-  card.dataset.nodeId = node.id;
-  card.dataset.sortableHandle = "true";
-  card.tabIndex = 0;
-  if (state.selectedNodeId === node.id) {
-    card.classList.add("is-selected");
-  }
-
   const normalizedType = normalizeType(node.type);
   const typeMeta = TYPE_DEFS[normalizedType] || TYPE_DEFS.string;
 
+  const card = createCanvasCardElement({
+    dataset: { nodeId: node.id },
+    selected: state.selectedNodeId === node.id,
+  });
+  card.tabIndex = 0;
   card.addEventListener("click", (event) => {
     event.stopPropagation();
     selectNode(node.id);
   });
 
-  const header = document.createElement("div");
-  header.className = "workbench-canvas-card__header";
-  header.dataset.sortableHandle = "true";
+  const header = createCardHeaderElement();
+  const actions = createCardActionsElement();
 
-  const actions = document.createElement("div");
-  actions.className = "workbench-canvas-card__actions";
-
-  const typeIcon = document.createElement("span");
-  typeIcon.className = "workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
-  typeIcon.dataset.bsToggle = "tooltip";
-  typeIcon.dataset.bsPlacement = "bottom";
-  typeIcon.dataset.bsTitle = typeMeta.label || normalizedType;
-  typeIcon.setAttribute("aria-label", typeMeta.label || normalizedType);
-  typeIcon.innerHTML = `<span class="iconify" data-icon="${typeMeta.icon || TYPE_DEFS.string.icon}" aria-hidden="true"></span>`;
+  const typeIcon = createTypeIconElement({
+    icon: typeMeta.icon || TYPE_DEFS.string.icon,
+    label: typeMeta.label || normalizedType,
+  });
   actions.appendChild(typeIcon);
 
-  const typeIcon = document.createElement("span");
-  typeIcon.className = "workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
-  typeIcon.dataset.bsToggle = "tooltip";
-  typeIcon.dataset.bsPlacement = "bottom";
-  typeIcon.dataset.bsTitle = typeMeta.description || typeMeta.label || normalizedType;
-  typeIcon.innerHTML = `<span class="iconify" data-icon="${typeMeta.icon || TYPE_DEFS.string.icon}" aria-hidden="true"></span>`;
-  actions.appendChild(typeIcon);
-
-  const removeButton = document.createElement("button");
-  removeButton.className = "btn btn-outline-danger btn-sm";
-  removeButton.type = "button";
-  removeButton.innerHTML =
-    '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span><span class="visually-hidden">Remove field</span>';
-  removeButton.addEventListener("click", (event) => {
-    event.stopPropagation();
-    deleteNode(node.id);
+  const removeButton = createDeleteButton({
+    srLabel: "Remove field",
+    onClick: (event) => {
+      event.stopPropagation();
+      deleteNode(node.id);
+    },
   });
   actions.appendChild(removeButton);
 
   header.appendChild(actions);
   card.appendChild(header);
+
+  const content = document.createElement("div");
+  content.className = "d-flex flex-column gap-1";
+
+  const heading = document.createElement("div");
+  heading.className = "fw-semibold";
+  heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
+  content.appendChild(heading);
+
+  const subtitle = document.createElement("div");
+  subtitle.className = "text-body-secondary small";
+  subtitle.textContent = formatNodeSubtitle(node);
+  content.appendChild(subtitle);
 
   const content = document.createElement("div");
   content.className = "d-flex flex-column gap-1";
