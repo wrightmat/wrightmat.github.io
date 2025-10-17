@@ -339,6 +339,8 @@ function componentHasTextControls(component) {
   return true;
 }
 
+let lastPaletteDblClickAt = 0;
+
 if (elements.palette) {
   createSortable(elements.palette, {
     group: { name: "template-canvas", pull: "clone", put: false },
@@ -346,6 +348,14 @@ if (elements.palette) {
     fallbackOnBody: true,
   });
   elements.palette.addEventListener("dblclick", (event) => {
+    const now = Date.now();
+    if (now - lastPaletteDblClickAt < 120) {
+      return;
+    }
+    lastPaletteDblClickAt = now;
+
+    event.preventDefault();
+
     const paletteItem = event.target.closest("[data-component-type]");
     if (!paletteItem || !elements.palette.contains(paletteItem)) {
       return;
@@ -826,91 +836,6 @@ function renderComponentPreview(component) {
     default:
       return document.createTextNode("Unsupported component");
   }
-  return true;
-}
-
-if (elements.palette) {
-  createSortable(elements.palette, {
-    group: { name: "template-canvas", pull: "clone", put: false },
-    sort: false,
-    fallbackOnBody: true,
-  });
-  elements.palette.addEventListener("dblclick", (event) => {
-    const paletteItem = event.target.closest("[data-component-type]");
-    if (!paletteItem || !elements.palette.contains(paletteItem)) {
-      return;
-    }
-    const { componentType } = paletteItem.dataset;
-    if (!componentType || !COMPONENT_DEFINITIONS[componentType]) {
-      return;
-    }
-    const component = createComponent(componentType);
-    const definition = COMPONENT_DEFINITIONS[componentType] || {};
-    const parentId = "";
-    const zoneKey = "root";
-    const index = state.components.length;
-    insertComponent(parentId, zoneKey, index, component);
-    state.selectedId = component.uid;
-    undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
-    const label = typeof definition.label === "string" && definition.label ? definition.label : componentType;
-    status.show(`${label} added to canvas`, {
-      type: "success",
-      timeout: 1800,
-    });
-    renderCanvas();
-    renderInspector();
-    expandInspectorPane();
-  });
-}
-
-if (elements.canvasRoot) {
-  elements.canvasRoot.addEventListener("click", (event) => {
-    const deleteButton = event.target.closest('[data-action="remove-component"]');
-    if (deleteButton) {
-      event.preventDefault();
-      event.stopPropagation();
-      removeComponent(deleteButton.dataset.componentId);
-      return;
-    }
-    const target = event.target.closest("[data-component-id]");
-    if (!target) return;
-    selectComponent(target.dataset.componentId);
-  });
-}
-
-if (elements.saveButton) {
-  elements.saveButton.addEventListener("click", () => {
-    undoStack.push({ type: "save", count: state.components.length });
-    const label = state.template?.title || state.template?.id || "Template";
-    status.show(`${label} draft saved (${state.components.length} components)`, {
-      type: "success",
-      timeout: 2000,
-    });
-  });
-}
-
-if (elements.undoButton) {
-  elements.undoButton.addEventListener("click", () => {
-    status.show("Undo coming soon", { type: "info", timeout: 1800 });
-  });
-}
-
-if (elements.redoButton) {
-  elements.redoButton.addEventListener("click", () => {
-    status.show("Redo coming soon", { type: "info", timeout: 1800 });
-  });
-}
-
-if (elements.clearButton) {
-  elements.clearButton.addEventListener("click", () => {
-    clearCanvas();
-  });
-}
-
-if (elements.importButton) {
-  elements.importButton.addEventListener("click", () => {
-    status.show("Import coming soon", { type: "info", timeout: 2000 });
-  });
 }
 
 function ensureContainerZones(component) {
@@ -969,7 +894,6 @@ function ensureContainerZones(component) {
       }
       delete component.zones[key];
     }
-    status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
   });
 
   return zones;
