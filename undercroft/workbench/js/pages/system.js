@@ -7,7 +7,7 @@ import {
   setupDropzones,
 } from "../lib/editor-canvas.js";
 import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
-import { updateJsonPreview } from "../lib/json-preview.js";
+import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 
 function resolveApiBase() {
@@ -136,6 +136,15 @@ const drafts = new Map();
 
 const dropzones = new Map();
 const typeCounters = new Map();
+
+const renderPreview = createJsonPreviewRenderer({
+  resolvePreviewElement: () => elements.jsonPreview,
+  resolveBytesElement: () => elements.jsonPreviewBytes,
+  serialize: () => serializeSystem(state.system),
+  onAfterRender: () => {
+    rememberDraft(state.system);
+  },
+});
 
 rebuildFieldIdentities(state.system);
 if (elements.palette) {
@@ -1001,13 +1010,6 @@ function changeNodeType(nodeId, nextType) {
   }
   state.selectedNodeId = preserved.id;
   renderAll();
-}
-
-function renderPreview() {
-  if (!elements.jsonPreview) return;
-  const serialized = serializeSystem(state.system);
-  updateJsonPreview(elements.jsonPreview, elements.jsonPreviewBytes, serialized);
-  rememberDraft(state.system);
 }
 
 function serializeSystem(system) {
