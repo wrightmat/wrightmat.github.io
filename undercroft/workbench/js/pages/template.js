@@ -212,8 +212,8 @@ const COMPONENT_DEFINITIONS = {
     label: "Circular Track",
     defaults: {
       name: "Circular Track",
-      segments: 8,
-      activeSegments: [true, true, true, false, false, false, false, false],
+      segments: 6,
+      activeSegments: [true, true, true, false, false, false],
     },
     supportsBinding: true,
     supportsFormula: false,
@@ -738,7 +738,6 @@ function createComponentElement(component) {
   const wrapper = document.createElement("div");
   wrapper.className = "template-component border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-2";
   wrapper.dataset.componentId = component.uid;
-  wrapper.dataset.componentType = component.type;
   if (state.selectedId === component.uid) {
     wrapper.classList.add("template-component-selected");
   }
@@ -1501,7 +1500,7 @@ function renderInspector() {
   form.addEventListener("submit", (event) => event.preventDefault());
 
   const identityControls = [
-    createTextInput(component, "Component ID", component.id || "", (value) => {
+    createTextInput(component, "ID", component.id || "", (value) => {
       updateComponent(component.uid, (draft) => {
         draft.id = value.trim();
       }, { rerenderCanvas: true });
@@ -1524,12 +1523,12 @@ function renderInspector() {
     form.appendChild(identityGroup);
   }
 
-  const componentSpecific = createSection(
-    "Component Settings",
-    renderComponentSpecificInspector(component)
-  );
-  if (componentSpecific) {
-    form.appendChild(componentSpecific);
+  const componentSpecificControls = renderComponentSpecificInspector(component).filter(Boolean);
+  if (componentSpecificControls.length) {
+    const componentSection = document.createElement("section");
+    componentSection.className = "d-flex flex-column gap-3";
+    componentSpecificControls.forEach((control) => componentSection.appendChild(control));
+    form.appendChild(componentSection);
   }
 
   const dataControls = [];
@@ -1614,6 +1613,11 @@ function createColorRow(component, keys = []) {
   wrapper.appendChild(label);
   const grid = document.createElement("div");
   grid.className = "template-color-grid";
+  if (controls.length >= 3) {
+    grid.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
+  } else if (controls.length > 0) {
+    grid.style.gridTemplateColumns = `repeat(${controls.length}, minmax(0, 1fr))`;
+  }
   controls.forEach((key) => {
     const config = COLOR_FIELD_MAP[key];
     grid.appendChild(
@@ -1803,33 +1807,6 @@ function createNumberInput(component, labelText, value, onChange, { min, max, st
   return wrapper;
 }
 
-function createSelect(component, labelText, options, currentIndex, onChange) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "d-flex flex-column";
-  const id = toId([component.uid, labelText, "select"]);
-  const label = document.createElement("label");
-  label.className = "form-label fw-semibold text-body-secondary";
-  label.setAttribute("for", id);
-  label.textContent = labelText;
-  const select = document.createElement("select");
-  select.className = "form-select";
-  select.id = id;
-  options.forEach((option, index) => {
-    const opt = document.createElement("option");
-    opt.value = String(index);
-    opt.textContent = option;
-    if (index === currentIndex) {
-      opt.selected = true;
-    }
-    select.appendChild(opt);
-  });
-  select.addEventListener("change", () => {
-    onChange(Number(select.value));
-  });
-  wrapper.append(label, select);
-  return wrapper;
-}
-
 function createRadioButtonGroup(component, labelText, options, currentValue, onChange) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
@@ -1838,7 +1815,7 @@ function createRadioButtonGroup(component, labelText, options, currentValue, onC
   heading.textContent = labelText;
   wrapper.appendChild(heading);
   const group = document.createElement("div");
-  group.className = "btn-group";
+  group.className = "btn-group template-radio-group";
   const name = toId([component.uid, labelText, "radio"]);
   options.forEach((option, index) => {
     const id = toId([component.uid, labelText, option.value, index]);
@@ -1958,15 +1935,6 @@ function renderInputInspector(component) {
       }, { rerenderCanvas: true });
     }, { placeholder: "Shown inside the field" })
   );
-  if (["select", "radio", "checkbox"].includes(component.variant)) {
-    controls.push(
-      createTextarea(component, "Options (one per line)", (component.options || []).join("\n"), (value) => {
-        updateComponent(component.uid, (draft) => {
-          draft.options = parseLines(value);
-        }, { rerenderCanvas: true });
-      }, { rows: 3, placeholder: "Choice A\nChoice B" })
-    );
-  }
   return controls;
 }
 
@@ -2133,8 +2101,8 @@ function renderContainerInspector(component) {
 function renderTrackInspector(component) {
   const controls = [];
   controls.push(
-    createNumberInput(component, "Segments", component.segments || 1, (value) => {
-      const next = clampInteger(value ?? 1, 1, 12);
+    createNumberInput(component, "Segments", component.segments ?? 6, (value) => {
+      const next = clampInteger(value ?? 6, 1, 12);
       updateComponent(component.uid, (draft) => {
         setSegmentCount(draft, next);
       }, { rerenderCanvas: true, rerenderInspector: true });
@@ -2152,10 +2120,14 @@ function createSegmentControls(component) {
   heading.textContent = "Active segments";
   wrapper.appendChild(heading);
   const grid = document.createElement("div");
-  grid.className = "d-flex flex-wrap gap-2";
+  grid.className = "template-segment-grid";
   const segments = ensureSegmentArray(component);
+  const columnCount = Math.max(1, Math.min(segments.length, 8));
+  grid.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
   segments.forEach((isActive, index) => {
     const id = toId([component.uid, "segment", index]);
+    const cell = document.createElement("div");
+    cell.className = "template-segment-grid__item";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.className = "btn-check";
@@ -2171,7 +2143,8 @@ function createSegmentControls(component) {
     label.className = "btn btn-outline-secondary btn-sm";
     label.setAttribute("for", id);
     label.textContent = index + 1;
-    grid.append(input, label);
+    cell.append(input, label);
+    grid.appendChild(cell);
   });
   wrapper.appendChild(grid);
   return wrapper;
@@ -2235,29 +2208,82 @@ function renderToggleInspector(component) {
       }
     )
   );
-  controls.push(
-    createTextarea(component, "States (one per line)", (component.states || []).join("\n"), (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.states = parseLines(value);
-        if (!Array.isArray(draft.states) || !draft.states.length) {
-          draft.states = ["State 1", "State 2"];
-        }
-        if (draft.activeIndex >= draft.states.length) {
-          draft.activeIndex = draft.states.length - 1;
-        }
-      }, { rerenderCanvas: true, rerenderInspector: true });
-    }, { rows: 3, placeholder: "Novice\nSkilled\nExpert" })
-  );
-  const states = Array.isArray(component.states) && component.states.length
+  controls.push(...createToggleStateEditors(component));
+  return controls;
+}
+
+function createToggleStateEditors(component) {
+  const controls = [];
+  const textareaId = toId([component.uid, "toggle", "states"]);
+  const textareaWrapper = document.createElement("div");
+  textareaWrapper.className = "d-flex flex-column";
+  const textareaLabel = document.createElement("label");
+  textareaLabel.className = "form-label fw-semibold text-body-secondary";
+  textareaLabel.setAttribute("for", textareaId);
+  textareaLabel.textContent = "States (one per line)";
+  const textarea = document.createElement("textarea");
+  textarea.className = "form-control";
+  textarea.id = textareaId;
+  textarea.rows = 3;
+  textarea.placeholder = "Novice\nSkilled\nExpert";
+  const initialStates = Array.isArray(component.states) && component.states.length
     ? component.states
     : ["State 1", "State 2"];
-  controls.push(
-    createSelect(component, "Active state", states, Math.min(component.activeIndex ?? 0, states.length - 1), (index) => {
-      updateComponent(component.uid, (draft) => {
-        draft.activeIndex = clampInteger(index, 0, states.length - 1);
-      }, { rerenderCanvas: true });
-    })
-  );
+  textarea.value = initialStates.join("\n");
+  textareaWrapper.append(textareaLabel, textarea);
+  controls.push(textareaWrapper);
+
+  const selectId = toId([component.uid, "toggle", "active-state"]);
+  const selectWrapper = document.createElement("div");
+  selectWrapper.className = "d-flex flex-column";
+  const selectLabel = document.createElement("label");
+  selectLabel.className = "form-label fw-semibold text-body-secondary";
+  selectLabel.setAttribute("for", selectId);
+  selectLabel.textContent = "Active state";
+  const select = document.createElement("select");
+  select.className = "form-select";
+  select.id = selectId;
+  selectWrapper.append(selectLabel, select);
+  controls.push(selectWrapper);
+
+  const syncStateOptions = () => {
+    const states = Array.isArray(component.states) && component.states.length
+      ? component.states
+      : ["State 1", "State 2"];
+    select.innerHTML = "";
+    states.forEach((state, index) => {
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = state;
+      select.appendChild(option);
+    });
+    const safeIndex = clampInteger(component.activeIndex ?? 0, 0, states.length - 1);
+    select.value = String(safeIndex);
+  };
+
+  textarea.addEventListener("input", () => {
+    updateComponent(component.uid, (draft) => {
+      draft.states = parseLines(textarea.value);
+      if (!Array.isArray(draft.states) || !draft.states.length) {
+        draft.states = ["State 1", "State 2"];
+      }
+      if (draft.activeIndex === undefined || draft.activeIndex === null) {
+        draft.activeIndex = 0;
+      }
+      draft.activeIndex = clampInteger(draft.activeIndex, 0, draft.states.length - 1);
+    }, { rerenderCanvas: true });
+    syncStateOptions();
+  });
+
+  select.addEventListener("change", () => {
+    const nextIndex = Number(select.value);
+    updateComponent(component.uid, (draft) => {
+      draft.activeIndex = clampInteger(nextIndex, 0, (draft.states?.length || 1) - 1);
+    }, { rerenderCanvas: true });
+    syncStateOptions();
+  });
+
+  syncStateOptions();
   return controls;
 }
 
@@ -2274,15 +2300,20 @@ function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspecto
 }
 
 function ensureSegmentArray(component) {
-  const count = clampInteger(component.segments || (component.activeSegments ? component.activeSegments.length : 1), 1, 12);
+  const baseLength = Array.isArray(component.activeSegments) ? component.activeSegments.length : 0;
+  const desired = clampInteger(
+    component.segments ?? (baseLength || 6),
+    1,
+    12
+  );
   if (!Array.isArray(component.activeSegments)) {
-    component.activeSegments = Array.from({ length: count }, (_, index) => index === 0);
+    component.activeSegments = Array.from({ length: desired }, (_, index) => index === 0);
   }
-  if (component.activeSegments.length < count) {
-    const needed = count - component.activeSegments.length;
+  if (component.activeSegments.length < desired) {
+    const needed = desired - component.activeSegments.length;
     component.activeSegments.push(...Array.from({ length: needed }, () => false));
-  } else if (component.activeSegments.length > count) {
-    component.activeSegments = component.activeSegments.slice(0, count);
+  } else if (component.activeSegments.length > desired) {
+    component.activeSegments = component.activeSegments.slice(0, desired);
   }
   return component.activeSegments;
 }
