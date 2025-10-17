@@ -304,7 +304,7 @@ const containerActiveTabs = new Map();
 const renderPreview = createJsonPreviewRenderer({
   resolvePreviewElement: () => elements.jsonPreview,
   resolveBytesElement: () => elements.jsonPreviewBytes,
-  serialize: serializeTemplate,
+  serialize: serializeTemplateState,
 });
 
 function getActiveTabIndex(component, total = 0) {
@@ -537,40 +537,7 @@ function renderCanvas() {
   renderPreview();
 }
 
-function serializeTemplate() {
-  return {
-    id: state.template?.id || "",
-    title: state.template?.title || "",
-    version: state.template?.version || "0.1",
-    components: state.components.map(serializeComponentForPreview),
-  };
-}
-
-function serializeComponentForPreview(component) {
-  const clone = JSON.parse(JSON.stringify(component));
-  stripComponentMetadata(clone);
-  return clone;
-}
-
-function stripComponentMetadata(node) {
-  if (!node || typeof node !== "object") {
-    return;
-  }
-  if ("uid" in node) {
-    delete node.uid;
-  }
-  Object.values(node).forEach((value) => {
-    if (Array.isArray(value)) {
-      value.forEach(stripComponentMetadata);
-    } else if (value && typeof value === "object") {
-      stripComponentMetadata(value);
-    }
-  });
-  refreshTooltips(elements.canvasRoot);
-  renderPreview();
-}
-
-function serializeTemplate() {
+function serializeTemplateState() {
   return {
     id: state.template?.id || "",
     title: state.template?.title || "",
