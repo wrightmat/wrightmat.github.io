@@ -300,6 +300,24 @@
                 </div>
               </div>
             </section>
+            <section class="mt-auto">
+              <button
+                class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#template-json-preview"
+                aria-expanded="false"
+                aria-controls="template-json-preview"
+              >
+                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
+                <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
+              </button>
+              <div class="collapse" id="template-json-preview">
+                <div class="border rounded-3 bg-body p-3 mt-3">
+                  <pre class="text-body-secondary small overflow-auto mb-0" style="max-height: 16rem" data-json-preview>{}</pre>
+                </div>
+              </div>
+            </section>
           </div>
         </aside>
         <main class="workbench-main flex-grow-1 bg-body-secondary py-5">
@@ -313,6 +331,14 @@
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
                     <button class="btn btn-outline-secondary" type="button" data-action="new-template">New Template</button>
+                    <button
+                      class="btn btn-outline-danger d-none"
+                      type="button"
+                      data-action="delete-template"
+                      data-delete-template
+                    >
+                      Delete Template
+                    </button>
                   </div>
                 </div>
               </div>
@@ -390,6 +416,17 @@
                   value="0.1"
                   data-new-template-version
                 />
+              </div>
+              <div>
+                <label class="form-label" for="new-template-system">System</label>
+                <select
+                  id="new-template-system"
+                  class="form-select"
+                  name="schema"
+                  required
+                  data-new-template-system
+                ></select>
+                <div class="invalid-feedback">Select a system for this template.</div>
               </div>
             </div>
             <div class="modal-footer">
