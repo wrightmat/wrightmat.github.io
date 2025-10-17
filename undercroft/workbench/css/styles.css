@@ -92,3 +92,84 @@ body[data-theme="dark"] .hover-lift:hover {
   transition: opacity 120ms ease;
   opacity: 0;
 }
+
+.workbench-app {
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+@supports (min-height: 100dvh) {
+  .workbench-app {
+    min-height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  .workbench-sticky-pane {
+    max-height: calc(100dvh - 2.5rem);
+  }
+}
+
+.workbench-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.workbench-shell {
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.workbench-main {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+}
+
+.workbench-sticky-pane {
+  position: sticky;
+  top: 1.25rem;
+  align-self: flex-start;
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
+  z-index: 2;
+}
+
+@media (max-width: 991.98px) {
+  .workbench-app {
+    max-height: none;
+  }
+
+  .workbench-shell,
+  .workbench-main {
+    overflow: visible;
+  }
+
+  .workbench-sticky-pane {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (min-width: 992px) {
+  .workbench-sticky-pane {
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+  }
+
+  @supports (min-height: 100dvh) {
+    .workbench-sticky-pane {
+      max-height: calc(100dvh - 4rem);
+    }
+  }
+}
+
+[data-sortable-handle] {
+  cursor: grab;
+}
+
+[data-sortable-handle]:active {
+  cursor: grabbing;
+}
