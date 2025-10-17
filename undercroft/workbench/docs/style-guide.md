@@ -23,9 +23,18 @@ This document captures the shared layout and styling conventions introduced whil
 - Palette entries should remain compact `d-grid` tiles with `shadow-sm`, rounded borders, and iconography from Tabler to communicate field types quickly.
 - Canvas cards rely on `.border-dashed` for placeholders and `.hover-lift` for draggable affordances; reuse them when building additional draggable regions.
 
+### Shared drag & drop patterns
+
+- Wire palette lists through `initPaletteInteractions` (see `js/lib/editor-canvas.js`). It attaches SortableJS for drag cloning *and* enables double-click to append the chosen component/field to the bottom of the root canvas.
+- Always render empty states with `createCanvasPlaceholder()` so each editor shows the same single-line instruction with a dashed underline.
+- Register SortableJS dropzones via `setupDropzones()`. The helper keeps zone teardown consistent and ensures both System and Template editors react to drops the same way.
+- Apply the unified canvas card styles: `.workbench-canvas-card` for the shell, `.workbench-canvas-card__header` for the floating control rail, and `.workbench-canvas-card__actions` / `.workbench-canvas-card__type-icon` for the type badge + icon cluster.
+- When exposing nested drop regions, wrap them with `.workbench-dropzone` and label with `.workbench-dropzone-label` so subsequent tools inherit the same look and feel.
+
 ## Toolbar and Actions
 
 - Consolidate pane actions into an icon toolbar with outlined buttons by default. Tooltips (Bootstrap `data-bs-toggle="tooltip"`) provide accessible labels.
+- Include a dedicated “Clear canvas” control in that toolbar and mirror the collapsible JSON Preview card in each editor’s tools pane so reset and export workflows stay consistent.
 - Highlight active pane toggles by swapping to the filled `btn-secondary` style. The helper in `panes.js` already handles this state change when `data-active="true"` is set.
 - Keep undo/redo placeholders sized like the other toolbar buttons so future functionality can drop in without shifting the layout.
 
