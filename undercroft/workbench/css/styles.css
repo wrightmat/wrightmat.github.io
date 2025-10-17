@@ -338,20 +338,31 @@ body[data-theme="dark"] .hover-lift:hover {
 }
 
 .template-radio-group {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.25rem;
 }
 
 .template-radio-group .btn {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.5rem;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  gap: 0.2rem;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
+  min-width: 2.75rem;
 }
 
 .template-radio-group .btn .iconify {
-  font-size: 1rem;
+  font-size: 1.1rem;
+}
+
+.template-radio-group .btn .template-radio-label {
+  display: block;
+  font-size: 0.65rem;
 }
 
 .template-segment-grid {
