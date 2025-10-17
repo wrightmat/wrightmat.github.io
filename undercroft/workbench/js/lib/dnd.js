@@ -2,7 +2,7 @@ const DEFAULT_OPTIONS = {
   animation: 150,
   handle: "[data-sortable-handle]",
   ghostClass: "opacity-50",
-  chosenClass: "ring-2 ring-sky-400",
+  chosenClass: "border-primary",
   dragClass: "opacity-90",
 };
 
