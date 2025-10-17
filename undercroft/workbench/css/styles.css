@@ -45,6 +45,18 @@ body[data-theme="dark"] .hover-lift:hover {
   min-height: 24rem;
 }
 
+.workbench-editor-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .workbench-editor-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    align-items: start;
+  }
+}
+
 .workbench-sidebar {
   width: 18rem;
 }
