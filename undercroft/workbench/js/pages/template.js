@@ -883,6 +883,12 @@ function ensureContainerZones(component) {
       }
       delete component.zones[key];
     }
+    const id = window.prompt("Enter a template ID", state.template?.id || "");
+    if (id === null) return;
+    const title = window.prompt("Enter a template title", state.template?.title || "");
+    if (title === null) return;
+    const version = window.prompt("Enter a version", state.template?.version || "0.1") || "0.1";
+    startNewTemplate({ id: id.trim(), title: title.trim(), version: version.trim() });
   });
 
   return zones;
