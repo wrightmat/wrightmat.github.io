@@ -1016,6 +1016,10 @@ const BUILTIN_CHARACTERS = [
       return null;
     }
     const clone = JSON.parse(JSON.stringify(component));
+    const normalizedBinding = normalizeBinding(clone.binding ?? clone.bind ?? "");
+    if (normalizedBinding) {
+      clone.binding = normalizedBinding;
+    }
     if (!clone.uid) {
       componentCounter += 1;
       clone.uid = `cmp-${componentCounter}`;
@@ -1029,6 +1033,21 @@ const BUILTIN_CHARACTERS = [
     return clone;
   }
 
+  function normalizeBinding(bindingOrComponent) {
+    if (typeof bindingOrComponent === "string") {
+      return bindingOrComponent.trim();
+    }
+    if (bindingOrComponent && typeof bindingOrComponent === "object") {
+      if (typeof bindingOrComponent.binding === "string") {
+        return bindingOrComponent.binding.trim();
+      }
+      if (typeof bindingOrComponent.bind === "string") {
+        return bindingOrComponent.bind.trim();
+      }
+    }
+    return "";
+  }
+
   function isEditable(component) {
     if (!component) {
       return false;
@@ -1037,10 +1056,11 @@ const BUILTIN_CHARACTERS = [
   }
 
   function getBindingValue(binding) {
-    if (!binding || typeof binding !== "string") {
+    const normalizedBinding = normalizeBinding(binding);
+    if (!normalizedBinding) {
       return undefined;
     }
-    const trimmed = binding.trim();
+    const trimmed = normalizedBinding.trim();
     if (!trimmed.startsWith("@")) {
       return undefined;
     }
@@ -1059,10 +1079,16 @@ const BUILTIN_CHARACTERS = [
   }
 
   function updateBinding(binding, value) {
-    if (!state.draft || !binding || typeof binding !== "string" || !binding.startsWith("@")) {
+    const normalizedBinding = normalizeBinding(binding);
+    if (
+      !state.draft ||
+      !normalizedBinding ||
+      typeof normalizedBinding !== "string" ||
+      !normalizedBinding.startsWith("@")
+    ) {
       return;
     }
-    const path = binding.slice(1).split(".").filter(Boolean);
+    const path = normalizedBinding.slice(1).split(".").filter(Boolean);
     if (!path.length) {
       return;
     }
