@@ -1,8 +1,6 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { createSortable } from "../lib/dnd.js";
-import { renderLayout } from "../lib/renderer.js";
-
 const { status, undoStack } = initAppShell({ namespace: "template" });
 
 const TEMPLATES = [
@@ -13,39 +11,46 @@ const TEMPLATES = [
   },
 ];
 
-const SAMPLE_CHARACTER = {
-  id: "cha-demo",
-  path: "data/characters/cha_01k26cm0jxDR5V4R1Q4N56B5RH.json",
+const COMPONENT_ICONS = {
+  input: "tabler:forms",
+  array: "tabler:list-details",
+  divider: "tabler:separator-horizontal",
+  image: "tabler:photo",
+  label: "tabler:typography",
+  container: "tabler:layout-grid-add",
+  "linear-track": "tabler:timeline",
+  "circular-track": "tabler:gauge",
+  "select-group": "tabler:toggle-right",
+  toggle: "tabler:adjustments",
 };
-
-let sampleData = null;
-let activeTemplate = null;
-
-async function ensureSampleData() {
-  if (sampleData) return sampleData;
-  try {
-    const response = await fetch(SAMPLE_CHARACTER.path);
-    sampleData = await response.json();
-  } catch (error) {
-    console.warn("Unable to load sample character", error);
-    sampleData = {};
-  }
-  return sampleData;
-}
 
 const elements = {
   templateSelect: document.querySelector("[data-template-select]"),
   palette: document.querySelector("[data-palette]"),
   canvasRoot: document.querySelector("[data-canvas-root]"),
   inspector: document.querySelector("[data-inspector]"),
-  previewRoot: document.querySelector("[data-preview-root]"),
   saveButton: document.querySelector('[data-action="save-template"]'),
+  undoButton: document.querySelector('[data-action="undo-template"]'),
+  redoButton: document.querySelector('[data-action="redo-template"]'),
   clearButton: document.querySelector('[data-action="clear-canvas"]'),
   importButton: document.querySelector('[data-action="import-template"]'),
   exportButton: document.querySelector('[data-action="export-template"]'),
+  newTemplateButton: document.querySelector('[data-action="new-template"]'),
+  newTemplateForm: document.querySelector("[data-new-template-form]"),
+  newTemplateId: document.querySelector("[data-new-template-id]"),
+  newTemplateTitle: document.querySelector("[data-new-template-title]"),
+  newTemplateVersion: document.querySelector("[data-new-template-version]"),
   rightPane: document.querySelector('[data-pane="right"]'),
   rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
 };
+
+let newTemplateModalInstance = null;
+if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+  const modalElement = document.getElementById("new-template-modal");
+  if (modalElement) {
+    newTemplateModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+  }
+}
 
 if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
   const tooltipTriggers = document.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -58,42 +63,36 @@ if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
 if (elements.templateSelect) {
   populateSelect(
     elements.templateSelect,
-    TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title }))
+    TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title })),
+    { placeholder: "Select template" }
   );
   elements.templateSelect.addEventListener("change", async () => {
     const selected = TEMPLATES.find((tpl) => tpl.id === elements.templateSelect.value);
     if (!selected) {
-      activeTemplate = null;
-      if (elements.previewRoot) {
-        elements.previewRoot.innerHTML =
-          '<p class="border border-dashed rounded-3 p-4 fs-6 text-body-secondary mb-0">Select a template to see the rendered output.</p>';
-      }
+      state.template = null;
+      state.components = [];
+      state.selectedId = null;
+      renderCanvas();
+      renderInspector();
+      ensureTemplateSelectValue();
       return;
     }
     try {
       const response = await fetch(selected.path);
-      activeTemplate = await response.json();
-      const character = await ensureSampleData();
-      renderPreview(activeTemplate, character);
-      status.show(`Loaded ${activeTemplate.title}`, { type: "success", timeout: 2000 });
+      const data = await response.json();
+      state.template = {
+        id: data.id || selected.id,
+        title: data.title || selected.title,
+        version: data.version || data.metadata?.version || "",
+      };
+      ensureTemplateOption(state.template.id, state.template.title || selected.title);
+      ensureTemplateSelectValue();
+      status.show(`Loaded ${state.template.title || selected.title}`, { type: "success", timeout: 2000 });
     } catch (error) {
       console.error("Unable to load template", error);
       status.show("Failed to load template", { type: "error", timeout: 2500 });
     }
   });
-}
-
-function renderPreview(template, character) {
-  if (!elements.previewRoot) return;
-  elements.previewRoot.innerHTML = "";
-  if (!template || !template.layout) {
-    const placeholder = document.createElement("p");
-    placeholder.className = "border border-dashed rounded-3 p-4 fs-6 text-body-secondary mb-0";
-    placeholder.textContent = "Select a template to see the rendered output.";
-    elements.previewRoot.appendChild(placeholder);
-    return;
-  }
-  renderLayout(elements.previewRoot, template.layout, character.data || {});
 }
 
 const COMPONENT_DEFINITIONS = {
@@ -228,6 +227,7 @@ const COMPONENT_DEFINITIONS = {
 let componentCounter = 0;
 
 const state = {
+  template: null,
   components: [],
   selectedId: null,
 };
@@ -260,10 +260,23 @@ if (elements.canvasRoot) {
 if (elements.saveButton) {
   elements.saveButton.addEventListener("click", () => {
     undoStack.push({ type: "save", count: state.components.length });
-    status.show(`Template draft saved (${state.components.length} components)`, {
+    const label = state.template?.title || state.template?.id || "Template";
+    status.show(`${label} draft saved (${state.components.length} components)`, {
       type: "success",
       timeout: 2000,
     });
+  });
+}
+
+if (elements.undoButton) {
+  elements.undoButton.addEventListener("click", () => {
+    status.show("Undo coming soon", { type: "info", timeout: 1800 });
+  });
+}
+
+if (elements.redoButton) {
+  elements.redoButton.addEventListener("click", () => {
+    status.show("Redo coming soon", { type: "info", timeout: 1800 });
   });
 }
 
@@ -285,8 +298,53 @@ if (elements.exportButton) {
   });
 }
 
+if (elements.newTemplateButton) {
+  elements.newTemplateButton.addEventListener("click", () => {
+    if (newTemplateModalInstance && elements.newTemplateForm) {
+      elements.newTemplateForm.reset();
+      if (elements.newTemplateVersion) {
+        const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
+        elements.newTemplateVersion.value = defaultVersion;
+      }
+      newTemplateModalInstance.show();
+      return;
+    }
+    const id = window.prompt("Enter a template ID", state.template?.id || "");
+    if (id === null) return;
+    const title = window.prompt("Enter a template title", state.template?.title || "");
+    if (title === null) return;
+    const version = window.prompt("Enter a version", state.template?.version || "0.1") || "0.1";
+    startNewTemplate({ id: id.trim(), title: title.trim(), version: version.trim() });
+  });
+}
+
+if (elements.newTemplateForm) {
+  elements.newTemplateForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = elements.newTemplateForm;
+    if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+      form.classList.add("was-validated");
+      return;
+    }
+    const id = (elements.newTemplateId?.value || "").trim();
+    const title = (elements.newTemplateTitle?.value || "").trim();
+    const version = ((elements.newTemplateVersion?.value || "0.1").trim() || "0.1");
+    if (!id || !title) {
+      form.classList.add("was-validated");
+      return;
+    }
+    startNewTemplate({ id, title, version });
+    if (newTemplateModalInstance) {
+      newTemplateModalInstance.hide();
+    }
+    form.reset();
+    form.classList.remove("was-validated");
+  });
+}
+
 renderCanvas();
 renderInspector();
+ensureTemplateSelectValue();
 
 function renderCanvas() {
   if (!elements.canvasRoot) return;
@@ -299,7 +357,7 @@ function renderCanvas() {
     const placeholder = document.createElement("div");
     placeholder.className = "border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary";
     placeholder.setAttribute("data-canvas-placeholder", "true");
-    placeholder.textContent = "Drag components from the library to design your template.";
+    placeholder.textContent = "Drag components from the palette to design your template.";
     elements.canvasRoot.appendChild(placeholder);
   } else {
     const fragment = document.createDocumentFragment();
@@ -369,7 +427,6 @@ function createComponent(type) {
     textStyles: { bold: false, italic: false, underline: false },
     align: "start",
     binding: "",
-    formula: "",
     readOnly: false,
     ...defaults,
   };
@@ -393,36 +450,72 @@ function createComponentElement(component) {
   wrapper.className = "template-component border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-3";
   wrapper.dataset.componentId = component.uid;
   wrapper.dataset.componentType = component.type;
-  wrapper.setAttribute("data-sortable-handle", "true");
   if (state.selectedId === component.uid) {
     wrapper.classList.add("template-component-selected");
   }
 
-  const toolbar = document.createElement("div");
-  toolbar.className = "template-component-toolbar";
+  const definition = COMPONENT_DEFINITIONS[component.type] || {};
+  const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
+  const typeLabel = definition.label || component.type;
+
+  const header = document.createElement("div");
+  header.className = "template-component-header";
+  header.dataset.sortableHandle = "true";
+
+  const meta = document.createElement("div");
+  meta.className = "template-component-meta";
+
+  const icon = document.createElement("span");
+  icon.className = "iconify text-primary fs-4";
+  icon.setAttribute("data-icon", iconName);
+  icon.setAttribute("aria-hidden", "true");
+  meta.appendChild(icon);
+
+  const heading = document.createElement("div");
+  heading.className = "template-component-heading";
+  const title = document.createElement("div");
+  title.className = "fw-semibold";
+  title.textContent = component.name || typeLabel;
+  heading.appendChild(title);
+  const subtitle = document.createElement("div");
+  subtitle.className = "text-body-secondary small text-uppercase";
+  subtitle.textContent = typeLabel;
+  heading.appendChild(subtitle);
+  meta.appendChild(heading);
+
+  header.appendChild(meta);
+
+  const actions = document.createElement("div");
+  actions.className = "template-component-actions";
+
+  const badge = document.createElement("span");
+  badge.className = "badge text-bg-secondary text-uppercase";
+  badge.textContent = typeLabel;
+  actions.appendChild(badge);
+
+  const bindingLabel = component.binding || component.formula || "";
+  if (bindingLabel) {
+    const pill = document.createElement("span");
+    pill.className = "template-binding-pill badge text-bg-secondary";
+    pill.textContent = bindingLabel;
+    actions.appendChild(pill);
+  }
+
   const removeButton = document.createElement("button");
   removeButton.type = "button";
   removeButton.className = "btn btn-outline-danger btn-sm";
   removeButton.dataset.action = "remove-component";
   removeButton.dataset.componentId = component.uid;
   removeButton.setAttribute("aria-label", "Remove component");
-  removeButton.innerHTML = '<span class="iconify fs-5" data-icon="tabler:x" aria-hidden="true"></span>';
-  toolbar.appendChild(removeButton);
-  wrapper.appendChild(toolbar);
+  removeButton.innerHTML =
+    '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span><span class="visually-hidden">Remove component</span>';
+  actions.appendChild(removeButton);
+
+  header.appendChild(actions);
+  wrapper.appendChild(header);
 
   const preview = renderComponentPreview(component);
   wrapper.appendChild(preview);
-
-  if (component.binding || component.formula) {
-    const pill = document.createElement("span");
-    pill.className = "template-binding-pill badge text-bg-secondary";
-    if (component.binding && component.formula) {
-      pill.textContent = `${component.binding} • ƒx`;
-    } else {
-      pill.textContent = component.binding || component.formula;
-    }
-    wrapper.appendChild(pill);
-  }
 
   applyComponentStyles(wrapper, component);
   return wrapper;
@@ -939,6 +1032,24 @@ function removeComponent(uid) {
   renderInspector();
 }
 
+function startNewTemplate({ id = "", title = "", version = "0.1" } = {}) {
+  const template = createBlankTemplate({ id, title, version });
+  if (!template.id || !template.title) {
+    status.show("Provide both an ID and title for the template.", { type: "warning", timeout: 2000 });
+    return;
+  }
+  state.template = template;
+  state.components = [];
+  state.selectedId = null;
+  componentCounter = 0;
+  ensureTemplateOption(template.id, template.title || template.id);
+  ensureTemplateSelectValue();
+  renderCanvas();
+  renderInspector();
+  const label = template.title || template.id || "template";
+  status.show(`Started ${label}`, { type: "success", timeout: 1800 });
+}
+
 function renderInspector() {
   if (!elements.inspector) return;
   elements.inspector.innerHTML = "";
@@ -988,41 +1099,25 @@ function renderInspector() {
   }
 
   const dataControls = [];
-  if (definition.supportsBinding !== false) {
+  if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
     dataControls.push(
       createTextInput(
         component,
-        "Binding / Scope",
-        component.binding || "",
+        "Binding / Formula",
+        component.binding || component.formula || "",
         (value) => {
           updateComponent(
             component.uid,
             (draft) => {
               draft.binding = value.trim();
+              if (Object.prototype.hasOwnProperty.call(draft, "formula")) {
+                draft.formula = "";
+              }
             },
-            { rerenderCanvas: true }
+            { rerenderCanvas: true, rerenderInspector: true }
           );
         },
-        { placeholder: "@attributes.score" }
-      )
-    );
-  }
-  if (definition.supportsFormula !== false) {
-    dataControls.push(
-      createTextInput(
-        component,
-        "Formula",
-        component.formula || "",
-        (value) => {
-          updateComponent(
-            component.uid,
-            (draft) => {
-              draft.formula = value.trim();
-            },
-            { rerenderCanvas: true }
-          );
-        },
-        { placeholder: "Optional formula" }
+        { placeholder: "@attributes.score or =SUM(values)" }
       )
     );
   }
@@ -1071,36 +1166,36 @@ function createColorRow(component) {
   label.className = "fw-semibold text-body-secondary";
   label.textContent = "Colors";
   wrapper.appendChild(label);
-  const row = document.createElement("div");
-  row.className = "d-flex flex-wrap gap-3 align-items-center";
-  row.appendChild(
+  const grid = document.createElement("div");
+  grid.className = "template-color-grid";
+  grid.appendChild(
     createColorInput(component, "Text", component.textColor, (value) => {
       updateComponent(component.uid, (draft) => {
         draft.textColor = value;
       }, { rerenderCanvas: true, rerenderInspector: true });
     })
   );
-  row.appendChild(
+  grid.appendChild(
     createColorInput(component, "Background", component.backgroundColor, (value) => {
       updateComponent(component.uid, (draft) => {
         draft.backgroundColor = value;
       }, { rerenderCanvas: true, rerenderInspector: true });
     })
   );
-  row.appendChild(
+  grid.appendChild(
     createColorInput(component, "Border", component.borderColor, (value) => {
       updateComponent(component.uid, (draft) => {
         draft.borderColor = value;
       }, { rerenderCanvas: true, rerenderInspector: true });
     })
   );
-  wrapper.appendChild(row);
+  wrapper.appendChild(grid);
   return wrapper;
 }
 
 function createColorInput(component, labelText, value, onChange) {
   const container = document.createElement("div");
-  container.className = "d-flex align-items-center gap-2";
+  container.className = "template-color-control";
   const id = toId([component.uid, labelText, "color"]);
   const label = document.createElement("label");
   label.className = "form-label small text-body-secondary mb-0";
@@ -1114,15 +1209,27 @@ function createColorInput(component, labelText, value, onChange) {
   input.addEventListener("input", () => {
     onChange(input.value);
   });
+  const controls = document.createElement("div");
+  controls.className = "d-flex align-items-center gap-2";
+  controls.appendChild(input);
   const clear = document.createElement("button");
   clear.type = "button";
   clear.className = "btn btn-outline-secondary btn-sm";
   clear.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
   clear.setAttribute("aria-label", `Clear ${labelText.toLowerCase()} color`);
+  clear.setAttribute("data-bs-toggle", "tooltip");
+  clear.setAttribute("data-bs-placement", "top");
+  clear.setAttribute("data-bs-title", "Reset to default");
   clear.addEventListener("click", () => {
+    input.value = "#000000";
     onChange("");
   });
-  container.append(label, input, clear);
+  controls.appendChild(clear);
+  container.append(label, controls);
+  if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
+    // eslint-disable-next-line no-new
+    new window.bootstrap.Tooltip(clear);
+  }
   return container;
 }
 
@@ -1769,4 +1876,52 @@ function toId(parts = []) {
     .join("-")
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, "-");
+}
+
+function createBlankTemplate({ id = "", title = "", version = "0.1" } = {}) {
+  return {
+    id: id || "",
+    title: title || "",
+    version: version || "0.1",
+  };
+}
+
+function ensureTemplateOption(id, label) {
+  if (!elements.templateSelect || !id) {
+    return;
+  }
+  const escaped = escapeCss(id);
+  let option = escaped ? elements.templateSelect.querySelector(`option[value="${escaped}"]`) : null;
+  if (!option) {
+    option = document.createElement("option");
+    option.value = id;
+    elements.templateSelect.appendChild(option);
+  }
+  option.textContent = label || id;
+}
+
+function ensureTemplateSelectValue() {
+  if (!elements.templateSelect) return;
+  const id = state.template?.id || "";
+  if (!id) {
+    elements.templateSelect.value = "";
+    return;
+  }
+  const escaped = escapeCss(id);
+  const option = escaped ? elements.templateSelect.querySelector(`option[value="${escaped}"]`) : null;
+  if (option) {
+    elements.templateSelect.value = id;
+  } else {
+    elements.templateSelect.value = "";
+  }
+}
+
+function escapeCss(value) {
+  if (typeof value !== "string" || !value) {
+    return value;
+  }
+  if (window.CSS && typeof window.CSS.escape === "function") {
+    return window.CSS.escape(value);
+  }
+  return value.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
 }
