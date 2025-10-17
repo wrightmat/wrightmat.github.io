@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { createCanvasPlaceholder, initPaletteInteractions, setupDropzones } from "../lib/editor-canvas.js";
+import { updateJsonPreview } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 const { status, undoStack } = initAppShell({ namespace: "template" });
 
@@ -43,6 +44,8 @@ const elements = {
   newTemplateVersion: document.querySelector("[data-new-template-version]"),
   rightPane: document.querySelector('[data-pane="right"]'),
   rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+  jsonPreview: document.querySelector("[data-json-preview]"),
+  jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
 };
 
 let newTemplateModalInstance = null;
@@ -480,6 +483,67 @@ function renderCanvas() {
     },
   });
   refreshTooltips(elements.canvasRoot);
+  renderPreview();
+}
+
+function renderPreview() {
+  if (!elements.jsonPreview) {
+    return;
+  }
+  const serialized = serializeTemplate();
+  updateJsonPreview(elements.jsonPreview, elements.jsonPreviewBytes, serialized);
+}
+
+function serializeTemplate() {
+  return {
+    id: state.template?.id || "",
+    title: state.template?.title || "",
+    version: state.template?.version || "0.1",
+    components: state.components.map(serializeComponentForPreview),
+  };
+}
+
+function serializeComponentForPreview(component) {
+  const clone = JSON.parse(JSON.stringify(component));
+  stripComponentMetadata(clone);
+  return clone;
+}
+
+function stripComponentMetadata(node) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  if ("uid" in node) {
+    delete node.uid;
+  }
+  Object.values(node).forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach(stripComponentMetadata);
+    } else if (value && typeof value === "object") {
+      stripComponentMetadata(value);
+    }
+  });
+  refreshTooltips(elements.canvasRoot);
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
 }
 
 function addComponentToRoot(type) {

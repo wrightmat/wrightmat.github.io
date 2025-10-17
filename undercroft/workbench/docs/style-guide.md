@@ -34,6 +34,7 @@ This document captures the shared layout and styling conventions introduced whil
 ## Toolbar and Actions
 
 - Consolidate pane actions into an icon toolbar with outlined buttons by default. Tooltips (Bootstrap `data-bs-toggle="tooltip"`) provide accessible labels.
+- Include a dedicated “Clear canvas” control in that toolbar and mirror the collapsible JSON Preview card in each editor’s tools pane so reset and export workflows stay consistent.
 - Highlight active pane toggles by swapping to the filled `btn-secondary` style. The helper in `panes.js` already handles this state change when `data-active="true"` is set.
 - Keep undo/redo placeholders sized like the other toolbar buttons so future functionality can drop in without shifting the layout.
 
