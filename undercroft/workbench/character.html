@@ -191,11 +191,12 @@
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Notes</h2>
                 <span class="fs-6 text-body-secondary">Local only</span>
               </div>
-              <div
-                class="border rounded-3 bg-body shadow-sm character-notes-editor"
+              <textarea
+                class="form-control form-control-sm character-notes"
                 data-note-editor
-                style="min-height: 12rem"
-              ></div>
+                rows="8"
+                placeholder="Capture quick notes for this session..."
+              ></textarea>
             </section>
             <section class="mt-auto">
               <button
@@ -206,7 +207,7 @@
                 aria-expanded="false"
                 aria-controls="character-json-preview"
               >
-                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">Character JSON</span>
+                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
                 <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
               </button>
               <div class="collapse" id="character-json-preview">
@@ -294,6 +295,19 @@
           </div>
           <form class="needs-validation" novalidate data-new-character-form>
             <div class="modal-body d-flex flex-column gap-3">
+              <div>
+                <label class="form-label" for="new-character-id">Character ID</label>
+                <input
+                  id="new-character-id"
+                  class="form-control"
+                  type="text"
+                  name="id"
+                  required
+                  data-new-character-id
+                  placeholder="e.g. cha.my-hero"
+                />
+                <div class="invalid-feedback">Please provide a character ID.</div>
+              </div>
               <div>
                 <label class="form-label" for="new-character-name">Character Name</label>
                 <input

@@ -35,7 +35,6 @@ const BUILTIN_CHARACTERS = [
     characterOrigin: null,
   };
 
-  let notesEditor = null;
   let suppressNotesChange = false;
   let currentNotesKey = "";
   let componentCounter = 0;
@@ -59,6 +58,7 @@ const BUILTIN_CHARACTERS = [
     diceExpression: document.querySelector("[data-dice-expression]"),
     diceResult: document.querySelector("[data-dice-result]"),
     newCharacterForm: document.querySelector("[data-new-character-form]"),
+    newCharacterId: document.querySelector("[data-new-character-id]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
   };
@@ -139,6 +139,12 @@ const BUILTIN_CHARACTERS = [
     if (elements.newCharacterButton) {
       elements.newCharacterButton.addEventListener("click", () => {
         openNewCharacterDialog();
+      });
+    }
+
+    if (elements.newCharacterId) {
+      elements.newCharacterId.addEventListener("input", () => {
+        elements.newCharacterId.setCustomValidity("");
       });
     }
 
@@ -280,7 +286,14 @@ const BUILTIN_CHARACTERS = [
     const isLocal = origin === "local";
     const deletable = isLocal;
     elements.deleteCharacterButton.disabled = !deletable;
-    elements.deleteCharacterButton.setAttribute("aria-disabled", deletable ? "false" : "true");
+    if (deletable) {
+      elements.deleteCharacterButton.removeAttribute("disabled");
+      elements.deleteCharacterButton.setAttribute("aria-disabled", "false");
+      elements.deleteCharacterButton.classList.remove("disabled");
+    } else {
+      elements.deleteCharacterButton.setAttribute("aria-disabled", "true");
+      elements.deleteCharacterButton.classList.add("disabled");
+    }
     if (!deletable) {
       const message = isBuiltin
         ? "Built-in characters cannot be deleted."
@@ -292,25 +305,16 @@ const BUILTIN_CHARACTERS = [
   }
 
   function initNotesEditor() {
-    if (!elements.noteEditor || !window.toastui || !window.toastui.Editor) {
+    if (!elements.noteEditor) {
       return;
     }
-    notesEditor = new window.toastui.Editor({
-      el: elements.noteEditor,
-      height: "12rem",
-      minHeight: "12rem",
-      initialEditType: "markdown",
-      previewStyle: "vertical",
-      usageStatistics: false,
-      placeholder: "Capture quick notes for this session...",
-    });
-    notesEditor.on("change", () => {
+    elements.noteEditor.addEventListener("input", () => {
       if (suppressNotesChange) {
         return;
       }
-      persistNotes(notesEditor.getMarkdown());
+      persistNotes(elements.noteEditor.value);
     });
-    syncNotesEditor();
+    syncNotesEditor(true);
   }
 
   function initDiceRoller() {
@@ -535,6 +539,7 @@ const BUILTIN_CHARACTERS = [
     if (!elements.canvasRoot) {
       return;
     }
+    elements.canvasRoot.dataset.canvasMode = state.mode;
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id) {
       elements.canvasRoot.appendChild(
@@ -576,7 +581,7 @@ const BUILTIN_CHARACTERS = [
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
     });
-    const { header, actions, iconElement } = createStandardCardChrome({
+    const { header } = createStandardCardChrome({
       icon: iconName,
       iconLabel: component.type,
       headerOptions: { classes: ["character-component-header"] },
@@ -584,11 +589,6 @@ const BUILTIN_CHARACTERS = [
       iconOptions: { classes: ["character-component-icon"] },
       removeButtonOptions: false,
     });
-    const title = document.createElement("div");
-    title.className = "fw-semibold";
-    title.textContent = component.label || component.name || component.type;
-    applyTextFormatting(title, component);
-    header.insertBefore(title, actions);
     wrapper.appendChild(header);
     const body = renderComponentContent(component);
     wrapper.appendChild(body);
@@ -1092,6 +1092,14 @@ const BUILTIN_CHARACTERS = [
     }
     elements.newCharacterForm.reset();
     elements.newCharacterForm.classList.remove("was-validated");
+    if (elements.newCharacterId) {
+      elements.newCharacterId.setCustomValidity("");
+      let generatedId = "";
+      do {
+        generatedId = generateCharacterId("character");
+      } while (generatedId && characterCatalog.has(generatedId));
+      elements.newCharacterId.value = generatedId;
+    }
     refreshNewCharacterTemplateOptions(defaultTemplate);
     if (elements.newCharacterTemplate && defaultTemplate) {
       elements.newCharacterTemplate.value = defaultTemplate;
@@ -1108,8 +1116,28 @@ const BUILTIN_CHARACTERS = [
       await createNewCharacterPromptFallback();
       return;
     }
+    const idInput = elements.newCharacterId;
+    const id = (idInput?.value || "").trim();
+    if (idInput) {
+      idInput.setCustomValidity("");
+    }
     const name = (elements.newCharacterName.value || "").trim();
     const templateId = (elements.newCharacterTemplate.value || "").trim();
+    if (!id) {
+      elements.newCharacterForm?.classList.add("was-validated");
+      status.show("Provide an ID for the new character.", { type: "warning", timeout: 2000 });
+      idInput?.focus();
+      idInput?.select();
+      return;
+    }
+    if (characterCatalog.has(id)) {
+      if (idInput) {
+        idInput.setCustomValidity("Character ID already exists.");
+        idInput.reportValidity();
+      }
+      status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
+      return;
+    }
     if (!name) {
       elements.newCharacterForm?.classList.add("was-validated");
       status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
@@ -1120,7 +1148,7 @@ const BUILTIN_CHARACTERS = [
       status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
       return;
     }
-    const created = await startNewCharacter({ name, templateId });
+    const created = await startNewCharacter({ id, name, templateId });
     if (!created) {
       return;
     }
@@ -1156,12 +1184,33 @@ const BUILTIN_CHARACTERS = [
       status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
       return;
     }
-    await startNewCharacter({ name: trimmedName, templateId: trimmedTemplate });
+    const suggestedId = (() => {
+      let candidate = "";
+      do {
+        candidate = generateCharacterId(trimmedName || "character");
+      } while (candidate && characterCatalog.has(candidate));
+      return candidate;
+    })();
+    const idInput = window.prompt("Enter a character ID", suggestedId);
+    if (idInput === null) {
+      return;
+    }
+    const trimmedId = idInput.trim();
+    if (!trimmedId) {
+      status.show("Provide an ID for the new character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    await startNewCharacter({ id: trimmedId, name: trimmedName, templateId: trimmedTemplate });
   }
 
-  async function startNewCharacter({ name, templateId }) {
+  async function startNewCharacter({ id, name, templateId }) {
     const trimmedName = (name || "").trim();
     const trimmedTemplate = (templateId || "").trim();
+    const trimmedId = (id || "").trim();
+    if (!trimmedId) {
+      status.show("Provide an ID for the new character.", { type: "warning", timeout: 2000 });
+      return false;
+    }
     if (!trimmedName) {
       status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
       return false;
@@ -1181,9 +1230,12 @@ const BUILTIN_CHARACTERS = [
         return false;
       }
     }
-    const id = generateCharacterId(trimmedName);
+    if (characterCatalog.has(trimmedId)) {
+      status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
+      return false;
+    }
     const draft = {
-      id,
+      id: trimmedId,
       title: trimmedName,
       template: trimmedTemplate,
       system: state.template?.schema || templateMetadata?.schema || "",
@@ -1194,9 +1246,9 @@ const BUILTIN_CHARACTERS = [
     state.draft = cloneCharacter(draft);
     state.characterOrigin = "local";
     state.mode = "edit";
-    registerCharacterRecord({ id, title: trimmedName, template: trimmedTemplate, source: "local" });
+    registerCharacterRecord({ id: trimmedId, title: trimmedName, template: trimmedTemplate, source: "local" });
     if (elements.characterSelect) {
-      elements.characterSelect.value = id;
+      elements.characterSelect.value = trimmedId;
     }
     persistDraft({ silent: true });
     syncNotesEditor();
@@ -1316,22 +1368,22 @@ const BUILTIN_CHARACTERS = [
     }
   }
 
-  function syncNotesEditor() {
-    if (!notesEditor) {
+  function syncNotesEditor(force = false) {
+    if (!elements.noteEditor) {
       return;
     }
     const key = getNotesStorageKey();
-    if (key === currentNotesKey) {
+    if (!force && key === currentNotesKey) {
       return;
     }
     currentNotesKey = key;
     suppressNotesChange = true;
     try {
       const stored = localStorage.getItem(key);
-      notesEditor.setMarkdown(stored || "");
+      elements.noteEditor.value = stored || "";
     } catch (error) {
       console.warn("Character editor: unable to load notes", error);
-      notesEditor.setMarkdown("");
+      elements.noteEditor.value = "";
     } finally {
       suppressNotesChange = false;
     }
@@ -1339,8 +1391,9 @@ const BUILTIN_CHARACTERS = [
 
   function persistNotes(value) {
     const key = getNotesStorageKey();
+    const payload = value ?? elements.noteEditor?.value ?? "";
     try {
-      localStorage.setItem(key, value || "");
+      localStorage.setItem(key, payload);
     } catch (error) {
       console.warn("Character editor: unable to save notes", error);
     }
