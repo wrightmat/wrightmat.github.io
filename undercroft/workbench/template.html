@@ -54,8 +54,8 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body">
-    <div class="d-flex flex-column min-vh-100">
-      <header class="border-bottom bg-body-tertiary">
+    <div class="workbench-app d-flex flex-column">
+      <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="container-lg d-flex align-items-center gap-3 py-3">
           <div class="d-flex align-items-center gap-3">
             <button
@@ -97,25 +97,164 @@
           </div>
         </div>
       </header>
-      <div class="d-flex flex-grow-1 overflow-hidden">
+      <div class="workbench-shell d-flex">
         <aside
-          class="d-none flex-column gap-3 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
+          class="workbench-pane border-end border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar"
           data-pane="left"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
-          data-pane-initial="collapsed"
+          data-pane-initial="expanded"
         >
-          <button class="btn btn-primary w-100" type="button" data-action="save-template">Save Draft</button>
-          <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Library</h2>
-          <ul class="list-unstyled d-flex flex-column gap-2 fs-6 mb-0">
-            <li class="border rounded-3 p-2 shadow-sm bg-body">Text Input</li>
-            <li class="border rounded-3 p-2 shadow-sm bg-body">Number Input</li>
-            <li class="border rounded-3 p-2 shadow-sm bg-body">Textarea</li>
-            <li class="border rounded-3 p-2 shadow-sm bg-body">Track</li>
-            <li class="border rounded-3 p-2 shadow-sm bg-body">Tabs</li>
-          </ul>
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template actions">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="save-template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save draft"
+                  aria-label="Save draft"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save draft</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="clear-canvas"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Clear canvas"
+                  aria-label="Clear canvas"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Clear canvas</span>
+                </button>
+              </div>
+            </div>
+            <section class="d-flex flex-column gap-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Library</h2>
+                <span class="fs-6 text-body-secondary">Drag into canvas</span>
+              </div>
+              <div class="d-grid gap-2" data-palette>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="input"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Input</div>
+                    <div class="text-body-secondary small">Text, number, select, radio, checkbox</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="array"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Array</div>
+                    <div class="text-body-secondary small">Inventory lists and repeaters</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="divider"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:separator-horizontal" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Divider</div>
+                    <div class="text-body-secondary small">Break up sections</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="image"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Image</div>
+                    <div class="text-body-secondary small">Portraits, logos, or maps</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="label"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Label</div>
+                    <div class="text-body-secondary small">Static text or headings</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="container"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Container</div>
+                    <div class="text-body-secondary small">Tabs, grids, columns, rows</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="linear-track"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Linear Track</div>
+                    <div class="text-body-secondary small">Segmented progress bars</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="circular-track"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:gauge" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Circular Track</div>
+                    <div class="text-body-secondary small">Dial-style clocks</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="select-group"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Select Group</div>
+                    <div class="text-body-secondary small">Pills, tags, or segmented toggles</div>
+                  </div>
+                </div>
+                <div
+                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="toggle"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
+                  <div>
+                    <div class="fw-semibold">Toggle</div>
+                    <div class="text-body-secondary small">Multi-state proficiencies</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </aside>
-        <main class="flex-grow-1 overflow-auto bg-body-secondary py-5">
+        <main class="workbench-main flex-grow-1 bg-body-secondary py-5">
           <div class="container-lg d-flex flex-column gap-4">
             <section class="card border-0 shadow-theme">
               <div class="card-body">
@@ -127,70 +266,46 @@
                     </select>
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary" type="button" data-action="add-block">Add Block</button>
                     <button class="btn btn-outline-secondary" type="button" data-action="import-template">Import JSON</button>
+                    <button class="btn btn-outline-secondary" type="button" data-action="export-template">Export JSON</button>
                   </div>
                 </div>
               </div>
             </section>
-            <section class="row g-4 flex-grow-1">
-              <div class="col-12 col-xl-4 d-flex">
-                <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
-                  <div class="card-body d-flex flex-column gap-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Palette</h2>
-                      <span class="fs-6 text-body-secondary">Drag into canvas</span>
-                    </div>
-                    <div class="flex-grow-1 overflow-auto d-grid gap-2" data-sortable-group="template-canvas" data-sortable-id="palette" data-sortable-root>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Text Field</div>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Number Field</div>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Tabs</div>
-                      <div class="border rounded-3 p-2 shadow-sm bg-body" data-sortable-handle="true">Repeater</div>
-                    </div>
-                  </div>
+            <section class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
+              <div class="card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
+                  <span class="fs-6 text-body-secondary">Layout preview</span>
                 </div>
+                <div class="flex-grow-1 d-flex flex-column gap-3" data-canvas-root data-sortable-id="canvas"></div>
               </div>
-              <div class="col-12 col-xl-4 d-flex" data-template-editor>
-                <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
-                  <div class="card-body d-flex flex-column gap-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
-                      <span class="fs-6 text-body-secondary">Drop components here</span>
-                    </div>
-                    <div class="flex-grow-1 overflow-auto d-grid gap-2" data-sortable-group="template-canvas" data-sortable-id="canvas" data-canvas-root>
-                      <div class="border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary" data-canvas-placeholder="true">
-                        Drag components from the palette to design your template.
-                      </div>
-                    </div>
-                  </div>
+            </section>
+            <section class="card border-0 shadow-theme">
+              <div class="card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sample Character Preview</h2>
+                  <span class="fs-6 text-body-secondary">Rendered with selected template</span>
                 </div>
-              </div>
-              <div class="col-12 col-xl-4 d-flex" data-template-preview>
-                <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
-                  <div class="card-body d-flex flex-column gap-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Preview</h2>
-                      <span class="fs-6 text-body-secondary">Live layout</span>
-                    </div>
-                    <div class="flex-grow-1 overflow-auto" data-preview-root>
-                      <p class="border border-dashed rounded-3 p-4 fs-6 text-body-secondary">Select a template to see the rendered output.</p>
-                    </div>
-                  </div>
+                <div class="flex-grow-1" data-preview-root>
+                  <p class="border border-dashed rounded-3 p-4 fs-6 text-body-secondary mb-0">Select a template to see the rendered output.</p>
                 </div>
               </div>
             </section>
           </div>
         </main>
         <aside
-          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg"
+          class="workbench-pane d-none border-start border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar-lg"
           data-pane="right"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Component Properties</h2>
-          <div class="d-flex flex-column gap-3 fs-6" data-properties>
-            <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a component to edit settings.</p>
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Component Properties</h2>
+            <div class="d-flex flex-column gap-3 fs-6" data-inspector>
+              <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a component on the canvas to edit its settings.</p>
+            </div>
           </div>
         </aside>
       </div>
