@@ -342,6 +342,15 @@ body[data-theme="dark"] .hover-lift:hover {
   gap: 0.25rem;
 }
 
+.template-radio-group--single-row {
+  flex-wrap: nowrap;
+}
+
+.template-radio-group--single-row .btn {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
 .template-radio-group .btn {
   font-size: 0.7rem;
   padding: 0.3rem 0.5rem;
