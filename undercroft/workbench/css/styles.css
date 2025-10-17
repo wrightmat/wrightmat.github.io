@@ -105,15 +105,6 @@ body[data-theme="dark"] .hover-lift:hover {
   opacity: 0;
 }
 
-.workbench-sticky {
-  position: sticky;
-  top: 1.25rem;
-  align-self: flex-start;
-  max-height: calc(100vh - 2.5rem);
-  min-height: 0;
-  z-index: 1;
-}
-
 .workbench-sticky-pane {
   position: sticky;
   top: 1.25rem;
@@ -124,14 +115,13 @@ body[data-theme="dark"] .hover-lift:hover {
 }
 
 @media (max-width: 991.98px) {
-  .workbench-sticky {
+  .workbench-sticky-pane {
     position: static;
     max-height: none;
   }
 }
 
 @media (min-width: 992px) {
-  .workbench-sticky,
   .workbench-sticky-pane {
     top: 2rem;
   }
