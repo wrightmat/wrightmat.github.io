@@ -276,6 +276,23 @@ export class DataManager {
     return { source: "remote", response: result, id, payload };
   }
 
+  async delete(bucket, id, { mode = "auto" } = {}) {
+    if (!id) {
+      throw new Error("Record id is required");
+    }
+    const shouldTargetRemote = mode === "remote" || (mode === "auto" && this.isAuthenticated());
+    if (shouldTargetRemote) {
+      await this._request(`/content/${bucket}/${id}/delete`, {
+        method: "POST",
+        body: {},
+        auth: true,
+      });
+    }
+    this.removeLocal(bucket, id);
+    this._listCache.delete(`${bucket}`);
+    return { source: shouldTargetRemote ? "remote" : "local", id };
+  }
+
   async promote(bucket, id) {
     if (!this.isAuthenticated()) {
       throw new Error("Cannot promote without an active session");
