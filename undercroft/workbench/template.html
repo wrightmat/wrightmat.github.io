@@ -331,6 +331,14 @@
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
                     <button class="btn btn-outline-secondary" type="button" data-action="new-template">New Template</button>
+                    <button
+                      class="btn btn-outline-danger d-none"
+                      type="button"
+                      data-action="delete-template"
+                      data-delete-template
+                    >
+                      Delete Template
+                    </button>
                   </div>
                 </div>
               </div>
@@ -408,6 +416,17 @@
                   value="0.1"
                   data-new-template-version
                 />
+              </div>
+              <div>
+                <label class="form-label" for="new-template-system">System</label>
+                <select
+                  id="new-template-system"
+                  class="form-select"
+                  name="schema"
+                  required
+                  data-new-template-system
+                ></select>
+                <div class="invalid-feedback">Select a system for this template.</div>
               </div>
             </div>
             <div class="modal-footer">

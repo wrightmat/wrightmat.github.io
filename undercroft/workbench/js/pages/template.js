@@ -1,5 +1,6 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
+import { DataManager } from "../lib/data-manager.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -10,17 +11,18 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
+import { resolveApiBase } from "../lib/api.js";
+import { BUILTIN_SYSTEMS, BUILTIN_TEMPLATES } from "../lib/content-registry.js";
 
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "template" });
 
-  const TEMPLATES = [
-    {
-      id: "tpl.5e.flex-basic",
-      title: "5e — Flex Basic",
-      path: "data/templates/tpl.5e.flex-basic.json",
-    },
-  ];
+  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+
+  const templateCatalog = new Map();
+  const systemCatalog = new Map();
+
+  registerBuiltinContent();
 
   const COMPONENT_ICONS = {
     input: "tabler:forms",
@@ -47,10 +49,12 @@ import { refreshTooltips } from "../lib/tooltips.js";
     importButton: document.querySelector('[data-action="import-template"]'),
     exportButton: document.querySelector('[data-action="export-template"]'),
     newTemplateButton: document.querySelector('[data-action="new-template"]'),
+    deleteTemplateButton: document.querySelector('[data-delete-template]'),
     newTemplateForm: document.querySelector("[data-new-template-form]"),
     newTemplateId: document.querySelector("[data-new-template-id]"),
     newTemplateTitle: document.querySelector("[data-new-template-title]"),
     newTemplateVersion: document.querySelector("[data-new-template-version]"),
+    newTemplateSystem: document.querySelector("[data-new-template-system]"),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     jsonPreview: document.querySelector("[data-json-preview]"),
@@ -106,36 +110,58 @@ import { refreshTooltips } from "../lib/tooltips.js";
 
   refreshTooltips(document);
 
+  loadSystemRecords();
+  loadTemplateRecords();
+
   if (elements.templateSelect) {
-    populateSelect(
-      elements.templateSelect,
-      TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title })),
-      { placeholder: "Select template" }
-    );
+    const builtinOptions = BUILTIN_TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title }));
+    populateSelect(elements.templateSelect, builtinOptions, { placeholder: "Select template" });
     elements.templateSelect.addEventListener("change", async () => {
-      const selected = TEMPLATES.find((tpl) => tpl.id === elements.templateSelect.value);
-      if (!selected) {
+      const selectedId = elements.templateSelect.value;
+      if (!selectedId) {
         state.template = null;
         state.components = [];
         state.selectedId = null;
         containerActiveTabs.clear();
+        componentCounter = 0;
         renderCanvas();
         renderInspector();
+        ensureTemplateSelectValue();
+        syncTemplateActions();
+        return;
+      }
+      const metadata = templateCatalog.get(selectedId);
+      if (!metadata) {
+        status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+        return;
+      }
+      if (state.template?.id === selectedId && state.template?.origin === metadata.source) {
+        return;
+      }
+      if (metadata.source === "draft") {
+        status.show("Save the template before reloading it.", { type: "info", timeout: 2200 });
         ensureTemplateSelectValue();
         return;
       }
       try {
-        const response = await fetch(selected.path);
-        const data = await response.json();
-        state.template = {
-          id: data.id || selected.id,
-          title: data.title || selected.title,
-          version: data.version || data.metadata?.version || "",
-        };
-        containerActiveTabs.clear();
-        ensureTemplateOption(state.template.id, state.template.title || selected.title);
-        ensureTemplateSelectValue();
-        status.show(`Loaded ${state.template.title || selected.title}`, { type: "success", timeout: 2000 });
+        let payload = null;
+        if (metadata.source === "builtin" && metadata.path) {
+          const response = await fetch(metadata.path);
+          payload = await response.json();
+        } else {
+          const result = await dataManager.get("templates", selectedId, { preferLocal: true });
+          payload = result?.payload || null;
+        }
+        if (!payload) {
+          throw new Error("Template payload missing");
+        }
+        const label = payload.title || metadata.title || selectedId;
+        const schema = payload.schema || payload.system || metadata.schema || "";
+        registerTemplateRecord(
+          { id: payload.id || selectedId, title: label, schema, source: metadata.source || "remote", path: metadata.path },
+          { syncOption: true }
+        );
+        applyTemplateData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
       } catch (error) {
         console.error("Unable to load template", error);
         status.show("Failed to load template", { type: "error", timeout: 2500 });
@@ -413,13 +439,69 @@ import { refreshTooltips } from "../lib/tooltips.js";
   }
 
   if (elements.saveButton) {
-    elements.saveButton.addEventListener("click", () => {
-      undoStack.push({ type: "save", count: state.components.length });
-      const label = state.template?.title || state.template?.id || "Template";
-      status.show(`${label} draft saved (${state.components.length} components)`, {
-        type: "success",
-        timeout: 2000,
-      });
+    elements.saveButton.addEventListener("click", async () => {
+      if (!state.template) {
+        return;
+      }
+      const payload = serializeTemplateState();
+      const templateId = (payload.id || "").trim();
+      if (!templateId) {
+        status.show("Set a template ID before saving.", { type: "warning", timeout: 2400 });
+        return;
+      }
+      if (!payload.schema) {
+        status.show("Select a system for this template before saving.", { type: "warning", timeout: 2400 });
+        return;
+      }
+      state.template.id = templateId;
+      state.template.title = payload.title || templateId;
+      state.template.schema = payload.schema;
+      const wantsRemote = dataManager.isAuthenticated();
+      if (wantsRemote && !dataManager.baseUrl) {
+        status.show("Server connection not configured. Start the Workbench server to save.", {
+          type: "error",
+          timeout: 3000,
+        });
+        return;
+      }
+      const button = elements.saveButton;
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      try {
+        const result = await dataManager.save("templates", templateId, payload, {
+          mode: wantsRemote ? "remote" : "auto",
+        });
+        const savedToServer = result?.source === "remote";
+        state.template.origin = savedToServer ? "remote" : "local";
+        registerTemplateRecord(
+          {
+            id: templateId,
+            title: payload.title || templateId,
+            schema: payload.schema,
+            source: state.template.origin,
+          },
+          { syncOption: true }
+        );
+        ensureTemplateSelectValue();
+        syncTemplateActions();
+        undoStack.push({ type: "save", count: state.components.length });
+        const label = payload.title || templateId;
+        if (savedToServer) {
+          status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
+        } else {
+          status.show(`Saved ${label} locally. Log in to sync with the server.`, {
+            type: "info",
+            timeout: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to save template", error);
+        const message = error?.message || "Unable to save template";
+        status.show(message, { type: "error", timeout: 3000 });
+      } finally {
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+      }
     });
   }
 
@@ -453,6 +535,47 @@ import { refreshTooltips } from "../lib/tooltips.js";
     });
   }
 
+  if (elements.deleteTemplateButton) {
+    elements.deleteTemplateButton.addEventListener("click", async () => {
+      if (!state.template?.id) {
+        status.show("Select a template before deleting.", { type: "warning", timeout: 2000 });
+        return;
+      }
+      if (state.template.origin === "builtin") {
+        status.show("Built-in templates cannot be deleted.", { type: "info", timeout: 2200 });
+        return;
+      }
+      if (state.template.origin === "draft") {
+        status.show("Save the template before deleting it.", { type: "info", timeout: 2200 });
+        return;
+      }
+      const label = state.template.title || state.template.id;
+      const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
+      if (!confirmed) {
+        return;
+      }
+      const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
+      try {
+        await dataManager.delete("templates", state.template.id, { mode: wantsRemote ? "remote" : "auto" });
+        removeTemplateRecord(state.template.id);
+        state.template = null;
+        state.components = [];
+        state.selectedId = null;
+        containerActiveTabs.clear();
+        componentCounter = 0;
+        ensureTemplateSelectValue();
+        renderCanvas();
+        renderInspector();
+        syncTemplateActions();
+        status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+      } catch (error) {
+        console.error("Failed to delete template", error);
+        const message = error?.message || "Unable to delete template";
+        status.show(message, { type: "error", timeout: 3000 });
+      }
+    });
+  }
+
   if (elements.newTemplateButton) {
     elements.newTemplateButton.addEventListener("click", (event) => {
       if (!elements.newTemplateButton.contains(event.target)) {
@@ -462,16 +585,26 @@ import { refreshTooltips } from "../lib/tooltips.js";
         status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
         return;
       }
-      elements.newTemplateForm.reset();
-      if (elements.newTemplateVersion) {
-        const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
-        elements.newTemplateVersion.value = defaultVersion;
-      }
+      prepareNewTemplateForm();
       if (newTemplateModalInstance) {
         newTemplateModalInstance.show();
         return;
       }
-      status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
+      const id = window.prompt("Enter a template ID", state.template?.id || "");
+      if (!id) {
+        return;
+      }
+      const title = window.prompt("Enter a template title", state.template?.title || "");
+      if (!title) {
+        return;
+      }
+      const version = window.prompt("Enter a version", state.template?.version || "0.1") || "0.1";
+      const schema = window.prompt("Enter the system ID for this template", state.template?.schema || "");
+      if (!schema) {
+        status.show("Templates must reference a system.", { type: "warning", timeout: 2400 });
+        return;
+      }
+      startNewTemplate({ id: id.trim(), title: title.trim(), version: version.trim(), schema: schema.trim(), origin: "draft" });
     });
   }
 
@@ -486,11 +619,12 @@ import { refreshTooltips } from "../lib/tooltips.js";
       const id = (elements.newTemplateId?.value || "").trim();
       const title = (elements.newTemplateTitle?.value || "").trim();
       const version = ((elements.newTemplateVersion?.value || "0.1").trim() || "0.1");
-      if (!id || !title) {
+      const schema = (elements.newTemplateSystem?.value || "").trim();
+      if (!id || !title || !schema) {
         form.classList.add("was-validated");
         return;
       }
-      startNewTemplate({ id, title, version });
+      startNewTemplate({ id, title, version, schema, origin: "draft" });
       if (newTemplateModalInstance) {
         newTemplateModalInstance.hide();
       }
@@ -502,6 +636,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
   renderCanvas();
   renderInspector();
   ensureTemplateSelectValue();
+  syncTemplateActions();
 
   function renderCanvas() {
     if (!elements.canvasRoot) return;
@@ -537,6 +672,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
     });
     refreshTooltips(elements.canvasRoot);
     renderPreview();
+    syncTemplateActions();
   }
 
   function serializeTemplateState() {
@@ -544,6 +680,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
       id: state.template?.id || "",
       title: state.template?.title || "",
       version: state.template?.version || "0.1",
+      schema: state.template?.schema || "",
       components: state.components.map(serializeComponentForPreview),
     };
   }
@@ -568,6 +705,176 @@ import { refreshTooltips } from "../lib/tooltips.js";
         stripComponentMetadata(value);
       }
     });
+  }
+
+  function registerTemplateRecord(record, { syncOption = true } = {}) {
+    if (!record || !record.id) {
+      return;
+    }
+    const current = templateCatalog.get(record.id) || {};
+    const next = { ...current, ...record };
+    templateCatalog.set(record.id, next);
+    if (syncOption) {
+      ensureTemplateOption(record.id, next.title || record.id);
+    }
+  }
+
+  function removeTemplateRecord(id) {
+    if (!id) {
+      return;
+    }
+    templateCatalog.delete(id);
+    removeTemplateOption(id);
+  }
+
+  function removeTemplateOption(id) {
+    if (!elements.templateSelect || !id) {
+      return;
+    }
+    const escaped = escapeCss(id);
+    const option = escaped ? elements.templateSelect.querySelector(`option[value="${escaped}"]`) : null;
+    if (option) {
+      option.remove();
+    }
+  }
+
+  function registerSystemRecord(record) {
+    if (!record || !record.id) {
+      return;
+    }
+    const current = systemCatalog.get(record.id) || {};
+    systemCatalog.set(record.id, { ...current, ...record });
+  }
+
+  function refreshNewTemplateSystemOptions(selectedValue = "") {
+    if (!elements.newTemplateSystem) {
+      return;
+    }
+    const options = Array.from(systemCatalog.values())
+      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
+      .filter((option) => option.value)
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    populateSelect(elements.newTemplateSystem, options, { placeholder: "Select system" });
+    if (selectedValue) {
+      elements.newTemplateSystem.value = selectedValue;
+    }
+  }
+
+  function prepareNewTemplateForm() {
+    if (!elements.newTemplateForm) {
+      return;
+    }
+    elements.newTemplateForm.reset();
+    elements.newTemplateForm.classList.remove("was-validated");
+    if (elements.newTemplateVersion) {
+      const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
+      elements.newTemplateVersion.value = defaultVersion;
+    }
+    refreshNewTemplateSystemOptions();
+    if (elements.newTemplateSystem) {
+      elements.newTemplateSystem.value = "";
+    }
+    if (elements.newTemplateId) {
+      elements.newTemplateId.focus();
+      elements.newTemplateId.select();
+    }
+  }
+
+  function syncTemplateActions() {
+    if (!elements.deleteTemplateButton) {
+      return;
+    }
+    const hasTemplate = Boolean(state.template?.id);
+    elements.deleteTemplateButton.classList.toggle("d-none", !hasTemplate);
+    if (!hasTemplate) {
+      elements.deleteTemplateButton.disabled = true;
+      elements.deleteTemplateButton.setAttribute("aria-disabled", "true");
+      elements.deleteTemplateButton.removeAttribute("title");
+      return;
+    }
+    const origin = state.template?.origin || "";
+    const isBuiltin = origin === "builtin";
+    const isDraft = origin === "draft";
+    const deletable = !isBuiltin && !isDraft;
+    elements.deleteTemplateButton.disabled = !deletable;
+    elements.deleteTemplateButton.setAttribute("aria-disabled", deletable ? "false" : "true");
+    if (isBuiltin) {
+      elements.deleteTemplateButton.title = "Built-in templates cannot be deleted.";
+    } else if (isDraft) {
+      elements.deleteTemplateButton.title = "Save the template before deleting it.";
+    } else {
+      elements.deleteTemplateButton.removeAttribute("title");
+    }
+  }
+
+  function registerBuiltinContent() {
+    BUILTIN_TEMPLATES.forEach((template) => {
+      registerTemplateRecord(
+        { id: template.id, title: template.title, path: template.path, source: "builtin" },
+        { syncOption: false }
+      );
+    });
+    BUILTIN_SYSTEMS.forEach((system) => {
+      registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
+    });
+  }
+
+  async function loadSystemRecords() {
+    try {
+      const localEntries = dataManager.listLocalEntries("systems");
+      localEntries.forEach(({ id, payload }) => {
+        registerSystemRecord({ id, title: payload?.title || id, source: "local" });
+      });
+    } catch (error) {
+      console.warn("Template editor: unable to read local systems", error);
+    }
+    if (!dataManager.baseUrl) {
+      refreshNewTemplateSystemOptions(elements.newTemplateSystem?.value || "");
+      return;
+    }
+    try {
+      const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
+      const items = remote?.items || [];
+      items.forEach((item) => {
+        registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" });
+      });
+    } catch (error) {
+      console.warn("Template editor: unable to list systems", error);
+    } finally {
+      refreshNewTemplateSystemOptions(elements.newTemplateSystem?.value || "");
+    }
+  }
+
+  async function loadTemplateRecords() {
+    try {
+      const localEntries = dataManager.listLocalEntries("templates");
+      localEntries.forEach(({ id, payload }) => {
+        registerTemplateRecord(
+          { id, title: payload?.title || id, schema: payload?.schema || "", source: "local" },
+          { syncOption: true }
+        );
+      });
+    } catch (error) {
+      console.warn("Template editor: unable to read local templates", error);
+    }
+    if (!dataManager.baseUrl) {
+      ensureTemplateSelectValue();
+      return;
+    }
+    try {
+      const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
+      const items = remote?.items || [];
+      items.forEach((item) => {
+        registerTemplateRecord(
+          { id: item.id, title: item.title || item.id, schema: item.schema || "", source: "remote" },
+          { syncOption: true }
+        );
+      });
+    } catch (error) {
+      console.warn("Template editor: unable to list templates", error);
+    } finally {
+      ensureTemplateSelectValue();
+    }
   }
 
   function handleDrop(event) {
@@ -1492,23 +1799,46 @@ import { refreshTooltips } from "../lib/tooltips.js";
     renderInspector();
   }
 
-  function startNewTemplate({ id = "", title = "", version = "0.1" } = {}) {
-    const template = createBlankTemplate({ id, title, version });
-    if (!template.id || !template.title) {
-      status.show("Provide both an ID and title for the template.", { type: "warning", timeout: 2000 });
-      return;
-    }
+  function applyTemplateData(data = {}, { origin = "draft", emitStatus = false, statusMessage = "" } = {}) {
+    const template = createBlankTemplate({
+      id: data.id || "",
+      title: data.title || "",
+      version: data.version || data.metadata?.version || "0.1",
+      schema: data.schema || data.system || "",
+      origin,
+    });
+    componentCounter = 0;
+    const components = Array.isArray(data.components)
+      ? data.components.map((component) => hydrateComponent(component)).filter(Boolean)
+      : [];
     state.template = template;
-    state.components = [];
+    state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
-    componentCounter = 0;
-    ensureTemplateOption(template.id, template.title || template.id);
-    ensureTemplateSelectValue();
     renderCanvas();
     renderInspector();
-    const label = template.title || template.id || "template";
-    status.show(`Started ${label}`, { type: "success", timeout: 1800 });
+    ensureTemplateSelectValue();
+    if (emitStatus && statusMessage) {
+      status.show(statusMessage, { type: "success", timeout: 2000 });
+    }
+  }
+
+  function startNewTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
+    const trimmedId = (id || "").trim();
+    const trimmedTitle = (title || "").trim();
+    const trimmedSchema = (schema || "").trim();
+    if (!trimmedId || !trimmedTitle || !trimmedSchema) {
+      status.show("Provide an ID, title, and system for the template.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    registerTemplateRecord(
+      { id: trimmedId, title: trimmedTitle, schema: trimmedSchema, source: origin },
+      { syncOption: true }
+    );
+    applyTemplateData(
+      { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: [] },
+      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}` }
+    );
   }
 
   function renderInspector() {
@@ -2407,6 +2737,35 @@ import { refreshTooltips } from "../lib/tooltips.js";
     return JSON.parse(JSON.stringify(defaults));
   }
 
+  function hydrateComponent(component) {
+    if (!component || typeof component !== "object") {
+      return null;
+    }
+    const type = component.type || "input";
+    let base;
+    try {
+      base = createComponent(type);
+    } catch (error) {
+      base = createComponent("input");
+    }
+    const copy = cloneDefaults(component);
+    const merged = Object.assign(base, copy);
+    merged.uid = base.uid;
+    if (!merged.id) {
+      merged.id = merged.uid;
+    }
+    if (merged.type === "container") {
+      const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
+      Object.keys(zones).forEach((key) => {
+        const entries = Array.isArray(zones[key]) ? zones[key].map(hydrateComponent).filter(Boolean) : [];
+        zones[key] = entries;
+      });
+      merged.zones = zones;
+      ensureContainerZones(merged);
+    }
+    return merged;
+  }
+
   function toId(parts = []) {
     return parts
       .filter(Boolean)
@@ -2415,11 +2774,13 @@ import { refreshTooltips } from "../lib/tooltips.js";
       .replace(/[^a-z0-9_-]/g, "-");
   }
 
-  function createBlankTemplate({ id = "", title = "", version = "0.1" } = {}) {
+  function createBlankTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
     return {
       id: id || "",
       title: title || "",
       version: version || "0.1",
+      schema: schema || "",
+      origin,
     };
   }
 
