@@ -7,6 +7,8 @@ import {
 } from "../lib/editor-canvas.js";
 import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
+import { createRootInsertionHandler } from "../lib/root-inserter.js";
+import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 const { status, undoStack } = initAppShell({ namespace: "template" });
 
@@ -52,6 +54,45 @@ const elements = {
   jsonPreview: document.querySelector("[data-json-preview]"),
   jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
 };
+
+const addComponentToCanvasRoot = createRootInsertionHandler({
+  createItem: (type) => {
+    if (!COMPONENT_DEFINITIONS[type]) {
+      return null;
+    }
+    return createComponent(type);
+  },
+  beforeInsert: (type, component) => {
+    state.selectedId = component.uid;
+    return {
+      parentId: "",
+      zoneKey: "root",
+      index: state.components.length,
+      definition: COMPONENT_DEFINITIONS[type],
+    };
+  },
+  insertItem: (type, component, context) => {
+    insertComponent(context.parentId, context.zoneKey, context.index, component);
+  },
+  createUndoEntry: (type, component, context) => ({
+    type: "add",
+    component: { ...component },
+    parentId: context.parentId,
+    zoneKey: context.zoneKey,
+    index: context.index,
+  }),
+  afterInsert: () => {
+    renderCanvas();
+    renderInspector();
+    expandInspectorPane();
+  },
+  undoStack,
+  status,
+  getStatusMessage: (type, component, context) => ({
+    message: `${context.definition?.label || type} added to canvas`,
+    options: { type: "success", timeout: 1800 },
+  }),
+});
 
 let newTemplateModalInstance = null;
 if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
@@ -349,7 +390,7 @@ if (elements.palette) {
       if (!value || !COMPONENT_DEFINITIONS[value]) {
         return;
       }
-      addComponentToRoot(value);
+      addComponentToCanvasRoot(value);
     },
   });
 }
@@ -491,6 +532,39 @@ function renderCanvas() {
         handleReorder(event);
       },
     },
+  });
+  refreshTooltips(elements.canvasRoot);
+  renderPreview();
+}
+
+function serializeTemplate() {
+  return {
+    id: state.template?.id || "",
+    title: state.template?.title || "",
+    version: state.template?.version || "0.1",
+    components: state.components.map(serializeComponentForPreview),
+  };
+}
+
+function serializeComponentForPreview(component) {
+  const clone = JSON.parse(JSON.stringify(component));
+  stripComponentMetadata(clone);
+  return clone;
+}
+
+function stripComponentMetadata(node) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  if ("uid" in node) {
+    delete node.uid;
+  }
+  Object.values(node).forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach(stripComponentMetadata);
+    } else if (value && typeof value === "object") {
+      stripComponentMetadata(value);
+    }
   });
   refreshTooltips(elements.canvasRoot);
   renderPreview();
@@ -1478,16 +1552,7 @@ function selectComponent(uid) {
 }
 
 function expandInspectorPane() {
-  if (!elements.rightPane) return;
-  const collapsedClass = elements.rightPane.getAttribute("data-pane-collapsed-class") || "hidden";
-  const expandedClass = elements.rightPane.getAttribute("data-pane-expanded-class") || "flex";
-  elements.rightPane.dataset.state = "expanded";
-  elements.rightPane.classList.remove(collapsedClass);
-  elements.rightPane.classList.add(expandedClass);
-  if (elements.rightPaneToggle) {
-    elements.rightPaneToggle.setAttribute("aria-expanded", "true");
-    elements.rightPaneToggle.dataset.active = "true";
-  }
+  expandPane(elements.rightPane, elements.rightPaneToggle);
 }
 
 function clearCanvas() {

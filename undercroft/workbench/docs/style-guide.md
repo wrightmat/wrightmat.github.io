@@ -30,6 +30,7 @@ This document captures the shared layout and styling conventions introduced whil
 - Register SortableJS dropzones via `setupDropzones()`. The helper keeps zone teardown consistent and ensures both System and Template editors react to drops the same way.
 - Apply the unified canvas card styles: `.workbench-canvas-card` for the shell, `.workbench-canvas-card__header` for the floating control rail, and `.workbench-canvas-card__actions` / `.workbench-canvas-card__type-icon` for the type badge + icon cluster.
 - Build card headers through `createStandardCardChrome()` (see `js/lib/canvas-card.js`) so icons, tooltips, and delete buttons stay identical across editors.
+- Use `createRootInsertionHandler()` (see `js/lib/root-inserter.js`) to wire palette double-click behavior and root-level appends. The helper standardizes undo logging, status toasts, selection, and inspector expansion across tools.
 - When exposing nested drop regions, wrap them with `.workbench-dropzone` and label with `.workbench-dropzone-label` so subsequent tools inherit the same look and feel.
 
 ## Toolbar and Actions
