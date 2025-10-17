@@ -320,6 +320,52 @@ body[data-theme="dark"] .hover-lift:hover {
   line-height: 1.2;
 }
 
+.character-notes-editor .toastui-editor-defaultUI {
+  border: none;
+  box-shadow: none;
+}
+
+.character-notes-editor .toastui-editor-defaultUI,
+.character-notes-editor .toastui-editor-toolbar,
+.character-notes-editor .toastui-editor-defaultUI-toolbar,
+.character-notes-editor .toastui-editor-main,
+.character-notes-editor .toastui-editor-md-preview,
+.character-notes-editor .toastui-editor-md-container,
+.character-notes-editor .toastui-editor-ww-container,
+.character-notes-editor .toastui-editor-contents {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+.character-notes-editor .toastui-editor-toolbar,
+.character-notes-editor .toastui-editor-defaultUI-toolbar,
+.character-notes-editor .toastui-editor-md-preview,
+.character-notes-editor .toastui-editor-md-container,
+.character-notes-editor .toastui-editor-ww-container {
+  border-color: var(--bs-border-color);
+}
+
+.character-notes-editor .toastui-editor-toolbar-icons,
+.character-notes-editor .toastui-editor-toolbar button {
+  color: var(--bs-body-color);
+}
+
+.character-notes-editor .toastui-editor-toolbar-icons svg,
+.character-notes-editor .toastui-editor-toolbar-icons svg path {
+  fill: currentColor;
+}
+
+.character-notes-editor .toastui-editor-md-splitter {
+  background-color: var(--bs-border-color);
+}
+
+.character-notes-editor .toastui-editor-md-container,
+.character-notes-editor .toastui-editor-ww-container,
+.character-notes-editor .toastui-editor-md-preview {
+  max-height: 10rem;
+  overflow-y: auto;
+}
+
 .template-color-grid {
   display: grid;
   gap: 0.5rem;
