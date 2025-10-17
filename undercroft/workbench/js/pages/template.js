@@ -547,6 +547,46 @@ function addComponentToRoot(type) {
   return component;
 }
 
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
+}
+
 function handleDrop(event) {
   const parentId = event.to.dataset.dropzoneParent || "";
   const zoneKey = event.to.dataset.dropzoneKey || "root";
