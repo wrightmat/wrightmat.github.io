@@ -1572,6 +1572,8 @@ function createTextSizeControls(component) {
       draft.textSize = value;
     }, { rerenderCanvas: true });
   });
+  wrapper.append(label, input);
+  return wrapper;
 }
 
 function createTextStyleControls(component) {
@@ -1586,6 +1588,8 @@ function createTextStyleControls(component) {
       draft.textStyles[key] = checked;
     }, { rerenderCanvas: true });
   });
+  wrapper.append(label, textarea);
+  return wrapper;
 }
 
 function createAlignmentControls(component) {
@@ -1600,6 +1604,8 @@ function createAlignmentControls(component) {
       draft.align = value;
     }, { rerenderCanvas: true });
   });
+  wrapper.append(label, select);
+  return wrapper;
 }
 
 function createReadOnlyToggle(component) {
