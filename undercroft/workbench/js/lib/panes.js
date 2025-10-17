@@ -22,6 +22,23 @@ function togglePane(pane, config) {
   return next;
 }
 
+function updateToggleAppearance(button, expanded) {
+  if (!button) {
+    return;
+  }
+  button.dataset.active = expanded ? "true" : "false";
+  if (!button.classList.contains("btn")) {
+    return;
+  }
+  if (expanded) {
+    button.classList.add("btn-secondary");
+    button.classList.remove("btn-outline-secondary");
+  } else {
+    button.classList.add("btn-outline-secondary");
+    button.classList.remove("btn-secondary");
+  }
+}
+
 export function initPaneToggles(root = document, { onChange } = {}) {
   const panes = new Map();
   root.querySelectorAll("[data-pane]").forEach((pane) => {
@@ -38,12 +55,12 @@ export function initPaneToggles(root = document, { onChange } = {}) {
     }
     const isExpanded = target.pane.dataset.state === "expanded";
     button.setAttribute("aria-expanded", isExpanded ? "true" : "false");
-    button.dataset.active = isExpanded ? "true" : "false";
+    updateToggleAppearance(button, isExpanded);
     button.addEventListener("click", () => {
       const state = togglePane(target.pane, target.config);
       const expanded = state === "expanded";
       button.setAttribute("aria-expanded", expanded ? "true" : "false");
-      button.dataset.active = expanded ? "true" : "false";
+      updateToggleAppearance(button, expanded);
       if (typeof onChange === "function") {
         onChange({ key, state });
       }
