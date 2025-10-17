@@ -35,4 +35,38 @@ export function updateJsonPreview(previewElement, bytesElement, data) {
   }
 }
 
+export function createJsonPreviewRenderer({
+  resolvePreviewElement,
+  resolveBytesElement,
+  serialize,
+  onAfterRender,
+} = {}) {
+  if (typeof serialize !== "function") {
+    throw new Error("createJsonPreviewRenderer requires a serialize function");
+  }
+
+  const previewResolver =
+    typeof resolvePreviewElement === "function"
+      ? resolvePreviewElement
+      : () => resolvePreviewElement;
+
+  const bytesResolver =
+    typeof resolveBytesElement === "function"
+      ? resolveBytesElement
+      : () => resolveBytesElement;
+
+  return () => {
+    const previewElement = previewResolver();
+    if (!previewElement) {
+      return;
+    }
+    const bytesElement = bytesResolver();
+    const payload = serialize();
+    updateJsonPreview(previewElement, bytesElement, payload);
+    if (typeof onAfterRender === "function") {
+      onAfterRender(payload);
+    }
+  };
+}
+
 export { formatSize };

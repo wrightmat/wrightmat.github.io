@@ -39,6 +39,10 @@ This document captures the shared layout and styling conventions introduced whil
 - Highlight active pane toggles by swapping to the filled `btn-secondary` style. The helper in `panes.js` already handles this state change when `data-active="true"` is set.
 - Keep undo/redo placeholders sized like the other toolbar buttons so future functionality can drop in without shifting the layout.
 
+## JSON Preview
+
+- Drive preview panes through `createJsonPreviewRenderer()` (see `js/lib/json-preview.js`) so formatting, byte counts, and follow-up hooks (like draft persistence) behave identically across editors.
+
 ## Theme and Surface Colors
 
 - Lean on Bootstrap semantic tokens (`bg-body`, `bg-body-secondary`, `bg-body-tertiary`) instead of hard-coded colors to ensure light/dark theme support.

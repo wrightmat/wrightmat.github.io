@@ -6,7 +6,7 @@ import {
   setupDropzones,
 } from "../lib/editor-canvas.js";
 import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
-import { updateJsonPreview } from "../lib/json-preview.js";
+import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 const { status, undoStack } = initAppShell({ namespace: "template" });
 
@@ -260,6 +260,12 @@ const state = {
 const dropzones = new Map();
 const containerActiveTabs = new Map();
 
+const renderPreview = createJsonPreviewRenderer({
+  resolvePreviewElement: () => elements.jsonPreview,
+  resolveBytesElement: () => elements.jsonPreviewBytes,
+  serialize: serializeTemplate,
+});
+
 function getActiveTabIndex(component, total = 0) {
   if (!component?.uid) return 0;
   const current = containerActiveTabs.get(component.uid) ?? 0;
@@ -490,14 +496,6 @@ function renderCanvas() {
   renderPreview();
 }
 
-function renderPreview() {
-  if (!elements.jsonPreview) {
-    return;
-  }
-  const serialized = serializeTemplate();
-  updateJsonPreview(elements.jsonPreview, elements.jsonPreviewBytes, serialized);
-}
-
 function serializeTemplate() {
   return {
     id: state.template?.id || "",
@@ -527,47 +525,26 @@ function stripComponentMetadata(node) {
       stripComponentMetadata(value);
     }
   });
-  refreshTooltips(elements.canvasRoot);
-  renderPreview();
 }
 
-function renderPreview() {
-  if (!elements.jsonPreview) {
-    return;
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
   }
-  const serialized = serializeTemplate();
-  updateJsonPreview(elements.jsonPreview, elements.jsonPreviewBytes, serialized);
-}
-
-function serializeTemplate() {
-  return {
-    id: state.template?.id || "",
-    title: state.template?.title || "",
-    version: state.template?.version || "0.1",
-    components: state.components.map(serializeComponentForPreview),
-  };
-}
-
-function serializeComponentForPreview(component) {
-  const clone = JSON.parse(JSON.stringify(component));
-  stripComponentMetadata(clone);
-  return clone;
-}
-
-function stripComponentMetadata(node) {
-  if (!node || typeof node !== "object") {
-    return;
-  }
-  if ("uid" in node) {
-    delete node.uid;
-  }
-  Object.values(node).forEach((value) => {
-    if (Array.isArray(value)) {
-      value.forEach(stripComponentMetadata);
-    } else if (value && typeof value === "object") {
-      stripComponentMetadata(value);
-    }
-  });
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
 }
 
 function addComponentToRoot(type) {
