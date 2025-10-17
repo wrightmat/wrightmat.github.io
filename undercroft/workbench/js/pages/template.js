@@ -52,13 +52,20 @@ if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
   }
 }
 
-if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
-  const tooltipTriggers = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+function refreshTooltips(root = document) {
+  if (!window.bootstrap || typeof window.bootstrap.Tooltip !== "function") return;
+  const tooltipTriggers = root.querySelectorAll('[data-bs-toggle="tooltip"]');
   tooltipTriggers.forEach((element) => {
+    const existing = window.bootstrap.Tooltip.getInstance(element);
+    if (existing) {
+      existing.dispose();
+    }
     // eslint-disable-next-line no-new
     new window.bootstrap.Tooltip(element);
   });
 }
+
+refreshTooltips(document);
 
 if (elements.templateSelect) {
   populateSelect(
@@ -72,6 +79,7 @@ if (elements.templateSelect) {
       state.template = null;
       state.components = [];
       state.selectedId = null;
+      containerActiveTabs.clear();
       renderCanvas();
       renderInspector();
       ensureTemplateSelectValue();
@@ -85,6 +93,7 @@ if (elements.templateSelect) {
         title: data.title || selected.title,
         version: data.version || data.metadata?.version || "",
       };
+      containerActiveTabs.clear();
       ensureTemplateOption(state.template.id, state.template.title || selected.title);
       ensureTemplateSelectValue();
       status.show(`Loaded ${state.template.title || selected.title}`, { type: "success", timeout: 2000 });
@@ -116,8 +125,6 @@ const COMPONENT_DEFINITIONS = {
     defaults: {
       name: "Array",
       variant: "list",
-      itemLabel: "Item",
-      emptyText: "No entries",
     },
     supportsBinding: true,
     supportsFormula: false,
@@ -255,6 +262,27 @@ const state = {
 };
 
 const dropzones = new Map();
+const containerActiveTabs = new Map();
+
+function getActiveTabIndex(component, total = 0) {
+  if (!component?.uid) return 0;
+  const current = containerActiveTabs.get(component.uid) ?? 0;
+  if (!Number.isFinite(total) || total <= 0) {
+    return Math.max(0, current);
+  }
+  const maxIndex = Math.max(0, total - 1);
+  return Math.min(Math.max(0, current), maxIndex);
+}
+
+function setActiveTabIndex(component, index) {
+  if (!component?.uid) return;
+  containerActiveTabs.set(component.uid, Math.max(0, index));
+}
+
+function clearActiveTab(component) {
+  if (!component?.uid) return;
+  containerActiveTabs.delete(component.uid);
+}
 
 const COLOR_FIELD_MAP = {
   foreground: { label: "Foreground/Text", prop: "textColor" },
@@ -443,6 +471,7 @@ function renderCanvas() {
     elements.canvasRoot.appendChild(fragment);
   }
   registerDropzones();
+  refreshTooltips(elements.canvasRoot);
 }
 
 function createDropPlaceholder(text) {
@@ -679,7 +708,7 @@ function createComponent(type) {
 
 function createComponentElement(component) {
   const wrapper = document.createElement("div");
-  wrapper.className = "template-component border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-3";
+  wrapper.className = "template-component border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-2";
   wrapper.dataset.componentId = component.uid;
   wrapper.dataset.componentType = component.type;
   if (state.selectedId === component.uid) {
@@ -694,44 +723,31 @@ function createComponentElement(component) {
   header.className = "template-component-header";
   header.dataset.sortableHandle = "true";
 
-  const meta = document.createElement("div");
-  meta.className = "template-component-meta";
-
-  const icon = document.createElement("span");
-  icon.className = "iconify text-primary fs-4";
-  icon.setAttribute("data-icon", iconName);
-  icon.setAttribute("aria-hidden", "true");
-  meta.appendChild(icon);
-
-  const heading = document.createElement("div");
-  heading.className = "template-component-heading";
-  const title = document.createElement("div");
-  title.className = "fw-semibold";
-  title.textContent = getComponentLabel(component, typeLabel);
-  heading.appendChild(title);
-  const subtitle = document.createElement("div");
-  subtitle.className = "text-body-secondary small text-uppercase";
-  subtitle.textContent = typeLabel;
-  heading.appendChild(subtitle);
-  meta.appendChild(heading);
-
-  header.appendChild(meta);
-
-  const actions = document.createElement("div");
-  actions.className = "template-component-actions";
-
-  const badge = document.createElement("span");
-  badge.className = "badge text-bg-secondary text-uppercase";
-  badge.textContent = typeLabel;
-  actions.appendChild(badge);
+  const chips = document.createElement("div");
+  chips.className = "template-component-chips";
 
   const bindingLabel = component.binding || component.formula || "";
   if (bindingLabel) {
     const pill = document.createElement("span");
     pill.className = "template-binding-pill badge text-bg-secondary";
     pill.textContent = bindingLabel;
-    actions.appendChild(pill);
+    chips.appendChild(pill);
   }
+
+  header.appendChild(chips);
+
+  const actions = document.createElement("div");
+  actions.className = "template-component-actions";
+
+  const iconButton = document.createElement("span");
+  iconButton.className = "template-component-icon d-inline-flex align-items-center justify-content-center";
+  iconButton.dataset.bsToggle = "tooltip";
+  iconButton.dataset.bsPlacement = "bottom";
+  iconButton.dataset.bsTitle = typeLabel;
+  iconButton.setAttribute("aria-label", typeLabel);
+  iconButton.tabIndex = 0;
+  iconButton.innerHTML = `<span class="iconify" data-icon="${iconName}" aria-hidden="true"></span>`;
+  actions.appendChild(iconButton);
 
   const removeButton = document.createElement("button");
   removeButton.type = "button";
@@ -814,12 +830,15 @@ function ensureContainerZones(component) {
     labels.forEach((labelText, index) => {
       registerZone(`tab-${index}`, (labelText || `Tab ${index + 1}`).trim() || `Tab ${index + 1}`);
     });
+    setActiveTabIndex(component, getActiveTabIndex(component, labels.length));
   } else if (type === "rows") {
+    clearActiveTab(component);
     const rows = clampInteger(component.rows || 2, 1, 6);
     for (let index = 0; index < rows; index += 1) {
       registerZone(`row-${index}`, `Row ${index + 1}`);
     }
   } else if (type === "grid") {
+    clearActiveTab(component);
     const columns = clampInteger(component.columns || 2, 1, 4);
     const rows = clampInteger(component.rows || 2, 1, 6);
     for (let row = 0; row < rows; row += 1) {
@@ -828,6 +847,7 @@ function ensureContainerZones(component) {
       }
     }
   } else {
+    clearActiveTab(component);
     const columns = clampInteger(component.columns || 2, 1, 4);
     for (let index = 0; index < columns; index += 1) {
       registerZone(`col-${index}`, `Column ${index + 1}`);
@@ -872,6 +892,24 @@ function createContainerDropzone(component, zone, { label, hint } = {}) {
   }
   wrapper.appendChild(drop);
   return wrapper;
+}
+
+function pruneContainerState(component) {
+  if (!component || component.type !== "container") {
+    return;
+  }
+  clearActiveTab(component);
+  const zoneEntries = component.zones && typeof component.zones === "object"
+    ? Object.values(component.zones)
+    : [];
+  zoneEntries.forEach((items) => {
+    if (!Array.isArray(items)) return;
+    items.forEach((child) => {
+      if (child && child.type === "container") {
+        pruneContainerState(child);
+      }
+    });
+  });
 }
 
 function renderInputPreview(component) {
@@ -969,6 +1007,16 @@ function renderArrayPreview(component) {
     container.appendChild(heading);
   }
 
+  const labelFromBinding = (() => {
+    const source = (component.binding || "").replace(/^[=@]/, "");
+    if (!source) return "Item";
+    const parts = source.split(/[.\[\]]/).filter(Boolean);
+    if (!parts.length) return "Item";
+    const raw = parts[parts.length - 1].replace(/[-_]+/g, " ").trim();
+    if (!raw) return "Item";
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  })();
+
   if (component.variant === "cards") {
     const grid = document.createElement("div");
     grid.className = "row g-2";
@@ -977,9 +1025,8 @@ function renderArrayPreview(component) {
       col.className = "col-12 col-md-6";
       const card = document.createElement("div");
       card.className = "border rounded-3 p-3 bg-body";
-      const itemLabel = (component.itemLabel || "Item").trim() || "Item";
-      const description = component.emptyText || "Repeatable entry";
-      card.innerHTML = `<div class=\"fw-semibold\">${itemLabel} ${index + 1}</div><div class=\"text-body-secondary small\">${description}</div>`;
+      const itemLabel = `${labelFromBinding} ${index + 1}`;
+      card.innerHTML = `<div class=\"fw-semibold\">${itemLabel}</div><div class=\"text-body-secondary small\">Repeatable entry</div>`;
       col.appendChild(card);
       grid.appendChild(col);
     }
@@ -990,8 +1037,7 @@ function renderArrayPreview(component) {
     for (let index = 0; index < 3; index += 1) {
       const item = document.createElement("li");
       item.className = "list-group-item d-flex justify-content-between align-items-center";
-      const itemLabel = (component.itemLabel || "Item").trim() || "Item";
-      item.textContent = `${itemLabel} ${index + 1}`;
+      item.textContent = `${labelFromBinding} ${index + 1}`;
       const badge = document.createElement("span");
       badge.className = "badge text-bg-secondary";
       badge.textContent = "Value";
@@ -999,13 +1045,6 @@ function renderArrayPreview(component) {
       list.appendChild(item);
     }
     container.appendChild(list);
-  }
-
-  if (component.emptyText) {
-    const empty = document.createElement("div");
-    empty.className = "text-body-secondary small";
-    empty.textContent = component.emptyText;
-    container.appendChild(empty);
   }
   return container;
 }
@@ -1039,9 +1078,12 @@ function renderImagePreview(component) {
 }
 
 function renderLabelPreview(component) {
+  const value = (component.text || "").trim() || getComponentLabel(component, "");
+  if (!value) {
+    return document.createDocumentFragment();
+  }
   const text = document.createElement("div");
   text.className = "fw-semibold";
-  const value = (component.text || "").trim() || getComponentLabel(component, "") || "Label";
   text.textContent = value;
   applyTextFormatting(text, component);
   return text;
@@ -1065,27 +1107,34 @@ function renderContainerPreview(component) {
   switch (component.containerType) {
     case "tabs": {
       const labels = zones.map((zone) => zone.label);
+      const activeIndex = getActiveTabIndex(component, labels.length);
       const nav = document.createElement("div");
       nav.className = "d-flex flex-wrap gap-2";
       labels.forEach((label, index) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `btn btn-outline-secondary btn-sm${index === 0 ? " active" : ""}`;
+        const isActive = index === activeIndex;
+        button.className = `btn btn-outline-secondary btn-sm${isActive ? " active" : ""}`;
         button.textContent = label;
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (isActive) return;
+          setActiveTabIndex(component, index);
+          renderCanvas();
+        });
         nav.appendChild(button);
       });
       wrapper.appendChild(nav);
 
-      const panels = document.createElement("div");
-      panels.className = "d-flex flex-column gap-3";
-      zones.forEach((zone, index) => {
+      const zone = zones[activeIndex] || zones[0];
+      if (zone) {
         const dropzone = createContainerDropzone(component, zone, {
-          label: labels[index],
-          hint: `Drop components for ${labels[index]}`,
+          label: labels[activeIndex] || zone.label,
+          hint: `Drop components for ${labels[activeIndex] || zone.label || "this tab"}`,
         });
-        panels.appendChild(dropzone);
-      });
-      wrapper.appendChild(panels);
+        wrapper.appendChild(dropzone);
+      }
       break;
     }
     case "grid": {
@@ -1283,18 +1332,19 @@ function renderTogglePreview(component) {
     : ["State 1", "State 2"];
   const shape = component.shape || "circle";
   const activeIndex = Math.max(0, Math.min(component.activeIndex ?? 0, states.length - 1));
-  const group = document.createElement("div");
-  group.className = "template-toggle-group";
-  states.forEach((state, index) => {
-    const item = document.createElement("div");
-    item.className = `template-toggle-shape template-toggle-shape--${shape}`;
-    if (index <= activeIndex) {
-      item.classList.add("is-active");
-    }
-    item.setAttribute("title", state);
-    group.appendChild(item);
-  });
-  wrapper.appendChild(group);
+  const maxIndex = Math.max(states.length - 1, 1);
+  const progress = maxIndex > 0 ? activeIndex / maxIndex : 0;
+  const preview = document.createElement("div");
+  preview.className = `template-toggle-shape template-toggle-shape--${shape}`;
+  if (progress > 0) {
+    preview.classList.add("is-active");
+  }
+  preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
+  const opacity = 0.25 + progress * 0.55;
+  preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
+  preview.setAttribute("aria-label", states[activeIndex] || "Toggle state");
+  wrapper.appendChild(preview);
+
   return wrapper;
 }
 
@@ -1367,6 +1417,7 @@ function clearCanvas() {
   }
   state.components = [];
   state.selectedId = null;
+  containerActiveTabs.clear();
   undoStack.push({ type: "clear" });
   status.show("Cleared template canvas", { type: "info", timeout: 1500 });
   renderCanvas();
@@ -1377,6 +1428,7 @@ function removeComponent(uid) {
   const found = findComponent(uid);
   if (!found) return;
   const [removed] = found.collection.splice(found.index, 1);
+  pruneContainerState(removed);
   undoStack.push({ type: "remove", componentId: removed.uid, parentId: found.parent?.uid || "", zoneKey: found.zoneKey });
   status.show("Removed component", { type: "info", timeout: 1500 });
   if (state.selectedId === uid) {
@@ -1395,6 +1447,7 @@ function startNewTemplate({ id = "", title = "", version = "0.1" } = {}) {
   state.template = template;
   state.components = [];
   state.selectedId = null;
+  containerActiveTabs.clear();
   componentCounter = 0;
   ensureTemplateOption(template.id, template.title || template.id);
   ensureTemplateSelectValue();
@@ -1506,6 +1559,7 @@ function renderInspector() {
   }
 
   elements.inspector.appendChild(form);
+  refreshTooltips(elements.inspector);
 }
 
 function createSection(title, controls = []) {
@@ -1862,7 +1916,7 @@ function renderInputInspector(component) {
     { value: "checkbox", icon: "tabler:checkbox", label: "Checkbox" },
   ];
   controls.push(
-    createRadioButtonGroup(component, "Input type", options, component.variant || "text", (value) => {
+    createRadioButtonGroup(component, "Type", options, component.variant || "text", (value) => {
       updateComponent(component.uid, (draft) => {
         draft.variant = value;
         if ((value === "select" || value === "radio" || value === "checkbox") && (!Array.isArray(draft.options) || !draft.options.length)) {
@@ -1891,8 +1945,7 @@ function renderInputInspector(component) {
 }
 
 function renderArrayInspector(component) {
-  const controls = [];
-  controls.push(
+  return [
     createRadioButtonGroup(
       component,
       "Layout",
@@ -1906,23 +1959,8 @@ function renderArrayInspector(component) {
           draft.variant = value;
         }, { rerenderCanvas: true });
       }
-    )
-  );
-  controls.push(
-    createTextInput(component, "Item label", component.itemLabel || "", (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.itemLabel = value;
-      }, { rerenderCanvas: true });
-    })
-  );
-  controls.push(
-    createTextInput(component, "Empty text", component.emptyText || "", (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.emptyText = value;
-      }, { rerenderCanvas: true });
-    }, { placeholder: "Shown when no items" })
-  );
-  return controls;
+    ),
+  ];
 }
 
 function renderDividerInspector(component) {
@@ -1999,17 +2037,7 @@ function renderImageInspector(component) {
 }
 
 function renderLabelInspector(component) {
-  const controls = [];
-  controls.push(
-    createTextarea(component, "Text", component.text || getComponentLabel(component, ""), (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.text = value;
-        draft.name = value;
-        draft.label = value;
-      }, { rerenderCanvas: true });
-    }, { rows: 3, placeholder: "Label text" })
-  );
-  return controls;
+  return [];
 }
 
 function renderContainerInspector(component) {
@@ -2017,7 +2045,7 @@ function renderContainerInspector(component) {
   controls.push(
     createRadioButtonGroup(
       component,
-      "Layout type",
+      "Type",
       [
         { value: "columns", icon: "tabler:columns-3", label: "Columns" },
         { value: "rows", icon: "tabler:layout-rows", label: "Rows" },
