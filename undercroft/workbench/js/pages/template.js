@@ -826,6 +826,81 @@ function renderComponentPreview(component) {
     default:
       return document.createTextNode("Unsupported component");
   }
+  return Object.keys(COLOR_FIELD_MAP);
+}
+
+function hasTextControls(component) {
+  const definition = getDefinition(component);
+  if (definition.textControls === false) {
+    return false;
+  }
+  return true;
+}
+
+if (elements.palette) {
+  createSortable(elements.palette, {
+    group: { name: "template-canvas", pull: "clone", put: false },
+    sort: false,
+    fallbackOnBody: true,
+  });
+  elements.palette.addEventListener("dblclick", (event) => {
+    const paletteItem = event.target.closest("[data-component-type]");
+    if (!paletteItem || !elements.palette.contains(paletteItem)) {
+      return;
+    }
+    const { componentType } = paletteItem.dataset;
+    if (!componentType || !COMPONENT_DEFINITIONS[componentType]) {
+      return;
+    }
+    const component = createComponent(componentType);
+    const definition = COMPONENT_DEFINITIONS[componentType] || {};
+    const parentId = "";
+    const zoneKey = "root";
+    const index = state.components.length;
+    insertComponent(parentId, zoneKey, index, component);
+    state.selectedId = component.uid;
+    undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+    const label = typeof definition.label === "string" && definition.label ? definition.label : componentType;
+    status.show(`${label} added to canvas`, {
+      type: "success",
+      timeout: 1800,
+    });
+    renderCanvas();
+    renderInspector();
+    expandInspectorPane();
+  });
+}
+
+if (elements.canvasRoot) {
+  elements.canvasRoot.addEventListener("click", (event) => {
+    const deleteButton = event.target.closest('[data-action="remove-component"]');
+    if (deleteButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      removeComponent(deleteButton.dataset.componentId);
+      return;
+    }
+    const target = event.target.closest("[data-component-id]");
+    if (!target) return;
+    selectComponent(target.dataset.componentId);
+  });
+}
+
+if (elements.saveButton) {
+  elements.saveButton.addEventListener("click", () => {
+    undoStack.push({ type: "save", count: state.components.length });
+    const label = state.template?.title || state.template?.id || "Template";
+    status.show(`${label} draft saved (${state.components.length} components)`, {
+      type: "success",
+      timeout: 2000,
+    });
+  });
+}
+
+if (elements.undoButton) {
+  elements.undoButton.addEventListener("click", () => {
+    status.show("Undo coming soon", { type: "info", timeout: 1800 });
+  });
 }
 
 function ensureContainerZones(component) {
@@ -884,6 +959,7 @@ function ensureContainerZones(component) {
       }
       delete component.zones[key];
     }
+    status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
   });
 
   return zones;
@@ -1684,28 +1760,6 @@ function createTextSizeControls(component) {
       draft.textSize = value;
     }, { rerenderCanvas: true });
   });
-  const controls = document.createElement("div");
-  controls.className = "d-flex align-items-center gap-2";
-  controls.appendChild(input);
-  const clear = document.createElement("button");
-  clear.type = "button";
-  clear.className = "btn btn-outline-secondary btn-sm";
-  clear.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
-  clear.setAttribute("aria-label", `Clear ${labelText.toLowerCase()} color`);
-  clear.setAttribute("data-bs-toggle", "tooltip");
-  clear.setAttribute("data-bs-placement", "top");
-  clear.setAttribute("data-bs-title", "Reset to default");
-  clear.addEventListener("click", () => {
-    input.value = "#000000";
-    onChange("");
-  });
-  controls.appendChild(clear);
-  container.append(label, controls);
-  if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
-    // eslint-disable-next-line no-new
-    new window.bootstrap.Tooltip(clear);
-  }
-  return container;
 }
 
 function createTextStyleControls(component) {
@@ -1720,78 +1774,6 @@ function createTextStyleControls(component) {
       draft.textStyles[key] = checked;
     }, { rerenderCanvas: true });
   });
-  circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
-  const mask = document.createElement("div");
-  mask.className = "template-circular-track__mask";
-  circle.appendChild(mask);
-  const value = document.createElement("div");
-  value.className = "template-circular-track__value";
-  value.textContent = `${activeSegments.filter(Boolean).length}/${segments}`;
-  circle.appendChild(value);
-  wrapper.appendChild(circle);
-  return wrapper;
-}
-
-function renderSelectGroupPreview(component) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "d-flex flex-column gap-2";
-  const headingText = getComponentLabel(component, "Select");
-  if (headingText) {
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold";
-    heading.textContent = headingText;
-    applyTextFormatting(heading, component);
-    wrapper.appendChild(heading);
-  }
-
-  const sampleOptions = ["Option A", "Option B", "Option C"];
-  let control;
-  if (component.variant === "tags") {
-    control = document.createElement("div");
-    control.className = "template-select-tags d-flex flex-wrap gap-2";
-    sampleOptions.forEach((option, index) => {
-      const tag = document.createElement("span");
-      tag.className = "template-select-tag";
-      const slug = option.trim().toLowerCase().replace(/\s+/g, "-");
-      tag.textContent = `#${slug || "tag"}`;
-      if (component.multiple !== false && index < 2) {
-        tag.classList.add("is-active");
-      } else if (!component.multiple && index === 0) {
-        tag.classList.add("is-active");
-      }
-      control.appendChild(tag);
-    });
-  } else if (component.variant === "buttons") {
-    control = document.createElement("div");
-    control.className = "btn-group";
-    sampleOptions.forEach((option, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      const isActive = component.multiple ? index < 2 : index === 0;
-      button.className = `btn btn-outline-secondary${isActive ? " active" : ""}`;
-      if (component.readOnly) {
-        button.classList.add("disabled");
-      }
-      button.textContent = option;
-      control.appendChild(button);
-    });
-  } else {
-    control = document.createElement("div");
-    control.className = "d-flex flex-wrap gap-2";
-    sampleOptions.forEach((option, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      const isActive = component.multiple ? index < 2 : index === 0;
-      button.className = `btn btn-outline-secondary btn-sm rounded-pill${isActive ? " active" : ""}`;
-      if (component.readOnly) {
-        button.classList.add("disabled");
-      }
-      button.textContent = option;
-      control.appendChild(button);
-    });
-  }
-  wrapper.appendChild(control);
-  return wrapper;
 }
 
 function createAlignmentControls(component) {
@@ -1901,7 +1883,14 @@ function createNumberInput(component, labelText, value, onChange, { min, max, st
   return wrapper;
 }
 
-function createRadioButtonGroup(component, labelText, options, currentValue, onChange) {
+function createRadioButtonGroup(
+  component,
+  labelText,
+  options,
+  currentValue,
+  onChange,
+  config = {}
+) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
   const heading = document.createElement("div");
@@ -1910,6 +1899,9 @@ function createRadioButtonGroup(component, labelText, options, currentValue, onC
   wrapper.appendChild(heading);
   const group = document.createElement("div");
   group.className = "btn-group template-radio-group";
+  if (config.forceSingleRow) {
+    group.classList.add("template-radio-group--single-row");
+  }
   const name = toId([component.uid, labelText, "radio"]);
   options.forEach((option, index) => {
     const id = toId([component.uid, labelText, option.value, index]);
@@ -2022,14 +2014,28 @@ function renderInputInspector(component) {
     { value: "checkbox", icon: "tabler:checkbox", label: "Checkbox" },
   ];
   controls.push(
-    createRadioButtonGroup(component, "Type", options, component.variant || "text", (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.variant = value;
-        if ((value === "select" || value === "radio" || value === "checkbox") && (!Array.isArray(draft.options) || !draft.options.length)) {
-          draft.options = ["Option A", "Option B"];
-        }
-      }, { rerenderCanvas: true, rerenderInspector: true });
-    })
+    createRadioButtonGroup(
+      component,
+      "Type",
+      options,
+      component.variant || "text",
+      (value) => {
+        updateComponent(
+          component.uid,
+          (draft) => {
+            draft.variant = value;
+            if (
+              (value === "select" || value === "radio" || value === "checkbox") &&
+              (!Array.isArray(draft.options) || !draft.options.length)
+            ) {
+              draft.options = ["Option A", "Option B"];
+            }
+          },
+          { rerenderCanvas: true, rerenderInspector: true }
+        );
+      },
+      { forceSingleRow: true }
+    )
   );
   controls.push(
     createTextInput(component, "Placeholder", component.placeholder || "", (value) => {
