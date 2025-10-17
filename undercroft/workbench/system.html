@@ -174,8 +174,8 @@
                 </div>
               </div>
             </section>
-            <section class="row g-4 flex-grow-1 align-items-start">
-              <div class="col-12 col-lg-3">
+            <section class="workbench-editor-layout flex-grow-1">
+              <div>
                 <div class="workbench-sticky">
                   <div class="card border-0 shadow-theme min-h-24rem h-100">
                     <div class="card-body d-flex flex-column gap-3">
@@ -184,46 +184,67 @@
                         <span class="fs-6 text-body-secondary">Drag into canvas</span>
                       </div>
                       <div class="flex-grow-1 overflow-auto d-grid gap-2" data-palette>
-                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="string" data-sortable-handle="true">
-                        <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
-                        <div>
-                          <div class="fw-semibold">String</div>
-                          <div class="text-body-secondary small">Free-form text value</div>
+                        <div
+                          class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2"
+                          data-palette-type="string"
+                          data-sortable-handle="true"
+                        >
+                          <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
+                          <div>
+                            <div class="fw-semibold">String</div>
+                            <div class="text-body-secondary small">Free-form text value</div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="number" data-sortable-handle="true">
-                        <span class="iconify fs-4 text-primary" data-icon="tabler:hash" aria-hidden="true"></span>
-                        <div>
-                          <div class="fw-semibold">Number</div>
-                          <div class="text-body-secondary small">Numeric value with limits</div>
+                        <div
+                          class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2"
+                          data-palette-type="number"
+                          data-sortable-handle="true"
+                        >
+                          <span class="iconify fs-4 text-primary" data-icon="tabler:hash" aria-hidden="true"></span>
+                          <div>
+                            <div class="fw-semibold">Number</div>
+                            <div class="text-body-secondary small">Numeric value with limits</div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="boolean" data-sortable-handle="true">
-                        <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-left" aria-hidden="true"></span>
-                        <div>
-                          <div class="fw-semibold">Boolean</div>
-                          <div class="text-body-secondary small">True / false value</div>
+                        <div
+                          class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2"
+                          data-palette-type="boolean"
+                          data-sortable-handle="true"
+                        >
+                          <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-left" aria-hidden="true"></span>
+                          <div>
+                            <div class="fw-semibold">Boolean</div>
+                            <div class="text-body-secondary small">True / false value</div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="object" data-sortable-handle="true">
-                        <span class="iconify fs-4 text-primary" data-icon="tabler:braces" aria-hidden="true"></span>
-                        <div>
-                          <div class="fw-semibold">Object</div>
-                          <div class="text-body-secondary small">Keyed set of fields</div>
+                        <div
+                          class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2"
+                          data-palette-type="object"
+                          data-sortable-handle="true"
+                        >
+                          <span class="iconify fs-4 text-primary" data-icon="tabler:braces" aria-hidden="true"></span>
+                          <div>
+                            <div class="fw-semibold">Object</div>
+                            <div class="text-body-secondary small">Keyed set of fields</div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2" data-palette-type="array" data-sortable-handle="true">
-                        <span class="iconify fs-4 text-primary" data-icon="tabler:brackets" aria-hidden="true"></span>
-                        <div>
-                          <div class="fw-semibold">Array</div>
-                          <div class="text-body-secondary small">Repeatable entries</div>
+                        <div
+                          class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2"
+                          data-palette-type="array"
+                          data-sortable-handle="true"
+                        >
+                          <span class="iconify fs-4 text-primary" data-icon="tabler:brackets" aria-hidden="true"></span>
+                          <div>
+                            <div class="fw-semibold">Array</div>
+                            <div class="text-body-secondary small">Repeatable entries</div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-12 col-lg-9 d-flex">
+              <div class="d-flex">
                 <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
                   <div class="card-body d-flex flex-column gap-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -231,7 +252,10 @@
                       <span class="fs-6 text-body-secondary">Drop fields here</span>
                     </div>
                     <div class="flex-grow-1 overflow-auto d-grid gap-2" data-canvas-root>
-                      <div class="border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary" data-canvas-placeholder="true">
+                      <div
+                        class="border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary"
+                        data-canvas-placeholder="true"
+                      >
                         Drag fields from the palette to begin building your system.
                       </div>
                     </div>
