@@ -11,36 +11,16 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
+import { resolveApiBase } from "../lib/api.js";
+import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
 (() => {
-
-  function resolveApiBase() {
-    if (typeof window === "undefined") {
-      return "";
-    }
-    if (window.__WORKBENCH_API_BASE__ && typeof window.__WORKBENCH_API_BASE__ === "string") {
-      return window.__WORKBENCH_API_BASE__;
-    }
-    const { origin, protocol, host } = window.location || {};
-    if (origin && origin !== "null") {
-      return origin;
-    }
-    if (protocol && protocol.startsWith("http") && host) {
-      return `${protocol}//${host}`;
-    }
-    return "";
-  }
-
   const { status, undoStack } = initAppShell({ namespace: "system" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 
-  const SYSTEMS = [
-    {
-      id: "sys.dnd5e",
-      title: "D&D 5e (Basic)",
-      path: "data/systems/sys.dnd5e.json",
-    },
-  ];
+  const systemCatalog = new Map();
+
+  registerBuiltinContent();
 
   const TYPE_DEFS = {
     string: {
@@ -115,6 +95,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
     inspector: document.querySelector("[data-inspector]"),
     saveButton: document.querySelector('[data-action="save-system"]'),
     newButton: document.querySelector('[data-action="new-system"]'),
+    deleteButton: document.querySelector('[data-delete-system]'),
     clearButton: document.querySelector('[data-action="clear-canvas"]'),
     importButton: document.querySelector('[data-action="import-system"]'),
     exportButton: document.querySelector('[data-action="export-system"]'),
@@ -130,6 +111,8 @@ import { refreshTooltips } from "../lib/tooltips.js";
   };
 
   refreshTooltips(document);
+
+  loadSystemRecords();
 
   const state = {
     system: createBlankSystem(),
@@ -211,7 +194,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
   if (elements.select) {
     populateSelect(
       elements.select,
-      SYSTEMS.map((system) => ({ value: system.id, label: system.title }))
+      BUILTIN_SYSTEMS.map((system) => ({ value: system.id, label: system.title }))
     );
     elements.select.addEventListener("change", async () => {
       persistCurrentDraft();
@@ -219,7 +202,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
       if (!selectedId) {
         return;
       }
-      if (state.system.id === selectedId) {
+      if (state.system.id === selectedId && state.system.origin !== "draft") {
         return;
       }
 
@@ -229,17 +212,36 @@ import { refreshTooltips } from "../lib/tooltips.js";
         return;
       }
 
-      const selected = SYSTEMS.find((system) => system.id === selectedId);
-      if (!selected) {
-        const fallback = createBlankSystem({ id: selectedId, title: selectedId });
+      const metadata = systemCatalog.get(selectedId);
+      if (!metadata) {
+        const fallback = createBlankSystem({ id: selectedId, title: selectedId, origin: "draft" });
+        registerSystemRecord({ id: fallback.id, title: fallback.title, source: "draft" }, { syncOption: true });
+        applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
+        return;
+      }
+      if (metadata.source === "draft") {
+        const fallback = createBlankSystem({ id: metadata.id, title: metadata.title, origin: "draft" });
         applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
         return;
       }
       try {
-        const response = await fetch(selected.path);
-        const data = await response.json();
-        applySystemData(data, { source: "select" });
-        status.show(`Loaded ${data.title}`, { type: "success", timeout: 2000 });
+        let payload = null;
+        if (metadata.source === "builtin" && metadata.path) {
+          const response = await fetch(metadata.path);
+          payload = await response.json();
+        } else {
+          const result = await dataManager.get("systems", selectedId, { preferLocal: true });
+          payload = result?.payload || null;
+        }
+        if (!payload) {
+          throw new Error("System payload missing");
+        }
+        const label = payload.title || metadata.title || selectedId;
+        registerSystemRecord(
+          { id: payload.id || selectedId, title: label, source: metadata.source || "remote", path: metadata.path },
+          { syncOption: true }
+        );
+        applySystemData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
       } catch (error) {
         console.error("Unable to load system", error);
         status.show("Failed to load system", { type: "error", timeout: 2500 });
@@ -271,9 +273,9 @@ import { refreshTooltips } from "../lib/tooltips.js";
       }
       const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
       persistCurrentDraft();
-      const blank = createBlankSystem({ id: id.trim(), title: title.trim(), version: version.trim() });
+      const blank = createBlankSystem({ id: id.trim(), title: title.trim(), version: version.trim(), origin: "draft" });
+      registerSystemRecord({ id: blank.id, title: blank.title, source: "draft" }, { syncOption: true });
       applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
-      ensureSelectOption(blank.id, blank.title);
       if (elements.select) {
         elements.select.value = blank.id || "";
       }
@@ -299,9 +301,9 @@ import { refreshTooltips } from "../lib/tooltips.js";
       }
 
       persistCurrentDraft();
-      const blank = createBlankSystem({ id, title, version });
+      const blank = createBlankSystem({ id, title, version, origin: "draft" });
+      registerSystemRecord({ id: blank.id, title: blank.title, source: "draft" }, { syncOption: true });
       applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
-      ensureSelectOption(blank.id, blank.title);
       if (elements.select) {
         elements.select.value = blank.id || "";
       }
@@ -327,7 +329,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
       payload.id = systemId;
       if (state.system.id !== systemId) {
         state.system.id = systemId;
-        ensureSelectOption(systemId, payload.title || systemId);
+        registerSystemRecord({ id: systemId, title: payload.title || systemId, source: state.system.origin || "draft" }, { syncOption: true });
         ensureSelectValue();
       }
       const wantsRemote = dataManager.isAuthenticated();
@@ -349,6 +351,9 @@ import { refreshTooltips } from "../lib/tooltips.js";
         rememberDraft(state.system);
         const savedToServer = result?.source === "remote";
         const label = payload.title || systemId;
+        state.system.origin = savedToServer ? "remote" : "local";
+        registerSystemRecord({ id: systemId, title: label, source: state.system.origin }, { syncOption: true });
+        ensureSelectValue();
         if (savedToServer) {
           status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
         } else {
@@ -364,6 +369,43 @@ import { refreshTooltips } from "../lib/tooltips.js";
       } finally {
         button.disabled = false;
         button.removeAttribute("aria-busy");
+      }
+    });
+  }
+
+  if (elements.deleteButton) {
+    elements.deleteButton.addEventListener("click", async () => {
+      if (!state.system?.id) {
+        status.show("Select a system before deleting.", { type: "warning", timeout: 2000 });
+        return;
+      }
+      if (state.system.origin === "builtin") {
+        status.show("Built-in systems cannot be deleted.", { type: "info", timeout: 2200 });
+        return;
+      }
+      if (state.system.origin === "draft") {
+        status.show("Save the system before deleting it.", { type: "info", timeout: 2200 });
+        return;
+      }
+      const label = state.system.title || state.system.id;
+      const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
+      if (!confirmed) {
+        return;
+      }
+      const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
+      try {
+        await dataManager.delete("systems", state.system.id, { mode: wantsRemote ? "remote" : "auto" });
+        drafts.delete(getDraftKey(state.system.id));
+        removeSystemRecord(state.system.id);
+        state.system = createBlankSystem();
+        state.selectedNodeId = null;
+        renderAll();
+        ensureSelectValue();
+        status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+      } catch (error) {
+        console.error("Failed to delete system", error);
+        const message = error?.message || "Unable to delete system";
+        status.show(message, { type: "error", timeout: 3000 });
       }
     });
   }
@@ -387,8 +429,8 @@ import { refreshTooltips } from "../lib/tooltips.js";
       const text = await file.text();
       const data = JSON.parse(text);
       persistCurrentDraft();
-      applySystemData(data, { source: "import" });
-      ensureSelectOption(state.system.id, state.system.title);
+      applySystemData(data, { origin: "draft", emitStatus: true, statusMessage: `Imported ${data.title || state.system.id || "system"}` });
+      registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
       if (elements.select) {
         elements.select.value = state.system.id || "";
       }
@@ -406,6 +448,12 @@ import { refreshTooltips } from "../lib/tooltips.js";
     elements.importButton.addEventListener("click", () => {
       importInput.click();
     });
+    hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
+    hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
+    hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
+    hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
+    hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
+    applySystemState(hydrated);
   }
 
   if (elements.exportButton) {
@@ -428,7 +476,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
 
   renderAll();
 
-  function createBlankSystem({ id = "", title = "", version = "0.1" } = {}) {
+  function createBlankSystem({ id = "", title = "", version = "0.1", origin = "draft" } = {}) {
     return {
       id,
       title,
@@ -438,6 +486,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
       metadata: [],
       formulas: [],
       importers: [],
+      origin,
     };
   }
 
@@ -466,22 +515,27 @@ import { refreshTooltips } from "../lib/tooltips.js";
     return Object.assign(node, overrides);
   }
 
-  function applySystemData(data = {}) {
+  function applySystemData(data = {}, { origin = "remote", emitStatus = false, statusMessage = "" } = {}) {
     const hydrated = createBlankSystem({
       id: data.id || "",
       title: data.title || "",
       version: data.version || "0.1",
+      origin,
     });
     hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
     hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
     hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
     hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
-    applySystemState(hydrated);
+    applySystemState(hydrated, { emitStatus, statusMessage });
   }
 
   function applySystemState(system, { emitStatus = false, statusMessage = "" } = {}) {
     state.system = cloneSystem(system);
+    state.system.origin = system.origin || state.system.origin || "draft";
+    if (state.system.id) {
+      registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
+    }
     rebuildFieldIdentities(state.system);
     state.selectedNodeId = null;
     renderAll();
@@ -522,6 +576,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
     renderCanvas();
     renderInspector();
     renderPreview();
+    syncSystemActions();
   }
 
   function renderCanvas() {
@@ -1154,6 +1209,95 @@ import { refreshTooltips } from "../lib/tooltips.js";
         return lower.charAt(0).toUpperCase() + lower.slice(1);
       })
       .join("");
+  }
+
+  function registerSystemRecord(record, { syncOption = true } = {}) {
+    if (!record || !record.id) {
+      return;
+    }
+    const current = systemCatalog.get(record.id) || {};
+    const next = { ...current, ...record };
+    systemCatalog.set(record.id, next);
+    if (syncOption) {
+      ensureSelectOption(record.id, next.title || record.id);
+    }
+  }
+
+  function removeSystemRecord(id) {
+    if (!id) {
+      return;
+    }
+    systemCatalog.delete(id);
+    removeSelectOption(id);
+  }
+
+  function removeSelectOption(id) {
+    if (!elements.select || !id) {
+      return;
+    }
+    const escaped = escapeCss(id);
+    const option = escaped ? elements.select.querySelector(`option[value="${escaped}"]`) : null;
+    if (option) {
+      option.remove();
+    }
+  }
+
+  function syncSystemActions() {
+    if (!elements.deleteButton) {
+      return;
+    }
+    const hasSystem = Boolean(state.system?.id);
+    elements.deleteButton.classList.toggle("d-none", !hasSystem);
+    if (!hasSystem) {
+      elements.deleteButton.disabled = true;
+      elements.deleteButton.setAttribute("aria-disabled", "true");
+      elements.deleteButton.removeAttribute("title");
+      return;
+    }
+    const origin = state.system?.origin || "";
+    const isBuiltin = origin === "builtin";
+    const isDraft = origin === "draft";
+    const deletable = !isBuiltin && !isDraft;
+    elements.deleteButton.disabled = !deletable;
+    elements.deleteButton.setAttribute("aria-disabled", deletable ? "false" : "true");
+    if (isBuiltin) {
+      elements.deleteButton.title = "Built-in systems cannot be deleted.";
+    } else if (isDraft) {
+      elements.deleteButton.title = "Save the system before deleting it.";
+    } else {
+      elements.deleteButton.removeAttribute("title");
+    }
+  }
+
+  function registerBuiltinContent() {
+    BUILTIN_SYSTEMS.forEach((system) => {
+      registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" }, { syncOption: false });
+    });
+  }
+
+  async function loadSystemRecords() {
+    try {
+      const localEntries = dataManager.listLocalEntries("systems");
+      localEntries.forEach(({ id, payload }) => {
+        registerSystemRecord({ id, title: payload?.title || id, source: "local" }, { syncOption: true });
+      });
+    } catch (error) {
+      console.warn("System editor: unable to read local systems", error);
+    }
+    if (!dataManager.baseUrl) {
+      ensureSelectValue();
+      return;
+    }
+    try {
+      const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
+      const items = remote?.items || [];
+      items.forEach((item) => {
+        registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" }, { syncOption: true });
+      });
+      ensureSelectValue();
+    } catch (error) {
+      console.warn("System editor: unable to list systems", error);
+    }
   }
 
   function ensureSelectOption(id, label) {

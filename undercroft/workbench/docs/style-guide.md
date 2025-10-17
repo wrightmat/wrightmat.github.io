@@ -39,6 +39,20 @@ This document captures the shared layout and styling conventions introduced whil
 - Include a dedicated “Clear canvas” control in that toolbar and mirror the collapsible JSON Preview card in each editor’s tools pane so reset and export workflows stay consistent.
 - Highlight active pane toggles by swapping to the filled `btn-secondary` style. The helper in `panes.js` already handles this state change when `data-active="true"` is set.
 - Keep undo/redo placeholders sized like the other toolbar buttons so future functionality can drop in without shifting the layout.
+- Pair each creation control (New Template/System) with a sibling “Delete” button. Hide it until a record is selected, disable it for built-in content, and confirm before calling the shared DataManager delete helper so every editor removes files locally and remotely in the same way.
+
+## JSON Preview
+
+- Drive preview panes through `createJsonPreviewRenderer()` (see `js/lib/json-preview.js`) so formatting, byte counts, and follow-up hooks (like draft persistence) behave identically across editors.
+
+## Developer Checks
+
+- Run `scripts/check-modules.mjs` before committing changes to Workbench editors. The helper executes `node --check` across the shared libraries and page entry points so duplicate identifier regressions (like the `addComponentToRoot` collisions) are caught immediately.
+- Wrap each page module in an IIFE (e.g. `(() => { /* page code */ })();`) so that, even if the browser evaluates the entry script twice, top-level `const` declarations are scoped to the invocation and cannot clash with prior loads.
+
+## Template Authoring
+
+- Require the “Create Template” dialog to include a system selector. Populate it from the shared system catalog (built-in, local, and remote entries) and block creation until the author chooses the backing system so bindings and formulas have a schema target.
 
 ## JSON Preview
 
