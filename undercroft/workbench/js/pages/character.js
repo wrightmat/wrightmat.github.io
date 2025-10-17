@@ -32,6 +32,7 @@ const BUILTIN_CHARACTERS = [
     components: [],
     character: null,
     draft: null,
+    characterOrigin: null,
   };
 
   let notesEditor = null;
@@ -40,7 +41,6 @@ const BUILTIN_CHARACTERS = [
   let componentCounter = 0;
 
   const elements = {
-    templateSelect: document.querySelector("[data-template-select]"),
     characterSelect: document.querySelector("[data-character-select]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
     saveButton: document.querySelector('[data-action="save-character"]'),
@@ -49,7 +49,7 @@ const BUILTIN_CHARACTERS = [
     importButton: document.querySelector('[data-action="import-character"]'),
     exportButton: document.querySelector('[data-action="export-character"]'),
     newCharacterButton: document.querySelector('[data-action="new-character"]'),
-    resetButton: document.querySelector('[data-action="reset-character"]'),
+    deleteCharacterButton: document.querySelector('[data-delete-character]'),
     viewToggle: document.querySelector('[data-action="toggle-mode"]'),
     modeIndicator: document.querySelector("[data-mode-indicator]"),
     noteEditor: document.querySelector("[data-note-editor]"),
@@ -58,6 +58,9 @@ const BUILTIN_CHARACTERS = [
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
     diceResult: document.querySelector("[data-dice-result]"),
+    newCharacterForm: document.querySelector("[data-new-character-form]"),
+    newCharacterName: document.querySelector("[data-new-character-name]"),
+    newCharacterTemplate: document.querySelector("[data-new-character-template]"),
   };
 
   const renderPreview = createJsonPreviewRenderer({
@@ -65,6 +68,14 @@ const BUILTIN_CHARACTERS = [
     bytesTarget: elements.jsonPreviewBytes,
     serialize: () => state.draft || {},
   });
+
+  let newCharacterModalInstance = null;
+  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+    const modalElement = document.getElementById("new-character-modal");
+    if (modalElement) {
+      newCharacterModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+    }
+  }
 
   registerBuiltinContent();
   initNotesEditor();
@@ -75,17 +86,9 @@ const BUILTIN_CHARACTERS = [
   syncModeIndicator();
   renderCanvas();
   renderPreview();
+  syncCharacterActions();
 
   function bindUiEvents() {
-    if (elements.templateSelect) {
-      elements.templateSelect.addEventListener("change", async () => {
-        const selectedId = elements.templateSelect.value;
-        if (selectedId) {
-          await loadTemplateById(selectedId, { announce: true });
-        }
-      });
-    }
-
     if (elements.characterSelect) {
       elements.characterSelect.addEventListener("change", async () => {
         const selectedId = elements.characterSelect.value;
@@ -135,13 +138,13 @@ const BUILTIN_CHARACTERS = [
 
     if (elements.newCharacterButton) {
       elements.newCharacterButton.addEventListener("click", () => {
-        createNewCharacter();
+        openNewCharacterDialog();
       });
     }
 
-    if (elements.resetButton) {
-      elements.resetButton.addEventListener("click", () => {
-        resetDraft();
+    if (elements.deleteCharacterButton) {
+      elements.deleteCharacterButton.addEventListener("click", () => {
+        deleteCurrentCharacter();
       });
     }
 
@@ -154,6 +157,18 @@ const BUILTIN_CHARACTERS = [
           type: "info",
           timeout: 1500,
         });
+      });
+    }
+
+    if (elements.newCharacterForm) {
+      elements.newCharacterForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = elements.newCharacterForm;
+        if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+          form.classList.add("was-validated");
+          return;
+        }
+        await createNewCharacterFromForm();
       });
     }
   }
@@ -184,7 +199,9 @@ const BUILTIN_CHARACTERS = [
     }
     const current = templateCatalog.get(record.id) || {};
     templateCatalog.set(record.id, { ...current, ...record });
-    syncTemplateOptions();
+    const selected = elements.newCharacterTemplate?.value || "";
+    refreshNewCharacterTemplateOptions(selected);
+    syncCharacterOptions();
   }
 
   function registerCharacterRecord(record) {
@@ -194,20 +211,7 @@ const BUILTIN_CHARACTERS = [
     const current = characterCatalog.get(record.id) || {};
     characterCatalog.set(record.id, { ...current, ...record });
     syncCharacterOptions();
-  }
-
-  function syncTemplateOptions() {
-    if (!elements.templateSelect) {
-      return;
-    }
-    const options = Array.from(templateCatalog.values())
-      .filter((entry) => entry.id)
-      .sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id, undefined, { sensitivity: "base" }))
-      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }));
-    populateSelect(elements.templateSelect, options, { placeholder: "Select template" });
-    if (state.template?.id) {
-      elements.templateSelect.value = state.template.id;
-    }
+    syncCharacterActions();
   }
 
   function syncCharacterOptions() {
@@ -216,11 +220,74 @@ const BUILTIN_CHARACTERS = [
     }
     const options = Array.from(characterCatalog.values())
       .filter((entry) => entry.id)
-      .sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id, undefined, { sensitivity: "base" }))
-      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }));
-    populateSelect(elements.characterSelect, options, { placeholder: "Select character" });
-    if (state.draft?.id) {
-      elements.characterSelect.value = state.draft.id;
+      .map((entry) => {
+        const templateId = entry.template || "";
+        const templateLabel = templateId
+          ? templateCatalog.get(templateId)?.title || templateId
+          : "";
+        const baseLabel = entry.title || entry.id;
+        const label = templateLabel ? `${baseLabel} (${templateLabel})` : baseLabel;
+        return { value: entry.id, label, sortLabel: label.toLowerCase() };
+      })
+      .sort((a, b) => a.sortLabel.localeCompare(b.sortLabel, undefined, { sensitivity: "base" }));
+    populateSelect(
+      elements.characterSelect,
+      options.map(({ value, label }) => ({ value, label })),
+      { placeholder: "Select character" }
+    );
+    const value = state.draft?.id || "";
+    elements.characterSelect.value = value;
+  }
+
+  function refreshNewCharacterTemplateOptions(selectedValue = "") {
+    if (!elements.newCharacterTemplate) {
+      return;
+    }
+    const options = Array.from(templateCatalog.values())
+      .filter((entry) => entry.id)
+      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    populateSelect(elements.newCharacterTemplate, options, { placeholder: "Select template" });
+    if (selectedValue) {
+      elements.newCharacterTemplate.value = selectedValue;
+    }
+  }
+
+  function removeCharacterRecord(id) {
+    if (!id) {
+      return;
+    }
+    characterCatalog.delete(id);
+    syncCharacterOptions();
+    syncCharacterActions();
+  }
+
+  function syncCharacterActions() {
+    if (!elements.deleteCharacterButton) {
+      return;
+    }
+    const hasCharacter = Boolean(state.draft?.id);
+    elements.deleteCharacterButton.classList.toggle("d-none", !hasCharacter);
+    if (!hasCharacter) {
+      elements.deleteCharacterButton.disabled = true;
+      elements.deleteCharacterButton.setAttribute("aria-disabled", "true");
+      elements.deleteCharacterButton.removeAttribute("title");
+      return;
+    }
+    const metadata = state.draft?.id ? characterCatalog.get(state.draft.id) : null;
+    const origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
+    const isBuiltin = origin === "builtin";
+    const isLocal = origin === "local";
+    const deletable = isLocal;
+    elements.deleteCharacterButton.disabled = !deletable;
+    elements.deleteCharacterButton.setAttribute("aria-disabled", deletable ? "false" : "true");
+    if (!deletable) {
+      const message = isBuiltin
+        ? "Built-in characters cannot be deleted."
+        : "Only local characters can be deleted right now.";
+      elements.deleteCharacterButton.title = message;
+    } else {
+      elements.deleteCharacterButton.removeAttribute("title");
     }
   }
 
@@ -230,7 +297,8 @@ const BUILTIN_CHARACTERS = [
     }
     notesEditor = new window.toastui.Editor({
       el: elements.noteEditor,
-      height: "100%",
+      height: "12rem",
+      minHeight: "12rem",
       initialEditType: "markdown",
       previewStyle: "vertical",
       usageStatistics: false,
@@ -299,7 +367,8 @@ const BUILTIN_CHARACTERS = [
     } catch (error) {
       console.warn("Character editor: unable to read local templates", error);
     }
-    syncTemplateOptions();
+    const selected = elements.newCharacterTemplate?.value || "";
+    refreshNewCharacterTemplateOptions(selected);
   }
 
   async function loadCharacterRecords() {
@@ -391,12 +460,8 @@ const BUILTIN_CHARACTERS = [
     if (state.draft) {
       state.draft.template = template.id;
     }
-    if (elements.templateSelect && template.id) {
-      elements.templateSelect.value = template.id;
-    }
     renderCanvas();
     renderPreview();
-    syncTemplateOptions();
   }
 
   async function loadCharacter(id) {
@@ -414,6 +479,7 @@ const BUILTIN_CHARACTERS = [
       }
       state.character = cloneCharacter(payload);
       state.draft = cloneCharacter(payload);
+      state.characterOrigin = metadata.source || payload.origin || "";
       registerCharacterRecord({
         id: state.draft.id,
         title: state.draft.data?.name || metadata.title || state.draft.id,
@@ -430,6 +496,7 @@ const BUILTIN_CHARACTERS = [
       renderCanvas();
       renderPreview();
       syncCharacterOptions();
+      syncCharacterActions();
       status.show(`Loaded ${state.draft.data?.name || metadata.title || state.draft.id}`, {
         type: "success",
         timeout: 2000,
@@ -469,9 +536,17 @@ const BUILTIN_CHARACTERS = [
       return;
     }
     elements.canvasRoot.innerHTML = "";
+    if (!state.draft?.id) {
+      elements.canvasRoot.appendChild(
+        createCanvasPlaceholder("Select a character to view the sheet.", { variant: "root" })
+      );
+      refreshTooltips(elements.canvasRoot);
+      syncModeIndicator();
+      return;
+    }
     if (!state.template?.id) {
       elements.canvasRoot.appendChild(
-        createCanvasPlaceholder("Select a template to preview the sheet.", { variant: "root" })
+        createCanvasPlaceholder("The linked template could not be loaded.", { variant: "root" })
       );
       refreshTooltips(elements.canvasRoot);
       syncModeIndicator();
@@ -514,16 +589,6 @@ const BUILTIN_CHARACTERS = [
     title.textContent = component.label || component.name || component.type;
     applyTextFormatting(title, component);
     header.insertBefore(title, actions);
-    if (component.binding) {
-      const badge = document.createElement("span");
-      badge.className = "badge text-bg-secondary";
-      badge.textContent = component.binding.trim();
-      if (iconElement && actions.contains(iconElement)) {
-        actions.insertBefore(badge, iconElement);
-      } else {
-        actions.appendChild(badge);
-      }
-    }
     wrapper.appendChild(header);
     const body = renderComponentContent(component);
     wrapper.appendChild(body);
@@ -1007,41 +1072,129 @@ const BUILTIN_CHARACTERS = [
     renderPreview();
   }
 
-  async function createNewCharacter() {
-    const templateId = elements.templateSelect?.value || state.template?.id;
-    if (!templateId) {
-      status.show("Select a template before creating a character.", { type: "warning", timeout: 2200 });
-      return;
-    }
-    if (state.template?.id !== templateId) {
-      await loadTemplateById(templateId);
-      if (state.template?.id !== templateId) {
+  function openNewCharacterDialog() {
+    if (elements.newCharacterForm && elements.newCharacterName && elements.newCharacterTemplate) {
+      const defaultTemplate = state.template?.id || elements.newCharacterTemplate.value || "";
+      prepareNewCharacterForm(defaultTemplate);
+      if (newCharacterModalInstance) {
+        newCharacterModalInstance.show();
         return;
       }
+      createNewCharacterPromptFallback();
+      return;
     }
+    createNewCharacterPromptFallback();
+  }
+
+  function prepareNewCharacterForm(defaultTemplate = "") {
+    if (!elements.newCharacterForm) {
+      return;
+    }
+    elements.newCharacterForm.reset();
+    elements.newCharacterForm.classList.remove("was-validated");
+    refreshNewCharacterTemplateOptions(defaultTemplate);
+    if (elements.newCharacterTemplate && defaultTemplate) {
+      elements.newCharacterTemplate.value = defaultTemplate;
+    }
+    if (elements.newCharacterName) {
+      elements.newCharacterName.value = "";
+      elements.newCharacterName.focus();
+      elements.newCharacterName.select();
+    }
+  }
+
+  async function createNewCharacterFromForm() {
+    if (!elements.newCharacterName || !elements.newCharacterTemplate) {
+      await createNewCharacterPromptFallback();
+      return;
+    }
+    const name = (elements.newCharacterName.value || "").trim();
+    const templateId = (elements.newCharacterTemplate.value || "").trim();
+    if (!name) {
+      elements.newCharacterForm?.classList.add("was-validated");
+      status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    if (!templateId) {
+      elements.newCharacterForm?.classList.add("was-validated");
+      status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    const created = await startNewCharacter({ name, templateId });
+    if (!created) {
+      return;
+    }
+    if (newCharacterModalInstance) {
+      newCharacterModalInstance.hide();
+    }
+    if (elements.newCharacterForm) {
+      elements.newCharacterForm.reset();
+      elements.newCharacterForm.classList.remove("was-validated");
+    }
+  }
+
+  async function createNewCharacterPromptFallback() {
     const name = window.prompt("Name your character", "New Hero");
     if (name === null) {
       return;
     }
-    const trimmed = name.trim();
-    if (!trimmed) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
       return;
     }
-    const id = generateCharacterId(trimmed);
+    const templateOptions = Array.from(templateCatalog.values()).filter((entry) => entry.id);
+    const templatePrompt = templateOptions.length
+      ? `Enter a template ID (e.g. ${templateOptions[0].id})`
+      : "Enter a template ID";
+    const templateId = window.prompt(templatePrompt, state.template?.id || templateOptions[0]?.id || "");
+    if (templateId === null) {
+      return;
+    }
+    const trimmedTemplate = templateId.trim();
+    if (!trimmedTemplate) {
+      status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    await startNewCharacter({ name: trimmedName, templateId: trimmedTemplate });
+  }
+
+  async function startNewCharacter({ name, templateId }) {
+    const trimmedName = (name || "").trim();
+    const trimmedTemplate = (templateId || "").trim();
+    if (!trimmedName) {
+      status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
+      return false;
+    }
+    if (!trimmedTemplate) {
+      status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      return false;
+    }
+    const templateMetadata = templateCatalog.get(trimmedTemplate);
+    if (!templateMetadata) {
+      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      return false;
+    }
+    if (state.template?.id !== trimmedTemplate) {
+      await loadTemplateById(trimmedTemplate);
+      if (state.template?.id !== trimmedTemplate) {
+        return false;
+      }
+    }
+    const id = generateCharacterId(trimmedName);
     const draft = {
       id,
-      title: trimmed,
-      template: templateId,
-      system: state.template?.schema || "",
-      data: { name: trimmed },
+      title: trimmedName,
+      template: trimmedTemplate,
+      system: state.template?.schema || templateMetadata?.schema || "",
+      data: { name: trimmedName },
       state: { timers: {}, log: [] },
     };
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);
+    state.characterOrigin = "local";
     state.mode = "edit";
-    registerCharacterRecord({ id, title: trimmed, template: templateId, source: "local" });
-    syncCharacterOptions();
+    registerCharacterRecord({ id, title: trimmedName, template: trimmedTemplate, source: "local" });
     if (elements.characterSelect) {
       elements.characterSelect.value = id;
     }
@@ -1050,19 +1203,60 @@ const BUILTIN_CHARACTERS = [
     renderCanvas();
     renderPreview();
     syncModeIndicator();
-    status.show(`Started ${trimmed}`, { type: "success", timeout: 2000 });
+    syncCharacterActions();
+    status.show(`Started ${trimmedName}`, { type: "success", timeout: 2000 });
+    return true;
   }
 
-  function resetDraft() {
-    if (!state.character) {
-      status.show("Nothing to reset yet.", { type: "info", timeout: 1800 });
+  function deleteCurrentCharacter() {
+    const id = state.draft?.id;
+    if (!id) {
+      status.show("Select a character before deleting.", { type: "warning", timeout: 2000 });
       return;
     }
-    state.draft = cloneCharacter(state.character);
+    const metadata = characterCatalog.get(id) || {};
+    const origin = state.characterOrigin || metadata.source || metadata.origin || state.character?.origin || "";
+    if (origin !== "local") {
+      const message = origin === "builtin"
+        ? "Built-in characters cannot be deleted."
+        : "Only local characters can be deleted right now.";
+      status.show(message, { type: origin === "builtin" ? "info" : "warning", timeout: 2400 });
+      return;
+    }
+    const label = state.draft.data?.name || metadata.title || id;
+    const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+    try {
+      dataManager.removeLocal("characters", id);
+    } catch (error) {
+      console.warn("Character editor: unable to remove character", error);
+    }
+    const notesKey = `undercroft.workbench.character.notes.${id}`;
+    try {
+      localStorage.removeItem(notesKey);
+    } catch (error) {
+      console.warn("Character editor: unable to remove notes", error);
+    }
+    removeCharacterRecord(id);
+    state.character = null;
+    state.draft = null;
+    state.template = null;
+    state.components = [];
+    state.characterOrigin = null;
+    state.mode = "view";
+    componentCounter = 0;
+    currentNotesKey = "";
+    if (elements.characterSelect) {
+      elements.characterSelect.value = "";
+    }
     syncNotesEditor();
     renderCanvas();
     renderPreview();
-    status.show("Reverted unsaved changes.", { timeout: 1800 });
+    syncModeIndicator();
+    syncCharacterActions();
+    status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
   }
 
   function exportDraft() {
@@ -1091,6 +1285,7 @@ const BUILTIN_CHARACTERS = [
         template: state.draft.template || state.template?.id || "",
         source: "local",
       });
+      state.characterOrigin = "local";
       if (!silent) {
         status.show("Character saved locally", { type: "success", timeout: 2000 });
       }
@@ -1098,6 +1293,7 @@ const BUILTIN_CHARACTERS = [
       console.warn("Character editor: unable to save character", error);
       status.show("Failed to save character locally", { type: "error", timeout: 2200 });
     }
+    syncCharacterActions();
   }
 
   function syncModeIndicator() {
