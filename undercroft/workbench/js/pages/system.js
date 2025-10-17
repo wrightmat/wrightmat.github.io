@@ -8,6 +8,8 @@ import {
 } from "../lib/editor-canvas.js";
 import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
+import { createRootInsertionHandler } from "../lib/root-inserter.js";
+import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 
 function resolveApiBase() {
@@ -132,6 +134,39 @@ const state = {
   selectedNodeId: null,
 };
 
+const addFieldToCanvasRoot = createRootInsertionHandler({
+  createItem: (type) => {
+    const normalized = normalizeType(type);
+    return applyFieldIdentity(createFieldNode(normalized));
+  },
+  beforeInsert: (type, node) => {
+    const parentId = "root";
+    const collection = getCollection(parentId);
+    const index = collection ? collection.length : 0;
+    state.selectedNodeId = node.id;
+    return { parentId, index, type: normalizeType(type) };
+  },
+  insertItem: (type, node, context) => {
+    insertNode(context.parentId, context.index, node);
+  },
+  createUndoEntry: (type, node, context) => ({
+    type: "add",
+    nodeId: node.id,
+    parentId: context.parentId,
+    index: context.index,
+  }),
+  afterInsert: () => {
+    renderAll();
+    expandInspectorPane();
+  },
+  undoStack,
+  status,
+  getStatusMessage: (type, node, context) => ({
+    message: `Added ${TYPE_DEFS[context.type]?.label || context.type} field`,
+    options: { timeout: 1500 },
+  }),
+});
+
 const drafts = new Map();
 
 const dropzones = new Map();
@@ -155,7 +190,7 @@ if (elements.palette) {
       if (!value) {
         return;
       }
-      addFieldToRoot(value);
+      addFieldToCanvasRoot(value);
     },
   });
 }
@@ -534,21 +569,6 @@ function clearCanvas() {
   renderAll();
 }
 
-function addFieldToRoot(type) {
-  const normalized = normalizeType(type);
-  const node = applyFieldIdentity(createFieldNode(normalized));
-  const parentId = "root";
-  const collection = getCollection(parentId);
-  const index = collection ? collection.length : 0;
-  insertNode(parentId, index, node);
-  undoStack.push({ type: "add", nodeId: node.id, parentId, index });
-  status.show(`Added ${TYPE_DEFS[normalized]?.label || normalized} field`, { timeout: 1500 });
-  selectNode(node.id);
-  renderAll();
-  expandInspectorPane();
-  return node;
-}
-
 function renderFieldCard(node) {
   const normalizedType = normalizeType(node.type);
   const typeMeta = TYPE_DEFS[normalizedType] || TYPE_DEFS.string;
@@ -754,16 +774,7 @@ function selectNode(nodeId) {
 }
 
 function expandInspectorPane() {
-  if (!elements.rightPane) return;
-  const collapsedClass = elements.rightPane.getAttribute("data-pane-collapsed-class") || "hidden";
-  const expandedClass = elements.rightPane.getAttribute("data-pane-expanded-class") || "flex";
-  elements.rightPane.dataset.state = "expanded";
-  elements.rightPane.classList.remove(collapsedClass);
-  elements.rightPane.classList.add(expandedClass);
-  if (elements.rightPaneToggle) {
-    elements.rightPaneToggle.setAttribute("aria-expanded", "true");
-    elements.rightPaneToggle.dataset.active = "true";
-  }
+  expandPane(elements.rightPane, elements.rightPaneToggle);
 }
 
 function getCollection(parentId) {
