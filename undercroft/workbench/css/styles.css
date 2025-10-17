@@ -65,6 +65,18 @@ body[data-theme="dark"] .hover-lift:hover {
   width: 20rem;
 }
 
+.workbench-pane {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.workbench-pane.d-flex {
+  flex-direction: column;
+}
+
+.workbench-pane-content {
+  width: 100%;
+}
+
 .status-root {
   position: fixed;
   left: 0;
