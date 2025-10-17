@@ -820,7 +820,7 @@ function renderComponentPreview(component) {
     case "circular-track":
       return renderCircularTrackPreview(component);
     case "select-group":
-      return renderSelectGroupPreview(component);
+      return renderSelectGroupComponentPreview(component);
     case "toggle":
       return renderTogglePreview(component);
     default:
@@ -1275,7 +1275,7 @@ function renderCircularTrackPreview(component) {
   return wrapper;
 }
 
-function renderSelectGroupPreview(component) {
+function renderSelectGroupComponentPreview(component) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
   const headingText = getComponentLabel(component, "Select");
@@ -1684,6 +1684,42 @@ function createTextSizeControls(component) {
       draft.textSize = value;
     }, { rerenderCanvas: true });
   });
+  const controls = document.createElement("div");
+  controls.className = "d-flex align-items-center gap-2";
+  controls.appendChild(input);
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "btn btn-outline-secondary btn-sm";
+  clear.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
+  clear.setAttribute("aria-label", `Clear ${labelText.toLowerCase()} color`);
+  clear.setAttribute("data-bs-toggle", "tooltip");
+  clear.setAttribute("data-bs-placement", "top");
+  clear.setAttribute("data-bs-title", "Reset to default");
+  clear.addEventListener("click", () => {
+    input.value = "#000000";
+    onChange("");
+  });
+  controls.appendChild(clear);
+  container.append(label, controls);
+  if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
+    // eslint-disable-next-line no-new
+    new window.bootstrap.Tooltip(clear);
+  }
+  return container;
+}
+
+function createTextStyleControls(component) {
+  const options = [
+    { value: "bold", icon: "tabler:bold" },
+    { value: "italic", icon: "tabler:italic" },
+    { value: "underline", icon: "tabler:underline" },
+  ];
+  return createInspectorToggleGroup(component, "Text style", options, component.textStyles || {}, (key, checked) => {
+    updateComponent(component.uid, (draft) => {
+      draft.textStyles = { ...(draft.textStyles || {}) };
+      draft.textStyles[key] = checked;
+    }, { rerenderCanvas: true });
+  });
   circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
   const mask = document.createElement("div");
   mask.className = "template-circular-track__mask";
@@ -1756,60 +1792,6 @@ function renderSelectGroupPreview(component) {
   }
   wrapper.appendChild(control);
   return wrapper;
-}
-
-function renderTogglePreview(component) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "d-flex flex-column gap-2";
-  const headingText = getComponentLabel(component, "Toggle");
-  if (headingText) {
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold";
-    heading.textContent = headingText;
-    applyTextFormatting(heading, component);
-    wrapper.appendChild(heading);
-  }
-
-  const states = Array.isArray(component.states) && component.states.length
-    ? component.states
-    : ["State 1", "State 2"];
-  const shape = component.shape || "circle";
-  const activeIndex = Math.max(0, Math.min(component.activeIndex ?? 0, states.length - 1));
-  const maxIndex = Math.max(states.length - 1, 1);
-  const progress = maxIndex > 0 ? activeIndex / maxIndex : 0;
-  const preview = document.createElement("div");
-  preview.className = `template-toggle-shape template-toggle-shape--${shape}`;
-  if (progress > 0) {
-    preview.classList.add("is-active");
-  }
-  preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
-  const opacity = 0.25 + progress * 0.55;
-  preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
-  preview.setAttribute("aria-label", states[activeIndex] || "Toggle state");
-  wrapper.appendChild(preview);
-
-  return wrapper;
-}
-
-function createTextStyleControls(component) {
-  const options = [
-    { value: "bold", icon: "tabler:bold" },
-    { value: "italic", icon: "tabler:italic" },
-    { value: "underline", icon: "tabler:underline" },
-  ];
-  return createInspectorToggleGroup(component, "Text style", options, component.textStyles || {}, (key, checked) => {
-    updateComponent(component.uid, (draft) => {
-      draft.textStyles = { ...(draft.textStyles || {}) };
-      draft.textStyles[key] = checked;
-    }, { rerenderCanvas: true });
-  });
-  controls.appendChild(clear);
-  container.append(label, controls);
-  if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
-    // eslint-disable-next-line no-new
-    new window.bootstrap.Tooltip(clear);
-  }
-  return container;
 }
 
 function createAlignmentControls(component) {
