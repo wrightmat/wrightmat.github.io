@@ -108,6 +108,8 @@ const COMPONENT_DEFINITIONS = {
     supportsFormula: true,
     supportsReadOnly: true,
     supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   array: {
     label: "Array",
@@ -120,7 +122,9 @@ const COMPONENT_DEFINITIONS = {
     supportsBinding: true,
     supportsFormula: false,
     supportsReadOnly: false,
-    supportsAlignment: false,
+    supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   divider: {
     label: "Divider",
@@ -133,6 +137,8 @@ const COMPONENT_DEFINITIONS = {
     supportsFormula: false,
     supportsReadOnly: false,
     supportsAlignment: false,
+    textControls: false,
+    colorControls: ["foreground"],
   },
   image: {
     label: "Image",
@@ -147,6 +153,8 @@ const COMPONENT_DEFINITIONS = {
     supportsFormula: false,
     supportsReadOnly: false,
     supportsAlignment: false,
+    textControls: false,
+    colorControls: [],
   },
   label: {
     label: "Label",
@@ -158,6 +166,8 @@ const COMPONENT_DEFINITIONS = {
     supportsFormula: false,
     supportsReadOnly: false,
     supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   container: {
     label: "Container",
@@ -168,11 +178,14 @@ const COMPONENT_DEFINITIONS = {
       rows: 2,
       tabLabels: ["Tab 1", "Tab 2"],
       gap: 16,
+      zones: {},
     },
     supportsBinding: false,
     supportsFormula: false,
     supportsReadOnly: false,
-    supportsAlignment: false,
+    supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   "linear-track": {
     label: "Linear Track",
@@ -184,7 +197,9 @@ const COMPONENT_DEFINITIONS = {
     supportsBinding: true,
     supportsFormula: false,
     supportsReadOnly: false,
-    supportsAlignment: false,
+    supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   "circular-track": {
     label: "Circular Track",
@@ -196,19 +211,23 @@ const COMPONENT_DEFINITIONS = {
     supportsBinding: true,
     supportsFormula: false,
     supportsReadOnly: false,
-    supportsAlignment: false,
+    supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   "select-group": {
     label: "Select Group",
     defaults: {
       name: "Select Group",
       variant: "pills",
-      options: ["Option A", "Option B", "Option C"],
+      multiple: false,
     },
     supportsBinding: true,
     supportsFormula: false,
     supportsReadOnly: true,
     supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
   toggle: {
     label: "Toggle",
@@ -216,11 +235,14 @@ const COMPONENT_DEFINITIONS = {
       name: "Toggle",
       states: ["Novice", "Skilled", "Expert"],
       activeIndex: 1,
+      shape: "circle",
     },
     supportsBinding: true,
     supportsFormula: false,
     supportsReadOnly: true,
-    supportsAlignment: false,
+    supportsAlignment: true,
+    textControls: true,
+    colorControls: ["foreground", "background", "border"],
   },
 };
 
@@ -232,7 +254,34 @@ const state = {
   selectedId: null,
 };
 
-let canvasSortable = null;
+const dropzones = new Map();
+
+const COLOR_FIELD_MAP = {
+  foreground: { label: "Foreground/Text", prop: "textColor" },
+  background: { label: "Background", prop: "backgroundColor" },
+  border: { label: "Border", prop: "borderColor" },
+};
+
+function getDefinition(component) {
+  if (!component) return {};
+  return COMPONENT_DEFINITIONS[component.type] || {};
+}
+
+function getColorControls(component) {
+  const definition = getDefinition(component);
+  if (Array.isArray(definition.colorControls)) {
+    return definition.colorControls.filter((key) => COLOR_FIELD_MAP[key]);
+  }
+  return Object.keys(COLOR_FIELD_MAP);
+}
+
+function hasTextControls(component) {
+  const definition = getDefinition(component);
+  if (definition.textControls === false) {
+    return false;
+  }
+  return true;
+}
 
 if (elements.palette) {
   createSortable(elements.palette, {
@@ -348,16 +397,15 @@ ensureTemplateSelectValue();
 
 function renderCanvas() {
   if (!elements.canvasRoot) return;
-  if (canvasSortable) {
-    canvasSortable.destroy();
-    canvasSortable = null;
-  }
+  dropzones.forEach((sortable) => sortable.destroy());
+  dropzones.clear();
   elements.canvasRoot.innerHTML = "";
+  elements.canvasRoot.dataset.dropzone = "root";
+  elements.canvasRoot.dataset.dropzoneParent = "";
+  elements.canvasRoot.dataset.dropzoneKey = "root";
   if (!state.components.length) {
-    const placeholder = document.createElement("div");
-    placeholder.className = "border border-dashed rounded-3 p-4 text-center fs-6 text-body-secondary";
-    placeholder.setAttribute("data-canvas-placeholder", "true");
-    placeholder.textContent = "Drag components from the palette to design your template.";
+    const placeholder = createDropPlaceholder("Drag components from the palette to design your template.");
+    placeholder.classList.add("template-drop-placeholder--root");
     elements.canvasRoot.appendChild(placeholder);
   } else {
     const fragment = document.createDocumentFragment();
@@ -366,46 +414,186 @@ function renderCanvas() {
     });
     elements.canvasRoot.appendChild(fragment);
   }
-  ensureCanvasSortable();
+  registerDropzones();
 }
 
-function ensureCanvasSortable() {
+function createDropPlaceholder(text) {
+  const placeholder = document.createElement("div");
+  placeholder.className = "template-drop-placeholder";
+  placeholder.textContent = text;
+  placeholder.setAttribute("aria-hidden", "true");
+  return placeholder;
+}
+
+function registerDropzones() {
   if (!elements.canvasRoot) return;
-  canvasSortable = createSortable(elements.canvasRoot, {
-    group: { name: "template-canvas", pull: true, put: true },
-    fallbackOnBody: true,
-    onAdd(event) {
-      const type = event.item.getAttribute("data-component-type");
-      if (type && COMPONENT_DEFINITIONS[type]) {
-        const component = createComponent(type);
-        const newIndex = typeof event.newIndex === "number" ? event.newIndex : state.components.length;
-        state.components.splice(newIndex, 0, component);
-        state.selectedId = component.uid;
-        undoStack.push({ type: "add", component: { ...component } });
-        status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, {
-          type: "success",
-          timeout: 1800,
-        });
-        renderCanvas();
-        renderInspector();
-        expandInspectorPane();
-      }
-      event.item.remove();
-    },
-    onUpdate(event) {
-      if (event.oldIndex === event.newIndex) return;
-      const [moved] = state.components.splice(event.oldIndex, 1);
-      state.components.splice(event.newIndex, 0, moved);
-      undoStack.push({
-        type: "reorder",
-        componentId: moved.uid,
-        from: event.oldIndex,
-        to: event.newIndex,
-      });
-      status.show("Reordered component", { timeout: 1500 });
-      renderCanvas();
-    },
+  const zones = [elements.canvasRoot, ...elements.canvasRoot.querySelectorAll("[data-dropzone]")];
+  zones.forEach((zone) => {
+    const sortable = createSortable(zone, {
+      group: { name: "template-canvas", pull: true, put: true },
+      fallbackOnBody: true,
+      swapThreshold: 0.65,
+      onAdd(event) {
+        handleDrop(event);
+      },
+      onUpdate(event) {
+        handleReorder(event);
+      },
+    });
+    dropzones.set(zone, sortable);
   });
+}
+
+function handleDrop(event) {
+  const parentId = event.to.dataset.dropzoneParent || "";
+  const zoneKey = event.to.dataset.dropzoneKey || "root";
+  const index = typeof event.newIndex === "number" ? event.newIndex : 0;
+  const type = event.item.dataset.componentType;
+  const componentId = event.item.dataset.componentId;
+
+  if (type && COMPONENT_DEFINITIONS[type]) {
+    const component = createComponent(type);
+    insertComponent(parentId, zoneKey, index, component);
+    state.selectedId = component.uid;
+    undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+    status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, { type: "success", timeout: 1800 });
+    event.item.remove();
+    renderCanvas();
+    renderInspector();
+    expandInspectorPane();
+    return;
+  }
+
+  if (componentId) {
+    if (parentId && (parentId === componentId || isDescendantOf(parentId, componentId))) {
+      status.show("Cannot move a component into itself", { type: "error", timeout: 2000 });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
+    const moved = moveComponent(componentId, parentId, zoneKey, index);
+    if (moved) {
+      undoStack.push({ type: "move", componentId, parentId, zoneKey, index });
+      status.show("Moved component", { timeout: 1500 });
+    }
+  }
+
+  event.item.remove();
+  renderCanvas();
+  renderInspector();
+}
+
+function handleReorder(event) {
+  const parentId = event.to.dataset.dropzoneParent || "";
+  const zoneKey = event.to.dataset.dropzoneKey || "root";
+  const componentId = event.item.dataset.componentId;
+  if (!componentId) {
+    renderCanvas();
+    return;
+  }
+  const collection = getCollection(parentId, zoneKey);
+  if (!collection) {
+    renderCanvas();
+    return;
+  }
+  const oldIndex = typeof event.oldIndex === "number" ? event.oldIndex : collection.length - 1;
+  const newIndex = typeof event.newIndex === "number" ? event.newIndex : oldIndex;
+  if (oldIndex === newIndex) {
+    return;
+  }
+  const found = findComponent(componentId);
+  if (!found || found.collection !== collection) {
+    renderCanvas();
+    return;
+  }
+  const [item] = collection.splice(oldIndex, 1);
+  collection.splice(newIndex, 0, item);
+  undoStack.push({ type: "reorder", componentId, parentId, zoneKey, oldIndex, newIndex });
+  renderCanvas();
+  renderInspector();
+}
+
+function insertComponent(parentId, zoneKey, index, component) {
+  const collection = getCollection(parentId, zoneKey);
+  if (!collection) return;
+  const safeIndex = Math.min(Math.max(index, 0), collection.length);
+  collection.splice(safeIndex, 0, component);
+}
+
+function moveComponent(componentId, targetParentId, zoneKey, index) {
+  const found = findComponent(componentId);
+  if (!found) return false;
+  const targetCollection = getCollection(targetParentId, zoneKey);
+  if (!targetCollection) return false;
+  const [item] = found.collection.splice(found.index, 1);
+  const safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+  targetCollection.splice(safeIndex, 0, item);
+  return true;
+}
+
+function getCollection(parentId, zoneKey) {
+  if (!parentId) {
+    return state.components;
+  }
+  const parent = findComponent(parentId);
+  if (!parent) {
+    return null;
+  }
+  const component = parent.component;
+  if (component.type !== "container") {
+    return parent.collection;
+  }
+  ensureContainerZones(component);
+  if (!component.zones) {
+    component.zones = {};
+  }
+  if (!component.zones[zoneKey]) {
+    component.zones[zoneKey] = [];
+  }
+  return component.zones[zoneKey];
+}
+
+function findComponent(uid, components = state.components, parent = null, zoneKey = "root") {
+  if (!uid) return null;
+  for (let index = 0; index < components.length; index += 1) {
+    const component = components[index];
+    if (component.uid === uid) {
+      return { component, collection: components, index, parent, zoneKey };
+    }
+    if (component.type === "container") {
+      const zones = ensureContainerZones(component);
+      for (const zone of zones) {
+        const found = findComponent(uid, zone.components, component, zone.key);
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+}
+
+function isDescendantOf(targetId, ancestorId) {
+  if (!targetId || !ancestorId || targetId === ancestorId) {
+    return false;
+  }
+  const ancestor = findComponent(ancestorId);
+  if (!ancestor) return false;
+  return containsComponent(ancestor.component, targetId);
+}
+
+function containsComponent(component, targetId) {
+  if (!component || component.type !== "container") return false;
+  const zones = ensureContainerZones(component);
+  for (const zone of zones) {
+    for (const child of zone.components) {
+      if (child.uid === targetId) {
+        return true;
+      }
+      if (child.type === "container" && containsComponent(child, targetId)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 function createComponent(type) {
@@ -419,7 +607,8 @@ function createComponent(type) {
     uid: `cmp-${componentCounter}`,
     type,
     id: `cmp-${componentCounter}`,
-    name: defaults.name || definition.label,
+    label: (defaults.label || defaults.name || definition.label || type).trim(),
+    name: undefined,
     textColor: "",
     backgroundColor: "",
     borderColor: "",
@@ -430,6 +619,15 @@ function createComponent(type) {
     readOnly: false,
     ...defaults,
   };
+  if (component.label && typeof component.label === "string") {
+    component.label = component.label.trim();
+  }
+  if (!component.label) {
+    component.label = definition.label || type;
+  }
+  if (component.name === undefined) {
+    component.name = component.label;
+  }
   if (component.activeSegments && Array.isArray(component.activeSegments)) {
     component.activeSegments = component.activeSegments.slice();
   }
@@ -441,6 +639,12 @@ function createComponent(type) {
   }
   if (component.states && Array.isArray(component.states)) {
     component.states = component.states.slice();
+  }
+  if (component.zones && typeof component.zones === "object") {
+    component.zones = { ...component.zones };
+  }
+  if (component.type === "container") {
+    ensureContainerZones(component);
   }
   return component;
 }
@@ -475,7 +679,7 @@ function createComponentElement(component) {
   heading.className = "template-component-heading";
   const title = document.createElement("div");
   title.className = "fw-semibold";
-  title.textContent = component.name || typeLabel;
+  title.textContent = getComponentLabel(component, typeLabel);
   heading.appendChild(title);
   const subtitle = document.createElement("div");
   subtitle.className = "text-body-secondary small text-uppercase";
@@ -558,14 +762,101 @@ function renderComponentPreview(component) {
   }
 }
 
+function ensureContainerZones(component) {
+  if (!component || component.type !== "container") return [];
+  if (!component.zones || typeof component.zones !== "object") {
+    component.zones = {};
+  }
+  const zones = [];
+  const validKeys = new Set();
+
+  const registerZone = (key, label) => {
+    if (!Array.isArray(component.zones[key])) {
+      component.zones[key] = [];
+    }
+    validKeys.add(key);
+    zones.push({ key, label, components: component.zones[key] });
+  };
+
+  const type = component.containerType || "columns";
+  if (type === "tabs") {
+    const labels = Array.isArray(component.tabLabels) && component.tabLabels.length
+      ? component.tabLabels
+      : ["Tab 1", "Tab 2"];
+    labels.forEach((labelText, index) => {
+      registerZone(`tab-${index}`, (labelText || `Tab ${index + 1}`).trim() || `Tab ${index + 1}`);
+    });
+  } else if (type === "rows") {
+    const rows = clampInteger(component.rows || 2, 1, 6);
+    for (let index = 0; index < rows; index += 1) {
+      registerZone(`row-${index}`, `Row ${index + 1}`);
+    }
+  } else if (type === "grid") {
+    const columns = clampInteger(component.columns || 2, 1, 4);
+    const rows = clampInteger(component.rows || 2, 1, 6);
+    for (let row = 0; row < rows; row += 1) {
+      for (let col = 0; col < columns; col += 1) {
+        registerZone(`grid-${row}-${col}`, `Row ${row + 1}, Column ${col + 1}`);
+      }
+    }
+  } else {
+    const columns = clampInteger(component.columns || 2, 1, 4);
+    for (let index = 0; index < columns; index += 1) {
+      registerZone(`col-${index}`, `Column ${index + 1}`);
+    }
+  }
+
+  Object.keys(component.zones).forEach((key) => {
+    if (!validKeys.has(key)) {
+      const items = component.zones[key];
+      if (Array.isArray(items) && items.length && zones.length) {
+        zones[0].components.push(...items);
+      }
+      delete component.zones[key];
+    }
+  });
+
+  return zones;
+}
+
+function createContainerDropzone(component, zone, { label, hint } = {}) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "template-container-zone d-flex flex-column gap-2";
+  if (label) {
+    const badge = document.createElement("div");
+    badge.className = "template-dropzone-label text-body-secondary text-uppercase extra-small";
+    badge.textContent = label;
+    wrapper.appendChild(badge);
+  }
+  const drop = document.createElement("div");
+  drop.className = "template-dropzone";
+  drop.dataset.dropzone = "true";
+  drop.dataset.dropzoneParent = component.uid;
+  drop.dataset.dropzoneKey = zone.key;
+  if (Array.isArray(zone.components) && zone.components.length) {
+    zone.components.forEach((child) => {
+      drop.appendChild(createComponentElement(child));
+    });
+  } else {
+    const placeholder = createDropPlaceholder(hint || "Drag components here");
+    placeholder.classList.add("template-drop-placeholder--compact");
+    drop.appendChild(placeholder);
+  }
+  wrapper.appendChild(drop);
+  return wrapper;
+}
+
 function renderInputPreview(component) {
   const container = document.createElement("div");
   container.className = "d-flex flex-column gap-2";
-  const label = document.createElement("label");
-  label.className = "form-label mb-1";
-  label.textContent = component.name || "Input";
-  applyTextFormatting(label, component);
-  container.appendChild(label);
+  const labelText = getComponentLabel(component, "Input");
+  if (labelText) {
+    const label = document.createElement("label");
+    label.className = "form-label mb-1";
+    label.textContent = labelText;
+    applyTextFormatting(label, component);
+    container.appendChild(label);
+  }
 
   let control;
   switch (component.variant) {
@@ -641,11 +932,14 @@ function renderChoiceGroup(component, type) {
 function renderArrayPreview(component) {
   const container = document.createElement("div");
   container.className = "d-flex flex-column gap-2";
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = component.name || "Array";
-  applyTextFormatting(heading, component);
-  container.appendChild(heading);
+  const headingText = getComponentLabel(component, "Array");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    container.appendChild(heading);
+  }
 
   if (component.variant === "cards") {
     const grid = document.createElement("div");
@@ -655,7 +949,9 @@ function renderArrayPreview(component) {
       col.className = "col-12 col-md-6";
       const card = document.createElement("div");
       card.className = "border rounded-3 p-3 bg-body";
-      card.innerHTML = `<div class=\"fw-semibold\">${component.itemLabel || "Item"} ${index + 1}</div><div class=\"text-body-secondary small\">${component.emptyText || "Repeatable entry"}</div>`;
+      const itemLabel = (component.itemLabel || "Item").trim() || "Item";
+      const description = component.emptyText || "Repeatable entry";
+      card.innerHTML = `<div class=\"fw-semibold\">${itemLabel} ${index + 1}</div><div class=\"text-body-secondary small\">${description}</div>`;
       col.appendChild(card);
       grid.appendChild(col);
     }
@@ -666,7 +962,8 @@ function renderArrayPreview(component) {
     for (let index = 0; index < 3; index += 1) {
       const item = document.createElement("li");
       item.className = "list-group-item d-flex justify-content-between align-items-center";
-      item.textContent = `${component.itemLabel || "Item"} ${index + 1}`;
+      const itemLabel = (component.itemLabel || "Item").trim() || "Item";
+      item.textContent = `${itemLabel} ${index + 1}`;
       const badge = document.createElement("span");
       badge.className = "badge text-bg-secondary";
       badge.textContent = "Value";
@@ -690,8 +987,9 @@ function renderDividerPreview(component) {
   hr.className = "my-2";
   hr.style.borderStyle = component.style || "solid";
   hr.style.borderWidth = `${component.thickness || 2}px`;
-  if (component.borderColor) {
-    hr.style.borderColor = component.borderColor;
+  const color = component.textColor || component.borderColor || "";
+  if (color) {
+    hr.style.borderColor = color;
   }
   return hr;
 }
@@ -715,104 +1013,116 @@ function renderImagePreview(component) {
 function renderLabelPreview(component) {
   const text = document.createElement("div");
   text.className = "fw-semibold";
-  text.textContent = component.text || component.name || "Label";
+  const value = (component.text || "").trim() || getComponentLabel(component, "") || "Label";
+  text.textContent = value;
   applyTextFormatting(text, component);
   return text;
 }
 
 function renderContainerPreview(component) {
   const wrapper = document.createElement("div");
-  wrapper.className = "d-flex flex-column gap-2";
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = component.name || "Container";
-  applyTextFormatting(heading, component);
-  wrapper.appendChild(heading);
+  wrapper.className = "d-flex flex-column gap-3";
+  const labelText = getComponentLabel(component, "Container");
+  if (labelText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = labelText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
 
-  const body = document.createElement("div");
-  body.className = "border rounded-3 bg-body-tertiary p-3 text-body-secondary small";
+  const zones = ensureContainerZones(component);
+  const gap = clampInteger(component.gap ?? 16, 0, 64);
+
   switch (component.containerType) {
     case "tabs": {
-      const tabs = document.createElement("div");
-      tabs.className = "d-flex flex-wrap gap-2 mb-3";
-      const labels = Array.isArray(component.tabLabels) && component.tabLabels.length
-        ? component.tabLabels
-        : ["Tab 1", "Tab 2"];
-      labels.forEach((labelText, index) => {
+      const labels = zones.map((zone) => zone.label);
+      const nav = document.createElement("div");
+      nav.className = "d-flex flex-wrap gap-2";
+      labels.forEach((label, index) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = `btn btn-outline-secondary btn-sm${index === 0 ? " active" : ""}`;
-        button.textContent = labelText;
-        tabs.appendChild(button);
+        button.textContent = label;
+        nav.appendChild(button);
       });
-      body.appendChild(tabs);
-      const content = document.createElement("div");
-      content.className = "border rounded-3 bg-body p-3";
-      content.textContent = "Tab content area";
-      body.appendChild(content);
+      wrapper.appendChild(nav);
+
+      const panels = document.createElement("div");
+      panels.className = "d-flex flex-column gap-3";
+      zones.forEach((zone, index) => {
+        const dropzone = createContainerDropzone(component, zone, {
+          label: labels[index],
+          hint: `Drop components for ${labels[index]}`,
+        });
+        panels.appendChild(dropzone);
+      });
+      wrapper.appendChild(panels);
       break;
     }
     case "grid": {
       const grid = document.createElement("div");
-      grid.className = "d-grid";
+      grid.className = "template-container-grid";
       const columns = clampInteger(component.columns || 2, 1, 4);
-      const rows = clampInteger(component.rows || 2, 1, 4);
       grid.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
-      grid.style.gap = `${component.gap ?? 12}px`;
-      for (let row = 0; row < rows; row += 1) {
-        for (let col = 0; col < columns; col += 1) {
-          const slot = document.createElement("div");
-          slot.className = "border border-dashed rounded-2 p-3 text-center";
-          slot.textContent = "Slot";
-          grid.appendChild(slot);
-        }
-      }
-      body.appendChild(grid);
+      grid.style.gap = `${gap}px`;
+      zones.forEach((zone) => {
+        grid.appendChild(
+          createContainerDropzone(component, zone, {
+            label: zone.label,
+            hint: `Drop components into ${zone.label}`,
+          })
+        );
+      });
+      wrapper.appendChild(grid);
       break;
     }
     case "rows": {
       const list = document.createElement("div");
       list.className = "d-flex flex-column";
-      list.style.gap = `${component.gap ?? 12}px`;
-      const rows = clampInteger(component.rows || 3, 1, 6);
-      for (let index = 0; index < rows; index += 1) {
-        const row = document.createElement("div");
-        row.className = "border border-dashed rounded-2 p-3 text-center";
-        row.textContent = `Row ${index + 1}`;
-        list.appendChild(row);
-      }
-      body.appendChild(list);
+      list.style.gap = `${gap}px`;
+      zones.forEach((zone) => {
+        list.appendChild(
+          createContainerDropzone(component, zone, {
+            label: zone.label,
+            hint: `Drop components into ${zone.label}`,
+          })
+        );
+      });
+      wrapper.appendChild(list);
       break;
     }
     default: {
-      const columns = clampInteger(component.columns || 2, 1, 4);
-      const row = document.createElement("div");
-      row.className = "row g-2";
-      for (let index = 0; index < columns; index += 1) {
-        const col = document.createElement("div");
-        col.className = "col";
-        const slot = document.createElement("div");
-        slot.className = "border border-dashed rounded-2 p-3 text-center";
-        slot.textContent = `Column ${index + 1}`;
-        col.appendChild(slot);
-        row.appendChild(col);
-      }
-      body.appendChild(row);
+      const grid = document.createElement("div");
+      grid.className = "template-container-grid";
+      grid.style.gridTemplateColumns = `repeat(${zones.length || 1}, minmax(0, 1fr))`;
+      grid.style.gap = `${gap}px`;
+      zones.forEach((zone) => {
+        grid.appendChild(
+          createContainerDropzone(component, zone, {
+            label: zone.label,
+            hint: `Drop components into ${zone.label}`,
+          })
+        );
+      });
+      wrapper.appendChild(grid);
       break;
     }
   }
-  wrapper.appendChild(body);
   return wrapper;
 }
 
 function renderLinearTrackPreview(component) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = component.name || "Track";
-  applyTextFormatting(heading, component);
-  wrapper.appendChild(heading);
+  const headingText = getComponentLabel(component, "Track");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
 
   const track = document.createElement("div");
   track.className = "template-linear-track";
@@ -833,11 +1143,14 @@ function renderLinearTrackPreview(component) {
 function renderCircularTrackPreview(component) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = component.name || "Clock";
-  applyTextFormatting(heading, component);
-  wrapper.appendChild(heading);
+  const headingText = getComponentLabel(component, "Clock");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
 
   const circle = document.createElement("div");
   circle.className = "template-circular-track";
@@ -866,32 +1179,40 @@ function renderCircularTrackPreview(component) {
 function renderSelectGroupPreview(component) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = component.name || "Select";
-  applyTextFormatting(heading, component);
-  wrapper.appendChild(heading);
+  const headingText = getComponentLabel(component, "Select");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
 
-  const options = Array.isArray(component.options) && component.options.length
-    ? component.options
-    : ["Option A", "Option B", "Option C"];
+  const sampleOptions = ["Option A", "Option B", "Option C"];
   let control;
   if (component.variant === "tags") {
     control = document.createElement("div");
-    control.className = "d-flex flex-wrap gap-2";
-    options.forEach((option) => {
-      const badge = document.createElement("span");
-      badge.className = "badge rounded-pill text-bg-secondary";
-      badge.textContent = option;
-      control.appendChild(badge);
+    control.className = "template-select-tags d-flex flex-wrap gap-2";
+    sampleOptions.forEach((option, index) => {
+      const tag = document.createElement("span");
+      tag.className = "template-select-tag";
+      const slug = option.trim().toLowerCase().replace(/\s+/g, "-");
+      tag.textContent = `#${slug || "tag"}`;
+      if (component.multiple !== false && index < 2) {
+        tag.classList.add("is-active");
+      } else if (!component.multiple && index === 0) {
+        tag.classList.add("is-active");
+      }
+      control.appendChild(tag);
     });
   } else if (component.variant === "buttons") {
     control = document.createElement("div");
     control.className = "btn-group";
-    options.forEach((option, index) => {
+    sampleOptions.forEach((option, index) => {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = `btn btn-outline-secondary${index === 0 ? " active" : ""}`;
+      const isActive = component.multiple ? index < 2 : index === 0;
+      button.className = `btn btn-outline-secondary${isActive ? " active" : ""}`;
       if (component.readOnly) {
         button.classList.add("disabled");
       }
@@ -901,10 +1222,11 @@ function renderSelectGroupPreview(component) {
   } else {
     control = document.createElement("div");
     control.className = "d-flex flex-wrap gap-2";
-    options.forEach((option) => {
+    sampleOptions.forEach((option, index) => {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "btn btn-outline-secondary btn-sm rounded-pill";
+      const isActive = component.multiple ? index < 2 : index === 0;
+      button.className = `btn btn-outline-secondary btn-sm rounded-pill${isActive ? " active" : ""}`;
       if (component.readOnly) {
         button.classList.add("disabled");
       }
@@ -919,26 +1241,30 @@ function renderSelectGroupPreview(component) {
 function renderTogglePreview(component) {
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = component.name || "Toggle";
-  applyTextFormatting(heading, component);
-  wrapper.appendChild(heading);
+  const headingText = getComponentLabel(component, "Toggle");
+  if (headingText) {
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold";
+    heading.textContent = headingText;
+    applyTextFormatting(heading, component);
+    wrapper.appendChild(heading);
+  }
 
-  const group = document.createElement("div");
-  group.className = "btn-group w-100";
   const states = Array.isArray(component.states) && component.states.length
     ? component.states
     : ["State 1", "State 2"];
+  const shape = component.shape || "circle";
+  const activeIndex = Math.max(0, Math.min(component.activeIndex ?? 0, states.length - 1));
+  const group = document.createElement("div");
+  group.className = "template-toggle-group";
   states.forEach((state, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `btn btn-outline-secondary${index === component.activeIndex ? " active" : ""}`;
-    if (component.readOnly) {
-      button.classList.add("disabled");
+    const item = document.createElement("div");
+    item.className = `template-toggle-shape template-toggle-shape--${shape}`;
+    if (index <= activeIndex) {
+      item.classList.add("is-active");
     }
-    button.textContent = state;
-    group.appendChild(button);
+    item.setAttribute("title", state);
+    group.appendChild(item);
   });
   wrapper.appendChild(group);
   return wrapper;
@@ -1020,13 +1346,13 @@ function clearCanvas() {
 }
 
 function removeComponent(uid) {
-  const index = state.components.findIndex((component) => component.uid === uid);
-  if (index === -1) return;
-  const [removed] = state.components.splice(index, 1);
-  undoStack.push({ type: "remove", componentId: removed.uid });
+  const found = findComponent(uid);
+  if (!found) return;
+  const [removed] = found.collection.splice(found.index, 1);
+  undoStack.push({ type: "remove", componentId: removed.uid, parentId: found.parent?.uid || "", zoneKey: found.zoneKey });
   status.show("Removed component", { type: "info", timeout: 1500 });
   if (state.selectedId === uid) {
-    state.selectedId = null;
+    state.selectedId = found.parent?.uid || null;
   }
   renderCanvas();
   renderInspector();
@@ -1053,7 +1379,8 @@ function startNewTemplate({ id = "", title = "", version = "0.1" } = {}) {
 function renderInspector() {
   if (!elements.inspector) return;
   elements.inspector.innerHTML = "";
-  const component = state.components.find((item) => item.uid === state.selectedId);
+  const selection = findComponent(state.selectedId);
+  const component = selection?.component;
   if (!component) {
     const placeholder = document.createElement("p");
     placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
@@ -1062,6 +1389,9 @@ function renderInspector() {
     return;
   }
   const definition = COMPONENT_DEFINITIONS[component.type] || {};
+  if (component.type === "container") {
+    ensureContainerZones(component);
+  }
   const form = document.createElement("form");
   form.className = "d-flex flex-column gap-4";
   form.addEventListener("submit", (event) => event.preventDefault());
@@ -1072,11 +1402,13 @@ function renderInspector() {
         draft.id = value.trim();
       }, { rerenderCanvas: true });
     }, { placeholder: "Unique identifier" }),
-    createTextInput(component, "Name", component.name || "", (value) => {
+    createTextInput(component, "Label", getComponentLabel(component), (value) => {
       updateComponent(component.uid, (draft) => {
-        draft.name = value;
+        const next = value.trim();
+        draft.label = next;
+        draft.name = next;
         if (draft.text !== undefined && draft.type === "label") {
-          draft.text = value;
+          draft.text = next;
         }
       }, { rerenderCanvas: true });
     }, { placeholder: "Displayed label" }),
@@ -1085,12 +1417,16 @@ function renderInspector() {
     form.appendChild(basicsSection);
   }
 
-  const appearanceControls = [
-    createColorRow(component),
-    createTextSizeControls(component),
-    createTextStyleControls(component),
-  ];
-  if (definition.supportsAlignment !== false) {
+  const appearanceControls = [];
+  const colorControls = getColorControls(component);
+  if (colorControls.length) {
+    appearanceControls.push(createColorRow(component, colorControls));
+  }
+  if (hasTextControls(component)) {
+    appearanceControls.push(createTextSizeControls(component));
+    appearanceControls.push(createTextStyleControls(component));
+  }
+  if (definition.supportsAlignment !== false && hasTextControls(component)) {
     appearanceControls.push(createAlignmentControls(component));
   }
   const appearanceSection = createSection("Appearance", appearanceControls);
@@ -1159,7 +1495,9 @@ function createSection(title, controls = []) {
   return section;
 }
 
-function createColorRow(component) {
+function createColorRow(component, keys = []) {
+  const controls = keys.filter((key) => COLOR_FIELD_MAP[key]);
+  if (!controls.length) return null;
   const wrapper = document.createElement("div");
   wrapper.className = "d-flex flex-column gap-2";
   const label = document.createElement("div");
@@ -1168,27 +1506,16 @@ function createColorRow(component) {
   wrapper.appendChild(label);
   const grid = document.createElement("div");
   grid.className = "template-color-grid";
-  grid.appendChild(
-    createColorInput(component, "Text", component.textColor, (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.textColor = value;
-      }, { rerenderCanvas: true, rerenderInspector: true });
-    })
-  );
-  grid.appendChild(
-    createColorInput(component, "Background", component.backgroundColor, (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.backgroundColor = value;
-      }, { rerenderCanvas: true, rerenderInspector: true });
-    })
-  );
-  grid.appendChild(
-    createColorInput(component, "Border", component.borderColor, (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.borderColor = value;
-      }, { rerenderCanvas: true, rerenderInspector: true });
-    })
-  );
+  controls.forEach((key) => {
+    const config = COLOR_FIELD_MAP[key];
+    grid.appendChild(
+      createColorInput(component, config.label, component[config.prop], (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft[config.prop] = value;
+        }, { rerenderCanvas: true, rerenderInspector: true });
+      })
+    );
+  });
   wrapper.appendChild(grid);
   return wrapper;
 }
@@ -1245,6 +1572,8 @@ function createTextSizeControls(component) {
       draft.textSize = value;
     }, { rerenderCanvas: true });
   });
+  wrapper.append(label, input);
+  return wrapper;
 }
 
 function createTextStyleControls(component) {
@@ -1259,6 +1588,8 @@ function createTextStyleControls(component) {
       draft.textStyles[key] = checked;
     }, { rerenderCanvas: true });
   });
+  wrapper.append(label, textarea);
+  return wrapper;
 }
 
 function createAlignmentControls(component) {
@@ -1273,6 +1604,8 @@ function createAlignmentControls(component) {
       draft.align = value;
     }, { rerenderCanvas: true });
   });
+  wrapper.append(label, select);
+  return wrapper;
 }
 
 function createReadOnlyToggle(component) {
@@ -1646,10 +1979,11 @@ function renderImageInspector(component) {
 function renderLabelInspector(component) {
   const controls = [];
   controls.push(
-    createTextarea(component, "Text", component.text || component.name || "", (value) => {
+    createTextarea(component, "Text", component.text || getComponentLabel(component, ""), (value) => {
       updateComponent(component.uid, (draft) => {
         draft.text = value;
         draft.name = value;
+        draft.label = value;
       }, { rerenderCanvas: true });
     }, { rows: 3, placeholder: "Label text" })
   );
@@ -1672,18 +2006,20 @@ function renderContainerInspector(component) {
       (value) => {
         updateComponent(component.uid, (draft) => {
           draft.containerType = value;
+          ensureContainerZones(draft);
         }, { rerenderCanvas: true, rerenderInspector: true });
       }
     )
   );
   if (component.containerType === "tabs") {
     controls.push(
-      createTextarea(component, "Tab labels (one per line)", (component.tabLabels || []).join("\n"), (value) => {
-        updateComponent(component.uid, (draft) => {
-          draft.tabLabels = parseLines(value);
-        }, { rerenderCanvas: true });
-      }, { rows: 3, placeholder: "Details\nInventory" })
-    );
+    createTextarea(component, "Tab labels (one per line)", (component.tabLabels || []).join("\n"), (value) => {
+      updateComponent(component.uid, (draft) => {
+        draft.tabLabels = parseLines(value);
+        ensureContainerZones(draft);
+      }, { rerenderCanvas: true });
+    }, { rows: 3, placeholder: "Details\nInventory" })
+  );
   }
   if (component.containerType === "columns" || component.containerType === "grid") {
     controls.push(
@@ -1691,6 +2027,7 @@ function renderContainerInspector(component) {
         const next = clampInteger(value ?? 2, 1, 4);
         updateComponent(component.uid, (draft) => {
           draft.columns = next;
+          ensureContainerZones(draft);
         }, { rerenderCanvas: true, rerenderInspector: true });
       }, { min: 1, max: 4 })
     );
@@ -1701,6 +2038,7 @@ function renderContainerInspector(component) {
         const next = clampInteger(value ?? 2, 1, 6);
         updateComponent(component.uid, (draft) => {
           draft.rows = next;
+          ensureContainerZones(draft);
         }, { rerenderCanvas: true, rerenderInspector: true });
       }, { min: 1, max: 6 })
     );
@@ -1768,7 +2106,7 @@ function renderSelectGroupInspector(component) {
   controls.push(
     createRadioButtonGroup(
       component,
-      "Display",
+      "Type",
       [
         { value: "pills", icon: "tabler:toggle-right", label: "Pills" },
         { value: "tags", icon: "tabler:tags", label: "Tags" },
@@ -1783,17 +2121,44 @@ function renderSelectGroupInspector(component) {
     )
   );
   controls.push(
-    createTextarea(component, "Options (one per line)", (component.options || []).join("\n"), (value) => {
-      updateComponent(component.uid, (draft) => {
-        draft.options = parseLines(value);
-      }, { rerenderCanvas: true });
-    }, { rows: 3, placeholder: "Option A\nOption B" })
+    createRadioButtonGroup(
+      component,
+      "Selection",
+      [
+        { value: "single", label: "Single" },
+        { value: "multi", label: "Multi" },
+      ],
+      component.multiple ? "multi" : "single",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.multiple = value === "multi";
+        }, { rerenderCanvas: true });
+      }
+    )
   );
   return controls;
 }
 
 function renderToggleInspector(component) {
   const controls = [];
+  controls.push(
+    createRadioButtonGroup(
+      component,
+      "Shape",
+      [
+        { value: "circle", icon: "tabler:circle", label: "Circle" },
+        { value: "square", icon: "tabler:square", label: "Square" },
+        { value: "diamond", icon: "tabler:diamond", label: "Diamond" },
+        { value: "star", icon: "tabler:star", label: "Star" },
+      ],
+      component.shape || "circle",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.shape = value;
+        }, { rerenderCanvas: true });
+      }
+    )
+  );
   controls.push(
     createTextarea(component, "States (one per line)", (component.states || []).join("\n"), (value) => {
       updateComponent(component.uid, (draft) => {
@@ -1821,9 +2186,9 @@ function renderToggleInspector(component) {
 }
 
 function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
-  const component = state.components.find((item) => item.uid === uid);
-  if (!component) return;
-  mutate(component);
+  const found = findComponent(uid);
+  if (!found) return;
+  mutate(found.component);
   if (rerenderCanvas) {
     renderCanvas();
   }
