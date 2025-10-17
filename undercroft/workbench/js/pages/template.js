@@ -55,7 +55,7 @@ const elements = {
   jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
 };
 
-const addComponentToCanvasRoot = createRootInsertionHandler({
+const insertComponentAtCanvasRoot = createRootInsertionHandler({
   createItem: (type) => {
     if (!COMPONENT_DEFINITIONS[type]) {
       return null;
@@ -390,7 +390,7 @@ if (elements.palette) {
       if (!value || !COMPONENT_DEFINITIONS[value]) {
         return;
       }
-      addComponentToCanvasRoot(value);
+      insertComponentAtCanvasRoot(value);
     },
   });
 }

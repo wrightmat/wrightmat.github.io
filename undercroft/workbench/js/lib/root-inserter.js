@@ -15,7 +15,7 @@ export function createRootInsertionHandler({
     throw new Error("createRootInsertionHandler requires an insertItem function");
   }
 
-  return function addToRoot(type, options = {}) {
+  return (type, options = {}) => {
     const item = createItem(type, options);
     if (!item) {
       return null;

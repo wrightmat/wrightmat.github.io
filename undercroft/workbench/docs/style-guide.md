@@ -44,6 +44,10 @@ This document captures the shared layout and styling conventions introduced whil
 
 - Drive preview panes through `createJsonPreviewRenderer()` (see `js/lib/json-preview.js`) so formatting, byte counts, and follow-up hooks (like draft persistence) behave identically across editors.
 
+## Developer Checks
+
+- Run `scripts/check-modules.mjs` before committing changes to Workbench editors. The helper executes `node --check` across the shared libraries and page entry points so duplicate identifier regressions (like the `addComponentToRoot` collisions) are caught immediately.
+
 ## Theme and Surface Colors
 
 - Lean on Bootstrap semantic tokens (`bg-body`, `bg-body-secondary`, `bg-body-tertiary`) instead of hard-coded colors to ensure light/dark theme support.

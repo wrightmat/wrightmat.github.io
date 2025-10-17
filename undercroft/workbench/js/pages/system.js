@@ -134,7 +134,7 @@ const state = {
   selectedNodeId: null,
 };
 
-const addFieldToCanvasRoot = createRootInsertionHandler({
+const insertFieldAtCanvasRoot = createRootInsertionHandler({
   createItem: (type) => {
     const normalized = normalizeType(type);
     return applyFieldIdentity(createFieldNode(normalized));
@@ -190,7 +190,7 @@ if (elements.palette) {
       if (!value) {
         return;
       }
-      addFieldToCanvasRoot(value);
+      insertFieldAtCanvasRoot(value);
     },
   });
 }
