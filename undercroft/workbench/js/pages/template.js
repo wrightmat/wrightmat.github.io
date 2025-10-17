@@ -1,6 +1,17 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { createCanvasPlaceholder, initPaletteInteractions, setupDropzones } from "../lib/editor-canvas.js";
+import {
+  createCanvasPlaceholder,
+  initPaletteInteractions,
+  setupDropzones,
+} from "../lib/editor-canvas.js";
+import {
+  createCanvasCardElement,
+  createCardHeaderElement,
+  createCardActionsElement,
+  createTypeIconElement,
+  createDeleteButton,
+} from "../lib/canvas-card.js";
 import { updateJsonPreview } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 const { status, undoStack } = initAppShell({ namespace: "template" });
@@ -460,7 +471,6 @@ function renderCanvas() {
       "Drag components from the palette into the canvas below to design your template.",
       {
         variant: "root",
-        classes: ["template-drop-placeholder", "template-drop-placeholder--root"],
       }
     );
     elements.canvasRoot.appendChild(placeholder);
@@ -523,27 +533,6 @@ function stripComponentMetadata(node) {
       stripComponentMetadata(value);
     }
   });
-  refreshTooltips(elements.canvasRoot);
-}
-
-function addComponentToRoot(type) {
-  const definition = COMPONENT_DEFINITIONS[type];
-  if (!definition) {
-    return null;
-  }
-  const component = createComponent(type);
-  const parentId = "";
-  const zoneKey = "root";
-  const index = state.components.length;
-  insertComponent(parentId, zoneKey, index, component);
-  state.selectedId = component.uid;
-  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
-  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
-  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
-  renderCanvas();
-  renderInspector();
-  expandInspectorPane();
-  return component;
 }
 
 function addComponentToRoot(type) {
@@ -772,23 +761,27 @@ function createComponent(type) {
 }
 
 function createComponentElement(component) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "template-component workbench-canvas-card border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-2";
-  wrapper.dataset.componentId = component.uid;
-  if (state.selectedId === component.uid) {
-    wrapper.classList.add("template-component-selected", "is-selected");
-  }
-
   const definition = COMPONENT_DEFINITIONS[component.type] || {};
   const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
   const typeLabel = definition.label || component.type;
 
-  const header = document.createElement("div");
-  header.className = "template-component-header workbench-canvas-card__header";
-  header.dataset.sortableHandle = "true";
+  const wrapper = createCanvasCardElement({
+    classes: ["template-component"],
+    dataset: { componentId: component.uid },
+    gapClass: "gap-2",
+    selected: state.selectedId === component.uid,
+  });
+  if (state.selectedId === component.uid) {
+    wrapper.classList.add("template-component-selected");
+  }
 
-  const actions = document.createElement("div");
-  actions.className = "template-component-actions workbench-canvas-card__actions";
+  const header = createCardHeaderElement({
+    classes: ["template-component-header"],
+  });
+
+  const actions = createCardActionsElement({
+    classes: ["template-component-actions"],
+  });
 
   const bindingLabel = (component.binding || component.formula || "").trim();
   if (bindingLabel) {
@@ -798,25 +791,19 @@ function createComponentElement(component) {
     actions.appendChild(pill);
   }
 
-  const iconButton = document.createElement("span");
-  iconButton.className =
-    "template-component-icon workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
-  iconButton.dataset.bsToggle = "tooltip";
-  iconButton.dataset.bsPlacement = "bottom";
-  iconButton.dataset.bsTitle = typeLabel;
-  iconButton.setAttribute("aria-label", typeLabel);
+  const iconButton = createTypeIconElement({
+    icon: iconName,
+    label: typeLabel,
+  });
+  iconButton.classList.add("template-component-icon");
   iconButton.tabIndex = 0;
-  iconButton.innerHTML = `<span class="iconify" data-icon="${iconName}" aria-hidden="true"></span>`;
   actions.appendChild(iconButton);
 
-  const removeButton = document.createElement("button");
-  removeButton.type = "button";
-  removeButton.className = "btn btn-outline-danger btn-sm";
-  removeButton.dataset.action = "remove-component";
-  removeButton.dataset.componentId = component.uid;
-  removeButton.setAttribute("aria-label", "Remove component");
-  removeButton.innerHTML =
-    '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span><span class="visually-hidden">Remove component</span>';
+  const removeButton = createDeleteButton({
+    srLabel: "Remove component",
+    dataset: { action: "remove-component", componentId: component.uid },
+    attributes: { "aria-label": "Remove component" },
+  });
   actions.appendChild(removeButton);
 
   header.appendChild(actions);
@@ -948,7 +935,6 @@ function createContainerDropzone(component, zone, { label, hint } = {}) {
   } else {
     const placeholder = createCanvasPlaceholder(hint || "Drag components here", {
       variant: "compact",
-      classes: ["template-drop-placeholder", "template-drop-placeholder--compact"],
     });
     drop.appendChild(placeholder);
   }
