@@ -156,7 +156,12 @@ const BUILTIN_CHARACTERS = [
 
     if (elements.viewToggle) {
       elements.viewToggle.addEventListener("click", () => {
-        state.mode = state.mode === "edit" ? "view" : "edit";
+        const nextMode = state.mode === "edit" ? "view" : "edit";
+        if (state.mode === "edit" && state.draft?.id) {
+          persistDraft({ silent: true });
+          renderPreview();
+        }
+        state.mode = nextMode;
         syncModeIndicator();
         renderCanvas();
         status.show(state.mode === "edit" ? "Edit mode enabled" : "View mode enabled", {
@@ -281,19 +286,24 @@ const BUILTIN_CHARACTERS = [
       return;
     }
     const metadata = state.draft?.id ? characterCatalog.get(state.draft.id) : null;
-    const origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
-    const isBuiltin = origin === "builtin";
-    const isLocal = origin === "local";
-    const deletable = isLocal;
-    elements.deleteCharacterButton.disabled = !deletable;
-    if (deletable) {
-      elements.deleteCharacterButton.removeAttribute("disabled");
-      elements.deleteCharacterButton.setAttribute("aria-disabled", "false");
-      elements.deleteCharacterButton.classList.remove("disabled");
-    } else {
-      elements.deleteCharacterButton.setAttribute("aria-disabled", "true");
-      elements.deleteCharacterButton.classList.add("disabled");
+    let origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
+    let deletable = origin === "local";
+    if (!deletable && state.draft?.id) {
+      try {
+        const localSnapshot = dataManager.getLocal("characters", state.draft.id);
+        if (localSnapshot) {
+          deletable = true;
+          origin = "local";
+          state.characterOrigin = "local";
+        }
+      } catch (error) {
+        console.warn("Character editor: unable to inspect local character entry", error);
+      }
     }
+    const isBuiltin = origin === "builtin";
+    elements.deleteCharacterButton.disabled = !deletable;
+    elements.deleteCharacterButton.classList.toggle("disabled", !deletable);
+    elements.deleteCharacterButton.setAttribute("aria-disabled", deletable ? "false" : "true");
     if (!deletable) {
       const message = isBuiltin
         ? "Built-in characters cannot be deleted."
@@ -584,7 +594,7 @@ const BUILTIN_CHARACTERS = [
     const { header } = createStandardCardChrome({
       icon: iconName,
       iconLabel: component.type,
-      headerOptions: { classes: ["character-component-header"] },
+      headerOptions: { classes: ["character-component-header"], sortableHandle: false },
       actionsOptions: { classes: ["character-component-actions"] },
       iconOptions: { classes: ["character-component-icon"] },
       removeButtonOptions: false,
@@ -1337,6 +1347,7 @@ const BUILTIN_CHARACTERS = [
         template: state.draft.template || state.template?.id || "",
         source: "local",
       });
+      state.character = cloneCharacter(state.draft);
       state.characterOrigin = "local";
       if (!silent) {
         status.show("Character saved locally", { type: "success", timeout: 2000 });
