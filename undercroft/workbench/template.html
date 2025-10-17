@@ -114,11 +114,59 @@
                   data-action="save-template"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Save draft"
-                  aria-label="Save draft"
+                  data-bs-title="Save"
+                  aria-label="Save"
                 >
                   <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save draft</span>
+                  <span class="visually-hidden">Save</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="undo-template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Undo"
+                  aria-label="Undo"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:arrow-back-up" aria-hidden="true"></span>
+                  <span class="visually-hidden">Undo</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="redo-template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Redo"
+                  aria-label="Redo"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:arrow-forward-up" aria-hidden="true"></span>
+                  <span class="visually-hidden">Redo</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="import-template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Import JSON"
+                  aria-label="Import JSON"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:upload" aria-hidden="true"></span>
+                  <span class="visually-hidden">Import JSON</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="export-template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Export JSON"
+                  aria-label="Export JSON"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
+                  <span class="visually-hidden">Export JSON</span>
                 </button>
                 <button
                   class="btn btn-outline-secondary p-2"
@@ -136,118 +184,118 @@
             </div>
             <section class="d-flex flex-column gap-3">
               <div class="d-flex justify-content-between align-items-center">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Library</h2>
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Palette</h2>
                 <span class="fs-6 text-body-secondary">Drag into canvas</span>
               </div>
               <div class="d-grid gap-2" data-palette>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="input"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Input</div>
-                    <div class="text-body-secondary small">Text, number, select, radio, checkbox</div>
+                    <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="array"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Array</div>
-                    <div class="text-body-secondary small">Inventory lists and repeaters</div>
+                    <div class="text-body-secondary extra-small text-truncate">Inventory lists and repeaters</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="divider"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:separator-horizontal" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Divider</div>
-                    <div class="text-body-secondary small">Break up sections</div>
+                    <div class="text-body-secondary extra-small text-truncate">Break up sections</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="image"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Image</div>
-                    <div class="text-body-secondary small">Portraits, logos, or maps</div>
+                    <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or maps</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="label"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Label</div>
-                    <div class="text-body-secondary small">Static text or headings</div>
+                    <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="container"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Container</div>
-                    <div class="text-body-secondary small">Tabs, grids, columns, rows</div>
+                    <div class="text-body-secondary extra-small text-truncate">Tabs, grids, columns, rows</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="linear-track"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Linear Track</div>
-                    <div class="text-body-secondary small">Segmented progress bars</div>
+                    <div class="text-body-secondary extra-small text-truncate">Segmented progress bars</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="circular-track"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:gauge" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Circular Track</div>
-                    <div class="text-body-secondary small">Dial-style clocks</div>
+                    <div class="text-body-secondary extra-small text-truncate">Dial-style clocks</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="select-group"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Select Group</div>
-                    <div class="text-body-secondary small">Pills, tags, or segmented toggles</div>
+                    <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
                   </div>
                 </div>
                 <div
-                  class="border rounded-3 p-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
                   data-component-type="toggle"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
-                  <div>
+                  <div class="d-flex flex-column">
                     <div class="fw-semibold">Toggle</div>
-                    <div class="text-body-secondary small">Multi-state proficiencies</div>
+                    <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
                   </div>
                 </div>
               </div>
@@ -261,13 +309,10 @@
                 <div class="row g-3 align-items-end">
                   <div class="col-12 col-md-4 col-lg-3">
                     <label class="form-label fw-semibold text-body-secondary" for="template-select">Active template</label>
-                    <select class="form-select" id="template-select" data-template-select>
-                      <option value="" disabled selected>Select template</option>
-                    </select>
+                    <select class="form-select" id="template-select" data-template-select></select>
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary" type="button" data-action="import-template">Import JSON</button>
-                    <button class="btn btn-outline-secondary" type="button" data-action="export-template">Export JSON</button>
+                    <button class="btn btn-outline-secondary" type="button" data-action="new-template">New Template</button>
                   </div>
                 </div>
               </div>
@@ -279,17 +324,6 @@
                   <span class="fs-6 text-body-secondary">Layout preview</span>
                 </div>
                 <div class="flex-grow-1 d-flex flex-column gap-3" data-canvas-root data-sortable-id="canvas"></div>
-              </div>
-            </section>
-            <section class="card border-0 shadow-theme">
-              <div class="card-body d-flex flex-column gap-3">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sample Character Preview</h2>
-                  <span class="fs-6 text-body-secondary">Rendered with selected template</span>
-                </div>
-                <div class="flex-grow-1" data-preview-root>
-                  <p class="border border-dashed rounded-3 p-4 fs-6 text-body-secondary mb-0">Select a template to see the rendered output.</p>
-                </div>
               </div>
             </section>
           </div>
@@ -311,6 +345,61 @@
       </div>
     </div>
     <div class="status-root" data-status-root></div>
+    <div class="modal fade" id="new-template-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Create New Template</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form class="needs-validation" novalidate data-new-template-form>
+            <div class="modal-body d-flex flex-column gap-3">
+              <div>
+                <label class="form-label" for="new-template-id">Template ID</label>
+                <input
+                  id="new-template-id"
+                  class="form-control"
+                  type="text"
+                  name="id"
+                  required
+                  data-new-template-id
+                  placeholder="e.g. tpl.custom"
+                />
+                <div class="invalid-feedback">Please provide a unique template ID.</div>
+              </div>
+              <div>
+                <label class="form-label" for="new-template-title">Template Title</label>
+                <input
+                  id="new-template-title"
+                  class="form-control"
+                  type="text"
+                  name="title"
+                  required
+                  data-new-template-title
+                  placeholder="e.g. Hero Sheet"
+                />
+                <div class="invalid-feedback">Please provide a readable title.</div>
+              </div>
+              <div>
+                <label class="form-label" for="new-template-version">Starting Version</label>
+                <input
+                  id="new-template-version"
+                  class="form-control"
+                  type="text"
+                  name="version"
+                  value="0.1"
+                  data-new-template-version
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create Template</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script
