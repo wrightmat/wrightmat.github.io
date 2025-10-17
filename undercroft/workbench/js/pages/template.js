@@ -430,22 +430,24 @@ if (elements.exportButton) {
 }
 
 if (elements.newTemplateButton) {
-  elements.newTemplateButton.addEventListener("click", () => {
-    if (newTemplateModalInstance && elements.newTemplateForm) {
-      elements.newTemplateForm.reset();
-      if (elements.newTemplateVersion) {
-        const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
-        elements.newTemplateVersion.value = defaultVersion;
-      }
+  elements.newTemplateButton.addEventListener("click", (event) => {
+    if (!elements.newTemplateButton.contains(event.target)) {
+      return;
+    }
+    if (!elements.newTemplateForm) {
+      status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    elements.newTemplateForm.reset();
+    if (elements.newTemplateVersion) {
+      const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
+      elements.newTemplateVersion.value = defaultVersion;
+    }
+    if (newTemplateModalInstance) {
       newTemplateModalInstance.show();
       return;
     }
-    const id = window.prompt("Enter a template ID", state.template?.id || "");
-    if (id === null) return;
-    const title = window.prompt("Enter a template title", state.template?.title || "");
-    if (title === null) return;
-    const version = window.prompt("Enter a version", state.template?.version || "0.1") || "0.1";
-    startNewTemplate({ id: id.trim(), title: title.trim(), version: version.trim() });
+    status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
   });
 }
 
@@ -883,12 +885,6 @@ function ensureContainerZones(component) {
       }
       delete component.zones[key];
     }
-    const id = window.prompt("Enter a template ID", state.template?.id || "");
-    if (id === null) return;
-    const title = window.prompt("Enter a template title", state.template?.title || "");
-    if (title === null) return;
-    const version = window.prompt("Enter a version", state.template?.version || "0.1") || "0.1";
-    startNewTemplate({ id: id.trim(), title: title.trim(), version: version.trim() });
   });
 
   return zones;
