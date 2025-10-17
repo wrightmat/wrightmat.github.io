@@ -2,6 +2,7 @@ import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
 import { createCanvasPlaceholder, initPaletteInteractions, setupDropzones } from "../lib/editor-canvas.js";
+import { updateJsonPreview } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 
 function resolveApiBase() {
@@ -105,6 +106,7 @@ const elements = {
   inspector: document.querySelector("[data-inspector]"),
   saveButton: document.querySelector('[data-action="save-system"]'),
   newButton: document.querySelector('[data-action="new-system"]'),
+  clearButton: document.querySelector('[data-action="clear-canvas"]'),
   importButton: document.querySelector('[data-action="import-system"]'),
   exportButton: document.querySelector('[data-action="export-system"]'),
   jsonPreview: document.querySelector("[data-json-preview]"),
@@ -128,6 +130,9 @@ const state = {
 const drafts = new Map();
 
 const dropzones = new Map();
+const typeCounters = new Map();
+
+rebuildFieldIdentities(state.system);
 if (elements.palette) {
   initPaletteInteractions(elements.palette, {
     groupName: "system-canvas",
@@ -312,6 +317,12 @@ if (elements.saveButton) {
   });
 }
 
+if (elements.clearButton) {
+  elements.clearButton.addEventListener("click", () => {
+    clearCanvas();
+  });
+}
+
 const importInput = document.createElement("input");
 importInput.type = "file";
 importInput.accept = "application/json";
@@ -420,6 +431,7 @@ function applySystemData(data = {}) {
 
 function applySystemState(system, { emitStatus = false, statusMessage = "" } = {}) {
   state.system = cloneSystem(system);
+  rebuildFieldIdentities(state.system);
   state.selectedNodeId = null;
   renderAll();
   ensureSelectValue();
@@ -466,6 +478,8 @@ function renderCanvas() {
   if (!root) return;
   root.innerHTML = "";
   root.dataset.dropzone = "root";
+  root.dataset.dropzoneParent = "";
+  root.dataset.dropzoneKey = "root";
   const fields = state.system.fields || [];
   if (!fields.length) {
     root.appendChild(
@@ -492,9 +506,23 @@ function renderCanvas() {
   refreshTooltips(root);
 }
 
+function clearCanvas() {
+  const fields = state.system.fields || [];
+  if (!fields.length) {
+    status.show("Canvas is already empty", { timeout: 1200 });
+    return;
+  }
+  state.system.fields = [];
+  state.selectedNodeId = null;
+  resetTypeCounters();
+  undoStack.push({ type: "clear" });
+  status.show("Cleared system canvas", { type: "info", timeout: 1500 });
+  renderAll();
+}
+
 function addFieldToRoot(type) {
   const normalized = normalizeType(type);
-  const node = createFieldNode(normalized);
+  const node = applyFieldIdentity(createFieldNode(normalized));
   const parentId = "root";
   const collection = getCollection(parentId);
   const index = collection ? collection.length : 0;
@@ -530,12 +558,16 @@ function renderFieldCard(node) {
   header.dataset.sortableHandle = "true";
 
   const actions = document.createElement("div");
-  actions.className = "workbench-canvas-card__actions d-flex align-items-center gap-2";
+  actions.className = "workbench-canvas-card__actions";
 
-  const typeBadge = document.createElement("span");
-  typeBadge.className = "badge text-bg-secondary text-uppercase extra-small";
-  typeBadge.textContent = typeMeta.label || normalizedType;
-  actions.appendChild(typeBadge);
+  const typeIcon = document.createElement("span");
+  typeIcon.className = "workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
+  typeIcon.dataset.bsToggle = "tooltip";
+  typeIcon.dataset.bsPlacement = "bottom";
+  typeIcon.dataset.bsTitle = typeMeta.label || normalizedType;
+  typeIcon.setAttribute("aria-label", typeMeta.label || normalizedType);
+  typeIcon.innerHTML = `<span class="iconify" data-icon="${typeMeta.icon || TYPE_DEFS.string.icon}" aria-hidden="true"></span>`;
+  actions.appendChild(typeIcon);
 
   const typeIcon = document.createElement("span");
   typeIcon.className = "workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
@@ -641,7 +673,7 @@ function handleDrop(event) {
   const nodeId = event.item.dataset.nodeId;
 
   if (paletteType) {
-    const node = createFieldNode(paletteType);
+    const node = applyFieldIdentity(createFieldNode(paletteType));
     insertNode(parentId, index, node);
     undoStack.push({ type: "add", nodeId: node.id, parentId });
     status.show(`Added ${TYPE_DEFS[paletteType]?.label || paletteType} field`, { timeout: 1500 });
@@ -942,7 +974,8 @@ function renderAdditionalFieldGroup(node) {
   legend.className = "float-none w-auto px-2 text-body-secondary small text-uppercase";
   legend.textContent = "Additional entries";
   wrapper.appendChild(legend);
-  const additional = node.additional || createFieldNode("string", { id: `${node.id}-additional` });
+  const additional =
+    node.additional || applyFieldIdentity(createFieldNode("string", { id: `${node.id}-additional` }));
   if (!node.additional) {
     node.additional = additional;
   }
@@ -984,7 +1017,7 @@ function changeNodeType(nodeId, nextType) {
     label: current.label,
     required: current.required,
   };
-  const replacement = createFieldNode(nextType, preserved);
+  const replacement = applyFieldIdentity(createFieldNode(nextType, preserved));
   if (found.relation === "additional" && found.collection) {
     found.collection.additional = replacement;
   } else {
@@ -997,12 +1030,7 @@ function changeNodeType(nodeId, nextType) {
 function renderPreview() {
   if (!elements.jsonPreview) return;
   const serialized = serializeSystem(state.system);
-  const text = JSON.stringify(serialized, null, 2);
-  elements.jsonPreview.textContent = text;
-  if (elements.jsonPreviewBytes) {
-    const size = new Blob([text]).size;
-    elements.jsonPreviewBytes.textContent = formatSize(size);
-  }
+  updateJsonPreview(elements.jsonPreview, elements.jsonPreviewBytes, serialized);
   rememberDraft(state.system);
 }
 
@@ -1064,6 +1092,79 @@ function serializeFieldNode(node) {
   return output;
 }
 
+function rebuildFieldIdentities(system) {
+  resetTypeCounters();
+  const fields = Array.isArray(system?.fields) ? system.fields : [];
+  fields.forEach((field) => {
+    traverseField(field);
+  });
+}
+
+function traverseField(node) {
+  if (!node) {
+    return;
+  }
+  applyFieldIdentity(node);
+  if (Array.isArray(node.children) && node.children.length) {
+    node.children.forEach((child) => {
+      traverseField(child);
+    });
+  }
+  if (node.additional) {
+    traverseField(node.additional);
+  }
+}
+
+function applyFieldIdentity(node) {
+  if (!node) {
+    return node;
+  }
+  const normalized = normalizeType(node.type);
+  const count = incrementTypeCounter(normalized);
+  const typeLabel = TYPE_DEFS[normalized]?.label || normalized;
+  const baseLabel = `${typeLabel} Field`;
+  const label = count > 1 ? `${baseLabel} ${count}` : baseLabel;
+  const keySource = count > 1 ? `${typeLabel} Field ${count}` : `${typeLabel} Field`;
+  const fallbackKey = toCamelCase(keySource);
+  const trimmedLabel = typeof node.label === "string" ? node.label.trim() : "";
+  const trimmedKey = typeof node.key === "string" ? node.key.trim() : "";
+  node.label = trimmedLabel || label;
+  node.key = trimmedKey || fallbackKey;
+  return node;
+}
+
+function incrementTypeCounter(type) {
+  const current = typeCounters.get(type) || 0;
+  const next = current + 1;
+  typeCounters.set(type, next);
+  return next;
+}
+
+function resetTypeCounters() {
+  typeCounters.clear();
+}
+
+function toCamelCase(value) {
+  if (!value) {
+    return "";
+  }
+  const segments = String(value)
+    .trim()
+    .match(/[a-zA-Z0-9]+/g);
+  if (!segments || !segments.length) {
+    return "";
+  }
+  return segments
+    .map((segment, index) => {
+      const lower = segment.toLowerCase();
+      if (index === 0) {
+        return lower;
+      }
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join("");
+}
+
 function ensureSelectOption(id, label) {
   if (!elements.select || !id) return;
   const escaped = escapeCss(id);
@@ -1078,16 +1179,6 @@ function ensureSelectOption(id, label) {
       option.textContent = label || id;
     }
   }
-}
-
-function formatSize(bytes) {
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function ensureSelectValue() {
