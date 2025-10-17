@@ -434,6 +434,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       if (elements.select) {
         elements.select.value = state.system.id || "";
       }
+      status.show(`Imported ${state.system.title || "system"}`, { type: "success", timeout: 2500 });
     } catch (error) {
       console.error("Failed to import system", error);
       status.show("Import failed. Check the JSON and try again.", { type: "error", timeout: 3000 });
@@ -447,6 +448,12 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     elements.importButton.addEventListener("click", () => {
       importInput.click();
     });
+    hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
+    hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
+    hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
+    hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
+    hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
+    applySystemState(hydrated);
   }
 
   if (elements.exportButton) {

@@ -54,6 +54,15 @@ This document captures the shared layout and styling conventions introduced whil
 
 - Require the “Create Template” dialog to include a system selector. Populate it from the shared system catalog (built-in, local, and remote entries) and block creation until the author chooses the backing system so bindings and formulas have a schema target.
 
+## JSON Preview
+
+- Drive preview panes through `createJsonPreviewRenderer()` (see `js/lib/json-preview.js`) so formatting, byte counts, and follow-up hooks (like draft persistence) behave identically across editors.
+
+## Developer Checks
+
+- Run `scripts/check-modules.mjs` before committing changes to Workbench editors. The helper executes `node --check` across the shared libraries and page entry points so duplicate identifier regressions (like the `addComponentToRoot` collisions) are caught immediately.
+- Wrap each page module in an IIFE (e.g. `(() => { /* page code */ })();`) so that, even if the browser evaluates the entry script twice, top-level `const` declarations are scoped to the invocation and cannot clash with prior loads.
+
 ## Theme and Surface Colors
 
 - Lean on Bootstrap semantic tokens (`bg-body`, `bg-body-secondary`, `bg-body-tertiary`) instead of hard-coded colors to ensure light/dark theme support.
