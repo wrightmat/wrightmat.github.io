@@ -331,7 +331,7 @@ function getColorControls(component) {
   return Object.keys(COLOR_FIELD_MAP);
 }
 
-function hasTextControls(component) {
+function componentHasTextControls(component) {
   const definition = getDefinition(component);
   if (definition.textControls === false) {
     return false;
@@ -826,14 +826,6 @@ function renderComponentPreview(component) {
     default:
       return document.createTextNode("Unsupported component");
   }
-  return Object.keys(COLOR_FIELD_MAP);
-}
-
-function hasTextControls(component) {
-  const definition = getDefinition(component);
-  if (definition.textControls === false) {
-    return false;
-  }
   return true;
 }
 
@@ -900,6 +892,24 @@ if (elements.saveButton) {
 if (elements.undoButton) {
   elements.undoButton.addEventListener("click", () => {
     status.show("Undo coming soon", { type: "info", timeout: 1800 });
+  });
+}
+
+if (elements.redoButton) {
+  elements.redoButton.addEventListener("click", () => {
+    status.show("Redo coming soon", { type: "info", timeout: 1800 });
+  });
+}
+
+if (elements.clearButton) {
+  elements.clearButton.addEventListener("click", () => {
+    clearCanvas();
+  });
+}
+
+if (elements.importButton) {
+  elements.importButton.addEventListener("click", () => {
+    status.show("Import coming soon", { type: "info", timeout: 2000 });
   });
 }
 
@@ -1640,11 +1650,11 @@ function renderInspector() {
   if (colorControls.length) {
     appearanceControls.push(createColorRow(component, colorControls));
   }
-  if (hasTextControls(component)) {
+  if (componentHasTextControls(component)) {
     appearanceControls.push(createTextSizeControls(component));
     appearanceControls.push(createTextStyleControls(component));
   }
-  if (definition.supportsAlignment !== false && hasTextControls(component)) {
+  if (definition.supportsAlignment !== false && componentHasTextControls(component)) {
     appearanceControls.push(createAlignmentControls(component));
   }
   const appearanceSection = createSection("Appearance", appearanceControls);

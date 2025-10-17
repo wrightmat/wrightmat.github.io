@@ -33,6 +33,7 @@ This guide explains how we can collaborate on Project Undercroft: Workbench, how
 ### Implementation Notes
 
 - When adding or refactoring helper functions in the page scripts (for example `js/pages/template.js`), run a quick `rg function-name js/pages/template.js` search before introducing a new identifier. ES module parsing halts on duplicate `function` declarations, which prevents the editors from loading. Keeping names unique avoids the "Identifier has already been declared" console errors we've encountered.
+- Prefer descriptive prefixes (e.g., `componentHas...`, `renderSelectGroup...`) for new helpers so their intent is obvious and so they are unlikely to collide with other utilities. Document renamed helpers in the PR summary when you consolidate or deduplicate them.
 
 ## Task Ownership
 
