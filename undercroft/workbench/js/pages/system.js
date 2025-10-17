@@ -1,8 +1,27 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { createSortable } from "../lib/dnd.js";
+import { DataManager } from "../lib/data-manager.js";
+
+function resolveApiBase() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+  if (window.__WORKBENCH_API_BASE__ && typeof window.__WORKBENCH_API_BASE__ === "string") {
+    return window.__WORKBENCH_API_BASE__;
+  }
+  const { origin, protocol, host } = window.location || {};
+  if (origin && origin !== "null") {
+    return origin;
+  }
+  if (protocol && protocol.startsWith("http") && host) {
+    return `${protocol}//${host}`;
+  }
+  return "";
+}
 
 const { status, undoStack } = initAppShell({ namespace: "system" });
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 
 const SYSTEMS = [
   {
@@ -239,9 +258,57 @@ if (elements.newSystemForm) {
 }
 
 if (elements.saveButton) {
-  elements.saveButton.addEventListener("click", () => {
-    undoStack.push({ type: "save" });
-    status.show("System draft saved locally", { type: "success", timeout: 2000 });
+  elements.saveButton.addEventListener("click", async () => {
+    if (!state.system) {
+      return;
+    }
+    const payload = serializeSystem(state.system);
+    const systemId = (payload.id || "").trim();
+    if (!systemId) {
+      status.show("Set a system ID before saving.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    payload.id = systemId;
+    if (state.system.id !== systemId) {
+      state.system.id = systemId;
+      ensureSelectOption(systemId, payload.title || systemId);
+      ensureSelectValue();
+    }
+    const wantsRemote = dataManager.isAuthenticated();
+    if (wantsRemote && !dataManager.baseUrl) {
+      status.show("Server connection not configured. Start the Workbench server to save.", {
+        type: "error",
+        timeout: 3000,
+      });
+      return;
+    }
+    const button = elements.saveButton;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    try {
+      const result = await dataManager.save("systems", systemId, payload, {
+        mode: wantsRemote ? "remote" : "auto",
+      });
+      undoStack.push({ type: "save", id: systemId });
+      rememberDraft(state.system);
+      const savedToServer = result?.source === "remote";
+      const label = payload.title || systemId;
+      if (savedToServer) {
+        status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
+      } else {
+        status.show(`Saved ${label} locally. Log in to sync with the server.`, {
+          type: "info",
+          timeout: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to save system", error);
+      const message = error?.message || "Unable to save system";
+      status.show(message, { type: "error", timeout: 3000 });
+    } finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+    }
   });
 }
 
