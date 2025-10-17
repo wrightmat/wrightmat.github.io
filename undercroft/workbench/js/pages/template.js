@@ -1666,6 +1666,203 @@ function createTextStyleControls(component) {
       draft.textStyles[key] = checked;
     }, { rerenderCanvas: true });
   });
+  wrapper.appendChild(group);
+  return wrapper;
+}
+
+function createToggleButtonGroup(component, labelText, options, values, onToggle) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "d-flex flex-column gap-2";
+  const heading = document.createElement("div");
+  heading.className = "fw-semibold text-body-secondary";
+  heading.textContent = labelText;
+  wrapper.appendChild(heading);
+  const group = document.createElement("div");
+  group.className = "btn-group";
+  options.forEach((option, index) => {
+    const id = toId([component.uid, labelText, option.value, index]);
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "btn-check";
+    input.id = id;
+    input.autocomplete = "off";
+    input.checked = !!values[option.value];
+    input.addEventListener("change", () => {
+      onToggle(option.value, input.checked);
+    });
+    const label = document.createElement("label");
+    label.className = "btn btn-outline-secondary btn-sm";
+    label.setAttribute("for", id);
+    if (option.icon) {
+      label.innerHTML = `<span class="iconify" data-icon="${option.icon}" aria-hidden="true"></span>`;
+    }
+    if (option.label) {
+      label.innerHTML += `<span class="ms-1">${option.label}</span>`;
+    }
+    group.append(input, label);
+  });
+  wrapper.appendChild(group);
+  return wrapper;
+}
+
+function renderComponentSpecificInspector(component) {
+  switch (component.type) {
+    case "input":
+      return renderInputInspector(component);
+    case "array":
+      return renderArrayInspector(component);
+    case "divider":
+      return renderDividerInspector(component);
+    case "image":
+      return renderImageInspector(component);
+    case "label":
+      return renderLabelInspector(component);
+    case "container":
+      return renderContainerInspector(component);
+    case "linear-track":
+    case "circular-track":
+      return renderTrackInspector(component);
+    case "select-group":
+      return renderSelectGroupInspector(component);
+    case "toggle":
+      return renderToggleInspector(component);
+    default:
+      return [];
+  }
+}
+
+function renderInputInspector(component) {
+  const controls = [];
+  const options = [
+    { value: "text", icon: "tabler:letter-case", label: "Text" },
+    { value: "number", icon: "tabler:123", label: "Number" },
+    { value: "select", icon: "tabler:list-details", label: "Select" },
+    { value: "radio", icon: "tabler:circle-dot", label: "Radio" },
+    { value: "checkbox", icon: "tabler:checkbox", label: "Checkbox" },
+  ];
+  controls.push(
+    createRadioButtonGroup(component, "Type", options, component.variant || "text", (value) => {
+      updateComponent(component.uid, (draft) => {
+        draft.variant = value;
+        if ((value === "select" || value === "radio" || value === "checkbox") && (!Array.isArray(draft.options) || !draft.options.length)) {
+          draft.options = ["Option A", "Option B"];
+        }
+      }, { rerenderCanvas: true, rerenderInspector: true });
+    })
+  );
+  controls.push(
+    createTextInput(component, "Placeholder", component.placeholder || "", (value) => {
+      updateComponent(component.uid, (draft) => {
+        draft.placeholder = value;
+      }, { rerenderCanvas: true });
+    }, { placeholder: "Shown inside the field" })
+  );
+  if (["select", "radio", "checkbox"].includes(component.variant)) {
+    controls.push(
+      createTextarea(component, "Options (one per line)", (component.options || []).join("\n"), (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.options = parseLines(value);
+        }, { rerenderCanvas: true });
+      }, { rows: 3, placeholder: "Choice A\nChoice B" })
+    );
+  }
+  return controls;
+}
+
+function renderArrayInspector(component) {
+  return [
+    createRadioButtonGroup(
+      component,
+      "Layout",
+      [
+        { value: "list", icon: "tabler:list", label: "List" },
+        { value: "cards", icon: "tabler:layout-cards", label: "Cards" },
+      ],
+      component.variant || "list",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.variant = value;
+        }, { rerenderCanvas: true });
+      }
+    ),
+  ];
+}
+
+function renderDividerInspector(component) {
+  const controls = [];
+  controls.push(
+    createRadioButtonGroup(
+      component,
+      "Style",
+      [
+        { value: "solid", label: "Solid" },
+        { value: "dashed", label: "Dashed" },
+        { value: "dotted", label: "Dotted" },
+      ],
+      component.style || "solid",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.style = value;
+        }, { rerenderCanvas: true });
+      }
+    )
+  );
+  controls.push(
+    createNumberInput(component, "Thickness", component.thickness || 2, (value) => {
+      const next = clampInteger(value ?? 1, 1, 6);
+      updateComponent(component.uid, (draft) => {
+        draft.thickness = next;
+      }, { rerenderCanvas: true, rerenderInspector: true });
+    }, { min: 1, max: 6 })
+  );
+  return controls;
+}
+
+function renderImageInspector(component) {
+  const controls = [];
+  controls.push(
+    createTextInput(component, "Image URL", component.src || "", (value) => {
+      updateComponent(component.uid, (draft) => {
+        draft.src = value;
+      }, { rerenderCanvas: true });
+    }, { placeholder: "https://" })
+  );
+  controls.push(
+    createTextInput(component, "Alt text", component.alt || "", (value) => {
+      updateComponent(component.uid, (draft) => {
+        draft.alt = value;
+      }, { rerenderCanvas: true });
+    }, { placeholder: "Describe the image" })
+  );
+  controls.push(
+    createRadioButtonGroup(
+      component,
+      "Fit",
+      [
+        { value: "contain", label: "Contain" },
+        { value: "cover", label: "Cover" },
+      ],
+      component.fit || "contain",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.fit = value;
+        }, { rerenderCanvas: true });
+      }
+    )
+  );
+  controls.push(
+    createNumberInput(component, "Max height (px)", component.height || 180, (value) => {
+      const next = clampInteger(value ?? 180, 80, 600);
+      updateComponent(component.uid, (draft) => {
+        draft.height = next;
+      }, { rerenderCanvas: true });
+    }, { min: 80, max: 600, step: 10 })
+  );
+  return controls;
+}
+
+function renderLabelInspector(component) {
+  return [];
 }
 
 function createAlignmentControls(component) {
@@ -1680,6 +1877,46 @@ function createAlignmentControls(component) {
       draft.align = value;
     }, { rerenderCanvas: true });
   });
+  wrapper.appendChild(grid);
+  return wrapper;
+}
+
+function renderSelectGroupInspector(component) {
+  const controls = [];
+  controls.push(
+    createRadioButtonGroup(
+      component,
+      "Type",
+      [
+        { value: "pills", icon: "tabler:toggle-right", label: "Pills" },
+        { value: "tags", icon: "tabler:tags", label: "Tags" },
+        { value: "buttons", icon: "tabler:switch-3", label: "Buttons" },
+      ],
+      component.variant || "pills",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.variant = value;
+        }, { rerenderCanvas: true });
+      }
+    )
+  );
+  controls.push(
+    createRadioButtonGroup(
+      component,
+      "Selection",
+      [
+        { value: "single", label: "Single" },
+        { value: "multi", label: "Multi" },
+      ],
+      component.multiple ? "multi" : "single",
+      (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.multiple = value === "multi";
+        }, { rerenderCanvas: true });
+      }
+    )
+  );
+  return controls;
 }
 
 function createReadOnlyToggle(component) {
