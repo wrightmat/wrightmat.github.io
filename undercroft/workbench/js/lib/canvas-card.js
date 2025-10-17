@@ -141,3 +141,34 @@ export function createDeleteButton({
   }
   return button;
 }
+
+export function createStandardCardChrome({
+  icon,
+  iconLabel,
+  headerOptions = {},
+  actionsOptions = {},
+  iconOptions = {},
+  removeButtonOptions = {},
+} = {}) {
+  const header = createCardHeaderElement(headerOptions);
+  const actions = createCardActionsElement(actionsOptions);
+
+  let iconElement = null;
+  if (icon) {
+    iconElement = createTypeIconElement({
+      icon,
+      label: iconLabel,
+      ...iconOptions,
+    });
+    actions.appendChild(iconElement);
+  }
+
+  let deleteButton = null;
+  if (removeButtonOptions !== false) {
+    deleteButton = createDeleteButton(removeButtonOptions);
+    actions.appendChild(deleteButton);
+  }
+
+  header.appendChild(actions);
+  return { header, actions, iconElement, deleteButton };
+}

@@ -6,13 +6,7 @@ import {
   initPaletteInteractions,
   setupDropzones,
 } from "../lib/editor-canvas.js";
-import {
-  createCanvasCardElement,
-  createCardHeaderElement,
-  createCardActionsElement,
-  createTypeIconElement,
-  createDeleteButton,
-} from "../lib/canvas-card.js";
+import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
 import { updateJsonPreview } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 
@@ -560,61 +554,40 @@ function renderFieldCard(node) {
     selectNode(node.id);
   });
 
-  const header = createCardHeaderElement();
-  const actions = createCardActionsElement();
-
-  const typeIcon = createTypeIconElement({
+  const { header } = createStandardCardChrome({
     icon: typeMeta.icon || TYPE_DEFS.string.icon,
-    label: typeMeta.label || normalizedType,
-  });
-  actions.appendChild(typeIcon);
-
-  const removeButton = createDeleteButton({
-    srLabel: "Remove field",
-    onClick: (event) => {
-      event.stopPropagation();
-      deleteNode(node.id);
+    iconLabel: typeMeta.label || normalizedType,
+    removeButtonOptions: {
+      srLabel: "Remove field",
+      onClick: (event) => {
+        event.stopPropagation();
+        deleteNode(node.id);
+      },
     },
   });
-  actions.appendChild(removeButton);
-
-  header.appendChild(actions);
   card.appendChild(header);
 
-  const content = document.createElement("div");
-  content.className = "d-flex flex-column gap-1";
+  const cardBody = document.createElement("div");
+  cardBody.className = "d-flex flex-column gap-1";
 
   const heading = document.createElement("div");
   heading.className = "fw-semibold";
   heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
-  content.appendChild(heading);
+  cardBody.appendChild(heading);
 
   const subtitle = document.createElement("div");
   subtitle.className = "text-body-secondary small";
   subtitle.textContent = formatNodeSubtitle(node);
-  content.appendChild(subtitle);
-
-  const content = document.createElement("div");
-  content.className = "d-flex flex-column gap-1";
-
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
-  content.appendChild(heading);
-
-  const subtitle = document.createElement("div");
-  subtitle.className = "text-body-secondary small";
-  subtitle.textContent = formatNodeSubtitle(node);
-  content.appendChild(subtitle);
+  cardBody.appendChild(subtitle);
 
   if (node.children && node.children.length) {
     const summary = document.createElement("div");
     summary.className = "text-body-secondary extra-small";
     summary.textContent = `${node.children.length} nested ${node.children.length === 1 ? "field" : "fields"}`;
-    content.appendChild(summary);
+    cardBody.appendChild(summary);
   }
 
-  card.appendChild(content);
+  card.appendChild(cardBody);
 
   if (supportsChildren(node.type)) {
     const wrapper = document.createElement("div");

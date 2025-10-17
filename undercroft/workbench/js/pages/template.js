@@ -5,13 +5,7 @@ import {
   initPaletteInteractions,
   setupDropzones,
 } from "../lib/editor-canvas.js";
-import {
-  createCanvasCardElement,
-  createCardHeaderElement,
-  createCardActionsElement,
-  createTypeIconElement,
-  createDeleteButton,
-} from "../lib/canvas-card.js";
+import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
 import { updateJsonPreview } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 const { status, undoStack } = initAppShell({ namespace: "template" });
@@ -533,6 +527,67 @@ function stripComponentMetadata(node) {
       stripComponentMetadata(value);
     }
   });
+  refreshTooltips(elements.canvasRoot);
+  renderPreview();
+}
+
+function renderPreview() {
+  if (!elements.jsonPreview) {
+    return;
+  }
+  const serialized = serializeTemplate();
+  updateJsonPreview(elements.jsonPreview, elements.jsonPreviewBytes, serialized);
+}
+
+function serializeTemplate() {
+  return {
+    id: state.template?.id || "",
+    title: state.template?.title || "",
+    version: state.template?.version || "0.1",
+    components: state.components.map(serializeComponentForPreview),
+  };
+}
+
+function serializeComponentForPreview(component) {
+  const clone = JSON.parse(JSON.stringify(component));
+  stripComponentMetadata(clone);
+  return clone;
+}
+
+function stripComponentMetadata(node) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  if ("uid" in node) {
+    delete node.uid;
+  }
+  Object.values(node).forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach(stripComponentMetadata);
+    } else if (value && typeof value === "object") {
+      stripComponentMetadata(value);
+    }
+  });
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
 }
 
 function addComponentToRoot(type) {
@@ -775,12 +830,20 @@ function createComponentElement(component) {
     wrapper.classList.add("template-component-selected");
   }
 
-  const header = createCardHeaderElement({
-    classes: ["template-component-header"],
-  });
-
-  const actions = createCardActionsElement({
-    classes: ["template-component-actions"],
+  const { header, actions, iconElement } = createStandardCardChrome({
+    icon: iconName,
+    iconLabel: typeLabel,
+    headerOptions: { classes: ["template-component-header"] },
+    actionsOptions: { classes: ["template-component-actions"] },
+    iconOptions: {
+      classes: ["template-component-icon"],
+      attributes: { tabindex: "0" },
+    },
+    removeButtonOptions: {
+      srLabel: "Remove component",
+      dataset: { action: "remove-component", componentId: component.uid },
+      attributes: { "aria-label": "Remove component" },
+    },
   });
 
   const bindingLabel = (component.binding || component.formula || "").trim();
@@ -788,25 +851,17 @@ function createComponentElement(component) {
     const pill = document.createElement("span");
     pill.className = "template-binding-pill badge text-bg-secondary";
     pill.textContent = bindingLabel;
-    actions.appendChild(pill);
+    if (iconElement && actions.contains(iconElement)) {
+      actions.insertBefore(pill, iconElement);
+    } else {
+      actions.appendChild(pill);
+    }
   }
 
-  const iconButton = createTypeIconElement({
-    icon: iconName,
-    label: typeLabel,
-  });
-  iconButton.classList.add("template-component-icon");
-  iconButton.tabIndex = 0;
-  actions.appendChild(iconButton);
+  if (iconElement) {
+    iconElement.tabIndex = 0;
+  }
 
-  const removeButton = createDeleteButton({
-    srLabel: "Remove component",
-    dataset: { action: "remove-component", componentId: component.uid },
-    attributes: { "aria-label": "Remove component" },
-  });
-  actions.appendChild(removeButton);
-
-  header.appendChild(actions);
   wrapper.appendChild(header);
 
   const preview = renderComponentPreview(component);
