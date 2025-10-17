@@ -566,6 +566,99 @@ function stripComponentMetadata(node) {
       stripComponentMetadata(value);
     }
   });
+  refreshTooltips(elements.canvasRoot);
+  renderPreview();
+}
+
+function serializeTemplate() {
+  return {
+    id: state.template?.id || "",
+    title: state.template?.title || "",
+    version: state.template?.version || "0.1",
+    components: state.components.map(serializeComponentForPreview),
+  };
+}
+
+function serializeComponentForPreview(component) {
+  const clone = JSON.parse(JSON.stringify(component));
+  stripComponentMetadata(clone);
+  return clone;
+}
+
+function stripComponentMetadata(node) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  if ("uid" in node) {
+    delete node.uid;
+  }
+  Object.values(node).forEach((value) => {
+    if (Array.isArray(value)) {
+      value.forEach(stripComponentMetadata);
+    } else if (value && typeof value === "object") {
+      stripComponentMetadata(value);
+    }
+  });
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
 }
 
 function handleDrop(event) {
