@@ -30,6 +30,10 @@ This guide explains how we can collaborate on Project Undercroft: Workbench, how
 4. **Commit & PR** – I commit the changes directly in this environment and generate a PR summary using the `make_pr` tool so you have a concise record.
 5. **Review & Iterate** – You review the summary and diff, provide feedback, and I follow up with additional commits or revisions as needed.
 
+### Implementation Notes
+
+- When adding or refactoring helper functions in the page scripts (for example `js/pages/template.js`), run a quick `rg function-name js/pages/template.js` search before introducing a new identifier. ES module parsing halts on duplicate `function` declarations, which prevents the editors from loading. Keeping names unique avoids the "Identifier has already been declared" console errors we've encountered.
+
 ## Task Ownership
 
 - I manage the in-session implementation details and keep the roadmap updated with progress notes when tasks change state.
