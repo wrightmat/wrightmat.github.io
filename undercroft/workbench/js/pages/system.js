@@ -594,6 +594,19 @@ function renderFieldCard(node) {
   subtitle.textContent = formatNodeSubtitle(node);
   content.appendChild(subtitle);
 
+  const content = document.createElement("div");
+  content.className = "d-flex flex-column gap-1";
+
+  const heading = document.createElement("div");
+  heading.className = "fw-semibold";
+  heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
+  content.appendChild(heading);
+
+  const subtitle = document.createElement("div");
+  subtitle.className = "text-body-secondary small";
+  subtitle.textContent = formatNodeSubtitle(node);
+  content.appendChild(subtitle);
+
   if (node.children && node.children.length) {
     const summary = document.createElement("div");
     summary.className = "text-body-secondary extra-small";
