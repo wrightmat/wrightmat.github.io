@@ -1,7 +1,8 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { createSortable } from "../lib/dnd.js";
 import { DataManager } from "../lib/data-manager.js";
+import { createCanvasPlaceholder, initPaletteInteractions, setupDropzones } from "../lib/editor-canvas.js";
+import { refreshTooltips } from "../lib/tooltips.js";
 
 function resolveApiBase() {
   if (typeof window === "undefined") {
@@ -117,13 +118,7 @@ const elements = {
   newSystemVersion: document.querySelector("[data-new-system-version]"),
 };
 
-if (window.bootstrap && typeof window.bootstrap.Tooltip === "function") {
-  const tooltipTriggers = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  tooltipTriggers.forEach((element) => {
-    // eslint-disable-next-line no-new
-    new window.bootstrap.Tooltip(element);
-  });
-}
+refreshTooltips(document);
 
 const state = {
   system: createBlankSystem(),
@@ -133,13 +128,18 @@ const state = {
 const drafts = new Map();
 
 const dropzones = new Map();
-const paletteSortable = elements.palette
-  ? createSortable(elements.palette, {
-      group: { name: "system-canvas", pull: "clone", put: false },
-      sort: false,
-      fallbackOnBody: true,
-    })
-  : null;
+if (elements.palette) {
+  initPaletteInteractions(elements.palette, {
+    groupName: "system-canvas",
+    dataAttribute: "data-palette-type",
+    onActivate: ({ value }) => {
+      if (!value) {
+        return;
+      }
+      addFieldToRoot(value);
+    },
+  });
+}
 
 let newSystemModalInstance = null;
 if (elements.newSystemModal && window.bootstrap && typeof window.bootstrap.Modal === "function") {
@@ -464,29 +464,57 @@ function renderAll() {
 function renderCanvas() {
   const root = elements.canvasRoot;
   if (!root) return;
-  dropzones.forEach((sortable) => sortable.destroy());
-  dropzones.clear();
   root.innerHTML = "";
   root.dataset.dropzone = "root";
   const fields = state.system.fields || [];
   if (!fields.length) {
-    root.appendChild(createPlaceholder("Drag fields from the palette to begin building your system."));
+    root.appendChild(
+      createCanvasPlaceholder("Drag fields from the palette into the canvas below to design your system.", {
+        variant: "root",
+      })
+    );
   } else {
     fields.forEach((field) => {
       root.appendChild(renderFieldCard(field));
     });
   }
-  registerDropzones();
+  setupDropzones(root, dropzones, {
+    groupName: "system-canvas",
+    sortableOptions: {
+      onAdd(event) {
+        handleDrop(event);
+      },
+      onUpdate(event) {
+        handleReorder(event);
+      },
+    },
+  });
+  refreshTooltips(root);
+}
+
+function addFieldToRoot(type) {
+  const normalized = normalizeType(type);
+  const node = createFieldNode(normalized);
+  const parentId = "root";
+  const collection = getCollection(parentId);
+  const index = collection ? collection.length : 0;
+  insertNode(parentId, index, node);
+  undoStack.push({ type: "add", nodeId: node.id, parentId, index });
+  status.show(`Added ${TYPE_DEFS[normalized]?.label || normalized} field`, { timeout: 1500 });
+  selectNode(node.id);
+  renderAll();
+  expandInspectorPane();
+  return node;
 }
 
 function renderFieldCard(node) {
   const card = document.createElement("div");
-  card.className = "border rounded-3 bg-body shadow-sm p-3 d-flex flex-column gap-3";
+  card.className = "workbench-canvas-card border rounded-3 bg-body shadow-sm p-3 d-flex flex-column gap-3";
   card.dataset.nodeId = node.id;
   card.dataset.sortableHandle = "true";
   card.tabIndex = 0;
   if (state.selectedNodeId === node.id) {
-    card.classList.add("border-primary", "border-2");
+    card.classList.add("is-selected");
   }
 
   const normalizedType = normalizeType(node.type);
@@ -498,37 +526,24 @@ function renderFieldCard(node) {
   });
 
   const header = document.createElement("div");
-  header.className = "d-flex justify-content-between align-items-start gap-3";
+  header.className = "workbench-canvas-card__header";
   header.dataset.sortableHandle = "true";
 
-  const title = document.createElement("div");
-  title.className = "d-flex align-items-center gap-2";
-
-  const icon = document.createElement("span");
-  icon.className = "iconify text-primary fs-4";
-  icon.setAttribute("data-icon", typeMeta.icon || TYPE_DEFS.string.icon);
-  icon.setAttribute("aria-hidden", "true");
-  title.appendChild(icon);
-
-  const text = document.createElement("div");
-  const heading = document.createElement("div");
-  heading.className = "fw-semibold";
-  heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
-  const subheading = document.createElement("div");
-  subheading.className = "text-body-secondary small";
-  subheading.textContent = formatNodeSubtitle(node);
-  text.appendChild(heading);
-  text.appendChild(subheading);
-  title.appendChild(text);
-  header.appendChild(title);
-
   const actions = document.createElement("div");
-  actions.className = "d-flex gap-2 align-items-center";
+  actions.className = "workbench-canvas-card__actions d-flex align-items-center gap-2";
 
   const typeBadge = document.createElement("span");
-  typeBadge.className = "badge text-bg-secondary text-uppercase";
+  typeBadge.className = "badge text-bg-secondary text-uppercase extra-small";
   typeBadge.textContent = typeMeta.label || normalizedType;
   actions.appendChild(typeBadge);
+
+  const typeIcon = document.createElement("span");
+  typeIcon.className = "workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
+  typeIcon.dataset.bsToggle = "tooltip";
+  typeIcon.dataset.bsPlacement = "bottom";
+  typeIcon.dataset.bsTitle = typeMeta.description || typeMeta.label || normalizedType;
+  typeIcon.innerHTML = `<span class="iconify" data-icon="${typeMeta.icon || TYPE_DEFS.string.icon}" aria-hidden="true"></span>`;
+  actions.appendChild(typeIcon);
 
   const removeButton = document.createElement("button");
   removeButton.className = "btn btn-outline-danger btn-sm";
@@ -544,25 +559,51 @@ function renderFieldCard(node) {
   header.appendChild(actions);
   card.appendChild(header);
 
+  const content = document.createElement("div");
+  content.className = "d-flex flex-column gap-1";
+
+  const heading = document.createElement("div");
+  heading.className = "fw-semibold";
+  heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
+  content.appendChild(heading);
+
+  const subtitle = document.createElement("div");
+  subtitle.className = "text-body-secondary small";
+  subtitle.textContent = formatNodeSubtitle(node);
+  content.appendChild(subtitle);
+
   if (node.children && node.children.length) {
     const summary = document.createElement("div");
-    summary.className = "text-body-secondary small";
+    summary.className = "text-body-secondary extra-small";
     summary.textContent = `${node.children.length} nested ${node.children.length === 1 ? "field" : "fields"}`;
-    card.appendChild(summary);
+    content.appendChild(summary);
   }
 
+  card.appendChild(content);
+
   if (supportsChildren(node.type)) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+
+    const label = document.createElement("div");
+    label.className = "workbench-dropzone-label text-body-secondary text-uppercase extra-small";
+    label.textContent = "Nested Fields";
+    wrapper.appendChild(label);
+
     const container = document.createElement("div");
-    container.className = "d-grid gap-2 border border-dashed rounded-3 p-3 bg-body-tertiary";
+    container.className = "workbench-dropzone";
     container.dataset.dropzone = node.id;
     if (!node.children || !node.children.length) {
-      container.appendChild(createPlaceholder("Drag fields here to nest them"));
+      container.appendChild(
+        createCanvasPlaceholder("Drag fields here to nest them", { variant: "compact" })
+      );
     } else {
       node.children.forEach((child) => {
         container.appendChild(renderFieldCard(child));
       });
     }
-    card.appendChild(container);
+    wrapper.appendChild(container);
+    card.appendChild(wrapper);
   }
 
   return card;
@@ -591,33 +632,6 @@ function formatNodeSubtitle(node) {
 function supportsChildren(type) {
   const normalized = normalizeType(type);
   return normalized === "group" || normalized === "object" || normalized === "array";
-}
-
-function createPlaceholder(text) {
-  const placeholder = document.createElement("div");
-  placeholder.className = "border border-dashed rounded-3 p-3 text-body-secondary text-center bg-transparent";
-  placeholder.textContent = text;
-  placeholder.setAttribute("aria-hidden", "true");
-  return placeholder;
-}
-
-function registerDropzones() {
-  if (!elements.canvasRoot) return;
-  const zones = [elements.canvasRoot, ...elements.canvasRoot.querySelectorAll("[data-dropzone]")];
-  zones.forEach((zone) => {
-    const sortable = createSortable(zone, {
-      group: { name: "system-canvas", pull: true, put: true },
-      fallbackOnBody: true,
-      swapThreshold: 0.65,
-      onAdd(event) {
-        handleDrop(event);
-      },
-      onUpdate(event) {
-        handleReorder(event);
-      },
-    });
-    dropzones.set(zone, sortable);
-  });
 }
 
 function handleDrop(event) {
@@ -1088,8 +1102,6 @@ function ensureSelectValue() {
 }
 
 ensureSelectValue();
-
-export { paletteSortable };
 
 function escapeCss(value) {
   if (typeof value !== "string" || !value) {

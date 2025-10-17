@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { createSortable } from "../lib/dnd.js";
+import { createCanvasPlaceholder, initPaletteInteractions, setupDropzones } from "../lib/editor-canvas.js";
+import { refreshTooltips } from "../lib/tooltips.js";
 const { status, undoStack } = initAppShell({ namespace: "template" });
 
 const TEMPLATES = [
@@ -50,19 +51,6 @@ if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
   if (modalElement) {
     newTemplateModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
   }
-}
-
-function refreshTooltips(root = document) {
-  if (!window.bootstrap || typeof window.bootstrap.Tooltip !== "function") return;
-  const tooltipTriggers = root.querySelectorAll('[data-bs-toggle="tooltip"]');
-  tooltipTriggers.forEach((element) => {
-    const existing = window.bootstrap.Tooltip.getInstance(element);
-    if (existing) {
-      existing.dispose();
-    }
-    // eslint-disable-next-line no-new
-    new window.bootstrap.Tooltip(element);
-  });
 }
 
 refreshTooltips(document);
@@ -339,47 +327,16 @@ function componentHasTextControls(component) {
   return true;
 }
 
-let lastPaletteDblClickAt = 0;
-
 if (elements.palette) {
-  createSortable(elements.palette, {
-    group: { name: "template-canvas", pull: "clone", put: false },
-    sort: false,
-    fallbackOnBody: true,
-  });
-  elements.palette.addEventListener("dblclick", (event) => {
-    const now = Date.now();
-    if (now - lastPaletteDblClickAt < 120) {
-      return;
-    }
-    lastPaletteDblClickAt = now;
-
-    event.preventDefault();
-
-    const paletteItem = event.target.closest("[data-component-type]");
-    if (!paletteItem || !elements.palette.contains(paletteItem)) {
-      return;
-    }
-    const { componentType } = paletteItem.dataset;
-    if (!componentType || !COMPONENT_DEFINITIONS[componentType]) {
-      return;
-    }
-    const component = createComponent(componentType);
-    const definition = COMPONENT_DEFINITIONS[componentType] || {};
-    const parentId = "";
-    const zoneKey = "root";
-    const index = state.components.length;
-    insertComponent(parentId, zoneKey, index, component);
-    state.selectedId = component.uid;
-    undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
-    const label = typeof definition.label === "string" && definition.label ? definition.label : componentType;
-    status.show(`${label} added to canvas`, {
-      type: "success",
-      timeout: 1800,
-    });
-    renderCanvas();
-    renderInspector();
-    expandInspectorPane();
+  initPaletteInteractions(elements.palette, {
+    groupName: "template-canvas",
+    dataAttribute: "data-component-type",
+    onActivate: ({ value }) => {
+      if (!value || !COMPONENT_DEFINITIONS[value]) {
+        return;
+      }
+      addComponentToRoot(value);
+    },
   });
 }
 
@@ -491,15 +448,18 @@ ensureTemplateSelectValue();
 
 function renderCanvas() {
   if (!elements.canvasRoot) return;
-  dropzones.forEach((sortable) => sortable.destroy());
-  dropzones.clear();
   elements.canvasRoot.innerHTML = "";
   elements.canvasRoot.dataset.dropzone = "root";
   elements.canvasRoot.dataset.dropzoneParent = "";
   elements.canvasRoot.dataset.dropzoneKey = "root";
   if (!state.components.length) {
-    const placeholder = createDropPlaceholder("Drag components from the palette into the canvas below to design your template.");
-    placeholder.classList.add("template-drop-placeholder--root");
+    const placeholder = createCanvasPlaceholder(
+      "Drag components from the palette into the canvas below to design your template.",
+      {
+        variant: "root",
+        classes: ["template-drop-placeholder", "template-drop-placeholder--root"],
+      }
+    );
     elements.canvasRoot.appendChild(placeholder);
   } else {
     const fragment = document.createDocumentFragment();
@@ -508,35 +468,38 @@ function renderCanvas() {
     });
     elements.canvasRoot.appendChild(fragment);
   }
-  registerDropzones();
-  refreshTooltips(elements.canvasRoot);
-}
-
-function createDropPlaceholder(text) {
-  const placeholder = document.createElement("div");
-  placeholder.className = "template-drop-placeholder";
-  placeholder.textContent = text;
-  placeholder.setAttribute("aria-hidden", "true");
-  return placeholder;
-}
-
-function registerDropzones() {
-  if (!elements.canvasRoot) return;
-  const zones = [elements.canvasRoot, ...elements.canvasRoot.querySelectorAll("[data-dropzone]")];
-  zones.forEach((zone) => {
-    const sortable = createSortable(zone, {
-      group: { name: "template-canvas", pull: true, put: true },
-      fallbackOnBody: true,
-      swapThreshold: 0.65,
+  setupDropzones(elements.canvasRoot, dropzones, {
+    groupName: "template-canvas",
+    sortableOptions: {
       onAdd(event) {
         handleDrop(event);
       },
       onUpdate(event) {
         handleReorder(event);
       },
-    });
-    dropzones.set(zone, sortable);
+    },
   });
+  refreshTooltips(elements.canvasRoot);
+}
+
+function addComponentToRoot(type) {
+  const definition = COMPONENT_DEFINITIONS[type];
+  if (!definition) {
+    return null;
+  }
+  const component = createComponent(type);
+  const parentId = "";
+  const zoneKey = "root";
+  const index = state.components.length;
+  insertComponent(parentId, zoneKey, index, component);
+  state.selectedId = component.uid;
+  undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+  const label = typeof definition.label === "string" && definition.label ? definition.label : type;
+  status.show(`${label} added to canvas`, { type: "success", timeout: 1800 });
+  renderCanvas();
+  renderInspector();
+  expandInspectorPane();
+  return component;
 }
 
 function handleDrop(event) {
@@ -746,10 +709,10 @@ function createComponent(type) {
 
 function createComponentElement(component) {
   const wrapper = document.createElement("div");
-  wrapper.className = "template-component border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-2";
+  wrapper.className = "template-component workbench-canvas-card border rounded-3 p-3 bg-body shadow-sm d-flex flex-column gap-2";
   wrapper.dataset.componentId = component.uid;
   if (state.selectedId === component.uid) {
-    wrapper.classList.add("template-component-selected");
+    wrapper.classList.add("template-component-selected", "is-selected");
   }
 
   const definition = COMPONENT_DEFINITIONS[component.type] || {};
@@ -757,11 +720,11 @@ function createComponentElement(component) {
   const typeLabel = definition.label || component.type;
 
   const header = document.createElement("div");
-  header.className = "template-component-header";
+  header.className = "template-component-header workbench-canvas-card__header";
   header.dataset.sortableHandle = "true";
 
   const actions = document.createElement("div");
-  actions.className = "template-component-actions";
+  actions.className = "template-component-actions workbench-canvas-card__actions";
 
   const bindingLabel = (component.binding || component.formula || "").trim();
   if (bindingLabel) {
@@ -772,7 +735,8 @@ function createComponentElement(component) {
   }
 
   const iconButton = document.createElement("span");
-  iconButton.className = "template-component-icon d-inline-flex align-items-center justify-content-center";
+  iconButton.className =
+    "template-component-icon workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
   iconButton.dataset.bsToggle = "tooltip";
   iconButton.dataset.bsPlacement = "bottom";
   iconButton.dataset.bsTitle = typeLabel;
@@ -904,12 +868,12 @@ function createContainerDropzone(component, zone, { label, hint } = {}) {
   wrapper.className = "template-container-zone d-flex flex-column gap-2";
   if (label) {
     const badge = document.createElement("div");
-    badge.className = "template-dropzone-label text-body-secondary text-uppercase extra-small";
+    badge.className = "template-dropzone-label workbench-dropzone-label text-body-secondary text-uppercase extra-small";
     badge.textContent = label;
     wrapper.appendChild(badge);
   }
   const drop = document.createElement("div");
-  drop.className = "template-dropzone";
+  drop.className = "template-dropzone workbench-dropzone";
   drop.dataset.dropzone = "true";
   drop.dataset.dropzoneParent = component.uid;
   drop.dataset.dropzoneKey = zone.key;
@@ -918,8 +882,10 @@ function createContainerDropzone(component, zone, { label, hint } = {}) {
       drop.appendChild(createComponentElement(child));
     });
   } else {
-    const placeholder = createDropPlaceholder(hint || "Drag components here");
-    placeholder.classList.add("template-drop-placeholder--compact");
+    const placeholder = createCanvasPlaceholder(hint || "Drag components here", {
+      variant: "compact",
+      classes: ["template-drop-placeholder", "template-drop-placeholder--compact"],
+    });
     drop.appendChild(placeholder);
   }
   wrapper.appendChild(drop);
