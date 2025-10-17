@@ -262,6 +262,34 @@ const COLOR_FIELD_MAP = {
   border: { label: "Border", prop: "borderColor" },
 };
 
+function getComponentLabel(component, fallback = "") {
+  if (!component) return fallback || "";
+  const { type } = component;
+
+  if (Object.prototype.hasOwnProperty.call(component, "label")) {
+    const value = typeof component.label === "string" ? component.label.trim() : "";
+    if (value) return value;
+    return "";
+  }
+
+  const candidates = [component.name, component.text];
+  for (const candidate of candidates) {
+    if (typeof candidate === "string") {
+      const trimmed = candidate.trim();
+      if (trimmed) {
+        return trimmed;
+      }
+    }
+  }
+
+  const definition = type ? COMPONENT_DEFINITIONS[type] : null;
+  if (definition?.label) {
+    return definition.label;
+  }
+
+  return fallback || "";
+}
+
 function getDefinition(component) {
   if (!component) return {};
   return COMPONENT_DEFINITIONS[component.type] || {};
@@ -1572,8 +1600,6 @@ function createTextSizeControls(component) {
       draft.textSize = value;
     }, { rerenderCanvas: true });
   });
-  wrapper.append(label, input);
-  return wrapper;
 }
 
 function createTextStyleControls(component) {
@@ -1588,8 +1614,6 @@ function createTextStyleControls(component) {
       draft.textStyles[key] = checked;
     }, { rerenderCanvas: true });
   });
-  wrapper.append(label, textarea);
-  return wrapper;
 }
 
 function createAlignmentControls(component) {
@@ -1604,8 +1628,6 @@ function createAlignmentControls(component) {
       draft.align = value;
     }, { rerenderCanvas: true });
   });
-  wrapper.append(label, select);
-  return wrapper;
 }
 
 function createReadOnlyToggle(component) {
