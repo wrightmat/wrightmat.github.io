@@ -67,3 +67,22 @@ export function initPaneToggles(root = document, { onChange } = {}) {
     });
   });
 }
+
+export function expandPane(paneElement, toggleElement) {
+  if (!paneElement) {
+    return;
+  }
+  const collapsedClass = paneElement.getAttribute("data-pane-collapsed-class") || DEFAULT_COLLAPSED_CLASS;
+  const expandedClass = paneElement.getAttribute("data-pane-expanded-class") || DEFAULT_EXPANDED_CLASS;
+  paneElement.dataset.state = "expanded";
+  paneElement.classList.remove(collapsedClass);
+  paneElement.classList.add(expandedClass);
+  if (toggleElement) {
+    toggleElement.setAttribute("aria-expanded", "true");
+    toggleElement.dataset.active = "true";
+    if (toggleElement.classList.contains("btn")) {
+      toggleElement.classList.add("btn-secondary");
+      toggleElement.classList.remove("btn-outline-secondary");
+    }
+  }
+}
