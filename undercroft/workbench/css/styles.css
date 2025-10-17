@@ -320,6 +320,31 @@ body[data-theme="dark"] .hover-lift:hover {
   line-height: 1.2;
 }
 
+.character-notes {
+  min-height: 12rem;
+  resize: vertical;
+}
+
+[data-canvas-mode="view"] .form-control:disabled,
+[data-canvas-mode="view"] .form-select:disabled,
+[data-canvas-mode="view"] textarea:disabled,
+[data-canvas-mode="view"] .form-check-input:disabled {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  opacity: 1;
+  cursor: default;
+}
+
+[data-canvas-mode="view"] .form-select:disabled {
+  background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon);
+  border-color: var(--bs-border-color);
+}
+
+[data-canvas-mode="view"] .form-check-input:disabled {
+  border-color: var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+}
+
 .template-color-grid {
   display: grid;
   gap: 0.5rem;
