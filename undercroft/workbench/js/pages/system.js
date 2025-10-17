@@ -569,6 +569,14 @@ function renderFieldCard(node) {
   typeIcon.innerHTML = `<span class="iconify" data-icon="${typeMeta.icon || TYPE_DEFS.string.icon}" aria-hidden="true"></span>`;
   actions.appendChild(typeIcon);
 
+  const typeIcon = document.createElement("span");
+  typeIcon.className = "workbench-canvas-card__type-icon d-inline-flex align-items-center justify-content-center";
+  typeIcon.dataset.bsToggle = "tooltip";
+  typeIcon.dataset.bsPlacement = "bottom";
+  typeIcon.dataset.bsTitle = typeMeta.description || typeMeta.label || normalizedType;
+  typeIcon.innerHTML = `<span class="iconify" data-icon="${typeMeta.icon || TYPE_DEFS.string.icon}" aria-hidden="true"></span>`;
+  actions.appendChild(typeIcon);
+
   const removeButton = document.createElement("button");
   removeButton.className = "btn btn-outline-danger btn-sm";
   removeButton.type = "button";
