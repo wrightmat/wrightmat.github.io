@@ -11,13 +11,22 @@ from .auth import (
     AuthError,
     User,
     cleanup_sessions,
+    ensure_default_admin,
+    ensure_default_test_users,
     get_user_by_session,
+    get_user_by_username,
     init_auth_db,
     login_user,
     logout_user,
     register_user,
+    list_users,
+    verify_registration,
     upgrade_user,
+    delete_user,
+    update_email_address,
+    update_password,
 )
+from .builtins import builtin_catalog
 from .config import ConfigLoader
 from .importer import run_importer
 from .router import Request, Response, Router
@@ -31,8 +40,10 @@ from .storage import (
     init_storage_db,
     is_owner,
     list_bucket,
+    list_owned_content,
     save_item,
     toggle_public,
+    update_owner,
 )
 class SheetsHTTPServer(http.server.ThreadingHTTPServer):
     def __init__(self, server_address, RequestHandlerClass, state: ServerState):
@@ -194,6 +205,37 @@ def register_routes():
 
     router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content)
 
+    # GET /content/builtins
+    def handle_content_builtins(request: Request) -> Response:
+        catalog = builtin_catalog(request.state)
+        return json_response(catalog)
+
+    router.add("GET", r"^/content/builtins$", handle_content_builtins)
+
+    # GET /content/owned
+    def handle_owned_content(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        query = request.handler.path.split("?", 1)
+        target = user
+        if len(query) > 1 and query[1]:
+            from urllib.parse import parse_qs
+
+            params = parse_qs(query[1])
+            username = params.get("username", [""])[0]
+            if username and username != user.username:
+                if user.tier != "admin":
+                    raise AuthError("Admin only")
+                target_user = get_user_by_username(request.state, username)
+                if not target_user:
+                    raise AuthError("User not found")
+                target = target_user
+        payload = list_owned_content(request.state, target)
+        return json_response(payload)
+
+    router.add("GET", r"^/content/owned$", handle_owned_content)
+
     # GET /shares/{content_type}/{content_id}
     def handle_list_shares(request: Request) -> Response:
         params = getattr(request, "params")
@@ -219,6 +261,16 @@ def register_routes():
         return json_response(result, status=HTTPStatus.CREATED)
 
     router.add("POST", r"^/auth/register$", handle_register)
+
+    # POST /auth/verify
+    def handle_verify(request: Request) -> Response:
+        data = require_json(request)
+        data["ip"] = request.handler.client_address[0]
+        data["user_agent"] = request.handler.headers.get("User-Agent", "")
+        result = verify_registration(request.state, data)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/verify$", handle_verify)
 
     # POST /auth/login
     def handle_login(request: Request) -> Response:
@@ -260,6 +312,57 @@ def register_routes():
 
     router.add("POST", r"^/auth/upgrade$", handle_upgrade)
 
+    # GET /auth/users
+    def handle_list_users(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        payload = list_users(request.state)
+        return json_response(payload)
+
+    router.add("GET", r"^/auth/users$", handle_list_users)
+
+    # POST /auth/users/delete
+    def handle_delete_user(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        data = require_json(request)
+        username = data.get("username")
+        if not username:
+            raise AuthError("username required")
+        result = delete_user(request.state, username)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/users/delete$", handle_delete_user)
+
+    # POST /auth/profile/email
+    def handle_update_email(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        data = require_json(request)
+        result = update_email_address(request.state, user, data.get("email", ""), data.get("password", ""))
+        return json_response(result)
+
+    router.add("POST", r"^/auth/profile/email$", handle_update_email)
+
+    # POST /auth/profile/password
+    def handle_update_password(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        data = require_json(request)
+        result = update_password(
+            request.state,
+            user,
+            data.get("current_password", ""),
+            data.get("new_password", ""),
+        )
+        return json_response(result)
+
+    router.add("POST", r"^/auth/profile/password$", handle_update_password)
+
     # POST /content/{bucket}/{id}
     def handle_save_content(request: Request) -> Response:
         params = getattr(request, "params")
@@ -286,6 +389,26 @@ def register_routes():
         return json_response({"ok": True})
 
     router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/delete$", handle_delete_content)
+
+    # POST /content/{bucket}/{id}/owner
+    def handle_owner_update(request: Request) -> Response:
+        params = getattr(request, "params")
+        bucket = params["bucket"]
+        id_ = params["id"]
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        body = require_json(request)
+        username = (body.get("username") or "").strip()
+        if not username:
+            raise AuthError("Username required")
+        new_owner = get_user_by_username(request.state, username)
+        if not new_owner:
+            raise AuthError("User not found")
+        result = update_owner(request.state, bucket, id_, user, new_owner)
+        return json_response(result)
+
+    router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/owner$", handle_owner_update)
 
     # POST /content/{bucket}/{id}/public
     def handle_public_toggle(request: Request) -> Response:
@@ -372,6 +495,8 @@ def create_server(config_path: str) -> SheetsHTTPServer:
     configure_logging(loader.get().options.log_level)
     state = ServerState.from_loader(loader)
     init_auth_db(state.db)
+    ensure_default_admin(state)
+    ensure_default_test_users(state)
     init_storage_db(state.db)
     cleanup_sessions(state)
     server = SheetsHTTPServer((state.config.options.host, state.config.options.port), RequestHandler, state)
