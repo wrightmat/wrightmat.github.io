@@ -72,6 +72,7 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
             is_public INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
         )
         """
@@ -87,6 +88,7 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
             is_public INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
         )
         """
@@ -109,7 +111,20 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_user ON shares(shared_with_user_id)")
+    # Ensure legacy databases pick up the last_accessed_at columns
+    _ensure_column(conn, "templates", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
+    _ensure_column(conn, "systems", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
     conn.commit()
+
+
+def _ensure_column(conn: sqlite3.Connection, table: str, column: str, type_: str, default: Optional[str] = None) -> None:
+    info = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    if any(row[1] == column for row in info):
+        return
+    default_clause = f" DEFAULT {default}" if default else ""
+    conn.execute(
+        f"ALTER TABLE {table} ADD COLUMN {column} {type_}{default_clause}"
+    )
 
 
 def role_rank(role: str) -> int:
@@ -210,6 +225,8 @@ def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[s
 def is_owner(state: ServerState, bucket: str, id_: str, user: Optional[User]) -> bool:
     if not user:
         return False
+    if str(getattr(user, "tier", "")).lower() == "admin":
+        return True
     mount = state.get_mount(bucket)
     if mount.type != "json" or not mount.table:
         return False
@@ -285,12 +302,14 @@ def get_item(state: ServerState, bucket: str, id_: str, user: Optional[User]) ->
     if not (is_public(state, bucket, id_) or is_owner(state, bucket, id_, user) or is_shared(state, bucket, id_, user)):
         raise AuthError("Access denied")
     payload = load_json(_record_path(state, bucket, id_))
-    if bucket == "characters":
-        state.db.execute(
-            "UPDATE characters SET last_accessed_at = ? WHERE id = ?",
-            (datetime.utcnow().isoformat(), id_.replace(".json", "")),
-        )
-        state.db.commit()
+    if bucket in {"characters", "templates", "systems"}:
+        table = state.get_mount(bucket).table
+        if table:
+            state.db.execute(
+                f"UPDATE {table} SET last_accessed_at = ? WHERE id = ?",
+                (datetime.utcnow().isoformat(), id_.replace(".json", "")),
+            )
+            state.db.commit()
     return payload
 
 
@@ -298,20 +317,34 @@ def save_item(state: ServerState, bucket: str, id_: str, body: Dict[str, Any], u
     mount = state.get_mount(bucket)
     if mount.type != "json":
         raise AuthError("Bucket does not support writes")
-    ensure_write_role(state, bucket, user)
+    try:
+        ensure_write_role(state, bucket, user)
+    except AuthError as exc:
+        if bucket == "templates":
+            raise AuthError("Your tier cannot create templates") from exc
+        if bucket == "systems":
+            raise AuthError("Your tier cannot create systems") from exc
+        raise
+    base_id = id_.replace(".json", "")
+    existing_row = state.db.execute(
+        f"SELECT * FROM {mount.table} WHERE id = ?",
+        (base_id,),
+    ).fetchone()
+    is_new_record = existing_row is None
     if not (is_owner(state, bucket, id_, user) or is_shared(state, bucket, id_, user, require_edit=True)):
         # creation allowed if record missing
         path = _record_path(state, bucket, id_)
         if path.exists():
             raise AuthError("Edit not permitted")
+    if is_new_record:
+        _enforce_creation_limits(state, bucket, user)
     write_json(_record_path(state, bucket, id_), body)
     now_ts = datetime.utcnow().isoformat()
-    base_id = id_.replace(".json", "")
     filename = _record_filename(id_)
     owner_id = user.id if user else None
     if bucket == "characters":
         char_name = body.get("name") or body.get("data", {}).get("name", "Unnamed")
-        existing = state.db.execute("SELECT system, template FROM characters WHERE id = ?", (base_id,)).fetchone()
+        existing = existing_row
         system = body.get("system") or (existing["system"] if existing else None)
         template = body.get("template") or (existing["template"] if existing else None)
         state.db.execute(
@@ -332,30 +365,32 @@ def save_item(state: ServerState, bucket: str, id_: str, body: Dict[str, Any], u
     elif bucket == "templates":
         state.db.execute(
             """
-            INSERT INTO templates (id, owner_id, title, schema, filename, modified_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO templates (id, owner_id, title, schema, filename, modified_at, last_accessed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 owner_id = excluded.owner_id,
                 title = excluded.title,
                 schema = excluded.schema,
                 filename = excluded.filename,
-                modified_at = excluded.modified_at
+                modified_at = excluded.modified_at,
+                last_accessed_at = excluded.last_accessed_at
             """,
-            (base_id, owner_id, body.get("title", "Unnamed"), body.get("schema"), filename, now_ts),
+            (base_id, owner_id, body.get("title", "Unnamed"), body.get("schema"), filename, now_ts, now_ts),
         )
     elif bucket == "systems":
         state.db.execute(
             """
-            INSERT INTO systems (id, owner_id, title, "index", filename, modified_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO systems (id, owner_id, title, "index", filename, modified_at, last_accessed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 owner_id = excluded.owner_id,
                 title = excluded.title,
                 "index" = excluded."index",
                 filename = excluded.filename,
-                modified_at = excluded.modified_at
+                modified_at = excluded.modified_at,
+                last_accessed_at = excluded.last_accessed_at
             """,
-            (base_id, owner_id, body.get("title", "Unnamed"), body.get("index"), filename, now_ts),
+            (base_id, owner_id, body.get("title", "Unnamed"), body.get("index"), filename, now_ts, now_ts),
         )
     else:
         state.db.execute(
@@ -393,6 +428,67 @@ def toggle_public(state: ServerState, bucket: str, id_: str, user: Optional[User
     )
     state.db.commit()
     return {"ok": True, "public": public}
+
+
+def _enforce_creation_limits(state: ServerState, bucket: str, user: Optional[User]) -> None:
+    if not user or user.tier == "admin":
+        return
+    tier = (user.tier or "").lower()
+    if bucket == "characters":
+        if tier == "free":
+            count = state.db.execute(
+                "SELECT COUNT(*) AS count FROM characters WHERE owner_id = ?",
+                (user.id,),
+            ).fetchone()["count"]
+            if count >= 5:
+                raise AuthError("Free accounts can only create up to 5 characters")
+        return
+    if bucket == "templates":
+        if tier not in {"gm", "master", "creator"}:
+            raise AuthError("Your tier cannot create templates")
+        return
+    if bucket == "systems":
+        if tier not in {"creator"}:
+            raise AuthError("Your tier cannot create systems")
+
+
+def list_owned_content(state: ServerState, owner: User) -> Dict[str, Any]:
+    items: List[Dict[str, Any]] = []
+    now_owner = {
+        "id": owner.id,
+        "username": owner.username,
+        "email": getattr(owner, "email", ""),
+        "tier": owner.tier,
+    }
+    mappings = [
+        ("characters", "characters", "name"),
+        ("templates", "templates", "title"),
+        ("systems", "systems", "title"),
+    ]
+    for bucket, table, label_field in mappings:
+        rows = state.db.execute(
+            f"""
+            SELECT id, {label_field} AS label, created_at, modified_at, last_accessed_at, is_public
+            FROM {table}
+            WHERE owner_id = ?
+            ORDER BY modified_at DESC
+            """,
+            (owner.id,),
+        ).fetchall()
+        for row in rows:
+            items.append(
+                {
+                    "bucket": bucket,
+                    "id": row["id"],
+                    "label": row["label"] or row["id"],
+                    "created_at": row["created_at"],
+                    "modified_at": row["modified_at"],
+                    "last_accessed_at": row["last_accessed_at"],
+                    "is_public": bool(row["is_public"]),
+                }
+            )
+    items.sort(key=lambda item: item.get("modified_at") or "", reverse=True)
+    return {"owner": now_owner, "items": items}
 
 
 def list_static(state: ServerState, bucket: str, relative_path: str = "") -> List[str]:
