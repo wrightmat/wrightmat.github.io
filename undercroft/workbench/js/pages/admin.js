@@ -33,7 +33,9 @@ const TIER_OPTIONS = [
 ];
 
 const TAB_SETTINGS = "settings";
+const TAB_OWNED = "owned";
 const TAB_USERS = "users";
+const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_USERS];
 
 const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat === "function"
   ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })
@@ -54,7 +56,7 @@ function currentUser() {
 
 function resolveTabFromHash() {
   const hash = window.location.hash ? window.location.hash.slice(1).toLowerCase() : "";
-  return hash === TAB_USERS ? TAB_USERS : TAB_SETTINGS;
+  return AVAILABLE_TABS.includes(hash) ? hash : TAB_SETTINGS;
 }
 
 viewState.activeTab = resolveTabFromHash();
@@ -177,23 +179,23 @@ function renderUsers(users) {
     const isSelf = currentUser && currentUser.username === user.username;
     const statusLabel = user.is_active ? "Active" : "Pending";
     const statusClass = user.is_active ? "text-bg-success" : "text-bg-warning";
+    const lastActivity = formatLastActivity(user.last_activity || user.last_login || user.created_at);
 
     row.innerHTML = `
       <td class="fw-semibold">${user.username}</td>
       <td class="text-body-secondary">${user.email}</td>
-      <td class="text-body-secondary">${formatLastActivity(user.last_activity)}</td>
+      <td>
+        <div class="d-flex align-items-center justify-content-between gap-2">
+          <span class="text-body-secondary">${lastActivity}</span>
+          <span class="badge ${statusClass}">${statusLabel}</span>
+        </div>
+      </td>
       <td class="text-end" data-admin-access>
-        <div class="d-flex flex-column align-items-end gap-2">
-          <div class="d-flex flex-wrap justify-content-end gap-2">
-            <span class="badge text-bg-light" data-admin-tier-label>${formatTier(user.tier)}</span>
-            <span class="badge ${statusClass}">${statusLabel}</span>
-          </div>
-          <div class="d-flex flex-wrap justify-content-end gap-2">
-            <select class="form-select form-select-sm w-auto" data-admin-tier-select>
-              ${TIER_OPTIONS.map((option) => `<option value="${option.value}">${option.label}</option>`).join("")}
-            </select>
-            <button type="button" class="btn btn-outline-danger btn-sm" data-admin-delete>Delete</button>
-          </div>
+        <div class="d-flex flex-wrap justify-content-end gap-2">
+          <select class="form-select form-select-sm w-auto" data-admin-tier-select aria-label="Set tier for ${user.username}">
+            ${TIER_OPTIONS.map((option) => `<option value="${option.value}">${option.label}</option>`).join("")}
+          </select>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-admin-delete>Delete</button>
         </div>
       </td>
     `;
@@ -201,7 +203,6 @@ function renderUsers(users) {
     const accessCell = row.querySelector("[data-admin-access]");
     const select = accessCell?.querySelector("[data-admin-tier-select]");
     const deleteBtn = accessCell?.querySelector("[data-admin-delete]");
-    const tierBadge = accessCell?.querySelector("[data-admin-tier-label]");
 
     if (select) {
       select.value = user.tier;
@@ -215,9 +216,6 @@ function renderUsers(users) {
         try {
           await dataManager.updateUserTier(user.username, newTier);
           user.tier = newTier;
-          if (tierBadge) {
-            tierBadge.textContent = formatTier(newTier);
-          }
           if (status) {
             status.show(`Updated ${user.username} to ${formatTier(newTier)} access.`, {
               type: "success",
@@ -236,39 +234,46 @@ function renderUsers(users) {
     }
 
     if (deleteBtn) {
-      if (isSelf) {
+      deleteBtn.addEventListener("click", async () => {
+        const confirmationMessage = isSelf
+          ? "Delete your own account? This will immediately end your session."
+          : `Delete ${user.username}? This cannot be undone.`;
+        const confirmed = window.confirm(confirmationMessage);
+        if (!confirmed) {
+          return;
+        }
         deleteBtn.disabled = true;
-        deleteBtn.classList.remove("btn-outline-danger");
-        deleteBtn.classList.add("btn-outline-secondary");
-        deleteBtn.title = "You cannot delete your own account.";
-      } else {
-        deleteBtn.addEventListener("click", async () => {
-          const confirmed = window.confirm(`Delete ${user.username}? This cannot be undone.`);
-          if (!confirmed) {
-            return;
+        if (select) {
+          select.disabled = true;
+        }
+        try {
+          await dataManager.deleteUser(user.username);
+          if (status) {
+            status.show(
+              isSelf ? "Your account has been deleted." : `Deleted ${user.username}.`,
+              { type: "success", timeout: 2000 },
+            );
           }
-          deleteBtn.disabled = true;
-          if (select) {
-            select.disabled = true;
-          }
-          try {
-            await dataManager.deleteUser(user.username);
-            if (status) {
-              status.show(`Deleted ${user.username}.`, { type: "success", timeout: 2000 });
+          if (isSelf) {
+            dataManager.clearSession();
+            if (auth && typeof auth.refreshDisplay === "function") {
+              auth.refreshDisplay();
             }
+            window.dispatchEvent(new CustomEvent("workbench:auth-changed", { detail: { session: null } }));
+          } else {
             row.remove();
             loadUsers({ showSpinner: false });
-          } catch (error) {
-            if (status) {
-              status.show(error.message || "Unable to delete user", { type: "danger" });
-            }
-            deleteBtn.disabled = false;
-            if (select) {
-              select.disabled = isSelf;
-            }
           }
-        });
-      }
+        } catch (error) {
+          if (status) {
+            status.show(error.message || "Unable to delete user", { type: "danger" });
+          }
+          deleteBtn.disabled = false;
+          if (select) {
+            select.disabled = isSelf;
+          }
+        }
+      });
     }
 
     fragment.appendChild(row);
@@ -284,11 +289,15 @@ function formatTier(tier) {
 
 function formatLastActivity(value) {
   if (!value) {
-    return "—";
+    return "Never";
   }
-  const date = new Date(value);
+  let source = value;
+  if (typeof source === "string" && source.includes(" ") && !source.includes("T")) {
+    source = source.replace(" ", "T");
+  }
+  const date = new Date(source);
   if (Number.isNaN(date.getTime())) {
-    return value;
+    return value || "Never";
   }
   return dateFormatter ? dateFormatter.format(date) : date.toLocaleString();
 }
