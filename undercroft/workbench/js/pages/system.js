@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -17,6 +18,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "system" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  initAuthControls({ root: document, status, dataManager });
 
   const systemCatalog = new Map();
 
@@ -99,7 +101,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   refreshTooltips(document);
 
+  let pendingSharedSystem = resolveSharedRecordParam("systems");
+
   loadSystemRecords();
+  initializeSharedSystemHandling();
 
   const state = {
     system: createBlankSystem(),
@@ -1239,6 +1244,44 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     }
   }
 
+  function initializeSharedSystemHandling() {
+    if (!pendingSharedSystem) {
+      return;
+    }
+    if (dataManager.isAuthenticated()) {
+      void loadPendingSharedSystem();
+    } else if (status) {
+      status.show("Sign in to load the shared system.", { type: "info", timeout: 2600 });
+    }
+  }
+
+  async function loadPendingSharedSystem() {
+    if (!pendingSharedSystem) {
+      return;
+    }
+    const targetId = pendingSharedSystem;
+    pendingSharedSystem = null;
+    registerSystemRecord({ id: targetId, title: targetId, source: "remote" }, { syncOption: true });
+    if (elements.select) {
+      elements.select.value = targetId;
+    }
+    try {
+      const result = await dataManager.get("systems", targetId, { preferLocal: true });
+      const payload = result?.payload;
+      if (!payload) {
+        throw new Error("System payload missing");
+      }
+      const label = payload.title || systemCatalog.get(targetId)?.title || targetId;
+      registerSystemRecord({ id: payload.id || targetId, title: label, source: "remote" }, { syncOption: true });
+      applySystemState(payload, { emitStatus: true, statusMessage: `Loaded ${label}` });
+    } catch (error) {
+      console.error("System editor: unable to load shared system", error);
+      if (status) {
+        status.show(error.message || "Unable to load shared system", { type: "danger" });
+      }
+    }
+  }
+
   function ensureSelectOption(id, label) {
     if (!elements.select || !id) return;
     const escaped = escapeCss(id);
@@ -1351,4 +1394,46 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   function getDraftKey(id) {
     return id && String(id).trim() ? String(id).trim() : "__blank__";
   }
+
+  function resolveSharedRecordParam(expectedBucket) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const record = params.get("record");
+      if (!record) {
+        return null;
+      }
+      const [bucket, ...rest] = record.split(":");
+      const id = rest.join(":");
+      if (bucket !== expectedBucket || !id) {
+        return null;
+      }
+      return id;
+    } catch (error) {
+      console.warn("System editor: unable to parse shared record", error);
+      return null;
+    }
+  }
+
+  window.addEventListener("workbench:auth-changed", () => {
+    if (dataManager.isAuthenticated()) {
+      loadSystemRecords();
+      if (pendingSharedSystem) {
+        void loadPendingSharedSystem();
+      }
+    }
+  });
+
+  window.addEventListener("workbench:content-saved", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "systems" && detail.source === "remote") {
+      loadSystemRecords();
+    }
+  });
+
+  window.addEventListener("workbench:content-deleted", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "systems" && detail.source === "remote") {
+      loadSystemRecords();
+    }
+  });
 })();
