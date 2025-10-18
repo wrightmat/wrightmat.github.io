@@ -1787,13 +1787,67 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!normalized || !normalized.startsWith("@")) {
       return null;
     }
-    const trimmed = normalized.slice(1).trim();
-    if (!trimmed) {
+    let expression = normalized.slice(1).trim();
+    if (!expression) {
       return [];
     }
-    return trimmed
-      .split(".")
-      .flatMap((segment) => segment.split(/\[|\]/).map((part) => part.trim()).filter(Boolean));
+    if (expression.startsWith("{") && expression.endsWith("}")) {
+      expression = expression.slice(1, -1).trim();
+    }
+    const segments = [];
+    let buffer = "";
+    let inBracket = false;
+    let quoteChar = "";
+    for (let index = 0; index < expression.length; index += 1) {
+      const char = expression[index];
+      if (inBracket) {
+        if (quoteChar) {
+          if (char === quoteChar && expression[index - 1] !== "\\") {
+            quoteChar = "";
+          } else {
+            buffer += char;
+          }
+          continue;
+        }
+        if (char === "'" || char === '"') {
+          quoteChar = char;
+          continue;
+        }
+        if (char === "]") {
+          const segment = buffer.trim();
+          if (segment) {
+            segments.push(segment);
+          }
+          buffer = "";
+          inBracket = false;
+          continue;
+        }
+        buffer += char;
+        continue;
+      }
+      if (char === "[") {
+        if (buffer.trim()) {
+          segments.push(buffer.trim());
+        }
+        buffer = "";
+        inBracket = true;
+        continue;
+      }
+      if (char === ".") {
+        if (buffer.trim()) {
+          segments.push(buffer.trim());
+        }
+        buffer = "";
+        continue;
+      }
+      buffer += char;
+    }
+    if (buffer.trim()) {
+      segments.push(buffer.trim());
+    }
+    return segments
+      .map((segment) => segment.replace(/^['"]|['"]$/g, "").trim())
+      .filter((segment) => segment.length > 0);
   }
 
   function getValueAtSegments(root, segments = []) {
@@ -1819,48 +1873,58 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!path || !path.length) {
       return undefined;
     }
-    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
     const contexts = [];
-    if (definition) {
-      const candidates = [
-        { key: null, value: definition },
-        { key: "preview", value: definition.preview },
-        { key: "metadata", value: definition.metadata },
-        { key: "definition", value: definition.definition },
-        { key: "data", value: definition.data },
-        { key: "sources", value: definition.sources },
-        { key: "samples", value: definition.samples },
-        { key: "sample", value: definition.sample },
-        { key: "values", value: definition.values },
-        { key: "lists", value: definition.lists },
-        { key: "collections", value: definition.collections },
-      ];
-      candidates.forEach(({ key, value }) => {
-        if (value && typeof value === "object") {
-          const offset = key && path[0] === key ? 1 : 0;
-          contexts.push({ root: value, offset });
-        }
-      });
+
+    function registerContext(value, { prefixes = [], allowDirect = false } = {}) {
+      if (!value || typeof value !== "object") {
+        return;
+      }
+      const normalizedPrefixes = Array.isArray(prefixes)
+        ? prefixes
+            .map((prefix) => (typeof prefix === "string" ? prefix.trim() : ""))
+            .filter((prefix) => prefix.length > 0)
+        : [];
+      contexts.push({ value, prefixes: normalizedPrefixes, allowDirect: Boolean(allowDirect) });
     }
+
     const template = state.template && typeof state.template === "object" ? state.template : null;
     if (template) {
-      const templateCandidates = [
-        { key: "metadata", value: template.metadata },
-        { key: "data", value: template.data },
-        { key: "sources", value: template.sources },
-      ];
-      templateCandidates.forEach(({ key, value }) => {
-        if (value && typeof value === "object") {
-          const offset = path[0] === key ? 1 : 0;
-          contexts.push({ root: value, offset });
-        }
-      });
+      registerContext(template, { allowDirect: true, prefixes: ["template"] });
+      registerContext(template.metadata, { prefixes: ["metadata"] });
+      registerContext(template.data, { prefixes: ["data"] });
+      registerContext(template.sources, { prefixes: ["sources"] });
     }
+
+    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
+    if (definition) {
+      registerContext(definition, { allowDirect: true, prefixes: ["system"] });
+      registerContext(definition.metadata, { prefixes: ["metadata"] });
+      registerContext(definition.definition, { prefixes: ["definition"] });
+      registerContext(definition.schema, { prefixes: ["schema"] });
+      registerContext(definition.data, { prefixes: ["data"] });
+      registerContext(definition.sources, { prefixes: ["sources"] });
+      registerContext(definition.preview, { prefixes: ["preview"] });
+      registerContext(definition.samples, { prefixes: ["samples"] });
+      registerContext(definition.sample, { prefixes: ["sample"] });
+      registerContext(definition.values, { prefixes: ["values"] });
+      registerContext(definition.lists, { prefixes: ["lists"] });
+      registerContext(definition.collections, { prefixes: ["collections"] });
+    }
+
     for (const context of contexts) {
-      const segments = path.slice(context.offset || 0);
-      const result = getValueAtSegments(context.root, segments);
-      if (result !== undefined) {
-        return result;
+      if (context.allowDirect) {
+        const direct = getValueAtSegments(context.value, path);
+        if (direct !== undefined) {
+          return direct;
+        }
+      }
+      for (const prefix of context.prefixes) {
+        if (path[0] === prefix) {
+          const result = getValueAtSegments(context.value, path.slice(1));
+          if (result !== undefined) {
+            return result;
+          }
+        }
       }
     }
     return undefined;
