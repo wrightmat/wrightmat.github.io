@@ -296,6 +296,32 @@ class ServerSmokeTests(unittest.TestCase):
         self.assertEqual(admin_owned["owner"]["username"], username)
         self.assertTrue(any(item["id"] == character_id for item in admin_owned.get("items", [])))
 
+    def test_admin_can_delete_orphaned_system_file(self):
+        orphan_id = "orphan-system"
+        orphan_path = self._content_root / "systems" / f"{orphan_id}.json"
+        orphan_path.parent.mkdir(parents=True, exist_ok=True)
+        orphan_payload = {"id": orphan_id, "title": "Legacy System", "fields": []}
+        orphan_path.write_text(json.dumps(orphan_payload), encoding="utf-8")
+        self.assertTrue(orphan_path.exists(), "expected orphan system file to be created")
+
+        status, admin_session = self._request(
+            "/auth/login",
+            method="POST",
+            payload={"username": "admin", "password": "admin"},
+        )
+        self.assertEqual(status, 200)
+        admin_token = admin_session["token"]
+
+        status, response = self._request(
+            f"/content/systems/{orphan_id}/delete",
+            method="POST",
+            payload={},
+            token=admin_token,
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(response, {"ok": True})
+        self.assertFalse(orphan_path.exists(), "expected orphan system file to be deleted")
+
     def test_static_files_are_served_from_any_directory(self):
         status, headers, body = self._fetch_raw("/public/")
         self.assertEqual(status, 200)

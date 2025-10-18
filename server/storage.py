@@ -225,6 +225,8 @@ def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[s
 def is_owner(state: ServerState, bucket: str, id_: str, user: Optional[User]) -> bool:
     if not user:
         return False
+    if str(getattr(user, "tier", "")).lower() == "admin":
+        return True
     mount = state.get_mount(bucket)
     if mount.type != "json" or not mount.table:
         return False
