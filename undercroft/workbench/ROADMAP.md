@@ -64,24 +64,24 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 
 ### Epic 3 – Authoring Workflows
 1. **System Editor**
-   - ⬜ Support nested fields, validation rules, and formulas with clear inspector panels.
+   - ✅ Support nested fields, validation rules, and formulas with clear inspector panels.
 2. **Template Editor**
-   - ⬜ Provide palette components and binding to system-defined fields, leveraging shared renderer primitives.
+   - ✅ Provide palette components and binding to system-defined fields, leveraging shared renderer primitives.
 3. **Character Experience**
-   - ⬜ Deliver live character sheets with undo/redo, dice roller, session notes, and offline storage for anonymous play.
+   - ✅ Deliver live character sheets with undo/redo, dice roller, session notes, and offline storage for anonymous play.
 4. **Data Flow & Formula Engine**
-   - ⬜ Template Editor exposes a Binding/Formula field that can point at a single system value (via `@field.path`) or combine multiple values with sandboxed helpers (`=sum(@a, @b)`).
-   - ⬜ Autocomplete/suggestion panel appears when the author types in the Binding/Formula input: `@` lists system fields from the active definition, `=` lists supported math/logic functions (aligned with the sandboxed JavaScript helpers).
-   - ⬜ Formula parser/engine evaluates bindings inside the character sheet runtime, safely resolving bound field values, invoking sandboxed helpers, and emitting display-ready results.
-   - ⬜ Mutations to calculated or bound values propagate back through DataManager so the underlying character JSON stays in sync and saves correctly.
+   - ✅ Template Editor exposes a Binding/Formula field that can point at a single system value (via `@field.path`) or combine multiple values with sandboxed helpers (`=sum(@a, @b)`).
+   - ✅ Autocomplete/suggestion panel appears when the author types in the Binding/Formula input: `@` lists system fields from the active definition, `=` lists supported math/logic functions (aligned with the sandboxed JavaScript helpers).
+   - ✅ Formula parser/engine evaluates bindings inside the character sheet runtime, safely resolving bound field values, invoking sandboxed helpers, and emitting display-ready results.
+   - ✅ Mutations to calculated or bound values propagate back through DataManager so the underlying character JSON stays in sync and saves correctly.
 
 ### Epic 4 – Index Page Expansion
-1. **Login/Register System**  
-   - ⬜ Build registration page and login modal window so new users can save data to the server.
+1. **Login/Register System**
+   - ✅ Build registration page and login modal window so new users can save data to the server.
 2. **Sharing Panel**  
    - ⬜ Section to list out owned content (characters primarily, but also owned templates and systems for higher tier users) with the ability to share links with others.
-3. **Admin Panel**  
-   - ⬜ Section for admins to adjust permissions for users (tier and other details), content (owner and other details), and anything else needed.
+3. **Admin Panel**
+   - ✅ Section for admins to adjust permissions for users (tier and other details), content (owner and other details), and anything else needed.
 
 ### Epic 5 – Quality & Delivery
 1. **Testing**
