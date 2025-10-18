@@ -101,7 +101,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   refreshTooltips(document);
 
-  let pendingSharedSystem = resolveSharedRecordParam("systems");
+  let pendingSharedSystemId = resolveSharedRecordParam("systems");
 
   loadSystemRecords();
   initializeSharedSystemHandling();
@@ -1247,7 +1247,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   }
 
   function initializeSharedSystemHandling() {
-    if (!pendingSharedSystem) {
+    if (!pendingSharedSystemId) {
       return;
     }
     if (dataManager.isAuthenticated()) {
@@ -1258,11 +1258,11 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   }
 
   async function loadPendingSharedSystem() {
-    if (!pendingSharedSystem) {
+    if (!pendingSharedSystemId) {
       return;
     }
-    const targetId = pendingSharedSystem;
-    pendingSharedSystem = null;
+    const targetId = pendingSharedSystemId;
+    pendingSharedSystemId = null;
     registerSystemRecord({ id: targetId, title: targetId, source: "remote" }, { syncOption: true });
     if (elements.select) {
       elements.select.value = targetId;
@@ -1419,7 +1419,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   window.addEventListener("workbench:auth-changed", () => {
     if (dataManager.isAuthenticated()) {
       loadSystemRecords();
-      if (pendingSharedSystem) {
+      if (pendingSharedSystemId) {
         void loadPendingSharedSystem();
       }
     }
