@@ -376,7 +376,14 @@ const BUILTIN_CHARACTERS = [
     }
     const current = characterCatalog.get(record.id) || {};
     const normalized = normalizeCharacterRecord(record, current);
-    characterCatalog.set(record.id, { ...current, ...normalized });
+    const merged = { ...current, ...normalized };
+    characterCatalog.set(record.id, merged);
+
+    const templateId = merged.template || "";
+    if (templateId && !templateCatalog.has(templateId)) {
+      const inferredSource = merged.source === "local" ? "local" : merged.source === "builtin" ? "builtin" : "remote";
+      registerTemplateRecord({ id: templateId, title: merged.templateTitle || templateId, source: inferredSource });
+    }
     syncCharacterOptions();
     syncCharacterActions();
   }
@@ -818,8 +825,59 @@ const BUILTIN_CHARACTERS = [
       });
     } catch (error) {
       console.error("Character editor: failed to load character", error);
-      status.show("Unable to load character", { type: "error", timeout: 2500 });
+      const pruned = handleCharacterLoadFailure(id, error);
+      const message = pruned
+        ? "That character is no longer available and was removed from your list."
+        : "Unable to load character";
+      const type = pruned ? "warning" : "error";
+      status.show(message, { type, timeout: 2800 });
     }
+  }
+
+  function handleCharacterLoadFailure(id, error) {
+    const metadata = characterCatalog.get(id);
+    if (!metadata) {
+      return false;
+    }
+    const source = (metadata.source || "").toLowerCase();
+    const isRemovable =
+      source !== "builtin" &&
+      (error?.status === 404 ||
+        error?.status === 410 ||
+        error?.message === "Character metadata missing" ||
+        error?.message === "Character payload missing" ||
+        error?.message === "Template metadata unavailable" ||
+        error?.message === "Template payload missing");
+
+    if (!isRemovable) {
+      return false;
+    }
+
+    try {
+      dataManager.removeLocal("characters", id);
+    } catch (storageError) {
+      console.warn("Character editor: unable to clear local cache for", id, storageError);
+    }
+
+    removeCharacterRecord(id);
+
+    if (state.draft && state.draft.id === id) {
+      state.character = null;
+      state.draft = null;
+      state.characterOrigin = null;
+      state.template = null;
+      state.components = [];
+      markCharacterClean();
+      renderCanvas();
+      renderPreview();
+      syncCharacterActions();
+    }
+
+    if (elements.characterSelect && elements.characterSelect.value === id) {
+      elements.characterSelect.value = "";
+    }
+
+    return true;
   }
 
   async function fetchCharacterPayload(metadata) {
