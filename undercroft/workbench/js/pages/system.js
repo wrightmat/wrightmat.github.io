@@ -1432,6 +1432,46 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
+  function verifyBuiltinAvailability(system) {
+    if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (builtinIsTemporarilyMissing("systems", system.id)) {
+      removeSystemRecord(system.id);
+      return;
+    }
+    if (dataManager.baseUrl) {
+      // When connected to the API the server-supplied catalog already
+      // reflects which builtin assets exist, so avoid probing the
+      // filesystem with fetch requests that would surface 404 errors in
+      // the console when an asset has been removed.
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(system.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          markBuiltinMissing("systems", system.id);
+          removeSystemRecord(system.id);
+          return;
+        }
+        markBuiltinAvailable("systems", system.id);
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("System editor: unable to cancel builtin fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("System editor: failed to verify builtin system", system.id, error);
+        markBuiltinMissing("systems", system.id);
+        removeSystemRecord(system.id);
+      });
+  }
+
   async function loadSystemRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("systems");

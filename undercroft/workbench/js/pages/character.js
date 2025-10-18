@@ -834,6 +834,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       const type = pruned ? "warning" : "error";
       status.show(message, { type, timeout: 2800 });
     }
+
+    return true;
   }
 
   function handleCharacterLoadFailure(id, error) {
