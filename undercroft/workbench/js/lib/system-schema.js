@@ -1,5 +1,38 @@
 const SEEN_TYPES = new Set(["group", "object"]);
 
+function normalizeType(type) {
+  if (typeof type !== "string") {
+    return "";
+  }
+  return type.trim().toLowerCase();
+}
+
+export function categorizeFieldType(type) {
+  const normalized = normalizeType(type);
+  switch (normalized) {
+    case "integer":
+    case "number":
+    case "float":
+    case "decimal":
+      return "number";
+    case "boolean":
+    case "bool":
+      return "boolean";
+    case "array":
+      return "array";
+    case "list":
+      return "list";
+    case "object":
+    case "group":
+      return "object";
+    case "string":
+    case "text":
+      return "string";
+    default:
+      return "";
+  }
+}
+
 function normalizeKey(key) {
   if (typeof key !== "string") {
     return "";
@@ -15,8 +48,9 @@ function pushPath(results, pathSegments, node) {
   const label = typeof node.label === "string" && node.label.trim()
     ? node.label.trim()
     : pathSegments[pathSegments.length - 1];
-  const type = typeof node.type === "string" ? node.type : "value";
-  results.push({ path, label, type });
+  const rawType = typeof node.type === "string" ? node.type : "";
+  const type = rawType ? rawType : "value";
+  results.push({ path, label, type, category: categorizeFieldType(rawType) });
 }
 
 function traverseField(node, prefix, results) {
@@ -28,7 +62,7 @@ function traverseField(node, prefix, results) {
   if (nextPrefix.length) {
     pushPath(results, nextPrefix, node);
   }
-  const type = typeof node.type === "string" ? node.type : "value";
+  const type = normalizeType(node.type) || "value";
   const shouldDrill = SEEN_TYPES.has(type.toLowerCase());
   if (shouldDrill && Array.isArray(node.children)) {
     node.children.forEach((child) => {

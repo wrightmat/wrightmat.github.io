@@ -14,7 +14,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { BUILTIN_SYSTEMS, BUILTIN_TEMPLATES } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
-import { collectSystemFields } from "../lib/system-schema.js";
+import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
 
 (() => {
@@ -48,6 +48,68 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     name,
     signature: FORMULA_FUNCTION_HINTS[name] || `${name}(...)`,
   }));
+
+  const FIELD_TYPE_META = {
+    string: { icon: "tabler:letter-case", label: "String" },
+    number: { icon: "tabler:123", label: "Number" },
+    boolean: { icon: "tabler:switch-3", label: "Boolean" },
+    list: { icon: "tabler:list-details", label: "List" },
+    array: { icon: "tabler:brackets", label: "Array" },
+    object: { icon: "tabler:braces", label: "Object" },
+  };
+
+  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
+
+  function resolveFieldTypeMeta(categoryOrType) {
+    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
+    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
+  }
+
+  function getComponentBindingCategories(component) {
+    if (!component || typeof component !== "object") {
+      return null;
+    }
+    switch (component.type) {
+      case "input": {
+        const variant = component.variant || "text";
+        if (variant === "number") {
+          return ["number"];
+        }
+        if (variant === "checkbox") {
+          return ["boolean", "array", "list"];
+        }
+        if (variant === "radio") {
+          return ["boolean", "string", "list"];
+        }
+        if (variant === "select") {
+          return ["list", "array", "string"];
+        }
+        return ["string"];
+      }
+      case "linear-track":
+      case "circular-track":
+        return ["number"];
+      case "array":
+        return ["array", "list", "object"];
+      case "select-group":
+        return component.multiple ? ["array", "list"] : ["string", "list"];
+      case "toggle":
+        return ["boolean", "string", "list"];
+      default:
+        return null;
+    }
+  }
+
+  function fieldMatchesCategories(entry, categories) {
+    if (!Array.isArray(categories) || !categories.length) {
+      return true;
+    }
+    const entryCategory = entry?.category || categorizeFieldType(entry?.type);
+    if (!entryCategory) {
+      return categories.includes("string") || categories.includes("any");
+    }
+    return categories.includes(entryCategory) || categories.includes("any");
+  }
 
   registerBuiltinContent();
 
@@ -200,9 +262,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       colorControls: ["foreground", "background", "border"],
     },
     array: {
-      label: "Array",
+      label: "List",
       defaults: {
-        name: "Array",
+        name: "List",
         variant: "list",
       },
       supportsBinding: true,
@@ -1486,7 +1548,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   function renderArrayPreview(component) {
     const container = document.createElement("div");
     container.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Array");
+    const headingText = getComponentLabel(component, "List");
     if (headingText) {
       const heading = document.createElement("div");
       heading.className = "fw-semibold";
@@ -2174,6 +2236,8 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     label.setAttribute("for", id);
     label.textContent = "Binding / Formula";
 
+    const allowedFieldCategories = getComponentBindingCategories(component);
+
     const inputWrapper = document.createElement("div");
     inputWrapper.className = "position-relative";
 
@@ -2193,6 +2257,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
     suggestions.id = `${id}-suggestions`;
     suggestions.setAttribute("role", "listbox");
+    suggestions.style.zIndex = "1300";
+    suggestions.style.fontSize = "0.875rem";
+    suggestions.style.maxHeight = "16rem";
+    suggestions.style.overflowY = "auto";
     input.setAttribute("aria-controls", suggestions.id);
 
     inputWrapper.append(input, suggestions);
@@ -2244,19 +2312,25 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       }
       const normalized = query.trim().toLowerCase();
       const entries = Array.isArray(state.bindingFields) ? state.bindingFields : [];
+      const typed = entries.filter((entry) => fieldMatchesCategories(entry, allowedFieldCategories));
       const filtered = normalized
-        ? entries.filter((entry) => {
+        ? typed.filter((entry) => {
             const path = entry.path?.toLowerCase?.() || "";
             const labelText = entry.label?.toLowerCase?.() || "";
             return path.includes(normalized) || labelText.includes(normalized);
           })
-        : entries;
-      return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => ({
-        type: "field",
-        path: entry.path,
-        display: `@${entry.path}`,
-        description: entry.label && entry.label !== entry.path ? entry.label : "",
-      }));
+        : typed;
+      return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => {
+        const category = entry.category || categorizeFieldType(entry.type);
+        return {
+          type: "field",
+          path: entry.path,
+          display: `@${entry.path}`,
+          description: entry.label && entry.label !== entry.path ? entry.label : "",
+          fieldType: entry.type || "",
+          fieldCategory: category || "",
+        };
+      });
     }
 
     function getFunctionSuggestions(query = "") {
@@ -2286,7 +2360,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       items.forEach((item, index) => {
         const option = document.createElement("button");
         option.type = "button";
-        option.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+        option.className = "list-group-item list-group-item-action d-flex align-items-start gap-2 py-2";
         option.dataset.suggestionIndex = String(index);
         option.id = `${suggestions.id}-option-${index}`;
         option.addEventListener("mousedown", (event) => event.preventDefault());
@@ -2294,15 +2368,40 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
           applySuggestion(index);
         });
 
+        let fieldMeta = null;
+        if (item.type === "field") {
+          fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
+          const icon = document.createElement("span");
+          icon.className = "iconify flex-shrink-0 text-body-tertiary";
+          icon.dataset.icon = fieldMeta.icon;
+          icon.setAttribute("aria-hidden", "true");
+          icon.title = fieldMeta.label;
+          icon.style.fontSize = "1rem";
+          option.appendChild(icon);
+        }
+
+        const content = document.createElement("div");
+        content.className = "d-flex flex-column flex-grow-1 text-start gap-1";
+
         const title = document.createElement("span");
         title.textContent = item.display;
-        option.appendChild(title);
+        content.appendChild(title);
+
         if (item.description) {
           const hint = document.createElement("small");
-          hint.className = "text-body-secondary ms-2";
+          hint.className = "text-body-secondary";
           hint.textContent = item.description;
-          option.appendChild(hint);
+          content.appendChild(hint);
         }
+
+        if (fieldMeta) {
+          const typeHint = document.createElement("small");
+          typeHint.className = "text-body-secondary text-uppercase extra-small";
+          typeHint.textContent = fieldMeta.label;
+          content.appendChild(typeHint);
+        }
+
+        option.appendChild(content);
         suggestions.appendChild(option);
       });
       suggestions.classList.remove("d-none");
