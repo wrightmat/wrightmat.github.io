@@ -17,8 +17,8 @@ import {
   listBuiltinSystems,
   markBuiltinMissing,
   markBuiltinAvailable,
-  builtinIsTemporarilyMissing,
   applyBuiltinCatalog,
+  verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 
@@ -1422,7 +1422,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         { id: system.id, title: system.title, path: system.path, source: "builtin" },
         { syncOption: false }
       );
-      verifyBuiltinAvailability(system);
+      verifyBuiltinAsset("systems", system, {
+        skipProbe: Boolean(dataManager.baseUrl),
+        onMissing: () => removeSystemRecord(system.id),
+        onError: (error) => {
+          console.warn("System editor: failed to verify builtin system", system.id, error);
+        },
+      });
     });
   }
 

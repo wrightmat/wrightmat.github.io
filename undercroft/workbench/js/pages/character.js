@@ -9,23 +9,15 @@ import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinTemplates,
+  listBuiltinCharacters,
   markBuiltinMissing,
   markBuiltinAvailable,
   builtinIsTemporarilyMissing,
   applyBuiltinCatalog,
+  verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
-
-const BUILTIN_CHARACTERS = [
-  {
-    id: "cha_01k26cm0jxDR5V4R1Q4N56B5RH",
-    title: "Elandra (Demo)",
-    path: "data/characters/cha_01k26cm0jxDR5V4R1Q4N56B5RH.json",
-    template: "tpl.5e.flex-basic",
-    source: "builtin",
-  },
-];
 
 (async () => {
   const { status } = initAppShell({ namespace: "character" });
@@ -293,13 +285,23 @@ const BUILTIN_CHARACTERS = [
         source: "builtin",
       });
     });
-    BUILTIN_CHARACTERS.forEach((character) => {
+    listBuiltinCharacters().forEach((character) => {
+      if (builtinIsTemporarilyMissing("characters", character.id)) {
+        return;
+      }
       registerCharacterRecord({
         id: character.id,
         title: character.title,
         path: character.path,
         template: character.template,
-        source: character.source || "builtin",
+        source: "builtin",
+      });
+      verifyBuiltinAsset("characters", character, {
+        skipProbe: Boolean(dataManager.baseUrl),
+        onMissing: () => removeCharacterRecord(character.id),
+        onError: (error) => {
+          console.warn("Character editor: failed to verify builtin character", character.id, error);
+        },
       });
     });
   }
@@ -832,6 +834,8 @@ const BUILTIN_CHARACTERS = [
       const type = pruned ? "warning" : "error";
       status.show(message, { type, timeout: 2800 });
     }
+
+    return true;
   }
 
   function handleCharacterLoadFailure(id, error) {
@@ -840,14 +844,20 @@ const BUILTIN_CHARACTERS = [
       return false;
     }
     const source = (metadata.source || "").toLowerCase();
-    const isRemovable =
-      source !== "builtin" &&
-      (error?.status === 404 ||
-        error?.status === 410 ||
-        error?.message === "Character metadata missing" ||
-        error?.message === "Character payload missing" ||
-        error?.message === "Template metadata unavailable" ||
-        error?.message === "Template payload missing");
+    const statusCode = typeof error?.status === "number" ? error.status : null;
+    const message = error?.message || "";
+    const isMissingCharacter =
+      statusCode === 404 ||
+      statusCode === 410 ||
+      message === "Character metadata missing" ||
+      message === "Character payload missing" ||
+      message.startsWith("Failed to fetch character");
+    const isTemplateFailure =
+      message === "Template metadata unavailable" || message === "Template payload missing";
+    if (source === "builtin" && isMissingCharacter) {
+      markBuiltinMissing("characters", id);
+    }
+    const isRemovable = isMissingCharacter || (source !== "builtin" && isTemplateFailure);
 
     if (!isRemovable) {
       return false;
@@ -890,12 +900,41 @@ const BUILTIN_CHARACTERS = [
         return JSON.parse(JSON.stringify(local));
       }
     }
-    if (metadata.source === "builtin" && metadata.path) {
-      const response = await fetch(metadata.path);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch character: ${response.status}`);
+    if (metadata.source === "builtin") {
+      const characterId = metadata.id || "";
+      if (characterId && builtinIsTemporarilyMissing("characters", characterId)) {
+        removeCharacterRecord(characterId);
+        const error = new Error("Failed to fetch character: 404");
+        error.status = 404;
+        throw error;
       }
-      return await response.json();
+    }
+    if (metadata.source === "builtin" && metadata.path) {
+      const characterId = metadata.id || "";
+      try {
+        const response = await fetch(metadata.path, { cache: "no-store" });
+        if (!response.ok) {
+          markBuiltinMissing("characters", characterId);
+          removeCharacterRecord(characterId);
+          const error = new Error(`Failed to fetch character: ${response.status}`);
+          error.status = response.status;
+          throw error;
+        }
+        markBuiltinAvailable("characters", characterId);
+        return await response.json();
+      } catch (fetchError) {
+        markBuiltinMissing("characters", characterId);
+        removeCharacterRecord(characterId);
+        const error =
+          fetchError instanceof Error ? fetchError : new Error("Failed to fetch character");
+        if (typeof error.status !== "number") {
+          error.status = 500;
+        }
+        if (!error.message || error.message === fetchError?.message) {
+          error.message = `Failed to fetch character: ${error.status}`;
+        }
+        throw error;
+      }
     }
     if (metadata.source === "remote" && dataManager.baseUrl) {
       const result = await dataManager.get("characters", metadata.id, { preferLocal: true });

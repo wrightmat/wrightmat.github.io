@@ -1,10 +1,39 @@
 const BUILTIN_CACHE_KEY = "workbench:missing-builtins";
 const BUILTIN_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-const DEFAULT_BUILTIN_STATE = {
-  systems: {},
-  templates: {},
+const BUILTIN_CATALOG = {
+  systems: [
+    {
+      id: "sys.dnd5e",
+      title: "D&D 5e (Basic)",
+      path: "data/systems/sys.dnd5e.json",
+    },
+  ],
+  templates: [
+    {
+      id: "tpl.5e.flex-basic",
+      title: "5e — Flex Basic",
+      path: "data/templates/tpl.5e.flex-basic.json",
+    },
+  ],
+  characters: [
+    {
+      id: "cha_01k26cm0jxDR5V4R1Q4N56B5RH",
+      title: "Elandra (Demo)",
+      path: "data/characters/cha_01k26cm0jxDR5V4R1Q4N56B5RH.json",
+      template: "tpl.5e.flex-basic",
+    },
+  ],
 };
+
+const SUPPORTED_BUCKETS = Object.keys(BUILTIN_CATALOG);
+
+function createEmptyState() {
+  return SUPPORTED_BUCKETS.reduce((state, bucket) => {
+    state[bucket] = {};
+    return state;
+  }, {});
+}
 
 let cachedBuiltinState = null;
 
@@ -19,21 +48,24 @@ function supportsStorage() {
 
 function loadBuiltinState() {
   if (!supportsStorage()) {
-    return { ...DEFAULT_BUILTIN_STATE };
+    return createEmptyState();
   }
   try {
     const raw = window.localStorage.getItem(BUILTIN_CACHE_KEY);
     if (!raw) {
-      return { ...DEFAULT_BUILTIN_STATE };
+      return createEmptyState();
     }
     const parsed = JSON.parse(raw);
-    return {
-      systems: parsed?.systems && typeof parsed.systems === "object" ? { ...parsed.systems } : {},
-      templates: parsed?.templates && typeof parsed.templates === "object" ? { ...parsed.templates } : {},
-    };
+    const state = createEmptyState();
+    SUPPORTED_BUCKETS.forEach((bucket) => {
+      if (parsed?.[bucket] && typeof parsed[bucket] === "object") {
+        state[bucket] = { ...parsed[bucket] };
+      }
+    });
+    return state;
   } catch (error) {
     console.warn("content-registry: failed to parse builtin cache", error);
-    return { ...DEFAULT_BUILTIN_STATE };
+    return createEmptyState();
   }
 }
 
@@ -64,10 +96,9 @@ function commitBuiltinState() {
 
 function pruneExpiredEntries(state) {
   const now = Date.now();
-  const next = { systems: {}, templates: {} };
-  ["systems", "templates"].forEach((bucket) => {
+  const next = createEmptyState();
+  SUPPORTED_BUCKETS.forEach((bucket) => {
     const entries = state[bucket] || {};
-    next[bucket] = {};
     Object.entries(entries).forEach(([id, timestamp]) => {
       if (typeof timestamp !== "number") {
         return;
@@ -136,7 +167,7 @@ export function builtinIsTemporarilyMissing(bucket, id) {
 }
 
 export function applyBuiltinCatalog(catalog = {}) {
-  ["systems", "templates"].forEach((bucket) => {
+  SUPPORTED_BUCKETS.forEach((bucket) => {
     const entries = Array.isArray(catalog[bucket]) ? catalog[bucket] : [];
     entries.forEach((entry) => {
       if (!entry || !entry.id) {
@@ -151,26 +182,81 @@ export function applyBuiltinCatalog(catalog = {}) {
   });
 }
 
-export const BUILTIN_SYSTEMS = [
-  {
-    id: "sys.dnd5e",
-    title: "D&D 5e (Basic)",
-    path: "data/systems/sys.dnd5e.json",
-  },
-];
+export function listBuiltinContent(bucket) {
+  const entries = Array.isArray(BUILTIN_CATALOG[bucket]) ? BUILTIN_CATALOG[bucket] : [];
+  return filterAvailableBuiltins(bucket, entries);
+}
 
-export const BUILTIN_TEMPLATES = [
-  {
-    id: "tpl.5e.flex-basic",
-    title: "5e — Flex Basic",
-    path: "data/templates/tpl.5e.flex-basic.json",
-  },
-];
+export const BUILTIN_SYSTEMS = BUILTIN_CATALOG.systems;
+
+export const BUILTIN_TEMPLATES = BUILTIN_CATALOG.templates;
+
+export const BUILTIN_CHARACTERS = BUILTIN_CATALOG.characters;
 
 export function listBuiltinSystems() {
-  return filterAvailableBuiltins("systems", BUILTIN_SYSTEMS);
+  return listBuiltinContent("systems");
 }
 
 export function listBuiltinTemplates() {
-  return filterAvailableBuiltins("templates", BUILTIN_TEMPLATES);
+  return listBuiltinContent("templates");
+}
+
+export function listBuiltinCharacters() {
+  return listBuiltinContent("characters");
+}
+
+export function verifyBuiltinAsset(
+  bucket,
+  entry,
+  { skipProbe = false, onMissing, onAvailable, onError } = {}
+) {
+  if (!entry || !entry.id || !entry.path) {
+    return;
+  }
+  if (builtinIsTemporarilyMissing(bucket, entry.id)) {
+    if (typeof onMissing === "function") {
+      onMissing(entry);
+    }
+    return;
+  }
+  if (skipProbe || typeof window === "undefined" || typeof window.fetch !== "function") {
+    return;
+  }
+  window
+    .fetch(entry.path, { method: "GET", cache: "no-store" })
+    .then((response) => {
+      if (!response.ok) {
+        markBuiltinMissing(bucket, entry.id);
+        if (typeof onMissing === "function") {
+          onMissing(entry);
+        }
+        return;
+      }
+      markBuiltinAvailable(bucket, entry.id);
+      if (typeof onAvailable === "function") {
+        onAvailable(entry);
+      }
+      try {
+        response.body?.cancel?.();
+      } catch (error) {
+        console.warn(
+          `content-registry: unable to cancel builtin fetch for ${bucket}:${entry.id}`,
+          error
+        );
+      }
+    })
+    .catch((error) => {
+      if (typeof onError === "function") {
+        onError(error, entry);
+      } else {
+        console.warn(
+          `content-registry: failed to verify builtin ${bucket}:${entry.id}`,
+          error
+        );
+      }
+      markBuiltinMissing(bucket, entry.id);
+      if (typeof onMissing === "function") {
+        onMissing(entry);
+      }
+    });
 }
