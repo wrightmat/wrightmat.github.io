@@ -337,6 +337,7 @@ export class DataManager {
     let remote = null;
     try {
       remote = await this._request(`/list/${bucket}`, { method: "GET", auth: true });
+      remote = this._normalizeListPayload(remote);
     } catch (error) {
       console.warn(`DataManager: Failed to list ${bucket} from server`, error);
     }
@@ -344,6 +345,36 @@ export class DataManager {
     const payload = { remote, local };
     this._listCache.set(cacheKey, payload);
     return payload;
+  }
+
+  _normalizeListPayload(payload) {
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      return payload;
+    }
+    const result = { ...payload };
+    const aggregated = [];
+    const seen = new Set();
+    const addEntries = (entries) => {
+      if (!Array.isArray(entries)) {
+        return;
+      }
+      entries.forEach((entry) => {
+        if (!entry || typeof entry !== "object") {
+          return;
+        }
+        const entryId = entry.id;
+        if (entryId && seen.has(entryId)) {
+          return;
+        }
+        if (entryId) {
+          seen.add(entryId);
+        }
+        aggregated.push(entry);
+      });
+    };
+    ["owned", "shared", "public", "items"].forEach((key) => addEntries(result[key]));
+    result.items = aggregated;
+    return result;
   }
 
   _emit(eventName, detail = {}) {
