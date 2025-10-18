@@ -1,0 +1,16 @@
+{
+  "id": "sys.dnd-5e",
+  "title": "D&D 5E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name"
+    }
+  ],
+  "fragments": [],
+  "metadata": [],
+  "formulas": [],
+  "importers": []
+}
