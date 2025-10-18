@@ -1,0 +1,27 @@
+{
+  "id": "sys.dnd-5e",
+  "title": "D&D 5E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name"
+    },
+    {
+      "type": "string",
+      "key": "class",
+      "label": "Class",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "species",
+      "label": "Species"
+    }
+  ],
+  "fragments": [],
+  "metadata": [],
+  "formulas": [],
+  "importers": []
+}
