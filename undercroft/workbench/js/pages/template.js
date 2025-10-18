@@ -994,6 +994,18 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       elements.newTemplateSystem.value = "";
     }
     if (elements.newTemplateId) {
+      elements.newTemplateId.setCustomValidity("");
+      const seed =
+        elements.newTemplateSystem?.value ||
+        state.template?.schema ||
+        state.template?.title ||
+        state.template?.id ||
+        "template";
+      let generatedId = "";
+      do {
+        generatedId = generateTemplateId(seed || "template");
+      } while (generatedId && templateCatalog.has(generatedId));
+      elements.newTemplateId.value = generatedId;
       elements.newTemplateId.focus();
       elements.newTemplateId.select();
     }
@@ -3382,5 +3394,15 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       return window.CSS.escape(value);
     }
     return value.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
+  }
+
+  function generateTemplateId(name) {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `tpl.${crypto.randomUUID()}`;
+    }
+    const base = (name || "template").toLowerCase();
+    const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `tpl.${slug || "template"}.${rand}`;
   }
 })();
