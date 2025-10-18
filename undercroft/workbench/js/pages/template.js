@@ -111,6 +111,19 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     return categories.includes(entryCategory) || categories.includes("any");
   }
 
+  const systemDefinitionCache = new Map();
+
+  const state = {
+    template: null,
+    components: [],
+    selectedId: null,
+    systemDefinition: null,
+    bindingFields: [],
+  };
+
+  const dropzones = new Map();
+  const containerActiveTabs = new Map();
+
   registerBuiltinContent();
 
   const elements = {
@@ -395,19 +408,6 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   };
 
   let componentCounter = 0;
-
-  const systemDefinitionCache = new Map();
-
-  const state = {
-    template: null,
-    components: [],
-    selectedId: null,
-    systemDefinition: null,
-    bindingFields: [],
-  };
-
-  const dropzones = new Map();
-  const containerActiveTabs = new Map();
 
   const renderPreview = createJsonPreviewRenderer({
     resolvePreviewElement: () => elements.jsonPreview,
