@@ -120,6 +120,8 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     bindingFields: [],
   };
 
+  let pendingSharedTemplate = resolveSharedRecordParam("templates");
+
   function hasActiveTemplate() {
     return Boolean(state.template && (state.template.id || state.template.title));
   }
@@ -215,6 +217,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
   loadSystemRecords();
   loadTemplateRecords();
+  initializeSharedTemplateHandling();
 
   if (elements.templateSelect) {
     const builtinOptions = BUILTIN_TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title }));
@@ -1106,6 +1109,48 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       console.warn("Template editor: unable to list templates", error);
     } finally {
       ensureTemplateSelectValue();
+    }
+  }
+
+  function initializeSharedTemplateHandling() {
+    if (!pendingSharedTemplate) {
+      return;
+    }
+    if (dataManager.isAuthenticated()) {
+      void loadPendingSharedTemplate();
+    } else if (status) {
+      status.show("Sign in to load the shared template.", { type: "info", timeout: 2600 });
+    }
+  }
+
+  async function loadPendingSharedTemplate() {
+    if (!pendingSharedTemplate) {
+      return;
+    }
+    const targetId = pendingSharedTemplate;
+    pendingSharedTemplate = null;
+    registerTemplateRecord({ id: targetId, title: targetId, schema: "", source: "remote" }, { syncOption: true });
+    if (elements.templateSelect) {
+      elements.templateSelect.value = targetId;
+    }
+    try {
+      const result = await dataManager.get("templates", targetId, { preferLocal: true });
+      const payload = result?.payload;
+      if (!payload) {
+        throw new Error("Template payload missing");
+      }
+      const label = payload.title || templateCatalog.get(targetId)?.title || targetId;
+      const schema = payload.schema || payload.system || templateCatalog.get(targetId)?.schema || "";
+      registerTemplateRecord(
+        { id: payload.id || targetId, title: label, schema, source: "remote" },
+        { syncOption: true },
+      );
+      applyTemplateData(payload, { origin: "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+    } catch (error) {
+      console.error("Template editor: unable to load shared template", error);
+      if (status) {
+        status.show(error.message || "Unable to load shared template", { type: "danger" });
+      }
     }
   }
 
@@ -3406,4 +3451,46 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     const rand = Math.random().toString(36).slice(2, 8);
     return `tpl.${slug || "template"}.${rand}`;
   }
+
+  function resolveSharedRecordParam(expectedBucket) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const record = params.get("record");
+      if (!record) {
+        return null;
+      }
+      const [bucket, ...rest] = record.split(":");
+      const id = rest.join(":");
+      if (bucket !== expectedBucket || !id) {
+        return null;
+      }
+      return id;
+    } catch (error) {
+      console.warn("Template editor: unable to parse shared record", error);
+      return null;
+    }
+  }
+
+  window.addEventListener("workbench:auth-changed", () => {
+    if (dataManager.isAuthenticated()) {
+      loadTemplateRecords();
+      if (pendingSharedTemplate) {
+        void loadPendingSharedTemplate();
+      }
+    }
+  });
+
+  window.addEventListener("workbench:content-saved", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "templates" && detail.source === "remote") {
+      loadTemplateRecords();
+    }
+  });
+
+  window.addEventListener("workbench:content-deleted", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "templates" && detail.source === "remote") {
+      loadTemplateRecords();
+    }
+  });
 })();

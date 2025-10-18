@@ -13,6 +13,7 @@ from .auth import (
     cleanup_sessions,
     ensure_default_admin,
     get_user_by_session,
+    get_user_by_username,
     init_auth_db,
     login_user,
     logout_user,
@@ -37,6 +38,7 @@ from .storage import (
     init_storage_db,
     is_owner,
     list_bucket,
+    list_owned_content,
     save_item,
     toggle_public,
 )
@@ -199,6 +201,30 @@ def register_routes():
         return json_response(payload)
 
     router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content)
+
+    # GET /content/owned
+    def handle_owned_content(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        query = request.handler.path.split("?", 1)
+        target = user
+        if len(query) > 1 and query[1]:
+            from urllib.parse import parse_qs
+
+            params = parse_qs(query[1])
+            username = params.get("username", [""])[0]
+            if username and username != user.username:
+                if user.tier != "admin":
+                    raise AuthError("Admin only")
+                target_user = get_user_by_username(request.state, username)
+                if not target_user:
+                    raise AuthError("User not found")
+                target = target_user
+        payload = list_owned_content(request.state, target)
+        return json_response(payload)
+
+    router.add("GET", r"^/content/owned$", handle_owned_content)
 
     # GET /shares/{content_type}/{content_id}
     def handle_list_shares(request: Request) -> Response:

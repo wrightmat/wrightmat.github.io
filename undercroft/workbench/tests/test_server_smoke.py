@@ -202,16 +202,99 @@ class ServerSmokeTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(response["ok"], True)
 
+        # Additional characters until reaching the free tier limit (5 total)
+        for index in range(1, 5):
+            extra_id = f"limit-{index}"
+            extra_payload = {
+                "id": extra_id,
+                "name": f"Limit {index}",
+                "system": "sys.dnd5e",
+                "template": "tpl.5e.flex-basic",
+                "data": {"name": f"Limit {index}"},
+            }
+            status, _ = self._request(
+                f"/content/characters/{extra_id}",
+                method="POST",
+                payload=extra_payload,
+                token=token,
+            )
+            self.assertEqual(status, 200)
+
+        with self.assertRaises(AssertionError) as ctx:
+            overflow_id = "limit-overflow"
+            overflow_payload = {
+                "id": overflow_id,
+                "name": "Too Many",
+                "system": "sys.dnd5e",
+                "template": "tpl.5e.flex-basic",
+                "data": {"name": "Too Many"},
+            }
+            self._request(
+                f"/content/characters/{overflow_id}",
+                method="POST",
+                payload=overflow_payload,
+                token=token,
+            )
+        self.assertIn("only create up to 5 characters", str(ctx.exception))
+
+        with self.assertRaises(AssertionError) as template_ctx:
+            template_payload = {
+                "id": "limit-template",
+                "title": "Limit Template",
+                "schema": "sys.dnd5e",
+                "components": [],
+            }
+            self._request(
+                "/content/templates/limit-template",
+                method="POST",
+                payload=template_payload,
+                token=token,
+            )
+        self.assertIn("cannot create templates", str(template_ctx.exception))
+
+        with self.assertRaises(AssertionError) as system_ctx:
+            system_payload = {
+                "id": "limit-system",
+                "title": "Limit System",
+                "index": {},
+                "fields": [],
+            }
+            self._request(
+                "/content/systems/limit-system",
+                method="POST",
+                payload=system_payload,
+                token=token,
+            )
+        self.assertIn("cannot create systems", str(system_ctx.exception))
+
         # Authenticated listing should show owned record
         status, listing = self._request("/list/characters", token=token)
         self.assertEqual(status, 200)
         owned = listing.get("owned", [])
         self.assertTrue(any(item["id"] == character_id for item in owned))
+        self.assertEqual(len(owned), 5)
 
         # Round-trip content fetch
         status, character = self._request(f"/content/characters/{character_id}", token=token)
         self.assertEqual(status, 200)
         self.assertEqual(character["name"], "Smoke Test")
+
+        status, owned_listing = self._request("/content/owned", token=token)
+        self.assertEqual(status, 200)
+        self.assertEqual(owned_listing["owner"]["username"], username)
+        self.assertTrue(any(item["id"] == character_id for item in owned_listing.get("items", [])))
+
+        status, admin_session = self._request(
+            "/auth/login",
+            method="POST",
+            payload={"username": "admin", "password": "admin"},
+        )
+        self.assertEqual(status, 200)
+        admin_token = admin_session["token"]
+        status, admin_owned = self._request(f"/content/owned?username={username}", token=admin_token)
+        self.assertEqual(status, 200)
+        self.assertEqual(admin_owned["owner"]["username"], username)
+        self.assertTrue(any(item["id"] == character_id for item in admin_owned.get("items", [])))
 
     def test_static_files_are_served_from_any_directory(self):
         status, headers, body = self._fetch_raw("/public/")
