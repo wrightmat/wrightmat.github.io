@@ -135,6 +135,22 @@ export function builtinIsTemporarilyMissing(bucket, id) {
   return isBuiltinMarkedMissing(bucket, id);
 }
 
+export function applyBuiltinCatalog(catalog = {}) {
+  ["systems", "templates"].forEach((bucket) => {
+    const entries = Array.isArray(catalog[bucket]) ? catalog[bucket] : [];
+    entries.forEach((entry) => {
+      if (!entry || !entry.id) {
+        return;
+      }
+      if (entry.available) {
+        markBuiltinAvailable(bucket, entry.id);
+      } else {
+        markBuiltinMissing(bucket, entry.id);
+      }
+    });
+  });
+}
+
 export const BUILTIN_SYSTEMS = [
   {
     id: "sys.dnd5e",

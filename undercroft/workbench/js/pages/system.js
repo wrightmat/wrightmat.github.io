@@ -18,16 +18,17 @@ import {
   markBuiltinMissing,
   markBuiltinAvailable,
   builtinIsTemporarilyMissing,
+  applyBuiltinCatalog,
 } from "../lib/content-registry.js";
 
-(() => {
+(async () => {
   const { status, undoStack } = initAppShell({ namespace: "system" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
 
   const systemCatalog = new Map();
 
-  registerBuiltinContent();
+  await initializeBuiltins();
 
   const TYPE_DEFS = {
     string: {
@@ -1383,6 +1384,20 @@ import {
     }
   }
 
+  async function initializeBuiltins() {
+    if (dataManager.baseUrl) {
+      try {
+        const catalog = await dataManager.listBuiltins();
+        if (catalog) {
+          applyBuiltinCatalog(catalog);
+        }
+      } catch (error) {
+        console.warn("System editor: unable to load builtin catalog", error);
+      }
+    }
+    registerBuiltinContent();
+  }
+
   function registerBuiltinContent() {
     listBuiltinSystems().forEach((system) => {
       registerSystemRecord(
@@ -1399,6 +1414,13 @@ import {
     }
     if (builtinIsTemporarilyMissing("systems", system.id)) {
       removeSystemRecord(system.id);
+      return;
+    }
+    if (dataManager.baseUrl) {
+      // When connected to the API the server-supplied catalog already
+      // reflects which builtin assets exist, so avoid probing the
+      // filesystem with fetch requests that would surface 404 errors in
+      // the console when an asset has been removed.
       return;
     }
     if (typeof window === "undefined" || typeof window.fetch !== "function") {

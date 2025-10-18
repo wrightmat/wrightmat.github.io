@@ -19,12 +19,13 @@ import {
   markBuiltinMissing,
   markBuiltinAvailable,
   builtinIsTemporarilyMissing,
+  applyBuiltinCatalog,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
 
-(() => {
+(async () => {
   const { status, undoStack } = initAppShell({ namespace: "template" });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
@@ -150,7 +151,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
   }
 
-  registerBuiltinContent();
+  await initializeBuiltins();
 
   const elements = {
     templateSelect: document.querySelector("[data-template-select]"),
@@ -918,6 +919,12 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       removeTemplateRecord(template.id);
       return;
     }
+    if (dataManager.baseUrl) {
+      // The API exposes builtin availability so avoid issuing redundant
+      // fetch requests that would result in console 404s when an asset is
+      // missing on the server.
+      return;
+    }
     if (typeof window === "undefined" || typeof window.fetch !== "function") {
       return;
     }
@@ -968,6 +975,11 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
     if (builtinIsTemporarilyMissing("systems", system.id)) {
       removeSystemRecord(system.id);
+      return;
+    }
+    if (dataManager.baseUrl) {
+      // Trust the server catalog when available to avoid noisy 404
+      // requests for builtin systems that have been removed.
       return;
     }
     if (typeof window === "undefined" || typeof window.fetch !== "function") {
@@ -1197,6 +1209,20 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     } else {
       elements.deleteTemplateButton.removeAttribute("title");
     }
+  }
+
+  async function initializeBuiltins() {
+    if (dataManager.baseUrl) {
+      try {
+        const catalog = await dataManager.listBuiltins();
+        if (catalog) {
+          applyBuiltinCatalog(catalog);
+        }
+      } catch (error) {
+        console.warn("Template editor: unable to load builtin catalog", error);
+      }
+    }
+    registerBuiltinContent();
   }
 
   function registerBuiltinContent() {

@@ -272,16 +272,17 @@
                         <table class="table align-middle mb-0">
                           <thead>
                             <tr>
-                              <th scope="col">Name</th>
-                              <th scope="col">Type</th>
-                              <th scope="col">Created</th>
-                              <th scope="col">Last accessed</th>
-                              <th scope="col" class="text-end">Share</th>
+                              <th scope="col" data-admin-owned-sort="name" role="button" tabindex="0" aria-sort="none">Name</th>
+                              <th scope="col" data-admin-owned-sort="type" role="button" tabindex="0" aria-sort="none">Type</th>
+                              <th scope="col" data-admin-owned-sort="created_at" role="button" tabindex="0" aria-sort="none">Created</th>
+                              <th scope="col" data-admin-owned-sort="last_accessed_at" role="button" tabindex="0" aria-sort="none">Last accessed</th>
+                              <th scope="col" data-admin-owned-sort="is_public" role="button" tabindex="0" aria-sort="none">Share</th>
+                              <th scope="col" class="text-end" data-admin-owned-sort="owner" role="button" tabindex="0" aria-sort="none">Owner / Actions</th>
                             </tr>
                           </thead>
                           <tbody data-admin-owned-rows>
                             <tr>
-                              <td colspan="5" class="text-center py-4 text-body-secondary">Loading content…</td>
+                              <td colspan="6" class="text-center py-4 text-body-secondary">Loading content…</td>
                             </tr>
                           </tbody>
                         </table>
@@ -293,10 +294,10 @@
                       <table class="table align-middle mb-0">
                         <thead>
                           <tr>
-                            <th scope="col">Username</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Last activity</th>
-                            <th scope="col" class="text-end">Access</th>
+                            <th scope="col" data-admin-users-sort="username" role="button" tabindex="0" aria-sort="none">Username</th>
+                            <th scope="col" data-admin-users-sort="email" role="button" tabindex="0" aria-sort="none">Email</th>
+                            <th scope="col" data-admin-users-sort="last_activity" role="button" tabindex="0" aria-sort="none">Last activity</th>
+                            <th scope="col" class="text-end" data-admin-users-sort="tier" role="button" tabindex="0" aria-sort="none">Access</th>
                           </tr>
                         </thead>
                         <tbody data-admin-users>

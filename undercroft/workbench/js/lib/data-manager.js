@@ -505,6 +505,20 @@ export class DataManager {
     return result;
   }
 
+  async updateContentOwner(bucket, id, username) {
+    if (!username) {
+      throw new Error("Username is required");
+    }
+    const result = await this._request(`/content/${bucket}/${id}/owner`, {
+      method: "POST",
+      body: { username },
+      auth: true,
+    });
+    this._listCache.delete(`${bucket}`);
+    this._ownedCache.clear();
+    return result;
+  }
+
   async listOwnedContent({ username = "", refresh = false } = {}) {
     const key = username ? username.toLowerCase() : "__self__";
     if (!refresh && this._ownedCache.has(key)) {
@@ -517,6 +531,10 @@ export class DataManager {
     });
     this._ownedCache.set(key, payload);
     return payload;
+  }
+
+  async listBuiltins() {
+    return this._request("/content/builtins", { method: "GET" });
   }
 }
 

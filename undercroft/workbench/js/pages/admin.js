@@ -22,6 +22,8 @@ const elements = {
   ownedSummary: document.querySelector("[data-admin-owned-summary]"),
   ownedUserSelect: document.querySelector("[data-admin-owned-user]"),
   ownedFilter: document.querySelector("[data-admin-owned-filter]"),
+  ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
+  userSortHeaders: Array.from(document.querySelectorAll("[data-admin-users-sort]")),
   emailForm: document.querySelector("[data-admin-email-form]"),
   emailError: document.querySelector("[data-admin-email-error]"),
   emailInput: document.getElementById("admin-settings-email"),
@@ -44,6 +46,21 @@ const OWNED_TYPE_LABELS = {
   systems: "System",
 };
 
+const OWNER_ROLE_REQUIREMENTS = {
+  characters: ["player", "gm", "master", "creator", "admin"],
+  templates: ["gm", "master", "creator", "admin"],
+  systems: ["creator", "admin"],
+};
+
+const ROLE_RANKS = {
+  free: 0,
+  player: 1,
+  gm: 2,
+  master: 3,
+  creator: 4,
+  admin: 5,
+};
+
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
 const TAB_USERS = "users";
@@ -56,12 +73,14 @@ const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat 
 const viewState = {
   activeTab: TAB_SETTINGS,
   users: [],
+  usersSort: { key: "username", direction: "asc" },
   owned: {
     owner: null,
     items: [],
     selectedUsername: "",
     loading: false,
     stale: true,
+    sort: { key: "last_accessed_at", direction: "desc" },
   },
 };
 
@@ -72,6 +91,32 @@ function isAdminSession() {
 
 function currentUser() {
   return dataManager.session?.user || null;
+}
+
+function normalizeTier(tier) {
+  return typeof tier === "string" ? tier.trim().toLowerCase() : "";
+}
+
+function tierRank(tier) {
+  const normalized = normalizeTier(tier);
+  return normalized in ROLE_RANKS ? ROLE_RANKS[normalized] : -1;
+}
+
+function tierMeetsOwnerRequirement(tier, bucket) {
+  const normalized = normalizeTier(tier);
+  const allowed = OWNER_ROLE_REQUIREMENTS[bucket];
+  if (!allowed || !allowed.length) {
+    return true;
+  }
+  const minRank = Math.min(
+    ...allowed
+      .map((role) => tierRank(role))
+      .filter((rank) => rank >= 0),
+  );
+  if (!Number.isFinite(minRank)) {
+    return true;
+  }
+  return tierRank(normalized) >= minRank;
 }
 
 function resolveTabFromHash() {
@@ -158,6 +203,9 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
     loadUsers();
   }
   if (target === TAB_OWNED) {
+    if (admin && !viewState.users.length) {
+      void loadUsers({ showSpinner: false, force: true });
+    }
     populateOwnedUserFilter();
     loadOwnedContent();
   }
@@ -194,11 +242,13 @@ function renderUsers(users) {
   if (!elements.usersBody) return;
   if (!users.length) {
     setLoading("No registered users yet.");
+    updateUserSortIndicators();
     return;
   }
   const currentUser = dataManager.session?.user;
+  const sortedUsers = sortUsers(users);
   const fragment = document.createDocumentFragment();
-  users.forEach((user) => {
+  sortedUsers.forEach((user) => {
     const row = document.createElement("tr");
     const isSelf = currentUser && currentUser.username === user.username;
     const statusLabel = user.is_active ? "Active" : "Pending";
@@ -303,6 +353,7 @@ function renderUsers(users) {
     fragment.appendChild(row);
   });
   elements.usersBody.replaceChildren(fragment);
+  updateUserSortIndicators();
 }
 
 function formatTier(tier) {
@@ -330,11 +381,90 @@ function formatLastActivity(value) {
   return formatTimestamp(value, "Never");
 }
 
-async function loadUsers({ showSpinner = true } = {}) {
-  if (!isAdminSession() || viewState.activeTab !== TAB_USERS) {
+function userSortValue(user, key) {
+  switch (key) {
+    case "username":
+      return (user.username || "").toLowerCase();
+    case "email":
+      return (user.email || "").toLowerCase();
+    case "last_activity": {
+      const source = user.last_activity || user.last_login || user.created_at || "";
+      if (!source) {
+        return 0;
+      }
+      const normalized = source.includes(" ") && !source.includes("T") ? source.replace(" ", "T") : source;
+      const value = Date.parse(normalized);
+      return Number.isNaN(value) ? 0 : value;
+    }
+    case "tier":
+      return tierRank(user.tier);
+    default:
+      return (user[key] || "").toString().toLowerCase();
+  }
+}
+
+function sortUsers(users) {
+  const { key, direction } = viewState.usersSort;
+  const factor = direction === "desc" ? -1 : 1;
+  return [...users].sort((a, b) => {
+    const aValue = userSortValue(a, key);
+    const bValue = userSortValue(b, key);
+    if (aValue === bValue) {
+      return 0;
+    }
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return aValue > bValue ? factor : -factor;
+    }
+    return aValue > bValue ? factor : -factor;
+  });
+}
+
+function updateUserSortIndicators() {
+  if (!Array.isArray(elements.userSortHeaders)) {
     return;
   }
-  if (showSpinner) {
+  const { key, direction } = viewState.usersSort;
+  elements.userSortHeaders.forEach((header) => {
+    if (!header) {
+      return;
+    }
+    const sortKey = header.getAttribute("data-admin-users-sort");
+    if (sortKey === key) {
+      header.setAttribute("aria-sort", direction === "desc" ? "descending" : "ascending");
+    } else {
+      header.setAttribute("aria-sort", "none");
+    }
+  });
+}
+
+function defaultUsersSortDirection(key) {
+  if (key === "last_activity") {
+    return "desc";
+  }
+  return "asc";
+}
+
+function setUsersSort(key) {
+  if (!key) {
+    return;
+  }
+  if (viewState.usersSort.key === key) {
+    viewState.usersSort.direction = viewState.usersSort.direction === "asc" ? "desc" : "asc";
+  } else {
+    viewState.usersSort = { key, direction: defaultUsersSortDirection(key) };
+  }
+  renderUsers(viewState.users);
+}
+
+async function loadUsers({ showSpinner = true, force = false } = {}) {
+  if (!isAdminSession()) {
+    return;
+  }
+  const shouldRenderSpinner = showSpinner && viewState.activeTab === TAB_USERS;
+  if (!force && viewState.activeTab !== TAB_USERS) {
+    return;
+  }
+  if (shouldRenderSpinner) {
     setLoading();
   }
   try {
@@ -343,11 +473,16 @@ async function loadUsers({ showSpinner = true } = {}) {
     viewState.users = users;
     renderUsers(users);
     populateOwnedUserFilter();
+    if (viewState.activeTab === TAB_OWNED) {
+      renderOwnedItems(viewState.owned.items, viewState.owned.owner);
+    }
   } catch (error) {
     if (status) {
       status.show(error.message || "Unable to load users", { type: "danger" });
     }
-    setLoading("Unable to load users");
+    if (shouldRenderSpinner) {
+      setLoading("Unable to load users");
+    }
   }
 }
 
@@ -416,7 +551,7 @@ function setOwnedLoading(message = "Loading content…") {
   }
   const row = document.createElement("tr");
   const cell = document.createElement("td");
-  cell.colSpan = 5;
+  cell.colSpan = 6;
   cell.className = "text-center py-4 text-body-secondary";
   cell.textContent = message;
   row.appendChild(cell);
@@ -502,6 +637,130 @@ async function copyShareLink(url) {
   }
 }
 
+function describeOwnerOption(username, tier) {
+  if (!username) {
+    return "";
+  }
+  const base = `${username} (${formatTier(tier)})`;
+  const current = currentUser();
+  if (current && current.username === username) {
+    return `${base} (You)`;
+  }
+  return base;
+}
+
+function buildOwnerOptions(bucket, currentOwner = { username: "", tier: "" }) {
+  const options = [];
+  const seen = new Set();
+  const ownerUsername = currentOwner?.username || "";
+  const ownerTier = currentOwner?.tier || "";
+  if (ownerUsername) {
+    options.push({ value: ownerUsername, label: describeOwnerOption(ownerUsername, ownerTier) });
+    seen.add(ownerUsername);
+  }
+  if (!isAdminSession()) {
+    return options;
+  }
+  const current = currentUser();
+  if (current && !seen.has(current.username) && tierMeetsOwnerRequirement(current.tier, bucket)) {
+    options.push({ value: current.username, label: describeOwnerOption(current.username, current.tier) });
+    seen.add(current.username);
+  }
+  const eligibleUsers = viewState.users
+    .filter((user) => user && user.username && tierMeetsOwnerRequirement(user.tier, bucket))
+    .sort((a, b) => a.username.localeCompare(b.username, undefined, { sensitivity: "base" }));
+  eligibleUsers.forEach((user) => {
+    if (seen.has(user.username)) {
+      return;
+    }
+    options.push({ value: user.username, label: describeOwnerOption(user.username, user.tier) });
+    seen.add(user.username);
+  });
+  return options;
+}
+
+function ownedSortValue(item, key) {
+  switch (key) {
+    case "name":
+      return (item.label || item.id || "").toLowerCase();
+    case "type":
+      return (OWNED_TYPE_LABELS[item.bucket] || item.bucket || "").toLowerCase();
+    case "created_at":
+    case "modified_at":
+    case "last_accessed_at": {
+      const raw = item[key] || "";
+      if (!raw) {
+        return 0;
+      }
+      const normalized = raw.includes(" ") && !raw.includes("T") ? raw.replace(" ", "T") : raw;
+      const value = Date.parse(normalized);
+      return Number.isNaN(value) ? 0 : value;
+    }
+    case "is_public":
+      return item.is_public ? 1 : 0;
+    case "owner":
+      return (viewState.owned.owner?.username || "").toLowerCase();
+    default:
+      return (item[key] || "").toString().toLowerCase();
+  }
+}
+
+function sortOwnedItems(items) {
+  const { key, direction } = viewState.owned.sort;
+  const factor = direction === "desc" ? -1 : 1;
+  return [...items].sort((a, b) => {
+    const aValue = ownedSortValue(a, key);
+    const bValue = ownedSortValue(b, key);
+    if (aValue === bValue) {
+      return 0;
+    }
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return aValue > bValue ? factor : -factor;
+    }
+    return aValue > bValue ? factor : -factor;
+  });
+}
+
+function updateOwnedSortIndicators() {
+  if (!Array.isArray(elements.ownedSortHeaders)) {
+    return;
+  }
+  const { key, direction } = viewState.owned.sort;
+  elements.ownedSortHeaders.forEach((header) => {
+    if (!header) {
+      return;
+    }
+    const sortKey = header.getAttribute("data-admin-owned-sort");
+    if (sortKey === key) {
+      header.setAttribute("aria-sort", direction === "desc" ? "descending" : "ascending");
+    } else {
+      header.setAttribute("aria-sort", "none");
+    }
+  });
+}
+
+function defaultOwnedSortDirection(key) {
+  if (key === "created_at" || key === "last_accessed_at" || key === "modified_at") {
+    return "desc";
+  }
+  if (key === "is_public") {
+    return "desc";
+  }
+  return "asc";
+}
+
+function setOwnedSort(key) {
+  if (!key) {
+    return;
+  }
+  if (viewState.owned.sort.key === key) {
+    viewState.owned.sort.direction = viewState.owned.sort.direction === "asc" ? "desc" : "asc";
+  } else {
+    viewState.owned.sort = { key, direction: defaultOwnedSortDirection(key) };
+  }
+  renderOwnedItems(viewState.owned.items, viewState.owned.owner);
+}
+
 function renderOwnedItems(items, owner) {
   if (!elements.ownedBody) {
     return;
@@ -509,6 +768,7 @@ function renderOwnedItems(items, owner) {
   if (!Array.isArray(items) || !items.length) {
     showOwnedEmpty(viewState.owned.selectedUsername ? "No content for this user." : "No saved content yet.");
     updateOwnedSummary(owner, 0);
+    updateOwnedSortIndicators();
     return;
   }
   if (elements.ownedTable) {
@@ -518,7 +778,8 @@ function renderOwnedItems(items, owner) {
     elements.ownedEmpty.hidden = true;
   }
   const fragment = document.createDocumentFragment();
-  items.forEach((item) => {
+  const sortedItems = sortOwnedItems(items);
+  sortedItems.forEach((item) => {
     const row = document.createElement("tr");
 
     const nameCell = document.createElement("td");
@@ -540,11 +801,13 @@ function renderOwnedItems(items, owner) {
     const accessedCell = document.createElement("td");
     accessedCell.textContent = formatTimestamp(item.last_accessed_at, "Never");
 
-    const actionsCell = document.createElement("td");
-    actionsCell.className = "text-end";
-    const controls = document.createElement("div");
-    controls.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
+    const shareCell = document.createElement("td");
+    shareCell.className = "text-end";
+    const ownerCell = document.createElement("td");
+    ownerCell.className = "text-end";
 
+    const shareRow = document.createElement("div");
+    shareRow.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
     const toggleWrapper = document.createElement("div");
     toggleWrapper.className = "form-check form-switch mb-0";
     const toggle = document.createElement("input");
@@ -601,21 +864,115 @@ function renderOwnedItems(items, owner) {
     openLink.className = "btn btn-outline-primary btn-sm";
     openLink.textContent = "Open";
 
-    controls.appendChild(toggleWrapper);
-    controls.appendChild(copyButton);
-    controls.appendChild(openLink);
-    actionsCell.appendChild(controls);
+    shareRow.appendChild(toggleWrapper);
+    shareRow.appendChild(copyButton);
+    shareRow.appendChild(openLink);
+
+    const ownerRow = document.createElement("div");
+    ownerRow.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
+    const ownerSelect = document.createElement("select");
+    ownerSelect.className = "form-select form-select-sm w-auto";
+    ownerSelect.setAttribute("aria-label", `Change owner for ${item.label || item.id}`);
+    const currentOwnerUsername = owner?.username || "";
+    const currentOwnerTier = owner?.tier || "";
+    const ownerOptions = buildOwnerOptions(item.bucket, { username: currentOwnerUsername, tier: currentOwnerTier });
+    ownerOptions.forEach((option) => {
+      const opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      if (option.disabled) {
+        opt.disabled = true;
+      }
+      if (option.value === currentOwnerUsername) {
+        opt.selected = true;
+      }
+      ownerSelect.appendChild(opt);
+    });
+    if (!ownerOptions.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = currentOwnerUsername ? describeOwnerOption(currentOwnerUsername, currentOwnerTier) : "Unassigned";
+      opt.selected = true;
+      opt.disabled = true;
+      ownerSelect.appendChild(opt);
+    }
+    ownerSelect.value = currentOwnerUsername;
+    ownerSelect.disabled = !isAdminSession() || ownerOptions.length <= 1;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "btn btn-outline-danger btn-sm";
+    deleteButton.textContent = "Delete";
+
+    if (isAdminSession()) {
+      ownerSelect.addEventListener("change", async () => {
+        const selected = ownerSelect.value;
+        if (!selected || selected === currentOwnerUsername) {
+          ownerSelect.value = currentOwnerUsername;
+          return;
+        }
+        ownerSelect.disabled = true;
+        deleteButton.disabled = true;
+        try {
+          await dataManager.updateContentOwner(item.bucket, item.id, selected);
+          if (status) {
+            status.show(`Transferred ownership to ${selected}.`, { type: "success", timeout: 2000 });
+          }
+          await loadOwnedContent({ refresh: true });
+        } catch (error) {
+          console.error("Failed to change owner", error);
+          if (status) {
+            status.show(error.message || "Unable to update owner", { type: "danger" });
+          }
+          ownerSelect.value = currentOwnerUsername;
+          ownerSelect.disabled = false;
+          deleteButton.disabled = false;
+        }
+      });
+    }
+
+    deleteButton.addEventListener("click", async () => {
+      const typeLabel = OWNED_TYPE_LABELS[item.bucket] || item.bucket;
+      const confirmed = window.confirm(`Delete this ${typeLabel.toLowerCase()}? This cannot be undone.`);
+      if (!confirmed) {
+        return;
+      }
+      deleteButton.disabled = true;
+      ownerSelect.disabled = true;
+      try {
+        await dataManager.delete(item.bucket, item.id, { mode: "remote" });
+        if (status) {
+          status.show(`${typeLabel} deleted.`, { type: "success", timeout: 2000 });
+        }
+        await loadOwnedContent({ refresh: true });
+      } catch (error) {
+        console.error("Failed to delete content", error);
+        if (status) {
+          status.show(error.message || "Unable to delete content", { type: "danger" });
+        }
+        deleteButton.disabled = false;
+        ownerSelect.disabled = !isAdminSession() || ownerOptions.length <= 1;
+      }
+    });
+
+    ownerRow.appendChild(ownerSelect);
+    ownerRow.appendChild(deleteButton);
+
+    shareCell.appendChild(shareRow);
+    ownerCell.appendChild(ownerRow);
 
     row.appendChild(nameCell);
     row.appendChild(typeCell);
     row.appendChild(createdCell);
     row.appendChild(accessedCell);
-    row.appendChild(actionsCell);
+    row.appendChild(shareCell);
+    row.appendChild(ownerCell);
     fragment.appendChild(row);
   });
 
   elements.ownedBody.replaceChildren(fragment);
   updateOwnedSummary(owner, items.length);
+  updateOwnedSortIndicators();
 }
 
 function isViewingCurrentUser() {
@@ -636,6 +993,7 @@ async function loadOwnedContent({ refresh = false } = {}) {
     viewState.owned.stale = true;
     showOwnedEmpty("Sign in to see your saved content.");
     updateOwnedSummary(null, 0);
+    updateOwnedSortIndicators();
     return;
   }
   if (viewState.owned.loading) {
@@ -661,6 +1019,7 @@ async function loadOwnedContent({ refresh = false } = {}) {
       status.show(error.message || "Unable to load content", { type: "danger" });
     }
     setOwnedLoading("Unable to load content");
+    updateOwnedSortIndicators();
   } finally {
     viewState.owned.loading = false;
   }
@@ -708,6 +1067,9 @@ function handleAuthChanged() {
     showPanel();
     updateTabAvailability();
     populateSettings({ force: true });
+    if (isAdminSession()) {
+      void loadUsers({ showSpinner: false, force: true });
+    }
     populateOwnedUserFilter();
     viewState.owned.selectedUsername = "";
     viewState.owned.stale = true;
@@ -754,6 +1116,47 @@ if (elements.ownedUserSelect) {
     loadOwnedContent({ refresh: true });
   });
 }
+
+if (Array.isArray(elements.userSortHeaders)) {
+  elements.userSortHeaders.forEach((header) => {
+    if (!header) {
+      return;
+    }
+    header.addEventListener("click", () => {
+      const key = header.getAttribute("data-admin-users-sort");
+      setUsersSort(key);
+    });
+    header.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        const key = header.getAttribute("data-admin-users-sort");
+        setUsersSort(key);
+      }
+    });
+  });
+}
+
+if (Array.isArray(elements.ownedSortHeaders)) {
+  elements.ownedSortHeaders.forEach((header) => {
+    if (!header) {
+      return;
+    }
+    header.addEventListener("click", () => {
+      const key = header.getAttribute("data-admin-owned-sort");
+      setOwnedSort(key);
+    });
+    header.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        const key = header.getAttribute("data-admin-owned-sort");
+        setOwnedSort(key);
+      }
+    });
+  });
+}
+
+updateUserSortIndicators();
+updateOwnedSortIndicators();
 
 if (elements.emailForm) {
   elements.emailForm.addEventListener("submit", async (event) => {
