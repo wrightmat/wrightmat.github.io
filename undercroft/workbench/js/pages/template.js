@@ -76,26 +76,23 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         if (variant === "number") {
           return ["number"];
         }
-        if (variant === "checkbox") {
-          return ["boolean", "array", "list"];
-        }
-        if (variant === "radio") {
-          return ["boolean", "string", "list"];
+        if (variant === "checkbox" || variant === "radio") {
+          return ["object"];
         }
         if (variant === "select") {
-          return ["list", "array", "string"];
+          return ["array"];
         }
-        return ["string"];
+        return ["string", "number"];
       }
       case "linear-track":
       case "circular-track":
         return ["number"];
       case "array":
-        return ["array", "list", "object"];
+        return ["array", "object"];
       case "select-group":
         return component.multiple ? ["array", "list"] : ["string", "list"];
       case "toggle":
-        return ["boolean", "string", "list"];
+        return ["string"];
       default:
         return null;
     }
@@ -369,7 +366,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       defaults: {
         name: "Linear Track",
         segments: 6,
-        activeSegments: [true, true, false, false, false, false],
+        segmentBinding: "6",
+        segmentFormula: "",
+        value: 3,
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -383,7 +382,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       defaults: {
         name: "Circular Track",
         segments: 6,
-        activeSegments: [true, true, true, false, false, false],
+        segmentBinding: "6",
+        segmentFormula: "",
+        value: 3,
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -411,8 +412,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       defaults: {
         name: "Toggle",
         states: ["Novice", "Skilled", "Expert"],
-        activeIndex: 1,
+        activeIndex: 0,
         shape: "circle",
+        statesBinding: "",
+        value: "Novice",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -492,19 +495,26 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     return value.trim();
   }
 
-  function componentHasFormula(component) {
-    return typeof component?.formula === "string" && component.formula.trim().length > 0;
+  function componentHasFormula(component, { formulaKey = "formula" } = {}) {
+    if (!formulaKey) {
+      return false;
+    }
+    const value = component && typeof component[formulaKey] === "string" ? component[formulaKey] : "";
+    return normalizeBindingValue(value).length > 0;
   }
 
-  function getBindingEditorValue(component) {
-    if (!component) {
+  function getBindingEditorValue(component, { bindingKey = "binding", formulaKey = "formula" } = {}) {
+    if (!component || typeof component !== "object") {
       return "";
     }
-    if (componentHasFormula(component)) {
-      const expression = normalizeBindingValue(component.formula);
+    if (componentHasFormula(component, { formulaKey })) {
+      const expression = normalizeBindingValue(component[formulaKey]);
       return expression ? `=${expression}` : "";
     }
-    return normalizeBindingValue(component.binding);
+    if (!bindingKey) {
+      return "";
+    }
+    return normalizeBindingValue(component[bindingKey]);
   }
 
   function getComponentBindingLabel(component) {
@@ -1285,9 +1295,6 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     if (component.name === undefined) {
       component.name = component.label;
     }
-    if (component.activeSegments && Array.isArray(component.activeSegments)) {
-      component.activeSegments = component.activeSegments.slice();
-    }
     if (component.options && Array.isArray(component.options)) {
       component.options = component.options.slice();
     }
@@ -1296,6 +1303,34 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
     if (component.states && Array.isArray(component.states)) {
       component.states = component.states.slice();
+    }
+    if (typeof component.segmentBinding !== "string") {
+      component.segmentBinding = component.segmentBinding != null ? String(component.segmentBinding) : "";
+    }
+    component.segmentBinding = component.segmentBinding.trim();
+    if (typeof component.segmentFormula !== "string") {
+      component.segmentFormula = "";
+    }
+    if (typeof component.statesBinding !== "string") {
+      component.statesBinding = component.statesBinding != null ? String(component.statesBinding) : "";
+    }
+    component.statesBinding = component.statesBinding.trim();
+    if (component.type === "linear-track" || component.type === "circular-track") {
+      if (!component.segmentBinding) {
+        const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
+        component.segmentBinding = String(fallbackSegments);
+      }
+      const parsedSegments = Number(component.segmentBinding);
+      if (Number.isFinite(parsedSegments)) {
+        component.segments = clampInteger(parsedSegments, 1, 16);
+      } else if (Number.isFinite(Number(component.segments))) {
+        component.segments = clampInteger(component.segments, 1, 16);
+      } else {
+        component.segments = 6;
+      }
+      if (component.value === undefined || component.value === null || Number.isNaN(Number(component.value))) {
+        component.value = Math.min(component.segments, Math.max(0, Math.ceil(component.segments / 2)));
+      }
     }
     if (component.zones && typeof component.zones === "object") {
       component.zones = { ...component.zones };
@@ -1773,6 +1808,52 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     return wrapper;
   }
 
+  function resolveTrackSegmentCount(component) {
+    const maxSegments = 16;
+    const minSegments = 1;
+    if (componentHasFormula(component, { formulaKey: "segmentFormula" })) {
+      const fallback = Number(component.segments);
+      return Number.isFinite(fallback)
+        ? clampInteger(fallback, minSegments, maxSegments)
+        : 6;
+    }
+    const bindingValue = typeof component.segmentBinding === "string"
+      ? component.segmentBinding.trim()
+      : "";
+    if (bindingValue && !bindingValue.startsWith("@")) {
+      const parsed = Number(bindingValue);
+      if (Number.isFinite(parsed)) {
+        return clampInteger(parsed, minSegments, maxSegments);
+      }
+    }
+    const segments = Number(component.segments);
+    if (Number.isFinite(segments)) {
+      return clampInteger(segments, minSegments, maxSegments);
+    }
+    return 6;
+  }
+
+  function resolveTrackActiveCount(component, segmentCount) {
+    const numericValue = Number(component.value);
+    if (Number.isFinite(numericValue)) {
+      return clampInteger(numericValue, 0, segmentCount);
+    }
+    const bindingValue = typeof component.binding === "string" ? component.binding.trim() : "";
+    if (bindingValue && !bindingValue.startsWith("@")) {
+      const parsed = Number(bindingValue);
+      if (Number.isFinite(parsed)) {
+        return clampInteger(parsed, 0, segmentCount);
+      }
+    }
+    return Math.min(segmentCount, Math.max(0, Math.ceil(segmentCount / 2)));
+  }
+
+  function getTrackPreviewState(component) {
+    const segments = resolveTrackSegmentCount(component);
+    const active = resolveTrackActiveCount(component, segments);
+    return { segments, active };
+  }
+
   function renderLinearTrackPreview(component) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
@@ -1787,16 +1868,17 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
     const track = document.createElement("div");
     track.className = "template-linear-track";
-    const activeSegments = ensureSegmentArray(component);
-    activeSegments.forEach((isActive, index) => {
+    const { segments, active } = getTrackPreviewState(component);
+    const total = Math.max(segments, 1);
+    for (let index = 0; index < total; index += 1) {
       const segment = document.createElement("div");
       segment.className = "template-linear-track__segment";
-      if (isActive) {
+      if (index < active) {
         segment.classList.add("is-active");
       }
       segment.title = `Segment ${index + 1}`;
       track.appendChild(segment);
-    });
+    }
     wrapper.appendChild(track);
     return wrapper;
   }
@@ -1815,23 +1897,23 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
     const circle = document.createElement("div");
     circle.className = "template-circular-track";
-    const activeSegments = ensureSegmentArray(component);
-    const segments = activeSegments.length || 1;
-    const step = 360 / segments;
+    const { segments, active } = getTrackPreviewState(component);
+    const total = Math.max(segments, 1);
+    const step = 360 / total;
     const gradientStops = [];
-    activeSegments.forEach((isActive, index) => {
+    for (let index = 0; index < total; index += 1) {
       const start = index * step;
       const end = start + step;
-      const color = isActive ? "var(--bs-primary)" : "var(--bs-border-color)";
+      const color = index < active ? "var(--bs-primary)" : "var(--bs-border-color)";
       gradientStops.push(`${color} ${start}deg ${end}deg`);
-    });
+    }
     circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
     const mask = document.createElement("div");
     mask.className = "template-circular-track__mask";
     circle.appendChild(mask);
     const value = document.createElement("div");
     value.className = "template-circular-track__value";
-    value.textContent = `${activeSegments.filter(Boolean).length}/${segments}`;
+    value.textContent = `${Math.min(active, total)}/${total}`;
     circle.appendChild(value);
     wrapper.appendChild(circle);
     return wrapper;
@@ -1915,7 +1997,14 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       ? component.states
       : ["State 1", "State 2"];
     const shape = component.shape || "circle";
-    const activeIndex = Math.max(0, Math.min(component.activeIndex ?? 0, states.length - 1));
+    const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
+    let activeIndex = fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
+    if (activeIndex < 0) {
+      activeIndex = clampInteger(component.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
+    }
+    if (activeIndex < 0) {
+      activeIndex = 0;
+    }
     const maxIndex = Math.max(states.length - 1, 1);
     const progress = maxIndex > 0 ? activeIndex / maxIndex : 0;
     const preview = document.createElement("div");
@@ -2261,16 +2350,31 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     return wrapper;
   }
 
-  function createBindingFormulaInput(component, { supportsBinding = true, supportsFormula = true } = {}) {
+  function createBindingFormulaInput(
+    component,
+    {
+      supportsBinding = true,
+      supportsFormula = true,
+      labelText = "Binding / Formula",
+      placeholder = null,
+      bindingKey = "binding",
+      formulaKey = "formula",
+      allowedFieldCategories: categoryOverride = null,
+      helperText = null,
+      afterCommit = null,
+    } = {}
+  ) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-1";
     const id = toId([component.uid, "binding-formula"]);
     const label = document.createElement("label");
     label.className = "form-label fw-semibold text-body-secondary";
     label.setAttribute("for", id);
-    label.textContent = "Binding / Formula";
+    label.textContent = labelText;
 
-    const allowedFieldCategories = getComponentBindingCategories(component);
+    const allowedFieldCategories = Array.isArray(categoryOverride) && categoryOverride.length
+      ? categoryOverride.map((category) => String(category).toLowerCase())
+      : getComponentBindingCategories(component);
 
     const inputWrapper = document.createElement("div");
     inputWrapper.className = "position-relative";
@@ -2279,12 +2383,16 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     input.className = "form-control";
     input.type = "text";
     input.id = id;
-    input.placeholder = supportsFormula
-      ? "@attributes.score or =sum(@attributes.strength, @attributes.dexterity)"
-      : "@attributes.score";
+    const resolvedPlaceholder =
+      placeholder !== null && placeholder !== undefined
+        ? placeholder
+        : supportsFormula
+        ? "@attributes.score or =sum(@attributes.strength, @attributes.dexterity)"
+        : "@attributes.score";
+    input.placeholder = resolvedPlaceholder || "";
     input.autocomplete = "off";
     input.spellcheck = false;
-    input.value = getBindingEditorValue(component);
+    input.value = getBindingEditorValue(component, { bindingKey, formulaKey });
     input.setAttribute("aria-autocomplete", "list");
 
     const suggestions = document.createElement("div");
@@ -2504,35 +2612,40 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
 
     function commitValue(raw) {
-      const next = typeof raw === "string" ? raw : "";
+      const source = typeof raw === "string" ? raw : "";
+      const trimmed = source.trim();
+      let result = { type: "empty", value: "" };
       updateComponent(
         component.uid,
         (draft) => {
-          const trimmed = next.trim();
           if (!trimmed) {
-            draft.binding = "";
-            if (supportsFormula && Object.prototype.hasOwnProperty.call(draft, "formula")) {
-              draft.formula = "";
+            if (bindingKey) {
+              draft[bindingKey] = "";
             }
-            return;
-          }
-          if (supportsFormula && trimmed.startsWith("=")) {
+            if (supportsFormula && formulaKey) {
+              draft[formulaKey] = "";
+            }
+            result = { type: "empty", value: "" };
+          } else if (supportsFormula && trimmed.startsWith("=")) {
             const expression = trimmed.slice(1).trim();
-            if (Object.prototype.hasOwnProperty.call(draft, "formula")) {
-              draft.formula = expression;
-            } else if (supportsFormula) {
-              draft.formula = expression;
+            if (formulaKey) {
+              draft[formulaKey] = expression;
             }
-            draft.binding = "";
-            return;
-          }
-          if (supportsBinding) {
-            draft.binding = trimmed;
+            if (bindingKey) {
+              draft[bindingKey] = "";
+            }
+            result = { type: "formula", value: expression };
           } else {
-            draft.binding = "";
+            if (bindingKey) {
+              draft[bindingKey] = supportsBinding ? trimmed : "";
+            }
+            if (supportsFormula && formulaKey) {
+              draft[formulaKey] = "";
+            }
+            result = { type: "binding", value: trimmed };
           }
-          if (supportsFormula && Object.prototype.hasOwnProperty.call(draft, "formula")) {
-            draft.formula = "";
+          if (typeof afterCommit === "function") {
+            afterCommit({ draft, raw: source, trimmed, result });
           }
         },
         { rerenderCanvas: true }
@@ -2586,6 +2699,13 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         }
       }, 120);
     });
+
+    if (helperText) {
+      const helper = document.createElement("div");
+      helper.className = "form-text text-body-secondary";
+      helper.textContent = helperText;
+      wrapper.appendChild(helper);
+    }
 
     if (supportsBinding && !state.bindingFields.length) {
       const helper = document.createElement("div");
@@ -2997,53 +3117,29 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   function renderTrackInspector(component) {
     const controls = [];
     controls.push(
-      createNumberInput(component, "Segments", component.segments ?? 6, (value) => {
-        const next = clampInteger(value ?? 6, 1, 16);
-        updateComponent(component.uid, (draft) => {
-          setSegmentCount(draft, next);
-        }, { rerenderCanvas: true, rerenderInspector: true });
-      }, { min: 1, max: 16 })
+      createBindingFormulaInput(component, {
+        labelText: "Segments",
+        placeholder: "6 or @resources.clock.max",
+        bindingKey: "segmentBinding",
+        formulaKey: "segmentFormula",
+        allowedFieldCategories: ["number"],
+        afterCommit: ({ draft, result }) => {
+          if (!result || result.type === "empty") {
+            draft.segmentBinding = "";
+            draft.segmentFormula = draft.segmentFormula || "";
+            draft.segments = 6;
+            return;
+          }
+          if (result.type === "binding") {
+            const numeric = Number(result.value);
+            if (Number.isFinite(numeric)) {
+              draft.segments = clampInteger(numeric, 1, 16);
+            }
+          }
+        },
+      })
     );
-    controls.push(createSegmentControls(component));
     return controls;
-  }
-
-  function createSegmentControls(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = "Active segments";
-    wrapper.appendChild(heading);
-    const grid = document.createElement("div");
-    grid.className = "template-segment-grid";
-    const segments = ensureSegmentArray(component);
-    const columnCount = Math.max(1, Math.min(segments.length, 8));
-    grid.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
-    segments.forEach((isActive, index) => {
-      const id = toId([component.uid, "segment", index]);
-      const cell = document.createElement("div");
-      cell.className = "template-segment-grid__item";
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.className = "btn-check";
-      input.id = id;
-      input.checked = isActive;
-      input.addEventListener("change", () => {
-        updateComponent(component.uid, (draft) => {
-          const target = ensureSegmentArray(draft);
-          target[index] = input.checked;
-        }, { rerenderCanvas: true });
-      });
-      const label = document.createElement("label");
-      label.className = "btn btn-outline-secondary btn-sm";
-      label.setAttribute("for", id);
-      label.textContent = index + 1;
-      cell.append(input, label);
-      grid.appendChild(cell);
-    });
-    wrapper.appendChild(grid);
-    return wrapper;
   }
 
   function renderSelectGroupInspector(component) {
@@ -3109,78 +3205,21 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   }
 
   function createToggleStateEditors(component) {
-    const controls = [];
-    const textareaId = toId([component.uid, "toggle", "states"]);
-    const textareaWrapper = document.createElement("div");
-    textareaWrapper.className = "d-flex flex-column";
-    const textareaLabel = document.createElement("label");
-    textareaLabel.className = "form-label fw-semibold text-body-secondary";
-    textareaLabel.setAttribute("for", textareaId);
-    textareaLabel.textContent = "States (one per line)";
-    const textarea = document.createElement("textarea");
-    textarea.className = "form-control";
-    textarea.id = textareaId;
-    textarea.rows = 3;
-    textarea.placeholder = "Novice\nSkilled\nExpert";
-    const initialStates = Array.isArray(component.states) && component.states.length
-      ? component.states
-      : ["State 1", "State 2"];
-    textarea.value = initialStates.join("\n");
-    textareaWrapper.append(textareaLabel, textarea);
-    controls.push(textareaWrapper);
-
-    const selectId = toId([component.uid, "toggle", "active-state"]);
-    const selectWrapper = document.createElement("div");
-    selectWrapper.className = "d-flex flex-column";
-    const selectLabel = document.createElement("label");
-    selectLabel.className = "form-label fw-semibold text-body-secondary";
-    selectLabel.setAttribute("for", selectId);
-    selectLabel.textContent = "Active state";
-    const select = document.createElement("select");
-    select.className = "form-select";
-    select.id = selectId;
-    selectWrapper.append(selectLabel, select);
-    controls.push(selectWrapper);
-
-    const syncStateOptions = () => {
-      const states = Array.isArray(component.states) && component.states.length
-        ? component.states
-        : ["State 1", "State 2"];
-      select.innerHTML = "";
-      states.forEach((state, index) => {
-        const option = document.createElement("option");
-        option.value = String(index);
-        option.textContent = state;
-        select.appendChild(option);
-      });
-      const safeIndex = clampInteger(component.activeIndex ?? 0, 0, states.length - 1);
-      select.value = String(safeIndex);
-    };
-
-    textarea.addEventListener("input", () => {
-      updateComponent(component.uid, (draft) => {
-        draft.states = parseLines(textarea.value);
-        if (!Array.isArray(draft.states) || !draft.states.length) {
-          draft.states = ["State 1", "State 2"];
-        }
-        if (draft.activeIndex === undefined || draft.activeIndex === null) {
-          draft.activeIndex = 0;
-        }
-        draft.activeIndex = clampInteger(draft.activeIndex, 0, draft.states.length - 1);
-      }, { rerenderCanvas: true });
-      syncStateOptions();
-    });
-
-    select.addEventListener("change", () => {
-      const nextIndex = Number(select.value);
-      updateComponent(component.uid, (draft) => {
-        draft.activeIndex = clampInteger(nextIndex, 0, (draft.states?.length || 1) - 1);
-      }, { rerenderCanvas: true });
-      syncStateOptions();
-    });
-
-    syncStateOptions();
-    return controls;
+    return [
+      createBindingFormulaInput(component, {
+        labelText: "States source",
+        placeholder: "@metadata.states",
+        bindingKey: "statesBinding",
+        formulaKey: null,
+        allowedFieldCategories: ["array"],
+        supportsFormula: false,
+        afterCommit: ({ draft, result }) => {
+          if (!result || result.type === "empty") {
+            draft.statesBinding = "";
+          }
+        },
+      }),
+    ];
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -3193,30 +3232,6 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     if (rerenderInspector) {
       renderInspector();
     }
-  }
-
-  function ensureSegmentArray(component) {
-    const baseLength = Array.isArray(component.activeSegments) ? component.activeSegments.length : 0;
-    const desired = clampInteger(
-      component.segments ?? (baseLength || 6),
-      1,
-      16
-    );
-    if (!Array.isArray(component.activeSegments)) {
-      component.activeSegments = Array.from({ length: desired }, (_, index) => index === 0);
-    }
-    if (component.activeSegments.length < desired) {
-      const needed = desired - component.activeSegments.length;
-      component.activeSegments.push(...Array.from({ length: needed }, () => false));
-    } else if (component.activeSegments.length > desired) {
-      component.activeSegments = component.activeSegments.slice(0, desired);
-    }
-    return component.activeSegments;
-  }
-
-  function setSegmentCount(component, next) {
-    component.segments = next;
-    ensureSegmentArray(component);
   }
 
   function parseLines(value) {
@@ -3254,6 +3269,50 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     merged.uid = base.uid;
     if (!merged.id) {
       merged.id = merged.uid;
+    }
+    if (merged.type === "linear-track" || merged.type === "circular-track") {
+      if (Array.isArray(copy.activeSegments)) {
+        const total = copy.activeSegments.length || 0;
+        const active = copy.activeSegments.filter(Boolean).length;
+        if (!merged.segmentBinding) {
+          merged.segmentBinding = String(total || merged.segments || 6);
+        }
+        if ((merged.value === undefined || merged.value === null) && active > 0) {
+          merged.value = active;
+        }
+      }
+      if (typeof merged.segmentBinding !== "string") {
+        merged.segmentBinding = "";
+      }
+      merged.segmentBinding = merged.segmentBinding.trim();
+      if (!merged.segmentBinding) {
+        const fallbackSegments = Number.isFinite(Number(merged.segments)) ? Number(merged.segments) : 6;
+        merged.segmentBinding = String(fallbackSegments);
+      }
+      if (typeof merged.segmentFormula !== "string") {
+        merged.segmentFormula = "";
+      }
+      const parsedSegments = Number(merged.segmentBinding);
+      if (Number.isFinite(parsedSegments)) {
+        merged.segments = clampInteger(parsedSegments, 1, 16);
+      } else if (Number.isFinite(Number(merged.segments))) {
+        merged.segments = clampInteger(merged.segments, 1, 16);
+      } else {
+        merged.segments = 6;
+      }
+      if (merged.value === undefined || merged.value === null || Number.isNaN(Number(merged.value))) {
+        merged.value = Math.min(merged.segments, Math.max(0, Math.ceil(merged.segments / 2)));
+      }
+      delete merged.activeSegments;
+    }
+    if (merged.type === "toggle") {
+      if (typeof merged.statesBinding !== "string") {
+        merged.statesBinding = "";
+      }
+      merged.statesBinding = merged.statesBinding.trim();
+      if ((merged.value === undefined || merged.value === null || merged.value === "") && Array.isArray(merged.states) && merged.states.length) {
+        merged.value = merged.states[0];
+      }
     }
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
