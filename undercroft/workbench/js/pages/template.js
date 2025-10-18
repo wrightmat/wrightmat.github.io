@@ -18,8 +18,8 @@ import {
   listBuiltinTemplates,
   markBuiltinMissing,
   markBuiltinAvailable,
-  builtinIsTemporarilyMissing,
   applyBuiltinCatalog,
+  verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
@@ -1249,11 +1249,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         { id: template.id, title: template.title, path: template.path, source: "builtin" },
         { syncOption: false }
       );
-      verifyBuiltinTemplateAvailability(template);
+      verifyBuiltinAsset("templates", template, {
+        skipProbe: Boolean(dataManager.baseUrl),
+        onMissing: () => removeTemplateRecord(template.id),
+        onError: (error) => {
+          console.warn("Template editor: failed to verify builtin template", template.id, error);
+        },
+      });
     });
     listBuiltinSystems().forEach((system) => {
       registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
-      verifyBuiltinSystemAvailability(system);
+      verifyBuiltinAsset("systems", system, {
+        skipProbe: Boolean(dataManager.baseUrl),
+        onMissing: () => removeSystemRecord(system.id),
+        onError: (error) => {
+          console.warn("Template editor: failed to verify builtin system", system.id, error);
+        },
+      });
     });
   }
 
