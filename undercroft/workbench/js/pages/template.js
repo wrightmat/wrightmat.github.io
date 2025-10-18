@@ -27,7 +27,11 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 
 (async () => {
-  const { status, undoStack } = initAppShell({ namespace: "template" });
+  const { status, undoStack, undo, redo } = initAppShell({
+    namespace: "template",
+    onUndo: handleUndoEntry,
+    onRedo: handleRedoEntry,
+  });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
@@ -103,10 +107,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           return ["number"];
         }
         if (variant === "checkbox" || variant === "radio") {
-          return ["object"];
+          return variant === "checkbox" ? ["array", "object"] : ["string", "number"];
         }
         if (variant === "select") {
-          return ["array"];
+          return ["string", "number"];
+        }
+        if (variant === "textarea") {
+          return ["string"];
         }
         return ["string", "number"];
       }
@@ -116,9 +123,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "array":
         return ["array", "object"];
       case "select-group":
-        return ["array", "object"];
+        return component.multiple ? ["array", "object"] : ["string", "number"];
       case "toggle":
-        return ["string"];
+        return ["string", "number"];
       default:
         return null;
     }
@@ -157,6 +164,35 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   const dropzones = new Map();
   const containerActiveTabs = new Map();
+
+  function cloneComponentTree(component) {
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(component);
+      } catch (error) {
+        // fall through to JSON clone
+      }
+    }
+    return JSON.parse(JSON.stringify(component));
+  }
+
+  function cloneComponentCollection(components) {
+    return Array.isArray(components) ? components.map((component) => cloneComponentTree(component)) : [];
+  }
+
+  function snapshotContainerTabs() {
+    return Array.from(containerActiveTabs.entries());
+  }
+
+  function restoreContainerTabsSnapshot(snapshot) {
+    containerActiveTabs.clear();
+    if (!Array.isArray(snapshot)) {
+      return;
+    }
+    snapshot.forEach(([key, value]) => {
+      containerActiveTabs.set(key, value);
+    });
+  }
 
   function emitBindingFieldsReady(schemaId = "") {
     if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
@@ -203,12 +239,14 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return createComponent(type);
     },
     beforeInsert: (type, component) => {
+      const previousSelectedId = state.selectedId || null;
       state.selectedId = component.uid;
       return {
         parentId: "",
         zoneKey: "root",
         index: state.components.length,
         definition: COMPONENT_DEFINITIONS[type],
+        previousSelectedId,
       };
     },
     insertItem: (type, component, context) => {
@@ -216,10 +254,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     },
     createUndoEntry: (type, component, context) => ({
       type: "add",
-      component: { ...component },
+      templateId: state.template?.id || "",
+      component: cloneComponentTree(component),
       parentId: context.parentId,
       zoneKey: context.zoneKey,
       index: context.index,
+      previousSelectedId: context.previousSelectedId || null,
     }),
     afterInsert: () => {
       renderCanvas();
@@ -316,6 +356,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         variant: "text",
         placeholder: "",
         options: ["Option A", "Option B"],
+        rows: 3,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -436,6 +478,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         name: "Select Group",
         variant: "pills",
         multiple: false,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -669,7 +712,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         );
         ensureTemplateSelectValue();
         syncTemplateActions();
-        undoStack.push({ type: "save", count: state.components.length });
+        undoStack.push({
+          type: "save",
+          templateId: state.template?.id || "",
+          count: state.components.length,
+        });
         if (savedToServer || !requireRemote) {
           markTemplateClean();
         }
@@ -695,13 +742,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   if (elements.undoButton) {
     elements.undoButton.addEventListener("click", () => {
-      status.show("Undo coming soon", { type: "info", timeout: 1800 });
+      undo();
     });
   }
 
   if (elements.redoButton) {
     elements.redoButton.addEventListener("click", () => {
-      status.show("Redo coming soon", { type: "info", timeout: 1800 });
+      redo();
     });
   }
 
@@ -1387,9 +1434,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
     if (type && COMPONENT_DEFINITIONS[type]) {
       const component = createComponent(type);
+      const previousSelectedId = state.selectedId || null;
       insertComponent(parentId, zoneKey, index, component);
       state.selectedId = component.uid;
-      undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+      undoStack.push({
+        type: "add",
+        templateId: state.template?.id || "",
+        component: cloneComponentTree(component),
+        parentId,
+        zoneKey,
+        index,
+        previousSelectedId,
+      });
       status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, { type: "success", timeout: 1800 });
       event.item.remove();
       renderCanvas();
@@ -1405,9 +1461,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         renderCanvas();
         return;
       }
-      const moved = moveComponent(componentId, parentId, zoneKey, index);
-      if (moved) {
-        undoStack.push({ type: "move", componentId, parentId, zoneKey, index });
+      const moveResult = moveComponent(componentId, parentId, zoneKey, index);
+      if (moveResult.success) {
+        undoStack.push({
+          type: "move",
+          templateId: state.template?.id || "",
+          componentId,
+          from: moveResult.from,
+          to: moveResult.to,
+        });
         status.show("Moved component", { timeout: 1500 });
       }
     }
@@ -1442,7 +1504,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const [item] = collection.splice(oldIndex, 1);
     collection.splice(newIndex, 0, item);
-    undoStack.push({ type: "reorder", componentId, parentId, zoneKey, oldIndex, newIndex });
+    const finalPosition = findComponent(componentId);
+    undoStack.push({
+      type: "reorder",
+      templateId: state.template?.id || "",
+      componentId,
+      parentId,
+      zoneKey,
+      from: { index: oldIndex },
+      to: { index: finalPosition ? finalPosition.index : newIndex },
+    });
     renderCanvas();
     renderInspector();
   }
@@ -1456,13 +1527,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function moveComponent(componentId, targetParentId, zoneKey, index) {
     const found = findComponent(componentId);
-    if (!found) return false;
+    if (!found) return { success: false };
     const targetCollection = getCollection(targetParentId, zoneKey);
-    if (!targetCollection) return false;
+    if (!targetCollection) return { success: false };
+    const fromParentId = found.parent?.uid || "";
+    const fromZoneKey = found.zoneKey;
+    const fromIndex = found.index;
     const [item] = found.collection.splice(found.index, 1);
-    const safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    let safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    if (found.collection === targetCollection && fromIndex < safeIndex) {
+      safeIndex -= 1;
+    }
     targetCollection.splice(safeIndex, 0, item);
-    return true;
+    return {
+      success: true,
+      from: { parentId: fromParentId, zoneKey: fromZoneKey, index: fromIndex },
+      to: { parentId: targetParentId, zoneKey, index: safeIndex },
+    };
   }
 
   function getCollection(parentId, zoneKey) {
@@ -1577,6 +1658,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (component.states && Array.isArray(component.states)) {
       component.states = component.states.slice();
     }
+    if (typeof component.sourceBinding !== "string") {
+      component.sourceBinding = component.sourceBinding != null ? String(component.sourceBinding) : "";
+    }
+    component.sourceBinding = component.sourceBinding.trim();
     if (typeof component.segmentBinding !== "string") {
       component.segmentBinding = component.segmentBinding != null ? String(component.segmentBinding) : "";
     }
@@ -1846,6 +1931,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         control = renderChoiceGroup(component, "checkbox");
         break;
       }
+      case "textarea": {
+        control = document.createElement("textarea");
+        control.className = "form-control";
+        control.rows = clampInteger(component.rows ?? 3, 2, 12);
+        control.placeholder = component.placeholder || "";
+        break;
+      }
       default: {
         control = document.createElement("input");
         control.type = "text";
@@ -1854,7 +1946,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         break;
       }
     }
-    if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement) {
+    if (
+      control instanceof HTMLInputElement ||
+      control instanceof HTMLSelectElement ||
+      control instanceof HTMLTextAreaElement
+    ) {
       control.disabled = !!component.readOnly;
     }
     container.appendChild(control);
@@ -2309,32 +2405,213 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     expandPane(elements.rightPane, elements.rightPaneToggle);
   }
 
-  function clearCanvas() {
+  function clearCanvas({ skipHistory = false, silent = false, suppressRender = false } = {}) {
     if (!state.components.length) {
       status.show("Canvas is already empty", { timeout: 1200 });
       return;
     }
+    const previousComponents = cloneComponentCollection(state.components);
+    const previousTabs = snapshotContainerTabs();
+    const previousSelectedId = state.selectedId || null;
     state.components = [];
     state.selectedId = null;
     containerActiveTabs.clear();
-    undoStack.push({ type: "clear" });
-    status.show("Cleared template canvas", { type: "info", timeout: 1500 });
-    renderCanvas();
-    renderInspector();
+    if (!skipHistory) {
+      undoStack.push({
+        type: "clear",
+        templateId: state.template?.id || "",
+        components: previousComponents,
+        containerTabs: previousTabs,
+        previousSelectedId,
+      });
+    }
+    if (!silent) {
+      status.show("Cleared template canvas", { type: "info", timeout: 1500 });
+    }
+    if (!suppressRender) {
+      renderCanvas();
+      renderInspector();
+    }
   }
 
-  function removeComponent(uid) {
+  function removeComponent(uid, { skipHistory = false, silent = false, suppressRender = false } = {}) {
     const found = findComponent(uid);
     if (!found) return;
+    const previousSelectedId = state.selectedId || null;
+    const parentId = found.parent?.uid || "";
+    const zoneKey = found.zoneKey;
+    const index = found.index;
     const [removed] = found.collection.splice(found.index, 1);
     pruneContainerState(removed);
-    undoStack.push({ type: "remove", componentId: removed.uid, parentId: found.parent?.uid || "", zoneKey: found.zoneKey });
-    status.show("Removed component", { type: "info", timeout: 1500 });
-    if (state.selectedId === uid) {
-      state.selectedId = found.parent?.uid || null;
+    if (!skipHistory) {
+      undoStack.push({
+        type: "remove",
+        templateId: state.template?.id || "",
+        componentId: removed.uid,
+        component: cloneComponentTree(removed),
+        parentId,
+        zoneKey,
+        index,
+        previousSelectedId,
+      });
     }
-    renderCanvas();
-    renderInspector();
+    if (!silent) {
+      status.show("Removed component", { type: "info", timeout: 1500 });
+    }
+    if (state.selectedId === uid) {
+      state.selectedId = parentId || null;
+    }
+    if (!suppressRender) {
+      renderCanvas();
+      renderInspector();
+    }
+  }
+
+  function ensureTemplateContext(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
+    }
+    const targetId = entry.templateId ?? "";
+    const currentId = state.template?.id || "";
+    if (targetId && targetId !== currentId) {
+      return false;
+    }
+    return true;
+  }
+
+  function applyTemplateUndo(entry) {
+    if (!ensureTemplateContext(entry)) {
+      return { message: "Undo unavailable for this template", options: { type: "warning", timeout: 2200 } };
+    }
+    switch (entry.type) {
+      case "add": {
+        const componentId = entry.component?.uid;
+        if (!componentId) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        removeComponent(componentId, { skipHistory: true, silent: true, suppressRender: true });
+        state.selectedId = entry.previousSelectedId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Removed added component", options: { type: "info", timeout: 1600 } };
+      }
+      case "move": {
+        if (!entry.componentId || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.from.parentId, entry.from.zoneKey, entry.from.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Moved component back", options: { type: "info", timeout: 1500 } };
+      }
+      case "reorder": {
+        if (!entry.componentId || !entry.parentId || !entry.zoneKey || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.parentId, entry.zoneKey, entry.from.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored component order", options: { type: "info", timeout: 1500 } };
+      }
+      case "remove": {
+        if (!entry.component || entry.componentId == null) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        const componentClone = cloneComponentTree(entry.component);
+        insertComponent(entry.parentId, entry.zoneKey, entry.index, componentClone);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored removed component", options: { type: "info", timeout: 1600 } };
+      }
+      case "clear": {
+        state.components = cloneComponentCollection(entry.components);
+        restoreContainerTabsSnapshot(entry.containerTabs);
+        state.selectedId = entry.previousSelectedId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored template canvas", options: { type: "info", timeout: 1600 } };
+      }
+      case "save": {
+        return { message: "Saved template state noted", options: { type: "info", timeout: 1500 } };
+      }
+      default:
+        return { message: "Nothing to undo", options: { timeout: 1200 } };
+    }
+  }
+
+  function applyTemplateRedo(entry) {
+    if (!ensureTemplateContext(entry)) {
+      return { message: "Redo unavailable for this template", options: { type: "warning", timeout: 2200 } };
+    }
+    switch (entry.type) {
+      case "add": {
+        if (!entry.component) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        const componentClone = cloneComponentTree(entry.component);
+        insertComponent(entry.parentId, entry.zoneKey, entry.index, componentClone);
+        state.selectedId = componentClone.uid;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component addition", options: { type: "info", timeout: 1600 } };
+      }
+      case "move": {
+        if (!entry.componentId || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.to.parentId, entry.to.zoneKey, entry.to.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component move", options: { type: "info", timeout: 1500 } };
+      }
+      case "reorder": {
+        if (!entry.componentId || !entry.parentId || !entry.zoneKey || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.parentId, entry.zoneKey, entry.to.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied ordering", options: { type: "info", timeout: 1500 } };
+      }
+      case "remove": {
+        if (!entry.componentId) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        removeComponent(entry.componentId, {
+          skipHistory: true,
+          silent: true,
+          suppressRender: true,
+        });
+        state.selectedId = entry.parentId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component removal", options: { type: "info", timeout: 1600 } };
+      }
+      case "clear": {
+        clearCanvas({ skipHistory: true, silent: true, suppressRender: true });
+        renderCanvas();
+        renderInspector();
+        return { message: "Cleared template canvas", options: { type: "info", timeout: 1500 } };
+      }
+      case "save": {
+        return { message: "Save action noted", options: { type: "info", timeout: 1500 } };
+      }
+      default:
+        return { message: "Nothing to redo", options: { timeout: 1200 } };
+    }
+  }
+
+  function handleUndoEntry(entry) {
+    return applyTemplateUndo(entry);
+  }
+
+  function handleRedoEntry(entry) {
+    return applyTemplateRedo(entry);
   }
 
   function applyTemplateData(
@@ -2439,15 +2716,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       form.appendChild(componentSection);
     }
 
-    const dataControls = [];
-    if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
-      dataControls.push(
-        createBindingFormulaInput(component, {
-          supportsBinding: definition.supportsBinding !== false,
-          supportsFormula: definition.supportsFormula !== false,
-        })
-      );
-    }
+    const dataControls = createDataControls(component, definition);
     const dataSection = createSection("Data", dataControls);
     if (dataSection) {
       form.appendChild(dataSection);
@@ -2480,6 +2749,92 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     elements.inspector.appendChild(form);
     refreshTooltips(elements.inspector);
     restoreInspectorFocus(focusSnapshot);
+  }
+
+  function createDataControls(component, definition = {}) {
+    const supportsBinding = definition.supportsBinding !== false;
+    const supportsFormula = definition.supportsFormula !== false;
+    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
+      return [];
+    }
+    if (component.type === "input" && (component.variant || "text") === "select") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@data.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (component.type === "select-group") {
+      const controls = [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+      ];
+      controls.push(
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
+        })
+      );
+      return controls;
+    }
+    if (component.type === "toggle") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.states",
+          bindingKey: "statesBinding",
+          formulaKey: null,
+          allowedFieldCategories: ["array"],
+          supportsFormula: false,
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.statesBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (!supportsBinding && !supportsFormula) {
+      return [];
+    }
+    return [
+      createBindingFormulaInput(component, {
+        supportsBinding,
+        supportsFormula,
+      }),
+    ];
   }
 
   function captureInspectorFocus() {
@@ -3244,6 +3599,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const controls = [];
     const options = [
       { value: "text", icon: "tabler:letter-case", label: "Text" },
+      { value: "textarea", icon: "tabler:notes", label: "Text area" },
       { value: "number", icon: "tabler:123", label: "Number" },
       { value: "select", icon: "tabler:list-details", label: "Select" },
       { value: "radio", icon: "tabler:circle-dot", label: "Radio" },
@@ -3260,6 +3616,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
             component.uid,
             (draft) => {
               draft.variant = value;
+              if (value === "textarea" && !Number.isFinite(Number(draft.rows))) {
+                draft.rows = 3;
+              }
               if (
                 (value === "select" || value === "radio" || value === "checkbox") &&
                 (!Array.isArray(draft.options) || !draft.options.length)
@@ -3280,6 +3639,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }, { rerenderCanvas: true });
       }, { placeholder: "Shown inside the field" })
     );
+    if ((component.variant || "text") === "textarea") {
+      controls.push(
+        createNumberInput(component, "Rows", component.rows ?? 3, (value) => {
+          const next = clampInteger(value ?? 3, 2, 12);
+          updateComponent(component.uid, (draft) => {
+            draft.rows = next;
+          }, { rerenderCanvas: true });
+        }, { min: 2, max: 12 })
+      );
+    }
     return controls;
   }
 
@@ -3502,7 +3871,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         (value) => {
           updateComponent(component.uid, (draft) => {
             draft.multiple = value === "multi";
-          }, { rerenderCanvas: true });
+          }, { rerenderCanvas: true, rerenderInspector: true });
         }
       )
     );
@@ -3529,26 +3898,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }
       )
     );
-    controls.push(...createToggleStateEditors(component));
     return controls;
-  }
-
-  function createToggleStateEditors(component) {
-    return [
-      createBindingFormulaInput(component, {
-        labelText: "States source",
-        placeholder: "@metadata.states",
-        bindingKey: "statesBinding",
-        formulaKey: null,
-        allowedFieldCategories: ["array"],
-        supportsFormula: false,
-        afterCommit: ({ draft, result }) => {
-          if (!result || result.type === "empty") {
-            draft.statesBinding = "";
-          }
-        },
-      }),
-    ];
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -3642,6 +3992,22 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       if ((merged.value === undefined || merged.value === null || merged.value === "") && Array.isArray(merged.states) && merged.states.length) {
         merged.value = merged.states[0];
       }
+    }
+    if (merged.type === "input") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
+      if (merged.variant === "textarea") {
+        const numericRows = Number(merged.rows);
+        merged.rows = Number.isFinite(numericRows) ? clampInteger(numericRows, 2, 12) : base.rows ?? 3;
+      }
+    }
+    if (merged.type === "select-group") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
     }
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
