@@ -13,7 +13,12 @@ import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
-import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
+import {
+  listBuiltinSystems,
+  markBuiltinMissing,
+  markBuiltinAvailable,
+  builtinIsTemporarilyMissing,
+} from "../lib/content-registry.js";
 
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "system" });
@@ -201,7 +206,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   if (elements.select) {
     populateSelect(
       elements.select,
-      BUILTIN_SYSTEMS.map((system) => ({ value: system.id, label: system.title })),
+      listBuiltinSystems().map((system) => ({ value: system.id, label: system.title })),
       { placeholder: "Select system" }
     );
     elements.select.addEventListener("change", async () => {
@@ -237,6 +242,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
         if (metadata.source === "builtin" && metadata.path) {
           const response = await fetch(metadata.path);
           payload = await response.json();
+          markBuiltinAvailable("systems", metadata.id || selectedId);
         } else {
           const result = await dataManager.get("systems", selectedId, { preferLocal: true });
           payload = result?.payload || null;
@@ -252,6 +258,9 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
         applySystemData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
       } catch (error) {
         console.error("Unable to load system", error);
+        if (metadata.source === "builtin") {
+          markBuiltinMissing("systems", metadata.id || selectedId);
+        }
         status.show("Failed to load system", { type: "error", timeout: 2500 });
         ensureSelectValue();
       }
@@ -1375,14 +1384,21 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   }
 
   function registerBuiltinContent() {
-    BUILTIN_SYSTEMS.forEach((system) => {
-      registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" }, { syncOption: false });
+    listBuiltinSystems().forEach((system) => {
+      registerSystemRecord(
+        { id: system.id, title: system.title, path: system.path, source: "builtin" },
+        { syncOption: false }
+      );
       verifyBuiltinAvailability(system);
     });
   }
 
   function verifyBuiltinAvailability(system) {
     if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (builtinIsTemporarilyMissing("systems", system.id)) {
+      removeSystemRecord(system.id);
       return;
     }
     if (typeof window === "undefined" || typeof window.fetch !== "function") {
@@ -1392,8 +1408,11 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       .fetch(system.path, { method: "GET", cache: "no-store" })
       .then((response) => {
         if (!response.ok) {
+          markBuiltinMissing("systems", system.id);
           removeSystemRecord(system.id);
+          return;
         }
+        markBuiltinAvailable("systems", system.id);
         try {
           response.body?.cancel?.();
         } catch (error) {
@@ -1402,6 +1421,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       })
       .catch((error) => {
         console.warn("System editor: failed to verify builtin system", system.id, error);
+        markBuiltinMissing("systems", system.id);
+        removeSystemRecord(system.id);
       });
   }
 

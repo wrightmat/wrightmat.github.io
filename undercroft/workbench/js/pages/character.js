@@ -7,7 +7,12 @@ import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
-import { BUILTIN_TEMPLATES } from "../lib/content-registry.js";
+import {
+  listBuiltinTemplates,
+  markBuiltinMissing,
+  markBuiltinAvailable,
+  builtinIsTemporarilyMissing,
+} from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
 
@@ -210,7 +215,10 @@ const BUILTIN_CHARACTERS = [
   }
 
   function registerBuiltinContent() {
-    BUILTIN_TEMPLATES.forEach((template) => {
+    listBuiltinTemplates().forEach((template) => {
+      if (builtinIsTemporarilyMissing("templates", template.id)) {
+        return;
+      }
       registerTemplateRecord({
         id: template.id,
         title: template.title,
@@ -235,6 +243,19 @@ const BUILTIN_CHARACTERS = [
     }
     const current = templateCatalog.get(record.id) || {};
     templateCatalog.set(record.id, { ...current, ...record });
+    const selected = elements.newCharacterTemplate?.value || "";
+    refreshNewCharacterTemplateOptions(selected);
+    syncCharacterOptions();
+  }
+
+  function removeTemplateRecord(id) {
+    if (!id) {
+      return;
+    }
+    if (!templateCatalog.has(id)) {
+      return;
+    }
+    templateCatalog.delete(id);
     const selected = elements.newCharacterTemplate?.value || "";
     refreshNewCharacterTemplateOptions(selected);
     syncCharacterOptions();
@@ -533,6 +554,13 @@ const BUILTIN_CHARACTERS = [
     if (!metadata) {
       return null;
     }
+    if (metadata.source === "builtin") {
+      const templateId = metadata.id || "";
+      if (builtinIsTemporarilyMissing("templates", templateId)) {
+        removeTemplateRecord(templateId);
+        throw new Error("Builtin template unavailable");
+      }
+    }
     if (metadata.source === "local") {
       const local = dataManager.getLocal("templates", metadata.id);
       if (local) {
@@ -541,9 +569,13 @@ const BUILTIN_CHARACTERS = [
     }
     if (metadata.source === "builtin" && metadata.path) {
       const response = await fetch(metadata.path);
+      const templateId = metadata.id || "";
       if (!response.ok) {
+        markBuiltinMissing("templates", templateId);
+        removeTemplateRecord(templateId);
         throw new Error(`Failed to fetch template: ${response.status}`);
       }
+      markBuiltinAvailable("templates", templateId);
       return await response.json();
     }
     if (metadata.source === "remote" && dataManager.baseUrl) {
