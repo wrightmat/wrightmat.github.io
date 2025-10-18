@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import { createCanvasPlaceholder } from "../lib/editor-canvas.js";
 import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
@@ -23,6 +24,7 @@ const BUILTIN_CHARACTERS = [
 (() => {
   const { status } = initAppShell({ namespace: "character" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  initAuthControls({ root: document, status, dataManager });
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();

@@ -38,6 +38,11 @@ class ServerSmokeTests(unittest.TestCase):
                 "session_ttl_days": 7,
                 "config_watch": False,
                 "log_level": "error",
+                "require_email_verification": True,
+                "debug_verification_codes": True,
+                "default_admin_username": "admin",
+                "default_admin_password": "admin",
+                "default_admin_email": "admin@example.com",
             },
             "database": {"path": str(cls._root / "test.sqlite")},
             "mounts": [
@@ -168,6 +173,15 @@ class ServerSmokeTests(unittest.TestCase):
             payload={"email": email, "username": username, "password": password},
         )
         self.assertEqual(status, 201)
+        if session.get("requires_verification"):
+            code = session.get("verification_code")
+            self.assertIsNotNone(code, "expected verification code in debug mode")
+            status, session = self._request(
+                "/auth/verify",
+                method="POST",
+                payload={"email": email, "code": code},
+            )
+            self.assertEqual(status, 200)
         token = session["token"]
 
         # Save new character record

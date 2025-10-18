@@ -44,6 +44,24 @@ class ServerOptions:
     session_ttl_days: int = 7
     config_watch: bool = False
     log_level: str = "info"
+    require_email_verification: bool = False
+    debug_verification_codes: bool = False
+    default_admin_username: str = "admin"
+    default_admin_password: str = "admin"
+    default_admin_email: str = "admin@example.com"
+
+
+@dataclass
+class EmailConfig:
+    enabled: bool = False
+    sender: str = ""
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    use_tls: bool = True
+    use_ssl: bool = False
+    timeout: int = 10
 
 
 @dataclass
@@ -51,6 +69,7 @@ class ServerConfig:
     options: ServerOptions
     database: DatabaseConfig
     mounts: Dict[str, MountConfig]
+    email: EmailConfig
 
     def ensure_directories(self) -> None:
         db_parent = self.database.path.parent
@@ -84,10 +103,34 @@ class ConfigLoader:
             session_ttl_days=int(server_opts.get("session_ttl_days", 7)),
             config_watch=bool(server_opts.get("config_watch", False)),
             log_level=server_opts.get("log_level", "info"),
+            require_email_verification=bool(server_opts.get("require_email_verification", False)),
+            debug_verification_codes=bool(server_opts.get("debug_verification_codes", False)),
+            default_admin_username=server_opts.get("default_admin_username", "admin"),
+            default_admin_password=server_opts.get("default_admin_password", "admin"),
+            default_admin_email=server_opts.get("default_admin_email", "admin@example.com"),
         )
 
         db_opts = payload.get("database", {})
         db_config = DatabaseConfig(path=Path(db_opts.get("path", "sheets/data/database.sqlite")))
+
+        email_opts = payload.get("email", {})
+        smtp_username = email_opts.get("smtp_username")
+        if isinstance(smtp_username, str) and not smtp_username.strip():
+            smtp_username = None
+        smtp_password = email_opts.get("smtp_password")
+        if isinstance(smtp_password, str) and not smtp_password:
+            smtp_password = None
+        email_config = EmailConfig(
+            enabled=bool(email_opts.get("enabled", False)),
+            sender=email_opts.get("sender", ""),
+            smtp_host=email_opts.get("smtp_host", ""),
+            smtp_port=int(email_opts.get("smtp_port", 587)),
+            smtp_username=smtp_username,
+            smtp_password=smtp_password,
+            use_tls=bool(email_opts.get("use_tls", True)),
+            use_ssl=bool(email_opts.get("use_ssl", False)),
+            timeout=int(email_opts.get("timeout", 10)),
+        )
 
         mounts_payload = payload.get("mounts", [])
         mounts: Dict[str, MountConfig] = {}
@@ -110,6 +153,7 @@ class ConfigLoader:
             options=options,
             database=db_config,
             mounts=mounts,
+            email=email_config,
         )
         config.ensure_directories()
         return config
