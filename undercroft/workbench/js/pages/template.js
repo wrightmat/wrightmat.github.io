@@ -929,6 +929,45 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
   }
 
+  function verifyBuiltinTemplateAvailability(template) {
+    if (!template || !template.id || !template.path) {
+      return;
+    }
+    if (builtinIsTemporarilyMissing("templates", template.id)) {
+      removeTemplateRecord(template.id);
+      return;
+    }
+    if (dataManager.baseUrl) {
+      // The API exposes builtin availability so avoid issuing redundant
+      // fetch requests that would result in console 404s when an asset is
+      // missing on the server.
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(template.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          markBuiltinMissing("templates", template.id);
+          removeTemplateRecord(template.id);
+          return;
+        }
+        markBuiltinAvailable("templates", template.id);
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("Template editor: unable to cancel builtin template fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Template editor: failed to verify builtin template", template.id, error);
+        markBuiltinMissing("templates", template.id);
+        removeTemplateRecord(template.id);
+      });
+  }
+
   function removeTemplateRecord(id) {
     if (!id) {
       return;
@@ -946,6 +985,44 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (option) {
       option.remove();
     }
+  }
+
+  function verifyBuiltinSystemAvailability(system) {
+    if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (builtinIsTemporarilyMissing("systems", system.id)) {
+      removeSystemRecord(system.id);
+      return;
+    }
+    if (dataManager.baseUrl) {
+      // Trust the server catalog when available to avoid noisy 404
+      // requests for builtin systems that have been removed.
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(system.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          markBuiltinMissing("systems", system.id);
+          removeSystemRecord(system.id);
+          return;
+        }
+        markBuiltinAvailable("systems", system.id);
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("Template editor: unable to cancel builtin system fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Template editor: failed to verify builtin system", system.id, error);
+        markBuiltinMissing("systems", system.id);
+        removeSystemRecord(system.id);
+      });
   }
 
   function registerSystemRecord(record) {
