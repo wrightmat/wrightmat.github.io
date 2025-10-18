@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+data/database.sqlite
+undercroft/workbench/data/database.sqlite
+*.sqlite
