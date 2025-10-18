@@ -1,0 +1,36 @@
+{
+  "id": "tpl.dnd-5e-basic",
+  "title": "D&D 5E Basic",
+  "version": "0.1",
+  "schema": "sys.dnd-5e",
+  "components": [
+    {
+      "type": "input",
+      "id": "name",
+      "label": "Name",
+      "name": "Name",
+      "textColor": "",
+      "backgroundColor": "",
+      "borderColor": "",
+      "textSize": "md",
+      "textStyles": {
+        "bold": false,
+        "italic": false,
+        "underline": false
+      },
+      "align": "start",
+      "binding": "@name",
+      "readOnly": false,
+      "variant": "text",
+      "placeholder": "",
+      "options": [
+        "Option A",
+        "Option B"
+      ],
+      "formula": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": ""
+    }
+  ]
+}
