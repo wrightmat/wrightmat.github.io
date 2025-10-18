@@ -11,11 +11,14 @@ from .auth import (
     AuthError,
     User,
     cleanup_sessions,
+    ensure_default_admin,
     get_user_by_session,
     init_auth_db,
     login_user,
     logout_user,
     register_user,
+    list_users,
+    verify_registration,
     upgrade_user,
 )
 from .config import ConfigLoader
@@ -220,6 +223,16 @@ def register_routes():
 
     router.add("POST", r"^/auth/register$", handle_register)
 
+    # POST /auth/verify
+    def handle_verify(request: Request) -> Response:
+        data = require_json(request)
+        data["ip"] = request.handler.client_address[0]
+        data["user_agent"] = request.handler.headers.get("User-Agent", "")
+        result = verify_registration(request.state, data)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/verify$", handle_verify)
+
     # POST /auth/login
     def handle_login(request: Request) -> Response:
         data = require_json(request)
@@ -259,6 +272,16 @@ def register_routes():
         return json_response(result)
 
     router.add("POST", r"^/auth/upgrade$", handle_upgrade)
+
+    # GET /auth/users
+    def handle_list_users(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        payload = list_users(request.state)
+        return json_response(payload)
+
+    router.add("GET", r"^/auth/users$", handle_list_users)
 
     # POST /content/{bucket}/{id}
     def handle_save_content(request: Request) -> Response:
@@ -372,6 +395,7 @@ def create_server(config_path: str) -> SheetsHTTPServer:
     configure_logging(loader.get().options.log_level)
     state = ServerState.from_loader(loader)
     init_auth_db(state.db)
+    ensure_default_admin(state)
     init_storage_db(state.db)
     cleanup_sessions(state)
     server = SheetsHTTPServer((state.config.options.host, state.config.options.port), RequestHandler, state)

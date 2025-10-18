@@ -203,6 +203,18 @@ export class DataManager {
     return session;
   }
 
+  async verifyRegistration(payload) {
+    const session = await this._request("/auth/verify", {
+      method: "POST",
+      body: payload,
+      auth: false,
+    });
+    if (session && session.token) {
+      this._persistSession({ token: session.token, user: session.user });
+    }
+    return session;
+  }
+
   async login(credentials) {
     const session = await this._request("/auth/login", {
       method: "POST",
@@ -302,6 +314,18 @@ export class DataManager {
       throw new Error(`No local payload found for ${bucket}/${id}`);
     }
     return this.save(bucket, id, localPayload, { mode: "remote" });
+  }
+
+  async listUsers() {
+    return this._request("/auth/users", { method: "GET", auth: true });
+  }
+
+  async updateUserTier(username, tier) {
+    return this._request("/auth/upgrade", {
+      method: "POST",
+      body: { username, tier },
+      auth: true,
+    });
   }
 }
 
