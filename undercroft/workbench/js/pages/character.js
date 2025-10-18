@@ -979,13 +979,19 @@ const BUILTIN_CHARACTERS = [
     wrapper.appendChild(label);
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
-    const states = Array.isArray(component.states) ? component.states : [];
+    const boundStates = getBindingValue(component.statesBinding);
+    const states = Array.isArray(boundStates) && boundStates.length
+      ? boundStates
+      : Array.isArray(component.states)
+      ? component.states
+      : [];
     const resolvedState = resolveComponentValue(component);
     const normalizedState = resolvedState != null ? String(resolvedState) : null;
     states.forEach((state, index) => {
+      const label = state != null ? String(state) : `State ${index + 1}`;
       const option = document.createElement("option");
-      option.value = state;
-      option.textContent = state;
+      option.value = label;
+      option.textContent = label;
       const shouldSelect = normalizedState !== null
         ? normalizedState === String(state)
         : component.activeIndex === index;
