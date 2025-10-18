@@ -1,6 +1,42 @@
 const DEFAULT_STORAGE_PREFIX = "undercroft.workbench";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
+const ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"];
+const ROLE_LABELS = {
+  free: "Free",
+  player: "Player",
+  gm: "GM",
+  master: "Master",
+  creator: "Creator",
+  admin: "Admin",
+};
+
+const WRITE_ROLE_REQUIREMENTS = {
+  characters: "free",
+  templates: "gm",
+  systems: "creator",
+};
+
+function normalizeTier(tier) {
+  return tier ? String(tier).trim().toLowerCase() : "";
+}
+
+function roleRank(role) {
+  const normalized = normalizeTier(role);
+  return ROLE_ORDER.indexOf(normalized);
+}
+
+function formatTierLabel(tier) {
+  const normalized = normalizeTier(tier);
+  if (!normalized) {
+    return "";
+  }
+  if (ROLE_LABELS[normalized]) {
+    return ROLE_LABELS[normalized];
+  }
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
 function normalizeBaseUrl(url = "") {
   if (!url) {
     return "";
@@ -36,6 +72,7 @@ export class DataManager {
     this.fetchImpl = fetchImpl;
     this.storagePrefix = storagePrefix;
     this._listCache = new Map();
+    this._ownedCache = new Map();
     this._sessionKey = `${this.storagePrefix}:session`;
     this._bucketPrefix = `${this.storagePrefix}:bucket:`;
     this._session = this._loadSession();
@@ -102,8 +139,57 @@ export class DataManager {
     this._persistSession(session);
   }
 
+  refreshSessionUser(user) {
+    if (!this._session || !this._session.token) {
+      return null;
+    }
+    const nextUser = user ? { ...(this._session.user || {}), ...user } : this._session.user;
+    const nextSession = { token: this._session.token, user: nextUser };
+    this._persistSession(nextSession);
+    return nextUser;
+  }
+
+  getUserTier(defaultTier = "free") {
+    const sessionTier = this._session?.user?.tier;
+    const normalized = normalizeTier(sessionTier);
+    if (normalized) {
+      return normalized;
+    }
+    const fallback = normalizeTier(defaultTier);
+    return fallback || "free";
+  }
+
+  getRequiredTier(bucket) {
+    const requirement = WRITE_ROLE_REQUIREMENTS[bucket];
+    return requirement ? normalizeTier(requirement) : "";
+  }
+
+  describeRequiredWriteTier(bucket) {
+    const requirement = this.getRequiredTier(bucket);
+    return requirement ? formatTierLabel(requirement) : "";
+  }
+
+  hasWriteAccess(bucket) {
+    const requirement = this.getRequiredTier(bucket);
+    if (!requirement) {
+      return true;
+    }
+    const requiredRank = roleRank(requirement);
+    if (requiredRank < 0) {
+      return true;
+    }
+    const userRank = roleRank(this.getUserTier());
+    return userRank >= requiredRank;
+  }
+
+  canSyncToServer(bucket) {
+    return Boolean(this.baseUrl) && this.isAuthenticated() && this.hasWriteAccess(bucket);
+  }
+
   clearSession() {
     this._persistSession(null);
+    this._listCache.clear();
+    this._ownedCache.clear();
   }
 
   _bucketKey(bucket) {
@@ -203,6 +289,18 @@ export class DataManager {
     return session;
   }
 
+  async verifyRegistration(payload) {
+    const session = await this._request("/auth/verify", {
+      method: "POST",
+      body: payload,
+      auth: false,
+    });
+    if (session && session.token) {
+      this._persistSession({ token: session.token, user: session.user });
+    }
+    return session;
+  }
+
   async login(credentials) {
     const session = await this._request("/auth/login", {
       method: "POST",
@@ -248,6 +346,17 @@ export class DataManager {
     return payload;
   }
 
+  _emit(eventName, detail = {}) {
+    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
+      return;
+    }
+    try {
+      window.dispatchEvent(new CustomEvent(eventName, { detail }));
+    } catch (error) {
+      console.warn("DataManager: failed to dispatch event", eventName, error);
+    }
+  }
+
   async get(bucket, id, { preferLocal = true } = {}) {
     if (preferLocal) {
       const local = this.getLocal(bucket, id);
@@ -265,6 +374,9 @@ export class DataManager {
     }
     if (mode === "local" || (mode === "auto" && !this.isAuthenticated())) {
       this.saveLocal(bucket, id, payload);
+      this._listCache.delete(`${bucket}`);
+      this._ownedCache.clear();
+      this._emit("workbench:content-saved", { bucket, id, payload, source: "local" });
       return { source: "local", id, payload };
     }
     const result = await this._request(`/content/${bucket}/${id}`, {
@@ -273,6 +385,9 @@ export class DataManager {
       auth: true,
     });
     this.saveLocal(bucket, id, payload);
+    this._listCache.delete(`${bucket}`);
+    this._ownedCache.clear();
+    this._emit("workbench:content-saved", { bucket, id, payload, source: "remote", response: result });
     return { source: "remote", response: result, id, payload };
   }
 
@@ -290,6 +405,8 @@ export class DataManager {
     }
     this.removeLocal(bucket, id);
     this._listCache.delete(`${bucket}`);
+    this._ownedCache.clear();
+    this._emit("workbench:content-deleted", { bucket, id, source: shouldTargetRemote ? "remote" : "local" });
     return { source: shouldTargetRemote ? "remote" : "local", id };
   }
 
@@ -302,6 +419,73 @@ export class DataManager {
       throw new Error(`No local payload found for ${bucket}/${id}`);
     }
     return this.save(bucket, id, localPayload, { mode: "remote" });
+  }
+
+  async listUsers() {
+    return this._request("/auth/users", { method: "GET", auth: true });
+  }
+
+  async updateUserTier(username, tier) {
+    return this._request("/auth/upgrade", {
+      method: "POST",
+      body: { username, tier },
+      auth: true,
+    });
+  }
+
+  async deleteUser(username) {
+    return this._request("/auth/users/delete", {
+      method: "POST",
+      body: { username },
+      auth: true,
+    });
+  }
+
+  async updateEmail({ email, password }) {
+    const result = await this._request("/auth/profile/email", {
+      method: "POST",
+      body: { email, password },
+      auth: true,
+    });
+    if (result && result.user) {
+      this.refreshSessionUser(result.user);
+    }
+    return result;
+  }
+
+  async updatePassword({ current_password, new_password }) {
+    return this._request("/auth/profile/password", {
+      method: "POST",
+      body: { current_password, new_password },
+      auth: true,
+    });
+  }
+
+  async toggleVisibility(bucket, id, makePublic) {
+    const query = makePublic ? "" : "?public=false";
+    const result = await this._request(`/content/${bucket}/${id}/public${query}`, {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+    this._listCache.delete(`${bucket}`);
+    this._ownedCache.clear();
+    this._emit("workbench:content-visibility", { bucket, id, public: Boolean(result?.public) });
+    return result;
+  }
+
+  async listOwnedContent({ username = "", refresh = false } = {}) {
+    const key = username ? username.toLowerCase() : "__self__";
+    if (!refresh && this._ownedCache.has(key)) {
+      return this._ownedCache.get(key);
+    }
+    const query = username ? `?username=${encodeURIComponent(username)}` : "";
+    const payload = await this._request(`/content/owned${query}`, {
+      method: "GET",
+      auth: true,
+    });
+    this._ownedCache.set(key, payload);
+    return payload;
   }
 }
 
