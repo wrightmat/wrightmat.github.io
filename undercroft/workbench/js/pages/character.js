@@ -20,7 +20,11 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 import { evaluateFormula } from "../lib/formula-engine.js";
 
 (async () => {
-  const { status } = initAppShell({ namespace: "character" });
+  const { status, undoStack, undo, redo } = initAppShell({
+    namespace: "character",
+    onUndo: handleUndoEntry,
+    onRedo: handleRedoEntry,
+  });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
 
@@ -48,6 +52,115 @@ import { evaluateFormula } from "../lib/formula-engine.js";
   let currentNotesKey = "";
   let componentCounter = 0;
   let pendingSharedRecord = resolveSharedRecordParam("characters");
+
+  function cloneValue(value) {
+    if (value === undefined) {
+      return undefined;
+    }
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(value);
+      } catch (error) {
+        // fall through to JSON clone
+      }
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function valuesEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+    if (typeof a === "number" && typeof b === "number" && Number.isNaN(a) && Number.isNaN(b)) {
+      return true;
+    }
+    if (a === undefined || b === undefined) {
+      return a === b;
+    }
+    try {
+      return JSON.stringify(a) === JSON.stringify(b);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function resolveBindingPath(binding) {
+    const normalized = normalizeBinding(binding);
+    if (!normalized || typeof normalized !== "string" || !normalized.startsWith("@")) {
+      return null;
+    }
+    const segments = normalized
+      .slice(1)
+      .split(".")
+      .map((segment) => segment.trim())
+      .filter(Boolean);
+    return segments.length ? segments : null;
+  }
+
+  function getValueAtPath(pathSegments) {
+    if (!Array.isArray(pathSegments) || !pathSegments.length) {
+      return undefined;
+    }
+    let cursor = state.draft?.data;
+    for (const segment of pathSegments) {
+      if (!cursor || typeof cursor !== "object" || !(segment in cursor)) {
+        return undefined;
+      }
+      cursor = cursor[segment];
+    }
+    return cursor;
+  }
+
+  function setValueAtPath(pathSegments, value) {
+    if (!Array.isArray(pathSegments) || !pathSegments.length) {
+      return false;
+    }
+    if (!state.draft) {
+      return false;
+    }
+    if (!state.draft.data || typeof state.draft.data !== "object") {
+      if (value === undefined) {
+        return false;
+      }
+      state.draft.data = {};
+    }
+    let cursor = state.draft.data;
+    for (let index = 0; index < pathSegments.length - 1; index += 1) {
+      const key = pathSegments[index];
+      if (!cursor[key] || typeof cursor[key] !== "object") {
+        if (value === undefined) {
+          return false;
+        }
+        cursor[key] = {};
+      }
+      cursor = cursor[key];
+    }
+    const lastKey = pathSegments[pathSegments.length - 1];
+    if (value === undefined) {
+      if (cursor && typeof cursor === "object" && Object.prototype.hasOwnProperty.call(cursor, lastKey)) {
+        delete cursor[lastKey];
+        return true;
+      }
+      return false;
+    }
+    cursor[lastKey] = value;
+    return true;
+  }
+
+  function applyBindingValue(pathSegments, value, { focusSnapshot = null } = {}) {
+    const applied = setValueAtPath(pathSegments, cloneValue(value));
+    renderCanvas();
+    if (focusSnapshot) {
+      restoreActiveField(focusSnapshot);
+    }
+    void persistDraft({ silent: true });
+    renderPreview();
+    return applied;
+  }
 
   function userOwnsCharacter(id) {
     if (!id) {
@@ -185,13 +298,13 @@ import { evaluateFormula } from "../lib/formula-engine.js";
 
     if (elements.undoButton) {
       elements.undoButton.addEventListener("click", () => {
-        status.show("Undo coming soon", { type: "info", timeout: 1800 });
+        undo();
       });
     }
 
     if (elements.redoButton) {
       elements.redoButton.addEventListener("click", () => {
-        status.show("Redo coming soon", { type: "info", timeout: 1800 });
+        redo();
       });
     }
 
@@ -1620,36 +1733,76 @@ import { evaluateFormula } from "../lib/formula-engine.js";
   }
 
   function updateBinding(binding, value) {
-    const normalizedBinding = normalizeBinding(binding);
-    if (
-      !state.draft ||
-      !normalizedBinding ||
-      typeof normalizedBinding !== "string" ||
-      !normalizedBinding.startsWith("@")
-    ) {
+    const pathSegments = resolveBindingPath(binding);
+    if (!pathSegments) {
       return;
     }
-    const path = normalizedBinding.slice(1).split(".").filter(Boolean);
-    if (!path.length) {
+    const previousValue = cloneValue(getValueAtPath(pathSegments));
+    const nextValue = cloneValue(value);
+    if (valuesEqual(previousValue, nextValue)) {
       return;
     }
     const focusSnapshot = captureActiveField();
-    if (!state.draft.data || typeof state.draft.data !== "object") {
-      state.draft.data = {};
+    const applied = applyBindingValue(pathSegments, nextValue, { focusSnapshot });
+    if (applied && undoStack) {
+      const previousValueDefined = previousValue !== undefined;
+      const nextValueDefined = nextValue !== undefined;
+      undoStack.push({
+        type: "binding",
+        characterId: state.draft?.id || "",
+        path: pathSegments,
+        previousValue: previousValueDefined ? previousValue : null,
+        previousValueDefined,
+        nextValue: nextValueDefined ? nextValue : null,
+        nextValueDefined,
+      });
     }
-    let cursor = state.draft.data;
-    for (let index = 0; index < path.length - 1; index += 1) {
-      const key = path[index];
-      if (!cursor[key] || typeof cursor[key] !== "object") {
-        cursor[key] = {};
-      }
-      cursor = cursor[key];
+  }
+
+  function ensureCharacterContext(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
     }
-    cursor[path[path.length - 1]] = value;
-    renderCanvas();
-    restoreActiveField(focusSnapshot);
-    void persistDraft({ silent: true });
-    renderPreview();
+    const entryId = entry.characterId ?? "";
+    const currentId = state.draft?.id || "";
+    if (entryId && entryId !== currentId) {
+      return false;
+    }
+    return true;
+  }
+
+  function applyCharacterUndo(entry) {
+    if (!ensureCharacterContext(entry)) {
+      return { message: "Undo unavailable for this character", options: { type: "warning", timeout: 2200 } };
+    }
+    if (entry.type === "binding" && Array.isArray(entry.path)) {
+      const focusSnapshot = captureActiveField();
+      const previousValue = entry.previousValueDefined ? entry.previousValue : undefined;
+      applyBindingValue(entry.path, cloneValue(previousValue), { focusSnapshot });
+      return { message: "Reverted field change", options: { type: "info", timeout: 1500 } };
+    }
+    return { message: "Nothing to undo", options: { timeout: 1200 } };
+  }
+
+  function applyCharacterRedo(entry) {
+    if (!ensureCharacterContext(entry)) {
+      return { message: "Redo unavailable for this character", options: { type: "warning", timeout: 2200 } };
+    }
+    if (entry.type === "binding" && Array.isArray(entry.path)) {
+      const focusSnapshot = captureActiveField();
+      const nextValue = entry.nextValueDefined ? entry.nextValue : undefined;
+      applyBindingValue(entry.path, cloneValue(nextValue), { focusSnapshot });
+      return { message: "Reapplied field change", options: { type: "info", timeout: 1500 } };
+    }
+    return { message: "Nothing to redo", options: { timeout: 1200 } };
+  }
+
+  function handleUndoEntry(entry) {
+    return applyCharacterUndo(entry);
+  }
+
+  function handleRedoEntry(entry) {
+    return applyCharacterRedo(entry);
   }
 
   function openNewCharacterDialog() {
