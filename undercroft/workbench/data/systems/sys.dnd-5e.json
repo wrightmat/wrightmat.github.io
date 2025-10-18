@@ -11,8 +11,27 @@
     {
       "type": "string",
       "key": "class",
-      "label": "Class",
-      "required": true
+      "label": "class"
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Classes",
+      "required": true,
+      "values": [
+        "Barbarian",
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Fighter",
+        "Monk",
+        "Paladin",
+        "Ranger",
+        "Rogue",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
     },
     {
       "type": "string",
