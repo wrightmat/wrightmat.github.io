@@ -41,6 +41,7 @@ const BUILTIN_CHARACTERS = [
   let suppressNotesChange = false;
   let currentNotesKey = "";
   let componentCounter = 0;
+  let pendingSharedRecord = resolveSharedRecordParam("characters");
 
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
@@ -90,6 +91,7 @@ const BUILTIN_CHARACTERS = [
   renderCanvas();
   renderPreview();
   syncCharacterActions();
+  initializeSharedRecordHandling();
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -102,12 +104,20 @@ const BUILTIN_CHARACTERS = [
     }
 
     if (elements.saveButton) {
-      elements.saveButton.addEventListener("click", () => {
+      elements.saveButton.addEventListener("click", async () => {
         if (!state.draft?.id) {
           status.show("Create or load a character first.", { type: "info", timeout: 2000 });
           return;
         }
-        persistDraft({ silent: false });
+        const button = elements.saveButton;
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        try {
+          await persistDraft({ silent: false });
+        } finally {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+        }
       });
     }
 
@@ -158,10 +168,10 @@ const BUILTIN_CHARACTERS = [
     }
 
     if (elements.viewToggle) {
-      elements.viewToggle.addEventListener("click", () => {
+      elements.viewToggle.addEventListener("click", async () => {
         const nextMode = state.mode === "edit" ? "view" : "edit";
         if (state.mode === "edit" && state.draft?.id) {
-          persistDraft({ silent: true });
+          await persistDraft({ silent: true });
           renderPreview();
         }
         state.mode = nextMode;
@@ -404,6 +414,63 @@ const BUILTIN_CHARACTERS = [
       console.warn("Character editor: unable to read local characters", error);
     }
     syncCharacterOptions();
+    if (dataManager.isAuthenticated()) {
+      await refreshRemoteCharacters({ force: true });
+    }
+  }
+
+  async function refreshRemoteCharacters({ force = false } = {}) {
+    if (!dataManager.isAuthenticated()) {
+      return;
+    }
+    try {
+      const { remote } = await dataManager.list("characters", { refresh: force, includeLocal: false });
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const shared = Array.isArray(remote?.shared) ? remote.shared : [];
+      const publicEntries = Array.isArray(remote?.public) ? remote.public : [];
+      const all = [...owned, ...shared, ...publicEntries];
+      all.forEach((entry) => {
+        if (!entry || !entry.id) return;
+        registerCharacterRecord({
+          id: entry.id,
+          title: entry.name || entry.title || entry.id,
+          template: entry.template || "",
+          source: "remote",
+        });
+      });
+      syncCharacterOptions();
+    } catch (error) {
+      console.warn("Character editor: unable to refresh remote characters", error);
+    }
+  }
+
+  function initializeSharedRecordHandling() {
+    if (!pendingSharedRecord) {
+      return;
+    }
+    if (dataManager.isAuthenticated()) {
+      void loadPendingSharedRecord();
+    } else if (status) {
+      status.show("Sign in to load the shared character.", { type: "info", timeout: 2600 });
+    }
+  }
+
+  async function loadPendingSharedRecord() {
+    if (!pendingSharedRecord) {
+      return;
+    }
+    const targetId = pendingSharedRecord;
+    pendingSharedRecord = null;
+    registerCharacterRecord({ id: targetId, title: targetId, template: "", source: "remote" });
+    syncCharacterOptions();
+    try {
+      await loadCharacter(targetId);
+    } catch (error) {
+      console.error("Character editor: unable to load shared character", error);
+      if (status) {
+        status.show(error.message || "Unable to load shared character", { type: "danger" });
+      }
+    }
   }
 
   async function loadTemplateById(id, { announce = false } = {}) {
@@ -798,16 +865,17 @@ const BUILTIN_CHARACTERS = [
     textarea.readOnly = !editable;
     assignBindingMetadata(textarea, component);
     if (editable) {
-      textarea.addEventListener("blur", () => {
+      textarea.addEventListener("blur", async () => {
         const text = textarea.value.trim();
         if (!text) {
           updateBinding(component.binding, []);
-          persistDraft({ silent: true });
+          await persistDraft({ silent: true });
           return;
         }
         try {
           const parsed = JSON.parse(text);
           updateBinding(component.binding, parsed);
+          await persistDraft({ silent: true });
         } catch (error) {
           status.show("Enter valid JSON for this list.", { type: "warning", timeout: 2000 });
         }
@@ -1252,7 +1320,7 @@ const BUILTIN_CHARACTERS = [
     cursor[path[path.length - 1]] = value;
     renderCanvas();
     restoreActiveField(focusSnapshot);
-    persistDraft({ silent: true });
+    void persistDraft({ silent: true });
     renderPreview();
   }
 
@@ -1434,7 +1502,7 @@ const BUILTIN_CHARACTERS = [
     if (elements.characterSelect) {
       elements.characterSelect.value = trimmedId;
     }
-    persistDraft({ silent: true });
+    await persistDraft({ silent: true });
     syncNotesEditor();
     renderCanvas();
     renderPreview();
@@ -1509,28 +1577,65 @@ const BUILTIN_CHARACTERS = [
     status.show("Downloaded character JSON", { timeout: 2000 });
   }
 
-  function persistDraft({ silent = true } = {}) {
+  async function persistDraft({ silent = true } = {}) {
     if (!state.draft?.id) {
-      return;
+      return false;
     }
-    try {
-      dataManager.saveLocal("characters", state.draft.id, state.draft);
-      registerCharacterRecord({
-        id: state.draft.id,
-        title: state.draft.data?.name || state.draft.title || state.draft.id,
-        template: state.draft.template || state.template?.id || "",
-        source: "local",
+    const payload = cloneCharacter(state.draft);
+    const id = state.draft.id;
+    const label = payload?.data?.name || payload?.title || id;
+    const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
+    let remoteSucceeded = false;
+    let remoteError = null;
+    if (wantsRemote) {
+      try {
+        const result = await dataManager.save("characters", id, payload, { mode: "remote" });
+        remoteSucceeded = result?.source === "remote";
+      } catch (error) {
+        remoteError = error;
+        console.error("Character editor: failed to sync character", error);
+      }
+    } else if (dataManager.isAuthenticated() && !dataManager.baseUrl && !silent && status) {
+      status.show("Server connection not configured. Start the Workbench server to sync.", {
+        type: "warning",
+        timeout: 3000,
       });
-      state.character = cloneCharacter(state.draft);
-      state.characterOrigin = "local";
-      if (!silent) {
+    }
+
+    if (!remoteSucceeded) {
+      try {
+        dataManager.saveLocal("characters", id, payload);
+      } catch (error) {
+        console.warn("Character editor: unable to save character locally", error);
+        if (status) {
+          status.show("Failed to save character locally", { type: "danger", timeout: 2200 });
+        }
+        return false;
+      }
+    }
+
+    registerCharacterRecord({
+      id,
+      title: label,
+      template: payload.template || state.template?.id || "",
+      source: remoteSucceeded ? "remote" : "local",
+    });
+    state.character = cloneCharacter(payload);
+    state.characterOrigin = remoteSucceeded ? "remote" : "local";
+
+    if (remoteError && status) {
+      const message = remoteError.message || "Unable to sync character with the server";
+      status.show(message, { type: "danger" });
+    } else if (!silent) {
+      if (remoteSucceeded) {
+        status.show(`Saved ${label} to the server`, { type: "success", timeout: 2200 });
+      } else {
         status.show("Character saved locally", { type: "success", timeout: 2000 });
       }
-    } catch (error) {
-      console.warn("Character editor: unable to save character", error);
-      status.show("Failed to save character locally", { type: "error", timeout: 2200 });
     }
+
     syncCharacterActions();
+    return remoteSucceeded;
   }
 
   function syncModeIndicator() {
@@ -1601,4 +1706,46 @@ const BUILTIN_CHARACTERS = [
     const rand = Math.random().toString(36).slice(2, 8);
     return `cha_${slug || "character"}_${rand}`;
   }
+
+  function resolveSharedRecordParam(expectedBucket) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const record = params.get("record");
+      if (!record) {
+        return null;
+      }
+      const [bucket, ...rest] = record.split(":");
+      const id = rest.join(":");
+      if (bucket !== expectedBucket || !id) {
+        return null;
+      }
+      return id;
+    } catch (error) {
+      console.warn("Character editor: unable to parse shared record", error);
+      return null;
+    }
+  }
+
+  window.addEventListener("workbench:auth-changed", () => {
+    if (dataManager.isAuthenticated()) {
+      refreshRemoteCharacters({ force: true });
+      if (pendingSharedRecord) {
+        void loadPendingSharedRecord();
+      }
+    }
+  });
+
+  window.addEventListener("workbench:content-saved", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "characters" && detail.source === "remote") {
+      refreshRemoteCharacters({ force: true });
+    }
+  });
+
+  window.addEventListener("workbench:content-deleted", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "characters" && detail.source === "remote") {
+      refreshRemoteCharacters({ force: true });
+    }
+  });
 })();

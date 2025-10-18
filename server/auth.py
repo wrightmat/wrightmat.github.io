@@ -230,6 +230,19 @@ def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[Us
     return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"])
 
 
+def get_user_by_username(state: ServerState, username: str) -> Optional[User]:
+    trimmed = (username or "").strip()
+    if not trimmed:
+        return None
+    row = state.db.execute(
+        "SELECT id, email, username, tier FROM users WHERE username = ?",
+        (trimmed,),
+    ).fetchone()
+    if not row:
+        return None
+    return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"])
+
+
 def require_role(user: Optional[User], role: str) -> None:
     tiers = ["free", "player", "gm", "master", "creator", "admin"]
     if user is None:
