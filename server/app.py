@@ -25,6 +25,7 @@ from .auth import (
     update_email_address,
     update_password,
 )
+from .builtins import builtin_catalog
 from .config import ConfigLoader
 from .importer import run_importer
 from .router import Request, Response, Router
@@ -41,6 +42,7 @@ from .storage import (
     list_owned_content,
     save_item,
     toggle_public,
+    update_owner,
 )
 class SheetsHTTPServer(http.server.ThreadingHTTPServer):
     def __init__(self, server_address, RequestHandlerClass, state: ServerState):
@@ -201,6 +203,13 @@ def register_routes():
         return json_response(payload)
 
     router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content)
+
+    # GET /content/builtins
+    def handle_content_builtins(request: Request) -> Response:
+        catalog = builtin_catalog(request.state)
+        return json_response(catalog)
+
+    router.add("GET", r"^/content/builtins$", handle_content_builtins)
 
     # GET /content/owned
     def handle_owned_content(request: Request) -> Response:
@@ -379,6 +388,26 @@ def register_routes():
         return json_response({"ok": True})
 
     router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/delete$", handle_delete_content)
+
+    # POST /content/{bucket}/{id}/owner
+    def handle_owner_update(request: Request) -> Response:
+        params = getattr(request, "params")
+        bucket = params["bucket"]
+        id_ = params["id"]
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        body = require_json(request)
+        username = (body.get("username") or "").strip()
+        if not username:
+            raise AuthError("Username required")
+        new_owner = get_user_by_username(request.state, username)
+        if not new_owner:
+            raise AuthError("User not found")
+        result = update_owner(request.state, bucket, id_, user, new_owner)
+        return json_response(result)
+
+    router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/owner$", handle_owner_update)
 
     # POST /content/{bucket}/{id}/public
     def handle_public_toggle(request: Request) -> Response:

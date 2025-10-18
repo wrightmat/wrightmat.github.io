@@ -83,6 +83,9 @@ class ServerSmokeTests(unittest.TestCase):
         workbench_root = cls._root / "undercroft" / "workbench"
         workbench_root.mkdir(parents=True, exist_ok=True)
         (workbench_root / "index.html").write_text("<main>Workbench</main>", encoding="utf-8")
+        data_dir = workbench_root / "data"
+        if sample_data.exists():
+            shutil.copytree(sample_data, data_dir, dirs_exist_ok=True)
 
         cls._server = create_server(str(cls._config_path))
         cls._thread = threading.Thread(
@@ -295,6 +298,119 @@ class ServerSmokeTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(admin_owned["owner"]["username"], username)
         self.assertTrue(any(item["id"] == character_id for item in admin_owned.get("items", [])))
+
+    def test_builtin_catalog_reports_availability(self):
+        status, catalog = self._request("/content/builtins")
+        self.assertEqual(status, 200)
+        systems = catalog.get("systems", [])
+        templates = catalog.get("templates", [])
+        self.assertTrue(
+            any(entry.get("id") == "sys.dnd5e" and entry.get("available") for entry in systems),
+            "expected builtin systems catalog to report sys.dnd5e as available",
+        )
+        self.assertTrue(
+            any(entry.get("id") == "tpl.5e.flex-basic" and entry.get("available") for entry in templates),
+            "expected builtin templates catalog to report tpl.5e.flex-basic as available",
+        )
+
+    def test_admin_can_transfer_content_ownership(self):
+        owner_email = "owner1@example.com"
+        owner_username = "owneralpha"
+        owner_password = "transfer123"
+        status, session = self._request(
+            "/auth/register",
+            method="POST",
+            payload={"email": owner_email, "username": owner_username, "password": owner_password},
+        )
+        self.assertEqual(status, 201)
+        if session.get("requires_verification"):
+            code = session.get("verification_code")
+            self.assertIsNotNone(code)
+            status, session = self._request(
+                "/auth/verify",
+                method="POST",
+                payload={"email": owner_email, "code": code},
+            )
+            self.assertEqual(status, 200)
+        owner_token = session["token"]
+
+        character_id = "transfer-character"
+        payload = {
+            "id": character_id,
+            "name": "Transfer Test",
+            "system": "sys.dnd5e",
+            "template": "tpl.5e.flex-basic",
+            "data": {"name": "Transfer Test"},
+        }
+        status, _ = self._request(
+            f"/content/characters/{character_id}",
+            method="POST",
+            payload=payload,
+            token=owner_token,
+        )
+        self.assertEqual(status, 200)
+
+        target_email = "owner2@example.com"
+        target_username = "ownerbeta"
+        target_password = "transfer456"
+        status, target_session = self._request(
+            "/auth/register",
+            method="POST",
+            payload={"email": target_email, "username": target_username, "password": target_password},
+        )
+        self.assertEqual(status, 201)
+        if target_session.get("requires_verification"):
+            code = target_session.get("verification_code")
+            self.assertIsNotNone(code)
+            status, target_session = self._request(
+                "/auth/verify",
+                method="POST",
+                payload={"email": target_email, "code": code},
+            )
+            self.assertEqual(status, 200)
+
+        status, admin_session = self._request(
+            "/auth/login",
+            method="POST",
+            payload={"username": "admin", "password": "admin"},
+        )
+        self.assertEqual(status, 200)
+        admin_token = admin_session["token"]
+
+        with self.assertRaises(AssertionError) as transfer_error:
+            self._request(
+                f"/content/characters/{character_id}/owner",
+                method="POST",
+                payload={"username": target_username},
+                token=admin_token,
+            )
+        self.assertIn("Owner tier too low", str(transfer_error.exception))
+
+        status, upgrade = self._request(
+            "/auth/upgrade",
+            method="POST",
+            payload={"username": target_username, "tier": "player"},
+            token=admin_token,
+        )
+        self.assertEqual(status, 200)
+
+        status, transfer = self._request(
+            f"/content/characters/{character_id}/owner",
+            method="POST",
+            payload={"username": target_username},
+            token=admin_token,
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(transfer["owner"]["username"], target_username)
+        self.assertEqual(transfer["owner"]["tier"], "player")
+
+        status, target_owned = self._request(f"/content/owned?username={target_username}", token=admin_token)
+        self.assertEqual(status, 200)
+        self.assertTrue(any(item["id"] == character_id for item in target_owned.get("items", [])))
+
+        status, owner_owned = self._request(f"/content/owned?username={owner_username}", token=admin_token)
+        self.assertEqual(status, 200)
+        self.assertFalse(any(item["id"] == character_id for item in owner_owned.get("items", [])))
 
     def test_admin_can_delete_orphaned_system_file(self):
         orphan_id = "orphan-system"

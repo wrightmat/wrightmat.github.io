@@ -12,6 +12,7 @@ import {
   markBuiltinMissing,
   markBuiltinAvailable,
   builtinIsTemporarilyMissing,
+  applyBuiltinCatalog,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
@@ -26,7 +27,7 @@ const BUILTIN_CHARACTERS = [
   },
 ];
 
-(() => {
+(async () => {
   const { status } = initAppShell({ namespace: "character" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
@@ -90,7 +91,7 @@ const BUILTIN_CHARACTERS = [
     }
   }
 
-  registerBuiltinContent();
+  await initializeBuiltins();
   initNotesEditor();
   initDiceRoller();
   bindUiEvents();
@@ -212,6 +213,20 @@ const BUILTIN_CHARACTERS = [
         await createNewCharacterFromForm();
       });
     }
+  }
+
+  async function initializeBuiltins() {
+    if (dataManager.baseUrl) {
+      try {
+        const catalog = await dataManager.listBuiltins();
+        if (catalog) {
+          applyBuiltinCatalog(catalog);
+        }
+      } catch (error) {
+        console.warn("Character sheet: unable to load builtin catalog", error);
+      }
+    }
+    registerBuiltinContent();
   }
 
   function registerBuiltinContent() {

@@ -430,6 +430,55 @@ def toggle_public(state: ServerState, bucket: str, id_: str, user: Optional[User
     return {"ok": True, "public": public}
 
 
+def _minimum_owner_role(bucket: str) -> str:
+    if bucket == "characters":
+        return "player"
+    if bucket == "templates":
+        return "gm"
+    if bucket == "systems":
+        return "creator"
+    return "free"
+
+
+def update_owner(
+    state: ServerState,
+    bucket: str,
+    id_: str,
+    acting_user: Optional[User],
+    new_owner: User,
+) -> Dict[str, Any]:
+    if not acting_user or acting_user.tier != "admin":
+        raise AuthError("Admin only")
+    mount = state.get_mount(bucket)
+    if mount.type != "json" or not mount.table:
+        raise AuthError("Bucket does not support owner updates")
+    required = _minimum_owner_role(bucket)
+    if role_rank(new_owner.tier) < role_rank(required):
+        raise AuthError("Owner tier too low for this content type")
+    base_id = id_.replace(".json", "")
+    row = state.db.execute(
+        f"SELECT id FROM {mount.table} WHERE id = ?",
+        (base_id,),
+    ).fetchone()
+    if not row:
+        raise AuthError("Content not found")
+    state.db.execute(
+        f"UPDATE {mount.table} SET owner_id = ? WHERE id = ?",
+        (new_owner.id, base_id),
+    )
+    state.db.commit()
+    return {
+        "ok": True,
+        "bucket": bucket,
+        "id": id_,
+        "owner": {
+            "id": new_owner.id,
+            "username": new_owner.username,
+            "tier": new_owner.tier,
+        },
+    }
+
+
 def _enforce_creation_limits(state: ServerState, bucket: str, user: Optional[User]) -> None:
     if not user or user.tier == "admin":
         return
