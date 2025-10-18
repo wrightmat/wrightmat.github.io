@@ -407,25 +407,6 @@ body[data-theme="dark"] .hover-lift:hover {
   font-size: 0.65rem;
 }
 
-.template-segment-grid {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.25rem;
-}
-
-.template-segment-grid__item {
-  position: relative;
-}
-
-.template-segment-grid__item .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0.25rem 0.35rem;
-  font-size: 0.75rem;
-}
-
 .template-dropzone,
 .workbench-dropzone {
   border: 1px dashed var(--bs-border-color);
