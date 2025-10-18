@@ -16,14 +16,7 @@ const BUILTIN_CATALOG = {
       path: "data/templates/tpl.5e.flex-basic.json",
     },
   ],
-  characters: [
-    {
-      id: "cha_01k26cm0jxDR5V4R1Q4N56B5RH",
-      title: "Elandra (Demo)",
-      path: "data/characters/cha_01k26cm0jxDR5V4R1Q4N56B5RH.json",
-      template: "tpl.5e.flex-basic",
-    },
-  ],
+  characters: [],
 };
 
 const SUPPORTED_BUCKETS = Object.keys(BUILTIN_CATALOG);
