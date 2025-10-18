@@ -2245,6 +2245,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
   function renderInspector() {
     if (!elements.inspector) return;
+    const focusSnapshot = captureInspectorFocus();
     elements.inspector.innerHTML = "";
     const selection = findComponent(state.selectedId);
     const component = selection?.component;
@@ -2335,6 +2336,55 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
     elements.inspector.appendChild(form);
     refreshTooltips(elements.inspector);
+    restoreInspectorFocus(focusSnapshot);
+  }
+
+  function captureInspectorFocus() {
+    if (!elements.inspector) {
+      return null;
+    }
+    const active = document.activeElement;
+    if (!active || !elements.inspector.contains(active)) {
+      return null;
+    }
+    const id = active.id || active.getAttribute("data-inspector-field");
+    if (!id) {
+      return null;
+    }
+    const snapshot = { id };
+    if (typeof active.selectionStart === "number" && typeof active.selectionEnd === "number") {
+      snapshot.selectionStart = active.selectionStart;
+      snapshot.selectionEnd = active.selectionEnd;
+    }
+    return snapshot;
+  }
+
+  function restoreInspectorFocus(snapshot) {
+    if (!snapshot || !snapshot.id || !elements.inspector) {
+      return;
+    }
+    const escaped = escapeCss(snapshot.id);
+    if (!escaped) {
+      return;
+    }
+    const target =
+      elements.inspector.querySelector(`#${escaped}`) ||
+      elements.inspector.querySelector(`[data-inspector-field="${escaped}"]`);
+    if (!target || typeof target.focus !== "function") {
+      return;
+    }
+    try {
+      target.focus({ preventScroll: true });
+      if (
+        typeof snapshot.selectionStart === "number" &&
+        typeof snapshot.selectionEnd === "number" &&
+        typeof target.setSelectionRange === "function"
+      ) {
+        target.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+      }
+    } catch (error) {
+      // ignore focus restoration errors
+    }
   }
 
   function createSection(title, controls = []) {
