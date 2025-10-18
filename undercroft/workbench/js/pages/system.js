@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -17,6 +18,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "system" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  initAuthControls({ root: document, status, dataManager });
 
   const systemCatalog = new Map();
 
