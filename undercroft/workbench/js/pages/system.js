@@ -1377,7 +1377,32 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   function registerBuiltinContent() {
     BUILTIN_SYSTEMS.forEach((system) => {
       registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" }, { syncOption: false });
+      verifyBuiltinAvailability(system);
     });
+  }
+
+  function verifyBuiltinAvailability(system) {
+    if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(system.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          removeSystemRecord(system.id);
+        }
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("System editor: unable to cancel builtin fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("System editor: failed to verify builtin system", system.id, error);
+      });
   }
 
   async function loadSystemRecords() {

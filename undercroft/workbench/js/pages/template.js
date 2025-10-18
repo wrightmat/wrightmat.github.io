@@ -900,6 +900,30 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
   }
 
+  function verifyBuiltinTemplateAvailability(template) {
+    if (!template || !template.id || !template.path) {
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(template.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          removeTemplateRecord(template.id);
+        }
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("Template editor: unable to cancel builtin template fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Template editor: failed to verify builtin template", template.id, error);
+      });
+  }
+
   function removeTemplateRecord(id) {
     if (!id) {
       return;
@@ -919,6 +943,30 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
   }
 
+  function verifyBuiltinSystemAvailability(system) {
+    if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(system.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          removeSystemRecord(system.id);
+        }
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("Template editor: unable to cancel builtin system fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Template editor: failed to verify builtin system", system.id, error);
+      });
+  }
+
   function registerSystemRecord(record) {
     if (!record || !record.id) {
       return;
@@ -930,6 +978,15 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       systemDefinitionCache.set(record.id, record.payload);
     }
     systemCatalog.set(record.id, next);
+  }
+
+  function removeSystemRecord(id) {
+    if (!id) {
+      return;
+    }
+    systemCatalog.delete(id);
+    systemDefinitionCache.delete(id);
+    refreshNewTemplateSystemOptions(elements.newTemplateSystem?.value || "");
   }
 
   function refreshNewTemplateSystemOptions(selectedValue = "") {
@@ -1120,9 +1177,11 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         { id: template.id, title: template.title, path: template.path, source: "builtin" },
         { syncOption: false }
       );
+      verifyBuiltinTemplateAvailability(template);
     });
     BUILTIN_SYSTEMS.forEach((system) => {
       registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
+      verifyBuiltinSystemAvailability(system);
     });
   }
 
