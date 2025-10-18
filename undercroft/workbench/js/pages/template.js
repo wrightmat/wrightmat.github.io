@@ -1787,13 +1787,67 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!normalized || !normalized.startsWith("@")) {
       return null;
     }
-    const trimmed = normalized.slice(1).trim();
-    if (!trimmed) {
+    let expression = normalized.slice(1).trim();
+    if (!expression) {
       return [];
     }
-    return trimmed
-      .split(".")
-      .flatMap((segment) => segment.split(/\[|\]/).map((part) => part.trim()).filter(Boolean));
+    if (expression.startsWith("{") && expression.endsWith("}")) {
+      expression = expression.slice(1, -1).trim();
+    }
+    const segments = [];
+    let buffer = "";
+    let inBracket = false;
+    let quoteChar = "";
+    for (let index = 0; index < expression.length; index += 1) {
+      const char = expression[index];
+      if (inBracket) {
+        if (quoteChar) {
+          if (char === quoteChar && expression[index - 1] !== "\\") {
+            quoteChar = "";
+          } else {
+            buffer += char;
+          }
+          continue;
+        }
+        if (char === "'" || char === '"') {
+          quoteChar = char;
+          continue;
+        }
+        if (char === "]") {
+          const segment = buffer.trim();
+          if (segment) {
+            segments.push(segment);
+          }
+          buffer = "";
+          inBracket = false;
+          continue;
+        }
+        buffer += char;
+        continue;
+      }
+      if (char === "[") {
+        if (buffer.trim()) {
+          segments.push(buffer.trim());
+        }
+        buffer = "";
+        inBracket = true;
+        continue;
+      }
+      if (char === ".") {
+        if (buffer.trim()) {
+          segments.push(buffer.trim());
+        }
+        buffer = "";
+        continue;
+      }
+      buffer += char;
+    }
+    if (buffer.trim()) {
+      segments.push(buffer.trim());
+    }
+    return segments
+      .map((segment) => segment.replace(/^['"]|['"]$/g, "").trim())
+      .filter((segment) => segment.length > 0);
   }
 
   function getValueAtSegments(root, segments = []) {
