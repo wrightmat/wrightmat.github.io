@@ -1,4 +1,4 @@
-const SEEN_TYPES = new Set(["group", "object"]);
+const OBJECT_TYPES = new Set(["group", "object"]);
 
 function normalizeType(type) {
   if (typeof type !== "string") {
@@ -63,11 +63,13 @@ function traverseField(node, prefix, results) {
     pushPath(results, nextPrefix, node);
   }
   const type = normalizeType(node.type) || "value";
-  const shouldDrill = SEEN_TYPES.has(type.toLowerCase());
-  if (shouldDrill && Array.isArray(node.children)) {
+  if (OBJECT_TYPES.has(type) && Array.isArray(node.children)) {
     node.children.forEach((child) => {
       traverseField(child, nextPrefix, results);
     });
+  }
+  if (type === "object" && node.additional && typeof node.additional === "object") {
+    traverseField(node.additional, nextPrefix, results);
   }
 }
 
@@ -77,9 +79,30 @@ export function collectSystemFields(system) {
   }
   const results = [];
   const seen = new Set();
-  const fields = Array.isArray(system.fields) ? system.fields : [];
-  fields.forEach((field) => {
-    traverseField(field, [], results);
+  const candidateSets = [];
+  if (Array.isArray(system.fields)) {
+    candidateSets.push(system.fields);
+  } else if (system.fields && typeof system.fields === "object") {
+    candidateSets.push(Object.values(system.fields));
+  }
+  const schemaFields = system.schema && typeof system.schema === "object" ? system.schema.fields : null;
+  if (Array.isArray(schemaFields)) {
+    candidateSets.push(schemaFields);
+  } else if (schemaFields && typeof schemaFields === "object") {
+    candidateSets.push(Object.values(schemaFields));
+  }
+  const definitionFields = system.definition && typeof system.definition === "object" ? system.definition.fields : null;
+  if (Array.isArray(definitionFields)) {
+    candidateSets.push(definitionFields);
+  } else if (definitionFields && typeof definitionFields === "object") {
+    candidateSets.push(Object.values(definitionFields));
+  }
+  candidateSets.forEach((fields) => {
+    if (Array.isArray(fields)) {
+      fields.forEach((field) => {
+        traverseField(field, [], results);
+      });
+    }
   });
   return results
     .filter((entry) => {
