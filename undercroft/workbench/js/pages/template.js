@@ -1165,11 +1165,14 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function updateSystemContext(schemaId) {
     state.systemDefinition = null;
     state.bindingFields = [];
+
     if (!schemaId) {
       emitBindingFieldsReady("");
       renderInspector();
+      renderCanvas();
       return;
     }
+
     try {
       const definition = await fetchSystemDefinition(schemaId);
       if (definition) {
@@ -1179,8 +1182,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     } catch (error) {
       console.warn("Template editor: unable to prepare system bindings", error);
     }
+
     emitBindingFieldsReady(schemaId);
     renderInspector();
+    renderCanvas();
   }
 
   function prepareNewTemplateForm() {
