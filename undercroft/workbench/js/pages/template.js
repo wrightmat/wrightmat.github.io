@@ -1891,24 +1891,24 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (template) {
       registerContext(template, { allowDirect: true, prefixes: ["template"] });
       registerContext(template.metadata, { prefixes: ["metadata"] });
-      registerContext(template.data, { prefixes: ["data"] });
-      registerContext(template.sources, { prefixes: ["sources"] });
+      registerContext(template.data, { prefixes: ["data"], allowDirect: true });
+      registerContext(template.sources, { prefixes: ["sources"], allowDirect: true });
     }
 
     const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
     if (definition) {
       registerContext(definition, { allowDirect: true, prefixes: ["system"] });
       registerContext(definition.metadata, { prefixes: ["metadata"] });
-      registerContext(definition.definition, { prefixes: ["definition"] });
+      registerContext(definition.definition, { prefixes: ["definition"], allowDirect: true });
       registerContext(definition.schema, { prefixes: ["schema"] });
-      registerContext(definition.data, { prefixes: ["data"] });
-      registerContext(definition.sources, { prefixes: ["sources"] });
-      registerContext(definition.preview, { prefixes: ["preview"] });
-      registerContext(definition.samples, { prefixes: ["samples"] });
-      registerContext(definition.sample, { prefixes: ["sample"] });
-      registerContext(definition.values, { prefixes: ["values"] });
-      registerContext(definition.lists, { prefixes: ["lists"] });
-      registerContext(definition.collections, { prefixes: ["collections"] });
+      registerContext(definition.data, { prefixes: ["data"], allowDirect: true });
+      registerContext(definition.sources, { prefixes: ["sources"], allowDirect: true });
+      registerContext(definition.preview, { prefixes: ["preview"], allowDirect: true });
+      registerContext(definition.samples, { prefixes: ["samples"], allowDirect: true });
+      registerContext(definition.sample, { prefixes: ["sample"], allowDirect: true });
+      registerContext(definition.values, { prefixes: ["values"], allowDirect: true });
+      registerContext(definition.lists, { prefixes: ["lists"], allowDirect: true });
+      registerContext(definition.collections, { prefixes: ["collections"], allowDirect: true });
     }
 
     for (const context of contexts) {
