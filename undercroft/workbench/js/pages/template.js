@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -12,7 +13,13 @@ import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
-import { BUILTIN_SYSTEMS, BUILTIN_TEMPLATES } from "../lib/content-registry.js";
+import {
+  listBuiltinSystems,
+  listBuiltinTemplates,
+  markBuiltinMissing,
+  markBuiltinAvailable,
+  builtinIsTemporarilyMissing,
+} from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
@@ -21,6 +28,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   const { status, undoStack } = initAppShell({ namespace: "template" });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  initAuthControls({ root: document, status, dataManager });
 
   const templateCatalog = new Map();
   const systemCatalog = new Map();
@@ -118,6 +126,12 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     bindingFields: [],
   };
 
+  let lastSavedTemplateSignature = null;
+
+  markTemplateClean();
+
+  let pendingSharedTemplate = resolveSharedRecordParam("templates");
+
   function hasActiveTemplate() {
     return Boolean(state.template && (state.template.id || state.template.title));
   }
@@ -213,9 +227,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
   loadSystemRecords();
   loadTemplateRecords();
+  initializeSharedTemplateHandling();
 
   if (elements.templateSelect) {
-    const builtinOptions = BUILTIN_TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title }));
+    const builtinOptions = listBuiltinTemplates().map((tpl) => ({ value: tpl.id, label: tpl.title }));
     populateSelect(elements.templateSelect, builtinOptions, { placeholder: "Select template" });
     elements.templateSelect.addEventListener("change", async () => {
       const selectedId = elements.templateSelect.value;
@@ -249,6 +264,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         if (metadata.source === "builtin" && metadata.path) {
           const response = await fetch(metadata.path);
           payload = await response.json();
+          markBuiltinAvailable("templates", metadata.id || selectedId);
         } else {
           const result = await dataManager.get("templates", selectedId, { preferLocal: true });
           payload = result?.payload || null;
@@ -265,6 +281,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         applyTemplateData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
       } catch (error) {
         console.error("Unable to load template", error);
+        if (metadata.source === "builtin") {
+          markBuiltinMissing("templates", metadata.id || selectedId);
+        }
         status.show("Failed to load template", { type: "error", timeout: 2500 });
       }
     });
@@ -591,6 +610,14 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         status.show("Select a system for this template before saving.", { type: "warning", timeout: 2400 });
         return;
       }
+      if (!dataManager.hasWriteAccess("templates")) {
+        const required = dataManager.describeRequiredWriteTier("templates");
+        const message = required
+          ? `Saving templates requires a ${required} tier.`
+          : "Your tier cannot save templates.";
+        status.show(message, { type: "warning", timeout: 2800 });
+        return;
+      }
       state.template.id = templateId;
       state.template.title = payload.title || templateId;
       state.template.schema = payload.schema;
@@ -605,6 +632,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       const button = elements.saveButton;
       button.disabled = true;
       button.setAttribute("aria-busy", "true");
+      const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("templates");
       try {
         const result = await dataManager.save("templates", templateId, payload, {
           mode: wantsRemote ? "remote" : "auto",
@@ -623,6 +651,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         ensureTemplateSelectValue();
         syncTemplateActions();
         undoStack.push({ type: "save", count: state.components.length });
+        if (savedToServer || !requireRemote) {
+          markTemplateClean();
+        }
         const label = payload.title || templateId;
         if (savedToServer) {
           status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
@@ -701,6 +732,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         state.selectedId = null;
         containerActiveTabs.clear();
         componentCounter = 0;
+        markTemplateClean();
         ensureTemplateSelectValue();
         renderCanvas();
         renderInspector();
@@ -823,6 +855,27 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     };
   }
 
+  function computeTemplateSignature() {
+    try {
+      return JSON.stringify(serializeTemplateState());
+    } catch (error) {
+      console.warn("Template editor: unable to compute template signature", error);
+      return null;
+    }
+  }
+
+  function markTemplateClean() {
+    lastSavedTemplateSignature = computeTemplateSignature();
+  }
+
+  function hasUnsavedTemplateChanges() {
+    const current = computeTemplateSignature();
+    if (!lastSavedTemplateSignature) {
+      return Boolean(current);
+    }
+    return current !== lastSavedTemplateSignature;
+  }
+
   function serializeComponentForPreview(component) {
     const clone = JSON.parse(JSON.stringify(component));
     stripComponentMetadata(clone);
@@ -857,6 +910,39 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
   }
 
+  function verifyBuiltinTemplateAvailability(template) {
+    if (!template || !template.id || !template.path) {
+      return;
+    }
+    if (builtinIsTemporarilyMissing("templates", template.id)) {
+      removeTemplateRecord(template.id);
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(template.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          markBuiltinMissing("templates", template.id);
+          removeTemplateRecord(template.id);
+          return;
+        }
+        markBuiltinAvailable("templates", template.id);
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("Template editor: unable to cancel builtin template fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Template editor: failed to verify builtin template", template.id, error);
+        markBuiltinMissing("templates", template.id);
+        removeTemplateRecord(template.id);
+      });
+  }
+
   function removeTemplateRecord(id) {
     if (!id) {
       return;
@@ -876,6 +962,39 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     }
   }
 
+  function verifyBuiltinSystemAvailability(system) {
+    if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (builtinIsTemporarilyMissing("systems", system.id)) {
+      removeSystemRecord(system.id);
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(system.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          markBuiltinMissing("systems", system.id);
+          removeSystemRecord(system.id);
+          return;
+        }
+        markBuiltinAvailable("systems", system.id);
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("Template editor: unable to cancel builtin system fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("Template editor: failed to verify builtin system", system.id, error);
+        markBuiltinMissing("systems", system.id);
+        removeSystemRecord(system.id);
+      });
+  }
+
   function registerSystemRecord(record) {
     if (!record || !record.id) {
       return;
@@ -887,6 +1006,15 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       systemDefinitionCache.set(record.id, record.payload);
     }
     systemCatalog.set(record.id, next);
+  }
+
+  function removeSystemRecord(id) {
+    if (!id) {
+      return;
+    }
+    systemCatalog.delete(id);
+    systemDefinitionCache.delete(id);
+    refreshNewTemplateSystemOptions(elements.newTemplateSystem?.value || "");
   }
 
   function refreshNewTemplateSystemOptions(selectedValue = "") {
@@ -1011,12 +1139,46 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   }
 
   function syncTemplateActions() {
+    const hasTemplate = Boolean(state.template);
+    if (elements.saveButton) {
+      const canWrite = dataManager.hasWriteAccess("templates");
+      const hasChanges = hasTemplate && hasUnsavedTemplateChanges();
+      const enabled = hasTemplate && hasChanges && canWrite;
+      elements.saveButton.disabled = !enabled;
+      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
+      if (!hasTemplate) {
+        elements.saveButton.title = "Create or load a template to save.";
+      } else if (!state.template.id || !state.template.schema) {
+        elements.saveButton.title = "Add an ID and system before saving.";
+      } else if (!canWrite) {
+        const required = dataManager.describeRequiredWriteTier("templates");
+        elements.saveButton.title = required
+          ? `Saving templates requires a ${required} tier.`
+          : "Your tier cannot save templates.";
+      } else if (!hasChanges) {
+        elements.saveButton.title = "No changes to save.";
+      } else {
+        elements.saveButton.removeAttribute("title");
+      }
+    }
+
+    if (elements.clearButton) {
+      const isEmpty = !Array.isArray(state.components) || state.components.length === 0;
+      elements.clearButton.disabled = isEmpty;
+      elements.clearButton.setAttribute("aria-disabled", isEmpty ? "true" : "false");
+      if (isEmpty) {
+        elements.clearButton.title = "Canvas is already empty.";
+      } else {
+        elements.clearButton.removeAttribute("title");
+      }
+    }
+
     if (!elements.deleteTemplateButton) {
       return;
     }
-    const hasTemplate = Boolean(state.template?.id);
-    elements.deleteTemplateButton.classList.toggle("d-none", !hasTemplate);
-    if (!hasTemplate) {
+    const hasIdentifier = Boolean(state.template?.id);
+    elements.deleteTemplateButton.classList.toggle("d-none", !hasIdentifier);
+    if (!hasIdentifier) {
       elements.deleteTemplateButton.disabled = true;
       elements.deleteTemplateButton.setAttribute("aria-disabled", "true");
       elements.deleteTemplateButton.removeAttribute("title");
@@ -1038,14 +1200,16 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   }
 
   function registerBuiltinContent() {
-    BUILTIN_TEMPLATES.forEach((template) => {
+    listBuiltinTemplates().forEach((template) => {
       registerTemplateRecord(
         { id: template.id, title: template.title, path: template.path, source: "builtin" },
         { syncOption: false }
       );
+      verifyBuiltinTemplateAvailability(template);
     });
-    BUILTIN_SYSTEMS.forEach((system) => {
+    listBuiltinSystems().forEach((system) => {
       registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
+      verifyBuiltinSystemAvailability(system);
     });
   }
 
@@ -1104,6 +1268,48 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       console.warn("Template editor: unable to list templates", error);
     } finally {
       ensureTemplateSelectValue();
+    }
+  }
+
+  function initializeSharedTemplateHandling() {
+    if (!pendingSharedTemplate) {
+      return;
+    }
+    if (dataManager.isAuthenticated()) {
+      void loadPendingSharedTemplate();
+    } else if (status) {
+      status.show("Sign in to load the shared template.", { type: "info", timeout: 2600 });
+    }
+  }
+
+  async function loadPendingSharedTemplate() {
+    if (!pendingSharedTemplate) {
+      return;
+    }
+    const targetId = pendingSharedTemplate;
+    pendingSharedTemplate = null;
+    registerTemplateRecord({ id: targetId, title: targetId, schema: "", source: "remote" }, { syncOption: true });
+    if (elements.templateSelect) {
+      elements.templateSelect.value = targetId;
+    }
+    try {
+      const result = await dataManager.get("templates", targetId, { preferLocal: true });
+      const payload = result?.payload;
+      if (!payload) {
+        throw new Error("Template payload missing");
+      }
+      const label = payload.title || templateCatalog.get(targetId)?.title || targetId;
+      const schema = payload.schema || payload.system || templateCatalog.get(targetId)?.schema || "";
+      registerTemplateRecord(
+        { id: payload.id || targetId, title: label, schema, source: "remote" },
+        { syncOption: true },
+      );
+      applyTemplateData(payload, { origin: "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+    } catch (error) {
+      console.error("Template editor: unable to load shared template", error);
+      if (status) {
+        status.show(error.message || "Unable to load shared template", { type: "danger" });
+      }
     }
   }
 
@@ -2075,7 +2281,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     renderInspector();
   }
 
-  function applyTemplateData(data = {}, { origin = "draft", emitStatus = false, statusMessage = "" } = {}) {
+  function applyTemplateData(
+    data = {},
+    { origin = "draft", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+  ) {
     const template = createBlankTemplate({
       id: data.id || "",
       title: data.title || "",
@@ -2091,6 +2300,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
+    if (markClean) {
+      markTemplateClean();
+    }
     renderCanvas();
     renderInspector();
     ensureTemplateSelectValue();
@@ -2114,12 +2326,13 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     );
     applyTemplateData(
       { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: [] },
-      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}` }
+      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}`, markClean: true }
     );
   }
 
   function renderInspector() {
     if (!elements.inspector) return;
+    const focusSnapshot = captureInspectorFocus();
     elements.inspector.innerHTML = "";
     const selection = findComponent(state.selectedId);
     const component = selection?.component;
@@ -2210,6 +2423,55 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
     elements.inspector.appendChild(form);
     refreshTooltips(elements.inspector);
+    restoreInspectorFocus(focusSnapshot);
+  }
+
+  function captureInspectorFocus() {
+    if (!elements.inspector) {
+      return null;
+    }
+    const active = document.activeElement;
+    if (!active || !elements.inspector.contains(active)) {
+      return null;
+    }
+    const id = active.id || active.getAttribute("data-inspector-field");
+    if (!id) {
+      return null;
+    }
+    const snapshot = { id };
+    if (typeof active.selectionStart === "number" && typeof active.selectionEnd === "number") {
+      snapshot.selectionStart = active.selectionStart;
+      snapshot.selectionEnd = active.selectionEnd;
+    }
+    return snapshot;
+  }
+
+  function restoreInspectorFocus(snapshot) {
+    if (!snapshot || !snapshot.id || !elements.inspector) {
+      return;
+    }
+    const escaped = escapeCss(snapshot.id);
+    if (!escaped) {
+      return;
+    }
+    const target =
+      elements.inspector.querySelector(`#${escaped}`) ||
+      elements.inspector.querySelector(`[data-inspector-field="${escaped}"]`);
+    if (!target || typeof target.focus !== "function") {
+      return;
+    }
+    try {
+      target.focus({ preventScroll: true });
+      if (
+        typeof snapshot.selectionStart === "number" &&
+        typeof snapshot.selectionEnd === "number" &&
+        typeof target.setSelectionRange === "function"
+      ) {
+        target.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+      }
+    } catch (error) {
+      // ignore focus restoration errors
+    }
   }
 
   function createSection(title, controls = []) {
@@ -3404,4 +3666,46 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     const rand = Math.random().toString(36).slice(2, 8);
     return `tpl.${slug || "template"}.${rand}`;
   }
+
+  function resolveSharedRecordParam(expectedBucket) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const record = params.get("record");
+      if (!record) {
+        return null;
+      }
+      const [bucket, ...rest] = record.split(":");
+      const id = rest.join(":");
+      if (bucket !== expectedBucket || !id) {
+        return null;
+      }
+      return id;
+    } catch (error) {
+      console.warn("Template editor: unable to parse shared record", error);
+      return null;
+    }
+  }
+
+  window.addEventListener("workbench:auth-changed", () => {
+    if (dataManager.isAuthenticated()) {
+      loadTemplateRecords();
+      if (pendingSharedTemplate) {
+        void loadPendingSharedTemplate();
+      }
+    }
+  });
+
+  window.addEventListener("workbench:content-saved", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "templates" && detail.source === "remote") {
+      loadTemplateRecords();
+    }
+  });
+
+  window.addEventListener("workbench:content-deleted", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "templates" && detail.source === "remote") {
+      loadTemplateRecords();
+    }
+  });
 })();

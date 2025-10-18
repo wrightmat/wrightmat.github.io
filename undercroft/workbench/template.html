@@ -84,7 +84,9 @@
                 <span class="visually-hidden">Dark theme</span>
               </button>
             </div>
-            <button class="btn btn-outline-secondary" type="button" data-action="auth">Login / Register</button>
+            <div data-auth-control class="d-flex">
+              <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+            </div>
             <button
               class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
               type="button"
@@ -108,18 +110,6 @@
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
             <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template actions">
               <div class="btn-group" role="group">
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-action="save-template"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
-                </button>
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
@@ -179,6 +169,18 @@
                 >
                   <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
                   <span class="visually-hidden">Clear canvas</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="save-template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
                 </button>
               </div>
             </div>
