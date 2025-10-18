@@ -30,7 +30,7 @@
     {
       "name": "characters",
       "type": "json",
-      "root": "sheets/data/characters",
+      "root": "undercroft/workbench/data/characters",
       "table": "characters",
       "read_roles": ["free"],
       "write_roles": ["free"]
@@ -38,7 +38,7 @@
     {
       "name": "templates",
       "type": "json",
-      "root": "sheets/data/templates",
+      "root": "undercroft/workbench/data/templates",
       "table": "templates",
       "read_roles": ["free"],
       "write_roles": ["gm", "master", "creator", "admin"]
@@ -46,7 +46,7 @@
     {
       "name": "systems",
       "type": "json",
-      "root": "sheets/data/systems",
+      "root": "undercroft/workbench/data/systems",
       "table": "systems",
       "read_roles": ["free"],
       "write_roles": ["creator", "admin"]
