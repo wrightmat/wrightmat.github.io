@@ -1884,16 +1884,30 @@ import {
     return fallback;
   }
 
+  function ensureLeadingBlankOption(options) {
+    const entries = Array.isArray(options) ? options.filter(Boolean).map((entry) => ({ ...entry })) : [];
+    const blankIndex = entries.findIndex((entry) => entry && entry.value === "");
+    if (blankIndex === 0) {
+      return entries;
+    }
+    if (blankIndex > 0) {
+      const [blank] = entries.splice(blankIndex, 1);
+      return [blank, ...entries];
+    }
+    return [{ value: "", label: "" }, ...entries];
+  }
+
   function resolveSelectionOptions(component) {
+    const expectsSource = Boolean(component?.sourceBinding);
     const boundOptions = normalizeOptionEntries(resolveSourceBindingValue(component?.sourceBinding));
-    if (boundOptions.length) {
-      return boundOptions;
+    if (boundOptions.length || expectsSource) {
+      return expectsSource ? ensureLeadingBlankOption(boundOptions) : boundOptions;
     }
     const componentOptions = normalizeOptionEntries(component?.options);
     if (componentOptions.length) {
-      return componentOptions;
+      return expectsSource ? ensureLeadingBlankOption(componentOptions) : componentOptions;
     }
-    return [];
+    return expectsSource ? ensureLeadingBlankOption([]) : [];
   }
 
   function resolveToggleStates(component) {
