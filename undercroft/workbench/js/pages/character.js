@@ -779,7 +779,7 @@ const BUILTIN_CHARACTERS = [
     wrapper.className = "d-flex flex-column gap-2";
     const heading = document.createElement("div");
     heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = component.label || component.name || "Array";
+    heading.textContent = component.label || component.name || "List";
     applyTextFormatting(heading, component);
     wrapper.appendChild(heading);
     const textarea = document.createElement("textarea");
