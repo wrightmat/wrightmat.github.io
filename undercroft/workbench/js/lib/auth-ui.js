@@ -254,10 +254,10 @@ export function initAuthControls({ root = document, status = null, dataManager =
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearError(errors.login);
-    disableForm(loginForm, true);
     const formData = new FormData(loginForm);
     const identifier = String(formData.get("identifier") || "").trim();
     const password = String(formData.get("password") || "");
+    disableForm(loginForm, true);
     try {
       const result = await manager.login({ username_or_email: identifier, password });
       handleSession(result, `Welcome back, ${result.user.username}!`);
@@ -271,7 +271,6 @@ export function initAuthControls({ root = document, status = null, dataManager =
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearError(errors.register);
-    disableForm(registerForm, true);
     const formData = new FormData(registerForm);
     const email = String(formData.get("email") || "").trim();
     const username = String(formData.get("username") || "").trim();
@@ -279,9 +278,9 @@ export function initAuthControls({ root = document, status = null, dataManager =
     const confirm = String(formData.get("confirm") || "");
     if (password !== confirm) {
       setError(errors.register, "Passwords do not match");
-      disableForm(registerForm, false);
       return;
     }
+    disableForm(registerForm, true);
     try {
       const result = await manager.register({ email, username, password });
       if (result && result.token && result.user) {
@@ -317,15 +316,14 @@ export function initAuthControls({ root = document, status = null, dataManager =
   verifyForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearError(errors.verify);
-    disableForm(verifyForm, true);
     const formData = new FormData(verifyForm);
     const code = String(formData.get("code") || "").trim();
     const context = state.pendingVerification;
     if (!context) {
       setError(errors.verify, "No registration in progress");
-      disableForm(verifyForm, false);
       return;
     }
+    disableForm(verifyForm, true);
     try {
       const payload = { code };
       if (context.email) {
