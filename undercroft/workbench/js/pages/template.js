@@ -120,6 +120,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     bindingFields: [],
   };
 
+  let lastSavedTemplateSignature = null;
+
+  markTemplateClean();
+
   let pendingSharedTemplate = resolveSharedRecordParam("templates");
 
   function hasActiveTemplate() {
@@ -596,6 +600,14 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         status.show("Select a system for this template before saving.", { type: "warning", timeout: 2400 });
         return;
       }
+      if (!dataManager.hasWriteAccess("templates")) {
+        const required = dataManager.describeRequiredWriteTier("templates");
+        const message = required
+          ? `Saving templates requires a ${required} tier.`
+          : "Your tier cannot save templates.";
+        status.show(message, { type: "warning", timeout: 2800 });
+        return;
+      }
       state.template.id = templateId;
       state.template.title = payload.title || templateId;
       state.template.schema = payload.schema;
@@ -610,6 +622,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       const button = elements.saveButton;
       button.disabled = true;
       button.setAttribute("aria-busy", "true");
+      const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("templates");
       try {
         const result = await dataManager.save("templates", templateId, payload, {
           mode: wantsRemote ? "remote" : "auto",
@@ -628,6 +641,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         ensureTemplateSelectValue();
         syncTemplateActions();
         undoStack.push({ type: "save", count: state.components.length });
+        if (savedToServer || !requireRemote) {
+          markTemplateClean();
+        }
         const label = payload.title || templateId;
         if (savedToServer) {
           status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
@@ -706,6 +722,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         state.selectedId = null;
         containerActiveTabs.clear();
         componentCounter = 0;
+        markTemplateClean();
         ensureTemplateSelectValue();
         renderCanvas();
         renderInspector();
@@ -826,6 +843,27 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       schema: state.template?.schema || "",
       components: state.components.map(serializeComponentForPreview),
     };
+  }
+
+  function computeTemplateSignature() {
+    try {
+      return JSON.stringify(serializeTemplateState());
+    } catch (error) {
+      console.warn("Template editor: unable to compute template signature", error);
+      return null;
+    }
+  }
+
+  function markTemplateClean() {
+    lastSavedTemplateSignature = computeTemplateSignature();
+  }
+
+  function hasUnsavedTemplateChanges() {
+    const current = computeTemplateSignature();
+    if (!lastSavedTemplateSignature) {
+      return Boolean(current);
+    }
+    return current !== lastSavedTemplateSignature;
   }
 
   function serializeComponentForPreview(component) {
@@ -1016,12 +1054,46 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   }
 
   function syncTemplateActions() {
+    const hasTemplate = Boolean(state.template);
+    if (elements.saveButton) {
+      const canWrite = dataManager.hasWriteAccess("templates");
+      const hasChanges = hasTemplate && hasUnsavedTemplateChanges();
+      const enabled = hasTemplate && hasChanges && canWrite;
+      elements.saveButton.disabled = !enabled;
+      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
+      if (!hasTemplate) {
+        elements.saveButton.title = "Create or load a template to save.";
+      } else if (!state.template.id || !state.template.schema) {
+        elements.saveButton.title = "Add an ID and system before saving.";
+      } else if (!canWrite) {
+        const required = dataManager.describeRequiredWriteTier("templates");
+        elements.saveButton.title = required
+          ? `Saving templates requires a ${required} tier.`
+          : "Your tier cannot save templates.";
+      } else if (!hasChanges) {
+        elements.saveButton.title = "No changes to save.";
+      } else {
+        elements.saveButton.removeAttribute("title");
+      }
+    }
+
+    if (elements.clearButton) {
+      const isEmpty = !Array.isArray(state.components) || state.components.length === 0;
+      elements.clearButton.disabled = isEmpty;
+      elements.clearButton.setAttribute("aria-disabled", isEmpty ? "true" : "false");
+      if (isEmpty) {
+        elements.clearButton.title = "Canvas is already empty.";
+      } else {
+        elements.clearButton.removeAttribute("title");
+      }
+    }
+
     if (!elements.deleteTemplateButton) {
       return;
     }
-    const hasTemplate = Boolean(state.template?.id);
-    elements.deleteTemplateButton.classList.toggle("d-none", !hasTemplate);
-    if (!hasTemplate) {
+    const hasIdentifier = Boolean(state.template?.id);
+    elements.deleteTemplateButton.classList.toggle("d-none", !hasIdentifier);
+    if (!hasIdentifier) {
       elements.deleteTemplateButton.disabled = true;
       elements.deleteTemplateButton.setAttribute("aria-disabled", "true");
       elements.deleteTemplateButton.removeAttribute("title");
@@ -2122,7 +2194,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     renderInspector();
   }
 
-  function applyTemplateData(data = {}, { origin = "draft", emitStatus = false, statusMessage = "" } = {}) {
+  function applyTemplateData(
+    data = {},
+    { origin = "draft", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+  ) {
     const template = createBlankTemplate({
       id: data.id || "",
       title: data.title || "",
@@ -2138,6 +2213,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
+    if (markClean) {
+      markTemplateClean();
+    }
     renderCanvas();
     renderInspector();
     ensureTemplateSelectValue();
@@ -2161,7 +2239,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     );
     applyTemplateData(
       { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: [] },
-      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}` }
+      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}`, markClean: true }
     );
   }
 

@@ -38,6 +38,10 @@ const BUILTIN_CHARACTERS = [
     characterOrigin: null,
   };
 
+  let lastSavedCharacterSignature = null;
+
+  markCharacterClean();
+
   let suppressNotesChange = false;
   let currentNotesKey = "";
   let componentCounter = 0;
@@ -107,6 +111,14 @@ const BUILTIN_CHARACTERS = [
       elements.saveButton.addEventListener("click", async () => {
         if (!state.draft?.id) {
           status.show("Create or load a character first.", { type: "info", timeout: 2000 });
+          return;
+        }
+        if (!dataManager.hasWriteAccess("characters")) {
+          const required = dataManager.describeRequiredWriteTier("characters");
+          const message = required
+            ? `Saving characters requires a ${required} tier.`
+            : "Your tier cannot save characters.";
+          status.show(message, { type: "warning", timeout: 2600 });
           return;
         }
         const button = elements.saveButton;
@@ -287,6 +299,27 @@ const BUILTIN_CHARACTERS = [
   }
 
   function syncCharacterActions() {
+    const hasDraft = Boolean(state.draft);
+    if (elements.saveButton) {
+      const canWrite = dataManager.hasWriteAccess("characters");
+      const hasChanges = hasDraft && hasUnsavedCharacterChanges();
+      const enabled = hasDraft && hasChanges && canWrite;
+      elements.saveButton.disabled = !enabled;
+      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
+      if (!hasDraft) {
+        elements.saveButton.title = "Create or load a character to save.";
+      } else if (!canWrite) {
+        const required = dataManager.describeRequiredWriteTier("characters");
+        elements.saveButton.title = required
+          ? `Saving characters requires a ${required} tier.`
+          : "Your tier cannot save characters.";
+      } else if (!hasChanges) {
+        elements.saveButton.title = "No changes to save.";
+      } else {
+        elements.saveButton.removeAttribute("title");
+      }
+    }
+
     if (!elements.deleteCharacterButton) {
       return;
     }
@@ -576,6 +609,7 @@ const BUILTIN_CHARACTERS = [
       if (!state.draft.data || typeof state.draft.data !== "object") {
         state.draft.data = {};
       }
+      markCharacterClean();
       syncNotesEditor();
       renderCanvas();
       renderPreview();
@@ -1555,6 +1589,7 @@ const BUILTIN_CHARACTERS = [
     if (elements.characterSelect) {
       elements.characterSelect.value = "";
     }
+    markCharacterClean();
     syncNotesEditor();
     renderCanvas();
     renderPreview();
@@ -1585,6 +1620,7 @@ const BUILTIN_CHARACTERS = [
     const id = state.draft.id;
     const label = payload?.data?.name || payload?.title || id;
     const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
+    const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("characters");
     let remoteSucceeded = false;
     let remoteError = null;
     if (wantsRemote) {
@@ -1622,6 +1658,10 @@ const BUILTIN_CHARACTERS = [
     });
     state.character = cloneCharacter(payload);
     state.characterOrigin = remoteSucceeded ? "remote" : "local";
+
+    if (remoteSucceeded || !requireRemote) {
+      markCharacterClean();
+    }
 
     if (remoteError && status) {
       const message = remoteError.message || "Unable to sync character with the server";
@@ -1696,6 +1736,33 @@ const BUILTIN_CHARACTERS = [
 
   function cloneCharacter(payload) {
     return payload ? JSON.parse(JSON.stringify(payload)) : null;
+  }
+
+  function computeCharacterSignature() {
+    if (!state.draft) {
+      return null;
+    }
+    try {
+      return JSON.stringify(state.draft);
+    } catch (error) {
+      console.warn("Character editor: unable to compute character signature", error);
+      return null;
+    }
+  }
+
+  function markCharacterClean() {
+    lastSavedCharacterSignature = computeCharacterSignature();
+  }
+
+  function hasUnsavedCharacterChanges() {
+    if (!state.draft) {
+      return false;
+    }
+    const current = computeCharacterSignature();
+    if (!lastSavedCharacterSignature) {
+      return Boolean(current);
+    }
+    return current !== lastSavedCharacterSignature;
   }
 
   function generateCharacterId(name) {
