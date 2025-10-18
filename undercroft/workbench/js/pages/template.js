@@ -14,6 +14,8 @@ import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { BUILTIN_SYSTEMS, BUILTIN_TEMPLATES } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
+import { listFormulaFunctions } from "../lib/formula-engine.js";
 
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "template" });
@@ -22,6 +24,121 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 
   const templateCatalog = new Map();
   const systemCatalog = new Map();
+  const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
+
+  const FORMULA_FUNCTION_SIGNATURES = {
+    abs: "abs(value)",
+    avg: "avg(...values)",
+    ceil: "ceil(value)",
+    clamp: "clamp(value, min, max)",
+    floor: "floor(value)",
+    if: "if(condition, whenTrue, whenFalse)",
+    max: "max(...values)",
+    min: "min(...values)",
+    mod: "mod(dividend, divisor)",
+    not: "not(value)",
+    or: "or(...values)",
+    and: "and(...values)",
+    pow: "pow(base, exponent)",
+    round: "round(value)",
+    sqrt: "sqrt(value)",
+    sum: "sum(...values)",
+  };
+
+  const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
+    name,
+    signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
+  }));
+
+  const FIELD_TYPE_META = {
+    string: { icon: "tabler:letter-case", label: "String" },
+    number: { icon: "tabler:123", label: "Number" },
+    boolean: { icon: "tabler:switch-3", label: "Boolean" },
+    list: { icon: "tabler:list-details", label: "List" },
+    array: { icon: "tabler:brackets", label: "Array" },
+    object: { icon: "tabler:braces", label: "Object" },
+  };
+
+  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
+
+  function resolveFieldTypeMeta(categoryOrType) {
+    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
+    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
+  }
+
+  function getComponentBindingCategories(component) {
+    if (!component || typeof component !== "object") {
+      return null;
+    }
+    switch (component.type) {
+      case "input": {
+        const variant = component.variant || "text";
+        if (variant === "number") {
+          return ["number"];
+        }
+        if (variant === "checkbox") {
+          return ["boolean", "array", "list"];
+        }
+        if (variant === "radio") {
+          return ["boolean", "string", "list"];
+        }
+        if (variant === "select") {
+          return ["list", "array", "string"];
+        }
+        return ["string"];
+      }
+      case "linear-track":
+      case "circular-track":
+        return ["number"];
+      case "array":
+        return ["array", "list", "object"];
+      case "select-group":
+        return component.multiple ? ["array", "list"] : ["string", "list"];
+      case "toggle":
+        return ["boolean", "string", "list"];
+      default:
+        return null;
+    }
+  }
+
+  function fieldMatchesCategories(entry, categories) {
+    if (!Array.isArray(categories) || !categories.length) {
+      return true;
+    }
+    const entryCategory = entry?.category || categorizeFieldType(entry?.type);
+    if (!entryCategory) {
+      return categories.includes("string") || categories.includes("any");
+    }
+    return categories.includes(entryCategory) || categories.includes("any");
+  }
+
+  const systemDefinitionCache = new Map();
+
+  const state = {
+    template: null,
+    components: [],
+    selectedId: null,
+    systemDefinition: null,
+    bindingFields: [],
+  };
+
+  function hasActiveTemplate() {
+    return Boolean(state.template && (state.template.id || state.template.title));
+  }
+
+  const dropzones = new Map();
+  const containerActiveTabs = new Map();
+
+  function emitBindingFieldsReady(schemaId = "") {
+    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
+      return;
+    }
+    const detail = {
+      schemaId: schemaId || "",
+      count: Array.isArray(state.bindingFields) ? state.bindingFields.length : 0,
+    };
+    window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
+  }
 
   registerBuiltinContent();
 
@@ -174,9 +291,9 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       colorControls: ["foreground", "background", "border"],
     },
     array: {
-      label: "Array",
+      label: "List",
       defaults: {
-        name: "Array",
+        name: "List",
         variant: "list",
       },
       supportsBinding: true,
@@ -308,15 +425,6 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 
   let componentCounter = 0;
 
-  const state = {
-    template: null,
-    components: [],
-    selectedId: null,
-  };
-
-  const dropzones = new Map();
-  const containerActiveTabs = new Map();
-
   const renderPreview = createJsonPreviewRenderer({
     resolvePreviewElement: () => elements.jsonPreview,
     resolveBytesElement: () => elements.jsonPreviewBytes,
@@ -377,6 +485,32 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     return fallback || "";
   }
 
+  function normalizeBindingValue(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+    return value.trim();
+  }
+
+  function componentHasFormula(component) {
+    return typeof component?.formula === "string" && component.formula.trim().length > 0;
+  }
+
+  function getBindingEditorValue(component) {
+    if (!component) {
+      return "";
+    }
+    if (componentHasFormula(component)) {
+      const expression = normalizeBindingValue(component.formula);
+      return expression ? `=${expression}` : "";
+    }
+    return normalizeBindingValue(component.binding);
+  }
+
+  function getComponentBindingLabel(component) {
+    return getBindingEditorValue(component);
+  }
+
   function getDefinition(component) {
     if (!component) return {};
     return COMPONENT_DEFINITIONS[component.type] || {};
@@ -404,6 +538,13 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       dataAttribute: "data-component-type",
       onActivate: ({ value }) => {
         if (!value || !COMPONENT_DEFINITIONS[value]) {
+          return;
+        }
+        if (!hasActiveTemplate()) {
+          status.show("Create or load a template before adding components.", {
+            type: "warning",
+            timeout: 2400,
+          });
           return;
         }
         insertComponentAtCanvasRoot(value);
@@ -633,12 +774,12 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     elements.canvasRoot.dataset.dropzoneParent = "";
     elements.canvasRoot.dataset.dropzoneKey = "root";
     if (!state.components.length) {
-      const placeholder = createCanvasPlaceholder(
-        "Drag components from the palette into the canvas below to design your template.",
-        {
-          variant: "root",
-        }
-      );
+      const placeholderText = hasActiveTemplate()
+        ? "Drag components from the palette into the canvas below to design your template."
+        : "Create or load a template to start adding components to the canvas.";
+      const placeholder = createCanvasPlaceholder(placeholderText, {
+        variant: "root",
+      });
       elements.canvasRoot.appendChild(placeholder);
     } else {
       const fragment = document.createDocumentFragment();
@@ -731,7 +872,12 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       return;
     }
     const current = systemCatalog.get(record.id) || {};
-    systemCatalog.set(record.id, { ...current, ...record });
+    const next = { ...current, ...record };
+    if (record.payload) {
+      next.payload = record.payload;
+      systemDefinitionCache.set(record.id, record.payload);
+    }
+    systemCatalog.set(record.id, next);
   }
 
   function refreshNewTemplateSystemOptions(selectedValue = "") {
@@ -746,6 +892,81 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     if (selectedValue) {
       elements.newTemplateSystem.value = selectedValue;
     }
+  }
+
+  async function fetchSystemDefinition(schemaId) {
+    if (!schemaId) {
+      return null;
+    }
+    if (systemDefinitionCache.has(schemaId)) {
+      return systemDefinitionCache.get(schemaId);
+    }
+    const metadata = systemCatalog.get(schemaId) || {};
+    if (metadata.payload) {
+      systemDefinitionCache.set(schemaId, metadata.payload);
+      return metadata.payload;
+    }
+    if (metadata.path) {
+      try {
+        const response = await fetch(metadata.path);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch system: ${response.status}`);
+        }
+        const payload = await response.json();
+        systemDefinitionCache.set(schemaId, payload);
+        registerSystemRecord({ id: schemaId, title: payload.title || schemaId, source: metadata.source, payload });
+        return payload;
+      } catch (error) {
+        console.warn("Template editor: unable to load builtin system", error);
+        return null;
+      }
+    }
+    try {
+      const local = dataManager.getLocal("systems", schemaId);
+      if (local) {
+        systemDefinitionCache.set(schemaId, local);
+        registerSystemRecord({ id: schemaId, title: local.title || schemaId, source: "local", payload: local });
+        return local;
+      }
+    } catch (error) {
+      console.warn("Template editor: unable to read local system", error);
+    }
+    if (!dataManager.baseUrl) {
+      return null;
+    }
+    try {
+      const result = await dataManager.get("systems", schemaId, { preferLocal: true });
+      const payload = result?.payload || null;
+      if (payload) {
+        systemDefinitionCache.set(schemaId, payload);
+        registerSystemRecord({ id: schemaId, title: payload.title || schemaId, source: result?.source || "remote", payload });
+      }
+      return payload;
+    } catch (error) {
+      console.warn("Template editor: unable to fetch system", error);
+      return null;
+    }
+  }
+
+  async function updateSystemContext(schemaId) {
+    state.systemDefinition = null;
+    state.bindingFields = [];
+    if (!schemaId) {
+      emitBindingFieldsReady("");
+      renderInspector();
+      return;
+    }
+    try {
+      const definition = await fetchSystemDefinition(schemaId);
+      if (definition) {
+        state.systemDefinition = definition;
+        state.bindingFields = collectSystemFields(definition);
+      }
+    } catch (error) {
+      console.warn("Template editor: unable to prepare system bindings", error);
+    }
+    emitBindingFieldsReady(schemaId);
+    renderInspector();
   }
 
   function prepareNewTemplateForm() {
@@ -811,7 +1032,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     try {
       const localEntries = dataManager.listLocalEntries("systems");
       localEntries.forEach(({ id, payload }) => {
-        registerSystemRecord({ id, title: payload?.title || id, source: "local" });
+        registerSystemRecord({ id, title: payload?.title || id, source: "local", payload });
       });
     } catch (error) {
       console.warn("Template editor: unable to read local systems", error);
@@ -866,6 +1087,15 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   }
 
   function handleDrop(event) {
+    if (!hasActiveTemplate()) {
+      status.show("Create or load a template before adding components.", {
+        type: "warning",
+        timeout: 2400,
+      });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
     const parentId = event.to.dataset.dropzoneParent || "";
     const zoneKey = event.to.dataset.dropzoneKey || "root";
     const index = typeof event.newIndex === "number" ? event.newIndex : 0;
@@ -1040,6 +1270,12 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       readOnly: false,
       ...defaults,
     };
+    if (!Object.prototype.hasOwnProperty.call(component, "binding") || typeof component.binding !== "string") {
+      component.binding = typeof component.binding === "string" ? component.binding : "";
+    }
+    if (definition.supportsFormula !== false && !Object.prototype.hasOwnProperty.call(component, "formula")) {
+      component.formula = "";
+    }
     if (component.label && typeof component.label === "string") {
       component.label = component.label.trim();
     }
@@ -1101,7 +1337,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       },
     });
 
-    const bindingLabel = (component.binding || component.formula || "").trim();
+    const bindingLabel = getComponentBindingLabel(component);
     if (bindingLabel) {
       const pill = document.createElement("span");
       pill.className = "template-binding-pill badge text-bg-secondary";
@@ -1346,7 +1582,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   function renderArrayPreview(component) {
     const container = document.createElement("div");
     container.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Array");
+    const headingText = getComponentLabel(component, "List");
     if (headingText) {
       const heading = document.createElement("div");
       heading.className = "fw-semibold";
@@ -1758,6 +1994,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     renderCanvas();
     renderInspector();
     ensureTemplateSelectValue();
+    updateSystemContext(template.schema).catch(() => {});
     if (emitStatus && statusMessage) {
       status.show(statusMessage, { type: "success", timeout: 2000 });
     }
@@ -1836,24 +2073,10 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     const dataControls = [];
     if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
       dataControls.push(
-        createTextInput(
-          component,
-          "Binding / Formula",
-          component.binding || component.formula || "",
-          (value) => {
-            updateComponent(
-              component.uid,
-              (draft) => {
-                draft.binding = value.trim();
-                if (Object.prototype.hasOwnProperty.call(draft, "formula")) {
-                  draft.formula = "";
-                }
-              },
-              { rerenderCanvas: true, rerenderInspector: true }
-            );
-          },
-          { placeholder: "@attributes.score or =SUM(values)" }
-        )
+        createBindingFormulaInput(component, {
+          supportsBinding: definition.supportsBinding !== false,
+          supportsFormula: definition.supportsFormula !== false,
+        })
       );
     }
     const dataSection = createSection("Data", dataControls);
@@ -2035,6 +2258,344 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     label.setAttribute("for", id);
     label.textContent = "Read only";
     wrapper.append(input, label);
+    return wrapper;
+  }
+
+  function createBindingFormulaInput(component, { supportsBinding = true, supportsFormula = true } = {}) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-1";
+    const id = toId([component.uid, "binding-formula"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = "Binding / Formula";
+
+    const allowedFieldCategories = getComponentBindingCategories(component);
+
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "position-relative";
+
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    input.placeholder = supportsFormula
+      ? "@attributes.score or =sum(@attributes.strength, @attributes.dexterity)"
+      : "@attributes.score";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = getBindingEditorValue(component);
+    input.setAttribute("aria-autocomplete", "list");
+
+    const suggestions = document.createElement("div");
+    suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    suggestions.id = `${id}-suggestions`;
+    suggestions.setAttribute("role", "listbox");
+    suggestions.style.zIndex = "1300";
+    suggestions.style.fontSize = "0.8125rem";
+    suggestions.style.maxHeight = "16rem";
+    suggestions.style.overflowY = "auto";
+    input.setAttribute("aria-controls", suggestions.id);
+
+    inputWrapper.append(input, suggestions);
+    wrapper.append(label, inputWrapper);
+
+    const MAX_SUGGESTIONS = 12;
+    let suggestionItems = [];
+    let activeIndex = -1;
+    let currentContext = null;
+    let listeningForUpdates = false;
+
+    const handleBindingFieldsReady = () => {
+      if (document.activeElement === input) {
+        updateSuggestions();
+      }
+    };
+
+    function closeSuggestions() {
+      suggestionItems = [];
+      activeIndex = -1;
+      currentContext = null;
+      suggestions.innerHTML = "";
+      suggestions.classList.add("d-none");
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function setActive(index) {
+      if (!suggestionItems.length) {
+        return;
+      }
+      const clamped = Math.max(0, Math.min(index, suggestionItems.length - 1));
+      activeIndex = clamped;
+      const options = Array.from(suggestions.querySelectorAll("[data-suggestion-index]"));
+      options.forEach((option) => {
+        const optionIndex = Number(option.dataset.suggestionIndex);
+        if (optionIndex === activeIndex) {
+          option.classList.add("active");
+          input.setAttribute("aria-activedescendant", option.id);
+        } else {
+          option.classList.remove("active");
+        }
+      });
+    }
+
+    function moveActive(delta) {
+      if (!suggestionItems.length) {
+        return;
+      }
+      const nextIndex = activeIndex < 0 ? 0 : activeIndex + delta;
+      setActive(nextIndex);
+    }
+
+    function getFieldSuggestions(query = "") {
+      if (!supportsBinding) {
+        return [];
+      }
+      const normalized = query.trim().toLowerCase();
+      const entries = Array.isArray(state.bindingFields) ? state.bindingFields : [];
+      const typed = entries.filter((entry) => fieldMatchesCategories(entry, allowedFieldCategories));
+      const filtered = normalized
+        ? typed.filter((entry) => {
+            const path = entry.path?.toLowerCase?.() || "";
+            const labelText = entry.label?.toLowerCase?.() || "";
+            return path.includes(normalized) || labelText.includes(normalized);
+          })
+        : typed;
+      return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => {
+        const category = entry.category || categorizeFieldType(entry.type);
+        return {
+          type: "field",
+          path: entry.path,
+          display: `@${entry.path}`,
+          description: entry.label && entry.label !== entry.path ? entry.label : "",
+          fieldType: entry.type || "",
+          fieldCategory: category || "",
+        };
+      });
+    }
+
+    function getFunctionSuggestions(query = "") {
+      if (!supportsFormula) {
+        return [];
+      }
+      const normalized = query.trim().toLowerCase();
+      const entries = normalized
+        ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+        : FORMULA_FUNCTIONS;
+      return entries.slice(0, MAX_SUGGESTIONS).map((fn) => ({
+        type: "function",
+        name: fn.name,
+        display: fn.signature,
+        description: fn.name,
+      }));
+    }
+
+    function renderSuggestions(items, context) {
+      suggestionItems = items;
+      currentContext = context;
+      suggestions.innerHTML = "";
+      if (!items.length) {
+        closeSuggestions();
+        return;
+      }
+      items.forEach((item, index) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
+        option.dataset.suggestionIndex = String(index);
+        option.id = `${suggestions.id}-option-${index}`;
+        option.addEventListener("mousedown", (event) => event.preventDefault());
+        option.addEventListener("click", () => {
+          applySuggestion(index);
+        });
+
+        const row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2 flex-grow-1 text-start";
+        row.style.minWidth = "0";
+        if (item.type === "field") {
+          const fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
+          const icon = document.createElement("span");
+          icon.className = "iconify flex-shrink-0 text-body-tertiary";
+          icon.dataset.icon = fieldMeta.icon;
+          icon.setAttribute("aria-hidden", "true");
+          icon.title = fieldMeta.label;
+          icon.style.fontSize = "1rem";
+          row.appendChild(icon);
+        }
+
+        const label = document.createElement("span");
+        label.className = "text-truncate";
+        label.textContent = item.display;
+        row.appendChild(label);
+
+        option.appendChild(row);
+
+        if (item.description) {
+          const hint = document.createElement("small");
+          hint.className = "text-body-secondary text-nowrap text-end ms-auto";
+          hint.textContent = item.description;
+          option.appendChild(hint);
+        }
+
+        suggestions.appendChild(option);
+      });
+      suggestions.classList.remove("d-none");
+      setActive(0);
+    }
+
+    function updateSuggestions() {
+      const value = input.value;
+      const caret = typeof input.selectionStart === "number" ? input.selectionStart : value.length;
+      const beforeCaret = value.slice(0, caret);
+
+      if (supportsBinding) {
+        const atIndex = beforeCaret.lastIndexOf("@");
+        if (atIndex !== -1) {
+          const query = beforeCaret.slice(atIndex + 1);
+          const items = getFieldSuggestions(query);
+          if (items.length) {
+            renderSuggestions(items, { type: "field", startIndex: atIndex + 1, endIndex: caret });
+            return;
+          }
+        }
+      }
+
+      if (supportsFormula && value.trim().startsWith("=")) {
+        const equalsIndex = value.indexOf("=");
+        if (equalsIndex !== -1 && caret >= equalsIndex + 1) {
+          const rawQuery = value.slice(equalsIndex + 1, caret);
+          const items = getFunctionSuggestions(rawQuery);
+          if (items.length) {
+            renderSuggestions(items, { type: "function", startIndex: equalsIndex + 1, endIndex: caret });
+            return;
+          }
+        }
+      }
+
+      closeSuggestions();
+    }
+
+    function applySuggestion(index) {
+      if (index < 0 || index >= suggestionItems.length || !currentContext) {
+        return;
+      }
+      const item = suggestionItems[index];
+      const value = input.value;
+      const start = currentContext.startIndex;
+      const end = currentContext.endIndex;
+      const before = value.slice(0, start);
+      const after = value.slice(end);
+      if (item.type === "field") {
+        const inserted = item.path;
+        const nextValue = `${before}${inserted}${after}`;
+        input.value = nextValue;
+        const caret = before.length + inserted.length;
+        input.setSelectionRange(caret, caret);
+      } else if (item.type === "function") {
+        const prefix = value.slice(0, start);
+        const suffix = value.slice(end);
+        const nextValue = `${prefix}${item.name}()${suffix}`;
+        input.value = nextValue;
+        const caret = prefix.length + item.name.length + 1;
+        input.setSelectionRange(caret, caret);
+      }
+      commitValue(input.value);
+      closeSuggestions();
+    }
+
+    function commitValue(raw) {
+      const next = typeof raw === "string" ? raw : "";
+      updateComponent(
+        component.uid,
+        (draft) => {
+          const trimmed = next.trim();
+          if (!trimmed) {
+            draft.binding = "";
+            if (supportsFormula && Object.prototype.hasOwnProperty.call(draft, "formula")) {
+              draft.formula = "";
+            }
+            return;
+          }
+          if (supportsFormula && trimmed.startsWith("=")) {
+            const expression = trimmed.slice(1).trim();
+            if (Object.prototype.hasOwnProperty.call(draft, "formula")) {
+              draft.formula = expression;
+            } else if (supportsFormula) {
+              draft.formula = expression;
+            }
+            draft.binding = "";
+            return;
+          }
+          if (supportsBinding) {
+            draft.binding = trimmed;
+          } else {
+            draft.binding = "";
+          }
+          if (supportsFormula && Object.prototype.hasOwnProperty.call(draft, "formula")) {
+            draft.formula = "";
+          }
+        },
+        { rerenderCanvas: true }
+      );
+    }
+
+    input.addEventListener("input", () => {
+      commitValue(input.value);
+      updateSuggestions();
+    });
+
+    input.addEventListener("focus", () => {
+      if (!listeningForUpdates) {
+        window.addEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
+        listeningForUpdates = true;
+      }
+      updateSuggestions();
+    });
+
+    input.addEventListener("click", () => {
+      updateSuggestions();
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (!suggestionItems.length) {
+        return;
+      }
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveActive(1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveActive(-1);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (activeIndex >= 0) {
+          applySuggestion(activeIndex);
+        }
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        closeSuggestions();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      setTimeout(() => {
+        closeSuggestions();
+        if (listeningForUpdates) {
+          window.removeEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
+          listeningForUpdates = false;
+        }
+      }, 120);
+    });
+
+    if (supportsBinding && !state.bindingFields.length) {
+      const helper = document.createElement("div");
+      helper.className = "form-text text-body-secondary";
+      helper.textContent = state.template?.schema
+        ? "No fields available for this system yet."
+        : "Select a system to enable bindings.";
+      wrapper.appendChild(helper);
+    }
+
     return wrapper;
   }
 
