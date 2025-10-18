@@ -12,6 +12,7 @@ from .auth import (
     User,
     cleanup_sessions,
     ensure_default_admin,
+    ensure_default_test_users,
     get_user_by_session,
     get_user_by_username,
     init_auth_db,
@@ -495,6 +496,7 @@ def create_server(config_path: str) -> SheetsHTTPServer:
     state = ServerState.from_loader(loader)
     init_auth_db(state.db)
     ensure_default_admin(state)
+    ensure_default_test_users(state)
     init_storage_db(state.db)
     cleanup_sessions(state)
     server = SheetsHTTPServer((state.config.options.host, state.config.options.port), RequestHandler, state)

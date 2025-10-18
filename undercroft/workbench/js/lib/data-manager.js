@@ -166,11 +166,16 @@ export class DataManager {
 
   describeRequiredWriteTier(bucket) {
     const requirement = this.getRequiredTier(bucket);
-    return requirement ? formatTierLabel(requirement) : "";
+    return requirement ? this.describeTier(requirement) : "";
   }
 
   hasWriteAccess(bucket) {
     const requirement = this.getRequiredTier(bucket);
+    return this.meetsTier(requirement);
+  }
+
+  meetsTier(requiredTier) {
+    const requirement = normalizeTier(requiredTier);
     if (!requirement) {
       return true;
     }
@@ -180,6 +185,10 @@ export class DataManager {
     }
     const userRank = roleRank(this.getUserTier());
     return userRank >= requiredRank;
+  }
+
+  describeTier(tier) {
+    return formatTierLabel(tier);
   }
 
   canSyncToServer(bucket) {

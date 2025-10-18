@@ -24,12 +24,30 @@ import {
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
+import { initTierGate, initTierVisibility } from "../lib/access.js";
 
 (async () => {
   const { status, undoStack } = initAppShell({ namespace: "template" });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  initAuthControls({ root: document, status, dataManager });
+  const auth = initAuthControls({ root: document, status, dataManager });
+  initTierVisibility({ root: document, dataManager, status, auth });
+
+  const gate = initTierGate({
+    root: document,
+    dataManager,
+    status,
+    auth,
+    requiredTier: "gm",
+    gateSelector: "[data-tier-gate]",
+    contentSelector: "[data-tier-content]",
+    onGranted: () => window.location.reload(),
+    onRevoked: () => window.location.reload(),
+  });
+
+  if (!gate.allowed) {
+    return;
+  }
 
   const templateCatalog = new Map();
   const systemCatalog = new Map();

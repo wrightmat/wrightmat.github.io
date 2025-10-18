@@ -78,8 +78,8 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
 ### Epic 4 – Index Page Expansion
 1. **Login/Register System**
    - ✅ Build registration page and login modal window so new users can save data to the server.
-2. **Sharing Panel**  
-   - ⬜ Section to list out owned content (characters primarily, but also owned templates and systems for higher tier users) with the ability to share links with others.
+2. **Sharing Panel**
+   - ✅ Section to list out owned content (characters primarily, but also owned templates and systems for higher tier users) with the ability to share links with others.
 3. **Admin Panel**
    - ✅ Section for admins to adjust permissions for users (tier and other details), content (owner and other details), and anything else needed.
 

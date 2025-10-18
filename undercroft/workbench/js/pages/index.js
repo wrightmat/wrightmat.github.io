@@ -2,10 +2,12 @@ import { initAppShell } from "../lib/app-shell.js";
 import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
+import { initTierVisibility } from "../lib/access.js";
 
 const { status } = initAppShell({ namespace: "index" });
 const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-initAuthControls({ root: document, status, dataManager });
+const auth = initAuthControls({ root: document, status, dataManager });
+initTierVisibility({ root: document, dataManager, status, auth });
 status.show("Welcome back to the Workbench", { timeout: 2500 });
 
 function renderRecentCharacters(list) {
