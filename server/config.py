@@ -44,6 +44,11 @@ class ServerOptions:
     session_ttl_days: int = 7
     config_watch: bool = False
     log_level: str = "info"
+    require_email_verification: bool = False
+    debug_verification_codes: bool = False
+    default_admin_username: str = "admin"
+    default_admin_password: str = "admin"
+    default_admin_email: str = "admin@example.com"
 
 
 @dataclass
@@ -84,6 +89,11 @@ class ConfigLoader:
             session_ttl_days=int(server_opts.get("session_ttl_days", 7)),
             config_watch=bool(server_opts.get("config_watch", False)),
             log_level=server_opts.get("log_level", "info"),
+            require_email_verification=bool(server_opts.get("require_email_verification", False)),
+            debug_verification_codes=bool(server_opts.get("debug_verification_codes", False)),
+            default_admin_username=server_opts.get("default_admin_username", "admin"),
+            default_admin_password=server_opts.get("default_admin_password", "admin"),
+            default_admin_email=server_opts.get("default_admin_email", "admin@example.com"),
         )
 
         db_opts = payload.get("database", {})

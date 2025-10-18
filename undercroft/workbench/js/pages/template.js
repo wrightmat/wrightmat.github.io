@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -21,6 +22,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   const { status, undoStack } = initAppShell({ namespace: "template" });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  initAuthControls({ root: document, status, dataManager });
 
   const templateCatalog = new Map();
   const systemCatalog = new Map();
