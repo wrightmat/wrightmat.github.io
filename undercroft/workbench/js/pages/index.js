@@ -1,7 +1,11 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { DataManager } from "../lib/data-manager.js";
+import { resolveApiBase } from "../lib/api.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 
 const { status } = initAppShell({ namespace: "index" });
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+initAuthControls({ root: document, status, dataManager });
 status.show("Welcome back to the Workbench", { timeout: 2500 });
 
 function renderRecentCharacters(list) {
@@ -22,8 +26,7 @@ function renderRecentCharacters(list) {
 }
 
 try {
-  const manager = new DataManager();
-  const entries = manager.listLocalEntries("characters");
+  const entries = dataManager.listLocalEntries("characters");
   renderRecentCharacters(entries);
 } catch (error) {
   console.warn("Unable to load recent characters", error);
