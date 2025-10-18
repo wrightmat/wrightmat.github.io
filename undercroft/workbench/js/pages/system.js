@@ -1060,50 +1060,70 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function applySystemUndo(entry) {
     if (!ensureSystemContext(entry)) {
-      return { message: "Undo unavailable for this system", options: { type: "warning", timeout: 2200 } };
+      return {
+        message: "Undo unavailable for this system",
+        options: { type: "warning", timeout: 2200 },
+        applied: false,
+      };
     }
     switch (entry.type) {
       case "add": {
         const nodeId = entry.node?.id;
         if (!nodeId) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         deleteNode(nodeId, { skipHistory: true, silent: true, suppressRender: true });
         state.selectedNodeId = entry.previousSelectedId || null;
         renderAll();
-        return { message: "Removed added field", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Removed added field",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "move": {
         if (!entry.nodeId || !entry.from) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         moveNode(entry.nodeId, entry.from.parentId, entry.from.index);
         state.selectedNodeId = entry.nodeId;
         renderAll();
-        return { message: "Moved field back", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Moved field back",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "reorder": {
         if (!entry.nodeId || !entry.parentId || !entry.from) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         moveNode(entry.nodeId, entry.parentId, entry.from.index);
         state.selectedNodeId = entry.nodeId;
         renderAll();
-        return { message: "Restored field order", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Restored field order",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "delete": {
         if (!entry.node) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         const nodeClone = cloneNode(entry.node);
         insertNode(entry.parentId || "root", entry.index ?? 0, nodeClone);
         state.selectedNodeId = nodeClone.id;
         renderAll();
-        return { message: "Restored removed field", options: { type: "info", timeout: 1600 } };
+        return {
+          message: "Restored removed field",
+          options: { type: "info", timeout: 1600 },
+          applied: true,
+        };
       }
       case "update": {
         if (!entry.nodeId || !entry.property) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         state.selectedNodeId = entry.nodeId;
         updateNodeProperty(entry.nodeId, entry.property, entry.previous, {
@@ -1113,15 +1133,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return {
           message: "Reverted field change",
           options: { type: "info", timeout: 1500 },
+          applied: true,
         };
       }
       case "type": {
         if (!entry.nodeId || !entry.previous) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         const location = findNode(entry.nodeId);
         if (!location || !location.collection) {
-          return { message: "Nothing to undo", options: { timeout: 1200 } };
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
         }
         location.collection[location.index] = cloneNode(entry.previous);
         state.selectedNodeId = entry.nodeId;
@@ -1130,6 +1151,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return {
           message: "Reverted field type",
           options: { type: "info", timeout: 1500 },
+          applied: true,
         };
       }
       case "clear": {
@@ -1137,61 +1159,89 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         state.selectedNodeId = entry.previousSelectedId || null;
         rebuildFieldIdentities(state.system);
         renderAll();
-        return { message: "Restored system canvas", options: { type: "info", timeout: 1600 } };
+        return {
+          message: "Restored system canvas",
+          options: { type: "info", timeout: 1600 },
+          applied: true,
+        };
       }
       case "save": {
-        return { message: "Saved system state noted", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Saved system state noted",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       default:
-        return { message: "Nothing to undo", options: { timeout: 1200 } };
+        return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
     }
   }
 
   function applySystemRedo(entry) {
     if (!ensureSystemContext(entry)) {
-      return { message: "Redo unavailable for this system", options: { type: "warning", timeout: 2200 } };
+      return {
+        message: "Redo unavailable for this system",
+        options: { type: "warning", timeout: 2200 },
+        applied: false,
+      };
     }
     switch (entry.type) {
       case "add": {
         if (!entry.node) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         const nodeClone = cloneNode(entry.node);
         insertNode(entry.parentId || "root", entry.index ?? 0, nodeClone);
         state.selectedNodeId = nodeClone.id;
         renderAll();
-        return { message: "Reapplied field addition", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Reapplied field addition",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "move": {
         if (!entry.nodeId || !entry.to) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         moveNode(entry.nodeId, entry.to.parentId, entry.to.index);
         state.selectedNodeId = entry.nodeId;
         renderAll();
-        return { message: "Reapplied field move", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Reapplied field move",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "reorder": {
         if (!entry.nodeId || !entry.parentId || !entry.to) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         moveNode(entry.nodeId, entry.parentId, entry.to.index);
         state.selectedNodeId = entry.nodeId;
         renderAll();
-        return { message: "Reapplied ordering", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Reapplied ordering",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "delete": {
         if (!entry.nodeId) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         deleteNode(entry.nodeId, { skipHistory: true, silent: true, suppressRender: true });
         state.selectedNodeId = entry.parentId && entry.parentId !== "root" ? entry.parentId : null;
         renderAll();
-        return { message: "Reapplied field removal", options: { type: "info", timeout: 1600 } };
+        return {
+          message: "Reapplied field removal",
+          options: { type: "info", timeout: 1600 },
+          applied: true,
+        };
       }
       case "update": {
         if (!entry.nodeId || !entry.property) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         state.selectedNodeId = entry.nodeId;
         updateNodeProperty(entry.nodeId, entry.property, entry.next, {
@@ -1201,15 +1251,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return {
           message: "Reapplied field change",
           options: { type: "info", timeout: 1500 },
+          applied: true,
         };
       }
       case "type": {
         if (!entry.nodeId || !entry.next) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         const location = findNode(entry.nodeId);
         if (!location || !location.collection) {
-          return { message: "Nothing to redo", options: { timeout: 1200 } };
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
         }
         location.collection[location.index] = cloneNode(entry.next);
         state.selectedNodeId = entry.nodeId;
@@ -1218,18 +1269,27 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return {
           message: "Reapplied field type",
           options: { type: "info", timeout: 1500 },
+          applied: true,
         };
       }
       case "clear": {
         clearCanvas({ skipHistory: true, silent: true, suppressRender: true });
         renderAll();
-        return { message: "Cleared system canvas", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Cleared system canvas",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       case "save": {
-        return { message: "Save action noted", options: { type: "info", timeout: 1500 } };
+        return {
+          message: "Save action noted",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
       }
       default:
-        return { message: "Nothing to redo", options: { timeout: 1200 } };
+        return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
     }
   }
 
