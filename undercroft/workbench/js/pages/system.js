@@ -903,6 +903,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   function renderInspector() {
     if (!elements.inspector) return;
+    const focusSnapshot = captureInspectorFocus();
     const node = state.selectedNodeId ? findNode(state.selectedNodeId)?.node : null;
     elements.inspector.innerHTML = "";
     if (!node) {
@@ -934,6 +935,61 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     }
 
     elements.inspector.appendChild(form);
+    restoreInspectorFocus(focusSnapshot);
+  }
+
+  function captureInspectorFocus() {
+    if (!elements.inspector) {
+      return null;
+    }
+    const active = document.activeElement;
+    if (!active || !elements.inspector.contains(active)) {
+      return null;
+    }
+    const id = active.id || active.getAttribute("data-inspector-field");
+    if (!id) {
+      return null;
+    }
+    const snapshot = { id };
+    if (typeof active.selectionStart === "number" && typeof active.selectionEnd === "number") {
+      snapshot.selectionStart = active.selectionStart;
+      snapshot.selectionEnd = active.selectionEnd;
+    }
+    return snapshot;
+  }
+
+  function restoreInspectorFocus(snapshot) {
+    if (!snapshot || !snapshot.id || !elements.inspector) {
+      return;
+    }
+    const escaped = escapeCss(snapshot.id);
+    if (!escaped) {
+      return;
+    }
+    const target =
+      elements.inspector.querySelector(`#${escaped}`) ||
+      elements.inspector.querySelector(`[data-inspector-field="${escaped}"]`);
+    if (!target || typeof target.focus !== "function") {
+      return;
+    }
+    try {
+      target.focus({ preventScroll: true });
+      if (
+        typeof snapshot.selectionStart === "number" &&
+        typeof snapshot.selectionEnd === "number" &&
+        typeof target.setSelectionRange === "function"
+      ) {
+        target.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+      }
+    } catch (error) {
+      // ignore focus restoration errors
+    }
+  }
+
+  function createInspectorFieldId(nodeId, property, suffix = "field") {
+    const base = nodeId ? String(nodeId) : "field";
+    const safeBase = base.replace(/[^a-zA-Z0-9_-]/g, "-");
+    return `system-inspector-${safeBase}-${property}-${suffix}`;
   }
 
   function createTypeSelect(node) {
@@ -944,6 +1000,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     label.textContent = "Type";
     const select = document.createElement("select");
     select.className = "form-select";
+    const fieldId = createInspectorFieldId(node.id, "type", "select");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     const normalized = normalizeType(node.type);
     const options = TYPE_OPTIONS.slice();
     if (normalized && !options.includes(normalized)) {
@@ -976,6 +1036,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     const input = document.createElement("input");
     input.type = "text";
     input.className = "form-control";
+    const fieldId = createInspectorFieldId(node.id, property, "input");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     input.placeholder = placeholder;
     input.value = node[property] ?? "";
     input.addEventListener("change", () => {
@@ -995,6 +1059,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     const input = document.createElement("input");
     input.type = "number";
     input.className = "form-control";
+    const fieldId = createInspectorFieldId(node.id, property, "number");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     input.value = node[property] ?? "";
     input.addEventListener("change", () => {
       const value = input.value === "" ? null : Number(input.value);
@@ -1011,7 +1079,9 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.className = "form-check-input";
-    input.id = `${node.id}-${property}`;
+    const fieldId = createInspectorFieldId(node.id, property, "toggle");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
     input.checked = Boolean(node[property]);
     input.addEventListener("change", () => {
       updateNodeProperty(node.id, property, input.checked);
@@ -1033,6 +1103,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     label.textContent = labelText;
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
+    const fieldId = createInspectorFieldId(node.id, property, "textarea");
+    textarea.id = fieldId;
+    textarea.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     textarea.rows = 4;
     textarea.value = Array.isArray(node[property]) ? node[property].join("\n") : node[property] || "";
     textarea.addEventListener("change", () => {
