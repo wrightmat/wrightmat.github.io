@@ -102,6 +102,16 @@ export class DataManager {
     this._persistSession(session);
   }
 
+  refreshSessionUser(user) {
+    if (!this._session || !this._session.token) {
+      return null;
+    }
+    const nextUser = user ? { ...(this._session.user || {}), ...user } : this._session.user;
+    const nextSession = { token: this._session.token, user: nextUser };
+    this._persistSession(nextSession);
+    return nextUser;
+  }
+
   clearSession() {
     this._persistSession(null);
   }
@@ -195,6 +205,18 @@ export class DataManager {
     const session = await this._request("/auth/register", {
       method: "POST",
       body: credentials,
+      auth: false,
+    });
+    if (session && session.token) {
+      this._persistSession({ token: session.token, user: session.user });
+    }
+    return session;
+  }
+
+  async verifyRegistration(payload) {
+    const session = await this._request("/auth/verify", {
+      method: "POST",
+      body: payload,
       auth: false,
     });
     if (session && session.token) {
@@ -302,6 +324,46 @@ export class DataManager {
       throw new Error(`No local payload found for ${bucket}/${id}`);
     }
     return this.save(bucket, id, localPayload, { mode: "remote" });
+  }
+
+  async listUsers() {
+    return this._request("/auth/users", { method: "GET", auth: true });
+  }
+
+  async updateUserTier(username, tier) {
+    return this._request("/auth/upgrade", {
+      method: "POST",
+      body: { username, tier },
+      auth: true,
+    });
+  }
+
+  async deleteUser(username) {
+    return this._request("/auth/users/delete", {
+      method: "POST",
+      body: { username },
+      auth: true,
+    });
+  }
+
+  async updateEmail({ email, password }) {
+    const result = await this._request("/auth/profile/email", {
+      method: "POST",
+      body: { email, password },
+      auth: true,
+    });
+    if (result && result.user) {
+      this.refreshSessionUser(result.user);
+    }
+    return result;
+  }
+
+  async updatePassword({ current_password, new_password }) {
+    return this._request("/auth/profile/password", {
+      method: "POST",
+      body: { current_password, new_password },
+      auth: true,
+    });
   }
 }
 
