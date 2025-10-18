@@ -1,6 +1,7 @@
 import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -17,6 +18,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "system" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  initAuthControls({ root: document, status, dataManager });
 
   const systemCatalog = new Map();
 
@@ -99,12 +101,19 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   refreshTooltips(document);
 
+  let pendingSharedSystemId = resolveSharedRecordParam("systems");
+
   loadSystemRecords();
+  initializeSharedSystemHandling();
 
   const state = {
     system: createBlankSystem(),
     selectedNodeId: null,
   };
+
+  let lastSavedSystemSignature = null;
+
+  markSystemClean(state.system);
 
   function hasActiveSystem() {
     return Boolean(state.system && (state.system.id || state.system.title));
@@ -341,6 +350,14 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
         status.show("Set a system ID before saving.", { type: "warning", timeout: 2500 });
         return;
       }
+      if (!dataManager.hasWriteAccess("systems")) {
+        const required = dataManager.describeRequiredWriteTier("systems");
+        const message = required
+          ? `Saving systems requires a ${required} tier.`
+          : "Your tier cannot save systems.";
+        status.show(message, { type: "warning", timeout: 2800 });
+        return;
+      }
       payload.id = systemId;
       if (state.system.id !== systemId) {
         state.system.id = systemId;
@@ -358,6 +375,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       const button = elements.saveButton;
       button.disabled = true;
       button.setAttribute("aria-busy", "true");
+      const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("systems");
       try {
         const result = await dataManager.save("systems", systemId, payload, {
           mode: wantsRemote ? "remote" : "auto",
@@ -369,6 +387,9 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
         state.system.origin = savedToServer ? "remote" : "local";
         registerSystemRecord({ id: systemId, title: label, source: state.system.origin }, { syncOption: true });
         ensureSelectValue();
+        if (savedToServer || !requireRemote) {
+          markSystemClean(state.system);
+        }
         if (savedToServer) {
           status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
         } else {
@@ -414,6 +435,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
         removeSystemRecord(state.system.id);
         state.system = createBlankSystem();
         state.selectedNodeId = null;
+        markSystemClean(state.system);
         renderAll();
         ensureSelectValue();
         status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
@@ -444,7 +466,12 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       const text = await file.text();
       const data = JSON.parse(text);
       persistCurrentDraft();
-      applySystemData(data, { origin: "draft", emitStatus: true, statusMessage: `Imported ${data.title || state.system.id || "system"}` });
+      applySystemData(data, {
+        origin: "draft",
+        emitStatus: true,
+        statusMessage: `Imported ${data.title || state.system.id || "system"}`,
+        markClean: false,
+      });
       registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
       if (elements.select) {
         elements.select.value = state.system.id || "";
@@ -517,7 +544,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     return Object.assign(node, overrides);
   }
 
-  function applySystemData(data = {}, { origin = "remote", emitStatus = false, statusMessage = "" } = {}) {
+  function applySystemData(
+    data = {},
+    { origin = "remote", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+  ) {
     const hydrated = createBlankSystem({
       id: data.id || "",
       title: data.title || "",
@@ -529,10 +559,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
     hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
-    applySystemState(hydrated, { emitStatus, statusMessage });
+    applySystemState(hydrated, { emitStatus, statusMessage, markClean });
   }
 
-  function applySystemState(system, { emitStatus = false, statusMessage = "" } = {}) {
+  function applySystemState(system, { emitStatus = false, statusMessage = "", markClean = true } = {}) {
     state.system = cloneSystem(system);
     state.system.origin = system.origin || state.system.origin || "draft";
     if (state.system.id) {
@@ -540,6 +570,9 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     }
     rebuildFieldIdentities(state.system);
     state.selectedNodeId = null;
+    if (markClean) {
+      markSystemClean(state.system);
+    }
     renderAll();
     ensureSelectValue();
     if (emitStatus && statusMessage) {
@@ -870,6 +903,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   function renderInspector() {
     if (!elements.inspector) return;
+    const focusSnapshot = captureInspectorFocus();
     const node = state.selectedNodeId ? findNode(state.selectedNodeId)?.node : null;
     elements.inspector.innerHTML = "";
     if (!node) {
@@ -901,6 +935,61 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     }
 
     elements.inspector.appendChild(form);
+    restoreInspectorFocus(focusSnapshot);
+  }
+
+  function captureInspectorFocus() {
+    if (!elements.inspector) {
+      return null;
+    }
+    const active = document.activeElement;
+    if (!active || !elements.inspector.contains(active)) {
+      return null;
+    }
+    const id = active.id || active.getAttribute("data-inspector-field");
+    if (!id) {
+      return null;
+    }
+    const snapshot = { id };
+    if (typeof active.selectionStart === "number" && typeof active.selectionEnd === "number") {
+      snapshot.selectionStart = active.selectionStart;
+      snapshot.selectionEnd = active.selectionEnd;
+    }
+    return snapshot;
+  }
+
+  function restoreInspectorFocus(snapshot) {
+    if (!snapshot || !snapshot.id || !elements.inspector) {
+      return;
+    }
+    const escaped = escapeCss(snapshot.id);
+    if (!escaped) {
+      return;
+    }
+    const target =
+      elements.inspector.querySelector(`#${escaped}`) ||
+      elements.inspector.querySelector(`[data-inspector-field="${escaped}"]`);
+    if (!target || typeof target.focus !== "function") {
+      return;
+    }
+    try {
+      target.focus({ preventScroll: true });
+      if (
+        typeof snapshot.selectionStart === "number" &&
+        typeof snapshot.selectionEnd === "number" &&
+        typeof target.setSelectionRange === "function"
+      ) {
+        target.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+      }
+    } catch (error) {
+      // ignore focus restoration errors
+    }
+  }
+
+  function createInspectorFieldId(nodeId, property, suffix = "field") {
+    const base = nodeId ? String(nodeId) : "field";
+    const safeBase = base.replace(/[^a-zA-Z0-9_-]/g, "-");
+    return `system-inspector-${safeBase}-${property}-${suffix}`;
   }
 
   function createTypeSelect(node) {
@@ -911,6 +1000,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     label.textContent = "Type";
     const select = document.createElement("select");
     select.className = "form-select";
+    const fieldId = createInspectorFieldId(node.id, "type", "select");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     const normalized = normalizeType(node.type);
     const options = TYPE_OPTIONS.slice();
     if (normalized && !options.includes(normalized)) {
@@ -943,6 +1036,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     const input = document.createElement("input");
     input.type = "text";
     input.className = "form-control";
+    const fieldId = createInspectorFieldId(node.id, property, "input");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     input.placeholder = placeholder;
     input.value = node[property] ?? "";
     input.addEventListener("change", () => {
@@ -962,6 +1059,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     const input = document.createElement("input");
     input.type = "number";
     input.className = "form-control";
+    const fieldId = createInspectorFieldId(node.id, property, "number");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     input.value = node[property] ?? "";
     input.addEventListener("change", () => {
       const value = input.value === "" ? null : Number(input.value);
@@ -978,7 +1079,9 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.className = "form-check-input";
-    input.id = `${node.id}-${property}`;
+    const fieldId = createInspectorFieldId(node.id, property, "toggle");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
     input.checked = Boolean(node[property]);
     input.addEventListener("change", () => {
       updateNodeProperty(node.id, property, input.checked);
@@ -1000,6 +1103,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     label.textContent = labelText;
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
+    const fieldId = createInspectorFieldId(node.id, property, "textarea");
+    textarea.id = fieldId;
+    textarea.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
     textarea.rows = 4;
     textarea.value = Array.isArray(node[property]) ? node[property].join("\n") : node[property] || "";
     textarea.addEventListener("change", () => {
@@ -1056,6 +1163,33 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       formulas: Array.isArray(system.formulas) ? system.formulas : [],
       importers: Array.isArray(system.importers) ? system.importers : [],
     };
+  }
+
+  function computeSystemSignature(system = state.system) {
+    if (!system) {
+      return null;
+    }
+    try {
+      return JSON.stringify(serializeSystem(system));
+    } catch (error) {
+      console.warn("System editor: unable to compute system signature", error);
+      return null;
+    }
+  }
+
+  function markSystemClean(system = state.system) {
+    lastSavedSystemSignature = computeSystemSignature(system);
+  }
+
+  function hasUnsavedSystemChanges() {
+    if (!state.system) {
+      return false;
+    }
+    const current = computeSystemSignature(state.system);
+    if (!lastSavedSystemSignature) {
+      return Boolean(current);
+    }
+    return current !== lastSavedSystemSignature;
   }
 
   function serializeFieldNode(node) {
@@ -1182,12 +1316,44 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   }
 
   function syncSystemActions() {
+    const hasSystem = Boolean(state.system);
+    if (elements.saveButton) {
+      const canWrite = dataManager.hasWriteAccess("systems");
+      const hasChanges = hasSystem && hasUnsavedSystemChanges();
+      const enabled = hasSystem && hasChanges && canWrite;
+      elements.saveButton.disabled = !enabled;
+      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
+      if (!hasSystem || (!state.system.id && !state.system.title)) {
+        elements.saveButton.title = "Create or load a system to save.";
+      } else if (!canWrite) {
+        const required = dataManager.describeRequiredWriteTier("systems");
+        elements.saveButton.title = required
+          ? `Saving systems requires a ${required} tier.`
+          : "Your tier cannot save systems.";
+      } else if (!hasChanges) {
+        elements.saveButton.title = "No changes to save.";
+      } else {
+        elements.saveButton.removeAttribute("title");
+      }
+    }
+
+    if (elements.clearButton) {
+      const isEmpty = !hasActiveSystem() || !(Array.isArray(state.system.fields) && state.system.fields.length);
+      elements.clearButton.disabled = isEmpty;
+      elements.clearButton.setAttribute("aria-disabled", isEmpty ? "true" : "false");
+      if (isEmpty) {
+        elements.clearButton.title = "Canvas is already empty.";
+      } else {
+        elements.clearButton.removeAttribute("title");
+      }
+    }
+
     if (!elements.deleteButton) {
       return;
     }
-    const hasSystem = Boolean(state.system?.id);
-    elements.deleteButton.classList.toggle("d-none", !hasSystem);
-    if (!hasSystem) {
+    const hasIdentifier = Boolean(state.system?.id);
+    elements.deleteButton.classList.toggle("d-none", !hasIdentifier);
+    if (!hasIdentifier) {
       elements.deleteButton.disabled = true;
       elements.deleteButton.setAttribute("aria-disabled", "true");
       elements.deleteButton.removeAttribute("title");
@@ -1211,7 +1377,32 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   function registerBuiltinContent() {
     BUILTIN_SYSTEMS.forEach((system) => {
       registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" }, { syncOption: false });
+      verifyBuiltinAvailability(system);
     });
+  }
+
+  function verifyBuiltinAvailability(system) {
+    if (!system || !system.id || !system.path) {
+      return;
+    }
+    if (typeof window === "undefined" || typeof window.fetch !== "function") {
+      return;
+    }
+    window
+      .fetch(system.path, { method: "GET", cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          removeSystemRecord(system.id);
+        }
+        try {
+          response.body?.cancel?.();
+        } catch (error) {
+          console.warn("System editor: unable to cancel builtin fetch", error);
+        }
+      })
+      .catch((error) => {
+        console.warn("System editor: failed to verify builtin system", system.id, error);
+      });
   }
 
   async function loadSystemRecords() {
@@ -1236,6 +1427,44 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       ensureSelectValue();
     } catch (error) {
       console.warn("System editor: unable to list systems", error);
+    }
+  }
+
+  function initializeSharedSystemHandling() {
+    if (!pendingSharedSystemId) {
+      return;
+    }
+    if (dataManager.isAuthenticated()) {
+      void loadPendingSharedSystem();
+    } else if (status) {
+      status.show("Sign in to load the shared system.", { type: "info", timeout: 2600 });
+    }
+  }
+
+  async function loadPendingSharedSystem() {
+    if (!pendingSharedSystemId) {
+      return;
+    }
+    const targetId = pendingSharedSystemId;
+    pendingSharedSystemId = null;
+    registerSystemRecord({ id: targetId, title: targetId, source: "remote" }, { syncOption: true });
+    if (elements.select) {
+      elements.select.value = targetId;
+    }
+    try {
+      const result = await dataManager.get("systems", targetId, { preferLocal: true });
+      const payload = result?.payload;
+      if (!payload) {
+        throw new Error("System payload missing");
+      }
+      const label = payload.title || systemCatalog.get(targetId)?.title || targetId;
+      registerSystemRecord({ id: payload.id || targetId, title: label, source: "remote" }, { syncOption: true });
+      applySystemState(payload, { emitStatus: true, statusMessage: `Loaded ${label}` });
+    } catch (error) {
+      console.error("System editor: unable to load shared system", error);
+      if (status) {
+        status.show(error.message || "Unable to load shared system", { type: "danger" });
+      }
     }
   }
 
@@ -1351,4 +1580,46 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   function getDraftKey(id) {
     return id && String(id).trim() ? String(id).trim() : "__blank__";
   }
+
+  function resolveSharedRecordParam(expectedBucket) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const record = params.get("record");
+      if (!record) {
+        return null;
+      }
+      const [bucket, ...rest] = record.split(":");
+      const id = rest.join(":");
+      if (bucket !== expectedBucket || !id) {
+        return null;
+      }
+      return id;
+    } catch (error) {
+      console.warn("System editor: unable to parse shared record", error);
+      return null;
+    }
+  }
+
+  window.addEventListener("workbench:auth-changed", () => {
+    if (dataManager.isAuthenticated()) {
+      loadSystemRecords();
+      if (pendingSharedSystemId) {
+        void loadPendingSharedSystem();
+      }
+    }
+  });
+
+  window.addEventListener("workbench:content-saved", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "systems" && detail.source === "remote") {
+      loadSystemRecords();
+    }
+  });
+
+  window.addEventListener("workbench:content-deleted", (event) => {
+    const detail = event.detail || {};
+    if (detail.bucket === "systems" && detail.source === "remote") {
+      loadSystemRecords();
+    }
+  });
 })();

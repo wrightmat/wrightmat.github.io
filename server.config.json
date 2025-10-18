@@ -5,16 +5,32 @@
     "cors_origin": "*",
     "session_ttl_days": 7,
     "config_watch": false,
-    "log_level": "info"
+    "log_level": "info",
+    "require_email_verification": true,
+    "debug_verification_codes": false,
+    "default_admin_username": "admin",
+    "default_admin_password": "admin",
+    "default_admin_email": "admin@example.com"
   },
   "database": {
     "path": "data/database.sqlite"
+  },
+  "email": {
+    "enabled": false,
+    "sender": "admin@example.com",
+    "smtp_host": "",
+    "smtp_port": 587,
+    "smtp_username": "",
+    "smtp_password": "",
+    "use_tls": true,
+    "use_ssl": false,
+    "timeout": 10
   },
   "mounts": [
     {
       "name": "characters",
       "type": "json",
-      "root": "sheets/data/characters",
+      "root": "undercroft/workbench/data/characters",
       "table": "characters",
       "read_roles": ["free"],
       "write_roles": ["free"]
@@ -22,7 +38,7 @@
     {
       "name": "templates",
       "type": "json",
-      "root": "sheets/data/templates",
+      "root": "undercroft/workbench/data/templates",
       "table": "templates",
       "read_roles": ["free"],
       "write_roles": ["gm", "master", "creator", "admin"]
@@ -30,7 +46,7 @@
     {
       "name": "systems",
       "type": "json",
-      "root": "sheets/data/systems",
+      "root": "undercroft/workbench/data/systems",
       "table": "systems",
       "read_roles": ["free"],
       "write_roles": ["creator", "admin"]
