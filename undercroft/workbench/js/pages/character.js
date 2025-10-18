@@ -35,6 +35,10 @@ const BUILTIN_CHARACTERS = [
   const templateCatalog = new Map();
   const characterCatalog = new Map();
 
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
+
   const state = {
     mode: "view",
     template: null,
@@ -52,6 +56,44 @@ const BUILTIN_CHARACTERS = [
   let currentNotesKey = "";
   let componentCounter = 0;
   let pendingSharedRecord = resolveSharedRecordParam("characters");
+
+  function userOwnsCharacter(id) {
+    if (!id) {
+      return false;
+    }
+    const metadata = characterCatalog.get(id);
+    if (!metadata) {
+      return true;
+    }
+    const ownership = (metadata.ownership || "").toLowerCase();
+    if (ownership === "shared" || ownership === "public") {
+      return false;
+    }
+    if (ownership === "local" || ownership === "draft") {
+      return true;
+    }
+    const user = sessionUser();
+    if (!user || !dataManager.isAuthenticated()) {
+      return false;
+    }
+    if (typeof metadata.ownerId === "number" && typeof user.id === "number") {
+      return metadata.ownerId === user.id;
+    }
+    if (metadata.ownerUsername && user.username) {
+      return metadata.ownerUsername === user.username;
+    }
+    return ownership !== "shared" && ownership !== "public";
+  }
+
+  function resolveOwnerLabel(metadata) {
+    if (!metadata) {
+      return "the owner";
+    }
+    if (metadata.ownerUsername) {
+      return metadata.ownerUsername;
+    }
+    return "the owner";
+  }
 
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
@@ -117,6 +159,16 @@ const BUILTIN_CHARACTERS = [
       elements.saveButton.addEventListener("click", async () => {
         if (!state.draft?.id) {
           status.show("Create or load a character first.", { type: "info", timeout: 2000 });
+          return;
+        }
+        if (!dataManager.isAuthenticated()) {
+          status.show("Sign in to save characters to the server.", { type: "warning", timeout: 2600 });
+          return;
+        }
+        if (!userOwnsCharacter(state.draft.id)) {
+          const metadata = characterCatalog.get(state.draft.id) || {};
+          const ownerLabel = resolveOwnerLabel(metadata);
+          status.show(`Only ${ownerLabel} can save this character.`, { type: "warning", timeout: 2600 });
           return;
         }
         if (!dataManager.hasWriteAccess("characters")) {
@@ -276,12 +328,55 @@ const BUILTIN_CHARACTERS = [
     syncCharacterOptions();
   }
 
+  function normalizeCharacterRecord(record = {}, current = {}) {
+    const next = { ...record };
+    if (next.owner_id !== undefined && next.ownerId === undefined) {
+      next.ownerId = next.owner_id;
+    }
+    if (next.owner_username !== undefined && next.ownerUsername === undefined) {
+      next.ownerUsername = next.owner_username;
+    }
+    if (next.owner_tier !== undefined && next.ownerTier === undefined) {
+      next.ownerTier = next.owner_tier;
+    }
+    if (next.permissions !== undefined && next.sharePermissions === undefined) {
+      next.sharePermissions = next.permissions;
+    }
+    delete next.owner_id;
+    delete next.owner_username;
+    delete next.owner_tier;
+    delete next.permissions;
+
+    if (!next.ownership && current.ownership) {
+      next.ownership = current.ownership;
+    }
+    if (!next.ownerId && current.ownerId) {
+      next.ownerId = current.ownerId;
+    }
+    if (!next.ownerUsername && current.ownerUsername) {
+      next.ownerUsername = current.ownerUsername;
+    }
+    if (!next.ownerTier && current.ownerTier) {
+      next.ownerTier = current.ownerTier;
+    }
+    if (!next.sharePermissions && current.sharePermissions) {
+      next.sharePermissions = current.sharePermissions;
+    }
+    Object.keys(next).forEach((key) => {
+      if (next[key] === undefined) {
+        delete next[key];
+      }
+    });
+    return next;
+  }
+
   function registerCharacterRecord(record) {
     if (!record || !record.id) {
       return;
     }
     const current = characterCatalog.get(record.id) || {};
-    characterCatalog.set(record.id, { ...current, ...record });
+    const normalized = normalizeCharacterRecord(record, current);
+    characterCatalog.set(record.id, { ...current, ...normalized });
     syncCharacterOptions();
     syncCharacterActions();
   }
@@ -337,18 +432,26 @@ const BUILTIN_CHARACTERS = [
   function syncCharacterActions() {
     const hasDraft = Boolean(state.draft);
     if (elements.saveButton) {
-      const canWrite = dataManager.hasWriteAccess("characters");
       const hasChanges = hasDraft && hasUnsavedCharacterChanges();
-      const enabled = hasDraft && hasChanges && canWrite;
+      const isAuthenticated = dataManager.isAuthenticated();
+      const canWrite = dataManager.hasWriteAccess("characters");
+      const ownsRecord = hasDraft ? userOwnsCharacter(state.draft.id) : false;
+      const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && ownsRecord;
       elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasDraft) {
         elements.saveButton.title = "Create or load a character to save.";
+      } else if (!isAuthenticated) {
+        elements.saveButton.title = "Sign in to save characters to the server.";
       } else if (!canWrite) {
         const required = dataManager.describeRequiredWriteTier("characters");
         elements.saveButton.title = required
           ? `Saving characters requires a ${required} tier.`
           : "Your tier cannot save characters.";
+      } else if (!ownsRecord) {
+        const metadata = characterCatalog.get(state.draft.id) || {};
+        const ownerLabel = resolveOwnerLabel(metadata);
+        elements.saveButton.title = `Only ${ownerLabel} can save this character.`;
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
@@ -470,6 +573,7 @@ const BUILTIN_CHARACTERS = [
   async function loadCharacterRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("characters");
+      const user = sessionUser();
       localEntries.forEach(({ id, payload }) => {
         if (!id) return;
         registerCharacterRecord({
@@ -477,6 +581,10 @@ const BUILTIN_CHARACTERS = [
           title: payload?.data?.name || payload?.title || id,
           template: payload?.template || "",
           source: "local",
+          ownership: user ? "owned" : "local",
+          ownerId: user?.id ?? null,
+          ownerUsername: user?.username ?? "",
+          ownerTier: user?.tier ?? "",
         });
       });
     } catch (error) {
@@ -494,17 +602,48 @@ const BUILTIN_CHARACTERS = [
     }
     try {
       const { remote } = await dataManager.list("characters", { refresh: force, includeLocal: false });
+      const session = sessionUser();
       const owned = Array.isArray(remote?.owned) ? remote.owned : [];
-      const shared = Array.isArray(remote?.shared) ? remote.shared : [];
-      const publicEntries = Array.isArray(remote?.public) ? remote.public : [];
-      const all = [...owned, ...shared, ...publicEntries];
-      all.forEach((entry) => {
+      owned.forEach((entry) => {
         if (!entry || !entry.id) return;
         registerCharacterRecord({
           id: entry.id,
           title: entry.name || entry.title || entry.id,
           template: entry.template || "",
           source: "remote",
+          ownership: "owned",
+          ownerId: entry.owner_id ?? session?.id ?? null,
+          ownerUsername: entry.owner_username || session?.username || "",
+          ownerTier: entry.owner_tier || session?.tier || "",
+        });
+      });
+      const shared = Array.isArray(remote?.shared) ? remote.shared : [];
+      shared.forEach((entry) => {
+        if (!entry || !entry.id) return;
+        registerCharacterRecord({
+          id: entry.id,
+          title: entry.name || entry.title || entry.id,
+          template: entry.template || "",
+          source: "remote",
+          ownership: "shared",
+          ownerId: entry.owner_id ?? null,
+          ownerUsername: entry.owner_username || "",
+          ownerTier: entry.owner_tier || "",
+          sharePermissions: entry.permissions || "",
+        });
+      });
+      const publicEntries = Array.isArray(remote?.public) ? remote.public : [];
+      publicEntries.forEach((entry) => {
+        if (!entry || !entry.id) return;
+        registerCharacterRecord({
+          id: entry.id,
+          title: entry.name || entry.title || entry.id,
+          template: entry.template || "",
+          source: "remote",
+          ownership: "public",
+          ownerId: entry.owner_id ?? null,
+          ownerUsername: entry.owner_username || "",
+          ownerTier: entry.owner_tier || "",
         });
       });
       syncCharacterOptions();
@@ -530,7 +669,13 @@ const BUILTIN_CHARACTERS = [
     }
     const targetId = pendingSharedRecord;
     pendingSharedRecord = null;
-    registerCharacterRecord({ id: targetId, title: targetId, template: "", source: "remote" });
+    registerCharacterRecord({
+      id: targetId,
+      title: targetId,
+      template: "",
+      source: "remote",
+      ownership: "shared",
+    });
     syncCharacterOptions();
     try {
       await loadCharacter(targetId);
@@ -649,6 +794,11 @@ const BUILTIN_CHARACTERS = [
         title: state.draft.data?.name || metadata.title || state.draft.id,
         template: state.draft.template || metadata.template || "",
         source: metadata.source,
+        ownership: metadata.ownership,
+        ownerId: metadata.ownerId,
+        ownerUsername: metadata.ownerUsername,
+        ownerTier: metadata.ownerTier,
+        sharePermissions: metadata.sharePermissions,
       });
       if (state.draft.template) {
         await loadTemplateById(state.draft.template);
@@ -1579,7 +1729,17 @@ const BUILTIN_CHARACTERS = [
     state.draft = cloneCharacter(draft);
     state.characterOrigin = "local";
     state.mode = "edit";
-    registerCharacterRecord({ id: trimmedId, title: trimmedName, template: trimmedTemplate, source: "local" });
+    const user = sessionUser();
+    registerCharacterRecord({
+      id: trimmedId,
+      title: trimmedName,
+      template: trimmedTemplate,
+      source: "local",
+      ownership: user ? "owned" : "local",
+      ownerId: user?.id ?? null,
+      ownerUsername: user?.username ?? "",
+      ownerTier: user?.tier ?? "",
+    });
     if (elements.characterSelect) {
       elements.characterSelect.value = trimmedId;
     }
@@ -1666,6 +1826,8 @@ const BUILTIN_CHARACTERS = [
     const payload = cloneCharacter(state.draft);
     const id = state.draft.id;
     const label = payload?.data?.name || payload?.title || id;
+    const metadata = characterCatalog.get(id) || {};
+    const session = sessionUser();
     const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
     const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("characters");
     let remoteSucceeded = false;
@@ -1702,6 +1864,19 @@ const BUILTIN_CHARACTERS = [
       title: label,
       template: payload.template || state.template?.id || "",
       source: remoteSucceeded ? "remote" : "local",
+      ownership: remoteSucceeded
+        ? "owned"
+        : metadata.ownership || (session ? "owned" : "local"),
+      ownerId: remoteSucceeded
+        ? session?.id ?? metadata.ownerId ?? null
+        : metadata.ownerId ?? session?.id ?? null,
+      ownerUsername: remoteSucceeded
+        ? session?.username || metadata.ownerUsername || ""
+        : metadata.ownerUsername || session?.username || "",
+      ownerTier: remoteSucceeded
+        ? session?.tier || metadata.ownerTier || ""
+        : metadata.ownerTier || session?.tier || "",
+      sharePermissions: metadata.sharePermissions,
     });
     state.character = cloneCharacter(payload);
     state.characterOrigin = remoteSucceeded ? "remote" : "local";
@@ -1847,6 +2022,7 @@ const BUILTIN_CHARACTERS = [
         void loadPendingSharedRecord();
       }
     }
+    syncCharacterActions();
   });
 
   window.addEventListener("workbench:content-saved", (event) => {

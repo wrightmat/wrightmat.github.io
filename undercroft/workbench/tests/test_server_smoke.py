@@ -149,14 +149,42 @@ class ServerSmokeTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body, {"ok": True})
 
+    def test_default_tier_users_seeded(self):
+        for username, tier in (("free", "free"), ("player", "player"), ("gm", "gm"), ("creator", "creator")):
+            status, session = self._request(
+                "/auth/login",
+                method="POST",
+                payload={"username": username, "password": username},
+            )
+            self.assertEqual(status, 200)
+            self.assertEqual(session["user"]["username"], username)
+            self.assertEqual(session["user"]["tier"], tier)
+
     def test_anonymous_list_and_read(self):
         status, listing = self._request("/list/characters")
         self.assertEqual(status, 200)
         self.assertIn("public", listing)
 
-        sample_files = list((self._content_root / "characters").glob("*.json"))
-        self.assertTrue(sample_files, "expected seeded character data")
-        sample_id = sample_files[0].stem
+        public_entries = [
+            item
+            for item in listing.get("public", [])
+            if isinstance(item, dict) and item.get("id")
+        ]
+        if not public_entries:
+            public_entries = [
+                item
+                for item in listing.get("items", [])
+                if isinstance(item, dict)
+                and item.get("id")
+                and (item.get("visibility") in (None, "public", "shared"))
+            ]
+
+        if public_entries:
+            sample_id = public_entries[0]["id"]
+        else:
+            sample_files = list((self._content_root / "characters").glob("*.json"))
+            self.assertTrue(sample_files, "expected seeded character data")
+            sample_id = sample_files[0].stem
 
         status, character = self._request(f"/content/characters/{sample_id}")
         self.assertEqual(status, 200)
@@ -407,6 +435,13 @@ class ServerSmokeTests(unittest.TestCase):
         status, target_owned = self._request(f"/content/owned?username={target_username}", token=admin_token)
         self.assertEqual(status, 200)
         self.assertTrue(any(item["id"] == character_id for item in target_owned.get("items", [])))
+
+        self._request(
+            f"/content/characters/{character_id}/delete",
+            method="POST",
+            payload={},
+            token=admin_token,
+        )
 
         status, owner_owned = self._request(f"/content/owned?username={owner_username}", token=admin_token)
         self.assertEqual(status, 200)

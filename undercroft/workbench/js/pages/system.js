@@ -20,11 +20,29 @@ import {
   builtinIsTemporarilyMissing,
   applyBuiltinCatalog,
 } from "../lib/content-registry.js";
+import { initTierGate, initTierVisibility } from "../lib/access.js";
 
 (async () => {
   const { status, undoStack } = initAppShell({ namespace: "system" });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  initAuthControls({ root: document, status, dataManager });
+  const auth = initAuthControls({ root: document, status, dataManager });
+  initTierVisibility({ root: document, dataManager, status, auth });
+
+  const gate = initTierGate({
+    root: document,
+    dataManager,
+    status,
+    auth,
+    requiredTier: "gm",
+    gateSelector: "[data-tier-gate]",
+    contentSelector: "[data-tier-content]",
+    onGranted: () => window.location.reload(),
+    onRevoked: () => window.location.reload(),
+  });
+
+  if (!gate.allowed) {
+    return;
+  }
 
   const systemCatalog = new Map();
 

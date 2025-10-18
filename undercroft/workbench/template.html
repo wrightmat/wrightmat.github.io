@@ -54,7 +54,7 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body">
-    <div class="workbench-app d-flex flex-column">
+    <div class="workbench-app d-flex flex-column" data-tier-content>
       <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="container-lg d-flex align-items-center gap-3 py-3">
           <div class="d-flex align-items-center gap-3">
@@ -370,6 +370,21 @@
             </div>
           </div>
         </aside>
+      </div>
+    </div>
+    <div class="container-lg py-5 my-5 d-none" data-tier-gate>
+      <div class="card border-0 shadow-theme mx-auto" style="max-width: 40rem;">
+        <div class="card-body d-flex flex-column gap-3">
+          <h2 class="card-title h4 mb-0">Access required</h2>
+          <p class="text-body-secondary mb-0">
+            This tool requires <span class="fw-semibold" data-tier-required-label>GM</span> access or higher. Sign in with an
+            eligible account or upgrade your tier to continue.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" type="button" data-tier-open-login>Sign in</button>
+            <a class="btn btn-outline-secondary" href="index.html">Return home</a>
+          </div>
+        </div>
       </div>
     </div>
     <div class="status-root" data-status-root></div>

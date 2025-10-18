@@ -504,3 +504,27 @@ def ensure_default_admin(state: ServerState) -> None:
     )
     state.db.commit()
     logging.info("Created default admin user '%s'", username)
+
+
+def ensure_default_test_users(state: ServerState) -> None:
+    defaults = [
+        ("free", "free"),
+        ("player", "player"),
+        ("gm", "gm"),
+        ("creator", "creator"),
+    ]
+    created = False
+    for username, tier in defaults:
+        existing = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+        if existing:
+            continue
+        email = f"{username}@example.com"
+        password_hash = hash_password(username)
+        state.db.execute(
+            "INSERT INTO users (email, username, password_hash, tier, is_active) VALUES (?, ?, ?, ?, 1)",
+            (email, username, password_hash, tier),
+        )
+        logging.info("Created default %s user '%s'", tier, username)
+        created = True
+    if created:
+        state.db.commit()
