@@ -9,9 +9,14 @@
       "label": "Name"
     },
     {
-      "type": "array",
+      "type": "string",
       "key": "class",
-      "label": "Class",
+      "label": "class"
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Classes",
       "required": true,
       "values": [
         "Barbarian",
