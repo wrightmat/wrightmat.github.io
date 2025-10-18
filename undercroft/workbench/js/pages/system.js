@@ -205,6 +205,73 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return Array.isArray(nodes) ? nodes.map((node) => cloneNode(node)) : [];
   }
 
+  function cloneValue(value) {
+    if (value === undefined || value === null) {
+      return value;
+    }
+    if (typeof value !== "object") {
+      return value;
+    }
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(value);
+      } catch (error) {
+        // ignore structuredClone errors and fall back
+      }
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      if (Array.isArray(value)) {
+        return value.slice();
+      }
+      return { ...value };
+    }
+  }
+
+  function areValuesEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+    if (Number.isNaN(a) && Number.isNaN(b)) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return a === b;
+    }
+    if (Array.isArray(a) || Array.isArray(b)) {
+      if (!Array.isArray(a) || !Array.isArray(b)) {
+        return false;
+      }
+      if (a.length !== b.length) {
+        return false;
+      }
+      for (let index = 0; index < a.length; index += 1) {
+        if (!areValuesEqual(a[index], b[index])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (typeof a === "object" && typeof b === "object") {
+      const keysA = Object.keys(a);
+      const keysB = Object.keys(b);
+      if (keysA.length !== keysB.length) {
+        return false;
+      }
+      for (const key of keysA) {
+        if (!Object.prototype.hasOwnProperty.call(b, key)) {
+          return false;
+        }
+        if (!areValuesEqual(a[key], b[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
   const renderPreview = createJsonPreviewRenderer({
     resolvePreviewElement: () => elements.jsonPreview,
     resolveBytesElement: () => elements.jsonPreviewBytes,
@@ -1034,6 +1101,37 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         renderAll();
         return { message: "Restored removed field", options: { type: "info", timeout: 1600 } };
       }
+      case "update": {
+        if (!entry.nodeId || !entry.property) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        state.selectedNodeId = entry.nodeId;
+        updateNodeProperty(entry.nodeId, entry.property, entry.previous, {
+          skipHistory: true,
+          defined: entry.previousDefined !== false,
+        });
+        return {
+          message: "Reverted field change",
+          options: { type: "info", timeout: 1500 },
+        };
+      }
+      case "type": {
+        if (!entry.nodeId || !entry.previous) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        const location = findNode(entry.nodeId);
+        if (!location || !location.collection) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        location.collection[location.index] = cloneNode(entry.previous);
+        state.selectedNodeId = entry.nodeId;
+        rebuildFieldIdentities(state.system);
+        renderAll();
+        return {
+          message: "Reverted field type",
+          options: { type: "info", timeout: 1500 },
+        };
+      }
       case "clear": {
         state.system.fields = cloneNodeCollection(entry.fields);
         state.selectedNodeId = entry.previousSelectedId || null;
@@ -1090,6 +1188,37 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         state.selectedNodeId = entry.parentId && entry.parentId !== "root" ? entry.parentId : null;
         renderAll();
         return { message: "Reapplied field removal", options: { type: "info", timeout: 1600 } };
+      }
+      case "update": {
+        if (!entry.nodeId || !entry.property) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        state.selectedNodeId = entry.nodeId;
+        updateNodeProperty(entry.nodeId, entry.property, entry.next, {
+          skipHistory: true,
+          defined: entry.nextDefined !== false,
+        });
+        return {
+          message: "Reapplied field change",
+          options: { type: "info", timeout: 1500 },
+        };
+      }
+      case "type": {
+        if (!entry.nodeId || !entry.next) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        const location = findNode(entry.nodeId);
+        if (!location || !location.collection) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        location.collection[location.index] = cloneNode(entry.next);
+        state.selectedNodeId = entry.nodeId;
+        rebuildFieldIdentities(state.system);
+        renderAll();
+        return {
+          message: "Reapplied field type",
+          options: { type: "info", timeout: 1500 },
+        };
       }
       case "clear": {
         clearCanvas({ skipHistory: true, silent: true, suppressRender: true });
@@ -1376,15 +1505,51 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return wrapper;
   }
 
-  function updateNodeProperty(nodeId, property, value) {
+  function updateNodeProperty(
+    nodeId,
+    property,
+    value,
+    { skipHistory = false, defined = value !== undefined } = {}
+  ) {
     const found = findNode(nodeId);
     if (!found) {
       return;
     }
-    found.node[property] = value;
+    const hasCurrent = Object.prototype.hasOwnProperty.call(found.node, property);
+    const currentValue = hasCurrent ? found.node[property] : undefined;
+    if (!defined && !hasCurrent) {
+      return;
+    }
+    if (defined && hasCurrent && areValuesEqual(currentValue, value)) {
+      return;
+    }
+    if (!skipHistory) {
+      undoStack.push({
+        type: "update",
+        systemId: state.system?.id || "",
+        nodeId,
+        property,
+        previous: cloneValue(currentValue),
+        previousDefined: hasCurrent,
+        next: cloneValue(value),
+        nextDefined: defined,
+      });
+    }
+    applyNodePropertyChange(found.node, property, value, { defined });
     renderCanvas();
     renderPreview();
     renderInspector();
+  }
+
+  function applyNodePropertyChange(targetNode, property, value, { defined = value !== undefined } = {}) {
+    if (!targetNode) {
+      return;
+    }
+    if (!defined) {
+      delete targetNode[property];
+      return;
+    }
+    targetNode[property] = cloneValue(value);
   }
 
   function changeNodeType(nodeId, nextType) {
@@ -1393,17 +1558,30 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return;
     }
     const current = found.node;
+    const normalizedNextType = normalizeType(nextType);
+    if (normalizeType(current.type) === normalizedNextType) {
+      return;
+    }
+    const previousNode = cloneNode(current);
     const preserved = {
       id: current.id,
       key: current.key,
       label: current.label,
       required: current.required,
     };
-    const replacement = applyFieldIdentity(createFieldNode(nextType, preserved));
+    const replacement = applyFieldIdentity(createFieldNode(normalizedNextType, preserved));
     if (found.collection) {
       found.collection[found.index] = replacement;
     }
+    undoStack.push({
+      type: "type",
+      systemId: state.system?.id || "",
+      nodeId,
+      previous: previousNode,
+      next: cloneNode(replacement),
+    });
     state.selectedNodeId = preserved.id;
+    rebuildFieldIdentities(state.system);
     renderAll();
   }
 
