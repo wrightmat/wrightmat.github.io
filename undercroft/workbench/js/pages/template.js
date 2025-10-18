@@ -13,7 +13,13 @@ import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
-import { BUILTIN_SYSTEMS, BUILTIN_TEMPLATES } from "../lib/content-registry.js";
+import {
+  listBuiltinSystems,
+  listBuiltinTemplates,
+  markBuiltinMissing,
+  markBuiltinAvailable,
+  builtinIsTemporarilyMissing,
+} from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
@@ -224,7 +230,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   initializeSharedTemplateHandling();
 
   if (elements.templateSelect) {
-    const builtinOptions = BUILTIN_TEMPLATES.map((tpl) => ({ value: tpl.id, label: tpl.title }));
+    const builtinOptions = listBuiltinTemplates().map((tpl) => ({ value: tpl.id, label: tpl.title }));
     populateSelect(elements.templateSelect, builtinOptions, { placeholder: "Select template" });
     elements.templateSelect.addEventListener("change", async () => {
       const selectedId = elements.templateSelect.value;
@@ -258,6 +264,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         if (metadata.source === "builtin" && metadata.path) {
           const response = await fetch(metadata.path);
           payload = await response.json();
+          markBuiltinAvailable("templates", metadata.id || selectedId);
         } else {
           const result = await dataManager.get("templates", selectedId, { preferLocal: true });
           payload = result?.payload || null;
@@ -274,6 +281,9 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         applyTemplateData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
       } catch (error) {
         console.error("Unable to load template", error);
+        if (metadata.source === "builtin") {
+          markBuiltinMissing("templates", metadata.id || selectedId);
+        }
         status.show("Failed to load template", { type: "error", timeout: 2500 });
       }
     });
@@ -904,6 +914,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     if (!template || !template.id || !template.path) {
       return;
     }
+    if (builtinIsTemporarilyMissing("templates", template.id)) {
+      removeTemplateRecord(template.id);
+      return;
+    }
     if (typeof window === "undefined" || typeof window.fetch !== "function") {
       return;
     }
@@ -911,8 +925,11 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       .fetch(template.path, { method: "GET", cache: "no-store" })
       .then((response) => {
         if (!response.ok) {
+          markBuiltinMissing("templates", template.id);
           removeTemplateRecord(template.id);
+          return;
         }
+        markBuiltinAvailable("templates", template.id);
         try {
           response.body?.cancel?.();
         } catch (error) {
@@ -921,6 +938,8 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       })
       .catch((error) => {
         console.warn("Template editor: failed to verify builtin template", template.id, error);
+        markBuiltinMissing("templates", template.id);
+        removeTemplateRecord(template.id);
       });
   }
 
@@ -947,6 +966,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     if (!system || !system.id || !system.path) {
       return;
     }
+    if (builtinIsTemporarilyMissing("systems", system.id)) {
+      removeSystemRecord(system.id);
+      return;
+    }
     if (typeof window === "undefined" || typeof window.fetch !== "function") {
       return;
     }
@@ -954,8 +977,11 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       .fetch(system.path, { method: "GET", cache: "no-store" })
       .then((response) => {
         if (!response.ok) {
+          markBuiltinMissing("systems", system.id);
           removeSystemRecord(system.id);
+          return;
         }
+        markBuiltinAvailable("systems", system.id);
         try {
           response.body?.cancel?.();
         } catch (error) {
@@ -964,6 +990,8 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       })
       .catch((error) => {
         console.warn("Template editor: failed to verify builtin system", system.id, error);
+        markBuiltinMissing("systems", system.id);
+        removeSystemRecord(system.id);
       });
   }
 
@@ -1172,14 +1200,14 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   }
 
   function registerBuiltinContent() {
-    BUILTIN_TEMPLATES.forEach((template) => {
+    listBuiltinTemplates().forEach((template) => {
       registerTemplateRecord(
         { id: template.id, title: template.title, path: template.path, source: "builtin" },
         { syncOption: false }
       );
       verifyBuiltinTemplateAvailability(template);
     });
-    BUILTIN_SYSTEMS.forEach((system) => {
+    listBuiltinSystems().forEach((system) => {
       registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
       verifyBuiltinSystemAvailability(system);
     });
