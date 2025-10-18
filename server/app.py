@@ -20,6 +20,9 @@ from .auth import (
     list_users,
     verify_registration,
     upgrade_user,
+    delete_user,
+    update_email_address,
+    update_password,
 )
 from .config import ConfigLoader
 from .importer import run_importer
@@ -282,6 +285,47 @@ def register_routes():
         return json_response(payload)
 
     router.add("GET", r"^/auth/users$", handle_list_users)
+
+    # POST /auth/users/delete
+    def handle_delete_user(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        data = require_json(request)
+        username = data.get("username")
+        if not username:
+            raise AuthError("username required")
+        result = delete_user(request.state, username)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/users/delete$", handle_delete_user)
+
+    # POST /auth/profile/email
+    def handle_update_email(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        data = require_json(request)
+        result = update_email_address(request.state, user, data.get("email", ""), data.get("password", ""))
+        return json_response(result)
+
+    router.add("POST", r"^/auth/profile/email$", handle_update_email)
+
+    # POST /auth/profile/password
+    def handle_update_password(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        data = require_json(request)
+        result = update_password(
+            request.state,
+            user,
+            data.get("current_password", ""),
+            data.get("new_password", ""),
+        )
+        return json_response(result)
+
+    router.add("POST", r"^/auth/profile/password$", handle_update_password)
 
     # POST /content/{bucket}/{id}
     def handle_save_content(request: Request) -> Response:

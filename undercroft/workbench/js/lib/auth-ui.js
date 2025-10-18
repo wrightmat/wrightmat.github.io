@@ -35,8 +35,8 @@ function ensureModal() {
                 </div>
                 <div class="text-danger small min-h-1" data-auth-error></div>
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                  <button type="submit" class="btn btn-primary">Log in</button>
                   <button type="button" class="btn btn-link" data-auth-switch="register">Need an account?</button>
+                  <button type="submit" class="btn btn-primary">Log in</button>
                 </div>
               </form>
             </div>
@@ -210,7 +210,8 @@ export function initAuthControls({ root = document, status = null, dataManager =
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><span class="dropdown-item-text text-body-secondary">Tier: ${formatTierLabel(user.tier)}</span></li>
-        ${user.tier === "admin" ? '<li><a class="dropdown-item" href="admin.html" data-auth-admin>Admin panel</a></li>' : ""}
+        <li><a class="dropdown-item" href="admin.html" data-auth-settings>Account settings</a></li>
+        ${user.tier === "admin" ? '<li><a class="dropdown-item" href="admin.html#users" data-auth-admin>Admin controls</a></li>' : ""}
         <li><hr class="dropdown-divider" /></li>
         <li><button class="dropdown-item" type="button" data-auth-logout>Log out</button></li>
       </ul>

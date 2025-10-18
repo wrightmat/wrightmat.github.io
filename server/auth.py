@@ -4,10 +4,12 @@ import hashlib
 import logging
 import hmac
 import secrets
+import smtplib
 import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from email.message import EmailMessage
 from typing import Any, Dict, Optional
 
 from .state import ServerState
@@ -31,6 +33,13 @@ class AuthError(Exception):
 
 
 def sanitize_user_row(row: sqlite3.Row) -> Dict[str, Any]:
+    keys = set(row.keys()) if hasattr(row, "keys") else set()
+    if "last_activity" in keys:
+        last_activity = row["last_activity"] or None
+    elif "last_login" in keys:
+        last_activity = row["last_login"] or None
+    else:
+        last_activity = None
     return {
         "id": row["id"],
         "email": row["email"],
@@ -38,6 +47,7 @@ def sanitize_user_row(row: sqlite3.Row) -> Dict[str, Any]:
         "tier": row["tier"],
         "created_at": row["created_at"],
         "last_login": row["last_login"],
+        "last_activity": last_activity,
         "is_active": bool(row["is_active"]),
     }
 
@@ -137,8 +147,47 @@ def latest_verification_record(state: ServerState, user_id: int) -> Optional[sql
     ).fetchone()
 
 
-def send_verification_email(email: str, code: str) -> None:
+def send_verification_email(state: ServerState, email: str, code: str) -> None:
     logging.info("Verification code for %s: %s", email, code)
+    config = state.config.email
+    if not config.enabled or not config.smtp_host or not config.sender:
+        logging.info("Email delivery disabled or SMTP not configured; skipping send")
+        return
+
+    message = EmailMessage()
+    message["Subject"] = "Your Undercroft verification code"
+    message["From"] = config.sender
+    message["To"] = email
+    message.set_content(
+        "\n".join(
+            [
+                "Hello!",
+                "",
+                f"Your verification code is {code}.",
+                "",
+                f"It expires in {VERIFICATION_CODE_TTL_MINUTES} minutes.",
+                "",
+                "If you did not request this code you can ignore this email.",
+            ]
+        )
+    )
+
+    try:
+        if config.use_ssl:
+            with smtplib.SMTP_SSL(config.smtp_host, config.smtp_port, timeout=config.timeout) as smtp:
+                if config.smtp_username:
+                    smtp.login(config.smtp_username, config.smtp_password or "")
+                smtp.send_message(message)
+        else:
+            with smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=config.timeout) as smtp:
+                if config.use_tls:
+                    smtp.starttls()
+                if config.smtp_username:
+                    smtp.login(config.smtp_username, config.smtp_password or "")
+                smtp.send_message(message)
+    except Exception as exc:  # pragma: no cover - depends on SMTP environment
+        logging.exception("Failed to send verification email")
+        raise AuthError("Unable to send verification email") from exc
 
 
 def create_session(state: ServerState, user_id: int, ip: str, user_agent: str) -> Dict[str, str]:
@@ -193,14 +242,30 @@ def require_role(user: Optional[User], role: str) -> None:
         raise AuthError("Insufficient permissions")
 
 
+def count_active_admins(state: ServerState, exclude_user_id: Optional[int] = None) -> int:
+    if exclude_user_id is not None:
+        row = state.db.execute(
+            "SELECT COUNT(*) AS count FROM users WHERE tier = 'admin' AND is_active = 1 AND id != ?",
+            (exclude_user_id,),
+        ).fetchone()
+    else:
+        row = state.db.execute(
+            "SELECT COUNT(*) AS count FROM users WHERE tier = 'admin' AND is_active = 1",
+        ).fetchone()
+    return int(row["count"] if row and "count" in row.keys() else row[0] if row else 0)
+
+
 def upgrade_user(state: ServerState, target_username: str, new_tier: str) -> Dict[str, str]:
     tiers = ["free", "player", "gm", "creator", "admin"]
     tier_value = (new_tier or "").strip().lower()
     if tier_value not in tiers:
         raise AuthError("Unknown tier")
-    row = state.db.execute("SELECT id FROM users WHERE username = ?", (target_username,)).fetchone()
+    row = state.db.execute("SELECT id, tier FROM users WHERE username = ?", (target_username,)).fetchone()
     if not row:
         raise AuthError("User not found")
+    if row["tier"] == "admin" and tier_value != "admin":
+        if count_active_admins(state, exclude_user_id=row["id"]) == 0:
+            raise AuthError("At least one administrator must remain")
     state.db.execute("UPDATE users SET tier = ? WHERE id = ?", (tier_value, row["id"]))
     state.db.commit()
     return {"username": target_username, "tier": tier_value}
@@ -208,9 +273,82 @@ def upgrade_user(state: ServerState, target_username: str, new_tier: str) -> Dic
 
 def list_users(state: ServerState) -> Dict[str, list[Dict[str, Any]]]:
     rows = state.db.execute(
-        "SELECT id, email, username, tier, created_at, last_login, is_active FROM users ORDER BY username"
+        """
+        SELECT
+            u.id,
+            u.email,
+            u.username,
+            u.tier,
+            u.created_at,
+            u.last_login,
+            u.is_active,
+            CASE
+                WHEN u.last_login IS NULL AND s.last_accessed_at IS NULL THEN NULL
+                ELSE MAX(COALESCE(u.last_login, ''), COALESCE(s.last_accessed_at, ''))
+            END AS last_activity
+        FROM users AS u
+        LEFT JOIN (
+            SELECT user_id, MAX(last_accessed_at) AS last_accessed_at
+            FROM sessions
+            WHERE is_active = 1
+            GROUP BY user_id
+        ) AS s ON s.user_id = u.id
+        ORDER BY u.username
+        """
     ).fetchall()
     return {"users": [sanitize_user_row(row) for row in rows]}
+
+
+def delete_user(state: ServerState, target_username: str) -> Dict[str, str]:
+    username = (target_username or "").strip()
+    if not username:
+        raise AuthError("username is required")
+    row = state.db.execute("SELECT id, tier FROM users WHERE username = ?", (username,)).fetchone()
+    if not row:
+        raise AuthError("User not found")
+    if row["tier"] == "admin" and count_active_admins(state, exclude_user_id=row["id"]) == 0:
+        raise AuthError("Cannot remove the last administrator")
+    state.db.execute("DELETE FROM users WHERE id = ?", (row["id"],))
+    state.db.commit()
+    return {"username": username}
+
+
+def update_email_address(state: ServerState, user: User, new_email: str, password: str) -> Dict[str, Any]:
+    email = (new_email or "").strip().lower()
+    if not email:
+        raise AuthError("Email is required")
+    if not password:
+        raise AuthError("Password is required")
+    row = state.db.execute("SELECT * FROM users WHERE id = ?", (user.id,)).fetchone()
+    if not row:
+        raise AuthError("User not found")
+    if not verify_password(password, row["password_hash"]):
+        raise AuthError("Incorrect password")
+    existing = state.db.execute(
+        "SELECT id FROM users WHERE email = ? AND id != ?",
+        (email, user.id),
+    ).fetchone()
+    if existing:
+        raise AuthError("Email already in use")
+    state.db.execute("UPDATE users SET email = ? WHERE id = ?", (email, user.id))
+    state.db.commit()
+    updated = state.db.execute("SELECT * FROM users WHERE id = ?", (user.id,)).fetchone()
+    return {"user": sanitize_user_row(updated)}
+
+
+def update_password(state: ServerState, user: User, current_password: str, new_password: str) -> Dict[str, Any]:
+    current = (current_password or "").strip()
+    new = (new_password or "").strip()
+    if len(new) < 8:
+        raise AuthError("New password must be at least 8 characters long")
+    row = state.db.execute("SELECT password_hash FROM users WHERE id = ?", (user.id,)).fetchone()
+    if not row:
+        raise AuthError("User not found")
+    if not verify_password(current, row["password_hash"]):
+        raise AuthError("Incorrect current password")
+    state.db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(new), user.id))
+    state.db.commit()
+    return {"ok": True}
 
 
 def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]:
@@ -240,7 +378,7 @@ def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]
             )
             state.db.commit()
             code = create_verification_record(state, existing["id"])
-            send_verification_email(existing["email"], code)
+            send_verification_email(state, existing["email"], code)
             result = {
                 "requires_verification": True,
                 "message": "Verification code resent",
@@ -254,7 +392,7 @@ def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]
     sanitized = sanitize_user_row(user_row)
     if require_verification:
         code = create_verification_record(state, user_row["id"])
-        send_verification_email(email, code)
+        send_verification_email(state, email, code)
         result = {
             "requires_verification": True,
             "user": sanitized,

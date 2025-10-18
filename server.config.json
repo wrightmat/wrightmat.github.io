@@ -15,6 +15,17 @@
   "database": {
     "path": "data/database.sqlite"
   },
+  "email": {
+    "enabled": false,
+    "sender": "admin@example.com",
+    "smtp_host": "",
+    "smtp_port": 587,
+    "smtp_username": "",
+    "smtp_password": "",
+    "use_tls": true,
+    "use_ssl": false,
+    "timeout": 10
+  },
   "mounts": [
     {
       "name": "characters",
