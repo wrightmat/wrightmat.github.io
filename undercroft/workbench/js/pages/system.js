@@ -194,7 +194,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   if (elements.select) {
     populateSelect(
       elements.select,
-      BUILTIN_SYSTEMS.map((system) => ({ value: system.id, label: system.title }))
+      BUILTIN_SYSTEMS.map((system) => ({ value: system.id, label: system.title })),
+      { placeholder: "Select system" }
     );
     elements.select.addEventListener("change", async () => {
       persistCurrentDraft();
@@ -253,12 +254,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
   if (elements.newButton) {
     elements.newButton.addEventListener("click", () => {
       if (newSystemModalInstance && elements.newSystemForm) {
-        elements.newSystemForm.reset();
-        elements.newSystemForm.classList.remove("was-validated");
-        if (elements.newSystemVersion) {
-          const defaultVersion = elements.newSystemVersion.getAttribute("value") || "0.1";
-          elements.newSystemVersion.value = defaultVersion;
-        }
+        prepareNewSystemForm();
         newSystemModalInstance.show();
         return;
       }
@@ -313,6 +309,27 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       form.reset();
       form.classList.remove("was-validated");
     });
+  }
+
+  function prepareNewSystemForm() {
+    if (!elements.newSystemForm) {
+      return;
+    }
+    elements.newSystemForm.reset();
+    elements.newSystemForm.classList.remove("was-validated");
+    if (elements.newSystemVersion) {
+      const defaultVersion = elements.newSystemVersion.getAttribute("value") || "0.1";
+      elements.newSystemVersion.value = defaultVersion;
+    }
+    if (elements.newSystemId) {
+      elements.newSystemId.setCustomValidity("");
+      const seed = state.system?.title || state.system?.id || "system";
+      let generatedId = "";
+      do {
+        generatedId = generateSystemId(seed || "system");
+      } while (generatedId && systemCatalog.has(generatedId));
+      elements.newSystemId.value = generatedId;
+    }
   }
 
   if (elements.saveButton) {
@@ -448,12 +465,6 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     elements.importButton.addEventListener("click", () => {
       importInput.click();
     });
-    hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
-    hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
-    hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
-    hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
-    hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
-    applySystemState(hydrated);
   }
 
   if (elements.exportButton) {
@@ -1318,12 +1329,19 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   function ensureSelectValue() {
     if (!elements.select) return;
-    const escaped = escapeCss(state.system.id || "");
-    const option = escaped ? elements.select.querySelector(`option[value="${escaped}"]`) : null;
-    if (option) {
-      elements.select.value = state.system.id;
-    } else {
-      elements.select.value = "";
+    const currentId = state.system.id || "";
+    const escaped = escapeCss(currentId);
+    if (currentId) {
+      const option = escaped ? elements.select.querySelector(`option[value="${escaped}"]`) : null;
+      if (option) {
+        elements.select.value = currentId;
+        return;
+      }
+    }
+    elements.select.value = "";
+    const placeholder = elements.select.querySelector('option[value=""][disabled]');
+    if (placeholder) {
+      placeholder.selected = true;
     }
   }
 
@@ -1337,6 +1355,16 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       return window.CSS.escape(value);
     }
     return value.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
+  }
+
+  function generateSystemId(name) {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `sys.${crypto.randomUUID()}`;
+    }
+    const base = (name || "system").toLowerCase();
+    const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `sys.${slug || "system"}.${rand}`;
   }
 
   function generateId() {
