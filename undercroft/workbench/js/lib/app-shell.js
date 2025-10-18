@@ -56,10 +56,19 @@ export function initAppShell({
       return null;
     }
     const feedback = typeof onUndo === "function" ? onUndo(entry) : null;
-    if (!silent) {
-      showFeedback(status, feedback, "Undid last action");
+    const applied = !(
+      feedback &&
+      typeof feedback === "object" &&
+      Object.prototype.hasOwnProperty.call(feedback, "applied") &&
+      feedback.applied === false
+    );
+    if (!applied) {
+      undoStack.requeueUndo(entry);
     }
-    return entry;
+    if (!silent) {
+      showFeedback(status, feedback, applied ? "Undid last action" : null);
+    }
+    return applied ? entry : null;
   }
 
   function performRedo({ silent = false } = {}) {
@@ -71,10 +80,19 @@ export function initAppShell({
       return null;
     }
     const feedback = typeof onRedo === "function" ? onRedo(entry) : null;
-    if (!silent) {
-      showFeedback(status, feedback, "Redid last action");
+    const applied = !(
+      feedback &&
+      typeof feedback === "object" &&
+      Object.prototype.hasOwnProperty.call(feedback, "applied") &&
+      feedback.applied === false
+    );
+    if (!applied) {
+      undoStack.requeueRedo(entry);
     }
-    return entry;
+    if (!silent) {
+      showFeedback(status, feedback, applied ? "Redid last action" : null);
+    }
+    return applied ? entry : null;
   }
 
   keyboard.register("ctrl+z", (event) => {
