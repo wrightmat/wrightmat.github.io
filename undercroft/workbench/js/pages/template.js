@@ -14,6 +14,8 @@ import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { BUILTIN_SYSTEMS, BUILTIN_TEMPLATES } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
+import { listFormulaFunctions } from "../lib/formula-engine.js";
 
 (() => {
   const { status, undoStack } = initAppShell({ namespace: "template" });
@@ -22,6 +24,117 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 
   const templateCatalog = new Map();
   const systemCatalog = new Map();
+  const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
+
+  const FORMULA_FUNCTION_SIGNATURES = {
+    abs: "abs(value)",
+    avg: "avg(...values)",
+    ceil: "ceil(value)",
+    clamp: "clamp(value, min, max)",
+    floor: "floor(value)",
+    if: "if(condition, whenTrue, whenFalse)",
+    max: "max(...values)",
+    min: "min(...values)",
+    mod: "mod(dividend, divisor)",
+    not: "not(value)",
+    or: "or(...values)",
+    and: "and(...values)",
+    pow: "pow(base, exponent)",
+    round: "round(value)",
+    sqrt: "sqrt(value)",
+    sum: "sum(...values)",
+  };
+
+  const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
+    name,
+    signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
+  }));
+
+  const FIELD_TYPE_META = {
+    string: { icon: "tabler:letter-case", label: "String" },
+    number: { icon: "tabler:123", label: "Number" },
+    boolean: { icon: "tabler:switch-3", label: "Boolean" },
+    array: { icon: "tabler:brackets", label: "Array" },
+    object: { icon: "tabler:braces", label: "Object" },
+  };
+
+  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
+
+  function resolveFieldTypeMeta(categoryOrType) {
+    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
+    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
+  }
+
+  function getComponentBindingCategories(component) {
+    if (!component || typeof component !== "object") {
+      return null;
+    }
+    switch (component.type) {
+      case "input": {
+        const variant = component.variant || "text";
+        if (variant === "number") {
+          return ["number"];
+        }
+        if (variant === "checkbox" || variant === "radio") {
+          return ["object"];
+        }
+        if (variant === "select") {
+          return ["array"];
+        }
+        return ["string", "number"];
+      }
+      case "linear-track":
+      case "circular-track":
+        return ["number"];
+      case "array":
+        return ["array", "object"];
+      case "select-group":
+        return ["array", "object"];
+      case "toggle":
+        return ["string"];
+      default:
+        return null;
+    }
+  }
+
+  function fieldMatchesCategories(entry, categories) {
+    if (!Array.isArray(categories) || !categories.length) {
+      return true;
+    }
+    const entryCategory = entry?.category || categorizeFieldType(entry?.type);
+    if (!entryCategory) {
+      return categories.includes("string") || categories.includes("any");
+    }
+    return categories.includes(entryCategory) || categories.includes("any");
+  }
+
+  const systemDefinitionCache = new Map();
+
+  const state = {
+    template: null,
+    components: [],
+    selectedId: null,
+    systemDefinition: null,
+    bindingFields: [],
+  };
+
+  function hasActiveTemplate() {
+    return Boolean(state.template && (state.template.id || state.template.title));
+  }
+
+  const dropzones = new Map();
+  const containerActiveTabs = new Map();
+
+  function emitBindingFieldsReady(schemaId = "") {
+    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
+      return;
+    }
+    const detail = {
+      schemaId: schemaId || "",
+      count: Array.isArray(state.bindingFields) ? state.bindingFields.length : 0,
+    };
+    window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
+  }
 
   registerBuiltinContent();
 
@@ -174,9 +287,9 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       colorControls: ["foreground", "background", "border"],
     },
     array: {
-      label: "Array",
+      label: "List",
       defaults: {
-        name: "Array",
+        name: "List",
         variant: "list",
       },
       supportsBinding: true,
@@ -252,7 +365,9 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       defaults: {
         name: "Linear Track",
         segments: 6,
-        activeSegments: [true, true, false, false, false, false],
+        segmentBinding: "6",
+        segmentFormula: "",
+        value: 3,
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -266,7 +381,9 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       defaults: {
         name: "Circular Track",
         segments: 6,
-        activeSegments: [true, true, true, false, false, false],
+        segmentBinding: "6",
+        segmentFormula: "",
+        value: 3,
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -294,8 +411,10 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       defaults: {
         name: "Toggle",
         states: ["Novice", "Skilled", "Expert"],
-        activeIndex: 1,
+        activeIndex: 0,
         shape: "circle",
+        statesBinding: "",
+        value: "Novice",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -307,15 +426,6 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   };
 
   let componentCounter = 0;
-
-  const state = {
-    template: null,
-    components: [],
-    selectedId: null,
-  };
-
-  const dropzones = new Map();
-  const containerActiveTabs = new Map();
 
   const renderPreview = createJsonPreviewRenderer({
     resolvePreviewElement: () => elements.jsonPreview,
@@ -377,6 +487,39 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     return fallback || "";
   }
 
+  function normalizeBindingValue(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+    return value.trim();
+  }
+
+  function componentHasFormula(component, { formulaKey = "formula" } = {}) {
+    if (!formulaKey) {
+      return false;
+    }
+    const value = component && typeof component[formulaKey] === "string" ? component[formulaKey] : "";
+    return normalizeBindingValue(value).length > 0;
+  }
+
+  function getBindingEditorValue(component, { bindingKey = "binding", formulaKey = "formula" } = {}) {
+    if (!component || typeof component !== "object") {
+      return "";
+    }
+    if (componentHasFormula(component, { formulaKey })) {
+      const expression = normalizeBindingValue(component[formulaKey]);
+      return expression ? `=${expression}` : "";
+    }
+    if (!bindingKey) {
+      return "";
+    }
+    return normalizeBindingValue(component[bindingKey]);
+  }
+
+  function getComponentBindingLabel(component) {
+    return getBindingEditorValue(component);
+  }
+
   function getDefinition(component) {
     if (!component) return {};
     return COMPONENT_DEFINITIONS[component.type] || {};
@@ -404,6 +547,13 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       dataAttribute: "data-component-type",
       onActivate: ({ value }) => {
         if (!value || !COMPONENT_DEFINITIONS[value]) {
+          return;
+        }
+        if (!hasActiveTemplate()) {
+          status.show("Create or load a template before adding components.", {
+            type: "warning",
+            timeout: 2400,
+          });
           return;
         }
         insertComponentAtCanvasRoot(value);
@@ -633,12 +783,12 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     elements.canvasRoot.dataset.dropzoneParent = "";
     elements.canvasRoot.dataset.dropzoneKey = "root";
     if (!state.components.length) {
-      const placeholder = createCanvasPlaceholder(
-        "Drag components from the palette into the canvas below to design your template.",
-        {
-          variant: "root",
-        }
-      );
+      const placeholderText = hasActiveTemplate()
+        ? "Drag components from the palette into the canvas below to design your template."
+        : "Create or load a template to start adding components to the canvas.";
+      const placeholder = createCanvasPlaceholder(placeholderText, {
+        variant: "root",
+      });
       elements.canvasRoot.appendChild(placeholder);
     } else {
       const fragment = document.createDocumentFragment();
@@ -731,7 +881,12 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       return;
     }
     const current = systemCatalog.get(record.id) || {};
-    systemCatalog.set(record.id, { ...current, ...record });
+    const next = { ...current, ...record };
+    if (record.payload) {
+      next.payload = record.payload;
+      systemDefinitionCache.set(record.id, record.payload);
+    }
+    systemCatalog.set(record.id, next);
   }
 
   function refreshNewTemplateSystemOptions(selectedValue = "") {
@@ -746,6 +901,81 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     if (selectedValue) {
       elements.newTemplateSystem.value = selectedValue;
     }
+  }
+
+  async function fetchSystemDefinition(schemaId) {
+    if (!schemaId) {
+      return null;
+    }
+    if (systemDefinitionCache.has(schemaId)) {
+      return systemDefinitionCache.get(schemaId);
+    }
+    const metadata = systemCatalog.get(schemaId) || {};
+    if (metadata.payload) {
+      systemDefinitionCache.set(schemaId, metadata.payload);
+      return metadata.payload;
+    }
+    if (metadata.path) {
+      try {
+        const response = await fetch(metadata.path);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch system: ${response.status}`);
+        }
+        const payload = await response.json();
+        systemDefinitionCache.set(schemaId, payload);
+        registerSystemRecord({ id: schemaId, title: payload.title || schemaId, source: metadata.source, payload });
+        return payload;
+      } catch (error) {
+        console.warn("Template editor: unable to load builtin system", error);
+        return null;
+      }
+    }
+    try {
+      const local = dataManager.getLocal("systems", schemaId);
+      if (local) {
+        systemDefinitionCache.set(schemaId, local);
+        registerSystemRecord({ id: schemaId, title: local.title || schemaId, source: "local", payload: local });
+        return local;
+      }
+    } catch (error) {
+      console.warn("Template editor: unable to read local system", error);
+    }
+    if (!dataManager.baseUrl) {
+      return null;
+    }
+    try {
+      const result = await dataManager.get("systems", schemaId, { preferLocal: true });
+      const payload = result?.payload || null;
+      if (payload) {
+        systemDefinitionCache.set(schemaId, payload);
+        registerSystemRecord({ id: schemaId, title: payload.title || schemaId, source: result?.source || "remote", payload });
+      }
+      return payload;
+    } catch (error) {
+      console.warn("Template editor: unable to fetch system", error);
+      return null;
+    }
+  }
+
+  async function updateSystemContext(schemaId) {
+    state.systemDefinition = null;
+    state.bindingFields = [];
+    if (!schemaId) {
+      emitBindingFieldsReady("");
+      renderInspector();
+      return;
+    }
+    try {
+      const definition = await fetchSystemDefinition(schemaId);
+      if (definition) {
+        state.systemDefinition = definition;
+        state.bindingFields = collectSystemFields(definition);
+      }
+    } catch (error) {
+      console.warn("Template editor: unable to prepare system bindings", error);
+    }
+    emitBindingFieldsReady(schemaId);
+    renderInspector();
   }
 
   function prepareNewTemplateForm() {
@@ -763,6 +993,18 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       elements.newTemplateSystem.value = "";
     }
     if (elements.newTemplateId) {
+      elements.newTemplateId.setCustomValidity("");
+      const seed =
+        elements.newTemplateSystem?.value ||
+        state.template?.schema ||
+        state.template?.title ||
+        state.template?.id ||
+        "template";
+      let generatedId = "";
+      do {
+        generatedId = generateTemplateId(seed || "template");
+      } while (generatedId && templateCatalog.has(generatedId));
+      elements.newTemplateId.value = generatedId;
       elements.newTemplateId.focus();
       elements.newTemplateId.select();
     }
@@ -811,7 +1053,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     try {
       const localEntries = dataManager.listLocalEntries("systems");
       localEntries.forEach(({ id, payload }) => {
-        registerSystemRecord({ id, title: payload?.title || id, source: "local" });
+        registerSystemRecord({ id, title: payload?.title || id, source: "local", payload });
       });
     } catch (error) {
       console.warn("Template editor: unable to read local systems", error);
@@ -866,6 +1108,15 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   }
 
   function handleDrop(event) {
+    if (!hasActiveTemplate()) {
+      status.show("Create or load a template before adding components.", {
+        type: "warning",
+        timeout: 2400,
+      });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
     const parentId = event.to.dataset.dropzoneParent || "";
     const zoneKey = event.to.dataset.dropzoneKey || "root";
     const index = typeof event.newIndex === "number" ? event.newIndex : 0;
@@ -1040,6 +1291,12 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       readOnly: false,
       ...defaults,
     };
+    if (!Object.prototype.hasOwnProperty.call(component, "binding") || typeof component.binding !== "string") {
+      component.binding = typeof component.binding === "string" ? component.binding : "";
+    }
+    if (definition.supportsFormula !== false && !Object.prototype.hasOwnProperty.call(component, "formula")) {
+      component.formula = "";
+    }
     if (component.label && typeof component.label === "string") {
       component.label = component.label.trim();
     }
@@ -1049,9 +1306,6 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     if (component.name === undefined) {
       component.name = component.label;
     }
-    if (component.activeSegments && Array.isArray(component.activeSegments)) {
-      component.activeSegments = component.activeSegments.slice();
-    }
     if (component.options && Array.isArray(component.options)) {
       component.options = component.options.slice();
     }
@@ -1060,6 +1314,34 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     }
     if (component.states && Array.isArray(component.states)) {
       component.states = component.states.slice();
+    }
+    if (typeof component.segmentBinding !== "string") {
+      component.segmentBinding = component.segmentBinding != null ? String(component.segmentBinding) : "";
+    }
+    component.segmentBinding = component.segmentBinding.trim();
+    if (typeof component.segmentFormula !== "string") {
+      component.segmentFormula = "";
+    }
+    if (typeof component.statesBinding !== "string") {
+      component.statesBinding = component.statesBinding != null ? String(component.statesBinding) : "";
+    }
+    component.statesBinding = component.statesBinding.trim();
+    if (component.type === "linear-track" || component.type === "circular-track") {
+      if (!component.segmentBinding) {
+        const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
+        component.segmentBinding = String(fallbackSegments);
+      }
+      const parsedSegments = Number(component.segmentBinding);
+      if (Number.isFinite(parsedSegments)) {
+        component.segments = clampInteger(parsedSegments, 1, 16);
+      } else if (Number.isFinite(Number(component.segments))) {
+        component.segments = clampInteger(component.segments, 1, 16);
+      } else {
+        component.segments = 6;
+      }
+      if (component.value === undefined || component.value === null || Number.isNaN(Number(component.value))) {
+        component.value = Math.min(component.segments, Math.max(0, Math.ceil(component.segments / 2)));
+      }
     }
     if (component.zones && typeof component.zones === "object") {
       component.zones = { ...component.zones };
@@ -1101,7 +1383,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       },
     });
 
-    const bindingLabel = (component.binding || component.formula || "").trim();
+    const bindingLabel = getComponentBindingLabel(component);
     if (bindingLabel) {
       const pill = document.createElement("span");
       pill.className = "template-binding-pill badge text-bg-secondary";
@@ -1346,7 +1628,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   function renderArrayPreview(component) {
     const container = document.createElement("div");
     container.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Array");
+    const headingText = getComponentLabel(component, "List");
     if (headingText) {
       const heading = document.createElement("div");
       heading.className = "fw-semibold";
@@ -1537,6 +1819,52 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     return wrapper;
   }
 
+  function resolveTrackSegmentCount(component) {
+    const maxSegments = 16;
+    const minSegments = 1;
+    if (componentHasFormula(component, { formulaKey: "segmentFormula" })) {
+      const fallback = Number(component.segments);
+      return Number.isFinite(fallback)
+        ? clampInteger(fallback, minSegments, maxSegments)
+        : 6;
+    }
+    const bindingValue = typeof component.segmentBinding === "string"
+      ? component.segmentBinding.trim()
+      : "";
+    if (bindingValue && !bindingValue.startsWith("@")) {
+      const parsed = Number(bindingValue);
+      if (Number.isFinite(parsed)) {
+        return clampInteger(parsed, minSegments, maxSegments);
+      }
+    }
+    const segments = Number(component.segments);
+    if (Number.isFinite(segments)) {
+      return clampInteger(segments, minSegments, maxSegments);
+    }
+    return 6;
+  }
+
+  function resolveTrackActiveCount(component, segmentCount) {
+    const numericValue = Number(component.value);
+    if (Number.isFinite(numericValue)) {
+      return clampInteger(numericValue, 0, segmentCount);
+    }
+    const bindingValue = typeof component.binding === "string" ? component.binding.trim() : "";
+    if (bindingValue && !bindingValue.startsWith("@")) {
+      const parsed = Number(bindingValue);
+      if (Number.isFinite(parsed)) {
+        return clampInteger(parsed, 0, segmentCount);
+      }
+    }
+    return Math.min(segmentCount, Math.max(0, Math.ceil(segmentCount / 2)));
+  }
+
+  function getTrackPreviewState(component) {
+    const segments = resolveTrackSegmentCount(component);
+    const active = resolveTrackActiveCount(component, segments);
+    return { segments, active };
+  }
+
   function renderLinearTrackPreview(component) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
@@ -1551,16 +1879,17 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 
     const track = document.createElement("div");
     track.className = "template-linear-track";
-    const activeSegments = ensureSegmentArray(component);
-    activeSegments.forEach((isActive, index) => {
+    const { segments, active } = getTrackPreviewState(component);
+    const total = Math.max(segments, 1);
+    for (let index = 0; index < total; index += 1) {
       const segment = document.createElement("div");
       segment.className = "template-linear-track__segment";
-      if (isActive) {
+      if (index < active) {
         segment.classList.add("is-active");
       }
       segment.title = `Segment ${index + 1}`;
       track.appendChild(segment);
-    });
+    }
     wrapper.appendChild(track);
     return wrapper;
   }
@@ -1579,23 +1908,23 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 
     const circle = document.createElement("div");
     circle.className = "template-circular-track";
-    const activeSegments = ensureSegmentArray(component);
-    const segments = activeSegments.length || 1;
-    const step = 360 / segments;
+    const { segments, active } = getTrackPreviewState(component);
+    const total = Math.max(segments, 1);
+    const step = 360 / total;
     const gradientStops = [];
-    activeSegments.forEach((isActive, index) => {
+    for (let index = 0; index < total; index += 1) {
       const start = index * step;
       const end = start + step;
-      const color = isActive ? "var(--bs-primary)" : "var(--bs-border-color)";
+      const color = index < active ? "var(--bs-primary)" : "var(--bs-border-color)";
       gradientStops.push(`${color} ${start}deg ${end}deg`);
-    });
+    }
     circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
     const mask = document.createElement("div");
     mask.className = "template-circular-track__mask";
     circle.appendChild(mask);
     const value = document.createElement("div");
     value.className = "template-circular-track__value";
-    value.textContent = `${activeSegments.filter(Boolean).length}/${segments}`;
+    value.textContent = `${Math.min(active, total)}/${total}`;
     circle.appendChild(value);
     wrapper.appendChild(circle);
     return wrapper;
@@ -1679,7 +2008,14 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       ? component.states
       : ["State 1", "State 2"];
     const shape = component.shape || "circle";
-    const activeIndex = Math.max(0, Math.min(component.activeIndex ?? 0, states.length - 1));
+    const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
+    let activeIndex = fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
+    if (activeIndex < 0) {
+      activeIndex = clampInteger(component.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
+    }
+    if (activeIndex < 0) {
+      activeIndex = 0;
+    }
     const maxIndex = Math.max(states.length - 1, 1);
     const progress = maxIndex > 0 ? activeIndex / maxIndex : 0;
     const preview = document.createElement("div");
@@ -1758,6 +2094,7 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     renderCanvas();
     renderInspector();
     ensureTemplateSelectValue();
+    updateSystemContext(template.schema).catch(() => {});
     if (emitStatus && statusMessage) {
       status.show(statusMessage, { type: "success", timeout: 2000 });
     }
@@ -1836,24 +2173,10 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     const dataControls = [];
     if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
       dataControls.push(
-        createTextInput(
-          component,
-          "Binding / Formula",
-          component.binding || component.formula || "",
-          (value) => {
-            updateComponent(
-              component.uid,
-              (draft) => {
-                draft.binding = value.trim();
-                if (Object.prototype.hasOwnProperty.call(draft, "formula")) {
-                  draft.formula = "";
-                }
-              },
-              { rerenderCanvas: true, rerenderInspector: true }
-            );
-          },
-          { placeholder: "@attributes.score or =SUM(values)" }
-        )
+        createBindingFormulaInput(component, {
+          supportsBinding: definition.supportsBinding !== false,
+          supportsFormula: definition.supportsFormula !== false,
+        })
       );
     }
     const dataSection = createSection("Data", dataControls);
@@ -2035,6 +2358,375 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     label.setAttribute("for", id);
     label.textContent = "Read only";
     wrapper.append(input, label);
+    return wrapper;
+  }
+
+  function createBindingFormulaInput(
+    component,
+    {
+      supportsBinding = true,
+      supportsFormula = true,
+      labelText = "Binding / Formula",
+      placeholder = null,
+      bindingKey = "binding",
+      formulaKey = "formula",
+      allowedFieldCategories: categoryOverride = null,
+      helperText = null,
+      afterCommit = null,
+    } = {}
+  ) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-1";
+    const id = toId([component.uid, "binding-formula"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = labelText;
+
+    const allowedFieldCategories = Array.isArray(categoryOverride) && categoryOverride.length
+      ? categoryOverride.map((category) => String(category).toLowerCase())
+      : getComponentBindingCategories(component);
+
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "position-relative";
+
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    const resolvedPlaceholder =
+      placeholder !== null && placeholder !== undefined
+        ? placeholder
+        : supportsFormula
+        ? "@attributes.score or =sum(@attributes.strength, @attributes.dexterity)"
+        : "@attributes.score";
+    input.placeholder = resolvedPlaceholder || "";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = getBindingEditorValue(component, { bindingKey, formulaKey });
+    input.setAttribute("aria-autocomplete", "list");
+
+    const suggestions = document.createElement("div");
+    suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    suggestions.id = `${id}-suggestions`;
+    suggestions.setAttribute("role", "listbox");
+    suggestions.style.zIndex = "1300";
+    suggestions.style.fontSize = "0.8125rem";
+    suggestions.style.maxHeight = "16rem";
+    suggestions.style.overflowY = "auto";
+    input.setAttribute("aria-controls", suggestions.id);
+
+    inputWrapper.append(input, suggestions);
+    wrapper.append(label, inputWrapper);
+
+    const MAX_SUGGESTIONS = 12;
+    let suggestionItems = [];
+    let activeIndex = -1;
+    let currentContext = null;
+    let listeningForUpdates = false;
+
+    const handleBindingFieldsReady = () => {
+      if (document.activeElement === input) {
+        updateSuggestions();
+      }
+    };
+
+    function closeSuggestions() {
+      suggestionItems = [];
+      activeIndex = -1;
+      currentContext = null;
+      suggestions.innerHTML = "";
+      suggestions.classList.add("d-none");
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function setActive(index) {
+      if (!suggestionItems.length) {
+        return;
+      }
+      const clamped = Math.max(0, Math.min(index, suggestionItems.length - 1));
+      activeIndex = clamped;
+      const options = Array.from(suggestions.querySelectorAll("[data-suggestion-index]"));
+      options.forEach((option) => {
+        const optionIndex = Number(option.dataset.suggestionIndex);
+        if (optionIndex === activeIndex) {
+          option.classList.add("active");
+          input.setAttribute("aria-activedescendant", option.id);
+        } else {
+          option.classList.remove("active");
+        }
+      });
+    }
+
+    function moveActive(delta) {
+      if (!suggestionItems.length) {
+        return;
+      }
+      const nextIndex = activeIndex < 0 ? 0 : activeIndex + delta;
+      setActive(nextIndex);
+    }
+
+    function getFieldSuggestions(query = "") {
+      if (!supportsBinding) {
+        return [];
+      }
+      const normalized = query.trim().toLowerCase();
+      const entries = Array.isArray(state.bindingFields) ? state.bindingFields : [];
+      const typed = entries.filter((entry) => fieldMatchesCategories(entry, allowedFieldCategories));
+      const filtered = normalized
+        ? typed.filter((entry) => {
+            const path = entry.path?.toLowerCase?.() || "";
+            const labelText = entry.label?.toLowerCase?.() || "";
+            return path.includes(normalized) || labelText.includes(normalized);
+          })
+        : typed;
+      return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => {
+        const category = entry.category || categorizeFieldType(entry.type);
+        return {
+          type: "field",
+          path: entry.path,
+          display: `@${entry.path}`,
+          description: entry.label && entry.label !== entry.path ? entry.label : "",
+          fieldType: entry.type || "",
+          fieldCategory: category || "",
+        };
+      });
+    }
+
+    function getFunctionSuggestions(query = "") {
+      if (!supportsFormula) {
+        return [];
+      }
+      const normalized = query.trim().toLowerCase();
+      const entries = normalized
+        ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+        : FORMULA_FUNCTIONS;
+      return entries.slice(0, MAX_SUGGESTIONS).map((fn) => ({
+        type: "function",
+        name: fn.name,
+        display: fn.signature,
+        description: fn.name,
+      }));
+    }
+
+    function renderSuggestions(items, context) {
+      suggestionItems = items;
+      currentContext = context;
+      suggestions.innerHTML = "";
+      if (!items.length) {
+        closeSuggestions();
+        return;
+      }
+      items.forEach((item, index) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
+        option.dataset.suggestionIndex = String(index);
+        option.id = `${suggestions.id}-option-${index}`;
+        option.addEventListener("mousedown", (event) => event.preventDefault());
+        option.addEventListener("click", () => {
+          applySuggestion(index);
+        });
+
+        const row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2 flex-grow-1 text-start";
+        row.style.minWidth = "0";
+        if (item.type === "field") {
+          const fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
+          const icon = document.createElement("span");
+          icon.className = "iconify flex-shrink-0 text-body-tertiary";
+          icon.dataset.icon = fieldMeta.icon;
+          icon.setAttribute("aria-hidden", "true");
+          icon.title = fieldMeta.label;
+          icon.style.fontSize = "1rem";
+          row.appendChild(icon);
+        }
+
+        const label = document.createElement("span");
+        label.className = "text-truncate";
+        label.textContent = item.display;
+        row.appendChild(label);
+
+        option.appendChild(row);
+
+        if (item.description) {
+          const hint = document.createElement("small");
+          hint.className = "text-body-secondary text-nowrap text-end ms-auto";
+          hint.textContent = item.description;
+          option.appendChild(hint);
+        }
+
+        suggestions.appendChild(option);
+      });
+      suggestions.classList.remove("d-none");
+      setActive(0);
+    }
+
+    function updateSuggestions() {
+      const value = input.value;
+      const caret = typeof input.selectionStart === "number" ? input.selectionStart : value.length;
+      const beforeCaret = value.slice(0, caret);
+
+      if (supportsBinding) {
+        const atIndex = beforeCaret.lastIndexOf("@");
+        if (atIndex !== -1) {
+          const query = beforeCaret.slice(atIndex + 1);
+          const items = getFieldSuggestions(query);
+          if (items.length) {
+            renderSuggestions(items, { type: "field", startIndex: atIndex + 1, endIndex: caret });
+            return;
+          }
+        }
+      }
+
+      if (supportsFormula && value.trim().startsWith("=")) {
+        const equalsIndex = value.indexOf("=");
+        if (equalsIndex !== -1 && caret >= equalsIndex + 1) {
+          const rawQuery = value.slice(equalsIndex + 1, caret);
+          const items = getFunctionSuggestions(rawQuery);
+          if (items.length) {
+            renderSuggestions(items, { type: "function", startIndex: equalsIndex + 1, endIndex: caret });
+            return;
+          }
+        }
+      }
+
+      closeSuggestions();
+    }
+
+    function applySuggestion(index) {
+      if (index < 0 || index >= suggestionItems.length || !currentContext) {
+        return;
+      }
+      const item = suggestionItems[index];
+      const value = input.value;
+      const start = currentContext.startIndex;
+      const end = currentContext.endIndex;
+      const before = value.slice(0, start);
+      const after = value.slice(end);
+      if (item.type === "field") {
+        const inserted = item.path;
+        const nextValue = `${before}${inserted}${after}`;
+        input.value = nextValue;
+        const caret = before.length + inserted.length;
+        input.setSelectionRange(caret, caret);
+      } else if (item.type === "function") {
+        const prefix = value.slice(0, start);
+        const suffix = value.slice(end);
+        const nextValue = `${prefix}${item.name}()${suffix}`;
+        input.value = nextValue;
+        const caret = prefix.length + item.name.length + 1;
+        input.setSelectionRange(caret, caret);
+      }
+      commitValue(input.value);
+      closeSuggestions();
+    }
+
+    function commitValue(raw) {
+      const source = typeof raw === "string" ? raw : "";
+      const trimmed = source.trim();
+      let result = { type: "empty", value: "" };
+      updateComponent(
+        component.uid,
+        (draft) => {
+          if (!trimmed) {
+            if (bindingKey) {
+              draft[bindingKey] = "";
+            }
+            if (supportsFormula && formulaKey) {
+              draft[formulaKey] = "";
+            }
+            result = { type: "empty", value: "" };
+          } else if (supportsFormula && trimmed.startsWith("=")) {
+            const expression = trimmed.slice(1).trim();
+            if (formulaKey) {
+              draft[formulaKey] = expression;
+            }
+            if (bindingKey) {
+              draft[bindingKey] = "";
+            }
+            result = { type: "formula", value: expression };
+          } else {
+            if (bindingKey) {
+              draft[bindingKey] = supportsBinding ? trimmed : "";
+            }
+            if (supportsFormula && formulaKey) {
+              draft[formulaKey] = "";
+            }
+            result = { type: "binding", value: trimmed };
+          }
+          if (typeof afterCommit === "function") {
+            afterCommit({ draft, raw: source, trimmed, result });
+          }
+        },
+        { rerenderCanvas: true }
+      );
+    }
+
+    input.addEventListener("input", () => {
+      commitValue(input.value);
+      updateSuggestions();
+    });
+
+    input.addEventListener("focus", () => {
+      if (!listeningForUpdates) {
+        window.addEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
+        listeningForUpdates = true;
+      }
+      updateSuggestions();
+    });
+
+    input.addEventListener("click", () => {
+      updateSuggestions();
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (!suggestionItems.length) {
+        return;
+      }
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveActive(1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveActive(-1);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (activeIndex >= 0) {
+          applySuggestion(activeIndex);
+        }
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        closeSuggestions();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      setTimeout(() => {
+        closeSuggestions();
+        if (listeningForUpdates) {
+          window.removeEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
+          listeningForUpdates = false;
+        }
+      }, 120);
+    });
+
+    if (helperText) {
+      const helper = document.createElement("div");
+      helper.className = "form-text text-body-secondary";
+      helper.textContent = helperText;
+      wrapper.appendChild(helper);
+    }
+
+    if (supportsBinding && !state.bindingFields.length) {
+      const helper = document.createElement("div");
+      helper.className = "form-text text-body-secondary";
+      helper.textContent = state.template?.schema
+        ? "No fields available for this system yet."
+        : "Select a system to enable bindings.";
+      wrapper.appendChild(helper);
+    }
+
     return wrapper;
   }
 
@@ -2436,53 +3128,29 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   function renderTrackInspector(component) {
     const controls = [];
     controls.push(
-      createNumberInput(component, "Segments", component.segments ?? 6, (value) => {
-        const next = clampInteger(value ?? 6, 1, 16);
-        updateComponent(component.uid, (draft) => {
-          setSegmentCount(draft, next);
-        }, { rerenderCanvas: true, rerenderInspector: true });
-      }, { min: 1, max: 16 })
+      createBindingFormulaInput(component, {
+        labelText: "Segments",
+        placeholder: "6 or @resources.clock.max",
+        bindingKey: "segmentBinding",
+        formulaKey: "segmentFormula",
+        allowedFieldCategories: ["number"],
+        afterCommit: ({ draft, result }) => {
+          if (!result || result.type === "empty") {
+            draft.segmentBinding = "";
+            draft.segmentFormula = draft.segmentFormula || "";
+            draft.segments = 6;
+            return;
+          }
+          if (result.type === "binding") {
+            const numeric = Number(result.value);
+            if (Number.isFinite(numeric)) {
+              draft.segments = clampInteger(numeric, 1, 16);
+            }
+          }
+        },
+      })
     );
-    controls.push(createSegmentControls(component));
     return controls;
-  }
-
-  function createSegmentControls(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = "Active segments";
-    wrapper.appendChild(heading);
-    const grid = document.createElement("div");
-    grid.className = "template-segment-grid";
-    const segments = ensureSegmentArray(component);
-    const columnCount = Math.max(1, Math.min(segments.length, 8));
-    grid.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
-    segments.forEach((isActive, index) => {
-      const id = toId([component.uid, "segment", index]);
-      const cell = document.createElement("div");
-      cell.className = "template-segment-grid__item";
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.className = "btn-check";
-      input.id = id;
-      input.checked = isActive;
-      input.addEventListener("change", () => {
-        updateComponent(component.uid, (draft) => {
-          const target = ensureSegmentArray(draft);
-          target[index] = input.checked;
-        }, { rerenderCanvas: true });
-      });
-      const label = document.createElement("label");
-      label.className = "btn btn-outline-secondary btn-sm";
-      label.setAttribute("for", id);
-      label.textContent = index + 1;
-      cell.append(input, label);
-      grid.appendChild(cell);
-    });
-    wrapper.appendChild(grid);
-    return wrapper;
   }
 
   function renderSelectGroupInspector(component) {
@@ -2548,78 +3216,21 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
   }
 
   function createToggleStateEditors(component) {
-    const controls = [];
-    const textareaId = toId([component.uid, "toggle", "states"]);
-    const textareaWrapper = document.createElement("div");
-    textareaWrapper.className = "d-flex flex-column";
-    const textareaLabel = document.createElement("label");
-    textareaLabel.className = "form-label fw-semibold text-body-secondary";
-    textareaLabel.setAttribute("for", textareaId);
-    textareaLabel.textContent = "States (one per line)";
-    const textarea = document.createElement("textarea");
-    textarea.className = "form-control";
-    textarea.id = textareaId;
-    textarea.rows = 3;
-    textarea.placeholder = "Novice\nSkilled\nExpert";
-    const initialStates = Array.isArray(component.states) && component.states.length
-      ? component.states
-      : ["State 1", "State 2"];
-    textarea.value = initialStates.join("\n");
-    textareaWrapper.append(textareaLabel, textarea);
-    controls.push(textareaWrapper);
-
-    const selectId = toId([component.uid, "toggle", "active-state"]);
-    const selectWrapper = document.createElement("div");
-    selectWrapper.className = "d-flex flex-column";
-    const selectLabel = document.createElement("label");
-    selectLabel.className = "form-label fw-semibold text-body-secondary";
-    selectLabel.setAttribute("for", selectId);
-    selectLabel.textContent = "Active state";
-    const select = document.createElement("select");
-    select.className = "form-select";
-    select.id = selectId;
-    selectWrapper.append(selectLabel, select);
-    controls.push(selectWrapper);
-
-    const syncStateOptions = () => {
-      const states = Array.isArray(component.states) && component.states.length
-        ? component.states
-        : ["State 1", "State 2"];
-      select.innerHTML = "";
-      states.forEach((state, index) => {
-        const option = document.createElement("option");
-        option.value = String(index);
-        option.textContent = state;
-        select.appendChild(option);
-      });
-      const safeIndex = clampInteger(component.activeIndex ?? 0, 0, states.length - 1);
-      select.value = String(safeIndex);
-    };
-
-    textarea.addEventListener("input", () => {
-      updateComponent(component.uid, (draft) => {
-        draft.states = parseLines(textarea.value);
-        if (!Array.isArray(draft.states) || !draft.states.length) {
-          draft.states = ["State 1", "State 2"];
-        }
-        if (draft.activeIndex === undefined || draft.activeIndex === null) {
-          draft.activeIndex = 0;
-        }
-        draft.activeIndex = clampInteger(draft.activeIndex, 0, draft.states.length - 1);
-      }, { rerenderCanvas: true });
-      syncStateOptions();
-    });
-
-    select.addEventListener("change", () => {
-      const nextIndex = Number(select.value);
-      updateComponent(component.uid, (draft) => {
-        draft.activeIndex = clampInteger(nextIndex, 0, (draft.states?.length || 1) - 1);
-      }, { rerenderCanvas: true });
-      syncStateOptions();
-    });
-
-    syncStateOptions();
-    return controls;
+    return [
+      createBindingFormulaInput(component, {
+        labelText: "States source",
+        placeholder: "@metadata.states",
+        bindingKey: "statesBinding",
+        formulaKey: null,
+        allowedFieldCategories: ["array"],
+        supportsFormula: false,
+        afterCommit: ({ draft, result }) => {
+          if (!result || result.type === "empty") {
+            draft.statesBinding = "";
+          }
+        },
+      }),
+    ];
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -2632,30 +3243,6 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     if (rerenderInspector) {
       renderInspector();
     }
-  }
-
-  function ensureSegmentArray(component) {
-    const baseLength = Array.isArray(component.activeSegments) ? component.activeSegments.length : 0;
-    const desired = clampInteger(
-      component.segments ?? (baseLength || 6),
-      1,
-      16
-    );
-    if (!Array.isArray(component.activeSegments)) {
-      component.activeSegments = Array.from({ length: desired }, (_, index) => index === 0);
-    }
-    if (component.activeSegments.length < desired) {
-      const needed = desired - component.activeSegments.length;
-      component.activeSegments.push(...Array.from({ length: needed }, () => false));
-    } else if (component.activeSegments.length > desired) {
-      component.activeSegments = component.activeSegments.slice(0, desired);
-    }
-    return component.activeSegments;
-  }
-
-  function setSegmentCount(component, next) {
-    component.segments = next;
-    ensureSegmentArray(component);
   }
 
   function parseLines(value) {
@@ -2693,6 +3280,50 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
     merged.uid = base.uid;
     if (!merged.id) {
       merged.id = merged.uid;
+    }
+    if (merged.type === "linear-track" || merged.type === "circular-track") {
+      if (Array.isArray(copy.activeSegments)) {
+        const total = copy.activeSegments.length || 0;
+        const active = copy.activeSegments.filter(Boolean).length;
+        if (!merged.segmentBinding) {
+          merged.segmentBinding = String(total || merged.segments || 6);
+        }
+        if ((merged.value === undefined || merged.value === null) && active > 0) {
+          merged.value = active;
+        }
+      }
+      if (typeof merged.segmentBinding !== "string") {
+        merged.segmentBinding = "";
+      }
+      merged.segmentBinding = merged.segmentBinding.trim();
+      if (!merged.segmentBinding) {
+        const fallbackSegments = Number.isFinite(Number(merged.segments)) ? Number(merged.segments) : 6;
+        merged.segmentBinding = String(fallbackSegments);
+      }
+      if (typeof merged.segmentFormula !== "string") {
+        merged.segmentFormula = "";
+      }
+      const parsedSegments = Number(merged.segmentBinding);
+      if (Number.isFinite(parsedSegments)) {
+        merged.segments = clampInteger(parsedSegments, 1, 16);
+      } else if (Number.isFinite(Number(merged.segments))) {
+        merged.segments = clampInteger(merged.segments, 1, 16);
+      } else {
+        merged.segments = 6;
+      }
+      if (merged.value === undefined || merged.value === null || Number.isNaN(Number(merged.value))) {
+        merged.value = Math.min(merged.segments, Math.max(0, Math.ceil(merged.segments / 2)));
+      }
+      delete merged.activeSegments;
+    }
+    if (merged.type === "toggle") {
+      if (typeof merged.statesBinding !== "string") {
+        merged.statesBinding = "";
+      }
+      merged.statesBinding = merged.statesBinding.trim();
+      if ((merged.value === undefined || merged.value === null || merged.value === "") && Array.isArray(merged.states) && merged.states.length) {
+        merged.value = merged.states[0];
+      }
     }
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
@@ -2762,5 +3393,15 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
       return window.CSS.escape(value);
     }
     return value.replace(/[^a-zA-Z0-9_-]/g, (char) => `\\${char}`);
+  }
+
+  function generateTemplateId(name) {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `tpl.${crypto.randomUUID()}`;
+    }
+    const base = (name || "template").toLowerCase();
+    const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `tpl.${slug || "template"}.${rand}`;
   }
 })();
