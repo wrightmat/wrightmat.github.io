@@ -101,6 +101,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   refreshTooltips(document);
 
+  let pendingSharedSystem = resolveSharedRecordParam("systems");
+
   loadSystemRecords();
   initializeSharedSystemHandling();
 
