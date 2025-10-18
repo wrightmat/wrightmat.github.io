@@ -149,6 +149,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     components: [],
     selectedId: null,
     systemDefinition: null,
+    systemPreviewData: {},
     bindingFields: [],
   };
 
@@ -1164,6 +1165,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   async function updateSystemContext(schemaId) {
     state.systemDefinition = null;
+    state.systemPreviewData = {};
     state.bindingFields = [];
 
     if (!schemaId) {
@@ -1177,7 +1179,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       const definition = await fetchSystemDefinition(schemaId);
       if (definition) {
         state.systemDefinition = definition;
+        state.systemPreviewData = buildSystemPreviewData(definition);
         state.bindingFields = collectSystemFields(definition);
+      } else {
+        state.systemPreviewData = {};
       }
     } catch (error) {
       console.warn("Template editor: unable to prepare system bindings", error);
@@ -1900,6 +1905,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       registerContext(template.sources, { prefixes: ["sources"], allowDirect: true });
     }
 
+    const systemPreviewData =
+      state.systemPreviewData && typeof state.systemPreviewData === "object" ? state.systemPreviewData : null;
+    if (systemPreviewData) {
+      registerContext(systemPreviewData, {
+        allowDirect: true,
+        prefixes: ["system", "data", "preview", "sources"],
+      });
+    }
+
     const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
     if (definition) {
       registerContext(definition, { allowDirect: true, prefixes: ["system"] });
@@ -1933,6 +1947,154 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       }
     }
     return undefined;
+  }
+
+  function isPlainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function clonePreviewValue(value) {
+    if (Array.isArray(value)) {
+      return value.map((entry) => clonePreviewValue(entry));
+    }
+    if (isPlainObject(value)) {
+      return Object.entries(value).reduce((accumulator, [key, entry]) => {
+        accumulator[key] = clonePreviewValue(entry);
+        return accumulator;
+      }, {});
+    }
+    return value;
+  }
+
+  function assignPreviewValue(target, path, value) {
+    if (!target || !Array.isArray(path) || !path.length) {
+      return;
+    }
+    let cursor = target;
+    for (let index = 0; index < path.length - 1; index += 1) {
+      const segment = path[index];
+      if (!isPlainObject(cursor[segment])) {
+        cursor[segment] = {};
+      }
+      cursor = cursor[segment];
+    }
+    const last = path[path.length - 1];
+    const existing = cursor[last];
+    const cloned = clonePreviewValue(value);
+    if (existing === undefined || existing === null) {
+      cursor[last] = cloned;
+      return;
+    }
+    if (Array.isArray(existing) && Array.isArray(cloned)) {
+      if (!existing.length) {
+        cursor[last] = cloned;
+      }
+      return;
+    }
+    if (isPlainObject(existing) && isPlainObject(cloned)) {
+      cursor[last] = { ...existing, ...cloned };
+    }
+  }
+
+  function mergePreviewRecord(target, record) {
+    if (!isPlainObject(record)) {
+      return;
+    }
+    Object.entries(record).forEach(([key, value]) => {
+      if (typeof key !== "string") {
+        return;
+      }
+      const trimmed = key.trim();
+      if (!trimmed) {
+        return;
+      }
+      assignPreviewValue(target, [trimmed], value);
+    });
+  }
+
+  function buildSystemPreviewData(definition) {
+    const preview = {};
+    if (!definition || typeof definition !== "object") {
+      return preview;
+    }
+
+    const MERGE_KEYS = ["preview", "sample", "samples", "values", "lists", "collections", "sources", "data"];
+    MERGE_KEYS.forEach((key) => {
+      const value = definition[key];
+      if (isPlainObject(value)) {
+        mergePreviewRecord(preview, value);
+      }
+    });
+
+    function visitField(node, prefix = []) {
+      if (!node || typeof node !== "object") {
+        return;
+      }
+      const key = typeof node.key === "string" ? node.key.trim() : "";
+      const nextPrefix = key ? [...prefix, key] : prefix;
+      if (nextPrefix.length) {
+        const candidateValues = [
+          node.values,
+          node.examples,
+          node.example,
+          node.sample,
+          node.preview,
+          node.default,
+        ];
+        const sample = candidateValues.find((candidate) => {
+          if (Array.isArray(candidate)) {
+            return candidate.length > 0;
+          }
+          if (isPlainObject(candidate)) {
+            return Object.keys(candidate).length > 0;
+          }
+          return false;
+        });
+        if (sample !== undefined) {
+          assignPreviewValue(preview, nextPrefix, sample);
+        }
+      }
+      const normalizedType = typeof node.type === "string" ? node.type.trim().toLowerCase() : "";
+      if (Array.isArray(node.children) && node.children.length) {
+        node.children.forEach((child) => {
+          visitField(child, nextPrefix);
+        });
+      } else if (normalizedType === "array" && node.items && typeof node.items === "object") {
+        const itemCandidates = [node.items.enum, node.items.values, node.items.examples];
+        const sample = itemCandidates.find((candidate) => Array.isArray(candidate) && candidate.length);
+        if (sample) {
+          assignPreviewValue(preview, nextPrefix, sample);
+        }
+      }
+    }
+
+    const fieldSets = [];
+    if (Array.isArray(definition.fields)) {
+      fieldSets.push(definition.fields);
+    } else if (isPlainObject(definition.fields)) {
+      fieldSets.push(Object.values(definition.fields));
+    }
+    const schemaFields = definition.schema && typeof definition.schema === "object" ? definition.schema.fields : null;
+    if (Array.isArray(schemaFields)) {
+      fieldSets.push(schemaFields);
+    } else if (isPlainObject(schemaFields)) {
+      fieldSets.push(Object.values(schemaFields));
+    }
+    const definitionFields =
+      definition.definition && typeof definition.definition === "object" ? definition.definition.fields : null;
+    if (Array.isArray(definitionFields)) {
+      fieldSets.push(definitionFields);
+    } else if (isPlainObject(definitionFields)) {
+      fieldSets.push(Object.values(definitionFields));
+    }
+
+    fieldSets.forEach((fields) => {
+      if (Array.isArray(fields)) {
+        fields.forEach((field) => visitField(field, []));
+      }
+    });
+
+    return preview;
   }
 
   function normalizePreviewOptions(source) {
