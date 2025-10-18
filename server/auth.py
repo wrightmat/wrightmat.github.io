@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import hmac
 import secrets
 import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from .state import ServerState
 
 PBKDF2_ITERATIONS = 240_000
 PBKDF2_ALGO = "sha256"
 SALT_BYTES = 16
+VERIFICATION_CODE_TTL_MINUTES = 15
 
 
 @dataclass
@@ -26,6 +28,18 @@ class User:
 
 class AuthError(Exception):
     pass
+
+
+def sanitize_user_row(row: sqlite3.Row) -> Dict[str, Any]:
+    return {
+        "id": row["id"],
+        "email": row["email"],
+        "username": row["username"],
+        "tier": row["tier"],
+        "created_at": row["created_at"],
+        "last_login": row["last_login"],
+        "is_active": bool(row["is_active"]),
+    }
 
 
 def hash_password(password: str) -> str:
@@ -65,6 +79,20 @@ def init_auth_db(conn: sqlite3.Connection) -> None:
     )
     conn.execute(
         """
+        CREATE TABLE IF NOT EXISTS email_verifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            code TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at DATETIME NOT NULL,
+            verified_at DATETIME,
+            is_used INTEGER DEFAULT 0,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -79,6 +107,38 @@ def init_auth_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+
+
+def generate_verification_code() -> str:
+    return f"{secrets.randbelow(900000) + 100000:06d}"
+
+
+def create_verification_record(state: ServerState, user_id: int) -> str:
+    code = generate_verification_code()
+    expires_at = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
+    state.db.execute("UPDATE email_verifications SET is_used = 1 WHERE user_id = ? AND is_used = 0", (user_id,))
+    state.db.execute(
+        "INSERT INTO email_verifications (user_id, code, expires_at) VALUES (?, ?, ?)",
+        (user_id, code, expires_at.isoformat()),
+    )
+    state.db.commit()
+    return code
+
+
+def latest_verification_record(state: ServerState, user_id: int) -> Optional[sqlite3.Row]:
+    return state.db.execute(
+        """
+        SELECT * FROM email_verifications
+        WHERE user_id = ? AND is_used = 0
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    ).fetchone()
+
+
+def send_verification_email(email: str, code: str) -> None:
+    logging.info("Verification code for %s: %s", email, code)
 
 
 def create_session(state: ServerState, user_id: int, ip: str, user_agent: str) -> Dict[str, str]:
@@ -135,14 +195,22 @@ def require_role(user: Optional[User], role: str) -> None:
 
 def upgrade_user(state: ServerState, target_username: str, new_tier: str) -> Dict[str, str]:
     tiers = ["free", "player", "gm", "creator", "admin"]
-    if new_tier not in tiers:
+    tier_value = (new_tier or "").strip().lower()
+    if tier_value not in tiers:
         raise AuthError("Unknown tier")
     row = state.db.execute("SELECT id FROM users WHERE username = ?", (target_username,)).fetchone()
     if not row:
         raise AuthError("User not found")
-    state.db.execute("UPDATE users SET tier = ? WHERE id = ?", (new_tier, row["id"]))
+    state.db.execute("UPDATE users SET tier = ? WHERE id = ?", (tier_value, row["id"]))
     state.db.commit()
-    return {"username": target_username, "tier": new_tier}
+    return {"username": target_username, "tier": tier_value}
+
+
+def list_users(state: ServerState) -> Dict[str, list[Dict[str, Any]]]:
+    rows = state.db.execute(
+        "SELECT id, email, username, tier, created_at, last_login, is_active FROM users ORDER BY username"
+    ).fetchall()
+    return {"users": [sanitize_user_row(row) for row in rows]}
 
 
 def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]:
@@ -152,17 +220,50 @@ def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]
     if not email or not username or not password:
         raise AuthError("email, username, and password are required")
     password_hash = hash_password(password)
+    require_verification = state.config.options.require_email_verification
+    is_active = 0 if require_verification else 1
     try:
         state.db.execute(
-            "INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)",
-            (email, username, password_hash),
+            "INSERT INTO users (email, username, password_hash, tier, is_active) VALUES (?, ?, ?, ?, ?)",
+            (email, username, password_hash, "free", is_active),
         )
         state.db.commit()
     except sqlite3.IntegrityError as exc:
+        existing = state.db.execute(
+            "SELECT * FROM users WHERE email = ? OR username = ?",
+            (email, username),
+        ).fetchone()
+        if existing and not existing["is_active"] and require_verification:
+            state.db.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (password_hash, existing["id"]),
+            )
+            state.db.commit()
+            code = create_verification_record(state, existing["id"])
+            send_verification_email(existing["email"], code)
+            result = {
+                "requires_verification": True,
+                "message": "Verification code resent",
+                "user": sanitize_user_row(existing),
+            }
+            if state.config.options.debug_verification_codes:
+                result["verification_code"] = code
+            return result
         raise AuthError("email or username already exists") from exc
     user_row = state.db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    sanitized = sanitize_user_row(user_row)
+    if require_verification:
+        code = create_verification_record(state, user_row["id"])
+        send_verification_email(email, code)
+        result = {
+            "requires_verification": True,
+            "user": sanitized,
+        }
+        if state.config.options.debug_verification_codes:
+            result["verification_code"] = code
+        return result
     session = create_session(state, user_row["id"], payload.get("ip", ""), payload.get("user_agent", ""))
-    return {"token": session["token"], "expires_at": session["expires_at"], "user": dict(user_row)}
+    return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitized}
 
 
 def login_user(state: ServerState, payload: Dict[str, str], ip: str, user_agent: str) -> Dict[str, str]:
@@ -182,7 +283,46 @@ def login_user(state: ServerState, payload: Dict[str, str], ip: str, user_agent:
     state.db.commit()
     session = create_session(state, row["id"], ip, user_agent)
     user_row = state.db.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
-    return {"token": session["token"], "expires_at": session["expires_at"], "user": dict(user_row)}
+    return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitize_user_row(user_row)}
+
+
+def verify_registration(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]:
+    identifier = payload.get("email", "").strip().lower() or payload.get("username", "").strip()
+    code = payload.get("code", "").strip()
+    if not identifier or not code:
+        raise AuthError("email or username and code are required")
+    user_row = state.db.execute(
+        "SELECT * FROM users WHERE email = ? OR username = ?",
+        (identifier, identifier),
+    ).fetchone()
+    if not user_row:
+        raise AuthError("User not found")
+    record = latest_verification_record(state, user_row["id"])
+    if user_row["is_active"] and not record:
+        session = create_session(state, user_row["id"], payload.get("ip", ""), payload.get("user_agent", ""))
+        sanitized = sanitize_user_row(user_row)
+        return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitized}
+    if not record:
+        raise AuthError("No verification code found")
+    expires_at = datetime.fromisoformat(record["expires_at"])
+    if expires_at < datetime.utcnow():
+        state.db.execute("UPDATE email_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+        state.db.commit()
+        raise AuthError("Verification code expired")
+    if record["code"].strip() != code:
+        raise AuthError("Invalid verification code")
+    state.db.execute(
+        "UPDATE email_verifications SET is_used = 1, verified_at = ? WHERE id = ?",
+        (datetime.utcnow().isoformat(), record["id"]),
+    )
+    state.db.execute(
+        "UPDATE users SET is_active = 1, last_login = ? WHERE id = ?",
+        (datetime.utcnow().isoformat(), user_row["id"]),
+    )
+    state.db.commit()
+    refreshed = state.db.execute("SELECT * FROM users WHERE id = ?", (user_row["id"],)).fetchone()
+    session = create_session(state, user_row["id"], payload.get("ip", ""), payload.get("user_agent", ""))
+    return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitize_user_row(refreshed)}
 
 
 def logout_user(state: ServerState, token: Optional[str]) -> None:
@@ -196,3 +336,20 @@ def cleanup_sessions(state: ServerState) -> None:
     now = datetime.utcnow().isoformat()
     state.db.execute("UPDATE sessions SET is_active = 0 WHERE expires_at < ?", (now,))
     state.db.commit()
+
+
+def ensure_default_admin(state: ServerState) -> None:
+    options = state.config.options
+    username = (options.default_admin_username or "admin").strip() or "admin"
+    email = (options.default_admin_email or f"{username}@example.com").strip().lower()
+    password = options.default_admin_password or "admin"
+    existing = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+    if existing:
+        return
+    password_hash = hash_password(password)
+    state.db.execute(
+        "INSERT INTO users (email, username, password_hash, tier, is_active) VALUES (?, ?, ?, ?, 1)",
+        (email, username, password_hash, "admin"),
+    )
+    state.db.commit()
+    logging.info("Created default admin user '%s'", username)
