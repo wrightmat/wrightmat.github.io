@@ -16,6 +16,12 @@ const elements = {
   tabButtons: Array.from(document.querySelectorAll("[data-admin-tab]")),
   tabPanels: Array.from(document.querySelectorAll("[data-admin-tab-panel]")),
   usersTab: document.querySelector("[data-admin-users-tab]"),
+  ownedTable: document.querySelector("[data-admin-owned-table]"),
+  ownedBody: document.querySelector("[data-admin-owned-rows]"),
+  ownedEmpty: document.querySelector("[data-admin-owned-empty]"),
+  ownedSummary: document.querySelector("[data-admin-owned-summary]"),
+  ownedUserSelect: document.querySelector("[data-admin-owned-user]"),
+  ownedFilter: document.querySelector("[data-admin-owned-filter]"),
   emailForm: document.querySelector("[data-admin-email-form]"),
   emailError: document.querySelector("[data-admin-email-error]"),
   emailInput: document.getElementById("admin-settings-email"),
@@ -32,6 +38,12 @@ const TIER_OPTIONS = [
   { value: "admin", label: "Admin" },
 ];
 
+const OWNED_TYPE_LABELS = {
+  characters: "Character",
+  templates: "Template",
+  systems: "System",
+};
+
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
 const TAB_USERS = "users";
@@ -43,6 +55,14 @@ const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat 
 
 const viewState = {
   activeTab: TAB_SETTINGS,
+  users: [],
+  owned: {
+    owner: null,
+    items: [],
+    selectedUsername: "",
+    loading: false,
+    stale: true,
+  },
 };
 
 function isAdminSession() {
@@ -136,6 +156,10 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
   }
   if (target === TAB_USERS && admin) {
     loadUsers();
+  }
+  if (target === TAB_OWNED) {
+    populateOwnedUserFilter();
+    loadOwnedContent();
   }
 }
 
@@ -287,9 +311,9 @@ function formatTier(tier) {
   return option ? option.label : tier;
 }
 
-function formatLastActivity(value) {
+function formatTimestamp(value, fallback = "Unknown") {
   if (!value) {
-    return "Never";
+    return fallback;
   }
   let source = value;
   if (typeof source === "string" && source.includes(" ") && !source.includes("T")) {
@@ -297,9 +321,13 @@ function formatLastActivity(value) {
   }
   const date = new Date(source);
   if (Number.isNaN(date.getTime())) {
-    return value || "Never";
+    return value || fallback;
   }
   return dateFormatter ? dateFormatter.format(date) : date.toLocaleString();
+}
+
+function formatLastActivity(value) {
+  return formatTimestamp(value, "Never");
 }
 
 async function loadUsers({ showSpinner = true } = {}) {
@@ -312,12 +340,340 @@ async function loadUsers({ showSpinner = true } = {}) {
   try {
     const payload = await dataManager.listUsers();
     const users = Array.isArray(payload?.users) ? payload.users : [];
+    viewState.users = users;
     renderUsers(users);
+    populateOwnedUserFilter();
   } catch (error) {
     if (status) {
       status.show(error.message || "Unable to load users", { type: "danger" });
     }
     setLoading("Unable to load users");
+  }
+}
+
+function populateOwnedUserFilter() {
+  if (!elements.ownedFilter) {
+    return;
+  }
+  const admin = isAdminSession();
+  elements.ownedFilter.classList.toggle("d-none", !admin);
+  if (!admin) {
+    if (elements.ownedUserSelect) {
+      elements.ownedUserSelect.innerHTML = "";
+    }
+    viewState.owned.selectedUsername = "";
+    return;
+  }
+  const select = elements.ownedUserSelect;
+  if (!select) {
+    return;
+  }
+  const current = currentUser();
+  const currentUsername = current?.username || "";
+  const selected = viewState.owned.selectedUsername || "";
+  const fragment = document.createDocumentFragment();
+  const selfOption = document.createElement("option");
+  selfOption.value = "";
+  selfOption.textContent = current
+    ? `${current.username} (You)`
+    : "My account";
+  fragment.appendChild(selfOption);
+  const uniqueUsers = new Map();
+  viewState.users.forEach((user) => {
+    if (!user || !user.username) return;
+    if (user.username === currentUsername) {
+      return;
+    }
+    uniqueUsers.set(user.username, user);
+  });
+  const sortedUsers = Array.from(uniqueUsers.values()).sort((a, b) =>
+    a.username.localeCompare(b.username, undefined, { sensitivity: "base" }),
+  );
+  sortedUsers.forEach((user) => {
+    const option = document.createElement("option");
+    option.value = user.username;
+    option.textContent = `${user.username} (${formatTier(user.tier)})`;
+    fragment.appendChild(option);
+  });
+  select.replaceChildren(fragment);
+  if (selected && (selected === currentUsername || uniqueUsers.has(selected))) {
+    select.value = selected;
+  } else {
+    select.value = "";
+    viewState.owned.selectedUsername = "";
+  }
+}
+
+function setOwnedLoading(message = "Loading content…") {
+  if (!elements.ownedBody) {
+    return;
+  }
+  if (elements.ownedTable) {
+    elements.ownedTable.hidden = false;
+  }
+  if (elements.ownedEmpty) {
+    elements.ownedEmpty.hidden = true;
+  }
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = 5;
+  cell.className = "text-center py-4 text-body-secondary";
+  cell.textContent = message;
+  row.appendChild(cell);
+  elements.ownedBody.replaceChildren(row);
+}
+
+function showOwnedEmpty(message = "No saved content yet.") {
+  if (elements.ownedTable) {
+    elements.ownedTable.hidden = true;
+  }
+  if (elements.ownedEmpty) {
+    elements.ownedEmpty.hidden = false;
+    elements.ownedEmpty.textContent = message;
+  }
+  if (elements.ownedBody) {
+    elements.ownedBody.innerHTML = "";
+  }
+}
+
+function updateOwnedSummary(owner, itemCount = 0) {
+  if (!elements.ownedSummary) {
+    return;
+  }
+  if (!owner) {
+    elements.ownedSummary.textContent = "";
+    return;
+  }
+  const tierLabel = formatTier(owner.tier);
+  const countLabel = itemCount === 1 ? "1 item" : `${itemCount} items`;
+  const viewingSelf = !viewState.owned.selectedUsername || viewState.owned.selectedUsername === owner.username;
+  const subject = viewingSelf ? "your account" : owner.username;
+  elements.ownedSummary.textContent = `Viewing ${subject} (${tierLabel}) — ${countLabel}.`;
+}
+
+function buildShareUrl(bucket, id) {
+  const pageMap = {
+    characters: "character.html",
+    templates: "template.html",
+    systems: "system.html",
+  };
+  const page = pageMap[bucket];
+  if (!page) {
+    return window.location.href;
+  }
+  const record = `${bucket}:${id}`;
+  const url = new URL(page, window.location.href);
+  url.searchParams.set("record", record);
+  return url.toString();
+}
+
+async function copyShareLink(url) {
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      await navigator.clipboard.writeText(url);
+      if (status) {
+        status.show("Copied share link to clipboard", { type: "success", timeout: 1800 });
+      }
+      return true;
+    }
+  } catch (error) {
+    console.warn("Clipboard write failed", error);
+  }
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = url;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    if (successful && status) {
+      status.show("Copied share link to clipboard", { type: "success", timeout: 1800 });
+    }
+    return successful;
+  } catch (error) {
+    console.warn("Fallback clipboard copy failed", error);
+    if (status) {
+      status.show("Unable to copy link", { type: "danger" });
+    }
+    return false;
+  }
+}
+
+function renderOwnedItems(items, owner) {
+  if (!elements.ownedBody) {
+    return;
+  }
+  if (!Array.isArray(items) || !items.length) {
+    showOwnedEmpty(viewState.owned.selectedUsername ? "No content for this user." : "No saved content yet.");
+    updateOwnedSummary(owner, 0);
+    return;
+  }
+  if (elements.ownedTable) {
+    elements.ownedTable.hidden = false;
+  }
+  if (elements.ownedEmpty) {
+    elements.ownedEmpty.hidden = true;
+  }
+  const fragment = document.createDocumentFragment();
+  items.forEach((item) => {
+    const row = document.createElement("tr");
+
+    const nameCell = document.createElement("td");
+    const namePrimary = document.createElement("div");
+    namePrimary.className = "fw-semibold";
+    namePrimary.textContent = item.label || item.id;
+    const nameSecondary = document.createElement("div");
+    nameSecondary.className = "text-body-secondary small";
+    nameSecondary.textContent = item.id;
+    nameCell.appendChild(namePrimary);
+    nameCell.appendChild(nameSecondary);
+
+    const typeCell = document.createElement("td");
+    typeCell.textContent = OWNED_TYPE_LABELS[item.bucket] || item.bucket;
+
+    const createdCell = document.createElement("td");
+    createdCell.textContent = formatTimestamp(item.created_at, "Unknown");
+
+    const accessedCell = document.createElement("td");
+    accessedCell.textContent = formatTimestamp(item.last_accessed_at, "Never");
+
+    const actionsCell = document.createElement("td");
+    actionsCell.className = "text-end";
+    const controls = document.createElement("div");
+    controls.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
+
+    const toggleWrapper = document.createElement("div");
+    toggleWrapper.className = "form-check form-switch mb-0";
+    const toggle = document.createElement("input");
+    toggle.className = "form-check-input";
+    toggle.type = "checkbox";
+    toggle.role = "switch";
+    toggle.checked = Boolean(item.is_public);
+    toggle.setAttribute("aria-label", `Toggle visibility for ${item.label || item.id}`);
+    const toggleLabel = document.createElement("label");
+    toggleLabel.className = "form-check-label";
+    toggleLabel.textContent = toggle.checked ? "Public" : "Private";
+    toggleWrapper.appendChild(toggle);
+    toggleWrapper.appendChild(toggleLabel);
+
+    toggle.addEventListener("change", async () => {
+      const desired = toggle.checked;
+      toggle.disabled = true;
+      try {
+        const result = await dataManager.toggleVisibility(item.bucket, item.id, desired);
+        const isPublic = Boolean(result?.public);
+        toggle.checked = isPublic;
+        toggleLabel.textContent = isPublic ? "Public" : "Private";
+        item.is_public = isPublic;
+        if (status) {
+          status.show(
+            isPublic ? "Content is now shareable via link." : "Content visibility set to private.",
+            { type: "success", timeout: 2000 },
+          );
+        }
+      } catch (error) {
+        console.error("Failed to toggle visibility", error);
+        toggle.checked = !desired;
+        if (status) {
+          status.show(error.message || "Unable to update visibility", { type: "danger" });
+        }
+      } finally {
+        toggle.disabled = false;
+      }
+    });
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "btn btn-outline-secondary btn-sm";
+    copyButton.textContent = "Copy link";
+    const shareUrl = buildShareUrl(item.bucket, item.id);
+    copyButton.addEventListener("click", () => {
+      copyShareLink(shareUrl);
+    });
+
+    const openLink = document.createElement("a");
+    openLink.href = shareUrl;
+    openLink.target = "_blank";
+    openLink.rel = "noopener";
+    openLink.className = "btn btn-outline-primary btn-sm";
+    openLink.textContent = "Open";
+
+    controls.appendChild(toggleWrapper);
+    controls.appendChild(copyButton);
+    controls.appendChild(openLink);
+    actionsCell.appendChild(controls);
+
+    row.appendChild(nameCell);
+    row.appendChild(typeCell);
+    row.appendChild(createdCell);
+    row.appendChild(accessedCell);
+    row.appendChild(actionsCell);
+    fragment.appendChild(row);
+  });
+
+  elements.ownedBody.replaceChildren(fragment);
+  updateOwnedSummary(owner, items.length);
+}
+
+function isViewingCurrentUser() {
+  const current = currentUser();
+  if (!current) {
+    return false;
+  }
+  return !viewState.owned.selectedUsername || viewState.owned.selectedUsername === current.username;
+}
+
+async function loadOwnedContent({ refresh = false } = {}) {
+  if (!elements.ownedBody) {
+    return;
+  }
+  if (!dataManager.isAuthenticated()) {
+    viewState.owned.owner = null;
+    viewState.owned.items = [];
+    viewState.owned.stale = true;
+    showOwnedEmpty("Sign in to see your saved content.");
+    updateOwnedSummary(null, 0);
+    return;
+  }
+  if (viewState.owned.loading) {
+    return;
+  }
+  viewState.owned.loading = true;
+  const shouldRefresh = refresh || viewState.owned.stale;
+  if (shouldRefresh || !viewState.owned.items.length) {
+    setOwnedLoading();
+  }
+  const username = viewState.owned.selectedUsername || "";
+  try {
+    const payload = await dataManager.listOwnedContent({ username, refresh: shouldRefresh });
+    const owner = payload?.owner || null;
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    viewState.owned.owner = owner;
+    viewState.owned.items = items;
+    viewState.owned.stale = false;
+    renderOwnedItems(items, owner);
+  } catch (error) {
+    console.error("Failed to load owned content", error);
+    if (status) {
+      status.show(error.message || "Unable to load content", { type: "danger" });
+    }
+    setOwnedLoading("Unable to load content");
+  } finally {
+    viewState.owned.loading = false;
+  }
+}
+
+function handleOwnedContentEvent() {
+  if (!dataManager.isAuthenticated()) {
+    return;
+  }
+  if (viewState.activeTab === TAB_OWNED && isViewingCurrentUser()) {
+    loadOwnedContent({ refresh: true });
+  } else if (isViewingCurrentUser()) {
+    viewState.owned.stale = true;
   }
 }
 
@@ -352,10 +708,22 @@ function handleAuthChanged() {
     showPanel();
     updateTabAvailability();
     populateSettings({ force: true });
+    populateOwnedUserFilter();
+    viewState.owned.selectedUsername = "";
+    viewState.owned.stale = true;
+    loadOwnedContent({ refresh: true });
     setActiveTab(resolveTabFromHash(), { updateHash: false, force: true });
   } else {
     showGate();
     updateTabAvailability();
+    viewState.users = [];
+    viewState.owned.owner = null;
+    viewState.owned.items = [];
+    viewState.owned.selectedUsername = "";
+    viewState.owned.stale = true;
+    populateOwnedUserFilter();
+    showOwnedEmpty("Sign in to see your saved content.");
+    updateOwnedSummary(null, 0);
     setActiveTab(TAB_SETTINGS, { updateHash: false, force: true });
   }
 }
@@ -376,6 +744,14 @@ if (elements.tabs) {
     }
     const tab = button.getAttribute("data-admin-tab") || TAB_SETTINGS;
     setActiveTab(tab, { updateHash: true });
+  });
+}
+
+if (elements.ownedUserSelect) {
+  elements.ownedUserSelect.addEventListener("change", () => {
+    viewState.owned.selectedUsername = elements.ownedUserSelect.value || "";
+    viewState.owned.stale = true;
+    loadOwnedContent({ refresh: true });
   });
 }
 
@@ -457,5 +833,9 @@ if (elements.passwordForm) {
     }
   });
 }
+
+window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
+window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
+window.addEventListener("workbench:content-visibility", handleOwnedContentEvent);
 
 handleAuthChanged();
