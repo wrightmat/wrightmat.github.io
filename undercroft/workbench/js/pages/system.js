@@ -111,6 +111,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     selectedNodeId: null,
   };
 
+  let pendingSharedSystem = resolveSharedRecordParam("systems");
+
   function hasActiveSystem() {
     return Boolean(state.system && (state.system.id || state.system.title));
   }
