@@ -1782,6 +1782,171 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
   }
 
+  function parseBindingPathSegments(binding) {
+    const normalized = normalizeBindingValue(binding);
+    if (!normalized || !normalized.startsWith("@")) {
+      return null;
+    }
+    const trimmed = normalized.slice(1).trim();
+    if (!trimmed) {
+      return [];
+    }
+    return trimmed
+      .split(".")
+      .flatMap((segment) => segment.split(/\[|\]/).map((part) => part.trim()).filter(Boolean));
+  }
+
+  function getValueAtSegments(root, segments = []) {
+    if (!segments.length) {
+      return root;
+    }
+    let cursor = root;
+    for (const segment of segments) {
+      if (Array.isArray(cursor) && /^\d+$/.test(segment)) {
+        const index = Number(segment);
+        cursor = cursor[index];
+      } else if (cursor && typeof cursor === "object" && segment in cursor) {
+        cursor = cursor[segment];
+      } else {
+        return undefined;
+      }
+    }
+    return cursor;
+  }
+
+  function resolvePreviewBindingValue(binding) {
+    const path = parseBindingPathSegments(binding);
+    if (!path || !path.length) {
+      return undefined;
+    }
+    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
+    const contexts = [];
+    if (definition) {
+      const candidates = [
+        { key: null, value: definition },
+        { key: "preview", value: definition.preview },
+        { key: "metadata", value: definition.metadata },
+        { key: "definition", value: definition.definition },
+        { key: "data", value: definition.data },
+        { key: "sources", value: definition.sources },
+        { key: "samples", value: definition.samples },
+        { key: "sample", value: definition.sample },
+        { key: "values", value: definition.values },
+        { key: "lists", value: definition.lists },
+        { key: "collections", value: definition.collections },
+      ];
+      candidates.forEach(({ key, value }) => {
+        if (value && typeof value === "object") {
+          const offset = key && path[0] === key ? 1 : 0;
+          contexts.push({ root: value, offset });
+        }
+      });
+    }
+    const template = state.template && typeof state.template === "object" ? state.template : null;
+    if (template) {
+      const templateCandidates = [
+        { key: "metadata", value: template.metadata },
+        { key: "data", value: template.data },
+        { key: "sources", value: template.sources },
+      ];
+      templateCandidates.forEach(({ key, value }) => {
+        if (value && typeof value === "object") {
+          const offset = path[0] === key ? 1 : 0;
+          contexts.push({ root: value, offset });
+        }
+      });
+    }
+    for (const context of contexts) {
+      const segments = path.slice(context.offset || 0);
+      const result = getValueAtSegments(context.root, segments);
+      if (result !== undefined) {
+        return result;
+      }
+    }
+    return undefined;
+  }
+
+  function normalizePreviewOptions(source) {
+    if (!source) {
+      return [];
+    }
+    if (Array.isArray(source)) {
+      return source
+        .map((entry, index) => {
+          if (entry == null) {
+            return null;
+          }
+          if (typeof entry === "object" && !Array.isArray(entry)) {
+            const rawValue =
+              entry.value ?? entry.id ?? entry.key ?? entry.slug ?? entry.name ?? entry.label ?? index;
+            if (rawValue == null) {
+              return null;
+            }
+            const rawLabel = entry.label ?? entry.name ?? entry.title ?? entry.text ?? rawValue;
+            return {
+              value: String(rawValue),
+              label: rawLabel != null ? String(rawLabel) : String(rawValue),
+            };
+          }
+          return { value: String(entry), label: String(entry) };
+        })
+        .filter(Boolean);
+    }
+    if (typeof source === "object") {
+      return Object.entries(source).map(([key, entry]) => {
+        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+          const rawValue = entry.value ?? entry.id ?? entry.key ?? entry.slug ?? key;
+          const rawLabel = entry.label ?? entry.name ?? entry.title ?? entry.text ?? rawValue;
+          return {
+            value: rawValue != null ? String(rawValue) : String(key),
+            label: rawLabel != null ? String(rawLabel) : String(rawValue ?? key),
+          };
+        }
+        return {
+          value: String(key),
+          label: entry != null ? String(entry) : String(key),
+        };
+      });
+    }
+    return [];
+  }
+
+  function resolveSelectPreviewOptions(component) {
+    const binding = normalizeBindingValue(component?.sourceBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizePreviewOptions(bound);
+  }
+
+  function resolveSelectGroupPreviewOptions(component) {
+    const binding = normalizeBindingValue(component?.sourceBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizePreviewOptions(bound);
+  }
+
+  function resolveTogglePreviewStates(component) {
+    const binding = normalizeBindingValue(component?.statesBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizePreviewOptions(bound)
+      .map((entry) => entry.label || entry.value)
+      .filter((value) => value != null && value !== "");
+  }
+
+  function createPreviewEmptyState(message = "Select a source to preview values.") {
+    const placeholder = document.createElement("div");
+    placeholder.className = "text-body-secondary small fst-italic";
+    placeholder.textContent = message;
+    return placeholder;
+  }
+
   function ensureContainerZones(component) {
     if (!component || component.type !== "container") return [];
     if (!component.zones || typeof component.zones !== "object") {
@@ -1902,6 +2067,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
 
     let control;
+    const previewOptions = resolveSelectPreviewOptions(component);
     switch (component.variant) {
       case "number": {
         control = document.createElement("input");
@@ -1913,12 +2079,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "select": {
         control = document.createElement("select");
         control.className = "form-select";
-        const options = Array.isArray(component.options) && component.options.length
-          ? component.options
-          : ["Option A", "Option B"];
-        options.forEach((option) => {
+        previewOptions.forEach((option) => {
           const opt = document.createElement("option");
-          opt.textContent = option;
+          opt.value = option.value;
+          opt.textContent = option.label || option.value;
           control.appendChild(opt);
         });
         break;
@@ -1954,6 +2118,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       control.disabled = !!component.readOnly;
     }
     container.appendChild(control);
+    if ((component.variant || "text") === "select" && !previewOptions.length) {
+      container.appendChild(createPreviewEmptyState());
+    }
     return container;
   }
 
@@ -2300,15 +2467,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       wrapper.appendChild(heading);
     }
 
-    const sampleOptions = ["Option A", "Option B", "Option C"];
+    const options = resolveSelectGroupPreviewOptions(component);
+    if (!options.length) {
+      wrapper.appendChild(createPreviewEmptyState());
+      return wrapper;
+    }
     let control;
     if (component.variant === "tags") {
       control = document.createElement("div");
       control.className = "template-select-tags d-flex flex-wrap gap-2";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const tag = document.createElement("span");
         tag.className = "template-select-tag";
-        const slug = option.trim().toLowerCase().replace(/\s+/g, "-");
+        const label = option.label || option.value || "";
+        const slug = label.trim().toLowerCase().replace(/\s+/g, "-");
         tag.textContent = `#${slug || "tag"}`;
         if (component.multiple !== false && index < 2) {
           tag.classList.add("is-active");
@@ -2320,7 +2492,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     } else if (component.variant === "buttons") {
       control = document.createElement("div");
       control.className = "btn-group";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const button = document.createElement("button");
         button.type = "button";
         const isActive = component.multiple ? index < 2 : index === 0;
@@ -2328,13 +2500,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (component.readOnly) {
           button.classList.add("disabled");
         }
-        button.textContent = option;
+        button.textContent = option.label || option.value;
         control.appendChild(button);
       });
     } else {
       control = document.createElement("div");
       control.className = "d-flex flex-wrap gap-2";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const button = document.createElement("button");
         button.type = "button";
         const isActive = component.multiple ? index < 2 : index === 0;
@@ -2342,7 +2514,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (component.readOnly) {
           button.classList.add("disabled");
         }
-        button.textContent = option;
+        button.textContent = option.label || option.value;
         control.appendChild(button);
       });
     }
@@ -2362,12 +2534,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       wrapper.appendChild(heading);
     }
 
-    const states = Array.isArray(component.states) && component.states.length
-      ? component.states
-      : ["State 1", "State 2"];
+    const states = resolveTogglePreviewStates(component);
     const shape = component.shape || "circle";
     const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
-    let activeIndex = fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
+    const hasStates = states.length > 0;
+    let activeIndex = hasStates && fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
     if (activeIndex < 0) {
       activeIndex = clampInteger(component.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
     }
@@ -2384,8 +2555,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
     const opacity = 0.25 + progress * 0.55;
     preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
-    preview.setAttribute("aria-label", states[activeIndex] || "Toggle state");
+    if (hasStates) {
+      preview.setAttribute("aria-label", states[Math.min(activeIndex, states.length - 1)] || "Toggle state");
+    } else {
+      preview.setAttribute("aria-label", "Toggle preview");
+    }
     wrapper.appendChild(preview);
+    if (!hasStates) {
+      wrapper.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
+    }
 
     return wrapper;
   }
