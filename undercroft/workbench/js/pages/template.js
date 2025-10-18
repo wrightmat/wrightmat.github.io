@@ -54,7 +54,6 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     string: { icon: "tabler:letter-case", label: "String" },
     number: { icon: "tabler:123", label: "Number" },
     boolean: { icon: "tabler:switch-3", label: "Boolean" },
-    list: { icon: "tabler:list-details", label: "List" },
     array: { icon: "tabler:brackets", label: "Array" },
     object: { icon: "tabler:braces", label: "Object" },
   };
@@ -90,7 +89,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       case "array":
         return ["array", "object"];
       case "select-group":
-        return component.multiple ? ["array", "list"] : ["string", "list"];
+        return ["array", "object"];
       case "toggle":
         return ["string"];
       default:

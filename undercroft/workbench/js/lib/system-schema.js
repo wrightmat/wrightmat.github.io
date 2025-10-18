@@ -1,4 +1,4 @@
-const OBJECT_TYPES = new Set(["group", "object"]);
+const OBJECT_TYPES = new Set(["object"]);
 
 function normalizeType(type) {
   if (typeof type !== "string") {
@@ -19,9 +19,8 @@ export function categorizeFieldType(type) {
     case "bool":
       return "boolean";
     case "array":
-      return "array";
     case "list":
-      return "list";
+      return "array";
     case "object":
     case "group":
       return "object";
@@ -67,9 +66,6 @@ function traverseField(node, prefix, results) {
     node.children.forEach((child) => {
       traverseField(child, nextPrefix, results);
     });
-  }
-  if (type === "object" && node.additional && typeof node.additional === "object") {
-    traverseField(node.additional, nextPrefix, results);
   }
 }
 

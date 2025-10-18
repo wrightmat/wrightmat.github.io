@@ -53,21 +53,13 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       description: "Repeatable entries",
       palette: true,
     },
-    group: {
-      label: "Group",
-      icon: "tabler:stack-2",
-      description: "Nest related fields",
-    },
-    list: {
-      label: "List",
-      icon: "tabler:list-check",
-      description: "Pick from options",
-    },
   };
 
   const TYPE_ALIASES = {
     integer: "number",
   };
+
+  const TYPE_OPTIONS = ["string", "number", "boolean", "object", "array"];
 
   function normalizeType(type) {
     if (!type) return "string";
@@ -81,11 +73,6 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   function isNumericType(type) {
     return normalizeType(type) === "number";
-  }
-
-  function supportsChoices(type) {
-    const normalized = normalizeType(type);
-    return normalized === "string" || normalized === "list";
   }
 
   const elements = {
@@ -118,6 +105,10 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     system: createBlankSystem(),
     selectedNodeId: null,
   };
+
+  function hasActiveSystem() {
+    return Boolean(state.system && (state.system.id || state.system.title));
+  }
 
   const insertFieldAtCanvasRoot = createRootInsertionHandler({
     createItem: (type) => {
@@ -173,6 +164,13 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       dataAttribute: "data-palette-type",
       onActivate: ({ value }) => {
         if (!value) {
+          return;
+        }
+        if (!hasActiveSystem()) {
+          status.show("Create or load a system before adding fields.", {
+            type: "warning",
+            timeout: 2400,
+          });
           return;
         }
         insertFieldAtCanvasRoot(value);
@@ -512,15 +510,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       formula: "",
       minimum: null,
       maximum: null,
-      minItems: null,
-      maxItems: null,
-      optionsFrom: "",
-      enum: [],
-      itemFragment: "",
-      itemKey: "",
-      itemLabel: "",
+      values: [],
       children: [],
-      additional: null,
     };
     node.children = Array.isArray(node.children) ? node.children : [];
     return Object.assign(node, overrides);
@@ -564,21 +555,15 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       formula: field.formula || field.expr || "",
       minimum: field.minimum ?? null,
       maximum: field.maximum ?? null,
-      minItems: field.minItems ?? null,
-      maxItems: field.maxItems ?? null,
-      optionsFrom: field.optionsFrom || "",
-      enum: Array.isArray(field.enum) ? [...field.enum] : [],
-      itemFragment: field.itemFragment || "",
-      itemKey: field.item?.key || "",
-      itemLabel: field.item?.label || "",
+      values: Array.isArray(field.values)
+        ? [...field.values]
+        : Array.isArray(field.enum)
+        ? [...field.enum]
+        : [],
     });
-    if (field.type === "array" && field.item) {
-      node.children = [hydrateFieldNode(field.item)];
-    } else if (Array.isArray(field.children) && field.children.length) {
+    const normalized = normalizeType(field.type);
+    if (normalized === "object" && Array.isArray(field.children) && field.children.length) {
       node.children = field.children.map(hydrateFieldNode);
-    }
-    if (field.additional) {
-      node.additional = hydrateFieldNode(field.additional);
     }
     return node;
   }
@@ -599,8 +584,11 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     root.dataset.dropzoneKey = "root";
     const fields = state.system.fields || [];
     if (!fields.length) {
+      const placeholderText = hasActiveSystem()
+        ? "Drag fields from the palette into the canvas below to design your system."
+        : "Create or load a system to start adding fields to the canvas.";
       root.appendChild(
-        createCanvasPlaceholder("Drag fields from the palette into the canvas below to design your system.", {
+        createCanvasPlaceholder(placeholderText, {
           variant: "root",
         })
       );
@@ -724,11 +712,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
         parts.push(`range ${range}`);
       }
     }
-    if (node.enum && node.enum.length) {
-      parts.push(`${node.enum.length} option${node.enum.length === 1 ? "" : "s"}`);
-    }
-    if (node.children && node.children.length && !supportsChildren(node.type)) {
-      parts.push(`${node.children.length} nested`);
+    if (Array.isArray(node.values) && node.values.length) {
+      parts.push(`${node.values.length} value${node.values.length === 1 ? "" : "s"}`);
     }
     const normalizedType = normalizeType(node.type);
     return parts.join(" · ") || TYPE_DEFS[normalizedType]?.description || "";
@@ -736,10 +721,19 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
   function supportsChildren(type) {
     const normalized = normalizeType(type);
-    return normalized === "group" || normalized === "object" || normalized === "array";
+    return normalized === "object";
   }
 
   function handleDrop(event) {
+    if (!hasActiveSystem()) {
+      status.show("Create or load a system before adding fields.", {
+        type: "warning",
+        timeout: 2400,
+      });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
     const parentId = event.to.dataset.dropzone || "root";
     const index = event.newIndex;
     const paletteType = event.item.dataset.paletteType;
@@ -864,9 +858,6 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       if (node.id === nodeId) {
         return { node, parentId, collection: nodes, index, relation: "children" };
       }
-      if (node.additional && node.additional.id === nodeId) {
-        return { node: node.additional, parentId: node.id, collection: node, index: "additional", relation: "additional" };
-      }
       if (node.children && node.children.length) {
         const childResult = findNode(nodeId, node.children, node.id);
         if (childResult) {
@@ -894,8 +885,8 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
 
     const normalizedType = normalizeType(node.type);
 
+    form.appendChild(createTextInput(node, "ID", "key"));
     form.appendChild(createTextInput(node, "Label", "label"));
-    form.appendChild(createTextInput(node, "Key", "key"));
     form.appendChild(createTypeSelect(node));
     form.appendChild(createCheckbox(node, "Required", "required"));
     form.appendChild(createTextInput(node, "Formula", "formula", { placeholder: "Optional formula expression" }));
@@ -906,21 +897,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     }
 
     if (normalizedType === "array") {
-      form.appendChild(createNumberInput(node, "Minimum items", "minItems"));
-      form.appendChild(createNumberInput(node, "Maximum items", "maxItems"));
-      form.appendChild(createTextInput(node, "Item key", "itemKey"));
-      form.appendChild(createTextInput(node, "Item label", "itemLabel"));
-      form.appendChild(createTextInput(node, "Item fragment", "itemFragment"));
-      form.appendChild(createTextInput(node, "Options from", "optionsFrom"));
-    }
-
-    if (supportsChoices(normalizedType)) {
-      form.appendChild(createTextarea(node, "Allowed values (one per line)", "enum"));
-      form.appendChild(createTextInput(node, "Options from", "optionsFrom"));
-    }
-
-    if (normalizedType === "object") {
-      form.appendChild(renderAdditionalFieldGroup(node));
+      form.appendChild(createTextarea(node, "Values (one per line)", "values"));
     }
 
     elements.inspector.appendChild(form);
@@ -934,11 +911,17 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     label.textContent = "Type";
     const select = document.createElement("select");
     select.className = "form-select";
-    Object.entries(TYPE_DEFS).forEach(([value, meta]) => {
+    const normalized = normalizeType(node.type);
+    const options = TYPE_OPTIONS.slice();
+    if (normalized && !options.includes(normalized)) {
+      options.push(normalized);
+    }
+    options.forEach((value) => {
+      const meta = TYPE_DEFS[value] || { label: value };
       const option = document.createElement("option");
       option.value = value;
       option.textContent = meta.label;
-      if (value === node.type) {
+      if (value === normalized) {
         option.selected = true;
       }
       select.appendChild(option);
@@ -1031,33 +1014,6 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     return wrapper;
   }
 
-  function renderAdditionalFieldGroup(node) {
-    const wrapper = document.createElement("fieldset");
-    wrapper.className = "border rounded-3 p-3";
-    const legend = document.createElement("legend");
-    legend.className = "float-none w-auto px-2 text-body-secondary small text-uppercase";
-    legend.textContent = "Additional entries";
-    wrapper.appendChild(legend);
-    const additional =
-      node.additional || applyFieldIdentity(createFieldNode("string", { id: `${node.id}-additional` }));
-    if (!node.additional) {
-      node.additional = additional;
-    }
-    const normalizedAdditionalType = normalizeType(additional.type);
-    wrapper.appendChild(createTextInput(additional, "Key", "key"));
-    wrapper.appendChild(createTextInput(additional, "Label", "label"));
-    wrapper.appendChild(createTypeSelect(additional));
-    wrapper.appendChild(createCheckbox(additional, "Required", "required"));
-    if (isNumericType(normalizedAdditionalType)) {
-      wrapper.appendChild(createNumberInput(additional, "Minimum", "minimum"));
-      wrapper.appendChild(createNumberInput(additional, "Maximum", "maximum"));
-    }
-    if (supportsChoices(normalizedAdditionalType)) {
-      wrapper.appendChild(createTextarea(additional, "Allowed values", "enum"));
-    }
-    return wrapper;
-  }
-
   function updateNodeProperty(nodeId, property, value) {
     const found = findNode(nodeId);
     if (!found) {
@@ -1082,9 +1038,7 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       required: current.required,
     };
     const replacement = applyFieldIdentity(createFieldNode(nextType, preserved));
-    if (found.relation === "additional" && found.collection) {
-      found.collection.additional = replacement;
-    } else {
+    if (found.collection) {
       found.collection[found.index] = replacement;
     }
     state.selectedNodeId = preserved.id;
@@ -1115,35 +1069,12 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
     if (node.formula) output.formula = node.formula;
     if (node.minimum != null) output.minimum = node.minimum;
     if (node.maximum != null) output.maximum = node.maximum;
-    if (node.minItems != null) output.minItems = node.minItems;
-    if (node.maxItems != null) output.maxItems = node.maxItems;
-    if (node.optionsFrom) output.optionsFrom = node.optionsFrom;
-    if (node.itemFragment) output.itemFragment = node.itemFragment;
-    if (Array.isArray(node.enum) && node.enum.length) output.enum = [...node.enum];
-
-    if (normalizedType === "object") {
-      if (node.additional) {
-        output.additional = serializeFieldNode(node.additional);
-      }
+    if (Array.isArray(node.values) && node.values.length) {
+      output.values = [...node.values];
     }
 
-    if (supportsChildren(normalizedType) && Array.isArray(node.children) && node.children.length) {
-      if (normalizedType === "array") {
-        if (node.children.length === 1) {
-          output.item = serializeFieldNode(node.children[0]);
-          if (node.itemKey) output.item.key = node.itemKey;
-          if (node.itemLabel) output.item.label = node.itemLabel;
-        } else {
-          output.item = {
-            key: node.itemKey || node.key || "item",
-            label: node.itemLabel || node.label || "Item",
-            type: "group",
-            children: node.children.map(serializeFieldNode),
-          };
-        }
-      } else {
-        output.children = node.children.map(serializeFieldNode);
-      }
+    if (normalizedType === "object" && Array.isArray(node.children) && node.children.length) {
+      output.children = node.children.map(serializeFieldNode);
     }
 
     return output;
@@ -1166,9 +1097,6 @@ import { BUILTIN_SYSTEMS } from "../lib/content-registry.js";
       node.children.forEach((child) => {
         traverseField(child);
       });
-    }
-    if (node.additional) {
-      traverseField(node.additional);
     }
   }
 
