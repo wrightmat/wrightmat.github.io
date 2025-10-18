@@ -8,6 +8,7 @@ import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { BUILTIN_TEMPLATES } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { evaluateFormula } from "../lib/formula-engine.js";
 
 const BUILTIN_CHARACTERS = [
   {
@@ -649,12 +650,13 @@ const BUILTIN_CHARACTERS = [
       wrapper.appendChild(label);
     }
     const editable = isEditable(component);
-    const value = getBindingValue(component.binding);
+    const resolvedValue = resolveComponentValue(component, component.value ?? "");
     const variant = component.variant || "text";
 
     if (variant === "select") {
       const select = document.createElement("select");
       select.className = "form-select";
+      const currentValue = resolvedValue == null ? "" : String(resolvedValue);
       (component.options || []).forEach((option) => {
         const opt = document.createElement("option");
         if (typeof option === "string") {
@@ -664,12 +666,13 @@ const BUILTIN_CHARACTERS = [
           opt.value = option.value;
           opt.textContent = option.label;
         }
-        if (opt.value === value) {
+        if (opt.value === currentValue) {
           opt.selected = true;
         }
         select.appendChild(opt);
       });
       select.disabled = !editable;
+      assignBindingMetadata(select, component);
       if (editable) {
         select.addEventListener("change", () => {
           updateBinding(component.binding, select.value);
@@ -684,12 +687,12 @@ const BUILTIN_CHARACTERS = [
       group.className = "d-flex flex-wrap gap-2";
       const options = Array.isArray(component.options) ? component.options : [];
       const currentValue = variant === "checkbox"
-        ? Array.isArray(value)
-          ? value.map(String)
+        ? Array.isArray(resolvedValue)
+          ? resolvedValue.map(String)
           : []
-        : value == null
+        : resolvedValue == null
         ? ""
-        : String(value);
+        : String(resolvedValue);
       options.forEach((option, index) => {
         const optionValue = typeof option === "string" ? option : option.value;
         const optionLabel = typeof option === "string" ? option : option.label;
@@ -709,6 +712,7 @@ const BUILTIN_CHARACTERS = [
           input.value = optionValue;
           input.checked = currentValue.includes(String(optionValue));
         }
+        assignBindingMetadata(input, component, { value: optionValue });
         if (editable) {
           input.addEventListener("change", () => {
             if (variant === "radio") {
@@ -739,8 +743,10 @@ const BUILTIN_CHARACTERS = [
       if (component.min !== undefined) input.min = component.min;
       if (component.max !== undefined) input.max = component.max;
       if (component.step !== undefined) input.step = component.step;
-      input.value = value ?? "";
+      const numericValue = resolvedValue == null ? "" : resolvedValue;
+      input.value = numericValue === undefined ? "" : numericValue;
       input.disabled = !editable;
+      assignBindingMetadata(input, component);
       if (editable) {
         input.addEventListener("input", () => {
           const raw = input.value;
@@ -755,8 +761,9 @@ const BUILTIN_CHARACTERS = [
     } else {
       input.type = component.inputType || "text";
       input.placeholder = component.placeholder || "";
-      input.value = value ?? "";
+      input.value = resolvedValue ?? "";
       input.disabled = !editable;
+      assignBindingMetadata(input, component);
       if (editable) {
         input.addEventListener("input", () => {
           updateBinding(component.binding, input.value);
@@ -772,17 +779,22 @@ const BUILTIN_CHARACTERS = [
     wrapper.className = "d-flex flex-column gap-2";
     const heading = document.createElement("div");
     heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = component.label || component.name || "Array";
+    heading.textContent = component.label || component.name || "List";
     applyTextFormatting(heading, component);
     wrapper.appendChild(heading);
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
     textarea.rows = component.rows || 4;
-    const value = getBindingValue(component.binding);
-    const serialized = Array.isArray(value) ? JSON.stringify(value, null, 2) : value ? String(value) : "";
+    const value = resolveComponentValue(component);
+    const serialized = Array.isArray(value)
+      ? JSON.stringify(value, null, 2)
+      : value != null
+      ? String(value)
+      : "";
     textarea.value = serialized;
     const editable = isEditable(component);
     textarea.readOnly = !editable;
+    assignBindingMetadata(textarea, component);
     if (editable) {
       textarea.addEventListener("blur", () => {
         const text = textarea.value.trim();
@@ -836,7 +848,8 @@ const BUILTIN_CHARACTERS = [
   function renderLabelComponent(component) {
     const text = document.createElement("div");
     text.className = "text-body";
-    text.textContent = component.text || component.label || "Label";
+    const resolved = resolveComponentValue(component, component.text || component.label || "Label");
+    text.textContent = resolved != null ? String(resolved) : "";
     applyTextFormatting(text, component);
     return text;
   }
@@ -878,10 +891,12 @@ const BUILTIN_CHARACTERS = [
     input.className = "form-range";
     input.min = component.min ?? 0;
     input.max = component.max ?? 100;
-    const value = Number(getBindingValue(component.binding) ?? component.value ?? 0);
+    const resolved = resolveComponentValue(component, component.value ?? 0);
+    const value = Number(resolved ?? 0);
     input.value = Number.isNaN(value) ? 0 : value;
     const editable = isEditable(component);
     input.disabled = !editable;
+    assignBindingMetadata(input, component);
     if (editable) {
       input.addEventListener("input", () => {
         updateBinding(component.binding, Number(input.value));
@@ -904,10 +919,12 @@ const BUILTIN_CHARACTERS = [
     input.min = 0;
     const max = component.max ?? 100;
     input.max = max;
-    const value = Number(getBindingValue(component.binding) ?? component.value ?? 0);
+    const resolved = resolveComponentValue(component, component.value ?? 0);
+    const value = Number(resolved ?? 0);
     input.value = Number.isNaN(value) ? 0 : value;
     const editable = isEditable(component);
     input.disabled = !editable;
+    assignBindingMetadata(input, component);
     if (editable) {
       input.addEventListener("input", () => {
         const next = Number(input.value);
@@ -926,7 +943,7 @@ const BUILTIN_CHARACTERS = [
     label.textContent = component.label || "Options";
     wrapper.appendChild(label);
     const editable = isEditable(component);
-    const value = getBindingValue(component.binding);
+    const value = resolveComponentValue(component, component.value ?? "");
     const options = Array.isArray(component.options) ? component.options : [];
     const group = document.createElement("div");
     group.className = "btn-group flex-wrap";
@@ -941,10 +958,10 @@ const BUILTIN_CHARACTERS = [
         : "btn btn-outline-secondary btn-sm";
       button.textContent = optionLabel;
       button.disabled = !editable;
+      assignBindingMetadata(button, component, { value: optionValue });
       if (editable) {
         button.addEventListener("click", () => {
           updateBinding(component.binding, optionValue);
-          renderCanvas();
         });
       }
       group.appendChild(button);
@@ -963,17 +980,23 @@ const BUILTIN_CHARACTERS = [
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
     const states = Array.isArray(component.states) ? component.states : [];
+    const resolvedState = resolveComponentValue(component);
+    const normalizedState = resolvedState != null ? String(resolvedState) : null;
     states.forEach((state, index) => {
       const option = document.createElement("option");
       option.value = state;
       option.textContent = state;
-      if (component.activeIndex === index || getBindingValue(component.binding) === state) {
+      const shouldSelect = normalizedState !== null
+        ? normalizedState === String(state)
+        : component.activeIndex === index;
+      if (shouldSelect) {
         option.selected = true;
       }
       select.appendChild(option);
     });
     const editable = isEditable(component);
     select.disabled = !editable;
+    assignBindingMetadata(select, component);
     if (editable) {
       select.addEventListener("change", () => {
         updateBinding(component.binding, select.value);
@@ -1048,11 +1071,125 @@ const BUILTIN_CHARACTERS = [
     return "";
   }
 
+  function componentHasFormula(component) {
+    return typeof component?.formula === "string" && component.formula.trim().length > 0;
+  }
+
   function isEditable(component) {
     if (!component) {
       return false;
     }
+    if (componentHasFormula(component)) {
+      return false;
+    }
     return state.mode === "edit" && !component.readOnly;
+  }
+
+  function resolveComponentValue(component, fallback = undefined) {
+    if (componentHasFormula(component)) {
+      try {
+        const result = evaluateFormula(component.formula, state.draft?.data || {});
+        return result;
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate formula", error);
+      }
+    }
+    const bound = getBindingValue(component?.binding);
+    if (bound !== undefined) {
+      return bound;
+    }
+    return fallback;
+  }
+
+  function assignBindingMetadata(element, component, { binding = null, value = null } = {}) {
+    if (!element || !element.dataset) {
+      return;
+    }
+    if (component?.uid) {
+      element.dataset.componentUid = component.uid;
+    }
+    const normalized = binding !== null ? binding : normalizeBinding(component?.binding);
+    if (normalized) {
+      element.dataset.bindingPath = normalized;
+    }
+    if (value !== null && value !== undefined) {
+      element.dataset.bindingValue = String(value);
+    }
+  }
+
+  function escapeSelector(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+      return CSS.escape(value);
+    }
+    return value.replace(/"/g, '\\"');
+  }
+
+  function captureActiveField() {
+    const active = document.activeElement;
+    if (!active || !elements.canvasRoot?.contains(active)) {
+      return null;
+    }
+    const container = active.closest("[data-component-id]");
+    if (!container) {
+      return null;
+    }
+    return {
+      componentId: container.dataset.componentId || "",
+      bindingPath: active.dataset?.bindingPath || "",
+      bindingValue: active.dataset?.bindingValue || "",
+      tagName: active.tagName || "",
+      type: active.type || "",
+      name: active.name || "",
+      selectionStart: typeof active.selectionStart === "number" ? active.selectionStart : null,
+      selectionEnd: typeof active.selectionEnd === "number" ? active.selectionEnd : null,
+    };
+  }
+
+  function restoreActiveField(snapshot) {
+    if (!snapshot || !snapshot.componentId || !elements.canvasRoot) {
+      return;
+    }
+    const selector = `[data-component-id="${escapeSelector(snapshot.componentId)}"]`;
+    const container = elements.canvasRoot.querySelector(selector);
+    if (!container) {
+      return;
+    }
+    let target = null;
+    if (snapshot.bindingPath) {
+      const bindingSelector = `[data-binding-path="${escapeSelector(snapshot.bindingPath)}"]`;
+      if (snapshot.bindingValue) {
+        target = container.querySelector(`${bindingSelector}[data-binding-value="${escapeSelector(snapshot.bindingValue)}"]`);
+      }
+      if (!target) {
+        target = container.querySelector(bindingSelector);
+      }
+    }
+    if (!target && snapshot.name) {
+      target = container.querySelector(`[name="${escapeSelector(snapshot.name)}"]`);
+    }
+    if (!target && snapshot.tagName) {
+      target = container.querySelector(snapshot.tagName.toLowerCase());
+    }
+    if (!target) {
+      target = container.querySelector("input, select, textarea");
+    }
+    if (target && typeof target.focus === "function") {
+      target.focus({ preventScroll: true });
+      if (
+        snapshot.selectionStart !== null &&
+        snapshot.selectionEnd !== null &&
+        typeof target.setSelectionRange === "function"
+      ) {
+        try {
+          target.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+        } catch (error) {
+          // ignore selection errors
+        }
+      }
+    }
   }
 
   function getBindingValue(binding) {
@@ -1092,6 +1229,7 @@ const BUILTIN_CHARACTERS = [
     if (!path.length) {
       return;
     }
+    const focusSnapshot = captureActiveField();
     if (!state.draft.data || typeof state.draft.data !== "object") {
       state.draft.data = {};
     }
@@ -1104,6 +1242,8 @@ const BUILTIN_CHARACTERS = [
       cursor = cursor[key];
     }
     cursor[path[path.length - 1]] = value;
+    renderCanvas();
+    restoreActiveField(focusSnapshot);
     persistDraft({ silent: true });
     renderPreview();
   }
