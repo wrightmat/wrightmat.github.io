@@ -1,6 +1,42 @@
 const DEFAULT_STORAGE_PREFIX = "undercroft.workbench";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
+const ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"];
+const ROLE_LABELS = {
+  free: "Free",
+  player: "Player",
+  gm: "GM",
+  master: "Master",
+  creator: "Creator",
+  admin: "Admin",
+};
+
+const WRITE_ROLE_REQUIREMENTS = {
+  characters: "free",
+  templates: "gm",
+  systems: "creator",
+};
+
+function normalizeTier(tier) {
+  return tier ? String(tier).trim().toLowerCase() : "";
+}
+
+function roleRank(role) {
+  const normalized = normalizeTier(role);
+  return ROLE_ORDER.indexOf(normalized);
+}
+
+function formatTierLabel(tier) {
+  const normalized = normalizeTier(tier);
+  if (!normalized) {
+    return "";
+  }
+  if (ROLE_LABELS[normalized]) {
+    return ROLE_LABELS[normalized];
+  }
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
 function normalizeBaseUrl(url = "") {
   if (!url) {
     return "";
@@ -111,6 +147,43 @@ export class DataManager {
     const nextSession = { token: this._session.token, user: nextUser };
     this._persistSession(nextSession);
     return nextUser;
+  }
+
+  getUserTier(defaultTier = "free") {
+    const sessionTier = this._session?.user?.tier;
+    const normalized = normalizeTier(sessionTier);
+    if (normalized) {
+      return normalized;
+    }
+    const fallback = normalizeTier(defaultTier);
+    return fallback || "free";
+  }
+
+  getRequiredTier(bucket) {
+    const requirement = WRITE_ROLE_REQUIREMENTS[bucket];
+    return requirement ? normalizeTier(requirement) : "";
+  }
+
+  describeRequiredWriteTier(bucket) {
+    const requirement = this.getRequiredTier(bucket);
+    return requirement ? formatTierLabel(requirement) : "";
+  }
+
+  hasWriteAccess(bucket) {
+    const requirement = this.getRequiredTier(bucket);
+    if (!requirement) {
+      return true;
+    }
+    const requiredRank = roleRank(requirement);
+    if (requiredRank < 0) {
+      return true;
+    }
+    const userRank = roleRank(this.getUserTier());
+    return userRank >= requiredRank;
+  }
+
+  canSyncToServer(bucket) {
+    return Boolean(this.baseUrl) && this.isAuthenticated() && this.hasWriteAccess(bucket);
   }
 
   clearSession() {
