@@ -1167,15 +1167,11 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       const select = document.createElement("select");
       select.className = "form-select";
       const currentValue = resolvedValue == null ? "" : String(resolvedValue);
-      (component.options || []).forEach((option) => {
+      const options = resolveSelectionOptions(component);
+      options.forEach(({ value, label }) => {
         const opt = document.createElement("option");
-        if (typeof option === "string") {
-          opt.value = option;
-          opt.textContent = option;
-        } else {
-          opt.value = option.value;
-          opt.textContent = option.label;
-        }
+        opt.value = value;
+        opt.textContent = label;
         if (opt.value === currentValue) {
           opt.selected = true;
         }
@@ -1189,6 +1185,24 @@ import { evaluateFormula } from "../lib/formula-engine.js";
         });
       }
       wrapper.appendChild(select);
+      return wrapper;
+    }
+
+    if (variant === "textarea") {
+      const textarea = document.createElement("textarea");
+      textarea.className = "form-control";
+      const rows = Number.isFinite(Number(component.rows)) ? Number(component.rows) : 3;
+      textarea.rows = Math.min(Math.max(Math.round(rows), 2), 12);
+      textarea.placeholder = component.placeholder || "";
+      textarea.value = resolvedValue != null ? String(resolvedValue) : "";
+      textarea.disabled = !editable;
+      assignBindingMetadata(textarea, component);
+      if (editable) {
+        textarea.addEventListener("input", () => {
+          updateBinding(component.binding, textarea.value);
+        });
+      }
+      wrapper.appendChild(textarea);
       return wrapper;
     }
 
@@ -1454,25 +1468,48 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     label.textContent = component.label || "Options";
     wrapper.appendChild(label);
     const editable = isEditable(component);
-    const value = resolveComponentValue(component, component.value ?? "");
-    const options = Array.isArray(component.options) ? component.options : [];
+    const value = resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
+    const activeValues = component.multiple
+      ? Array.isArray(value)
+        ? value.map(String)
+        : value != null
+        ? [String(value)]
+        : []
+      : value != null
+      ? String(value)
+      : "";
+    const options = resolveSelectionOptions(component);
     const group = document.createElement("div");
     group.className = "btn-group flex-wrap";
     group.setAttribute("role", "group");
-    options.forEach((option) => {
-      const optionValue = typeof option === "string" ? option : option.value;
-      const optionLabel = typeof option === "string" ? option : option.label;
+    options.forEach(({ value: optionValue, label: optionLabel }) => {
+      const normalizedOption = String(optionValue);
       const button = document.createElement("button");
       button.type = "button";
-      button.className = String(value) === String(optionValue)
-        ? "btn btn-primary btn-sm"
-        : "btn btn-outline-secondary btn-sm";
+      const isActive = component.multiple
+        ? activeValues.includes(normalizedOption)
+        : normalizedOption === activeValues;
+      button.className = isActive ? "btn btn-primary btn-sm" : "btn btn-outline-secondary btn-sm";
       button.textContent = optionLabel;
       button.disabled = !editable;
       assignBindingMetadata(button, component, { value: optionValue });
       if (editable) {
         button.addEventListener("click", () => {
-          updateBinding(component.binding, optionValue);
+          if (component.multiple) {
+            const current = resolveComponentValue(component, component.value ?? []);
+            const normalizedCurrent = Array.isArray(current)
+              ? current.map(String)
+              : current != null
+              ? [String(current)]
+              : [];
+            const exists = normalizedCurrent.includes(normalizedOption);
+            const next = exists
+              ? normalizedCurrent.filter((entry) => entry !== normalizedOption)
+              : [...normalizedCurrent, normalizedOption];
+            updateBinding(component.binding, next);
+          } else {
+            updateBinding(component.binding, optionValue);
+          }
         });
       }
       group.appendChild(button);
@@ -1490,12 +1527,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     wrapper.appendChild(label);
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
-    const boundStates = getBindingValue(component.statesBinding);
-    const states = Array.isArray(boundStates) && boundStates.length
-      ? boundStates
-      : Array.isArray(component.states)
-      ? component.states
-      : [];
+    const states = resolveToggleStates(component);
     const resolvedState = resolveComponentValue(component);
     const normalizedState = resolvedState != null ? String(resolvedState) : null;
     states.forEach((state, index) => {
@@ -1616,6 +1648,74 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       return bound;
     }
     return fallback;
+  }
+
+  function resolveSelectionOptions(component) {
+    const boundOptions = normalizeOptionEntries(getBindingValue(component?.sourceBinding));
+    if (boundOptions.length) {
+      return boundOptions;
+    }
+    const componentOptions = normalizeOptionEntries(component?.options);
+    if (componentOptions.length) {
+      return componentOptions;
+    }
+    return [];
+  }
+
+  function resolveToggleStates(component) {
+    const boundStates = normalizeOptionEntries(getBindingValue(component?.statesBinding));
+    if (boundStates.length) {
+      return boundStates.map((entry) => entry.label || entry.value).filter((value) => value != null);
+    }
+    if (Array.isArray(component?.states) && component.states.length) {
+      return component.states.map((state) => (state != null ? String(state) : state)).filter((state) => state != null);
+    }
+    return [];
+  }
+
+  function normalizeOptionEntries(source) {
+    if (!source) {
+      return [];
+    }
+    if (Array.isArray(source)) {
+      return source
+        .map((entry, index) => {
+          if (entry == null) {
+            return null;
+          }
+          if (typeof entry === "object" && !Array.isArray(entry)) {
+            const rawValue =
+              entry.value ?? entry.id ?? entry.key ?? entry.slug ?? entry.name ?? entry.label ?? index;
+            if (rawValue == null) {
+              return null;
+            }
+            const rawLabel = entry.label ?? entry.name ?? entry.title ?? entry.text ?? rawValue;
+            return {
+              value: String(rawValue),
+              label: rawLabel != null ? String(rawLabel) : String(rawValue),
+            };
+          }
+          return { value: String(entry), label: String(entry) };
+        })
+        .filter(Boolean);
+    }
+    if (typeof source === "object") {
+      return Object.entries(source).map(([key, entry]) => {
+        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+          const rawValue = entry.value ?? entry.id ?? entry.key ?? entry.slug ?? key;
+          const rawLabel = entry.label ?? entry.name ?? entry.title ?? entry.text ?? rawValue;
+          return {
+            value: rawValue != null ? String(rawValue) : String(key),
+            label: rawLabel != null ? String(rawLabel) : String(rawValue ?? key),
+          };
+        }
+        return {
+          value: String(key),
+          label: entry != null ? String(entry) : String(key),
+        };
+      });
+    }
+    return [];
   }
 
   function assignBindingMetadata(element, component, { binding = null, value = null } = {}) {

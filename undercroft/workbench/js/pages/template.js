@@ -107,10 +107,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           return ["number"];
         }
         if (variant === "checkbox" || variant === "radio") {
-          return ["object"];
+          return variant === "checkbox" ? ["array", "object"] : ["string", "number"];
         }
         if (variant === "select") {
-          return ["array"];
+          return ["string", "number"];
+        }
+        if (variant === "textarea") {
+          return ["string"];
         }
         return ["string", "number"];
       }
@@ -120,9 +123,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "array":
         return ["array", "object"];
       case "select-group":
-        return ["array", "object"];
+        return component.multiple ? ["array", "object"] : ["string", "number"];
       case "toggle":
-        return ["string"];
+        return ["string", "number"];
       default:
         return null;
     }
@@ -353,6 +356,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         variant: "text",
         placeholder: "",
         options: ["Option A", "Option B"],
+        rows: 3,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -473,6 +478,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         name: "Select Group",
         variant: "pills",
         multiple: false,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -1652,6 +1658,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (component.states && Array.isArray(component.states)) {
       component.states = component.states.slice();
     }
+    if (typeof component.sourceBinding !== "string") {
+      component.sourceBinding = component.sourceBinding != null ? String(component.sourceBinding) : "";
+    }
+    component.sourceBinding = component.sourceBinding.trim();
     if (typeof component.segmentBinding !== "string") {
       component.segmentBinding = component.segmentBinding != null ? String(component.segmentBinding) : "";
     }
@@ -1921,6 +1931,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         control = renderChoiceGroup(component, "checkbox");
         break;
       }
+      case "textarea": {
+        control = document.createElement("textarea");
+        control.className = "form-control";
+        control.rows = clampInteger(component.rows ?? 3, 2, 12);
+        control.placeholder = component.placeholder || "";
+        break;
+      }
       default: {
         control = document.createElement("input");
         control.type = "text";
@@ -1929,7 +1946,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         break;
       }
     }
-    if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement) {
+    if (
+      control instanceof HTMLInputElement ||
+      control instanceof HTMLSelectElement ||
+      control instanceof HTMLTextAreaElement
+    ) {
       control.disabled = !!component.readOnly;
     }
     container.appendChild(control);
@@ -2695,15 +2716,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       form.appendChild(componentSection);
     }
 
-    const dataControls = [];
-    if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
-      dataControls.push(
-        createBindingFormulaInput(component, {
-          supportsBinding: definition.supportsBinding !== false,
-          supportsFormula: definition.supportsFormula !== false,
-        })
-      );
-    }
+    const dataControls = createDataControls(component, definition);
     const dataSection = createSection("Data", dataControls);
     if (dataSection) {
       form.appendChild(dataSection);
@@ -2736,6 +2749,92 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     elements.inspector.appendChild(form);
     refreshTooltips(elements.inspector);
     restoreInspectorFocus(focusSnapshot);
+  }
+
+  function createDataControls(component, definition = {}) {
+    const supportsBinding = definition.supportsBinding !== false;
+    const supportsFormula = definition.supportsFormula !== false;
+    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
+      return [];
+    }
+    if (component.type === "input" && (component.variant || "text") === "select") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@data.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (component.type === "select-group") {
+      const controls = [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+      ];
+      controls.push(
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
+        })
+      );
+      return controls;
+    }
+    if (component.type === "toggle") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.states",
+          bindingKey: "statesBinding",
+          formulaKey: null,
+          allowedFieldCategories: ["array"],
+          supportsFormula: false,
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.statesBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (!supportsBinding && !supportsFormula) {
+      return [];
+    }
+    return [
+      createBindingFormulaInput(component, {
+        supportsBinding,
+        supportsFormula,
+      }),
+    ];
   }
 
   function captureInspectorFocus() {
@@ -3500,6 +3599,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const controls = [];
     const options = [
       { value: "text", icon: "tabler:letter-case", label: "Text" },
+      { value: "textarea", icon: "tabler:notes", label: "Text area" },
       { value: "number", icon: "tabler:123", label: "Number" },
       { value: "select", icon: "tabler:list-details", label: "Select" },
       { value: "radio", icon: "tabler:circle-dot", label: "Radio" },
@@ -3516,6 +3616,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
             component.uid,
             (draft) => {
               draft.variant = value;
+              if (value === "textarea" && !Number.isFinite(Number(draft.rows))) {
+                draft.rows = 3;
+              }
               if (
                 (value === "select" || value === "radio" || value === "checkbox") &&
                 (!Array.isArray(draft.options) || !draft.options.length)
@@ -3536,6 +3639,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }, { rerenderCanvas: true });
       }, { placeholder: "Shown inside the field" })
     );
+    if ((component.variant || "text") === "textarea") {
+      controls.push(
+        createNumberInput(component, "Rows", component.rows ?? 3, (value) => {
+          const next = clampInteger(value ?? 3, 2, 12);
+          updateComponent(component.uid, (draft) => {
+            draft.rows = next;
+          }, { rerenderCanvas: true });
+        }, { min: 2, max: 12 })
+      );
+    }
     return controls;
   }
 
@@ -3758,7 +3871,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         (value) => {
           updateComponent(component.uid, (draft) => {
             draft.multiple = value === "multi";
-          }, { rerenderCanvas: true });
+          }, { rerenderCanvas: true, rerenderInspector: true });
         }
       )
     );
@@ -3785,26 +3898,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }
       )
     );
-    controls.push(...createToggleStateEditors(component));
     return controls;
-  }
-
-  function createToggleStateEditors(component) {
-    return [
-      createBindingFormulaInput(component, {
-        labelText: "States source",
-        placeholder: "@metadata.states",
-        bindingKey: "statesBinding",
-        formulaKey: null,
-        allowedFieldCategories: ["array"],
-        supportsFormula: false,
-        afterCommit: ({ draft, result }) => {
-          if (!result || result.type === "empty") {
-            draft.statesBinding = "";
-          }
-        },
-      }),
-    ];
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -3898,6 +3992,22 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       if ((merged.value === undefined || merged.value === null || merged.value === "") && Array.isArray(merged.states) && merged.states.length) {
         merged.value = merged.states[0];
       }
+    }
+    if (merged.type === "input") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
+      if (merged.variant === "textarea") {
+        const numericRows = Number(merged.rows);
+        merged.rows = Number.isFinite(numericRows) ? clampInteger(numericRows, 2, 12) : base.rows ?? 3;
+      }
+    }
+    if (merged.type === "select-group") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
     }
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
