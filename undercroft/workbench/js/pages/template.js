@@ -122,6 +122,10 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     bindingFields: [],
   };
 
+  function hasActiveTemplate() {
+    return Boolean(state.template && (state.template.id || state.template.title));
+  }
+
   const dropzones = new Map();
   const containerActiveTabs = new Map();
 
@@ -536,6 +540,13 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
         if (!value || !COMPONENT_DEFINITIONS[value]) {
           return;
         }
+        if (!hasActiveTemplate()) {
+          status.show("Create or load a template before adding components.", {
+            type: "warning",
+            timeout: 2400,
+          });
+          return;
+        }
         insertComponentAtCanvasRoot(value);
       },
     });
@@ -763,12 +774,12 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     elements.canvasRoot.dataset.dropzoneParent = "";
     elements.canvasRoot.dataset.dropzoneKey = "root";
     if (!state.components.length) {
-      const placeholder = createCanvasPlaceholder(
-        "Drag components from the palette into the canvas below to design your template.",
-        {
-          variant: "root",
-        }
-      );
+      const placeholderText = hasActiveTemplate()
+        ? "Drag components from the palette into the canvas below to design your template."
+        : "Create or load a template to start adding components to the canvas.";
+      const placeholder = createCanvasPlaceholder(placeholderText, {
+        variant: "root",
+      });
       elements.canvasRoot.appendChild(placeholder);
     } else {
       const fragment = document.createDocumentFragment();
@@ -1076,6 +1087,15 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   }
 
   function handleDrop(event) {
+    if (!hasActiveTemplate()) {
+      status.show("Create or load a template before adding components.", {
+        type: "warning",
+        timeout: 2400,
+      });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
     const parentId = event.to.dataset.dropzoneParent || "";
     const zoneKey = event.to.dataset.dropzoneKey || "root";
     const index = typeof event.newIndex === "number" ? event.newIndex : 0;
@@ -2272,7 +2292,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     suggestions.id = `${id}-suggestions`;
     suggestions.setAttribute("role", "listbox");
     suggestions.style.zIndex = "1300";
-    suggestions.style.fontSize = "0.875rem";
+    suggestions.style.fontSize = "0.8125rem";
     suggestions.style.maxHeight = "16rem";
     suggestions.style.overflowY = "auto";
     input.setAttribute("aria-controls", suggestions.id);
@@ -2381,7 +2401,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
       items.forEach((item, index) => {
         const option = document.createElement("button");
         option.type = "button";
-        option.className = "list-group-item list-group-item-action d-flex align-items-start gap-2 py-2";
+        option.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
         option.dataset.suggestionIndex = String(index);
         option.id = `${suggestions.id}-option-${index}`;
         option.addEventListener("mousedown", (event) => event.preventDefault());
@@ -2389,40 +2409,34 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
           applySuggestion(index);
         });
 
-        let fieldMeta = null;
+        const row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2 flex-grow-1 text-start";
+        row.style.minWidth = "0";
         if (item.type === "field") {
-          fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
+          const fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
           const icon = document.createElement("span");
           icon.className = "iconify flex-shrink-0 text-body-tertiary";
           icon.dataset.icon = fieldMeta.icon;
           icon.setAttribute("aria-hidden", "true");
           icon.title = fieldMeta.label;
           icon.style.fontSize = "1rem";
-          option.appendChild(icon);
+          row.appendChild(icon);
         }
 
-        const content = document.createElement("div");
-        content.className = "d-flex flex-column flex-grow-1 text-start gap-1";
+        const label = document.createElement("span");
+        label.className = "text-truncate";
+        label.textContent = item.display;
+        row.appendChild(label);
 
-        const title = document.createElement("span");
-        title.textContent = item.display;
-        content.appendChild(title);
+        option.appendChild(row);
 
         if (item.description) {
           const hint = document.createElement("small");
-          hint.className = "text-body-secondary";
+          hint.className = "text-body-secondary text-nowrap text-end ms-auto";
           hint.textContent = item.description;
-          content.appendChild(hint);
+          option.appendChild(hint);
         }
 
-        if (fieldMeta) {
-          const typeHint = document.createElement("small");
-          typeHint.className = "text-body-secondary text-uppercase extra-small";
-          typeHint.textContent = fieldMeta.label;
-          content.appendChild(typeHint);
-        }
-
-        option.appendChild(content);
         suggestions.appendChild(option);
       });
       suggestions.classList.remove("d-none");
