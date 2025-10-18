@@ -26,7 +26,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
   const systemCatalog = new Map();
   const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
 
-  const FORMULA_FUNCTION_HINTS = {
+  const FORMULA_FUNCTION_SIGNATURES = {
     abs: "abs(value)",
     avg: "avg(...values)",
     ceil: "ceil(value)",
@@ -47,7 +47,7 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
 
   const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
     name,
-    signature: FORMULA_FUNCTION_HINTS[name] || `${name}(...)`,
+    signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
   }));
 
   const FIELD_TYPE_META = {
@@ -135,105 +135,6 @@ import { listFormulaFunctions } from "../lib/formula-engine.js";
     };
     window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
   }
-
-  const FORMULA_FUNCTION_HINTS = {
-    abs: "abs(value)",
-    avg: "avg(...values)",
-    ceil: "ceil(value)",
-    clamp: "clamp(value, min, max)",
-    floor: "floor(value)",
-    if: "if(condition, whenTrue, whenFalse)",
-    max: "max(...values)",
-    min: "min(...values)",
-    mod: "mod(dividend, divisor)",
-    not: "not(value)",
-    or: "or(...values)",
-    and: "and(...values)",
-    pow: "pow(base, exponent)",
-    round: "round(value)",
-    sqrt: "sqrt(value)",
-    sum: "sum(...values)",
-  };
-
-  const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
-    name,
-    signature: FORMULA_FUNCTION_HINTS[name] || `${name}(...)`,
-  }));
-
-  const FIELD_TYPE_META = {
-    string: { icon: "tabler:letter-case", label: "String" },
-    number: { icon: "tabler:123", label: "Number" },
-    boolean: { icon: "tabler:switch-3", label: "Boolean" },
-    list: { icon: "tabler:list-details", label: "List" },
-    array: { icon: "tabler:brackets", label: "Array" },
-    object: { icon: "tabler:braces", label: "Object" },
-  };
-
-  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
-
-  function resolveFieldTypeMeta(categoryOrType) {
-    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
-    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
-  }
-
-  function getComponentBindingCategories(component) {
-    if (!component || typeof component !== "object") {
-      return null;
-    }
-    switch (component.type) {
-      case "input": {
-        const variant = component.variant || "text";
-        if (variant === "number") {
-          return ["number"];
-        }
-        if (variant === "checkbox") {
-          return ["boolean", "array", "list"];
-        }
-        if (variant === "radio") {
-          return ["boolean", "string", "list"];
-        }
-        if (variant === "select") {
-          return ["list", "array", "string"];
-        }
-        return ["string"];
-      }
-      case "linear-track":
-      case "circular-track":
-        return ["number"];
-      case "array":
-        return ["array", "list", "object"];
-      case "select-group":
-        return component.multiple ? ["array", "list"] : ["string", "list"];
-      case "toggle":
-        return ["boolean", "string", "list"];
-      default:
-        return null;
-    }
-  }
-
-  function fieldMatchesCategories(entry, categories) {
-    if (!Array.isArray(categories) || !categories.length) {
-      return true;
-    }
-    const entryCategory = entry?.category || categorizeFieldType(entry?.type);
-    if (!entryCategory) {
-      return categories.includes("string") || categories.includes("any");
-    }
-    return categories.includes(entryCategory) || categories.includes("any");
-  }
-
-  const systemDefinitionCache = new Map();
-
-  const state = {
-    template: null,
-    components: [],
-    selectedId: null,
-    systemDefinition: null,
-    bindingFields: [],
-  };
-
-  const dropzones = new Map();
-  const containerActiveTabs = new Map();
 
   registerBuiltinContent();
 
