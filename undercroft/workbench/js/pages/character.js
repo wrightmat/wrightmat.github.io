@@ -10,6 +10,7 @@ import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
+  listBuiltinSystems,
   markBuiltinMissing,
   markBuiltinAvailable,
   builtinIsTemporarilyMissing,
@@ -18,6 +19,11 @@ import {
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
+import {
+  normalizeOptionEntries,
+  resolveBindingFromContexts,
+  buildSystemPreviewData,
+} from "../lib/component-data.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
@@ -30,6 +36,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();
+  const systemCatalog = new Map();
+  const systemDefinitionCache = new Map();
 
   function sessionUser() {
     return dataManager.session?.user || null;
@@ -42,6 +50,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     character: null,
     draft: null,
     characterOrigin: null,
+    systemDefinition: null,
+    systemPreviewData: {},
   };
 
   let lastSavedCharacterSignature = null;
@@ -417,6 +427,24 @@ import { evaluateFormula } from "../lib/formula-engine.js";
         },
       });
     });
+    listBuiltinSystems().forEach((system) => {
+      if (builtinIsTemporarilyMissing("systems", system.id)) {
+        return;
+      }
+      registerSystemRecord({
+        id: system.id,
+        title: system.title,
+        path: system.path,
+        source: "builtin",
+      });
+      verifyBuiltinAsset("systems", system, {
+        skipProbe: Boolean(dataManager.baseUrl),
+        onMissing: () => removeSystemRecord(system.id),
+        onError: (error) => {
+          console.warn("Character editor: failed to verify builtin system", system.id, error);
+        },
+      });
+    });
   }
 
   function registerTemplateRecord(record) {
@@ -430,6 +458,19 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     syncCharacterOptions();
   }
 
+  function registerSystemRecord(record) {
+    if (!record || !record.id) {
+      return;
+    }
+    const current = systemCatalog.get(record.id) || {};
+    const next = { ...current, ...record };
+    if (record.payload) {
+      next.payload = record.payload;
+      systemDefinitionCache.set(record.id, record.payload);
+    }
+    systemCatalog.set(record.id, next);
+  }
+
   function removeTemplateRecord(id) {
     if (!id) {
       return;
@@ -441,6 +482,107 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     const selected = elements.newCharacterTemplate?.value || "";
     refreshNewCharacterTemplateOptions(selected);
     syncCharacterOptions();
+  }
+
+  function removeSystemRecord(id) {
+    if (!id) {
+      return;
+    }
+    systemCatalog.delete(id);
+    systemDefinitionCache.delete(id);
+  }
+
+  function resetSystemContext() {
+    state.systemDefinition = null;
+    state.systemPreviewData = {};
+  }
+
+  async function fetchSystemDefinition(systemId) {
+    if (!systemId) {
+      return null;
+    }
+    if (systemDefinitionCache.has(systemId)) {
+      return systemDefinitionCache.get(systemId);
+    }
+    const metadata = systemCatalog.get(systemId) || {};
+    if (metadata.payload) {
+      systemDefinitionCache.set(systemId, metadata.payload);
+      return metadata.payload;
+    }
+    if (metadata.path) {
+      try {
+        if (metadata.source === "builtin" && builtinIsTemporarilyMissing("systems", systemId)) {
+          return null;
+        }
+        const response = await fetch(metadata.path, { cache: "no-store" });
+        if (!response.ok) {
+          markBuiltinMissing("systems", systemId);
+          removeSystemRecord(systemId);
+          throw new Error(`Failed to fetch system: ${response.status}`);
+        }
+        const payload = await response.json();
+        markBuiltinAvailable("systems", systemId);
+        systemDefinitionCache.set(systemId, payload);
+        registerSystemRecord({
+          id: systemId,
+          title: payload.title || systemId,
+          source: metadata.source || "builtin",
+          payload,
+        });
+        return payload;
+      } catch (error) {
+        console.warn("Character editor: unable to load builtin system", error);
+        return null;
+      }
+    }
+    try {
+      const local = dataManager.getLocal("systems", systemId);
+      if (local) {
+        systemDefinitionCache.set(systemId, local);
+        registerSystemRecord({ id: systemId, title: local.title || systemId, source: "local", payload: local });
+        return local;
+      }
+    } catch (error) {
+      console.warn("Character editor: unable to read local system", error);
+    }
+    if (!dataManager.baseUrl) {
+      return null;
+    }
+    try {
+      const result = await dataManager.get("systems", systemId, { preferLocal: true });
+      const payload = result?.payload || null;
+      if (payload) {
+        systemDefinitionCache.set(systemId, payload);
+        registerSystemRecord({
+          id: systemId,
+          title: payload.title || systemId,
+          source: result?.source || "remote",
+          payload,
+        });
+      }
+      return payload;
+    } catch (error) {
+      console.warn("Character editor: unable to fetch system", error);
+      return null;
+    }
+  }
+
+  async function updateSystemContext(systemId) {
+    resetSystemContext();
+    if (!systemId) {
+      renderCanvas();
+      return;
+    }
+    try {
+      const definition = await fetchSystemDefinition(systemId);
+      if (definition) {
+        state.systemDefinition = definition;
+        state.systemPreviewData = buildSystemPreviewData(definition);
+      }
+    } catch (error) {
+      console.warn("Character editor: unable to prepare system context", error);
+    }
+    renderCanvas();
   }
 
   function normalizeCharacterRecord(record = {}, current = {}) {
@@ -873,11 +1015,18 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       title: payload.title || payload.name || payload.id || "",
       schema: payload.schema || payload.system || "",
       origin,
+      metadata: cloneValue(payload.metadata) || undefined,
+      data: cloneValue(payload.data) || undefined,
+      sources: cloneValue(payload.sources) || undefined,
+      preview: cloneValue(payload.preview) || undefined,
+      sample: cloneValue(payload.sample) || undefined,
+      samples: cloneValue(payload.samples) || undefined,
     };
     componentCounter = 0;
     const components = Array.isArray(payload.components)
       ? payload.components.map((component) => hydrateComponent(component)).filter(Boolean)
       : [];
+    resetSystemContext();
     state.template = template;
     state.components = components;
     if (template.id) {
@@ -891,6 +1040,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (state.draft) {
       state.draft.template = template.id;
     }
+    void updateSystemContext(template.schema);
     renderCanvas();
     renderPreview();
   }
@@ -990,6 +1140,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       state.characterOrigin = null;
       state.template = null;
       state.components = [];
+      resetSystemContext();
       markCharacterClean();
       renderCanvas();
       renderPreview();
@@ -1620,6 +1771,89 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     return "";
   }
 
+  function resolveSourceBindingValue(bindingOrComponent) {
+    const normalized = normalizeBinding(bindingOrComponent);
+    if (!normalized) {
+      return undefined;
+    }
+    const contexts = [];
+    if (state.draft?.data && typeof state.draft.data === "object") {
+      contexts.push({ value: state.draft.data, prefixes: ["data"], allowDirect: true });
+    }
+    if (state.draft && typeof state.draft === "object") {
+      contexts.push({ value: state.draft, prefixes: ["character"], allowDirect: true });
+    }
+    const template = state.template && typeof state.template === "object" ? state.template : null;
+    if (template) {
+      contexts.push({ value: template, prefixes: ["template"], allowDirect: true });
+      if (template.metadata && typeof template.metadata === "object") {
+        contexts.push({ value: template.metadata, prefixes: ["metadata"] });
+      }
+      if (template.data && typeof template.data === "object") {
+        contexts.push({ value: template.data, prefixes: ["data"], allowDirect: true });
+      }
+      if (template.sources && typeof template.sources === "object") {
+        contexts.push({ value: template.sources, prefixes: ["sources"], allowDirect: true });
+      }
+      if (template.preview && typeof template.preview === "object") {
+        contexts.push({ value: template.preview, prefixes: ["preview"], allowDirect: true });
+      }
+      if (template.sample && typeof template.sample === "object") {
+        contexts.push({ value: template.sample, prefixes: ["sample"], allowDirect: true });
+      }
+      if (template.samples && typeof template.samples === "object") {
+        contexts.push({ value: template.samples, prefixes: ["samples"], allowDirect: true });
+      }
+    }
+    const systemPreviewData =
+      state.systemPreviewData && typeof state.systemPreviewData === "object" ? state.systemPreviewData : null;
+    if (systemPreviewData) {
+      contexts.push({
+        value: systemPreviewData,
+        allowDirect: true,
+        prefixes: ["system", "data", "preview", "sources"],
+      });
+    }
+    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
+    if (definition) {
+      contexts.push({ value: definition, prefixes: ["system"], allowDirect: true });
+      if (definition.metadata && typeof definition.metadata === "object") {
+        contexts.push({ value: definition.metadata, prefixes: ["metadata"] });
+      }
+      if (definition.definition && typeof definition.definition === "object") {
+        contexts.push({ value: definition.definition, prefixes: ["definition"], allowDirect: true });
+      }
+      if (definition.schema && typeof definition.schema === "object") {
+        contexts.push({ value: definition.schema, prefixes: ["schema"] });
+      }
+      if (definition.data && typeof definition.data === "object") {
+        contexts.push({ value: definition.data, prefixes: ["data"], allowDirect: true });
+      }
+      if (definition.sources && typeof definition.sources === "object") {
+        contexts.push({ value: definition.sources, prefixes: ["sources"], allowDirect: true });
+      }
+      if (definition.preview && typeof definition.preview === "object") {
+        contexts.push({ value: definition.preview, prefixes: ["preview"], allowDirect: true });
+      }
+      if (definition.samples && typeof definition.samples === "object") {
+        contexts.push({ value: definition.samples, prefixes: ["samples"], allowDirect: true });
+      }
+      if (definition.sample && typeof definition.sample === "object") {
+        contexts.push({ value: definition.sample, prefixes: ["sample"], allowDirect: true });
+      }
+      if (definition.values && typeof definition.values === "object") {
+        contexts.push({ value: definition.values, prefixes: ["values"], allowDirect: true });
+      }
+      if (definition.lists && typeof definition.lists === "object") {
+        contexts.push({ value: definition.lists, prefixes: ["lists"], allowDirect: true });
+      }
+      if (definition.collections && typeof definition.collections === "object") {
+        contexts.push({ value: definition.collections, prefixes: ["collections"], allowDirect: true });
+      }
+    }
+    return resolveBindingFromContexts(normalized, contexts);
+  }
+
   function componentHasFormula(component) {
     return typeof component?.formula === "string" && component.formula.trim().length > 0;
   }
@@ -1651,7 +1885,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
   }
 
   function resolveSelectionOptions(component) {
-    const boundOptions = normalizeOptionEntries(getBindingValue(component?.sourceBinding));
+    const boundOptions = normalizeOptionEntries(resolveSourceBindingValue(component?.sourceBinding));
     if (boundOptions.length) {
       return boundOptions;
     }
@@ -1663,57 +1897,12 @@ import { evaluateFormula } from "../lib/formula-engine.js";
   }
 
   function resolveToggleStates(component) {
-    const boundStates = normalizeOptionEntries(getBindingValue(component?.statesBinding));
+    const boundStates = normalizeOptionEntries(resolveSourceBindingValue(component?.statesBinding));
     if (boundStates.length) {
       return boundStates.map((entry) => entry.label || entry.value).filter((value) => value != null);
     }
     if (Array.isArray(component?.states) && component.states.length) {
       return component.states.map((state) => (state != null ? String(state) : state)).filter((state) => state != null);
-    }
-    return [];
-  }
-
-  function normalizeOptionEntries(source) {
-    if (!source) {
-      return [];
-    }
-    if (Array.isArray(source)) {
-      return source
-        .map((entry, index) => {
-          if (entry == null) {
-            return null;
-          }
-          if (typeof entry === "object" && !Array.isArray(entry)) {
-            const rawValue =
-              entry.value ?? entry.id ?? entry.key ?? entry.slug ?? entry.name ?? entry.label ?? index;
-            if (rawValue == null) {
-              return null;
-            }
-            const rawLabel = entry.label ?? entry.name ?? entry.title ?? entry.text ?? rawValue;
-            return {
-              value: String(rawValue),
-              label: rawLabel != null ? String(rawLabel) : String(rawValue),
-            };
-          }
-          return { value: String(entry), label: String(entry) };
-        })
-        .filter(Boolean);
-    }
-    if (typeof source === "object") {
-      return Object.entries(source).map(([key, entry]) => {
-        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
-          const rawValue = entry.value ?? entry.id ?? entry.key ?? entry.slug ?? key;
-          const rawLabel = entry.label ?? entry.name ?? entry.title ?? entry.text ?? rawValue;
-          return {
-            value: rawValue != null ? String(rawValue) : String(key),
-            label: rawLabel != null ? String(rawLabel) : String(rawValue ?? key),
-          };
-        }
-        return {
-          value: String(key),
-          label: entry != null ? String(entry) : String(key),
-        };
-      });
     }
     return [];
   }
@@ -2139,6 +2328,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     state.draft = null;
     state.template = null;
     state.components = [];
+    resetSystemContext();
     state.characterOrigin = null;
     state.mode = "view";
     componentCounter = 0;
