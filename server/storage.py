@@ -615,38 +615,78 @@ def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "
         ("systems", "systems", "title"),
     ]
     for bucket, table, label_field in mappings:
-        if scope == "all":
-            rows = state.db.execute(
-                f"""
-                SELECT t.id AS id,
-                       t.{label_field} AS label,
-                       t.created_at AS created_at,
-                       t.modified_at AS modified_at,
-                       t.last_accessed_at AS last_accessed_at,
-                       u.username AS owner_username,
-                       u.tier AS owner_tier
-                FROM {table} AS t
-                JOIN users AS u ON u.id = t.owner_id
-                ORDER BY t.modified_at DESC
-                """
-            ).fetchall()
+        if bucket == "characters":
+            if scope == "all":
+                rows = state.db.execute(
+                    """
+                    SELECT c.id AS id,
+                           c.name AS label,
+                           c.template AS template_id,
+                           t.title AS template_title,
+                           c.created_at AS created_at,
+                           c.modified_at AS modified_at,
+                           c.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM characters AS c
+                    JOIN users AS u ON u.id = c.owner_id
+                    LEFT JOIN templates AS t ON t.id = c.template
+                    ORDER BY c.modified_at DESC
+                    """
+                ).fetchall()
+            else:
+                rows = state.db.execute(
+                    """
+                    SELECT c.id AS id,
+                           c.name AS label,
+                           c.template AS template_id,
+                           t.title AS template_title,
+                           c.created_at AS created_at,
+                           c.modified_at AS modified_at,
+                           c.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM characters AS c
+                    JOIN users AS u ON u.id = c.owner_id
+                    LEFT JOIN templates AS t ON t.id = c.template
+                    WHERE c.owner_id = ?
+                    ORDER BY c.modified_at DESC
+                    """,
+                    (owner.id,),
+                ).fetchall()
         else:
-            rows = state.db.execute(
-                f"""
-                SELECT t.id AS id,
-                       t.{label_field} AS label,
-                       t.created_at AS created_at,
-                       t.modified_at AS modified_at,
-                       t.last_accessed_at AS last_accessed_at,
-                       u.username AS owner_username,
-                       u.tier AS owner_tier
-                FROM {table} AS t
-                JOIN users AS u ON u.id = t.owner_id
-                WHERE t.owner_id = ?
-                ORDER BY t.modified_at DESC
-                """,
-                (owner.id,),
-            ).fetchall()
+            if scope == "all":
+                rows = state.db.execute(
+                    f"""
+                    SELECT t.id AS id,
+                           t.{label_field} AS label,
+                           t.created_at AS created_at,
+                           t.modified_at AS modified_at,
+                           t.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM {table} AS t
+                    JOIN users AS u ON u.id = t.owner_id
+                    ORDER BY t.modified_at DESC
+                    """
+                ).fetchall()
+            else:
+                rows = state.db.execute(
+                    f"""
+                    SELECT t.id AS id,
+                           t.{label_field} AS label,
+                           t.created_at AS created_at,
+                           t.modified_at AS modified_at,
+                           t.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM {table} AS t
+                    JOIN users AS u ON u.id = t.owner_id
+                    WHERE t.owner_id = ?
+                    ORDER BY t.modified_at DESC
+                    """,
+                    (owner.id,),
+                ).fetchall()
         for row in rows:
             keys = row.keys() if hasattr(row, "keys") else []
             owner_username = row["owner_username"] if "owner_username" in keys else (owner.username if owner else "")
@@ -663,6 +703,10 @@ def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "
                     "owner_tier": owner_tier,
                 }
             )
+            if bucket == "characters":
+                entry = items[-1]
+                entry["template"] = row["template_id"] if "template_id" in keys else ""
+                entry["template_title"] = row["template_title"] if "template_title" in keys else ""
     items.sort(key=lambda item: item.get("modified_at") or "", reverse=True)
     if scope == "all":
         owner_info = {

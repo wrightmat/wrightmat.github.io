@@ -105,6 +105,9 @@ import {
     viewOnlyCharacterId: "",
   };
 
+  const notesState = { collapsed: true };
+  const jsonPreviewState = { collapsed: true };
+
   function cloneValue(value) {
     if (value === undefined) {
       return undefined;
@@ -321,7 +324,15 @@ import {
     viewToggle: document.querySelector('[data-action="toggle-mode"]'),
     modeIndicator: document.querySelector("[data-mode-indicator]"),
     noteEditor: document.querySelector("[data-note-editor]"),
+    notesToggle: document.querySelector("[data-notes-toggle]"),
+    notesToggleIcon: document.querySelector("[data-notes-toggle-icon]"),
+    notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
+    notesPanel: document.querySelector("[data-notes-panel]"),
     jsonPreview: document.querySelector("[data-json-preview]"),
+    jsonToggle: document.querySelector("[data-json-toggle]"),
+    jsonToggleIcon: document.querySelector("[data-json-toggle-icon]"),
+    jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
+    jsonPanel: document.querySelector("[data-json-panel]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
@@ -350,6 +361,10 @@ import {
     bytesTarget: elements.jsonPreviewBytes,
     serialize: () => state.draft || {},
   });
+
+  setNotesCollapsed(true);
+  setJsonPreviewCollapsed(true);
+  setGroupShareCollapsed(groupShareState.collapsed);
 
   let newCharacterModalInstance = null;
   if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
@@ -471,6 +486,20 @@ import {
       });
     }
 
+    if (elements.notesToggle) {
+      elements.notesToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setNotesCollapsed(!notesState.collapsed);
+      });
+    }
+
+    if (elements.jsonToggle) {
+      elements.jsonToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setJsonPreviewCollapsed(!jsonPreviewState.collapsed);
+      });
+    }
+
     if (elements.groupShareToggle) {
       elements.groupShareToggle.addEventListener("click", (event) => {
         event.preventDefault();
@@ -498,6 +527,46 @@ import {
       }
     }
     registerBuiltinContent();
+  }
+
+  function setNotesCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    notesState.collapsed = next;
+    if (elements.notesPanel) {
+      elements.notesPanel.hidden = next;
+    }
+    const actionLabel = next ? "Expand notes" : "Collapse notes";
+    if (elements.notesToggle) {
+      elements.notesToggle.setAttribute("aria-expanded", next ? "false" : "true");
+      elements.notesToggle.setAttribute("aria-label", actionLabel);
+      elements.notesToggle.setAttribute("title", actionLabel);
+    }
+    if (elements.notesToggleLabel) {
+      elements.notesToggleLabel.textContent = actionLabel;
+    }
+    if (elements.notesToggleIcon) {
+      elements.notesToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
+    }
+  }
+
+  function setJsonPreviewCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    jsonPreviewState.collapsed = next;
+    if (elements.jsonPanel) {
+      elements.jsonPanel.hidden = next;
+    }
+    const actionLabel = next ? "Expand JSON preview" : "Collapse JSON preview";
+    if (elements.jsonToggle) {
+      elements.jsonToggle.setAttribute("aria-expanded", next ? "false" : "true");
+      elements.jsonToggle.setAttribute("aria-label", actionLabel);
+      elements.jsonToggle.setAttribute("title", actionLabel);
+    }
+    if (elements.jsonToggleLabel) {
+      elements.jsonToggleLabel.textContent = actionLabel;
+    }
+    if (elements.jsonToggleIcon) {
+      elements.jsonToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
+    }
   }
 
   function registerBuiltinContent() {
@@ -1344,20 +1413,39 @@ import {
     setGroupShareStatus(message);
   }
 
+  function formatGroupMemberLabel(member) {
+    if (!member) {
+      return "Character";
+    }
+    const id = typeof member.content_id === "string" && member.content_id
+      ? member.content_id
+      : typeof member.id === "string" && member.id
+        ? member.id
+        : "";
+    const rawName = member.label || member.name || member.title || id;
+    const name = typeof rawName === "string" && rawName.trim() ? rawName.trim() : id || "Character";
+    const rawTemplate = member.template_title || member.templateTitle || member.template;
+    const templateLabel = typeof rawTemplate === "string" && rawTemplate.trim() ? rawTemplate.trim() : "";
+    return templateLabel ? `${name} (${templateLabel})` : name;
+  }
+
   function renderGroupShareOption(member) {
     const card = document.createElement("div");
-    card.className = "border border-body-tertiary rounded-3 p-3 d-flex flex-column gap-2";
-    const title = document.createElement("h3");
-    title.className = "h6 mb-0";
-    title.textContent = member.label || member.content_id;
-    card.appendChild(title);
+    card.className = "border border-body-tertiary rounded-3 p-3 d-flex flex-column gap-3";
+    const header = document.createElement("div");
+    header.className = "d-flex flex-column gap-1";
+    const title = document.createElement("div");
+    title.className = "fw-semibold";
+    title.textContent = formatGroupMemberLabel(member);
+    header.appendChild(title);
     const systemLabel = member.system_name || member.system;
     if (systemLabel) {
       const system = document.createElement("div");
       system.className = "text-body-secondary small";
-      system.textContent = `System: ${systemLabel}`;
-      card.appendChild(system);
+      system.textContent = systemLabel;
+      header.appendChild(system);
     }
+    card.appendChild(header);
     const buttonRow = document.createElement("div");
     buttonRow.className = "d-flex flex-wrap gap-2";
     const viewButton = document.createElement("button");
@@ -1380,7 +1468,7 @@ import {
     if (!groupShareState.token) {
       return;
     }
-    const label = member.label || member.content_id;
+    const label = formatGroupMemberLabel(member);
     if (button) {
       button.disabled = true;
     }
@@ -1420,7 +1508,7 @@ import {
     if (!groupShareState.token) {
       return;
     }
-    const label = member.label || member.content_id;
+    const label = formatGroupMemberLabel(member);
     button.disabled = true;
     setGroupShareStatus(`Claiming ${label}…`);
     try {
