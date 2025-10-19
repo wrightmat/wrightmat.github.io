@@ -1908,6 +1908,24 @@ import {
       renderCanvas();
       return;
     }
+    const metadata = getTemplateMetadata(state.template?.id);
+    if (!templateAllowsEdits(metadata)) {
+      const message = describeTemplateEditRestriction(metadata);
+      status.show(message, { type: "warning", timeout: 2800 });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
+    if (!dataManager.hasWriteAccess("templates")) {
+      const required = dataManager.describeRequiredWriteTier("templates");
+      const message = required
+        ? `Saving templates requires a ${required} tier.`
+        : "Your tier cannot save templates.";
+      status.show(message, { type: "warning", timeout: 2800 });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
     const parentId = event.to.dataset.dropzoneParent || "";
     const zoneKey = event.to.dataset.dropzoneKey || "root";
     const index = typeof event.newIndex === "number" ? event.newIndex : 0;

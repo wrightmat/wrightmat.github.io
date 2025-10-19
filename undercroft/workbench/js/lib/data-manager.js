@@ -779,13 +779,24 @@ export class DataManager {
     return result;
   }
 
-  async listOwnedContent({ username = "", refresh = false } = {}) {
-    const key = username ? username.toLowerCase() : "__self__";
+  async listOwnedContent({ username = "", scope = "", refresh = false } = {}) {
+    const normalizedScope = scope === "all" ? "all" : "";
+    const key = normalizedScope === "all"
+      ? "__all__"
+      : username
+        ? username.toLowerCase()
+        : "__self__";
     if (!refresh && this._ownedCache.has(key)) {
       return this._ownedCache.get(key);
     }
-    const query = username ? `?username=${encodeURIComponent(username)}` : "";
-    const payload = await this._request(`/content/owned${query}`, {
+    const params = new URLSearchParams();
+    if (normalizedScope === "all") {
+      params.set("scope", "all");
+    } else if (username) {
+      params.set("username", username);
+    }
+    const query = params.toString();
+    const payload = await this._request(`/content/owned${query ? `?${query}` : ""}`, {
       method: "GET",
       auth: true,
     });

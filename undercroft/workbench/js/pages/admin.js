@@ -538,40 +538,19 @@ function populateOwnedUserFilter() {
   if (!select) {
     return;
   }
-  const current = currentUser();
-  const currentUsername = current?.username || "";
-  const selected = viewState.owned.selectedUsername || "";
+  const selected = viewState.owned.selectedUsername === "__all__" ? "__all__" : "";
   const fragment = document.createDocumentFragment();
-  const selfOption = document.createElement("option");
-  selfOption.value = "";
-  selfOption.textContent = current
-    ? `${current.username} (You)`
-    : "My account";
-  fragment.appendChild(selfOption);
-  const uniqueUsers = new Map();
-  viewState.users.forEach((user) => {
-    if (!user || !user.username) return;
-    if (user.username === currentUsername) {
-      return;
-    }
-    uniqueUsers.set(user.username, user);
-  });
-  const sortedUsers = Array.from(uniqueUsers.values()).sort((a, b) =>
-    a.username.localeCompare(b.username, undefined, { sensitivity: "base" }),
-  );
-  sortedUsers.forEach((user) => {
-    const option = document.createElement("option");
-    option.value = user.username;
-    option.textContent = `${user.username} (${formatTier(user.tier)})`;
-    fragment.appendChild(option);
-  });
+  const meOption = document.createElement("option");
+  meOption.value = "";
+  meOption.textContent = "Me";
+  fragment.appendChild(meOption);
+  const everyoneOption = document.createElement("option");
+  everyoneOption.value = "__all__";
+  everyoneOption.textContent = "Everyone";
+  fragment.appendChild(everyoneOption);
   select.replaceChildren(fragment);
-  if (selected && (selected === currentUsername || uniqueUsers.has(selected))) {
-    select.value = selected;
-  } else {
-    select.value = "";
-    viewState.owned.selectedUsername = "";
-  }
+  select.value = selected;
+  viewState.owned.selectedUsername = selected;
 }
 
 function setOwnedLoading(message = "Loading content…") {
@@ -614,8 +593,14 @@ function updateOwnedSummary(owner, itemCount = 0) {
     elements.ownedSummary.textContent = "";
     return;
   }
-  const tierLabel = formatTier(owner.tier);
   const countLabel = itemCount === 1 ? "1 item" : `${itemCount} items`;
+  const viewingEveryone = viewState.owned.selectedUsername === "__all__";
+  if (viewingEveryone) {
+    const subject = owner.display_name || owner.username || "everyone";
+    elements.ownedSummary.textContent = `Viewing ${subject} — ${countLabel}.`;
+    return;
+  }
+  const tierLabel = formatTier(owner.tier);
   const viewingSelf = !viewState.owned.selectedUsername || viewState.owned.selectedUsername === owner.username;
   const subject = viewingSelf ? "your account" : owner.username;
   elements.ownedSummary.textContent = `Viewing ${subject} (${tierLabel}) — ${countLabel}.`;
@@ -1194,7 +1179,9 @@ function renderOwnedItems(items, owner) {
     return;
   }
   if (!Array.isArray(items) || !items.length) {
-    showOwnedEmpty(viewState.owned.selectedUsername ? "No content for this user." : "No saved content yet.");
+    const viewingEveryone = viewState.owned.selectedUsername === "__all__";
+    const message = viewingEveryone ? "No content available." : "No saved content yet.";
+    showOwnedEmpty(message);
     updateOwnedSummary(owner, 0);
     updateOwnedSortIndicators();
     return;
@@ -1234,23 +1221,23 @@ function renderOwnedItems(items, owner) {
     const ownerCell = document.createElement("td");
     ownerCell.className = "text-end";
 
-    const shareButton = document.createElement("button");
-    shareButton.type = "button";
-    shareButton.className = "btn btn-outline-primary btn-sm";
-    shareButton.textContent = "Share";
-    shareButton.addEventListener("click", () => {
-      openShareModal({ ...item, owner });
-    });
-
-    shareCell.appendChild(shareButton);
-
     const ownerRow = document.createElement("div");
     ownerRow.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
     const ownerSelect = document.createElement("select");
     ownerSelect.className = "form-select form-select-sm w-auto";
     ownerSelect.setAttribute("aria-label", `Change owner for ${item.label || item.id}`);
-    const currentOwnerUsername = owner?.username || "";
-    const currentOwnerTier = owner?.tier || "";
+    const currentOwnerUsername = item.owner_username || owner?.username || "";
+    const currentOwnerTier = item.owner_tier || owner?.tier || "";
+    const shareButton = document.createElement("button");
+    shareButton.type = "button";
+    shareButton.className = "btn btn-outline-primary btn-sm";
+    shareButton.textContent = "Share";
+    shareButton.addEventListener("click", () => {
+      openShareModal({ ...item, owner: { username: currentOwnerUsername, tier: currentOwnerTier } });
+    });
+
+    shareCell.appendChild(shareButton);
+
     const ownerOptions = buildOwnerOptions(item.bucket, { username: currentOwnerUsername, tier: currentOwnerTier });
     ownerOptions.forEach((option) => {
       const opt = document.createElement("option");
@@ -1355,6 +1342,9 @@ function isViewingCurrentUser() {
   if (!current) {
     return false;
   }
+  if (viewState.owned.selectedUsername === "__all__") {
+    return false;
+  }
   return !viewState.owned.selectedUsername || viewState.owned.selectedUsername === current.username;
 }
 
@@ -1379,9 +1369,11 @@ async function loadOwnedContent({ refresh = false } = {}) {
   if (shouldRefresh || !viewState.owned.items.length) {
     setOwnedLoading();
   }
-  const username = viewState.owned.selectedUsername || "";
+  const viewingEveryone = viewState.owned.selectedUsername === "__all__";
+  const username = viewingEveryone ? "" : viewState.owned.selectedUsername || "";
+  const scope = viewingEveryone ? "all" : "";
   try {
-    const payload = await dataManager.listOwnedContent({ username, refresh: shouldRefresh });
+    const payload = await dataManager.listOwnedContent({ username, scope, refresh: shouldRefresh });
     const owner = payload?.owner || null;
     const items = Array.isArray(payload?.items) ? payload.items : [];
     viewState.owned.owner = owner;
@@ -1404,9 +1396,10 @@ function handleOwnedContentEvent() {
   if (!dataManager.isAuthenticated()) {
     return;
   }
-  if (viewState.activeTab === TAB_OWNED && isViewingCurrentUser()) {
+  const viewingEveryone = viewState.owned.selectedUsername === "__all__";
+  if (viewState.activeTab === TAB_OWNED && (isViewingCurrentUser() || viewingEveryone)) {
     loadOwnedContent({ refresh: true });
-  } else if (isViewingCurrentUser()) {
+  } else if (isViewingCurrentUser() || viewingEveryone) {
     viewState.owned.stale = true;
   }
 }

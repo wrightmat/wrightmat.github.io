@@ -573,30 +573,52 @@ def _enforce_creation_limits(state: ServerState, bucket: str, user: Optional[Use
             raise AuthError("Your tier cannot create systems")
 
 
-def list_owned_content(state: ServerState, owner: User) -> Dict[str, Any]:
+def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "user") -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
-    now_owner = {
-        "id": owner.id,
-        "username": owner.username,
-        "email": getattr(owner, "email", ""),
-        "tier": owner.tier,
-    }
+    if scope != "all" and owner is None:
+        raise AuthError("Owner required")
     mappings = [
         ("characters", "characters", "name"),
         ("templates", "templates", "title"),
         ("systems", "systems", "title"),
     ]
     for bucket, table, label_field in mappings:
-        rows = state.db.execute(
-            f"""
-            SELECT id, {label_field} AS label, created_at, modified_at, last_accessed_at
-            FROM {table}
-            WHERE owner_id = ?
-            ORDER BY modified_at DESC
-            """,
-            (owner.id,),
-        ).fetchall()
+        if scope == "all":
+            rows = state.db.execute(
+                f"""
+                SELECT t.id AS id,
+                       t.{label_field} AS label,
+                       t.created_at AS created_at,
+                       t.modified_at AS modified_at,
+                       t.last_accessed_at AS last_accessed_at,
+                       u.username AS owner_username,
+                       u.tier AS owner_tier
+                FROM {table} AS t
+                JOIN users AS u ON u.id = t.owner_id
+                ORDER BY t.modified_at DESC
+                """
+            ).fetchall()
+        else:
+            rows = state.db.execute(
+                f"""
+                SELECT t.id AS id,
+                       t.{label_field} AS label,
+                       t.created_at AS created_at,
+                       t.modified_at AS modified_at,
+                       t.last_accessed_at AS last_accessed_at,
+                       u.username AS owner_username,
+                       u.tier AS owner_tier
+                FROM {table} AS t
+                JOIN users AS u ON u.id = t.owner_id
+                WHERE t.owner_id = ?
+                ORDER BY t.modified_at DESC
+                """,
+                (owner.id,),
+            ).fetchall()
         for row in rows:
+            keys = row.keys() if hasattr(row, "keys") else []
+            owner_username = row["owner_username"] if "owner_username" in keys else (owner.username if owner else "")
+            owner_tier = row["owner_tier"] if "owner_tier" in keys else (owner.tier if owner else "")
             items.append(
                 {
                     "bucket": bucket,
@@ -605,10 +627,26 @@ def list_owned_content(state: ServerState, owner: User) -> Dict[str, Any]:
                     "created_at": row["created_at"],
                     "modified_at": row["modified_at"],
                     "last_accessed_at": row["last_accessed_at"],
+                    "owner_username": owner_username,
+                    "owner_tier": owner_tier,
                 }
             )
     items.sort(key=lambda item: item.get("modified_at") or "", reverse=True)
-    return {"owner": now_owner, "items": items}
+    if scope == "all":
+        owner_info = {
+            "id": None,
+            "username": "__all__",
+            "display_name": "Everyone",
+            "tier": "",
+        }
+    else:
+        owner_info = {
+            "id": owner.id,
+            "username": owner.username,
+            "email": getattr(owner, "email", ""),
+            "tier": owner.tier,
+        }
+    return {"owner": owner_info, "items": items, "scope": scope}
 
 
 def list_static(state: ServerState, bucket: str, relative_path: str = "") -> List[str]:
