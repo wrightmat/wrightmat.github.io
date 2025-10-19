@@ -304,6 +304,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           });
           return;
         }
+        const metadata = getSystemMetadata(state.system?.id);
+        if (!systemAllowsEdits(metadata)) {
+          const message = describeSystemEditRestriction(metadata);
+          status.show(message, { type: "warning", timeout: 2800 });
+          return;
+        }
+        if (!dataManager.hasWriteAccess("systems")) {
+          const required = dataManager.describeRequiredWriteTier("systems");
+          const message = required
+            ? `Saving systems requires a ${required} tier.`
+            : "Your tier cannot save systems.";
+          status.show(message, { type: "warning", timeout: 2800 });
+          return;
+        }
         insertFieldAtCanvasRoot(value);
       },
     });
@@ -2124,6 +2138,19 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return systemOwnerMatchesCurrentUser(metadata);
   }
 
+  function describeSystemEditRestriction(metadata) {
+    const ownership = systemOwnership(metadata);
+    const permissions = systemPermissions(metadata);
+    if (ownership === "shared" && permissions !== "edit") {
+      return "This system was shared with you as view-only. Duplicate it to make changes.";
+    }
+    if (ownership === "public") {
+      return "Public systems are view-only. Duplicate it to customize.";
+    }
+    const ownerLabel = resolveSystemOwnerLabel(metadata);
+    return `Only ${ownerLabel} can save this system.`;
+  }
+
   function resolveSystemOwnerLabel(metadata) {
     const username =
       metadata?.ownerUsername ||
@@ -2151,16 +2178,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           ? `Saving systems requires a ${required} tier.`
           : "Your tier cannot save systems.";
       } else if (!canEditRecord) {
-        const ownership = systemOwnership(metadata);
-        const permissions = systemPermissions(metadata);
-        if (ownership === "shared" && permissions !== "edit") {
-          elements.saveButton.title = "This system was shared with you as view-only. Duplicate it to make changes.";
-        } else if (ownership === "public") {
-          elements.saveButton.title = "Public systems are view-only. Duplicate it to customize.";
-        } else {
-          const ownerLabel = resolveSystemOwnerLabel(metadata);
-          elements.saveButton.title = `Only ${ownerLabel} can save this system.`;
-        }
+        elements.saveButton.title = describeSystemEditRestriction(metadata);
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
