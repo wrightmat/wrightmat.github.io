@@ -627,6 +627,14 @@ import {
     return getBindingEditorValue(component);
   }
 
+  function getComponentRollerLabel(component) {
+    if (!component || typeof component.roller !== "string") {
+      return "";
+    }
+    const trimmed = component.roller.trim();
+    return trimmed || "";
+  }
+
   function getDefinition(component) {
     if (!component) return {};
     return COMPONENT_DEFINITIONS[component.type] || {};
@@ -2236,14 +2244,28 @@ import {
     });
 
     const bindingLabel = getComponentBindingLabel(component);
+    let bindingPill = null;
     if (bindingLabel) {
-      const pill = document.createElement("span");
-      pill.className = "template-binding-pill badge text-bg-secondary";
-      pill.textContent = bindingLabel;
+      bindingPill = document.createElement("span");
+      bindingPill.className = "template-binding-pill badge text-bg-secondary";
+      bindingPill.textContent = bindingLabel;
       if (iconElement && actions.contains(iconElement)) {
-        actions.insertBefore(pill, iconElement);
+        actions.insertBefore(bindingPill, iconElement);
       } else {
-        actions.appendChild(pill);
+        actions.appendChild(bindingPill);
+      }
+    }
+
+    const rollerLabel = getComponentRollerLabel(component);
+    if (rollerLabel) {
+      const rollerPill = document.createElement("span");
+      rollerPill.className = "template-roller-pill badge text-bg-info";
+      rollerPill.textContent = `🎲 ${rollerLabel}`;
+      const insertBefore = bindingPill && actions.contains(bindingPill) ? bindingPill : iconElement;
+      if (insertBefore && actions.contains(insertBefore)) {
+        actions.insertBefore(rollerPill, insertBefore);
+      } else {
+        actions.appendChild(rollerPill);
       }
     }
 

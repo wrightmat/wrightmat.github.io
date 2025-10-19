@@ -109,7 +109,8 @@ body[data-theme="dark"] .hover-lift:hover {
   font-size: 1rem;
 }
 
-.template-binding-pill {
+.template-binding-pill,
+.template-roller-pill {
   font-size: 0.75rem;
   max-width: 12rem;
   white-space: nowrap;
@@ -561,6 +562,26 @@ body[data-theme="dark"] .hover-lift:hover {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.dice-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.dice-quick-grid .btn {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .dice-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .dice-breakdown-line {

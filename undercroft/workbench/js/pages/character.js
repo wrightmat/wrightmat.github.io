@@ -288,7 +288,6 @@ import {
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
-    saveButton: document.querySelector('[data-action="save-character"]'),
     undoButton: document.querySelector('[data-action="undo-character"]'),
     redoButton: document.querySelector('[data-action="redo-character"]'),
     importButton: document.querySelector('[data-action="import-character"]'),
@@ -344,42 +343,6 @@ import {
         const selectedId = elements.characterSelect.value;
         if (selectedId) {
           await loadCharacter(selectedId);
-        }
-      });
-    }
-
-    if (elements.saveButton) {
-      elements.saveButton.addEventListener("click", async () => {
-        if (!state.draft?.id) {
-          status.show("Create or load a character first.", { type: "info", timeout: 2000 });
-          return;
-        }
-        if (!dataManager.isAuthenticated()) {
-          status.show("Sign in to save characters to the server.", { type: "warning", timeout: 2600 });
-          return;
-        }
-        const metadata = characterCatalog.get(state.draft.id) || {};
-        if (!characterAllowsEdits(metadata)) {
-          const message = describeCharacterEditRestriction(metadata);
-          status.show(message, { type: "warning", timeout: 2800 });
-          return;
-        }
-        if (!dataManager.hasWriteAccess("characters")) {
-          const required = dataManager.describeRequiredWriteTier("characters");
-          const message = required
-            ? `Saving characters requires a ${required} tier.`
-            : "Your tier cannot save characters.";
-          status.show(message, { type: "warning", timeout: 2600 });
-          return;
-        }
-        const button = elements.saveButton;
-        button.disabled = true;
-        button.setAttribute("aria-busy", "true");
-        try {
-          await persistDraft({ silent: false });
-        } finally {
-          button.disabled = false;
-          button.removeAttribute("aria-busy");
         }
       });
     }
@@ -791,36 +754,8 @@ import {
   }
 
   function syncCharacterActions() {
-    const hasDraft = Boolean(state.draft);
     const draftHasId = Boolean(state.draft?.id);
     const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
-    if (elements.saveButton) {
-      const hasChanges = hasDraft && hasUnsavedCharacterChanges();
-      const isAuthenticated = dataManager.isAuthenticated();
-    const canWrite = dataManager.hasWriteAccess("characters");
-    const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
-    const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
-    elements.saveButton.disabled = !enabled;
-      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
-      if (!hasDraft) {
-        elements.saveButton.title = "Create or load a character to save.";
-      } else if (!isAuthenticated) {
-        elements.saveButton.title = "Sign in to save characters to the server.";
-      } else if (!canWrite) {
-        const required = dataManager.describeRequiredWriteTier("characters");
-        elements.saveButton.title = required
-          ? `Saving characters requires a ${required} tier.`
-          : "Your tier cannot save characters.";
-      } else if (!canEditRecord) {
-        const message = describeCharacterEditRestriction(metadata);
-        elements.saveButton.title = message;
-      } else if (!hasChanges) {
-        elements.saveButton.title = "No changes to save.";
-      } else {
-        elements.saveButton.removeAttribute("title");
-      }
-    }
-
     if (!elements.deleteCharacterButton) {
       return;
     }
@@ -1525,13 +1460,14 @@ import {
 
   function renderComponentCard(component) {
     const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
+    const showTypeIcon = state.mode === "edit";
     const wrapper = createCanvasCardElement({
       classes: ["character-component"],
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
     });
     const { header } = createStandardCardChrome({
-      icon: iconName,
+      icon: showTypeIcon ? iconName : null,
       iconLabel: component.type,
       headerOptions: { classes: ["character-component-header"], sortableHandle: false },
       actionsOptions: { classes: ["character-component-actions"] },
