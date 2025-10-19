@@ -1,4 +1,7 @@
 function normalizeKey(event) {
+  if (!event || typeof event.key !== "string") {
+    return "";
+  }
   const parts = [];
   if (event.ctrlKey || event.metaKey) parts.push("ctrl");
   if (event.shiftKey) parts.push("shift");
@@ -28,6 +31,9 @@ export class KeyboardShortcuts {
 
   _handleKey(event) {
     const key = normalizeKey(event);
+    if (!key) {
+      return;
+    }
     if (this.shortcuts.has(key)) {
       const { handler, preventDefault } = this.shortcuts.get(key);
       if (preventDefault) {

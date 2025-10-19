@@ -25,13 +25,27 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
+import {
+  normalizeBindingValue,
+  resolveBindingFromContexts,
+  normalizeOptionEntries,
+  buildSystemPreviewData,
+} from "../lib/component-data.js";
 
 (async () => {
-  const { status, undoStack } = initAppShell({ namespace: "template" });
+  const { status, undoStack, undo, redo } = initAppShell({
+    namespace: "template",
+    onUndo: handleUndoEntry,
+    onRedo: handleRedoEntry,
+  });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
+
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
 
   const gate = initTierGate({
     root: document,
@@ -103,10 +117,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           return ["number"];
         }
         if (variant === "checkbox" || variant === "radio") {
-          return ["object"];
+          return variant === "checkbox" ? ["array", "object"] : ["string", "number"];
         }
         if (variant === "select") {
-          return ["array"];
+          return ["string", "number"];
+        }
+        if (variant === "textarea") {
+          return ["string"];
         }
         return ["string", "number"];
       }
@@ -116,9 +133,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "array":
         return ["array", "object"];
       case "select-group":
-        return ["array", "object"];
+        return component.multiple ? ["array", "object"] : ["string", "number"];
       case "toggle":
-        return ["string"];
+        return ["string", "number"];
       default:
         return null;
     }
@@ -142,6 +159,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     components: [],
     selectedId: null,
     systemDefinition: null,
+    systemPreviewData: {},
     bindingFields: [],
   };
 
@@ -157,6 +175,35 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   const dropzones = new Map();
   const containerActiveTabs = new Map();
+
+  function cloneComponentTree(component) {
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(component);
+      } catch (error) {
+        // fall through to JSON clone
+      }
+    }
+    return JSON.parse(JSON.stringify(component));
+  }
+
+  function cloneComponentCollection(components) {
+    return Array.isArray(components) ? components.map((component) => cloneComponentTree(component)) : [];
+  }
+
+  function snapshotContainerTabs() {
+    return Array.from(containerActiveTabs.entries());
+  }
+
+  function restoreContainerTabsSnapshot(snapshot) {
+    containerActiveTabs.clear();
+    if (!Array.isArray(snapshot)) {
+      return;
+    }
+    snapshot.forEach(([key, value]) => {
+      containerActiveTabs.set(key, value);
+    });
+  }
 
   function emitBindingFieldsReady(schemaId = "") {
     if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
@@ -183,12 +230,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     importButton: document.querySelector('[data-action="import-template"]'),
     exportButton: document.querySelector('[data-action="export-template"]'),
     newTemplateButton: document.querySelector('[data-action="new-template"]'),
+    duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
     deleteTemplateButton: document.querySelector('[data-delete-template]'),
     newTemplateForm: document.querySelector("[data-new-template-form]"),
     newTemplateId: document.querySelector("[data-new-template-id]"),
     newTemplateTitle: document.querySelector("[data-new-template-title]"),
     newTemplateVersion: document.querySelector("[data-new-template-version]"),
     newTemplateSystem: document.querySelector("[data-new-template-system]"),
+    newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
+    templateMeta: document.querySelector("[data-template-meta]"),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     jsonPreview: document.querySelector("[data-json-preview]"),
@@ -203,12 +253,14 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return createComponent(type);
     },
     beforeInsert: (type, component) => {
+      const previousSelectedId = state.selectedId || null;
       state.selectedId = component.uid;
       return {
         parentId: "",
         zoneKey: "root",
         index: state.components.length,
         definition: COMPONENT_DEFINITIONS[type],
+        previousSelectedId,
       };
     },
     insertItem: (type, component, context) => {
@@ -216,10 +268,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     },
     createUndoEntry: (type, component, context) => ({
       type: "add",
-      component: { ...component },
+      templateId: state.template?.id || "",
+      component: cloneComponentTree(component),
       parentId: context.parentId,
       zoneKey: context.zoneKey,
       index: context.index,
+      previousSelectedId: context.previousSelectedId || null,
     }),
     afterInsert: () => {
       renderCanvas();
@@ -241,6 +295,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       newTemplateModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
     }
   }
+
+  let templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
 
   refreshTooltips(document);
 
@@ -285,7 +341,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           payload = await response.json();
           markBuiltinAvailable("templates", metadata.id || selectedId);
         } else {
-          const result = await dataManager.get("templates", selectedId, { preferLocal: true });
+          const shareToken = metadata.shareToken || "";
+          const result = await dataManager.get("templates", selectedId, {
+            preferLocal: !shareToken,
+            shareToken,
+          });
           payload = result?.payload || null;
         }
         if (!payload) {
@@ -294,10 +354,22 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         const label = payload.title || metadata.title || selectedId;
         const schema = payload.schema || payload.system || metadata.schema || "";
         registerTemplateRecord(
-          { id: payload.id || selectedId, title: label, schema, source: metadata.source || "remote", path: metadata.path },
+          {
+            id: payload.id || selectedId,
+            title: label,
+            schema,
+            source: metadata.source || "remote",
+            path: metadata.path,
+            shareToken: metadata.shareToken,
+          },
           { syncOption: true }
         );
-        applyTemplateData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+        applyTemplateData(payload, {
+          origin: metadata.source || "remote",
+          emitStatus: true,
+          statusMessage: `Loaded ${label}`,
+          shareToken: metadata.shareToken || "",
+        });
       } catch (error) {
         console.error("Unable to load template", error);
         if (metadata.source === "builtin") {
@@ -316,6 +388,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         variant: "text",
         placeholder: "",
         options: ["Option A", "Option B"],
+        rows: 3,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -436,6 +510,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         name: "Select Group",
         variant: "pills",
         multiple: false,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -525,13 +600,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return fallback || "";
   }
 
-  function normalizeBindingValue(value) {
-    if (typeof value !== "string") {
-      return "";
-    }
-    return value.trim();
-  }
-
   function componentHasFormula(component, { formulaKey = "formula" } = {}) {
     if (!formulaKey) {
       return false;
@@ -592,6 +660,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
             type: "warning",
             timeout: 2400,
           });
+          return;
+        }
+        const metadata = getTemplateMetadata(state.template?.id);
+        if (!templateAllowsEdits(metadata)) {
+          const message = describeTemplateEditRestriction(metadata);
+          status.show(message, { type: "warning", timeout: 2800 });
+          return;
+        }
+        if (!dataManager.hasWriteAccess("templates")) {
+          const required = dataManager.describeRequiredWriteTier("templates");
+          const message = required
+            ? `Saving templates requires a ${required} tier.`
+            : "Your tier cannot save templates.";
+          status.show(message, { type: "warning", timeout: 2800 });
           return;
         }
         insertComponentAtCanvasRoot(value);
@@ -658,18 +740,35 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         });
         const savedToServer = result?.source === "remote";
         state.template.origin = savedToServer ? "remote" : "local";
+        const user = sessionUser();
+        const ownership = savedToServer ? "owned" : state.template.origin || "draft";
+        state.template.ownership = ownership;
+        state.template.permissions = savedToServer ? "edit" : "";
+        if (savedToServer && user) {
+          state.template.ownerId = user.id ?? null;
+          state.template.ownerUsername = user.username || "";
+        }
         registerTemplateRecord(
           {
             id: templateId,
             title: payload.title || templateId,
             schema: payload.schema,
             source: state.template.origin,
+            shareToken: state.template.shareToken || "",
+            ownership,
+            permissions: savedToServer ? "edit" : undefined,
+            ownerId: savedToServer ? user?.id ?? null : undefined,
+            ownerUsername: savedToServer ? user?.username || "" : undefined,
           },
           { syncOption: true }
         );
         ensureTemplateSelectValue();
         syncTemplateActions();
-        undoStack.push({ type: "save", count: state.components.length });
+        undoStack.push({
+          type: "save",
+          templateId: state.template?.id || "",
+          count: state.components.length,
+        });
         if (savedToServer || !requireRemote) {
           markTemplateClean();
         }
@@ -695,13 +794,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   if (elements.undoButton) {
     elements.undoButton.addEventListener("click", () => {
-      status.show("Undo coming soon", { type: "info", timeout: 1800 });
+      undo();
     });
   }
 
   if (elements.redoButton) {
     elements.redoButton.addEventListener("click", () => {
-      status.show("Redo coming soon", { type: "info", timeout: 1800 });
+      redo();
     });
   }
 
@@ -774,7 +873,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
         return;
       }
-      prepareNewTemplateForm();
+      prepareNewTemplateForm({ mode: "new" });
       if (newTemplateModalInstance) {
         newTemplateModalInstance.show();
         return;
@@ -797,6 +896,48 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
+  if (elements.duplicateTemplateButton) {
+    elements.duplicateTemplateButton.addEventListener("click", () => {
+      if (!state.template) {
+        return;
+      }
+      const baseTemplate = state.template;
+      const sourceTitle = baseTemplate.title || baseTemplate.id || "template";
+      if (newTemplateModalInstance && elements.newTemplateForm) {
+        prepareNewTemplateForm({ mode: "duplicate", seedTemplate: baseTemplate });
+        newTemplateModalInstance.show();
+        return;
+      }
+      const suggestedId = generateDuplicateTemplateId(baseTemplate.id || baseTemplate.title || "template");
+      const idInput = window.prompt("Enter a template ID", suggestedId || baseTemplate.id || "");
+      if (!idInput) {
+        return;
+      }
+      const suggestedTitle = generateDuplicateTemplateTitle(baseTemplate.title || baseTemplate.id || "Template");
+      const titleInput = window.prompt("Enter a template title", suggestedTitle) || "";
+      if (!titleInput) {
+        return;
+      }
+      const versionInput = window.prompt("Enter a version", baseTemplate.version || "0.1") || baseTemplate.version || "0.1";
+      const schema = baseTemplate.schema || "";
+      if (!schema) {
+        status.show("Templates must reference a system.", { type: "warning", timeout: 2400 });
+        return;
+      }
+      const components = cloneComponentCollection(state.components);
+      startNewTemplate({
+        id: idInput.trim(),
+        title: titleInput.trim(),
+        version: (versionInput || "0.1").trim() || "0.1",
+        schema: schema.trim(),
+        origin: "draft",
+        components,
+        markClean: false,
+        statusMessage: `Duplicated ${sourceTitle}`,
+      });
+    });
+  }
+
   if (elements.newTemplateForm) {
     elements.newTemplateForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -813,7 +954,24 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         form.classList.add("was-validated");
         return;
       }
-      startNewTemplate({ id, title, version, schema, origin: "draft" });
+      const mode = form.dataset.mode || templateCreationContext.mode || "new";
+      const isDuplicate = mode === "duplicate" && templateCreationContext.mode === "duplicate";
+      const components = isDuplicate && Array.isArray(templateCreationContext.duplicateComponents)
+        ? cloneComponentCollection(templateCreationContext.duplicateComponents)
+        : [];
+      const sourceTitle = templateCreationContext.sourceTitle || state.template?.title || state.template?.id || title;
+      startNewTemplate({
+        id,
+        title,
+        version,
+        schema,
+        origin: "draft",
+        components,
+        markClean: !isDuplicate,
+        statusMessage: isDuplicate ? `Duplicated ${sourceTitle}` : `Started ${title || id}`,
+      });
+      templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
+      form.dataset.mode = "new";
       if (newTemplateModalInstance) {
         newTemplateModalInstance.hide();
       }
@@ -923,9 +1081,34 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const current = templateCatalog.get(record.id) || {};
     const next = { ...current, ...record };
+    next.id = record.id;
+    if (record.schema === undefined && current.schema) {
+      next.schema = current.schema;
+    }
+    if (record.ownership === undefined && current.ownership !== undefined) {
+      next.ownership = current.ownership;
+    }
+    if (record.permissions === undefined && current.permissions !== undefined) {
+      next.permissions = current.permissions;
+    }
+    if (record.ownerId === undefined && current.ownerId !== undefined) {
+      next.ownerId = current.ownerId;
+    }
+    if (record.ownerUsername === undefined && current.ownerUsername !== undefined) {
+      next.ownerUsername = current.ownerUsername;
+    }
+    if (!next.ownership) {
+      const fallbackOwnership =
+        (typeof record.ownership === "string" && record.ownership) ||
+        (typeof current.ownership === "string" && current.ownership) ||
+        (typeof record.source === "string" && record.source) ||
+        (typeof current.source === "string" && current.source) ||
+        "";
+      next.ownership = fallbackOwnership;
+    }
     templateCatalog.set(record.id, next);
     if (syncOption) {
-      ensureTemplateOption(record.id, next.title || record.id);
+      ensureTemplateOption(record.id);
     }
   }
 
@@ -1031,11 +1214,33 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const current = systemCatalog.get(record.id) || {};
     const next = { ...current, ...record };
+    if (record.ownership === undefined && current.ownership !== undefined) {
+      next.ownership = current.ownership;
+    }
+    if (record.permissions === undefined && current.permissions !== undefined) {
+      next.permissions = current.permissions;
+    }
+    if (record.ownerId === undefined && current.ownerId !== undefined) {
+      next.ownerId = current.ownerId;
+    }
+    if (record.ownerUsername === undefined && current.ownerUsername !== undefined) {
+      next.ownerUsername = current.ownerUsername;
+    }
+    if (!next.ownership) {
+      const fallbackOwnership =
+        (typeof record.ownership === "string" && record.ownership) ||
+        (typeof current.ownership === "string" && current.ownership) ||
+        (typeof record.source === "string" && record.source) ||
+        (typeof current.source === "string" && current.source) ||
+        "";
+      next.ownership = fallbackOwnership;
+    }
     if (record.payload) {
       next.payload = record.payload;
       systemDefinitionCache.set(record.id, record.payload);
     }
     systemCatalog.set(record.id, next);
+    refreshTemplateOptionsForSystem(record.id);
   }
 
   function removeSystemRecord(id) {
@@ -1045,6 +1250,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     systemCatalog.delete(id);
     systemDefinitionCache.delete(id);
     refreshNewTemplateSystemOptions(elements.newTemplateSystem?.value || "");
+    refreshTemplateOptionsForSystem(id);
   }
 
   function refreshNewTemplateSystemOptions(selectedValue = "") {
@@ -1117,63 +1323,200 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   async function updateSystemContext(schemaId) {
     state.systemDefinition = null;
+    state.systemPreviewData = {};
     state.bindingFields = [];
+
     if (!schemaId) {
       emitBindingFieldsReady("");
       renderInspector();
+      renderCanvas();
       return;
     }
+
     try {
       const definition = await fetchSystemDefinition(schemaId);
       if (definition) {
         state.systemDefinition = definition;
+        state.systemPreviewData = buildSystemPreviewData(definition);
         state.bindingFields = collectSystemFields(definition);
+      } else {
+        state.systemPreviewData = {};
       }
     } catch (error) {
       console.warn("Template editor: unable to prepare system bindings", error);
     }
+
     emitBindingFieldsReady(schemaId);
     renderInspector();
+    renderCanvas();
   }
 
-  function prepareNewTemplateForm() {
+  function prepareNewTemplateForm({ mode = "new", seedTemplate = null } = {}) {
     if (!elements.newTemplateForm) {
       return;
     }
+    const isDuplicate = mode === "duplicate" && seedTemplate;
+    templateCreationContext = {
+      mode: isDuplicate ? "duplicate" : "new",
+      duplicateComponents: isDuplicate ? cloneComponentCollection(state.components) : null,
+      sourceTitle: isDuplicate ? seedTemplate?.title || seedTemplate?.id || "" : "",
+    };
     elements.newTemplateForm.reset();
     elements.newTemplateForm.classList.remove("was-validated");
-    if (elements.newTemplateVersion) {
-      const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
-      elements.newTemplateVersion.value = defaultVersion;
+    elements.newTemplateForm.dataset.mode = templateCreationContext.mode;
+    if (elements.newTemplateModalTitle) {
+      elements.newTemplateModalTitle.textContent = isDuplicate ? "Duplicate Template" : "Create New Template";
     }
-    refreshNewTemplateSystemOptions();
+    const defaultVersion = elements.newTemplateVersion?.getAttribute("value") || "0.1";
+    if (elements.newTemplateVersion) {
+      elements.newTemplateVersion.value = isDuplicate
+        ? seedTemplate?.version || defaultVersion
+        : defaultVersion;
+    }
+    const selectedSchema = isDuplicate ? seedTemplate?.schema || "" : "";
+    refreshNewTemplateSystemOptions(selectedSchema);
     if (elements.newTemplateSystem) {
-      elements.newTemplateSystem.value = "";
+      elements.newTemplateSystem.value = selectedSchema;
+    }
+    if (elements.newTemplateTitle) {
+      elements.newTemplateTitle.value = isDuplicate
+        ? generateDuplicateTemplateTitle(seedTemplate?.title || seedTemplate?.id || "Template")
+        : "";
+      if (isDuplicate) {
+        elements.newTemplateTitle.select();
+      }
     }
     if (elements.newTemplateId) {
       elements.newTemplateId.setCustomValidity("");
-      const seed =
-        elements.newTemplateSystem?.value ||
-        state.template?.schema ||
-        state.template?.title ||
-        state.template?.id ||
-        "template";
       let generatedId = "";
-      do {
-        generatedId = generateTemplateId(seed || "template");
-      } while (generatedId && templateCatalog.has(generatedId));
+      if (isDuplicate) {
+        generatedId = generateDuplicateTemplateId(seedTemplate?.id || seedTemplate?.title || "template");
+      } else {
+        const seed =
+          elements.newTemplateSystem?.value ||
+          state.template?.schema ||
+          state.template?.title ||
+          state.template?.id ||
+          "template";
+        do {
+          generatedId = generateTemplateId(seed || "template");
+        } while (generatedId && templateCatalog.has(generatedId));
+      }
       elements.newTemplateId.value = generatedId;
       elements.newTemplateId.focus();
       elements.newTemplateId.select();
     }
   }
 
+  function getTemplateMetadata(templateId) {
+    if (!templateId) {
+      return null;
+    }
+    return templateCatalog.get(templateId) || null;
+  }
+
+  function templateOwnership(metadata) {
+    const metaOwnership = metadata?.ownership;
+    if (typeof metaOwnership === "string" && metaOwnership) {
+      return metaOwnership.toLowerCase();
+    }
+    const stateOwnership = state.template?.ownership;
+    if (typeof stateOwnership === "string" && stateOwnership) {
+      return stateOwnership.toLowerCase();
+    }
+    const origin = state.template?.origin;
+    return typeof origin === "string" && origin ? origin.toLowerCase() : "";
+  }
+
+  function templatePermissions(metadata) {
+    if (metadata && typeof metadata.permissions === "string" && metadata.permissions) {
+      return metadata.permissions.toLowerCase();
+    }
+    if (typeof state.template?.permissions === "string" && state.template.permissions) {
+      return state.template.permissions.toLowerCase();
+    }
+    return "";
+  }
+
+  function templateOwnerMatchesCurrentUser(metadata) {
+    const ownership = templateOwnership(metadata);
+    if (ownership === "local" || ownership === "draft" || ownership === "owned") {
+      return true;
+    }
+    const user = sessionUser();
+    if (!user || !dataManager.isAuthenticated()) {
+      return false;
+    }
+    const ownerId =
+      metadata?.ownerId ?? metadata?.owner_id ?? state.template?.ownerId ?? null;
+    if (ownerId !== null && ownerId !== undefined && user.id !== undefined && user.id !== null) {
+      if (String(ownerId) === String(user.id)) {
+        return true;
+      }
+    }
+    const ownerUsername =
+      metadata?.ownerUsername ||
+      metadata?.owner_username ||
+      state.template?.ownerUsername ||
+      "";
+    if (ownerUsername && user.username) {
+      if (ownerUsername.toLowerCase() === user.username.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function templateAllowsEdits(metadata) {
+    if (!state.template?.id) {
+      return true;
+    }
+    const ownership = templateOwnership(metadata);
+    if (ownership === "shared") {
+      return templatePermissions(metadata) === "edit";
+    }
+    if (ownership === "public") {
+      return false;
+    }
+    if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
+      return true;
+    }
+    if (!ownership || ownership === "remote") {
+      return templateOwnerMatchesCurrentUser(metadata);
+    }
+    return templateOwnerMatchesCurrentUser(metadata);
+  }
+
+  function describeTemplateEditRestriction(metadata) {
+    const ownership = templateOwnership(metadata);
+    const permissions = templatePermissions(metadata);
+    if (ownership === "shared" && permissions !== "edit") {
+      return "This template was shared with you as view-only. Duplicate it to make changes.";
+    }
+    if (ownership === "public") {
+      return "Public templates are view-only. Duplicate it to customize.";
+    }
+    const ownerLabel = resolveTemplateOwnerLabel(metadata);
+    return `Only ${ownerLabel} can save this template.`;
+  }
+
+  function resolveTemplateOwnerLabel(metadata) {
+    const username =
+      metadata?.ownerUsername ||
+      metadata?.owner_username ||
+      state.template?.ownerUsername ||
+      "";
+    return username || "the owner";
+  }
+
   function syncTemplateActions() {
     const hasTemplate = Boolean(state.template);
     if (elements.saveButton) {
       const canWrite = dataManager.hasWriteAccess("templates");
+      const metadata = getTemplateMetadata(state.template?.id);
+      const canEditRecord = templateAllowsEdits(metadata);
       const hasChanges = hasTemplate && hasUnsavedTemplateChanges();
-      const enabled = hasTemplate && hasChanges && canWrite;
+      const enabled = hasTemplate && hasChanges && canWrite && canEditRecord;
       elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasTemplate) {
@@ -1185,6 +1528,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         elements.saveButton.title = required
           ? `Saving templates requires a ${required} tier.`
           : "Your tier cannot save templates.";
+      } else if (!canEditRecord) {
+        elements.saveButton.title = describeTemplateEditRestriction(metadata);
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
@@ -1203,12 +1548,25 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       }
     }
 
+    if (elements.duplicateTemplateButton) {
+      const canDuplicate = hasTemplate;
+      elements.duplicateTemplateButton.classList.toggle("d-none", !canDuplicate);
+      elements.duplicateTemplateButton.disabled = !canDuplicate;
+      elements.duplicateTemplateButton.setAttribute("aria-disabled", canDuplicate ? "false" : "true");
+    }
+
+    updateTemplateMeta();
+
     if (!elements.deleteTemplateButton) {
       return;
     }
+    const metadata = getTemplateMetadata(state.template?.id);
+    const canWrite = dataManager.hasWriteAccess("templates");
+    const canEditRecord = templateAllowsEdits(metadata);
     const hasIdentifier = Boolean(state.template?.id);
-    elements.deleteTemplateButton.classList.toggle("d-none", !hasIdentifier);
-    if (!hasIdentifier) {
+    const showDelete = hasIdentifier && canEditRecord && canWrite;
+    elements.deleteTemplateButton.classList.toggle("d-none", !showDelete);
+    if (!showDelete) {
       elements.deleteTemplateButton.disabled = true;
       elements.deleteTemplateButton.setAttribute("aria-disabled", "true");
       elements.deleteTemplateButton.removeAttribute("title");
@@ -1245,10 +1603,14 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function registerBuiltinContent() {
     listBuiltinTemplates().forEach((template) => {
-      registerTemplateRecord(
-        { id: template.id, title: template.title, path: template.path, source: "builtin" },
-        { syncOption: false }
-      );
+      registerTemplateRecord({
+        id: template.id,
+        title: template.title,
+        path: template.path,
+        source: "builtin",
+        schema: template.schema || template.system || "",
+        ownership: "builtin",
+      });
       verifyBuiltinAsset("templates", template, {
         skipProbe: Boolean(dataManager.baseUrl),
         onMissing: () => removeTemplateRecord(template.id),
@@ -1258,7 +1620,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       });
     });
     listBuiltinSystems().forEach((system) => {
-      registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
+      registerSystemRecord({
+        id: system.id,
+        title: system.title,
+        path: system.path,
+        source: "builtin",
+        ownership: "builtin",
+      });
       verifyBuiltinAsset("systems", system, {
         skipProbe: Boolean(dataManager.baseUrl),
         onMissing: () => removeSystemRecord(system.id),
@@ -1272,8 +1640,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function loadSystemRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("systems");
-      localEntries.forEach(({ id, payload }) => {
-        registerSystemRecord({ id, title: payload?.title || id, source: "local", payload });
+      localEntries.forEach((entry) => {
+        const { id, payload } = entry;
+        if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
+        registerSystemRecord({
+          id,
+          title: payload?.title || id,
+          source: "local",
+          payload,
+          ownership: "local",
+          permissions: "edit",
+        });
       });
     } catch (error) {
       console.warn("Template editor: unable to read local systems", error);
@@ -1284,9 +1664,68 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     try {
       const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
-      const items = remote?.items || [];
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const adopted = dataManager.adoptLegacyRecords(
+        "systems",
+        owned.map((entry) => entry?.id).filter(Boolean)
+      );
+      const session = sessionUser();
+      const sessionId = session?.id;
+      const sessionUsername = typeof session?.username === "string" ? session.username.toLowerCase() : "";
+      adopted.forEach(({ id, payload }) => {
+        if (!id) return;
+        registerSystemRecord({
+          id,
+          title: payload?.title || id,
+          source: "remote",
+          payload,
+          ownership: "owned",
+          permissions: "edit",
+          ownerId: sessionId ?? null,
+          ownerUsername: session?.username || "",
+        });
+      });
+      const items = dataManager.collectListEntries(remote);
       items.forEach((item) => {
-        registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" });
+        if (!item || !item.id) {
+          return;
+        }
+        const rawOwnerId = item.owner_id ?? item.ownerId ?? null;
+        const ownerId = rawOwnerId === undefined ? null : rawOwnerId;
+        const ownerUsername = item.owner_username || item.ownerUsername || "";
+        const permissions = typeof item.permissions === "string" ? item.permissions.toLowerCase() : "";
+        const isPublic = Boolean(item.is_public);
+        const ownerMatches = (() => {
+          if (!session) {
+            return false;
+          }
+          if (ownerId !== null && sessionId !== undefined && sessionId !== null) {
+            if (String(ownerId) === String(sessionId)) {
+              return true;
+            }
+          }
+          if (ownerUsername && sessionUsername) {
+            return ownerUsername.toLowerCase() === sessionUsername;
+          }
+          return false;
+        })();
+        const ownership = permissions
+          ? "shared"
+          : isPublic
+          ? "public"
+          : ownerMatches
+          ? "owned"
+          : "remote";
+        registerSystemRecord({
+          id: item.id,
+          title: item.title || item.id,
+          source: "remote",
+          shareToken: item.shareToken || item.share_token || "",
+          ownership,
+          permissions: permissions || (ownerMatches ? "edit" : ""),
+          ownerId,
+          ownerUsername,
+        });
       });
     } catch (error) {
       console.warn("Template editor: unable to list systems", error);
@@ -1298,9 +1737,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function loadTemplateRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("templates");
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload } = entry;
+        if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
         registerTemplateRecord(
-          { id, title: payload?.title || id, schema: payload?.schema || "", source: "local" },
+          {
+            id,
+            title: payload?.title || id,
+            schema: payload?.schema || "",
+            source: "local",
+            ownership: "local",
+            permissions: "edit",
+          },
           { syncOption: true }
         );
       });
@@ -1313,10 +1764,73 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     try {
       const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
-      const items = remote?.items || [];
-      items.forEach((item) => {
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const adopted = dataManager.adoptLegacyRecords(
+        "templates",
+        owned.map((entry) => entry?.id).filter(Boolean)
+      );
+      const session = sessionUser();
+      const sessionId = session?.id;
+      const sessionUsername = typeof session?.username === "string" ? session.username.toLowerCase() : "";
+      adopted.forEach(({ id, payload }) => {
+        if (!id) return;
         registerTemplateRecord(
-          { id: item.id, title: item.title || item.id, schema: item.schema || "", source: "remote" },
+          {
+            id,
+            title: payload?.title || id,
+            schema: payload?.schema || "",
+            source: "remote",
+            ownership: "owned",
+            permissions: "edit",
+            ownerId: sessionId ?? null,
+            ownerUsername: session?.username || "",
+          },
+          { syncOption: true }
+        );
+      });
+      const items = dataManager.collectListEntries(remote);
+      items.forEach((item) => {
+        if (!item || !item.id) {
+          return;
+        }
+        const rawOwnerId = item.owner_id ?? item.ownerId ?? null;
+        const ownerId = rawOwnerId === undefined ? null : rawOwnerId;
+        const ownerUsername = item.owner_username || item.ownerUsername || "";
+        const permissions = typeof item.permissions === "string" ? item.permissions.toLowerCase() : "";
+        const isPublic = Boolean(item.is_public);
+        const ownerMatches = (() => {
+          if (!session) {
+            return false;
+          }
+          if (ownerId !== null && sessionId !== undefined && sessionId !== null) {
+            if (String(ownerId) === String(sessionId)) {
+              return true;
+            }
+          }
+          if (ownerUsername && sessionUsername) {
+            return ownerUsername.toLowerCase() === sessionUsername;
+          }
+          return false;
+        })();
+        const ownership = permissions
+          ? "shared"
+          : isPublic
+          ? "public"
+          : ownerMatches
+          ? "owned"
+          : "remote";
+        registerTemplateRecord(
+          {
+            id: item.id,
+            title: item.title || item.id,
+            schema: item.schema || "",
+            source: "remote",
+            shareToken: item.shareToken || item.share_token || "",
+            ownership,
+            permissions: permissions || (ownerMatches ? "edit" : ""),
+            ownerId,
+            ownerUsername,
+          },
           { syncOption: true }
         );
       });
@@ -1331,25 +1845,35 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!pendingSharedTemplate) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedTemplate();
-    } else if (status) {
-      status.show("Sign in to load the shared template.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedTemplate();
   }
 
   async function loadPendingSharedTemplate() {
     if (!pendingSharedTemplate) {
       return;
     }
-    const targetId = pendingSharedTemplate;
+    const { id: targetId, shareToken = "" } = pendingSharedTemplate;
     pendingSharedTemplate = null;
-    registerTemplateRecord({ id: targetId, title: targetId, schema: "", source: "remote" }, { syncOption: true });
+    registerTemplateRecord(
+      {
+        id: targetId,
+        title: targetId,
+        schema: "",
+        source: "remote",
+        shareToken,
+        ownership: "shared",
+        permissions: "view",
+      },
+      { syncOption: true }
+    );
     if (elements.templateSelect) {
       elements.templateSelect.value = targetId;
     }
     try {
-      const result = await dataManager.get("templates", targetId, { preferLocal: true });
+      const result = await dataManager.get("templates", targetId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       const payload = result?.payload;
       if (!payload) {
         throw new Error("Template payload missing");
@@ -1357,10 +1881,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       const label = payload.title || templateCatalog.get(targetId)?.title || targetId;
       const schema = payload.schema || payload.system || templateCatalog.get(targetId)?.schema || "";
       registerTemplateRecord(
-        { id: payload.id || targetId, title: label, schema, source: "remote" },
+        { id: payload.id || targetId, title: label, schema, source: "remote", shareToken },
         { syncOption: true },
       );
-      applyTemplateData(payload, { origin: "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+      applyTemplateData(payload, {
+        origin: "remote",
+        emitStatus: true,
+        statusMessage: `Loaded ${label}`,
+        shareToken,
+      });
     } catch (error) {
       console.error("Template editor: unable to load shared template", error);
       if (status) {
@@ -1387,9 +1916,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
     if (type && COMPONENT_DEFINITIONS[type]) {
       const component = createComponent(type);
+      const previousSelectedId = state.selectedId || null;
       insertComponent(parentId, zoneKey, index, component);
       state.selectedId = component.uid;
-      undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+      undoStack.push({
+        type: "add",
+        templateId: state.template?.id || "",
+        component: cloneComponentTree(component),
+        parentId,
+        zoneKey,
+        index,
+        previousSelectedId,
+      });
       status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, { type: "success", timeout: 1800 });
       event.item.remove();
       renderCanvas();
@@ -1405,9 +1943,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         renderCanvas();
         return;
       }
-      const moved = moveComponent(componentId, parentId, zoneKey, index);
-      if (moved) {
-        undoStack.push({ type: "move", componentId, parentId, zoneKey, index });
+      const moveResult = moveComponent(componentId, parentId, zoneKey, index);
+      if (moveResult.success) {
+        undoStack.push({
+          type: "move",
+          templateId: state.template?.id || "",
+          componentId,
+          from: moveResult.from,
+          to: moveResult.to,
+        });
         status.show("Moved component", { timeout: 1500 });
       }
     }
@@ -1442,7 +1986,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const [item] = collection.splice(oldIndex, 1);
     collection.splice(newIndex, 0, item);
-    undoStack.push({ type: "reorder", componentId, parentId, zoneKey, oldIndex, newIndex });
+    const finalPosition = findComponent(componentId);
+    undoStack.push({
+      type: "reorder",
+      templateId: state.template?.id || "",
+      componentId,
+      parentId,
+      zoneKey,
+      from: { index: oldIndex },
+      to: { index: finalPosition ? finalPosition.index : newIndex },
+    });
     renderCanvas();
     renderInspector();
   }
@@ -1456,13 +2009,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function moveComponent(componentId, targetParentId, zoneKey, index) {
     const found = findComponent(componentId);
-    if (!found) return false;
+    if (!found) return { success: false };
     const targetCollection = getCollection(targetParentId, zoneKey);
-    if (!targetCollection) return false;
+    if (!targetCollection) return { success: false };
+    const fromParentId = found.parent?.uid || "";
+    const fromZoneKey = found.zoneKey;
+    const fromIndex = found.index;
     const [item] = found.collection.splice(found.index, 1);
-    const safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    let safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    if (found.collection === targetCollection && fromIndex < safeIndex) {
+      safeIndex -= 1;
+    }
     targetCollection.splice(safeIndex, 0, item);
-    return true;
+    return {
+      success: true,
+      from: { parentId: fromParentId, zoneKey: fromZoneKey, index: fromIndex },
+      to: { parentId: targetParentId, zoneKey, index: safeIndex },
+    };
   }
 
   function getCollection(parentId, zoneKey) {
@@ -1577,6 +2140,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (component.states && Array.isArray(component.states)) {
       component.states = component.states.slice();
     }
+    if (typeof component.sourceBinding !== "string") {
+      component.sourceBinding = component.sourceBinding != null ? String(component.sourceBinding) : "";
+    }
+    component.sourceBinding = component.sourceBinding.trim();
     if (typeof component.segmentBinding !== "string") {
       component.segmentBinding = component.segmentBinding != null ? String(component.segmentBinding) : "";
     }
@@ -1695,6 +2262,97 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       default:
         return document.createTextNode("Unsupported component");
     }
+  }
+
+  function resolvePreviewBindingValue(binding) {
+    const normalized = normalizeBindingValue(binding);
+    if (!normalized) {
+      return undefined;
+    }
+    const contexts = [];
+
+    function registerContext(value, { prefixes = [], allowDirect = false } = {}) {
+      if (!value || typeof value !== "object") {
+        return;
+      }
+      const normalizedPrefixes = Array.isArray(prefixes)
+        ? prefixes
+            .map((prefix) => (typeof prefix === "string" ? prefix.trim() : ""))
+            .filter((prefix) => prefix.length > 0)
+        : [];
+      contexts.push({ value, prefixes: normalizedPrefixes, allowDirect: Boolean(allowDirect) });
+    }
+
+    const template = state.template && typeof state.template === "object" ? state.template : null;
+    if (template) {
+      registerContext(template, { allowDirect: true, prefixes: ["template"] });
+      registerContext(template.metadata, { prefixes: ["metadata"] });
+      registerContext(template.data, { prefixes: ["data"], allowDirect: true });
+      registerContext(template.sources, { prefixes: ["sources"], allowDirect: true });
+    }
+
+    const systemPreviewData =
+      state.systemPreviewData && typeof state.systemPreviewData === "object" ? state.systemPreviewData : null;
+    if (systemPreviewData) {
+      registerContext(systemPreviewData, {
+        allowDirect: true,
+        prefixes: ["system", "data", "preview", "sources"],
+      });
+    }
+
+    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
+    if (definition) {
+      registerContext(definition, { allowDirect: true, prefixes: ["system"] });
+      registerContext(definition.metadata, { prefixes: ["metadata"] });
+      registerContext(definition.definition, { prefixes: ["definition"], allowDirect: true });
+      registerContext(definition.schema, { prefixes: ["schema"] });
+      registerContext(definition.data, { prefixes: ["data"], allowDirect: true });
+      registerContext(definition.sources, { prefixes: ["sources"], allowDirect: true });
+      registerContext(definition.preview, { prefixes: ["preview"], allowDirect: true });
+      registerContext(definition.samples, { prefixes: ["samples"], allowDirect: true });
+      registerContext(definition.sample, { prefixes: ["sample"], allowDirect: true });
+      registerContext(definition.values, { prefixes: ["values"], allowDirect: true });
+      registerContext(definition.lists, { prefixes: ["lists"], allowDirect: true });
+      registerContext(definition.collections, { prefixes: ["collections"], allowDirect: true });
+    }
+
+    return resolveBindingFromContexts(normalized, contexts);
+  }
+
+  function resolveSelectPreviewOptions(component) {
+    const binding = normalizeBindingValue(component?.sourceBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizeOptionEntries(bound);
+  }
+
+  function resolveSelectGroupPreviewOptions(component) {
+    const binding = normalizeBindingValue(component?.sourceBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizeOptionEntries(bound);
+  }
+
+  function resolveTogglePreviewStates(component) {
+    const binding = normalizeBindingValue(component?.statesBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizeOptionEntries(bound)
+      .map((entry) => entry.label || entry.value)
+      .filter((value) => value != null && value !== "");
+  }
+
+  function createPreviewEmptyState(message = "Select a source to preview values.") {
+    const placeholder = document.createElement("div");
+    placeholder.className = "text-body-secondary small fst-italic";
+    placeholder.textContent = message;
+    return placeholder;
   }
 
   function ensureContainerZones(component) {
@@ -1817,6 +2475,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
 
     let control;
+    const previewOptions = resolveSelectPreviewOptions(component);
     switch (component.variant) {
       case "number": {
         control = document.createElement("input");
@@ -1828,12 +2487,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "select": {
         control = document.createElement("select");
         control.className = "form-select";
-        const options = Array.isArray(component.options) && component.options.length
-          ? component.options
-          : ["Option A", "Option B"];
-        options.forEach((option) => {
+        previewOptions.forEach((option) => {
           const opt = document.createElement("option");
-          opt.textContent = option;
+          opt.value = option.value;
+          opt.textContent = option.label || option.value;
           control.appendChild(opt);
         });
         break;
@@ -1846,6 +2503,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         control = renderChoiceGroup(component, "checkbox");
         break;
       }
+      case "textarea": {
+        control = document.createElement("textarea");
+        control.className = "form-control";
+        control.rows = clampInteger(component.rows ?? 3, 2, 12);
+        control.placeholder = component.placeholder || "";
+        break;
+      }
       default: {
         control = document.createElement("input");
         control.type = "text";
@@ -1854,10 +2518,17 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         break;
       }
     }
-    if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement) {
+    if (
+      control instanceof HTMLInputElement ||
+      control instanceof HTMLSelectElement ||
+      control instanceof HTMLTextAreaElement
+    ) {
       control.disabled = !!component.readOnly;
     }
     container.appendChild(control);
+    if ((component.variant || "text") === "select" && !previewOptions.length) {
+      container.appendChild(createPreviewEmptyState());
+    }
     return container;
   }
 
@@ -2204,15 +2875,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       wrapper.appendChild(heading);
     }
 
-    const sampleOptions = ["Option A", "Option B", "Option C"];
+    const options = resolveSelectGroupPreviewOptions(component);
+    if (!options.length) {
+      wrapper.appendChild(createPreviewEmptyState());
+      return wrapper;
+    }
     let control;
     if (component.variant === "tags") {
       control = document.createElement("div");
       control.className = "template-select-tags d-flex flex-wrap gap-2";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const tag = document.createElement("span");
         tag.className = "template-select-tag";
-        const slug = option.trim().toLowerCase().replace(/\s+/g, "-");
+        const label = option.label || option.value || "";
+        const slug = label.trim().toLowerCase().replace(/\s+/g, "-");
         tag.textContent = `#${slug || "tag"}`;
         if (component.multiple !== false && index < 2) {
           tag.classList.add("is-active");
@@ -2224,7 +2900,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     } else if (component.variant === "buttons") {
       control = document.createElement("div");
       control.className = "btn-group";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const button = document.createElement("button");
         button.type = "button";
         const isActive = component.multiple ? index < 2 : index === 0;
@@ -2232,13 +2908,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (component.readOnly) {
           button.classList.add("disabled");
         }
-        button.textContent = option;
+        button.textContent = option.label || option.value;
         control.appendChild(button);
       });
     } else {
       control = document.createElement("div");
       control.className = "d-flex flex-wrap gap-2";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const button = document.createElement("button");
         button.type = "button";
         const isActive = component.multiple ? index < 2 : index === 0;
@@ -2246,7 +2922,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (component.readOnly) {
           button.classList.add("disabled");
         }
-        button.textContent = option;
+        button.textContent = option.label || option.value;
         control.appendChild(button);
       });
     }
@@ -2266,12 +2942,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       wrapper.appendChild(heading);
     }
 
-    const states = Array.isArray(component.states) && component.states.length
-      ? component.states
-      : ["State 1", "State 2"];
+    const states = resolveTogglePreviewStates(component);
     const shape = component.shape || "circle";
     const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
-    let activeIndex = fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
+    const hasStates = states.length > 0;
+    let activeIndex = hasStates && fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
     if (activeIndex < 0) {
       activeIndex = clampInteger(component.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
     }
@@ -2288,8 +2963,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
     const opacity = 0.25 + progress * 0.55;
     preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
-    preview.setAttribute("aria-label", states[activeIndex] || "Toggle state");
+    if (hasStates) {
+      preview.setAttribute("aria-label", states[Math.min(activeIndex, states.length - 1)] || "Toggle state");
+    } else {
+      preview.setAttribute("aria-label", "Toggle preview");
+    }
     wrapper.appendChild(preview);
+    if (!hasStates) {
+      wrapper.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
+    }
 
     return wrapper;
   }
@@ -2309,50 +2991,253 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     expandPane(elements.rightPane, elements.rightPaneToggle);
   }
 
-  function clearCanvas() {
+  function clearCanvas({ skipHistory = false, silent = false, suppressRender = false } = {}) {
     if (!state.components.length) {
       status.show("Canvas is already empty", { timeout: 1200 });
       return;
     }
+    const previousComponents = cloneComponentCollection(state.components);
+    const previousTabs = snapshotContainerTabs();
+    const previousSelectedId = state.selectedId || null;
     state.components = [];
     state.selectedId = null;
     containerActiveTabs.clear();
-    undoStack.push({ type: "clear" });
-    status.show("Cleared template canvas", { type: "info", timeout: 1500 });
-    renderCanvas();
-    renderInspector();
+    if (!skipHistory) {
+      undoStack.push({
+        type: "clear",
+        templateId: state.template?.id || "",
+        components: previousComponents,
+        containerTabs: previousTabs,
+        previousSelectedId,
+      });
+    }
+    if (!silent) {
+      status.show("Cleared template canvas", { type: "info", timeout: 1500 });
+    }
+    if (!suppressRender) {
+      renderCanvas();
+      renderInspector();
+    }
   }
 
-  function removeComponent(uid) {
+  function removeComponent(uid, { skipHistory = false, silent = false, suppressRender = false } = {}) {
     const found = findComponent(uid);
     if (!found) return;
+    const previousSelectedId = state.selectedId || null;
+    const parentId = found.parent?.uid || "";
+    const zoneKey = found.zoneKey;
+    const index = found.index;
     const [removed] = found.collection.splice(found.index, 1);
     pruneContainerState(removed);
-    undoStack.push({ type: "remove", componentId: removed.uid, parentId: found.parent?.uid || "", zoneKey: found.zoneKey });
-    status.show("Removed component", { type: "info", timeout: 1500 });
-    if (state.selectedId === uid) {
-      state.selectedId = found.parent?.uid || null;
+    if (!skipHistory) {
+      undoStack.push({
+        type: "remove",
+        templateId: state.template?.id || "",
+        componentId: removed.uid,
+        component: cloneComponentTree(removed),
+        parentId,
+        zoneKey,
+        index,
+        previousSelectedId,
+      });
     }
-    renderCanvas();
-    renderInspector();
+    if (!silent) {
+      status.show("Removed component", { type: "info", timeout: 1500 });
+    }
+    if (state.selectedId === uid) {
+      state.selectedId = parentId || null;
+    }
+    if (!suppressRender) {
+      renderCanvas();
+      renderInspector();
+    }
+  }
+
+  function ensureTemplateContext(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
+    }
+    const targetId = entry.templateId ?? "";
+    const currentId = state.template?.id || "";
+    if (targetId && targetId !== currentId) {
+      return false;
+    }
+    return true;
+  }
+
+  function applyTemplateUndo(entry) {
+    if (!ensureTemplateContext(entry)) {
+      return { message: "Undo unavailable for this template", options: { type: "warning", timeout: 2200 } };
+    }
+    switch (entry.type) {
+      case "add": {
+        const componentId = entry.component?.uid;
+        if (!componentId) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        removeComponent(componentId, { skipHistory: true, silent: true, suppressRender: true });
+        state.selectedId = entry.previousSelectedId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Removed added component", options: { type: "info", timeout: 1600 } };
+      }
+      case "move": {
+        if (!entry.componentId || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.from.parentId, entry.from.zoneKey, entry.from.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Moved component back", options: { type: "info", timeout: 1500 } };
+      }
+      case "reorder": {
+        if (!entry.componentId || !entry.parentId || !entry.zoneKey || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.parentId, entry.zoneKey, entry.from.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored component order", options: { type: "info", timeout: 1500 } };
+      }
+      case "remove": {
+        if (!entry.component || entry.componentId == null) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        const componentClone = cloneComponentTree(entry.component);
+        insertComponent(entry.parentId, entry.zoneKey, entry.index, componentClone);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored removed component", options: { type: "info", timeout: 1600 } };
+      }
+      case "clear": {
+        state.components = cloneComponentCollection(entry.components);
+        restoreContainerTabsSnapshot(entry.containerTabs);
+        state.selectedId = entry.previousSelectedId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored template canvas", options: { type: "info", timeout: 1600 } };
+      }
+      case "save": {
+        return { message: "Saved template state noted", options: { type: "info", timeout: 1500 } };
+      }
+      default:
+        return { message: "Nothing to undo", options: { timeout: 1200 } };
+    }
+  }
+
+  function applyTemplateRedo(entry) {
+    if (!ensureTemplateContext(entry)) {
+      return { message: "Redo unavailable for this template", options: { type: "warning", timeout: 2200 } };
+    }
+    switch (entry.type) {
+      case "add": {
+        if (!entry.component) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        const componentClone = cloneComponentTree(entry.component);
+        insertComponent(entry.parentId, entry.zoneKey, entry.index, componentClone);
+        state.selectedId = componentClone.uid;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component addition", options: { type: "info", timeout: 1600 } };
+      }
+      case "move": {
+        if (!entry.componentId || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.to.parentId, entry.to.zoneKey, entry.to.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component move", options: { type: "info", timeout: 1500 } };
+      }
+      case "reorder": {
+        if (!entry.componentId || !entry.parentId || !entry.zoneKey || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.parentId, entry.zoneKey, entry.to.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied ordering", options: { type: "info", timeout: 1500 } };
+      }
+      case "remove": {
+        if (!entry.componentId) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        removeComponent(entry.componentId, {
+          skipHistory: true,
+          silent: true,
+          suppressRender: true,
+        });
+        state.selectedId = entry.parentId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component removal", options: { type: "info", timeout: 1600 } };
+      }
+      case "clear": {
+        clearCanvas({ skipHistory: true, silent: true, suppressRender: true });
+        renderCanvas();
+        renderInspector();
+        return { message: "Cleared template canvas", options: { type: "info", timeout: 1500 } };
+      }
+      case "save": {
+        return { message: "Save action noted", options: { type: "info", timeout: 1500 } };
+      }
+      default:
+        return { message: "Nothing to redo", options: { timeout: 1200 } };
+    }
+  }
+
+  function handleUndoEntry(entry) {
+    return applyTemplateUndo(entry);
+  }
+
+  function handleRedoEntry(entry) {
+    return applyTemplateRedo(entry);
   }
 
   function applyTemplateData(
     data = {},
-    { origin = "draft", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+    {
+      origin = "draft",
+      emitStatus = false,
+      statusMessage = "",
+      markClean = origin !== "draft",
+      shareToken = "",
+    } = {}
   ) {
+    const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const template = createBlankTemplate({
       id: data.id || "",
       title: data.title || "",
       version: data.version || data.metadata?.version || "0.1",
       schema: data.schema || data.system || "",
       origin,
+      shareToken: effectiveShareToken,
     });
     componentCounter = 0;
     const components = Array.isArray(data.components)
       ? data.components.map((component) => hydrateComponent(component)).filter(Boolean)
       : [];
     state.template = template;
+    state.template.shareToken = effectiveShareToken;
+    const metadata = template.id ? templateCatalog.get(template.id) || null : null;
+    if (metadata) {
+      const ownership = templateOwnership(metadata) || template.origin || "";
+      state.template.ownership = ownership;
+      state.template.permissions = metadata.permissions || state.template.permissions || "";
+      state.template.ownerId = metadata.ownerId ?? metadata.owner_id ?? null;
+      state.template.ownerUsername = metadata.ownerUsername || metadata.owner_username || "";
+    } else {
+      state.template.ownership = template.origin || state.template.ownership || "";
+      state.template.permissions = state.template.permissions || "";
+      state.template.ownerId = null;
+      state.template.ownerUsername = "";
+    }
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
@@ -2368,7 +3253,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
   }
 
-  function startNewTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
+  function startNewTemplate({
+    id = "",
+    title = "",
+    version = "0.1",
+    schema = "",
+    origin = "draft",
+    components = [],
+    markClean = true,
+    statusMessage = "",
+  } = {}) {
     const trimmedId = (id || "").trim();
     const trimmedTitle = (title || "").trim();
     const trimmedSchema = (schema || "").trim();
@@ -2376,14 +3270,28 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       status.show("Provide an ID, title, and system for the template.", { type: "warning", timeout: 2200 });
       return;
     }
+    const componentClones = Array.isArray(components) ? cloneComponentCollection(components) : [];
     registerTemplateRecord(
-      { id: trimmedId, title: trimmedTitle, schema: trimmedSchema, source: origin },
+      {
+        id: trimmedId,
+        title: trimmedTitle,
+        schema: trimmedSchema,
+        source: origin,
+        ownership: origin,
+        permissions: "edit",
+      },
       { syncOption: true }
     );
     applyTemplateData(
-      { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: [] },
-      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}`, markClean: true }
+      { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: componentClones },
+      {
+        origin,
+        emitStatus: true,
+        statusMessage: statusMessage || `Started ${trimmedTitle || trimmedId}`,
+        markClean,
+      }
     );
+    templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
   }
 
   function renderInspector() {
@@ -2439,15 +3347,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       form.appendChild(componentSection);
     }
 
-    const dataControls = [];
-    if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
-      dataControls.push(
-        createBindingFormulaInput(component, {
-          supportsBinding: definition.supportsBinding !== false,
-          supportsFormula: definition.supportsFormula !== false,
-        })
-      );
-    }
+    const dataControls = createDataControls(component, definition);
     const dataSection = createSection("Data", dataControls);
     if (dataSection) {
       form.appendChild(dataSection);
@@ -2480,6 +3380,92 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     elements.inspector.appendChild(form);
     refreshTooltips(elements.inspector);
     restoreInspectorFocus(focusSnapshot);
+  }
+
+  function createDataControls(component, definition = {}) {
+    const supportsBinding = definition.supportsBinding !== false;
+    const supportsFormula = definition.supportsFormula !== false;
+    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
+      return [];
+    }
+    if (component.type === "input" && (component.variant || "text") === "select") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@data.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (component.type === "select-group") {
+      const controls = [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+      ];
+      controls.push(
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
+        })
+      );
+      return controls;
+    }
+    if (component.type === "toggle") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.states",
+          bindingKey: "statesBinding",
+          formulaKey: null,
+          allowedFieldCategories: ["array"],
+          supportsFormula: false,
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.statesBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (!supportsBinding && !supportsFormula) {
+      return [];
+    }
+    return [
+      createBindingFormulaInput(component, {
+        supportsBinding,
+        supportsFormula,
+      }),
+    ];
   }
 
   function captureInspectorFocus() {
@@ -3244,6 +4230,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const controls = [];
     const options = [
       { value: "text", icon: "tabler:letter-case", label: "Text" },
+      { value: "textarea", icon: "tabler:notes", label: "Text area" },
       { value: "number", icon: "tabler:123", label: "Number" },
       { value: "select", icon: "tabler:list-details", label: "Select" },
       { value: "radio", icon: "tabler:circle-dot", label: "Radio" },
@@ -3260,6 +4247,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
             component.uid,
             (draft) => {
               draft.variant = value;
+              if (value === "textarea" && !Number.isFinite(Number(draft.rows))) {
+                draft.rows = 3;
+              }
               if (
                 (value === "select" || value === "radio" || value === "checkbox") &&
                 (!Array.isArray(draft.options) || !draft.options.length)
@@ -3280,6 +4270,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }, { rerenderCanvas: true });
       }, { placeholder: "Shown inside the field" })
     );
+    if ((component.variant || "text") === "textarea") {
+      controls.push(
+        createNumberInput(component, "Rows", component.rows ?? 3, (value) => {
+          const next = clampInteger(value ?? 3, 2, 12);
+          updateComponent(component.uid, (draft) => {
+            draft.rows = next;
+          }, { rerenderCanvas: true });
+        }, { min: 2, max: 12 })
+      );
+    }
     return controls;
   }
 
@@ -3502,7 +4502,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         (value) => {
           updateComponent(component.uid, (draft) => {
             draft.multiple = value === "multi";
-          }, { rerenderCanvas: true });
+          }, { rerenderCanvas: true, rerenderInspector: true });
         }
       )
     );
@@ -3529,26 +4529,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }
       )
     );
-    controls.push(...createToggleStateEditors(component));
     return controls;
-  }
-
-  function createToggleStateEditors(component) {
-    return [
-      createBindingFormulaInput(component, {
-        labelText: "States source",
-        placeholder: "@metadata.states",
-        bindingKey: "statesBinding",
-        formulaKey: null,
-        allowedFieldCategories: ["array"],
-        supportsFormula: false,
-        afterCommit: ({ draft, result }) => {
-          if (!result || result.type === "empty") {
-            draft.statesBinding = "";
-          }
-        },
-      }),
-    ];
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -3643,6 +4624,22 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         merged.value = merged.states[0];
       }
     }
+    if (merged.type === "input") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
+      if (merged.variant === "textarea") {
+        const numericRows = Number(merged.rows);
+        merged.rows = Number.isFinite(numericRows) ? clampInteger(numericRows, 2, 12) : base.rows ?? 3;
+      }
+    }
+    if (merged.type === "select-group") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
+    }
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
       Object.keys(zones).forEach((key) => {
@@ -3663,20 +4660,34 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       .replace(/[^a-z0-9_-]/g, "-");
   }
 
-  function createBlankTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
+  function createBlankTemplate({
+    id = "",
+    title = "",
+    version = "0.1",
+    schema = "",
+    origin = "draft",
+    shareToken = "",
+  } = {}) {
     return {
       id: id || "",
       title: title || "",
       version: version || "0.1",
       schema: schema || "",
       origin,
+      shareToken: shareToken || "",
+      ownership: origin || "",
+      permissions: "",
+      ownerId: null,
+      ownerUsername: "",
     };
   }
 
-  function ensureTemplateOption(id, label) {
+  function ensureTemplateOption(id) {
     if (!elements.templateSelect || !id) {
       return;
     }
+    const metadata = templateCatalog.get(id) || { id, title: id };
+    const label = formatTemplateOptionLabel(metadata) || metadata.title || id;
     const escaped = escapeCss(id);
     let option = escaped ? elements.templateSelect.querySelector(`option[value="${escaped}"]`) : null;
     if (!option) {
@@ -3684,7 +4695,46 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       option.value = id;
       elements.templateSelect.appendChild(option);
     }
-    option.textContent = label || id;
+    option.textContent = label;
+  }
+
+  function formatTemplateOptionLabel(metadata = {}) {
+    const templateTitle = metadata.title || metadata.id || "";
+    const schemaId = metadata.schema || "";
+    const systemLabel = resolveSystemLabel(schemaId);
+    if (templateTitle && systemLabel) {
+      return `${templateTitle} (${systemLabel})`;
+    }
+    return templateTitle || schemaId || metadata.id || "";
+  }
+
+  function resolveSystemLabel(schemaId) {
+    if (!schemaId) {
+      return "";
+    }
+    const metadata = systemCatalog.get(schemaId) || {};
+    return metadata.title || schemaId;
+  }
+
+  function refreshTemplateOptionsForSystem(schemaId) {
+    templateCatalog.forEach((metadata, templateId) => {
+      if (!schemaId || (metadata?.schema || "") === schemaId) {
+        ensureTemplateOption(templateId);
+      }
+    });
+  }
+
+  function updateTemplateMeta() {
+    if (!elements.templateMeta) {
+      return;
+    }
+    if (!hasActiveTemplate()) {
+      elements.templateMeta.textContent = "No template selected";
+      return;
+    }
+    const templateId = state.template?.id || "—";
+    const version = state.template?.version || "—";
+    elements.templateMeta.textContent = `ID: ${templateId || "—"} • Version: ${version || "—"}`;
   }
 
   function ensureTemplateSelectValue() {
@@ -3723,6 +4773,37 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return `tpl.${slug || "template"}.${rand}`;
   }
 
+  function generateDuplicateTemplateId(baseId) {
+    const raw = (baseId || "").trim();
+    if (!raw) {
+      return generateTemplateId("template");
+    }
+    const normalized = raw.replace(/(\.copy\d*)$/i, "");
+    const root = normalized || raw;
+    let candidate = `${root}.copy`;
+    let counter = 2;
+    while (candidate && templateCatalog.has(candidate)) {
+      candidate = `${root}.copy${counter}`;
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function generateDuplicateTemplateTitle(baseTitle) {
+    const raw = (baseTitle || "").trim();
+    const base = raw.replace(/\(Copy(?: \d+)?\)$/i, "").trim() || raw || "Template";
+    const existing = new Set(
+      Array.from(templateCatalog.values()).map((entry) => (entry?.title || "").trim()).filter(Boolean)
+    );
+    let candidate = `${base} (Copy)`;
+    let counter = 2;
+    while (existing.has(candidate)) {
+      candidate = `${base} (Copy ${counter})`;
+      counter += 1;
+    }
+    return candidate;
+  }
+
   function resolveSharedRecordParam(expectedBucket) {
     try {
       const params = new URLSearchParams(window.location.search || "");
@@ -3735,7 +4816,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("Template editor: unable to parse shared record", error);
       return null;
