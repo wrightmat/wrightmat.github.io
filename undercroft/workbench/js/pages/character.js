@@ -2033,6 +2033,10 @@ import {
     if (normalizedBinding) {
       clone.binding = normalizedBinding;
     }
+    if (typeof clone.roller !== "string") {
+      clone.roller = "";
+    }
+    clone.roller = clone.roller.trim();
     if (!clone.uid) {
       componentCounter += 1;
       clone.uid = `cmp-${componentCounter}`;
@@ -2160,10 +2164,40 @@ import {
 
   function resolveComponentValue(component, fallback = undefined) {
     const componentUid = component?.uid || null;
+    const manualRolls = new Set();
+    if (typeof component?.roller === "string") {
+      const trimmedRoller = component.roller.trim();
+      if (trimmedRoller) {
+        manualRolls.add(trimmedRoller);
+      }
+    }
+    const applyRollDirectives = (extra) => {
+      if (!componentUid) {
+        return;
+      }
+      const combined = new Set(manualRolls);
+      if (extra) {
+        const values = extra instanceof Set ? Array.from(extra) : Array.isArray(extra) ? extra : [extra];
+        values.forEach((value) => {
+          if (typeof value === "string") {
+            const trimmed = value.trim();
+            if (trimmed) {
+              combined.add(trimmed);
+            }
+          }
+        });
+      }
+      if (combined.size) {
+        componentRollDirectives.set(componentUid, Array.from(combined));
+      } else {
+        componentRollDirectives.delete(componentUid);
+      }
+    };
     if (componentHasFormula(component)) {
       const collected = new Set();
       try {
-        const result = evaluateFormula(component.formula, state.draft?.data || {}, {
+        const dataContext = state.draft?.data || {};
+        const result = evaluateFormula(component.formula, dataContext, {
           onRoll: (notation) => {
             if (typeof notation === "string") {
               const trimmedNotation = notation.trim();
@@ -2172,23 +2206,16 @@ import {
               }
             }
           },
+          rollContext: dataContext,
         });
-        if (componentUid) {
-          if (collected.size) {
-            componentRollDirectives.set(componentUid, Array.from(collected));
-          } else {
-            componentRollDirectives.delete(componentUid);
-          }
-        }
+        applyRollDirectives(collected);
         return result;
       } catch (error) {
-        if (componentUid) {
-          componentRollDirectives.delete(componentUid);
-        }
+        applyRollDirectives();
         console.warn("Character editor: unable to evaluate formula", error);
       }
-    } else if (componentUid) {
-      componentRollDirectives.delete(componentUid);
+    } else {
+      applyRollDirectives();
     }
     const bound = getBindingValue(component?.binding);
     if (bound !== undefined) {

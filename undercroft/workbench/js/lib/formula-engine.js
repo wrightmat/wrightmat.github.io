@@ -1,3 +1,5 @@
+import { rollDiceExpression } from "./dice.js";
+
 const SAFE_PATTERN = /^[0-9+\-*/().,@\s<>=!?&|%:'"_\[\]A-Za-z]+$/;
 
 const BASE_FUNCTIONS = {
@@ -65,16 +67,30 @@ export function evaluateFormula(formula, context = {}, options = {}) {
     return `__get("${path}")`;
   });
 
-  const { functions = {}, onRoll } = typeof options === "object" && options !== null ? options : {};
+  const { functions = {}, onRoll, rollContext, random } =
+    typeof options === "object" && options !== null ? options : {};
   const runtimeFunctions = { ...BASE_FUNCTIONS, ...functions };
   runtimeFunctions.roller = (notation, fallback = 0) => {
-    if (typeof onRoll === "function" && typeof notation === "string") {
-      const trimmedNotation = notation.trim();
-      if (trimmedNotation) {
-        onRoll(trimmedNotation);
-      }
+    if (typeof notation !== "string") {
+      return fallback ?? 0;
     }
-    return fallback ?? 0;
+    const trimmedNotation = notation.trim();
+    if (!trimmedNotation) {
+      return fallback ?? 0;
+    }
+    if (typeof onRoll === "function") {
+      onRoll(trimmedNotation);
+    }
+    try {
+      const roll = rollDiceExpression(trimmedNotation, {
+        context: rollContext !== undefined ? rollContext : context,
+        random,
+      });
+      return Number.isFinite(roll.total) ? roll.total : fallback ?? 0;
+    } catch (error) {
+      console.warn("Formula roller(): unable to evaluate dice expression", error);
+      return fallback ?? 0;
+    }
   };
 
   const functionNames = Object.keys(runtimeFunctions);
