@@ -33,6 +33,7 @@ from .router import Request, Response, Router
 from .shares import (
     create_share_link,
     get_share_link,
+    list_shareable_users,
     list_shares,
     revoke_share,
     revoke_share_link,
@@ -266,6 +267,29 @@ def register_routes():
         return json_response({"shares": shares, "link": link})
 
     router.add("GET", r"^/shares/(?P<bucket>[^/]+)/(?P<content_id>[^/]+)$", handle_list_shares)
+
+    # GET /shares/eligible
+    def handle_share_eligible(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        query = {}
+        if "?" in request.handler.path:
+            from urllib.parse import parse_qs
+
+            query_string = request.handler.path.split("?", 1)[1]
+            query = parse_qs(query_string)
+        content_type = query.get("content_type", [""])[0]
+        content_id = query.get("content_id", [""])[0]
+        if not content_type or not content_id:
+            raise AuthError("Missing fields")
+        bucket_name = bucket_from_content_type(content_type)
+        if user.tier != "admin" and not is_owner(request.state, bucket_name, f"{content_id}.json", user):
+            raise AuthError("Only owner or admin can manage shares")
+        users = list_shareable_users(request.state, content_type)
+        return json_response({"users": users})
+
+    router.add("GET", r"^/shares/eligible$", handle_share_eligible)
 
     # POST /auth/register
     def handle_register(request: Request) -> Response:

@@ -588,6 +588,17 @@ export class DataManager {
     return result;
   }
 
+  async listEligibleShareUsers({ contentType, contentId } = {}) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    const params = new URLSearchParams({
+      content_type: contentType,
+      content_id: contentId,
+    });
+    return this._request(`/shares/eligible?${params.toString()}`, { method: "GET", auth: true });
+  }
+
   async createShareLink({ contentType, contentId, permissions = "view" } = {}) {
     if (!contentType || !contentId) {
       throw new Error("contentType and contentId are required");
