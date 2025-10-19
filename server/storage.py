@@ -147,6 +147,22 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id TEXT NOT NULL,
+            entry_type TEXT NOT NULL,
+            author_id INTEGER,
+            author_name TEXT,
+            message TEXT,
+            payload TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+            FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
+        )
+        """
+    )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
@@ -161,6 +177,12 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
     )
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_group_members_content ON group_members(content_type, content_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_logs_group ON group_logs(group_id, id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_logs_created ON group_logs(group_id, created_at)"
     )
     # Ensure legacy databases pick up the last_accessed_at columns
     _ensure_column(conn, "templates", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")

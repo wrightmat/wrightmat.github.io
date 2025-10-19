@@ -382,6 +382,48 @@ def register_routes():
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/members$", handle_update_group_members)
 
+    def handle_character_groups(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        character_id = params["character_id"]
+        payload = group_store.list_character_groups(request.state, user, character_id)
+        return json_response(payload)
+
+    router.add("GET", r"^/groups/character/(?P<character_id>[^/]+)$", handle_character_groups)
+
+    def handle_group_log(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        from urllib.parse import parse_qs, urlsplit
+
+        query = parse_qs(urlsplit(request.handler.path).query)
+        limit = query.get("limit", [None])[0]
+        payload = group_store.list_group_log(request.state, group_id, user, limit=limit)
+        return json_response(payload)
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/log$", handle_group_log)
+
+    def handle_group_log_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        entry_type = data.get("type") or data.get("entry_type") or "message"
+        message = data.get("message") or ""
+        payload = data.get("payload")
+        entry = group_store.create_group_log_entry(
+            request.state,
+            group_id,
+            user,
+            entry_type=entry_type,
+            message=message,
+            payload=payload,
+        )
+        return json_response(entry, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/log$", handle_group_log_post)
+
     def handle_group_share_link(request: Request) -> Response:
         user = require_user(request)
         params = getattr(request, "params")
@@ -412,6 +454,45 @@ def register_routes():
         r"^/groups/(?P<group_id>[^/]+)/share-link/revoke$",
         handle_group_share_link_revoke,
     )
+
+    def handle_group_share_log(request: Request) -> Response:
+        params = getattr(request, "params")
+        token = params["token"]
+        from urllib.parse import parse_qs, urlsplit
+
+        query = parse_qs(urlsplit(request.handler.path).query)
+        limit = query.get("limit", [None])[0]
+        payload = group_store.list_group_log(
+            request.state,
+            None,
+            None,
+            share_token=token,
+            limit=limit,
+        )
+        return json_response(payload)
+
+    router.add("GET", r"^/groups/share/(?P<token>[^/]+)/log$", handle_group_share_log)
+
+    def handle_group_share_log_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        token = params["token"]
+        data = require_json(request)
+        entry_type = data.get("type") or data.get("entry_type") or "message"
+        message = data.get("message") or ""
+        payload = data.get("payload")
+        entry = group_store.create_group_log_entry(
+            request.state,
+            None,
+            user,
+            share_token=token,
+            entry_type=entry_type,
+            message=message,
+            payload=payload,
+        )
+        return json_response(entry, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/share/(?P<token>[^/]+)/log$", handle_group_share_log_post)
 
     def handle_group_share_details(request: Request) -> Response:
         params = getattr(request, "params")

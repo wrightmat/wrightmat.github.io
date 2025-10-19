@@ -909,6 +909,16 @@ export class DataManager {
     return payload;
   }
 
+  async listCharacterGroups(id) {
+    if (!id) {
+      throw new Error("Character id is required");
+    }
+    return this._request(`/groups/character/${encodeURIComponent(id)}`, {
+      method: "GET",
+      auth: true,
+    });
+  }
+
   async getGroupShareLink(id) {
     if (!id) {
       throw new Error("Group id is required");
@@ -938,6 +948,54 @@ export class DataManager {
     });
     this._groupCache = null;
     return payload;
+  }
+
+  async getGroupLog({ groupId = "", shareToken = "", limit = undefined } = {}) {
+    const token = shareToken ? String(shareToken) : "";
+    const params = new URLSearchParams();
+    if (limit !== undefined && limit !== null) {
+      params.set("limit", String(limit));
+    }
+    const query = params.toString() ? `?${params.toString()}` : "";
+    if (token) {
+      return this._request(`/groups/share/${encodeURIComponent(token)}/log${query}`, {
+        method: "GET",
+        auth: false,
+      });
+    }
+    if (!groupId) {
+      throw new Error("Group id is required to load the game log");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/log${query}`, {
+      method: "GET",
+      auth: true,
+    });
+  }
+
+  async createGroupLogEntry({
+    groupId = "",
+    shareToken = "",
+    type = "message",
+    message = "",
+    payload = undefined,
+  } = {}) {
+    const body = { type, message, payload };
+    const token = shareToken ? String(shareToken) : "";
+    if (token) {
+      return this._request(`/groups/share/${encodeURIComponent(token)}/log`, {
+        method: "POST",
+        body,
+        auth: true,
+      });
+    }
+    if (!groupId) {
+      throw new Error("Group id is required to post to the game log");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/log`, {
+      method: "POST",
+      body,
+      auth: true,
+    });
   }
 
   async fetchGroupShare(token) {

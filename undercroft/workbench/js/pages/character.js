@@ -59,6 +59,7 @@ import {
     systemDefinition: null,
     systemPreviewData: {},
     viewLocked: false,
+    shareToken: "",
   };
 
   let lastSavedCharacterSignature = null;
@@ -67,6 +68,20 @@ import {
   const collapsedComponents = new Map();
   const diceQuickButtons = new Map();
   const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  const characterGroupCache = new Map();
+
+  const gameLogState = {
+    enabled: false,
+    groupId: "",
+    groupName: "",
+    shareToken: "",
+    entries: [],
+    loading: false,
+    sending: false,
+    error: "",
+    access: "none",
+    pollTimer: 0,
+  };
 
   function escapeHtml(value) {
     if (value === undefined || value === null) {
@@ -357,6 +372,13 @@ import {
     groupShareToggleLabel: document.querySelector("[data-group-share-toggle-label]"),
     groupSharePanel: document.querySelector("[data-group-share-panel]"),
     groupShareStatus: document.querySelector("[data-group-share-status]"),
+    gameLogSection: document.querySelector("[data-game-log-section]"),
+    gameLogEntries: document.querySelector("[data-game-log-entries]"),
+    gameLogForm: document.querySelector("[data-game-log-form]"),
+    gameLogInput: document.querySelector("[data-game-log-input]"),
+    gameLogRefresh: document.querySelector("[data-game-log-refresh]"),
+    gameLogStatus: document.querySelector("[data-game-log-status]"),
+    gameLogTitle: document.querySelector("[data-game-log-group]"),
   };
 
   assignSectionAriaConnections();
@@ -396,6 +418,7 @@ import {
   await initializeBuiltins();
   initNotesEditor();
   initDiceRoller();
+  initGameLog();
   bindUiEvents();
   loadTemplateRecords();
   loadCharacterRecords();
@@ -930,14 +953,20 @@ import {
       refreshTooltips(button.parentElement || button);
     };
 
+    const locked = state.viewLocked;
+
     updateToolbarButton(elements.importButton, {
-      disabled: !draftHasId,
-      disabledTitle: "Select a character to import data.",
+      disabled: !draftHasId || locked,
+      disabledTitle: locked
+        ? "Group characters must be claimed before importing."
+        : "Select a character to import data.",
     });
 
     updateToolbarButton(elements.exportButton, {
-      disabled: !draftHasId,
-      disabledTitle: "Select a character to export data.",
+      disabled: !draftHasId || locked,
+      disabledTitle: locked
+        ? "Group characters must be claimed before exporting."
+        : "Select a character to export data.",
     });
 
     if (!elements.deleteCharacterButton) {
@@ -1081,6 +1110,7 @@ import {
           : "";
         elements.diceResult.innerHTML = `<strong>${heading}</strong>: ${escapeHtml(result.total)}${breakdown}`;
       }
+      recordGameLogRoll(result, { expression: trimmed, label });
       return result;
     } catch (error) {
       if (elements.diceResult) {
@@ -1364,6 +1394,7 @@ import {
       renderPreview();
     }
     syncModeIndicator();
+    syncCharacterActions();
   }
 
   function assignSectionAriaConnections() {
@@ -1404,6 +1435,472 @@ import {
     elements.groupShareStatus.hidden = shouldHide;
   }
 
+  function initGameLog() {
+    if (elements.gameLogForm) {
+      elements.gameLogForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        void submitGameLogMessage();
+      });
+    }
+    if (elements.gameLogRefresh) {
+      elements.gameLogRefresh.addEventListener("click", () => {
+        void refreshGameLog({ force: true });
+      });
+    }
+    updateGameLogVisibility();
+    updateGameLogControls();
+    updateGameLogStatus();
+  }
+
+  function gameLogCanPost() {
+    if (!gameLogState.enabled) {
+      return false;
+    }
+    if (!dataManager.isAuthenticated()) {
+      return false;
+    }
+    if (gameLogState.shareToken) {
+      return Boolean(gameLogState.groupId);
+    }
+    if (!gameLogState.groupId) {
+      return false;
+    }
+    if (gameLogState.access === "owner" || gameLogState.access === "member") {
+      return true;
+    }
+    return dataManager.getUserTier() === "admin";
+  }
+
+  function updateGameLogControls() {
+    const canPost = gameLogCanPost();
+    if (elements.gameLogInput) {
+      elements.gameLogInput.disabled = !canPost || gameLogState.sending;
+    }
+    if (elements.gameLogForm) {
+      const submit = elements.gameLogForm.querySelector('button[type="submit"]');
+      if (submit) {
+        submit.disabled = !canPost || gameLogState.sending;
+      }
+    }
+    if (elements.gameLogRefresh) {
+      elements.gameLogRefresh.disabled = gameLogState.loading;
+      elements.gameLogRefresh.classList.toggle("disabled", gameLogState.loading);
+      elements.gameLogRefresh.setAttribute("aria-disabled", gameLogState.loading ? "true" : "false");
+    }
+  }
+
+  function updateGameLogVisibility() {
+    if (!elements.gameLogSection) {
+      return;
+    }
+    const enabled = gameLogState.enabled;
+    elements.gameLogSection.hidden = !enabled;
+    elements.gameLogSection.classList.toggle("d-none", !enabled);
+    if (!enabled && elements.gameLogEntries) {
+      elements.gameLogEntries.innerHTML = "";
+    }
+  }
+
+  function updateGameLogStatus() {
+    if (!elements.gameLogStatus) {
+      return;
+    }
+    let message = "";
+    elements.gameLogStatus.classList.remove("text-danger");
+    if (gameLogState.error) {
+      message = gameLogState.error;
+      elements.gameLogStatus.classList.add("text-danger");
+    } else if (gameLogState.enabled) {
+      if (!gameLogCanPost()) {
+        message = dataManager.isAuthenticated()
+          ? "You can view the log but cannot post to this group."
+          : "Sign in to chat with your group.";
+      } else if (!gameLogState.loading && !gameLogState.entries.length) {
+        message = "Roll dice or send a message to start the log.";
+      }
+    }
+    elements.gameLogStatus.textContent = message;
+    elements.gameLogStatus.hidden = !message;
+  }
+
+  function createGameLogEntryElement(entry) {
+    const container = document.createElement("article");
+    container.className = "game-log-entry";
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-baseline gap-2";
+    const author = document.createElement("span");
+    author.className = "fw-semibold";
+    author.textContent = entry?.author?.name || "System";
+    header.appendChild(author);
+    if (entry?.created_at) {
+      const timestamp = document.createElement("time");
+      timestamp.className = "text-body-secondary small";
+      timestamp.dateTime = entry.created_at;
+      timestamp.textContent = formatGameLogTimestamp(entry.created_at);
+      header.appendChild(timestamp);
+    }
+    container.appendChild(header);
+    const body = document.createElement("div");
+    body.className = "small";
+    if (entry?.type === "roll") {
+      const payload = entry && typeof entry.payload === "object" && entry.payload ? entry.payload : {};
+      const label = typeof payload.label === "string" ? payload.label.trim() : "";
+      const notation = typeof payload.expression === "string" && payload.expression.trim()
+        ? payload.expression.trim()
+        : typeof payload.notation === "string" && payload.notation.trim()
+          ? payload.notation.trim()
+          : "";
+      const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
+      let summary = "";
+      if (label) {
+        summary += `<span class="text-body-secondary">${escapeHtml(label)}:</span> `;
+      }
+      if (notation) {
+        summary += `<code>${escapeHtml(notation)}</code>`;
+      }
+      if (summary && (total || total === 0)) {
+        summary += ` ⇒ <strong>${escapeHtml(total)}</strong>`;
+      } else if (total || total === 0) {
+        summary += `<strong>${escapeHtml(total)}</strong>`;
+      }
+      if (!summary) {
+        summary = escapeHtml(entry?.message || "Roll");
+      }
+      body.innerHTML = summary;
+      if (payload.detailHtml) {
+        const detail = document.createElement("div");
+        detail.className = "game-log-roll-detail text-body-secondary mt-1";
+        detail.innerHTML = payload.detailHtml;
+        body.appendChild(detail);
+      } else if (payload.detailText) {
+        const detail = document.createElement("pre");
+        detail.className = "game-log-roll-detail text-body-secondary mb-0 mt-1";
+        detail.textContent = payload.detailText;
+        body.appendChild(detail);
+      }
+    } else {
+      body.textContent = entry?.message || "";
+    }
+    container.appendChild(body);
+    return container;
+  }
+
+  function formatGameLogTimestamp(value) {
+    if (!value) {
+      return "";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    try {
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch (error) {
+      return date.toISOString();
+    }
+  }
+
+  function renderGameLogEntries() {
+    if (!elements.gameLogEntries) {
+      return;
+    }
+    elements.gameLogEntries.innerHTML = "";
+    if (!gameLogState.enabled) {
+      return;
+    }
+    if (!gameLogState.entries.length) {
+      const placeholder = document.createElement("p");
+      placeholder.className = "text-body-secondary small mb-0";
+      placeholder.textContent = gameLogState.loading ? "Loading log…" : "No activity yet.";
+      elements.gameLogEntries.appendChild(placeholder);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    gameLogState.entries.forEach((entry) => {
+      fragment.appendChild(createGameLogEntryElement(entry));
+    });
+    elements.gameLogEntries.appendChild(fragment);
+  }
+
+  function stopGameLogPolling() {
+    if (gameLogState.pollTimer) {
+      window.clearInterval(gameLogState.pollTimer);
+      gameLogState.pollTimer = 0;
+    }
+  }
+
+  function startGameLogPolling() {
+    stopGameLogPolling();
+    if (!gameLogState.enabled) {
+      return;
+    }
+    gameLogState.pollTimer = window.setInterval(() => {
+      void refreshGameLog({ silent: true });
+    }, 30000);
+  }
+
+  function clearGameLogContext() {
+    if (!gameLogState.enabled && !gameLogState.groupId && !gameLogState.shareToken) {
+      return;
+    }
+    stopGameLogPolling();
+    gameLogState.enabled = false;
+    gameLogState.groupId = "";
+    gameLogState.groupName = "";
+    gameLogState.shareToken = "";
+    gameLogState.access = "none";
+    gameLogState.entries = [];
+    gameLogState.error = "";
+    if (elements.gameLogTitle) {
+      elements.gameLogTitle.textContent = "";
+      elements.gameLogTitle.hidden = true;
+    }
+    updateGameLogVisibility();
+    updateGameLogControls();
+    updateGameLogStatus();
+  }
+
+  function setGameLogContext({ groupId = "", shareToken = "", groupName = "", access = "none" } = {}) {
+    const normalizedId = typeof groupId === "string" ? groupId.trim() : "";
+    const normalizedToken = typeof shareToken === "string" ? shareToken.trim() : "";
+    const normalizedAccess = typeof access === "string" ? access : "none";
+    const changed = normalizedId !== gameLogState.groupId || normalizedToken !== gameLogState.shareToken;
+    gameLogState.groupId = normalizedId;
+    gameLogState.shareToken = normalizedToken;
+    gameLogState.groupName = typeof groupName === "string" ? groupName.trim() : "";
+    gameLogState.access = normalizedAccess;
+    gameLogState.enabled = Boolean(normalizedId || normalizedToken);
+    if (elements.gameLogTitle) {
+      elements.gameLogTitle.textContent = gameLogState.groupName;
+      elements.gameLogTitle.hidden = !gameLogState.groupName;
+    }
+    if (!gameLogState.enabled) {
+      clearGameLogContext();
+      return;
+    }
+    if (changed) {
+      gameLogState.entries = [];
+    }
+    updateGameLogVisibility();
+    renderGameLogEntries();
+    updateGameLogControls();
+    updateGameLogStatus();
+    if (changed) {
+      void refreshGameLog({ silent: true });
+    }
+    startGameLogPolling();
+  }
+
+  async function refreshGameLog({ silent = false, force = false } = {}) {
+    if (!gameLogState.enabled || (!gameLogState.groupId && !gameLogState.shareToken)) {
+      return;
+    }
+    if (gameLogState.loading && !force) {
+      return;
+    }
+    gameLogState.loading = true;
+    updateGameLogControls();
+    if (elements.gameLogEntries) {
+      elements.gameLogEntries.setAttribute("aria-busy", "true");
+    }
+    try {
+      const payload = await dataManager.getGroupLog({
+        groupId: gameLogState.shareToken ? "" : gameLogState.groupId,
+        shareToken: gameLogState.shareToken,
+      });
+      const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+      if (payload?.group?.name) {
+        gameLogState.groupName = String(payload.group.name);
+        if (elements.gameLogTitle) {
+          elements.gameLogTitle.textContent = gameLogState.groupName;
+          elements.gameLogTitle.hidden = !gameLogState.groupName;
+        }
+      }
+      gameLogState.entries = entries;
+      gameLogState.error = "";
+      renderGameLogEntries();
+    } catch (error) {
+      console.error("Character editor: failed to load game log", error);
+      if (!silent) {
+        gameLogState.error = error?.message || "Unable to load the game log.";
+      }
+      renderGameLogEntries();
+    } finally {
+      gameLogState.loading = false;
+      if (elements.gameLogEntries) {
+        elements.gameLogEntries.setAttribute("aria-busy", "false");
+      }
+      updateGameLogControls();
+      updateGameLogStatus();
+    }
+  }
+
+  async function postGameLogEntry(type, message, payload) {
+    if (!gameLogCanPost()) {
+      updateGameLogStatus();
+      return null;
+    }
+    if (gameLogState.sending) {
+      return null;
+    }
+    gameLogState.sending = true;
+    updateGameLogControls();
+    try {
+      const entry = await dataManager.createGroupLogEntry({
+        groupId: gameLogState.shareToken ? "" : gameLogState.groupId,
+        shareToken: gameLogState.shareToken,
+        type,
+        message,
+        payload,
+      });
+      gameLogState.error = "";
+      return entry;
+    } catch (error) {
+      console.error("Character editor: unable to send game log entry", error);
+      gameLogState.error = error?.message || "Unable to send to the game log.";
+      updateGameLogStatus();
+      if (status) {
+        status.show(gameLogState.error, { type: "danger" });
+      }
+      return null;
+    } finally {
+      gameLogState.sending = false;
+      updateGameLogControls();
+    }
+  }
+
+  function integrateGameLogEntry(entry) {
+    if (!entry || typeof entry !== "object") {
+      return;
+    }
+    const existing = gameLogState.entries.findIndex((item) => item && item.id === entry.id);
+    if (existing >= 0) {
+      gameLogState.entries[existing] = entry;
+    } else {
+      gameLogState.entries.push(entry);
+    }
+    gameLogState.entries.sort((a, b) => {
+      const aId = typeof a?.id === "number" ? a.id : parseInt(a?.id, 10) || 0;
+      const bId = typeof b?.id === "number" ? b.id : parseInt(b?.id, 10) || 0;
+      return aId - bId;
+    });
+    renderGameLogEntries();
+    updateGameLogStatus();
+  }
+
+  async function submitGameLogMessage() {
+    if (!elements.gameLogInput) {
+      return;
+    }
+    const value = elements.gameLogInput.value.trim();
+    if (!value) {
+      return;
+    }
+    const context = resolveCurrentCharacterContext();
+    const payload = context ? { character: context } : undefined;
+    const entry = await postGameLogEntry("message", value, payload);
+    if (entry) {
+      elements.gameLogInput.value = "";
+      integrateGameLogEntry(entry);
+      void refreshGameLog({ silent: true, force: true });
+    } else {
+      updateGameLogStatus();
+    }
+  }
+
+  function recordGameLogRoll(result, { expression = "", label = "" } = {}) {
+    if (!result || !gameLogCanPost()) {
+      return;
+    }
+    const context = resolveCurrentCharacterContext();
+    const payload = {
+      expression: expression || result.expression || result.notation || "",
+      notation: result.notation || expression || "",
+      total: result.total,
+      detailHtml: result.detailHtml || undefined,
+      detailText: result.detailText || undefined,
+      dice: Array.isArray(result.dice) && result.dice.length ? result.dice : undefined,
+      label: label || undefined,
+      character: context || undefined,
+    };
+    void postGameLogEntry("roll", "", payload).then((entry) => {
+      if (entry) {
+        integrateGameLogEntry(entry);
+        void refreshGameLog({ silent: true, force: true });
+      } else if (gameLogState.enabled) {
+        void refreshGameLog({ silent: true, force: true });
+      }
+    });
+  }
+
+  function resolveCurrentCharacterContext() {
+    if (!state.draft?.id) {
+      return null;
+    }
+    const name = typeof state.draft.data?.name === "string" && state.draft.data.name.trim()
+      ? state.draft.data.name.trim()
+      : state.draft.id;
+    const templateId = state.template?.id || state.draft.template || "";
+    const templateTitle = state.template?.title || "";
+    return {
+      id: state.draft.id,
+      name,
+      template: templateId,
+      template_title: templateTitle,
+    };
+  }
+
+  async function refreshCharacterGroups(characterId) {
+    if (!characterId || !dataManager.isAuthenticated()) {
+      characterGroupCache.delete(characterId);
+      return [];
+    }
+    try {
+      const payload = await dataManager.listCharacterGroups(characterId);
+      const groups = Array.isArray(payload?.groups) ? payload.groups : [];
+      characterGroupCache.set(characterId, groups);
+      return groups;
+    } catch (error) {
+      console.warn("Character editor: unable to fetch character groups", error);
+      characterGroupCache.set(characterId, []);
+      return [];
+    }
+  }
+
+  async function syncGameLogContext({ force = false } = {}) {
+    const shareToken = state.shareToken || groupShareState.token || "";
+    const shareGroupId = shareToken ? groupShareState.groupId || "" : "";
+    if (shareToken && shareGroupId) {
+      const groupName = groupShareState.group?.name || gameLogState.groupName;
+      const access = dataManager.isAuthenticated() ? "share" : "viewer";
+      setGameLogContext({ groupId: shareGroupId, shareToken, groupName, access });
+      return;
+    }
+    if (!state.draft?.id) {
+      clearGameLogContext();
+      return;
+    }
+    if (!dataManager.isAuthenticated()) {
+      characterGroupCache.delete(state.draft.id);
+      clearGameLogContext();
+      return;
+    }
+    let memberships = characterGroupCache.get(state.draft.id);
+    if (force || memberships === undefined) {
+      memberships = await refreshCharacterGroups(state.draft.id);
+    }
+    const groups = Array.isArray(memberships) ? memberships : [];
+    const campaign = groups.find((entry) => typeof entry?.type === "string" && entry.type.toLowerCase() === "campaign") || groups[0];
+    if (!campaign) {
+      clearGameLogContext();
+      return;
+    }
+    const ownerId = campaign.owner_id ?? null;
+    const userId = dataManager.session?.user?.id ?? null;
+    const access = ownerId === userId ? "owner" : "member";
+    setGameLogContext({ groupId: campaign.id, groupName: campaign.name || "", access });
+  }
+
   function applyGroupSharePayload(payload) {
     const group = payload && typeof payload.group === "object" ? payload.group : null;
     groupShareState.group = group;
@@ -1417,6 +1914,7 @@ import {
     groupShareState.error = "";
     groupShareState.status = "";
     registerGroupShareRecords();
+    void syncGameLogContext();
   }
 
   function registerGroupShareRecords() {
@@ -1681,6 +2179,8 @@ import {
       groupShareState.viewOnlyCharacterId = "";
       renderGroupSharePanel();
       syncCharacterToolbarVisibility();
+      state.shareToken = "";
+      clearGameLogContext();
       return;
     }
     groupShareState.token = shareToken;
@@ -1707,6 +2207,8 @@ import {
     } finally {
       groupShareState.loading = false;
       renderGroupSharePanel();
+      state.shareToken = shareToken;
+      void syncGameLogContext({ force: true });
     }
   }
 
@@ -1843,6 +2345,7 @@ import {
     if (!id) {
       return;
     }
+    state.shareToken = shareToken || "";
     try {
       const metadata = characterCatalog.get(id);
       if (!metadata) {
@@ -1885,6 +2388,7 @@ import {
         type: "success",
         timeout: 2000,
       });
+      await syncGameLogContext({ force: true });
     } catch (error) {
       console.error("Character editor: failed to load character", error);
       const pruned = handleCharacterLoadFailure(id, error);
@@ -1894,6 +2398,7 @@ import {
       const type = pruned ? "warning" : "error";
       status.show(message, { type, timeout: 2800 });
       syncCharacterToolbarVisibility();
+      await syncGameLogContext({ force: true });
     }
 
     return true;
@@ -1944,6 +2449,8 @@ import {
       renderCanvas();
       renderPreview();
       syncCharacterActions();
+      state.shareToken = "";
+      clearGameLogContext();
     }
 
     if (elements.characterSelect && elements.characterSelect.value === id) {
@@ -3228,6 +3735,8 @@ import {
     renderPreview();
     syncModeIndicator();
     syncCharacterActions();
+    state.shareToken = "";
+    clearGameLogContext();
     status.show(`Started ${trimmedName}`, { type: "success", timeout: 2000 });
     return true;
   }
@@ -3291,12 +3800,14 @@ import {
     if (elements.characterSelect) {
       elements.characterSelect.value = "";
     }
+    state.shareToken = "";
     markCharacterClean();
     syncNotesEditor();
     renderCanvas();
     renderPreview();
     syncModeIndicator();
     syncCharacterActions();
+    clearGameLogContext();
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
     if (button) {
       button.removeAttribute("aria-busy");
