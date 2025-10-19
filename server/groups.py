@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import json
 import secrets
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .auth import AuthError, User
 from .shares import (
@@ -120,6 +121,241 @@ def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Di
         "share_link": share_link,
         "members": members,
     }
+
+
+def _sanitize_log_limit(raw: Optional[int]) -> int:
+    try:
+        value = int(raw) if raw is not None else 100
+    except (TypeError, ValueError):
+        return 100
+    return max(1, min(value, 200))
+
+
+def _serialize_log_entries(rows: Iterable) -> List[Dict[str, Any]]:
+    entries: List[Dict[str, Any]] = []
+    for row in rows:
+        if not row:
+            continue
+        payload = None
+        payload_raw = row["payload"] if "payload" in row.keys() else None
+        if payload_raw:
+            try:
+                payload = json.loads(payload_raw)
+            except json.JSONDecodeError:
+                payload = None
+        entries.append(
+            {
+                "id": row["id"],
+                "type": row["entry_type"],
+                "message": row["message"] or "",
+                "payload": payload,
+                "author": {
+                    "id": row["author_id"],
+                    "name": row["author_name"] or "",
+                },
+                "created_at": row["created_at"],
+            }
+        )
+    return entries
+
+
+def _resolve_group_access(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+) -> Tuple[Any, bool]:
+    resolved_id = (group_id or "").strip()
+    share_mode = False
+    token = (share_token or "").strip()
+    if token:
+        info = resolve_share_token(state, token)
+        if not info or info.get("content_type") != "group":
+            raise AuthError("Invalid or expired share link")
+        resolved_id = info.get("content_id", "").strip() or resolved_id
+        if not resolved_id:
+            raise AuthError("Group not found")
+        touch_share_link(state, token)
+        share_mode = True
+    if not resolved_id:
+        raise AuthError("Group not found")
+    row = state.db.execute(
+        """
+        SELECT id, owner_id, name, type
+        FROM groups
+        WHERE id = ?
+        """,
+        (resolved_id,),
+    ).fetchone()
+    if not row:
+        raise AuthError("Group not found")
+    if row["type"] and row["type"].lower() != "campaign":
+        raise AuthError("Game log is only available for campaign groups")
+    if share_mode:
+        return row, True
+    if not user:
+        raise AuthError("Authentication required")
+    if user.tier == "admin" or row["owner_id"] == user.id:
+        return row, False
+    membership = state.db.execute(
+        """
+        SELECT 1
+        FROM group_members AS gm
+        JOIN characters AS c
+          ON gm.content_type = 'character' AND gm.content_id = c.id
+        WHERE gm.group_id = ?
+          AND c.owner_id = ?
+        LIMIT 1
+        """,
+        (resolved_id, user.id),
+    ).fetchone()
+    if membership:
+        return row, False
+    raise AuthError("Access denied")
+
+
+def _fetch_group_log_entries(state: ServerState, group_id: str, limit: int) -> List[Dict[str, Any]]:
+    rows = state.db.execute(
+        """
+        SELECT id, entry_type, author_id, author_name, message, payload, created_at
+        FROM group_logs
+        WHERE group_id = ?
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (group_id, limit),
+    ).fetchall()
+    ordered = list(rows)
+    ordered.reverse()
+    return _serialize_log_entries(ordered)
+
+
+def list_group_log(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+    limit: Optional[int] = None,
+) -> Dict[str, Any]:
+    row, share_mode = _resolve_group_access(state, group_id, user, share_token=share_token)
+    limit_value = _sanitize_log_limit(limit)
+    entries = _fetch_group_log_entries(state, row["id"], limit_value)
+    payload: Dict[str, Any] = {
+        "group": {"id": row["id"], "name": row["name"], "type": row["type"]},
+        "entries": entries,
+    }
+    if share_mode and share_token:
+        payload["share"] = {"token": share_token}
+    return payload
+
+
+def create_group_log_entry(
+    state: ServerState,
+    group_id: Optional[str],
+    user: Optional[User],
+    *,
+    share_token: Optional[str] = None,
+    entry_type: str = "message",
+    message: str = "",
+    payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    if not user:
+        raise AuthError("Sign in to post to the game log")
+    row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
+    normalized_type = (entry_type or "").strip().lower() or "message"
+    if normalized_type not in {"message", "roll"}:
+        raise AuthError("Unsupported log entry type")
+    text = (message or "").strip()
+    if text:
+        text = text[:2000]
+    payload_value: Optional[Dict[str, Any]] = None
+    if isinstance(payload, dict) and payload:
+        payload_value = payload
+    if normalized_type == "message" and not text and not payload_value:
+        raise AuthError("Message cannot be empty")
+    if normalized_type == "roll":
+        if not payload_value:
+            raise AuthError("Roll payload is required")
+    payload_data = None
+    if payload_value is not None:
+        try:
+            payload_data = json.dumps(payload_value)
+        except (TypeError, ValueError) as exc:
+            raise AuthError("Invalid payload") from exc
+    timestamp = datetime.utcnow().isoformat()
+    cursor = state.db.execute(
+        """
+        INSERT INTO group_logs (group_id, entry_type, author_id, author_name, message, payload, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (row["id"], normalized_type, user.id, user.username or "", text or None, payload_data, timestamp),
+    )
+    state.db.execute(
+        "UPDATE groups SET modified_at = ? WHERE id = ?",
+        (timestamp, row["id"]),
+    )
+    state.db.commit()
+    entry_row = state.db.execute(
+        """
+        SELECT id, entry_type, author_id, author_name, message, payload, created_at
+        FROM group_logs
+        WHERE id = ?
+        """,
+        (cursor.lastrowid,),
+    ).fetchone()
+    serialized = _serialize_log_entries([entry_row])
+    return serialized[0] if serialized else {}
+
+
+def list_character_groups(state: ServerState, user: Optional[User], character_id: str) -> Dict[str, Any]:
+    if not user:
+        raise AuthError("Authentication required")
+    if not character_id:
+        raise AuthError("Character id is required")
+    character_row = state.db.execute(
+        "SELECT id, owner_id FROM characters WHERE id = ?",
+        (character_id,),
+    ).fetchone()
+    if not character_row:
+        raise AuthError("Character not found")
+    owner_id = character_row["owner_id"]
+    if owner_id != user.id and user.tier != "admin":
+        ownership = state.db.execute(
+            """
+            SELECT g.owner_id
+            FROM group_members AS gm
+            JOIN groups AS g ON g.id = gm.group_id
+            WHERE gm.content_type = 'character' AND gm.content_id = ? AND g.owner_id = ?
+            LIMIT 1
+            """,
+            (character_id, user.id),
+        ).fetchone()
+        if not ownership and owner_id != user.id:
+            raise AuthError("Access denied")
+    rows = state.db.execute(
+        """
+        SELECT g.id, g.name, g.type, g.owner_id
+        FROM group_members AS gm
+        JOIN groups AS g ON g.id = gm.group_id
+        WHERE gm.content_type = 'character' AND gm.content_id = ?
+        ORDER BY g.modified_at DESC
+        """,
+        (character_id,),
+    ).fetchall()
+    groups: List[Dict[str, Any]] = []
+    for row in rows:
+        if user.tier == "admin" or row["owner_id"] == user.id or owner_id == user.id:
+            groups.append(
+                {
+                    "id": row["id"],
+                    "name": row["name"],
+                    "type": row["type"],
+                    "owner_id": row["owner_id"],
+                }
+            )
+    return {"groups": groups}
 
 
 def list_groups(state: ServerState, owner: Optional[User]) -> Dict[str, Any]:

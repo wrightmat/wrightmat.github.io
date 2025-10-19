@@ -280,6 +280,47 @@
           data-pane-initial="collapsed"
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-3" data-game-log-section hidden>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex flex-column">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Game Log</h2>
+                  <span class="text-body-secondary small" data-game-log-group></span>
+                </div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Game log tools">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    data-game-log-refresh
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    data-bs-title="Refresh log"
+                    aria-label="Refresh game log"
+                  >
+                    <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                    <span class="visually-hidden">Refresh game log</span>
+                  </button>
+                </div>
+              </div>
+              <div
+                class="border rounded-3 bg-body p-3 game-log-entries d-flex flex-column"
+                data-game-log-entries
+                aria-live="polite"
+              ></div>
+              <div class="text-body-secondary small" data-game-log-status hidden></div>
+              <form class="d-flex flex-column gap-2" data-game-log-form novalidate>
+                <label class="form-label small text-body-secondary mb-0" for="game-log-input">Message</label>
+                <textarea
+                  class="form-control form-control-sm"
+                  id="game-log-input"
+                  rows="2"
+                  data-game-log-input
+                  placeholder="Share a note with your group…"
+                ></textarea>
+                <div class="d-flex justify-content-end">
+                  <button class="btn btn-primary btn-sm" type="submit">Send</button>
+                </div>
+              </form>
+            </section>
             <section class="d-flex flex-column gap-3">
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Dice Roller</h2>
               <form class="d-flex flex-column gap-3" data-dice-form>
