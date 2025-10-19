@@ -612,6 +612,42 @@ export class DataManager {
     return result;
   }
 
+  collectListEntries(payload, keys = ["items", "owned", "shared", "public"]) {
+    if (!payload || typeof payload !== "object") {
+      return [];
+    }
+    const groups = Array.isArray(keys) && keys.length ? keys : ["items", "owned", "shared", "public"];
+    const seen = new Set();
+    const entries = [];
+    const coerceId = (value) => {
+      if (typeof value === "string") {
+        return value.trim();
+      }
+      if (value === null || value === undefined) {
+        return "";
+      }
+      return String(value).trim();
+    };
+    groups.forEach((key) => {
+      const group = payload[key];
+      if (!Array.isArray(group)) {
+        return;
+      }
+      group.forEach((entry) => {
+        if (!entry || typeof entry !== "object") {
+          return;
+        }
+        const id = coerceId(entry.id);
+        if (!id || seen.has(id)) {
+          return;
+        }
+        seen.add(id);
+        entries.push({ ...entry, id });
+      });
+    });
+    return entries;
+  }
+
   _emit(eventName, detail = {}) {
     if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
       return;

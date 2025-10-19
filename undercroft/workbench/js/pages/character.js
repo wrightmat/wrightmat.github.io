@@ -856,16 +856,20 @@ import {
     }
     try {
       const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
-      const items = Array.isArray(remote?.items) ? remote.items : [];
+      const items = dataManager.collectListEntries(remote);
       items.forEach((item) => {
         if (!item || !item.id) return;
         const shareToken = item.shareToken || item.share_token || "";
+        const ownership = item.permissions ? "shared" : item.is_public ? "public" : "remote";
         registerTemplateRecord({
           id: item.id,
           title: item.title || item.id,
           schema: item.schema || "",
           source: "remote",
           shareToken,
+          ownership,
+          ownerId: item.owner_id ?? item.ownerId ?? null,
+          ownerUsername: item.owner_username || item.ownerUsername || "",
         });
       });
     } catch (error) {
