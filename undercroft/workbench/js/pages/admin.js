@@ -26,7 +26,6 @@ const elements = {
   groupsPanel: document.querySelector("[data-admin-tab-panel='groups']"),
   groupsTable: document.querySelector("[data-admin-groups-table]"),
   groupsBody: document.querySelector("[data-admin-groups-rows]"),
-  groupsEmpty: document.querySelector("[data-admin-groups-empty]"),
   groupCreateButton: document.querySelector("[data-admin-group-create]"),
   userSortHeaders: Array.from(document.querySelectorAll("[data-admin-users-sort]")),
   emailForm: document.querySelector("[data-admin-email-form]"),
@@ -587,14 +586,15 @@ function setOwnedLoading(message = "Loading content…") {
 }
 
 function setGroupsLoading(message = "Loading groups…") {
-  if (!elements.groupsBody) {
-    return;
-  }
+  renderGroupsMessage(message);
+}
+
+function renderGroupsMessage(message) {
   if (elements.groupsTable) {
     elements.groupsTable.hidden = false;
   }
-  if (elements.groupsEmpty) {
-    elements.groupsEmpty.hidden = true;
+  if (!elements.groupsBody) {
+    return;
   }
   const row = document.createElement("tr");
   const cell = document.createElement("td");
@@ -1386,38 +1386,24 @@ function renderGroups(groups) {
     elements.groupCreateButton.disabled = !showPanel;
   }
   if (!showPanel) {
-    if (elements.groupsTable) {
-      elements.groupsTable.hidden = true;
-    }
-    if (elements.groupsBody) {
-      elements.groupsBody.innerHTML = "";
-    }
-    if (elements.groupsEmpty) {
-      elements.groupsEmpty.hidden = false;
-      elements.groupsEmpty.textContent = isAuthenticated
-        ? "Switch back to your account to manage groups."
-        : "Sign in to manage groups.";
-    }
+    const message = isAuthenticated
+      ? "Switch back to your account to manage groups."
+      : "Sign in to manage groups.";
+    renderGroupsMessage(message);
     return;
   }
 
   const list = Array.isArray(groups) ? groups : [];
   const hasGroups = list.length > 0;
 
-  if (elements.groupsEmpty) {
-    elements.groupsEmpty.hidden = hasGroups;
-    if (!hasGroups) {
-      elements.groupsEmpty.textContent = "No groups yet. Create one to start organizing characters.";
-    }
-  }
   if (elements.groupsTable) {
-    elements.groupsTable.hidden = !hasGroups;
+    elements.groupsTable.hidden = false;
   }
   if (!elements.groupsBody) {
     return;
   }
   if (!hasGroups) {
-    elements.groupsBody.innerHTML = "";
+    renderGroupsMessage("No groups yet. Create one to start organizing characters.");
     return;
   }
 
@@ -1428,6 +1414,22 @@ function renderGroups(groups) {
     fragment.appendChild(detailsRow);
   });
   elements.groupsBody.replaceChildren(fragment);
+}
+
+function formatGroupCharacterLabel(entry) {
+  if (!entry) {
+    return "Character";
+  }
+  const id = typeof entry.id === "string" && entry.id
+    ? entry.id
+    : typeof entry.content_id === "string" && entry.content_id
+      ? entry.content_id
+      : "";
+  const rawName = entry.label || entry.name || entry.title || id;
+  const name = typeof rawName === "string" && rawName.trim() ? rawName.trim() : id || "Character";
+  const rawTemplate = entry.template_title || entry.templateTitle || entry.template || entry.template_id;
+  const templateLabel = typeof rawTemplate === "string" && rawTemplate.trim() ? rawTemplate.trim() : "";
+  return templateLabel ? `${name} (${templateLabel})` : name;
 }
 
 function renderGroupTableRows(group) {
@@ -1559,7 +1561,7 @@ function renderGroupTableRows(group) {
   owned.forEach((character) => {
     const option = document.createElement("option");
     option.value = character.id;
-    let label = character.name || character.title || character.id;
+    let label = formatGroupCharacterLabel({ ...character, id: character.id });
     if (character.missing) {
       label = `${label} (not found)`;
     }
@@ -1577,7 +1579,7 @@ function renderGroupTableRows(group) {
     const option = document.createElement("option");
     option.value = id;
     option.selected = true;
-    let label = member.label || id;
+    let label = formatGroupCharacterLabel({ ...member, id });
     if (member.missing) {
       label = `${label} (not found)`;
     } else if (member.is_claimed) {
