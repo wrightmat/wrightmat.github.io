@@ -21,6 +21,7 @@
       "align": "start",
       "binding": "@name",
       "readOnly": false,
+      "collapsible": false,
       "variant": "text",
       "placeholder": "",
       "options": [
@@ -52,6 +53,7 @@
       "align": "start",
       "binding": "@class",
       "readOnly": false,
+      "collapsible": false,
       "variant": "select",
       "placeholder": "",
       "options": [
@@ -83,6 +85,7 @@
       "align": "start",
       "binding": "@numberField",
       "readOnly": false,
+      "collapsible": true,
       "variant": "number",
       "placeholder": "",
       "options": [
