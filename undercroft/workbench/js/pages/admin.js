@@ -707,9 +707,19 @@ function updateShareUsernameOptions() {
     return;
   }
   const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
+  const ordered = [];
+  let allUsersOption = null;
+  options.forEach((user) => {
+    if (user && user.special === SHARE_SPECIAL_ALL_USERS && !allUsersOption) {
+      allUsersOption = user;
+      return;
+    }
+    ordered.push(user);
+  });
+  const finalOptions = allUsersOption ? [allUsersOption, ...ordered] : ordered;
   const fragment = document.createDocumentFragment();
   const seen = new Set();
-  options
+  finalOptions
     .filter((user) => user && user.username)
     .forEach((user) => {
       const username = user.username;

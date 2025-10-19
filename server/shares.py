@@ -101,6 +101,7 @@ def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str
         """,
     ).fetchall()
     eligible: List[Dict[str, str]] = []
+    all_users_entry: Optional[Dict[str, str]] = None
     for row in rows:
         username = row["username"]
         tier = (row["tier"] or "free").strip().lower()
@@ -108,7 +109,9 @@ def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str
             continue
         eligible.append({"username": username, "tier": tier})
     if _supports_all_users(content_type):
-        eligible.append({"username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL})
+        all_users_entry = {"username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL}
+    if all_users_entry:
+        return [all_users_entry, *eligible]
     return eligible
 
 

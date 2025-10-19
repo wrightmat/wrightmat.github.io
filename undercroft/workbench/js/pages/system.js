@@ -114,6 +114,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     undoButton: document.querySelector('[data-action="undo-system"]'),
     redoButton: document.querySelector('[data-action="redo-system"]'),
     newButton: document.querySelector('[data-action="new-system"]'),
+    duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
     deleteButton: document.querySelector('[data-delete-system]'),
     clearButton: document.querySelector('[data-action="clear-canvas"]'),
     importButton: document.querySelector('[data-action="import-system"]'),
@@ -127,6 +128,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     newSystemId: document.querySelector("[data-new-system-id]"),
     newSystemTitle: document.querySelector("[data-new-system-title]"),
     newSystemVersion: document.querySelector("[data-new-system-version]"),
+    newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
+    systemMeta: document.querySelector("[data-system-meta]"),
   };
 
   refreshTooltips(document);
@@ -313,6 +316,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
+  let systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+
   if (elements.select) {
     populateSelect(
       elements.select,
@@ -395,7 +400,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   if (elements.newButton) {
     elements.newButton.addEventListener("click", () => {
       if (newSystemModalInstance && elements.newSystemForm) {
-        prepareNewSystemForm();
+        prepareNewSystemForm({ mode: "new" });
         newSystemModalInstance.show();
         return;
       }
@@ -409,13 +414,48 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return;
       }
       const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
-      persistCurrentDraft();
-      const blank = createBlankSystem({ id: id.trim(), title: title.trim(), version: version.trim(), origin: "draft" });
-      registerSystemRecord({ id: blank.id, title: blank.title, source: "draft" }, { syncOption: true });
-      applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
-      if (elements.select) {
-        elements.select.value = blank.id || "";
+      startNewSystem({
+        id: id.trim(),
+        title: title.trim(),
+        version: (version || "0.1").trim() || "0.1",
+        origin: "draft",
+      });
+    });
+  }
+
+  if (elements.duplicateButton) {
+    elements.duplicateButton.addEventListener("click", () => {
+      if (!hasActiveSystem()) {
+        return;
       }
+      const sourceSystem = cloneSystem(state.system);
+      sourceSystem.shareToken = "";
+      const sourceTitle = state.system.title || state.system.id || "system";
+      if (newSystemModalInstance && elements.newSystemForm) {
+        prepareNewSystemForm({ mode: "duplicate", seedSystem: state.system });
+        newSystemModalInstance.show();
+        return;
+      }
+      const suggestedId = generateDuplicateSystemId(state.system.id || state.system.title || "system");
+      const idInput = window.prompt("Enter a system ID", suggestedId || state.system.id || "");
+      if (!idInput) {
+        return;
+      }
+      const suggestedTitle = generateDuplicateSystemTitle(state.system.title || state.system.id || "System");
+      const titleInput = window.prompt("Enter a system title", suggestedTitle) || "";
+      if (!titleInput) {
+        return;
+      }
+      const versionInput = window.prompt("Enter a version", state.system.version || "0.1") || state.system.version || "0.1";
+      startNewSystem({
+        id: idInput.trim(),
+        title: titleInput.trim(),
+        version: (versionInput || "0.1").trim() || "0.1",
+        origin: "draft",
+        sourceSystem,
+        markClean: false,
+        statusMessage: `Duplicated ${sourceTitle}`,
+      });
     });
   }
 
@@ -437,13 +477,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return;
       }
 
-      persistCurrentDraft();
-      const blank = createBlankSystem({ id, title, version, origin: "draft" });
-      registerSystemRecord({ id: blank.id, title: blank.title, source: "draft" }, { syncOption: true });
-      applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
-      if (elements.select) {
-        elements.select.value = blank.id || "";
-      }
+      const mode = form.dataset.mode || systemCreationContext.mode || "new";
+      const isDuplicate = mode === "duplicate" && systemCreationContext.mode === "duplicate";
+      const sourceSystem = isDuplicate && systemCreationContext.duplicateSystem
+        ? cloneSystem(systemCreationContext.duplicateSystem)
+        : null;
+      const sourceTitle = systemCreationContext.sourceTitle || state.system.title || state.system.id || title;
+      startNewSystem({
+        id,
+        title,
+        version,
+        origin: "draft",
+        sourceSystem,
+        markClean: !isDuplicate,
+        statusMessage: isDuplicate ? `Duplicated ${sourceTitle}` : `Started ${title || id}`,
+      });
+      systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+      form.dataset.mode = "new";
       if (newSystemModalInstance) {
         newSystemModalInstance.hide();
       }
@@ -452,24 +502,50 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
-  function prepareNewSystemForm() {
+  function prepareNewSystemForm({ mode = "new", seedSystem = null } = {}) {
     if (!elements.newSystemForm) {
       return;
     }
+    const isDuplicate = mode === "duplicate" && seedSystem;
+    systemCreationContext = {
+      mode: isDuplicate ? "duplicate" : "new",
+      duplicateSystem: isDuplicate ? cloneSystem(seedSystem) : null,
+      sourceTitle: isDuplicate ? seedSystem?.title || seedSystem?.id || "" : "",
+    };
     elements.newSystemForm.reset();
     elements.newSystemForm.classList.remove("was-validated");
+    elements.newSystemForm.dataset.mode = systemCreationContext.mode;
+    if (elements.newSystemModalTitle) {
+      elements.newSystemModalTitle.textContent = isDuplicate ? "Duplicate System" : "Create New System";
+    }
+    const defaultVersion = elements.newSystemVersion?.getAttribute("value") || "0.1";
     if (elements.newSystemVersion) {
-      const defaultVersion = elements.newSystemVersion.getAttribute("value") || "0.1";
-      elements.newSystemVersion.value = defaultVersion;
+      elements.newSystemVersion.value = isDuplicate
+        ? seedSystem?.version || defaultVersion
+        : defaultVersion;
+    }
+    if (elements.newSystemTitle) {
+      elements.newSystemTitle.value = isDuplicate
+        ? generateDuplicateSystemTitle(seedSystem?.title || seedSystem?.id || "System")
+        : "";
+      if (isDuplicate) {
+        elements.newSystemTitle.select();
+      }
     }
     if (elements.newSystemId) {
       elements.newSystemId.setCustomValidity("");
-      const seed = state.system?.title || state.system?.id || "system";
       let generatedId = "";
-      do {
-        generatedId = generateSystemId(seed || "system");
-      } while (generatedId && systemCatalog.has(generatedId));
+      if (isDuplicate) {
+        generatedId = generateDuplicateSystemId(seedSystem?.id || seedSystem?.title || "system");
+      } else {
+        const seed = state.system?.title || state.system?.id || "system";
+        do {
+          generatedId = generateSystemId(seed || "system");
+        } while (generatedId && systemCatalog.has(generatedId));
+      }
       elements.newSystemId.value = generatedId;
+      elements.newSystemId.focus();
+      elements.newSystemId.select();
     }
   }
 
@@ -767,6 +843,50 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (emitStatus && statusMessage) {
       status.show(statusMessage, { type: "success", timeout: 2000 });
     }
+  }
+
+  function startNewSystem({
+    id = "",
+    title = "",
+    version = "0.1",
+    origin = "draft",
+    sourceSystem = null,
+    markClean = true,
+    statusMessage = "",
+  } = {}) {
+    const trimmedId = (id || "").trim();
+    const trimmedTitle = (title || "").trim();
+    const trimmedVersion = (version || "0.1").trim() || "0.1";
+    if (!trimmedId || !trimmedTitle) {
+      status.show("Provide a system ID and title.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    persistCurrentDraft();
+    let nextSystem;
+    if (sourceSystem) {
+      nextSystem = cloneSystem(sourceSystem);
+    } else {
+      nextSystem = createBlankSystem({ id: trimmedId, title: trimmedTitle, version: trimmedVersion, origin });
+      nextSystem.fields = [];
+      nextSystem.fragments = [];
+      nextSystem.metadata = [];
+      nextSystem.formulas = [];
+      nextSystem.importers = [];
+    }
+    nextSystem.id = trimmedId;
+    nextSystem.title = trimmedTitle;
+    nextSystem.version = trimmedVersion;
+    nextSystem.origin = origin;
+    nextSystem.shareToken = "";
+    applySystemState(nextSystem, {
+      emitStatus: true,
+      statusMessage: statusMessage || `Started ${trimmedTitle || trimmedId}`,
+      markClean,
+    });
+    if (elements.select) {
+      elements.select.value = trimmedId;
+    }
+    systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
   }
 
   function hydrateFieldNode(field) {
@@ -1899,6 +2019,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       }
     }
 
+    if (elements.duplicateButton) {
+      const canDuplicate = hasActiveSystem();
+      elements.duplicateButton.classList.toggle("d-none", !canDuplicate);
+      elements.duplicateButton.disabled = !canDuplicate;
+      elements.duplicateButton.setAttribute("aria-disabled", canDuplicate ? "false" : "true");
+    }
+
+    updateSystemMeta();
+
     if (!elements.deleteButton) {
       return;
     }
@@ -2123,6 +2252,19 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   ensureSelectValue();
 
+  function updateSystemMeta() {
+    if (!elements.systemMeta) {
+      return;
+    }
+    if (!hasActiveSystem()) {
+      elements.systemMeta.textContent = "No system selected";
+      return;
+    }
+    const systemId = state.system?.id || "—";
+    const version = state.system?.version || "—";
+    elements.systemMeta.textContent = `ID: ${systemId || "—"} • Version: ${version || "—"}`;
+  }
+
   function escapeCss(value) {
     if (typeof value !== "string" || !value) {
       return value;
@@ -2141,6 +2283,37 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const rand = Math.random().toString(36).slice(2, 8);
     return `sys.${slug || "system"}.${rand}`;
+  }
+
+  function generateDuplicateSystemId(baseId) {
+    const raw = (baseId || "").trim();
+    if (!raw) {
+      return generateSystemId("system");
+    }
+    const normalized = raw.replace(/(\.copy\d*)$/i, "");
+    const root = normalized || raw;
+    let candidate = `${root}.copy`;
+    let counter = 2;
+    while (candidate && systemCatalog.has(candidate)) {
+      candidate = `${root}.copy${counter}`;
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function generateDuplicateSystemTitle(baseTitle) {
+    const raw = (baseTitle || "").trim();
+    const base = raw.replace(/\(Copy(?: \d+)?\)$/i, "").trim() || raw || "System";
+    const existing = new Set(
+      Array.from(systemCatalog.values()).map((entry) => (entry?.title || "").trim()).filter(Boolean)
+    );
+    let candidate = `${base} (Copy)`;
+    let counter = 2;
+    while (existing.has(candidate)) {
+      candidate = `${base} (Copy ${counter})`;
+      counter += 1;
+    }
+    return candidate;
   }
 
   function generateId() {
