@@ -261,7 +261,7 @@ import {
       return characterPermissions(metadata) === "edit";
     }
     if (ownership === "public") {
-      return false;
+      return userOwnsCharacter(state.draft.id);
     }
     if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
       return true;

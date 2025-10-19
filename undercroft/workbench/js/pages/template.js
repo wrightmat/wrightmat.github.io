@@ -1476,7 +1476,7 @@ import {
       return templatePermissions(metadata) === "edit";
     }
     if (ownership === "public") {
-      return false;
+      return templateOwnerMatchesCurrentUser(metadata);
     }
     if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
       return true;
