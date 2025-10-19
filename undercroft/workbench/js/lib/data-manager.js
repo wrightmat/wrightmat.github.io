@@ -2,6 +2,7 @@ const DEFAULT_STORAGE_PREFIX = "undercroft.workbench";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
 const ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"];
+const ANONYMOUS_SCOPE = "anonymous";
 const ROLE_LABELS = {
   free: "Free",
   player: "Player",
@@ -35,6 +36,41 @@ function formatTierLabel(tier) {
     return ROLE_LABELS[normalized];
   }
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function normalizeUsername(username) {
+  return typeof username === "string" ? username.trim().toLowerCase() : "";
+}
+
+function computeScopeKey(session) {
+  const user = session?.user;
+  if (!user) {
+    return ANONYMOUS_SCOPE;
+  }
+  const username = normalizeUsername(user.username);
+  const rawId = user.id;
+  const idPart = rawId === undefined || rawId === null ? "" : String(rawId);
+  if (!username && !idPart) {
+    return ANONYMOUS_SCOPE;
+  }
+  return [username || "user", idPart].filter(Boolean).join("#");
+}
+
+function snapshotOwner(user, tier) {
+  if (!user) {
+    return null;
+  }
+  const username = typeof user.username === "string" ? user.username : "";
+  const id = user.id === undefined || user.id === null ? null : user.id;
+  const normalizedTier = normalizeTier(tier || user.tier);
+  if (!username && (id === null || id === undefined) && !normalizedTier) {
+    return null;
+  }
+  return {
+    id,
+    username,
+    tier: normalizedTier,
+  };
 }
 
 function normalizeBaseUrl(url = "") {
@@ -75,7 +111,9 @@ export class DataManager {
     this._ownedCache = new Map();
     this._sessionKey = `${this.storagePrefix}:session`;
     this._bucketPrefix = `${this.storagePrefix}:bucket:`;
+    this._legacyBucketPrefix = `${this.storagePrefix}:bucket`;
     this._session = this._loadSession();
+    this._scope = computeScopeKey(this._session);
   }
 
   setBaseUrl(url) {
@@ -121,10 +159,16 @@ export class DataManager {
     if (!session) {
       storage.removeItem(this._sessionKey);
       this._session = null;
+      this._scope = computeScopeKey(null);
+      this._listCache.clear();
+      this._ownedCache.clear();
       return;
     }
     storage.setItem(this._sessionKey, JSON.stringify(session));
     this._session = session;
+    this._scope = computeScopeKey(session);
+    this._listCache.clear();
+    this._ownedCache.clear();
   }
 
   get session() {
@@ -201,11 +245,19 @@ export class DataManager {
     this._ownedCache.clear();
   }
 
-  _bucketKey(bucket) {
+  _bucketKey(bucket, scope = this._scope) {
     if (!bucket) {
       throw new Error("Bucket name is required");
     }
-    return `${this._bucketPrefix}${bucket}`;
+    const activeScope = scope || ANONYMOUS_SCOPE;
+    return `${this._bucketPrefix}${bucket}:${activeScope}`;
+  }
+
+  _legacyBucketKey(bucket) {
+    if (!bucket) {
+      throw new Error("Bucket name is required");
+    }
+    return `${this._legacyBucketPrefix}${bucket}`;
   }
 
   listLocal(bucket) {
@@ -219,6 +271,17 @@ export class DataManager {
     }
   }
 
+  _readLegacyRecords(bucket) {
+    try {
+      const stored = this._requireStorage().getItem(this._legacyBucketKey(bucket));
+      const records = safeJsonParse(stored, {});
+      return typeof records === "object" && records ? records : {};
+    } catch (error) {
+      console.warn("DataManager: Unable to load legacy bucket", bucket, error);
+      return {};
+    }
+  }
+
   _writeLocal(bucket, records) {
     this._requireStorage().setItem(this._bucketKey(bucket), JSON.stringify(records));
   }
@@ -228,8 +291,19 @@ export class DataManager {
       throw new Error("Record id is required");
     }
     const records = this.listLocal(bucket);
-    records[id] = payload;
+    const owner = snapshotOwner(this._session?.user, this.getUserTier());
+    const existing = records[id];
+    const createdAt =
+      existing && typeof existing === "object" && existing.createdAt ? existing.createdAt : new Date().toISOString();
+    records[id] = {
+      payload,
+      owner,
+      scope: this._scope,
+      createdAt,
+      updatedAt: new Date().toISOString(),
+    };
     this._writeLocal(bucket, records);
+    this._purgeLegacyRecord(bucket, id);
     return { id, payload };
   }
 
@@ -239,16 +313,168 @@ export class DataManager {
       delete records[id];
       this._writeLocal(bucket, records);
     }
+    this._purgeLegacyRecord(bucket, id);
   }
 
   getLocal(bucket, id) {
     const records = this.listLocal(bucket);
-    return records[id];
+    const entry = records[id];
+    if (entry !== undefined) {
+      return this._normalizeLocalEntry(entry, { fallbackScope: this._scope }).payload;
+    }
+    if (this._scope === ANONYMOUS_SCOPE) {
+      const legacyRecords = this._readLegacyRecords(bucket);
+      if (legacyRecords && legacyRecords[id] !== undefined) {
+        return this._normalizeLocalEntry(legacyRecords[id], { fallbackScope: "legacy" }).payload;
+      }
+    }
+    return undefined;
   }
 
   listLocalEntries(bucket) {
     const records = this.listLocal(bucket);
-    return Object.entries(records).map(([id, payload]) => ({ id, payload }));
+    const entries = [];
+    const seen = new Set();
+    Object.entries(records).forEach(([id, raw]) => {
+      const normalized = this._normalizeLocalEntry(raw, { fallbackScope: this._scope });
+      entries.push({ id, payload: normalized.payload, owner: normalized.owner, scope: normalized.scope });
+      seen.add(id);
+    });
+    if (this._scope === ANONYMOUS_SCOPE) {
+      const legacyRecords = this._readLegacyRecords(bucket);
+      Object.entries(legacyRecords).forEach(([id, raw]) => {
+        if (seen.has(id)) {
+          return;
+        }
+        const normalized = this._normalizeLocalEntry(raw, { fallbackScope: "legacy" });
+        entries.push({ id, payload: normalized.payload, owner: normalized.owner, scope: normalized.scope });
+      });
+    }
+    return entries;
+  }
+
+  _normalizeLocalEntry(entry, { fallbackScope = null } = {}) {
+    if (!entry || typeof entry !== "object") {
+      return { payload: entry, owner: null, scope: fallbackScope, createdAt: null, updatedAt: null };
+    }
+    if (Object.prototype.hasOwnProperty.call(entry, "payload")) {
+      const owner = entry.owner && typeof entry.owner === "object" ? { ...entry.owner } : null;
+      if (owner) {
+        owner.username = typeof owner.username === "string" ? owner.username : "";
+        owner.tier = normalizeTier(owner.tier);
+        if (owner.id === undefined) {
+          owner.id = null;
+        }
+      }
+      const scope = typeof entry.scope === "string" && entry.scope ? entry.scope : fallbackScope;
+      const createdAt = typeof entry.createdAt === "string" ? entry.createdAt : null;
+      const updatedAt = typeof entry.updatedAt === "string" ? entry.updatedAt : null;
+      return { payload: entry.payload, owner, scope, createdAt, updatedAt };
+    }
+    return { payload: entry, owner: null, scope: fallbackScope, createdAt: null, updatedAt: null };
+  }
+
+  _purgeLegacyRecord(bucket, id) {
+    if (!id) {
+      return;
+    }
+    try {
+      const storage = this._requireStorage();
+      const legacyKey = this._legacyBucketKey(bucket);
+      const stored = storage.getItem(legacyKey);
+      if (!stored) {
+        return;
+      }
+      const records = safeJsonParse(stored, {});
+      if (!records || typeof records !== "object" || !Object.prototype.hasOwnProperty.call(records, id)) {
+        return;
+      }
+      delete records[id];
+      storage.setItem(legacyKey, JSON.stringify(records));
+    } catch (error) {
+      console.warn("DataManager: Unable to purge legacy record", bucket, id, error);
+    }
+  }
+
+  localEntryBelongsToCurrentUser(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
+    }
+    if (!this.isAuthenticated()) {
+      return true;
+    }
+    const owner = entry.owner;
+    if (!owner || typeof owner !== "object") {
+      return false;
+    }
+    const sessionUser = this._session?.user;
+    if (!sessionUser) {
+      return false;
+    }
+    if (owner.id !== undefined && owner.id !== null && sessionUser.id !== undefined && sessionUser.id !== null) {
+      if (String(owner.id) === String(sessionUser.id)) {
+        return true;
+      }
+    }
+    if (owner.username && sessionUser.username) {
+      if (owner.username.toLowerCase() === sessionUser.username.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  adoptLegacyRecords(bucket, ids = []) {
+    if (!Array.isArray(ids) || !ids.length) {
+      return [];
+    }
+    if (!this.isAuthenticated()) {
+      return [];
+    }
+    let storage;
+    try {
+      storage = this._requireStorage();
+    } catch (error) {
+      console.warn("DataManager: Unable to adopt legacy records", bucket, error);
+      return [];
+    }
+    const legacyKey = this._legacyBucketKey(bucket);
+    const legacyRaw = storage.getItem(legacyKey);
+    if (!legacyRaw) {
+      return [];
+    }
+    const legacyRecords = safeJsonParse(legacyRaw, {});
+    if (!legacyRecords || typeof legacyRecords !== "object") {
+      return [];
+    }
+    const scopedRecords = this.listLocal(bucket);
+    const adopted = [];
+    const owner = snapshotOwner(this._session?.user, this.getUserTier());
+    let legacyMutated = false;
+    ids.forEach((rawId) => {
+      const id = typeof rawId === "string" ? rawId.trim() : String(rawId || "").trim();
+      if (!id || !Object.prototype.hasOwnProperty.call(legacyRecords, id)) {
+        return;
+      }
+      const normalized = this._normalizeLocalEntry(legacyRecords[id], { fallbackScope: "legacy" });
+      scopedRecords[id] = {
+        payload: normalized.payload,
+        owner,
+        scope: this._scope,
+        createdAt: normalized.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      adopted.push({ id, payload: normalized.payload, owner });
+      delete legacyRecords[id];
+      legacyMutated = true;
+    });
+    if (adopted.length) {
+      this._writeLocal(bucket, scopedRecords);
+    }
+    if (legacyMutated) {
+      storage.setItem(legacyKey, JSON.stringify(legacyRecords));
+    }
+    return adopted;
   }
 
   async _request(path, { method = "GET", body = undefined, auth = true } = {}) {
@@ -381,7 +607,7 @@ export class DataManager {
         aggregated.push(entry);
       });
     };
-    ["owned", "shared", "public", "items"].forEach((key) => addEntries(result[key]));
+    ["owned", "shared", "items"].forEach((key) => addEntries(result[key]));
     result.items = aggregated;
     return result;
   }
@@ -397,14 +623,16 @@ export class DataManager {
     }
   }
 
-  async get(bucket, id, { preferLocal = true } = {}) {
-    if (preferLocal) {
+  async get(bucket, id, { preferLocal = true, shareToken = "" } = {}) {
+    const token = shareToken ? String(shareToken) : "";
+    if (preferLocal && !token) {
       const local = this.getLocal(bucket, id);
       if (local !== undefined) {
         return { source: "local", payload: local };
       }
     }
-    const payload = await this._request(`/content/${bucket}/${id}`, { method: "GET", auth: true });
+    const query = token ? `?share=${encodeURIComponent(token)}` : "";
+    const payload = await this._request(`/content/${bucket}/${id}${query}`, { method: "GET", auth: true });
     return { source: "remote", payload };
   }
 
@@ -501,19 +729,6 @@ export class DataManager {
     });
   }
 
-  async toggleVisibility(bucket, id, makePublic) {
-    const query = makePublic ? "" : "?public=false";
-    const result = await this._request(`/content/${bucket}/${id}/public${query}`, {
-      method: "POST",
-      body: {},
-      auth: true,
-    });
-    this._listCache.delete(`${bucket}`);
-    this._ownedCache.clear();
-    this._emit("workbench:content-visibility", { bucket, id, public: Boolean(result?.public) });
-    return result;
-  }
-
   async updateContentOwner(bucket, id, username) {
     if (!username) {
       throw new Error("Username is required");
@@ -544,6 +759,147 @@ export class DataManager {
 
   async listBuiltins() {
     return this._request("/content/builtins", { method: "GET" });
+  }
+
+  async listShares(contentType, contentId) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    return this._request(`/shares/${contentType}/${contentId}`, { method: "GET", auth: true });
+  }
+
+  async shareWithUser({ contentType, contentId, username, permissions = "view" } = {}) {
+    if (!contentType || !contentId || !username) {
+      throw new Error("contentType, contentId, and username are required");
+    }
+    const result = await this._request("/shares", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        username,
+        permissions,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share", {
+      bucket: contentType,
+      id: contentId,
+      username,
+      permissions,
+      action: "grant",
+    });
+    return result;
+  }
+
+  async revokeShare({ contentType, contentId, username } = {}) {
+    if (!contentType || !contentId || !username) {
+      throw new Error("contentType, contentId, and username are required");
+    }
+    const result = await this._request("/shares/revoke", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        username,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share", {
+      bucket: contentType,
+      id: contentId,
+      username,
+      action: "revoke",
+    });
+    return result;
+  }
+
+  async listEligibleShareUsers({ contentType, contentId } = {}) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    try {
+      return await this._request(`/shares/${contentType}/${contentId}/eligible`, {
+        method: "GET",
+        auth: true,
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "status" in error && error.status === 404) {
+        const params = new URLSearchParams({
+          content_type: contentType,
+          content_id: contentId,
+        });
+        return this._request(`/shares/eligible?${params.toString()}`, { method: "GET", auth: true });
+      }
+      throw error;
+    }
+  }
+
+  async createShareLink({ contentType, contentId, permissions = "view" } = {}) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    let result;
+    try {
+      result = await this._request(`/shares/${contentType}/${contentId}/link`, {
+        method: "POST",
+        body: { permissions },
+        auth: true,
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "status" in error && error.status === 404) {
+        result = await this._request("/shares/link", {
+          method: "POST",
+          body: {
+            content_type: contentType,
+            content_id: contentId,
+            permissions,
+          },
+          auth: true,
+        });
+      } else {
+        throw error;
+      }
+    }
+    this._emit("workbench:content-share-link", {
+      bucket: contentType,
+      id: contentId,
+      action: "created",
+    });
+    return result;
+  }
+
+  async revokeShareLink({ contentType, contentId } = {}) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    let result;
+    try {
+      result = await this._request(`/shares/${contentType}/${contentId}/link/revoke`, {
+        method: "POST",
+        body: {},
+        auth: true,
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "status" in error && error.status === 404) {
+        result = await this._request("/shares/link/revoke", {
+          method: "POST",
+          body: {
+            content_type: contentType,
+            content_id: contentId,
+          },
+          auth: true,
+        });
+      } else {
+        throw error;
+      }
+    }
+    this._emit("workbench:content-share-link", {
+      bucket: contentType,
+      id: contentId,
+      action: "revoked",
+    });
+    return result;
   }
 }
 

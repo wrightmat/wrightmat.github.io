@@ -25,9 +25,19 @@ import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../l
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
+import {
+  normalizeBindingValue,
+  resolveBindingFromContexts,
+  normalizeOptionEntries,
+  buildSystemPreviewData,
+} from "../lib/component-data.js";
 
 (async () => {
-  const { status, undoStack } = initAppShell({ namespace: "template" });
+  const { status, undoStack, undo, redo } = initAppShell({
+    namespace: "template",
+    onUndo: handleUndoEntry,
+    onRedo: handleRedoEntry,
+  });
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
@@ -103,10 +113,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           return ["number"];
         }
         if (variant === "checkbox" || variant === "radio") {
-          return ["object"];
+          return variant === "checkbox" ? ["array", "object"] : ["string", "number"];
         }
         if (variant === "select") {
-          return ["array"];
+          return ["string", "number"];
+        }
+        if (variant === "textarea") {
+          return ["string"];
         }
         return ["string", "number"];
       }
@@ -116,9 +129,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "array":
         return ["array", "object"];
       case "select-group":
-        return ["array", "object"];
+        return component.multiple ? ["array", "object"] : ["string", "number"];
       case "toggle":
-        return ["string"];
+        return ["string", "number"];
       default:
         return null;
     }
@@ -142,6 +155,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     components: [],
     selectedId: null,
     systemDefinition: null,
+    systemPreviewData: {},
     bindingFields: [],
   };
 
@@ -157,6 +171,35 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   const dropzones = new Map();
   const containerActiveTabs = new Map();
+
+  function cloneComponentTree(component) {
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(component);
+      } catch (error) {
+        // fall through to JSON clone
+      }
+    }
+    return JSON.parse(JSON.stringify(component));
+  }
+
+  function cloneComponentCollection(components) {
+    return Array.isArray(components) ? components.map((component) => cloneComponentTree(component)) : [];
+  }
+
+  function snapshotContainerTabs() {
+    return Array.from(containerActiveTabs.entries());
+  }
+
+  function restoreContainerTabsSnapshot(snapshot) {
+    containerActiveTabs.clear();
+    if (!Array.isArray(snapshot)) {
+      return;
+    }
+    snapshot.forEach(([key, value]) => {
+      containerActiveTabs.set(key, value);
+    });
+  }
 
   function emitBindingFieldsReady(schemaId = "") {
     if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
@@ -203,12 +246,14 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return createComponent(type);
     },
     beforeInsert: (type, component) => {
+      const previousSelectedId = state.selectedId || null;
       state.selectedId = component.uid;
       return {
         parentId: "",
         zoneKey: "root",
         index: state.components.length,
         definition: COMPONENT_DEFINITIONS[type],
+        previousSelectedId,
       };
     },
     insertItem: (type, component, context) => {
@@ -216,10 +261,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     },
     createUndoEntry: (type, component, context) => ({
       type: "add",
-      component: { ...component },
+      templateId: state.template?.id || "",
+      component: cloneComponentTree(component),
       parentId: context.parentId,
       zoneKey: context.zoneKey,
       index: context.index,
+      previousSelectedId: context.previousSelectedId || null,
     }),
     afterInsert: () => {
       renderCanvas();
@@ -285,7 +332,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           payload = await response.json();
           markBuiltinAvailable("templates", metadata.id || selectedId);
         } else {
-          const result = await dataManager.get("templates", selectedId, { preferLocal: true });
+          const shareToken = metadata.shareToken || "";
+          const result = await dataManager.get("templates", selectedId, {
+            preferLocal: !shareToken,
+            shareToken,
+          });
           payload = result?.payload || null;
         }
         if (!payload) {
@@ -294,10 +345,22 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         const label = payload.title || metadata.title || selectedId;
         const schema = payload.schema || payload.system || metadata.schema || "";
         registerTemplateRecord(
-          { id: payload.id || selectedId, title: label, schema, source: metadata.source || "remote", path: metadata.path },
+          {
+            id: payload.id || selectedId,
+            title: label,
+            schema,
+            source: metadata.source || "remote",
+            path: metadata.path,
+            shareToken: metadata.shareToken,
+          },
           { syncOption: true }
         );
-        applyTemplateData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+        applyTemplateData(payload, {
+          origin: metadata.source || "remote",
+          emitStatus: true,
+          statusMessage: `Loaded ${label}`,
+          shareToken: metadata.shareToken || "",
+        });
       } catch (error) {
         console.error("Unable to load template", error);
         if (metadata.source === "builtin") {
@@ -316,6 +379,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         variant: "text",
         placeholder: "",
         options: ["Option A", "Option B"],
+        rows: 3,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -436,6 +501,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         name: "Select Group",
         variant: "pills",
         multiple: false,
+        sourceBinding: "",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -523,13 +589,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
 
     return fallback || "";
-  }
-
-  function normalizeBindingValue(value) {
-    if (typeof value !== "string") {
-      return "";
-    }
-    return value.trim();
   }
 
   function componentHasFormula(component, { formulaKey = "formula" } = {}) {
@@ -664,12 +723,17 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
             title: payload.title || templateId,
             schema: payload.schema,
             source: state.template.origin,
+            shareToken: state.template.shareToken || "",
           },
           { syncOption: true }
         );
         ensureTemplateSelectValue();
         syncTemplateActions();
-        undoStack.push({ type: "save", count: state.components.length });
+        undoStack.push({
+          type: "save",
+          templateId: state.template?.id || "",
+          count: state.components.length,
+        });
         if (savedToServer || !requireRemote) {
           markTemplateClean();
         }
@@ -695,13 +759,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   if (elements.undoButton) {
     elements.undoButton.addEventListener("click", () => {
-      status.show("Undo coming soon", { type: "info", timeout: 1800 });
+      undo();
     });
   }
 
   if (elements.redoButton) {
     elements.redoButton.addEventListener("click", () => {
-      status.show("Redo coming soon", { type: "info", timeout: 1800 });
+      redo();
     });
   }
 
@@ -1117,23 +1181,32 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   async function updateSystemContext(schemaId) {
     state.systemDefinition = null;
+    state.systemPreviewData = {};
     state.bindingFields = [];
+
     if (!schemaId) {
       emitBindingFieldsReady("");
       renderInspector();
+      renderCanvas();
       return;
     }
+
     try {
       const definition = await fetchSystemDefinition(schemaId);
       if (definition) {
         state.systemDefinition = definition;
+        state.systemPreviewData = buildSystemPreviewData(definition);
         state.bindingFields = collectSystemFields(definition);
+      } else {
+        state.systemPreviewData = {};
       }
     } catch (error) {
       console.warn("Template editor: unable to prepare system bindings", error);
     }
+
     emitBindingFieldsReady(schemaId);
     renderInspector();
+    renderCanvas();
   }
 
   function prepareNewTemplateForm() {
@@ -1272,7 +1345,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function loadSystemRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("systems");
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload } = entry;
+        if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
         registerSystemRecord({ id, title: payload?.title || id, source: "local", payload });
       });
     } catch (error) {
@@ -1284,6 +1362,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     try {
       const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const adopted = dataManager.adoptLegacyRecords(
+        "systems",
+        owned.map((entry) => entry?.id).filter(Boolean)
+      );
+      adopted.forEach(({ id, payload }) => {
+        if (!id) return;
+        registerSystemRecord({ id, title: payload?.title || id, source: "remote", payload });
+      });
       const items = remote?.items || [];
       items.forEach((item) => {
         registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" });
@@ -1298,7 +1385,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function loadTemplateRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("templates");
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload } = entry;
+        if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
         registerTemplateRecord(
           { id, title: payload?.title || id, schema: payload?.schema || "", source: "local" },
           { syncOption: true }
@@ -1313,10 +1405,28 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     try {
       const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const adopted = dataManager.adoptLegacyRecords(
+        "templates",
+        owned.map((entry) => entry?.id).filter(Boolean)
+      );
+      adopted.forEach(({ id, payload }) => {
+        if (!id) return;
+        registerTemplateRecord(
+          { id, title: payload?.title || id, schema: payload?.schema || "", source: "remote" },
+          { syncOption: true }
+        );
+      });
       const items = remote?.items || [];
       items.forEach((item) => {
         registerTemplateRecord(
-          { id: item.id, title: item.title || item.id, schema: item.schema || "", source: "remote" },
+          {
+            id: item.id,
+            title: item.title || item.id,
+            schema: item.schema || "",
+            source: "remote",
+            shareToken: item.shareToken || "",
+          },
           { syncOption: true }
         );
       });
@@ -1331,25 +1441,27 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!pendingSharedTemplate) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedTemplate();
-    } else if (status) {
-      status.show("Sign in to load the shared template.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedTemplate();
   }
 
   async function loadPendingSharedTemplate() {
     if (!pendingSharedTemplate) {
       return;
     }
-    const targetId = pendingSharedTemplate;
+    const { id: targetId, shareToken = "" } = pendingSharedTemplate;
     pendingSharedTemplate = null;
-    registerTemplateRecord({ id: targetId, title: targetId, schema: "", source: "remote" }, { syncOption: true });
+    registerTemplateRecord(
+      { id: targetId, title: targetId, schema: "", source: "remote", shareToken },
+      { syncOption: true }
+    );
     if (elements.templateSelect) {
       elements.templateSelect.value = targetId;
     }
     try {
-      const result = await dataManager.get("templates", targetId, { preferLocal: true });
+      const result = await dataManager.get("templates", targetId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       const payload = result?.payload;
       if (!payload) {
         throw new Error("Template payload missing");
@@ -1357,10 +1469,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       const label = payload.title || templateCatalog.get(targetId)?.title || targetId;
       const schema = payload.schema || payload.system || templateCatalog.get(targetId)?.schema || "";
       registerTemplateRecord(
-        { id: payload.id || targetId, title: label, schema, source: "remote" },
+        { id: payload.id || targetId, title: label, schema, source: "remote", shareToken },
         { syncOption: true },
       );
-      applyTemplateData(payload, { origin: "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+      applyTemplateData(payload, {
+        origin: "remote",
+        emitStatus: true,
+        statusMessage: `Loaded ${label}`,
+        shareToken,
+      });
     } catch (error) {
       console.error("Template editor: unable to load shared template", error);
       if (status) {
@@ -1387,9 +1504,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
     if (type && COMPONENT_DEFINITIONS[type]) {
       const component = createComponent(type);
+      const previousSelectedId = state.selectedId || null;
       insertComponent(parentId, zoneKey, index, component);
       state.selectedId = component.uid;
-      undoStack.push({ type: "add", component: { ...component }, parentId, zoneKey, index });
+      undoStack.push({
+        type: "add",
+        templateId: state.template?.id || "",
+        component: cloneComponentTree(component),
+        parentId,
+        zoneKey,
+        index,
+        previousSelectedId,
+      });
       status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, { type: "success", timeout: 1800 });
       event.item.remove();
       renderCanvas();
@@ -1405,9 +1531,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         renderCanvas();
         return;
       }
-      const moved = moveComponent(componentId, parentId, zoneKey, index);
-      if (moved) {
-        undoStack.push({ type: "move", componentId, parentId, zoneKey, index });
+      const moveResult = moveComponent(componentId, parentId, zoneKey, index);
+      if (moveResult.success) {
+        undoStack.push({
+          type: "move",
+          templateId: state.template?.id || "",
+          componentId,
+          from: moveResult.from,
+          to: moveResult.to,
+        });
         status.show("Moved component", { timeout: 1500 });
       }
     }
@@ -1442,7 +1574,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const [item] = collection.splice(oldIndex, 1);
     collection.splice(newIndex, 0, item);
-    undoStack.push({ type: "reorder", componentId, parentId, zoneKey, oldIndex, newIndex });
+    const finalPosition = findComponent(componentId);
+    undoStack.push({
+      type: "reorder",
+      templateId: state.template?.id || "",
+      componentId,
+      parentId,
+      zoneKey,
+      from: { index: oldIndex },
+      to: { index: finalPosition ? finalPosition.index : newIndex },
+    });
     renderCanvas();
     renderInspector();
   }
@@ -1456,13 +1597,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function moveComponent(componentId, targetParentId, zoneKey, index) {
     const found = findComponent(componentId);
-    if (!found) return false;
+    if (!found) return { success: false };
     const targetCollection = getCollection(targetParentId, zoneKey);
-    if (!targetCollection) return false;
+    if (!targetCollection) return { success: false };
+    const fromParentId = found.parent?.uid || "";
+    const fromZoneKey = found.zoneKey;
+    const fromIndex = found.index;
     const [item] = found.collection.splice(found.index, 1);
-    const safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    let safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    if (found.collection === targetCollection && fromIndex < safeIndex) {
+      safeIndex -= 1;
+    }
     targetCollection.splice(safeIndex, 0, item);
-    return true;
+    return {
+      success: true,
+      from: { parentId: fromParentId, zoneKey: fromZoneKey, index: fromIndex },
+      to: { parentId: targetParentId, zoneKey, index: safeIndex },
+    };
   }
 
   function getCollection(parentId, zoneKey) {
@@ -1577,6 +1728,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (component.states && Array.isArray(component.states)) {
       component.states = component.states.slice();
     }
+    if (typeof component.sourceBinding !== "string") {
+      component.sourceBinding = component.sourceBinding != null ? String(component.sourceBinding) : "";
+    }
+    component.sourceBinding = component.sourceBinding.trim();
     if (typeof component.segmentBinding !== "string") {
       component.segmentBinding = component.segmentBinding != null ? String(component.segmentBinding) : "";
     }
@@ -1695,6 +1850,97 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       default:
         return document.createTextNode("Unsupported component");
     }
+  }
+
+  function resolvePreviewBindingValue(binding) {
+    const normalized = normalizeBindingValue(binding);
+    if (!normalized) {
+      return undefined;
+    }
+    const contexts = [];
+
+    function registerContext(value, { prefixes = [], allowDirect = false } = {}) {
+      if (!value || typeof value !== "object") {
+        return;
+      }
+      const normalizedPrefixes = Array.isArray(prefixes)
+        ? prefixes
+            .map((prefix) => (typeof prefix === "string" ? prefix.trim() : ""))
+            .filter((prefix) => prefix.length > 0)
+        : [];
+      contexts.push({ value, prefixes: normalizedPrefixes, allowDirect: Boolean(allowDirect) });
+    }
+
+    const template = state.template && typeof state.template === "object" ? state.template : null;
+    if (template) {
+      registerContext(template, { allowDirect: true, prefixes: ["template"] });
+      registerContext(template.metadata, { prefixes: ["metadata"] });
+      registerContext(template.data, { prefixes: ["data"], allowDirect: true });
+      registerContext(template.sources, { prefixes: ["sources"], allowDirect: true });
+    }
+
+    const systemPreviewData =
+      state.systemPreviewData && typeof state.systemPreviewData === "object" ? state.systemPreviewData : null;
+    if (systemPreviewData) {
+      registerContext(systemPreviewData, {
+        allowDirect: true,
+        prefixes: ["system", "data", "preview", "sources"],
+      });
+    }
+
+    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
+    if (definition) {
+      registerContext(definition, { allowDirect: true, prefixes: ["system"] });
+      registerContext(definition.metadata, { prefixes: ["metadata"] });
+      registerContext(definition.definition, { prefixes: ["definition"], allowDirect: true });
+      registerContext(definition.schema, { prefixes: ["schema"] });
+      registerContext(definition.data, { prefixes: ["data"], allowDirect: true });
+      registerContext(definition.sources, { prefixes: ["sources"], allowDirect: true });
+      registerContext(definition.preview, { prefixes: ["preview"], allowDirect: true });
+      registerContext(definition.samples, { prefixes: ["samples"], allowDirect: true });
+      registerContext(definition.sample, { prefixes: ["sample"], allowDirect: true });
+      registerContext(definition.values, { prefixes: ["values"], allowDirect: true });
+      registerContext(definition.lists, { prefixes: ["lists"], allowDirect: true });
+      registerContext(definition.collections, { prefixes: ["collections"], allowDirect: true });
+    }
+
+    return resolveBindingFromContexts(normalized, contexts);
+  }
+
+  function resolveSelectPreviewOptions(component) {
+    const binding = normalizeBindingValue(component?.sourceBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizeOptionEntries(bound);
+  }
+
+  function resolveSelectGroupPreviewOptions(component) {
+    const binding = normalizeBindingValue(component?.sourceBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizeOptionEntries(bound);
+  }
+
+  function resolveTogglePreviewStates(component) {
+    const binding = normalizeBindingValue(component?.statesBinding);
+    if (!binding) {
+      return [];
+    }
+    const bound = resolvePreviewBindingValue(binding);
+    return normalizeOptionEntries(bound)
+      .map((entry) => entry.label || entry.value)
+      .filter((value) => value != null && value !== "");
+  }
+
+  function createPreviewEmptyState(message = "Select a source to preview values.") {
+    const placeholder = document.createElement("div");
+    placeholder.className = "text-body-secondary small fst-italic";
+    placeholder.textContent = message;
+    return placeholder;
   }
 
   function ensureContainerZones(component) {
@@ -1817,6 +2063,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
 
     let control;
+    const previewOptions = resolveSelectPreviewOptions(component);
     switch (component.variant) {
       case "number": {
         control = document.createElement("input");
@@ -1828,12 +2075,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       case "select": {
         control = document.createElement("select");
         control.className = "form-select";
-        const options = Array.isArray(component.options) && component.options.length
-          ? component.options
-          : ["Option A", "Option B"];
-        options.forEach((option) => {
+        previewOptions.forEach((option) => {
           const opt = document.createElement("option");
-          opt.textContent = option;
+          opt.value = option.value;
+          opt.textContent = option.label || option.value;
           control.appendChild(opt);
         });
         break;
@@ -1846,6 +2091,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         control = renderChoiceGroup(component, "checkbox");
         break;
       }
+      case "textarea": {
+        control = document.createElement("textarea");
+        control.className = "form-control";
+        control.rows = clampInteger(component.rows ?? 3, 2, 12);
+        control.placeholder = component.placeholder || "";
+        break;
+      }
       default: {
         control = document.createElement("input");
         control.type = "text";
@@ -1854,10 +2106,17 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         break;
       }
     }
-    if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement) {
+    if (
+      control instanceof HTMLInputElement ||
+      control instanceof HTMLSelectElement ||
+      control instanceof HTMLTextAreaElement
+    ) {
       control.disabled = !!component.readOnly;
     }
     container.appendChild(control);
+    if ((component.variant || "text") === "select" && !previewOptions.length) {
+      container.appendChild(createPreviewEmptyState());
+    }
     return container;
   }
 
@@ -2204,15 +2463,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       wrapper.appendChild(heading);
     }
 
-    const sampleOptions = ["Option A", "Option B", "Option C"];
+    const options = resolveSelectGroupPreviewOptions(component);
+    if (!options.length) {
+      wrapper.appendChild(createPreviewEmptyState());
+      return wrapper;
+    }
     let control;
     if (component.variant === "tags") {
       control = document.createElement("div");
       control.className = "template-select-tags d-flex flex-wrap gap-2";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const tag = document.createElement("span");
         tag.className = "template-select-tag";
-        const slug = option.trim().toLowerCase().replace(/\s+/g, "-");
+        const label = option.label || option.value || "";
+        const slug = label.trim().toLowerCase().replace(/\s+/g, "-");
         tag.textContent = `#${slug || "tag"}`;
         if (component.multiple !== false && index < 2) {
           tag.classList.add("is-active");
@@ -2224,7 +2488,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     } else if (component.variant === "buttons") {
       control = document.createElement("div");
       control.className = "btn-group";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const button = document.createElement("button");
         button.type = "button";
         const isActive = component.multiple ? index < 2 : index === 0;
@@ -2232,13 +2496,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (component.readOnly) {
           button.classList.add("disabled");
         }
-        button.textContent = option;
+        button.textContent = option.label || option.value;
         control.appendChild(button);
       });
     } else {
       control = document.createElement("div");
       control.className = "d-flex flex-wrap gap-2";
-      sampleOptions.forEach((option, index) => {
+      options.forEach((option, index) => {
         const button = document.createElement("button");
         button.type = "button";
         const isActive = component.multiple ? index < 2 : index === 0;
@@ -2246,7 +2510,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (component.readOnly) {
           button.classList.add("disabled");
         }
-        button.textContent = option;
+        button.textContent = option.label || option.value;
         control.appendChild(button);
       });
     }
@@ -2266,12 +2530,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       wrapper.appendChild(heading);
     }
 
-    const states = Array.isArray(component.states) && component.states.length
-      ? component.states
-      : ["State 1", "State 2"];
+    const states = resolveTogglePreviewStates(component);
     const shape = component.shape || "circle";
     const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
-    let activeIndex = fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
+    const hasStates = states.length > 0;
+    let activeIndex = hasStates && fallbackState ? states.findIndex((state) => String(state) === fallbackState) : -1;
     if (activeIndex < 0) {
       activeIndex = clampInteger(component.activeIndex ?? 0, 0, Math.max(states.length - 1, 0));
     }
@@ -2288,8 +2551,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     preview.style.setProperty("--template-toggle-level", progress.toFixed(3));
     const opacity = 0.25 + progress * 0.55;
     preview.style.setProperty("--template-toggle-opacity", opacity.toFixed(3));
-    preview.setAttribute("aria-label", states[activeIndex] || "Toggle state");
+    if (hasStates) {
+      preview.setAttribute("aria-label", states[Math.min(activeIndex, states.length - 1)] || "Toggle state");
+    } else {
+      preview.setAttribute("aria-label", "Toggle preview");
+    }
     wrapper.appendChild(preview);
+    if (!hasStates) {
+      wrapper.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
+    }
 
     return wrapper;
   }
@@ -2309,50 +2579,240 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     expandPane(elements.rightPane, elements.rightPaneToggle);
   }
 
-  function clearCanvas() {
+  function clearCanvas({ skipHistory = false, silent = false, suppressRender = false } = {}) {
     if (!state.components.length) {
       status.show("Canvas is already empty", { timeout: 1200 });
       return;
     }
+    const previousComponents = cloneComponentCollection(state.components);
+    const previousTabs = snapshotContainerTabs();
+    const previousSelectedId = state.selectedId || null;
     state.components = [];
     state.selectedId = null;
     containerActiveTabs.clear();
-    undoStack.push({ type: "clear" });
-    status.show("Cleared template canvas", { type: "info", timeout: 1500 });
-    renderCanvas();
-    renderInspector();
+    if (!skipHistory) {
+      undoStack.push({
+        type: "clear",
+        templateId: state.template?.id || "",
+        components: previousComponents,
+        containerTabs: previousTabs,
+        previousSelectedId,
+      });
+    }
+    if (!silent) {
+      status.show("Cleared template canvas", { type: "info", timeout: 1500 });
+    }
+    if (!suppressRender) {
+      renderCanvas();
+      renderInspector();
+    }
   }
 
-  function removeComponent(uid) {
+  function removeComponent(uid, { skipHistory = false, silent = false, suppressRender = false } = {}) {
     const found = findComponent(uid);
     if (!found) return;
+    const previousSelectedId = state.selectedId || null;
+    const parentId = found.parent?.uid || "";
+    const zoneKey = found.zoneKey;
+    const index = found.index;
     const [removed] = found.collection.splice(found.index, 1);
     pruneContainerState(removed);
-    undoStack.push({ type: "remove", componentId: removed.uid, parentId: found.parent?.uid || "", zoneKey: found.zoneKey });
-    status.show("Removed component", { type: "info", timeout: 1500 });
-    if (state.selectedId === uid) {
-      state.selectedId = found.parent?.uid || null;
+    if (!skipHistory) {
+      undoStack.push({
+        type: "remove",
+        templateId: state.template?.id || "",
+        componentId: removed.uid,
+        component: cloneComponentTree(removed),
+        parentId,
+        zoneKey,
+        index,
+        previousSelectedId,
+      });
     }
-    renderCanvas();
-    renderInspector();
+    if (!silent) {
+      status.show("Removed component", { type: "info", timeout: 1500 });
+    }
+    if (state.selectedId === uid) {
+      state.selectedId = parentId || null;
+    }
+    if (!suppressRender) {
+      renderCanvas();
+      renderInspector();
+    }
+  }
+
+  function ensureTemplateContext(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
+    }
+    const targetId = entry.templateId ?? "";
+    const currentId = state.template?.id || "";
+    if (targetId && targetId !== currentId) {
+      return false;
+    }
+    return true;
+  }
+
+  function applyTemplateUndo(entry) {
+    if (!ensureTemplateContext(entry)) {
+      return { message: "Undo unavailable for this template", options: { type: "warning", timeout: 2200 } };
+    }
+    switch (entry.type) {
+      case "add": {
+        const componentId = entry.component?.uid;
+        if (!componentId) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        removeComponent(componentId, { skipHistory: true, silent: true, suppressRender: true });
+        state.selectedId = entry.previousSelectedId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Removed added component", options: { type: "info", timeout: 1600 } };
+      }
+      case "move": {
+        if (!entry.componentId || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.from.parentId, entry.from.zoneKey, entry.from.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Moved component back", options: { type: "info", timeout: 1500 } };
+      }
+      case "reorder": {
+        if (!entry.componentId || !entry.parentId || !entry.zoneKey || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.parentId, entry.zoneKey, entry.from.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored component order", options: { type: "info", timeout: 1500 } };
+      }
+      case "remove": {
+        if (!entry.component || entry.componentId == null) {
+          return { message: "Nothing to undo", options: { timeout: 1200 } };
+        }
+        const componentClone = cloneComponentTree(entry.component);
+        insertComponent(entry.parentId, entry.zoneKey, entry.index, componentClone);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored removed component", options: { type: "info", timeout: 1600 } };
+      }
+      case "clear": {
+        state.components = cloneComponentCollection(entry.components);
+        restoreContainerTabsSnapshot(entry.containerTabs);
+        state.selectedId = entry.previousSelectedId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Restored template canvas", options: { type: "info", timeout: 1600 } };
+      }
+      case "save": {
+        return { message: "Saved template state noted", options: { type: "info", timeout: 1500 } };
+      }
+      default:
+        return { message: "Nothing to undo", options: { timeout: 1200 } };
+    }
+  }
+
+  function applyTemplateRedo(entry) {
+    if (!ensureTemplateContext(entry)) {
+      return { message: "Redo unavailable for this template", options: { type: "warning", timeout: 2200 } };
+    }
+    switch (entry.type) {
+      case "add": {
+        if (!entry.component) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        const componentClone = cloneComponentTree(entry.component);
+        insertComponent(entry.parentId, entry.zoneKey, entry.index, componentClone);
+        state.selectedId = componentClone.uid;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component addition", options: { type: "info", timeout: 1600 } };
+      }
+      case "move": {
+        if (!entry.componentId || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.to.parentId, entry.to.zoneKey, entry.to.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component move", options: { type: "info", timeout: 1500 } };
+      }
+      case "reorder": {
+        if (!entry.componentId || !entry.parentId || !entry.zoneKey || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        moveComponent(entry.componentId, entry.parentId, entry.zoneKey, entry.to.index);
+        state.selectedId = entry.componentId;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied ordering", options: { type: "info", timeout: 1500 } };
+      }
+      case "remove": {
+        if (!entry.componentId) {
+          return { message: "Nothing to redo", options: { timeout: 1200 } };
+        }
+        removeComponent(entry.componentId, {
+          skipHistory: true,
+          silent: true,
+          suppressRender: true,
+        });
+        state.selectedId = entry.parentId || null;
+        renderCanvas();
+        renderInspector();
+        return { message: "Reapplied component removal", options: { type: "info", timeout: 1600 } };
+      }
+      case "clear": {
+        clearCanvas({ skipHistory: true, silent: true, suppressRender: true });
+        renderCanvas();
+        renderInspector();
+        return { message: "Cleared template canvas", options: { type: "info", timeout: 1500 } };
+      }
+      case "save": {
+        return { message: "Save action noted", options: { type: "info", timeout: 1500 } };
+      }
+      default:
+        return { message: "Nothing to redo", options: { timeout: 1200 } };
+    }
+  }
+
+  function handleUndoEntry(entry) {
+    return applyTemplateUndo(entry);
+  }
+
+  function handleRedoEntry(entry) {
+    return applyTemplateRedo(entry);
   }
 
   function applyTemplateData(
     data = {},
-    { origin = "draft", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+    {
+      origin = "draft",
+      emitStatus = false,
+      statusMessage = "",
+      markClean = origin !== "draft",
+      shareToken = "",
+    } = {}
   ) {
+    const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const template = createBlankTemplate({
       id: data.id || "",
       title: data.title || "",
       version: data.version || data.metadata?.version || "0.1",
       schema: data.schema || data.system || "",
       origin,
+      shareToken: effectiveShareToken,
     });
     componentCounter = 0;
     const components = Array.isArray(data.components)
       ? data.components.map((component) => hydrateComponent(component)).filter(Boolean)
       : [];
     state.template = template;
+    state.template.shareToken = effectiveShareToken;
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
@@ -2439,15 +2899,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       form.appendChild(componentSection);
     }
 
-    const dataControls = [];
-    if (definition.supportsBinding !== false || definition.supportsFormula !== false) {
-      dataControls.push(
-        createBindingFormulaInput(component, {
-          supportsBinding: definition.supportsBinding !== false,
-          supportsFormula: definition.supportsFormula !== false,
-        })
-      );
-    }
+    const dataControls = createDataControls(component, definition);
     const dataSection = createSection("Data", dataControls);
     if (dataSection) {
       form.appendChild(dataSection);
@@ -2480,6 +2932,92 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     elements.inspector.appendChild(form);
     refreshTooltips(elements.inspector);
     restoreInspectorFocus(focusSnapshot);
+  }
+
+  function createDataControls(component, definition = {}) {
+    const supportsBinding = definition.supportsBinding !== false;
+    const supportsFormula = definition.supportsFormula !== false;
+    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
+      return [];
+    }
+    if (component.type === "input" && (component.variant || "text") === "select") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@data.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (component.type === "select-group") {
+      const controls = [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.options",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+      ];
+      controls.push(
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
+        })
+      );
+      return controls;
+    }
+    if (component.type === "toggle") {
+      return [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@metadata.states",
+          bindingKey: "statesBinding",
+          formulaKey: null,
+          allowedFieldCategories: ["array"],
+          supportsFormula: false,
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.statesBinding = "";
+            }
+          },
+        }),
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["string", "number"],
+        }),
+      ];
+    }
+    if (!supportsBinding && !supportsFormula) {
+      return [];
+    }
+    return [
+      createBindingFormulaInput(component, {
+        supportsBinding,
+        supportsFormula,
+      }),
+    ];
   }
 
   function captureInspectorFocus() {
@@ -3244,6 +3782,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const controls = [];
     const options = [
       { value: "text", icon: "tabler:letter-case", label: "Text" },
+      { value: "textarea", icon: "tabler:notes", label: "Text area" },
       { value: "number", icon: "tabler:123", label: "Number" },
       { value: "select", icon: "tabler:list-details", label: "Select" },
       { value: "radio", icon: "tabler:circle-dot", label: "Radio" },
@@ -3260,6 +3799,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
             component.uid,
             (draft) => {
               draft.variant = value;
+              if (value === "textarea" && !Number.isFinite(Number(draft.rows))) {
+                draft.rows = 3;
+              }
               if (
                 (value === "select" || value === "radio" || value === "checkbox") &&
                 (!Array.isArray(draft.options) || !draft.options.length)
@@ -3280,6 +3822,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }, { rerenderCanvas: true });
       }, { placeholder: "Shown inside the field" })
     );
+    if ((component.variant || "text") === "textarea") {
+      controls.push(
+        createNumberInput(component, "Rows", component.rows ?? 3, (value) => {
+          const next = clampInteger(value ?? 3, 2, 12);
+          updateComponent(component.uid, (draft) => {
+            draft.rows = next;
+          }, { rerenderCanvas: true });
+        }, { min: 2, max: 12 })
+      );
+    }
     return controls;
   }
 
@@ -3502,7 +4054,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         (value) => {
           updateComponent(component.uid, (draft) => {
             draft.multiple = value === "multi";
-          }, { rerenderCanvas: true });
+          }, { rerenderCanvas: true, rerenderInspector: true });
         }
       )
     );
@@ -3529,26 +4081,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }
       )
     );
-    controls.push(...createToggleStateEditors(component));
     return controls;
-  }
-
-  function createToggleStateEditors(component) {
-    return [
-      createBindingFormulaInput(component, {
-        labelText: "States source",
-        placeholder: "@metadata.states",
-        bindingKey: "statesBinding",
-        formulaKey: null,
-        allowedFieldCategories: ["array"],
-        supportsFormula: false,
-        afterCommit: ({ draft, result }) => {
-          if (!result || result.type === "empty") {
-            draft.statesBinding = "";
-          }
-        },
-      }),
-    ];
   }
 
   function updateComponent(uid, mutate, { rerenderCanvas = false, rerenderInspector = false } = {}) {
@@ -3643,6 +4176,22 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         merged.value = merged.states[0];
       }
     }
+    if (merged.type === "input") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
+      if (merged.variant === "textarea") {
+        const numericRows = Number(merged.rows);
+        merged.rows = Number.isFinite(numericRows) ? clampInteger(numericRows, 2, 12) : base.rows ?? 3;
+      }
+    }
+    if (merged.type === "select-group") {
+      if (typeof merged.sourceBinding !== "string") {
+        merged.sourceBinding = "";
+      }
+      merged.sourceBinding = merged.sourceBinding.trim();
+    }
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
       Object.keys(zones).forEach((key) => {
@@ -3663,13 +4212,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       .replace(/[^a-z0-9_-]/g, "-");
   }
 
-  function createBlankTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
+  function createBlankTemplate({
+    id = "",
+    title = "",
+    version = "0.1",
+    schema = "",
+    origin = "draft",
+    shareToken = "",
+  } = {}) {
     return {
       id: id || "",
       title: title || "",
       version: version || "0.1",
       schema: schema || "",
       origin,
+      shareToken: shareToken || "",
     };
   }
 
@@ -3735,7 +4292,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("Template editor: unable to parse shared record", error);
       return null;
