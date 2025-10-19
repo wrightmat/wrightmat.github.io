@@ -116,6 +116,9 @@ const shareState = {
   eligibleUsers: [],
 };
 
+const SHARE_SPECIAL_ALL_USERS = "all-users";
+const SHARE_ALL_USERS_LABEL = "All Users";
+
 function isAdminSession() {
   const session = dataManager.session;
   return Boolean(session && session.user && session.user.tier === "admin");
@@ -717,13 +720,53 @@ function updateShareUsernameOptions() {
       seen.add(key);
       const option = document.createElement("option");
       option.value = username;
-      const tier = formatTier(normalizeTier(user.tier));
-      const label = tier ? `${username} (${tier})` : username;
+      if (user.special) {
+        option.dataset.special = user.special;
+      }
+      let label;
+      if (user.special === SHARE_SPECIAL_ALL_USERS) {
+        label = `${SHARE_ALL_USERS_LABEL} (View only)`;
+        option.value = SHARE_ALL_USERS_LABEL;
+      } else {
+        const tier = formatTier(normalizeTier(user.tier));
+        label = tier ? `${username} (${tier})` : username;
+      }
       option.label = label;
       option.textContent = label;
       fragment.appendChild(option);
-    });
+  });
   elements.shareUsernameOptions.replaceChildren(fragment);
+}
+
+function findEligibleShareEntry(username = "") {
+  const value = typeof username === "string" ? username.trim().toLowerCase() : "";
+  if (!value) {
+    return null;
+  }
+  const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
+  return (
+    options.find((user) => (user?.username || "").toLowerCase() === value) || null
+  );
+}
+
+function enforceSharePermissionConstraints() {
+  if (!elements.sharePermission) {
+    return;
+  }
+  const usernameValue = elements.shareUsername ? elements.shareUsername.value : "";
+  const match = findEligibleShareEntry(usernameValue);
+  const isAllUsers = Boolean(match && match.special === SHARE_SPECIAL_ALL_USERS);
+  const options = Array.from(elements.sharePermission.options || []);
+  options.forEach((option) => {
+    if (!option) {
+      return;
+    }
+    const shouldDisable = isAllUsers && option.value !== "view";
+    option.disabled = shouldDisable;
+  });
+  if (isAllUsers) {
+    elements.sharePermission.value = "view";
+  }
 }
 
 function renderShareModal() {
@@ -785,6 +828,7 @@ function renderShareModal() {
     } else {
       elements.shareUsername.placeholder = "Start typing a username…";
     }
+    enforceSharePermissionConstraints();
   }
   if (!hasRecord) {
     if (elements.shareTable) {
@@ -828,7 +872,10 @@ function renderShareModal() {
     shareEntries.forEach((entry) => {
       const row = document.createElement("tr");
       const userCell = document.createElement("td");
-      userCell.textContent = entry.username;
+      const special = entry?.special || "";
+      const isAllUsers = special === SHARE_SPECIAL_ALL_USERS;
+      const displayUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : entry.username;
+      userCell.textContent = displayUsername;
       const actionCell = document.createElement("td");
       actionCell.className = "text-end";
 
@@ -844,6 +891,15 @@ function renderShareModal() {
         permissionSelect.appendChild(opt);
       });
       permissionSelect.value = entry.permissions === "edit" ? "edit" : "view";
+      if (isAllUsers) {
+        permissionSelect.value = "view";
+        Array.from(permissionSelect.options).forEach((option) => {
+          if (option.value !== "view") {
+            option.disabled = true;
+          }
+        });
+        permissionSelect.disabled = true;
+      }
 
       const removeButton = document.createElement("button");
       removeButton.type = "button";
@@ -851,6 +907,10 @@ function renderShareModal() {
       removeButton.textContent = "Remove";
 
       permissionSelect.addEventListener("change", async () => {
+        if (isAllUsers) {
+          permissionSelect.value = "view";
+          return;
+        }
         const selected = permissionSelect.value;
         permissionSelect.disabled = true;
         removeButton.disabled = true;
@@ -961,6 +1021,7 @@ async function refreshShareEligibleUsers() {
     shareState.eligibleUsers = users.map((user) => ({
       username: user.username,
       tier: normalizeTier(user.tier),
+      special: user.special || "",
     }));
   } catch (error) {
     console.error("Failed to load eligible users", error);
@@ -1423,12 +1484,18 @@ if (elements.shareAddForm) {
       return;
     }
     const username = (elements.shareUsername?.value || "").trim();
-    const permissions = elements.sharePermission?.value || "view";
+    let permissions = elements.sharePermission?.value || "view";
     if (!username) {
       if (status) {
         status.show("Enter a username to share with.", { type: "warning", timeout: 1800 });
       }
       return;
+    }
+    const match = findEligibleShareEntry(username);
+    const isAllUsers = Boolean(match && match.special === SHARE_SPECIAL_ALL_USERS);
+    const targetUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : username;
+    if (isAllUsers) {
+      permissions = "view";
     }
     const contentType = contentTypeFromBucket(shareState.record.bucket);
     disableForm(elements.shareAddForm, true);
@@ -1436,15 +1503,16 @@ if (elements.shareAddForm) {
       await dataManager.shareWithUser({
         contentType,
         contentId: shareState.record.id,
-        username,
+        username: targetUsername,
         permissions,
       });
       elements.shareAddForm.reset();
       if (elements.sharePermission) {
         elements.sharePermission.value = "view";
       }
+      enforceSharePermissionConstraints();
       if (status) {
-        status.show(`Shared with ${username}.`, { type: "success", timeout: 1800 });
+        status.show(`Shared with ${targetUsername}.`, { type: "success", timeout: 1800 });
       }
     } catch (error) {
       console.error("Failed to share with user", error);
@@ -1456,6 +1524,14 @@ if (elements.shareAddForm) {
       await refreshShareModal();
     }
   });
+}
+
+if (elements.shareUsername) {
+  const handler = () => {
+    enforceSharePermissionConstraints();
+  };
+  elements.shareUsername.addEventListener("input", handler);
+  elements.shareUsername.addEventListener("change", handler);
 }
 
 function setEmailError(message = "") {

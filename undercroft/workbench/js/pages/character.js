@@ -607,11 +607,15 @@ import {
     if (next.share_token !== undefined && next.shareToken === undefined) {
       next.shareToken = next.share_token;
     }
+    if (next.template_title !== undefined && next.templateTitle === undefined) {
+      next.templateTitle = next.template_title;
+    }
     delete next.owner_id;
     delete next.owner_username;
     delete next.owner_tier;
     delete next.permissions;
     delete next.share_token;
+    delete next.template_title;
 
     if (!next.ownership && current.ownership) {
       next.ownership = current.ownership;
@@ -630,6 +634,9 @@ import {
     }
     if (!next.shareToken && current.shareToken) {
       next.shareToken = current.shareToken;
+    }
+    if (!next.templateTitle && current.templateTitle) {
+      next.templateTitle = current.templateTitle;
     }
     Object.keys(next).forEach((key) => {
       if (next[key] === undefined) {
@@ -843,7 +850,29 @@ import {
       console.warn("Character editor: unable to read local templates", error);
     }
     const selected = elements.newCharacterTemplate?.value || "";
-    refreshNewCharacterTemplateOptions(selected);
+    if (!dataManager.baseUrl) {
+      refreshNewCharacterTemplateOptions(selected);
+      return;
+    }
+    try {
+      const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
+      const items = Array.isArray(remote?.items) ? remote.items : [];
+      items.forEach((item) => {
+        if (!item || !item.id) return;
+        const shareToken = item.shareToken || item.share_token || "";
+        registerTemplateRecord({
+          id: item.id,
+          title: item.title || item.id,
+          schema: item.schema || "",
+          source: "remote",
+          shareToken,
+        });
+      });
+    } catch (error) {
+      console.warn("Character editor: unable to list templates", error);
+    } finally {
+      refreshNewCharacterTemplateOptions(selected);
+    }
   }
 
   async function loadCharacterRecords() {
@@ -866,6 +895,7 @@ import {
           id,
           title: payload?.data?.name || payload?.title || id,
           template: payload?.template || "",
+          templateTitle: payload?.templateTitle || "",
           source: "local",
           ownership: isOwner ? "owned" : "local",
           ownerId: ownerSnapshot?.id ?? null,
@@ -898,6 +928,7 @@ import {
           id: entry.id,
           title: entry.name || entry.title || entry.id,
           template: entry.template || "",
+          templateTitle: entry.template_title || "",
           source: "remote",
           ownership: "owned",
           ownerId: entry.owner_id ?? session?.id ?? null,
@@ -912,6 +943,7 @@ import {
           id,
           title: payload?.data?.name || payload?.title || id,
           template: payload?.template || "",
+          templateTitle: payload?.templateTitle || "",
           source: "remote",
           ownership: "owned",
           ownerId: owner?.id ?? session?.id ?? null,
@@ -926,6 +958,7 @@ import {
           id: entry.id,
           title: entry.name || entry.title || entry.id,
           template: entry.template || "",
+          templateTitle: entry.template_title || "",
           source: "remote",
           ownership: "shared",
           ownerId: entry.owner_id ?? null,
