@@ -23,7 +23,11 @@ import {
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 
 (async () => {
-  const { status, undoStack } = initAppShell({ namespace: "system" });
+  const { status, undoStack, undo, redo } = initAppShell({
+    namespace: "system",
+    onUndo: handleUndoEntry,
+    onRedo: handleRedoEntry,
+  });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
@@ -107,7 +111,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     palette: document.querySelector("[data-palette]"),
     inspector: document.querySelector("[data-inspector]"),
     saveButton: document.querySelector('[data-action="save-system"]'),
+    undoButton: document.querySelector('[data-action="undo-system"]'),
+    redoButton: document.querySelector('[data-action="redo-system"]'),
     newButton: document.querySelector('[data-action="new-system"]'),
+    duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
     deleteButton: document.querySelector('[data-delete-system]'),
     clearButton: document.querySelector('[data-action="clear-canvas"]'),
     importButton: document.querySelector('[data-action="import-system"]'),
@@ -121,6 +128,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     newSystemId: document.querySelector("[data-new-system-id]"),
     newSystemTitle: document.querySelector("[data-new-system-title]"),
     newSystemVersion: document.querySelector("[data-new-system-version]"),
+    newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
+    systemMeta: document.querySelector("[data-system-meta]"),
   };
 
   refreshTooltips(document);
@@ -152,17 +161,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       const parentId = "root";
       const collection = getCollection(parentId);
       const index = collection ? collection.length : 0;
+      const previousSelectedId = state.selectedNodeId || null;
       state.selectedNodeId = node.id;
-      return { parentId, index, type: normalizeType(type) };
+      return { parentId, index, type: normalizeType(type), previousSelectedId };
     },
     insertItem: (type, node, context) => {
       insertNode(context.parentId, context.index, node);
     },
     createUndoEntry: (type, node, context) => ({
       type: "add",
-      nodeId: node.id,
+      systemId: state.system?.id || "",
+      node: cloneNode(node),
       parentId: context.parentId,
       index: context.index,
+      previousSelectedId: context.previousSelectedId || null,
     }),
     afterInsert: () => {
       renderAll();
@@ -180,6 +192,88 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   const dropzones = new Map();
   const typeCounters = new Map();
+
+  function cloneNode(node) {
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(node);
+      } catch (error) {
+        // ignore structuredClone errors and fall back
+      }
+    }
+    return JSON.parse(JSON.stringify(node));
+  }
+
+  function cloneNodeCollection(nodes) {
+    return Array.isArray(nodes) ? nodes.map((node) => cloneNode(node)) : [];
+  }
+
+  function cloneValue(value) {
+    if (value === undefined || value === null) {
+      return value;
+    }
+    if (typeof value !== "object") {
+      return value;
+    }
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(value);
+      } catch (error) {
+        // ignore structuredClone errors and fall back
+      }
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      if (Array.isArray(value)) {
+        return value.slice();
+      }
+      return { ...value };
+    }
+  }
+
+  function areValuesEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+    if (Number.isNaN(a) && Number.isNaN(b)) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return a === b;
+    }
+    if (Array.isArray(a) || Array.isArray(b)) {
+      if (!Array.isArray(a) || !Array.isArray(b)) {
+        return false;
+      }
+      if (a.length !== b.length) {
+        return false;
+      }
+      for (let index = 0; index < a.length; index += 1) {
+        if (!areValuesEqual(a[index], b[index])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (typeof a === "object" && typeof b === "object") {
+      const keysA = Object.keys(a);
+      const keysB = Object.keys(b);
+      if (keysA.length !== keysB.length) {
+        return false;
+      }
+      for (const key of keysA) {
+        if (!Object.prototype.hasOwnProperty.call(b, key)) {
+          return false;
+        }
+        if (!areValuesEqual(a[key], b[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
 
   const renderPreview = createJsonPreviewRenderer({
     resolvePreviewElement: () => elements.jsonPreview,
@@ -222,6 +316,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
+  let systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+
   if (elements.select) {
     populateSelect(
       elements.select,
@@ -263,7 +359,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           payload = await response.json();
           markBuiltinAvailable("systems", metadata.id || selectedId);
         } else {
-          const result = await dataManager.get("systems", selectedId, { preferLocal: true });
+          const shareToken = metadata.shareToken || "";
+          const result = await dataManager.get("systems", selectedId, {
+            preferLocal: !shareToken,
+            shareToken,
+          });
           payload = result?.payload || null;
         }
         if (!payload) {
@@ -271,10 +371,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }
         const label = payload.title || metadata.title || selectedId;
         registerSystemRecord(
-          { id: payload.id || selectedId, title: label, source: metadata.source || "remote", path: metadata.path },
+          {
+            id: payload.id || selectedId,
+            title: label,
+            source: metadata.source || "remote",
+            path: metadata.path,
+            shareToken: metadata.shareToken,
+          },
           { syncOption: true }
         );
-        applySystemData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+        applySystemData(payload, {
+          origin: metadata.source || "remote",
+          emitStatus: true,
+          statusMessage: `Loaded ${label}`,
+          shareToken: metadata.shareToken || "",
+        });
       } catch (error) {
         console.error("Unable to load system", error);
         if (metadata.source === "builtin") {
@@ -289,7 +400,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   if (elements.newButton) {
     elements.newButton.addEventListener("click", () => {
       if (newSystemModalInstance && elements.newSystemForm) {
-        prepareNewSystemForm();
+        prepareNewSystemForm({ mode: "new" });
         newSystemModalInstance.show();
         return;
       }
@@ -303,13 +414,48 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return;
       }
       const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
-      persistCurrentDraft();
-      const blank = createBlankSystem({ id: id.trim(), title: title.trim(), version: version.trim(), origin: "draft" });
-      registerSystemRecord({ id: blank.id, title: blank.title, source: "draft" }, { syncOption: true });
-      applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
-      if (elements.select) {
-        elements.select.value = blank.id || "";
+      startNewSystem({
+        id: id.trim(),
+        title: title.trim(),
+        version: (version || "0.1").trim() || "0.1",
+        origin: "draft",
+      });
+    });
+  }
+
+  if (elements.duplicateButton) {
+    elements.duplicateButton.addEventListener("click", () => {
+      if (!hasActiveSystem()) {
+        return;
       }
+      const sourceSystem = cloneSystem(state.system);
+      sourceSystem.shareToken = "";
+      const sourceTitle = state.system.title || state.system.id || "system";
+      if (newSystemModalInstance && elements.newSystemForm) {
+        prepareNewSystemForm({ mode: "duplicate", seedSystem: state.system });
+        newSystemModalInstance.show();
+        return;
+      }
+      const suggestedId = generateDuplicateSystemId(state.system.id || state.system.title || "system");
+      const idInput = window.prompt("Enter a system ID", suggestedId || state.system.id || "");
+      if (!idInput) {
+        return;
+      }
+      const suggestedTitle = generateDuplicateSystemTitle(state.system.title || state.system.id || "System");
+      const titleInput = window.prompt("Enter a system title", suggestedTitle) || "";
+      if (!titleInput) {
+        return;
+      }
+      const versionInput = window.prompt("Enter a version", state.system.version || "0.1") || state.system.version || "0.1";
+      startNewSystem({
+        id: idInput.trim(),
+        title: titleInput.trim(),
+        version: (versionInput || "0.1").trim() || "0.1",
+        origin: "draft",
+        sourceSystem,
+        markClean: false,
+        statusMessage: `Duplicated ${sourceTitle}`,
+      });
     });
   }
 
@@ -331,13 +477,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         return;
       }
 
-      persistCurrentDraft();
-      const blank = createBlankSystem({ id, title, version, origin: "draft" });
-      registerSystemRecord({ id: blank.id, title: blank.title, source: "draft" }, { syncOption: true });
-      applySystemState(blank, { emitStatus: true, statusMessage: "Started a new system" });
-      if (elements.select) {
-        elements.select.value = blank.id || "";
-      }
+      const mode = form.dataset.mode || systemCreationContext.mode || "new";
+      const isDuplicate = mode === "duplicate" && systemCreationContext.mode === "duplicate";
+      const sourceSystem = isDuplicate && systemCreationContext.duplicateSystem
+        ? cloneSystem(systemCreationContext.duplicateSystem)
+        : null;
+      const sourceTitle = systemCreationContext.sourceTitle || state.system.title || state.system.id || title;
+      startNewSystem({
+        id,
+        title,
+        version,
+        origin: "draft",
+        sourceSystem,
+        markClean: !isDuplicate,
+        statusMessage: isDuplicate ? `Duplicated ${sourceTitle}` : `Started ${title || id}`,
+      });
+      systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+      form.dataset.mode = "new";
       if (newSystemModalInstance) {
         newSystemModalInstance.hide();
       }
@@ -346,24 +502,50 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
-  function prepareNewSystemForm() {
+  function prepareNewSystemForm({ mode = "new", seedSystem = null } = {}) {
     if (!elements.newSystemForm) {
       return;
     }
+    const isDuplicate = mode === "duplicate" && seedSystem;
+    systemCreationContext = {
+      mode: isDuplicate ? "duplicate" : "new",
+      duplicateSystem: isDuplicate ? cloneSystem(seedSystem) : null,
+      sourceTitle: isDuplicate ? seedSystem?.title || seedSystem?.id || "" : "",
+    };
     elements.newSystemForm.reset();
     elements.newSystemForm.classList.remove("was-validated");
+    elements.newSystemForm.dataset.mode = systemCreationContext.mode;
+    if (elements.newSystemModalTitle) {
+      elements.newSystemModalTitle.textContent = isDuplicate ? "Duplicate System" : "Create New System";
+    }
+    const defaultVersion = elements.newSystemVersion?.getAttribute("value") || "0.1";
     if (elements.newSystemVersion) {
-      const defaultVersion = elements.newSystemVersion.getAttribute("value") || "0.1";
-      elements.newSystemVersion.value = defaultVersion;
+      elements.newSystemVersion.value = isDuplicate
+        ? seedSystem?.version || defaultVersion
+        : defaultVersion;
+    }
+    if (elements.newSystemTitle) {
+      elements.newSystemTitle.value = isDuplicate
+        ? generateDuplicateSystemTitle(seedSystem?.title || seedSystem?.id || "System")
+        : "";
+      if (isDuplicate) {
+        elements.newSystemTitle.select();
+      }
     }
     if (elements.newSystemId) {
       elements.newSystemId.setCustomValidity("");
-      const seed = state.system?.title || state.system?.id || "system";
       let generatedId = "";
-      do {
-        generatedId = generateSystemId(seed || "system");
-      } while (generatedId && systemCatalog.has(generatedId));
+      if (isDuplicate) {
+        generatedId = generateDuplicateSystemId(seedSystem?.id || seedSystem?.title || "system");
+      } else {
+        const seed = state.system?.title || state.system?.id || "system";
+        do {
+          generatedId = generateSystemId(seed || "system");
+        } while (generatedId && systemCatalog.has(generatedId));
+      }
       elements.newSystemId.value = generatedId;
+      elements.newSystemId.focus();
+      elements.newSystemId.select();
     }
   }
 
@@ -389,7 +571,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       payload.id = systemId;
       if (state.system.id !== systemId) {
         state.system.id = systemId;
-        registerSystemRecord({ id: systemId, title: payload.title || systemId, source: state.system.origin || "draft" }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id: systemId,
+            title: payload.title || systemId,
+            source: state.system.origin || "draft",
+            shareToken: state.system.shareToken || "",
+          },
+          { syncOption: true }
+        );
         ensureSelectValue();
       }
       const wantsRemote = dataManager.isAuthenticated();
@@ -408,12 +598,20 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         const result = await dataManager.save("systems", systemId, payload, {
           mode: wantsRemote ? "remote" : "auto",
         });
-        undoStack.push({ type: "save", id: systemId });
+        undoStack.push({ type: "save", systemId, timestamp: Date.now() });
         rememberDraft(state.system);
         const savedToServer = result?.source === "remote";
         const label = payload.title || systemId;
         state.system.origin = savedToServer ? "remote" : "local";
-        registerSystemRecord({ id: systemId, title: label, source: state.system.origin }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id: systemId,
+            title: label,
+            source: state.system.origin,
+            shareToken: state.system.shareToken || "",
+          },
+          { syncOption: true }
+        );
         ensureSelectValue();
         if (savedToServer || !requireRemote) {
           markSystemClean(state.system);
@@ -475,6 +673,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     });
   }
 
+  if (elements.undoButton) {
+    elements.undoButton.addEventListener("click", () => {
+      undo();
+    });
+  }
+
+  if (elements.redoButton) {
+    elements.redoButton.addEventListener("click", () => {
+      redo();
+    });
+  }
+
   if (elements.clearButton) {
     elements.clearButton.addEventListener("click", () => {
       clearCanvas();
@@ -500,7 +710,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         statusMessage: `Imported ${data.title || state.system.id || "system"}`,
         markClean: false,
       });
-      registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
+      registerSystemRecord(
+        {
+          id: state.system.id,
+          title: state.system.title,
+          source: state.system.origin,
+          shareToken: state.system.shareToken || "",
+        },
+        { syncOption: true }
+      );
       if (elements.select) {
         elements.select.value = state.system.id || "";
       }
@@ -540,7 +758,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   renderAll();
 
-  function createBlankSystem({ id = "", title = "", version = "0.1", origin = "draft" } = {}) {
+  function createBlankSystem({ id = "", title = "", version = "0.1", origin = "draft", shareToken = "" } = {}) {
     return {
       id,
       title,
@@ -551,6 +769,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       formulas: [],
       importers: [],
       origin,
+      shareToken: shareToken || "",
     };
   }
 
@@ -574,13 +793,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function applySystemData(
     data = {},
-    { origin = "remote", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+    {
+      origin = "remote",
+      emitStatus = false,
+      statusMessage = "",
+      markClean = origin !== "draft",
+      shareToken = "",
+    } = {}
   ) {
+    const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const hydrated = createBlankSystem({
       id: data.id || "",
       title: data.title || "",
       version: data.version || "0.1",
       origin,
+      shareToken: effectiveShareToken,
     });
     hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
     hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
@@ -588,13 +815,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
     applySystemState(hydrated, { emitStatus, statusMessage, markClean });
+    state.system.shareToken = effectiveShareToken;
   }
 
   function applySystemState(system, { emitStatus = false, statusMessage = "", markClean = true } = {}) {
     state.system = cloneSystem(system);
     state.system.origin = system.origin || state.system.origin || "draft";
+    state.system.shareToken = system.shareToken || state.system.shareToken || "";
     if (state.system.id) {
-      registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
+      registerSystemRecord(
+        {
+          id: state.system.id,
+          title: state.system.title,
+          source: state.system.origin,
+          shareToken: state.system.shareToken,
+        },
+        { syncOption: true }
+      );
     }
     rebuildFieldIdentities(state.system);
     state.selectedNodeId = null;
@@ -606,6 +843,50 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (emitStatus && statusMessage) {
       status.show(statusMessage, { type: "success", timeout: 2000 });
     }
+  }
+
+  function startNewSystem({
+    id = "",
+    title = "",
+    version = "0.1",
+    origin = "draft",
+    sourceSystem = null,
+    markClean = true,
+    statusMessage = "",
+  } = {}) {
+    const trimmedId = (id || "").trim();
+    const trimmedTitle = (title || "").trim();
+    const trimmedVersion = (version || "0.1").trim() || "0.1";
+    if (!trimmedId || !trimmedTitle) {
+      status.show("Provide a system ID and title.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    persistCurrentDraft();
+    let nextSystem;
+    if (sourceSystem) {
+      nextSystem = cloneSystem(sourceSystem);
+    } else {
+      nextSystem = createBlankSystem({ id: trimmedId, title: trimmedTitle, version: trimmedVersion, origin });
+      nextSystem.fields = [];
+      nextSystem.fragments = [];
+      nextSystem.metadata = [];
+      nextSystem.formulas = [];
+      nextSystem.importers = [];
+    }
+    nextSystem.id = trimmedId;
+    nextSystem.title = trimmedTitle;
+    nextSystem.version = trimmedVersion;
+    nextSystem.origin = origin;
+    nextSystem.shareToken = "";
+    applySystemState(nextSystem, {
+      emitStatus: true,
+      statusMessage: statusMessage || `Started ${trimmedTitle || trimmedId}`,
+      markClean,
+    });
+    if (elements.select) {
+      elements.select.value = trimmedId;
+    }
+    systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
   }
 
   function hydrateFieldNode(field) {
@@ -672,18 +953,31 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     refreshTooltips(root);
   }
 
-  function clearCanvas() {
+  function clearCanvas({ skipHistory = false, silent = false, suppressRender = false } = {}) {
     const fields = state.system.fields || [];
     if (!fields.length) {
       status.show("Canvas is already empty", { timeout: 1200 });
       return;
     }
+    const previousFields = cloneNodeCollection(fields);
+    const previousSelectedId = state.selectedNodeId || null;
     state.system.fields = [];
     state.selectedNodeId = null;
     resetTypeCounters();
-    undoStack.push({ type: "clear" });
-    status.show("Cleared system canvas", { type: "info", timeout: 1500 });
-    renderAll();
+    if (!skipHistory) {
+      undoStack.push({
+        type: "clear",
+        systemId: state.system?.id || "",
+        fields: previousFields,
+        previousSelectedId,
+      });
+    }
+    if (!silent) {
+      status.show("Cleared system canvas", { type: "info", timeout: 1500 });
+    }
+    if (!suppressRender) {
+      renderAll();
+    }
   }
 
   function renderFieldCard(node) {
@@ -802,8 +1096,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
     if (paletteType) {
       const node = applyFieldIdentity(createFieldNode(paletteType));
+      const previousSelectedId = state.selectedNodeId || null;
       insertNode(parentId, index, node);
-      undoStack.push({ type: "add", nodeId: node.id, parentId });
+      undoStack.push({
+        type: "add",
+        systemId: state.system?.id || "",
+        node: cloneNode(node),
+        parentId,
+        index,
+        previousSelectedId,
+      });
       status.show(`Added ${TYPE_DEFS[paletteType]?.label || paletteType} field`, { timeout: 1500 });
       selectNode(node.id);
     } else if (nodeId) {
@@ -812,8 +1114,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         renderAll();
         return;
       }
-      moveNode(nodeId, parentId, index);
-      undoStack.push({ type: "move", nodeId, parentId, index });
+      const moveResult = moveNode(nodeId, parentId, index);
+      if (moveResult.success) {
+        undoStack.push({
+          type: "move",
+          systemId: state.system?.id || "",
+          nodeId,
+          from: moveResult.from,
+          to: moveResult.to,
+        });
+      }
       status.show("Reordered field", { timeout: 1200 });
     }
 
@@ -840,7 +1150,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const [item] = collection.splice(oldIndex, 1);
     collection.splice(newIndex, 0, item);
-    undoStack.push({ type: "reorder", nodeId, parentId, oldIndex, newIndex });
+    const finalPosition = findNode(nodeId);
+    undoStack.push({
+      type: "reorder",
+      systemId: state.system?.id || "",
+      nodeId,
+      parentId,
+      from: { index: oldIndex },
+      to: { index: finalPosition ? finalPosition.index : newIndex },
+    });
     renderAll();
   }
 
@@ -855,34 +1173,310 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   function moveNode(nodeId, targetParentId, index) {
     const found = findNode(nodeId);
     if (!found) {
-      return;
+      return { success: false };
     }
     const targetCollection = getCollection(targetParentId);
     if (!targetCollection) {
-      return;
+      return { success: false };
     }
-    if (found.collection === targetCollection) {
-      const [item] = found.collection.splice(found.index, 1);
-      targetCollection.splice(index, 0, item);
-      return;
-    }
+    const fromParentId = found.parentId;
+    const fromIndex = found.index;
     const [item] = found.collection.splice(found.index, 1);
-    targetCollection.splice(index, 0, item);
+    let safeIndex = Math.min(Math.max(index, 0), targetCollection.length);
+    if (found.collection === targetCollection && fromIndex < safeIndex) {
+      safeIndex -= 1;
+    }
+    targetCollection.splice(safeIndex, 0, item);
+    return {
+      success: true,
+      from: { parentId: fromParentId, index: fromIndex },
+      to: { parentId: targetParentId, index: safeIndex },
+    };
   }
 
-  function deleteNode(nodeId) {
+  function deleteNode(nodeId, { skipHistory = false, silent = false, suppressRender = false } = {}) {
     const found = findNode(nodeId);
     if (!found) {
       return;
     }
     const { collection, index } = found;
-    collection.splice(index, 1);
+    const [removed] = collection.splice(index, 1);
+    const previousSelectedId = state.selectedNodeId || null;
     if (state.selectedNodeId === nodeId) {
-      state.selectedNodeId = null;
+      state.selectedNodeId = found.parentId && found.parentId !== "root" ? found.parentId : null;
     }
-    undoStack.push({ type: "delete", nodeId });
-    status.show("Removed field", { type: "info", timeout: 1500 });
-    renderAll();
+    if (!skipHistory) {
+      undoStack.push({
+        type: "delete",
+        systemId: state.system?.id || "",
+        nodeId,
+        node: cloneNode(removed),
+        parentId: found.parentId,
+        index,
+        previousSelectedId,
+      });
+    }
+    if (!silent) {
+      status.show("Removed field", { type: "info", timeout: 1500 });
+    }
+    if (!suppressRender) {
+      renderAll();
+    }
+  }
+
+  function ensureSystemContext(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
+    }
+    const entryId = entry.systemId ?? "";
+    const currentId = state.system?.id || "";
+    if (entryId && entryId !== currentId) {
+      return false;
+    }
+    return true;
+  }
+
+  function applySystemUndo(entry) {
+    if (!ensureSystemContext(entry)) {
+      return {
+        message: "Undo unavailable for this system",
+        options: { type: "warning", timeout: 2200 },
+        applied: false,
+      };
+    }
+    switch (entry.type) {
+      case "add": {
+        const nodeId = entry.node?.id;
+        if (!nodeId) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        deleteNode(nodeId, { skipHistory: true, silent: true, suppressRender: true });
+        state.selectedNodeId = entry.previousSelectedId || null;
+        renderAll();
+        return {
+          message: "Removed added field",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "move": {
+        if (!entry.nodeId || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        moveNode(entry.nodeId, entry.from.parentId, entry.from.index);
+        state.selectedNodeId = entry.nodeId;
+        renderAll();
+        return {
+          message: "Moved field back",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "reorder": {
+        if (!entry.nodeId || !entry.parentId || !entry.from) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        moveNode(entry.nodeId, entry.parentId, entry.from.index);
+        state.selectedNodeId = entry.nodeId;
+        renderAll();
+        return {
+          message: "Restored field order",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "delete": {
+        if (!entry.node) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        const nodeClone = cloneNode(entry.node);
+        insertNode(entry.parentId || "root", entry.index ?? 0, nodeClone);
+        state.selectedNodeId = nodeClone.id;
+        renderAll();
+        return {
+          message: "Restored removed field",
+          options: { type: "info", timeout: 1600 },
+          applied: true,
+        };
+      }
+      case "update": {
+        if (!entry.nodeId || !entry.property) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        state.selectedNodeId = entry.nodeId;
+        updateNodeProperty(entry.nodeId, entry.property, entry.previous, {
+          skipHistory: true,
+          defined: entry.previousDefined !== false,
+        });
+        return {
+          message: "Reverted field change",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "type": {
+        if (!entry.nodeId || !entry.previous) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        const location = findNode(entry.nodeId);
+        if (!location || !location.collection) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        location.collection[location.index] = cloneNode(entry.previous);
+        state.selectedNodeId = entry.nodeId;
+        rebuildFieldIdentities(state.system);
+        renderAll();
+        return {
+          message: "Reverted field type",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "clear": {
+        state.system.fields = cloneNodeCollection(entry.fields);
+        state.selectedNodeId = entry.previousSelectedId || null;
+        rebuildFieldIdentities(state.system);
+        renderAll();
+        return {
+          message: "Restored system canvas",
+          options: { type: "info", timeout: 1600 },
+          applied: true,
+        };
+      }
+      case "save": {
+        return {
+          message: "Saved system state noted",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      default:
+        return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+    }
+  }
+
+  function applySystemRedo(entry) {
+    if (!ensureSystemContext(entry)) {
+      return {
+        message: "Redo unavailable for this system",
+        options: { type: "warning", timeout: 2200 },
+        applied: false,
+      };
+    }
+    switch (entry.type) {
+      case "add": {
+        if (!entry.node) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        const nodeClone = cloneNode(entry.node);
+        insertNode(entry.parentId || "root", entry.index ?? 0, nodeClone);
+        state.selectedNodeId = nodeClone.id;
+        renderAll();
+        return {
+          message: "Reapplied field addition",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "move": {
+        if (!entry.nodeId || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        moveNode(entry.nodeId, entry.to.parentId, entry.to.index);
+        state.selectedNodeId = entry.nodeId;
+        renderAll();
+        return {
+          message: "Reapplied field move",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "reorder": {
+        if (!entry.nodeId || !entry.parentId || !entry.to) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        moveNode(entry.nodeId, entry.parentId, entry.to.index);
+        state.selectedNodeId = entry.nodeId;
+        renderAll();
+        return {
+          message: "Reapplied ordering",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "delete": {
+        if (!entry.nodeId) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        deleteNode(entry.nodeId, { skipHistory: true, silent: true, suppressRender: true });
+        state.selectedNodeId = entry.parentId && entry.parentId !== "root" ? entry.parentId : null;
+        renderAll();
+        return {
+          message: "Reapplied field removal",
+          options: { type: "info", timeout: 1600 },
+          applied: true,
+        };
+      }
+      case "update": {
+        if (!entry.nodeId || !entry.property) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        state.selectedNodeId = entry.nodeId;
+        updateNodeProperty(entry.nodeId, entry.property, entry.next, {
+          skipHistory: true,
+          defined: entry.nextDefined !== false,
+        });
+        return {
+          message: "Reapplied field change",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "type": {
+        if (!entry.nodeId || !entry.next) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        const location = findNode(entry.nodeId);
+        if (!location || !location.collection) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        location.collection[location.index] = cloneNode(entry.next);
+        state.selectedNodeId = entry.nodeId;
+        rebuildFieldIdentities(state.system);
+        renderAll();
+        return {
+          message: "Reapplied field type",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "clear": {
+        clearCanvas({ skipHistory: true, silent: true, suppressRender: true });
+        renderAll();
+        return {
+          message: "Cleared system canvas",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "save": {
+        return {
+          message: "Save action noted",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      default:
+        return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+    }
+  }
+
+  function handleUndoEntry(entry) {
+    return applySystemUndo(entry);
+  }
+
+  function handleRedoEntry(entry) {
+    return applySystemRedo(entry);
   }
 
   function selectNode(nodeId) {
@@ -1149,15 +1743,51 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return wrapper;
   }
 
-  function updateNodeProperty(nodeId, property, value) {
+  function updateNodeProperty(
+    nodeId,
+    property,
+    value,
+    { skipHistory = false, defined = value !== undefined } = {}
+  ) {
     const found = findNode(nodeId);
     if (!found) {
       return;
     }
-    found.node[property] = value;
+    const hasCurrent = Object.prototype.hasOwnProperty.call(found.node, property);
+    const currentValue = hasCurrent ? found.node[property] : undefined;
+    if (!defined && !hasCurrent) {
+      return;
+    }
+    if (defined && hasCurrent && areValuesEqual(currentValue, value)) {
+      return;
+    }
+    if (!skipHistory) {
+      undoStack.push({
+        type: "update",
+        systemId: state.system?.id || "",
+        nodeId,
+        property,
+        previous: cloneValue(currentValue),
+        previousDefined: hasCurrent,
+        next: cloneValue(value),
+        nextDefined: defined,
+      });
+    }
+    applyNodePropertyChange(found.node, property, value, { defined });
     renderCanvas();
     renderPreview();
     renderInspector();
+  }
+
+  function applyNodePropertyChange(targetNode, property, value, { defined = value !== undefined } = {}) {
+    if (!targetNode) {
+      return;
+    }
+    if (!defined) {
+      delete targetNode[property];
+      return;
+    }
+    targetNode[property] = cloneValue(value);
   }
 
   function changeNodeType(nodeId, nextType) {
@@ -1166,17 +1796,30 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return;
     }
     const current = found.node;
+    const normalizedNextType = normalizeType(nextType);
+    if (normalizeType(current.type) === normalizedNextType) {
+      return;
+    }
+    const previousNode = cloneNode(current);
     const preserved = {
       id: current.id,
       key: current.key,
       label: current.label,
       required: current.required,
     };
-    const replacement = applyFieldIdentity(createFieldNode(nextType, preserved));
+    const replacement = applyFieldIdentity(createFieldNode(normalizedNextType, preserved));
     if (found.collection) {
       found.collection[found.index] = replacement;
     }
+    undoStack.push({
+      type: "type",
+      systemId: state.system?.id || "",
+      nodeId,
+      previous: previousNode,
+      next: cloneNode(replacement),
+    });
     state.selectedNodeId = preserved.id;
+    rebuildFieldIdentities(state.system);
     renderAll();
   }
 
@@ -1376,6 +2019,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       }
     }
 
+    if (elements.duplicateButton) {
+      const canDuplicate = hasActiveSystem();
+      elements.duplicateButton.classList.toggle("d-none", !canDuplicate);
+      elements.duplicateButton.disabled = !canDuplicate;
+      elements.duplicateButton.setAttribute("aria-disabled", canDuplicate ? "false" : "true");
+    }
+
+    updateSystemMeta();
+
     if (!elements.deleteButton) {
       return;
     }
@@ -1475,7 +2127,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function loadSystemRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("systems");
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload } = entry;
+        if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
         registerSystemRecord({ id, title: payload?.title || id, source: "local" }, { syncOption: true });
       });
     } catch (error) {
@@ -1487,9 +2144,26 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     try {
       const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const adopted = dataManager.adoptLegacyRecords(
+        "systems",
+        owned.map((entry) => entry?.id).filter(Boolean)
+      );
+      adopted.forEach(({ id, payload }) => {
+        if (!id) return;
+        registerSystemRecord({ id, title: payload?.title || id, source: "remote" }, { syncOption: true });
+      });
       const items = remote?.items || [];
       items.forEach((item) => {
-        registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id: item.id,
+            title: item.title || item.id,
+            source: "remote",
+            shareToken: item.shareToken || "",
+          },
+          { syncOption: true }
+        );
       });
       ensureSelectValue();
     } catch (error) {
@@ -1501,32 +2175,39 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!pendingSharedSystemId) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedSystem();
-    } else if (status) {
-      status.show("Sign in to load the shared system.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedSystem();
   }
 
   async function loadPendingSharedSystem() {
     if (!pendingSharedSystemId) {
       return;
     }
-    const targetId = pendingSharedSystemId;
+    const { id: targetId, shareToken = "" } = pendingSharedSystemId;
     pendingSharedSystemId = null;
-    registerSystemRecord({ id: targetId, title: targetId, source: "remote" }, { syncOption: true });
+    registerSystemRecord({ id: targetId, title: targetId, source: "remote", shareToken }, { syncOption: true });
     if (elements.select) {
       elements.select.value = targetId;
     }
     try {
-      const result = await dataManager.get("systems", targetId, { preferLocal: true });
+      const result = await dataManager.get("systems", targetId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       const payload = result?.payload;
       if (!payload) {
         throw new Error("System payload missing");
       }
       const label = payload.title || systemCatalog.get(targetId)?.title || targetId;
-      registerSystemRecord({ id: payload.id || targetId, title: label, source: "remote" }, { syncOption: true });
-      applySystemState(payload, { emitStatus: true, statusMessage: `Loaded ${label}` });
+      registerSystemRecord(
+        { id: payload.id || targetId, title: label, source: "remote", shareToken },
+        { syncOption: true }
+      );
+      applySystemData(payload, {
+        origin: "remote",
+        emitStatus: true,
+        statusMessage: `Loaded ${label}`,
+        shareToken,
+      });
     } catch (error) {
       console.error("System editor: unable to load shared system", error);
       if (status) {
@@ -1571,6 +2252,19 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   ensureSelectValue();
 
+  function updateSystemMeta() {
+    if (!elements.systemMeta) {
+      return;
+    }
+    if (!hasActiveSystem()) {
+      elements.systemMeta.textContent = "No system selected";
+      return;
+    }
+    const systemId = state.system?.id || "—";
+    const version = state.system?.version || "—";
+    elements.systemMeta.textContent = `ID: ${systemId || "—"} • Version: ${version || "—"}`;
+  }
+
   function escapeCss(value) {
     if (typeof value !== "string" || !value) {
       return value;
@@ -1589,6 +2283,37 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const rand = Math.random().toString(36).slice(2, 8);
     return `sys.${slug || "system"}.${rand}`;
+  }
+
+  function generateDuplicateSystemId(baseId) {
+    const raw = (baseId || "").trim();
+    if (!raw) {
+      return generateSystemId("system");
+    }
+    const normalized = raw.replace(/(\.copy\d*)$/i, "");
+    const root = normalized || raw;
+    let candidate = `${root}.copy`;
+    let counter = 2;
+    while (candidate && systemCatalog.has(candidate)) {
+      candidate = `${root}.copy${counter}`;
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function generateDuplicateSystemTitle(baseTitle) {
+    const raw = (baseTitle || "").trim();
+    const base = raw.replace(/\(Copy(?: \d+)?\)$/i, "").trim() || raw || "System";
+    const existing = new Set(
+      Array.from(systemCatalog.values()).map((entry) => (entry?.title || "").trim()).filter(Boolean)
+    );
+    let candidate = `${base} (Copy)`;
+    let counter = 2;
+    while (existing.has(candidate)) {
+      candidate = `${base} (Copy ${counter})`;
+      counter += 1;
+    }
+    return candidate;
   }
 
   function generateId() {
@@ -1660,7 +2385,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("System editor: unable to parse shared record", error);
       return null;
