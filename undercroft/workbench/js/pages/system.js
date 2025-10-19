@@ -41,7 +41,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     dataManager,
     status,
     auth,
-    requiredTier: "gm",
+    requiredTier: "creator",
     gateSelector: "[data-tier-gate]",
     contentSelector: "[data-tier-content]",
     onGranted: () => window.location.reload(),
@@ -1138,6 +1138,24 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         type: "warning",
         timeout: 2400,
       });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
+    const metadata = getSystemMetadata(state.system?.id);
+    if (!systemAllowsEdits(metadata)) {
+      const message = describeSystemEditRestriction(metadata);
+      status.show(message, { type: "warning", timeout: 2800 });
+      event.item.remove();
+      renderCanvas();
+      return;
+    }
+    if (!dataManager.hasWriteAccess("systems")) {
+      const required = dataManager.describeRequiredWriteTier("systems");
+      const message = required
+        ? `Saving systems requires a ${required} tier.`
+        : "Your tier cannot save systems.";
+      status.show(message, { type: "warning", timeout: 2800 });
       event.item.remove();
       renderCanvas();
       return;

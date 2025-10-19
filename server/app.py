@@ -234,19 +234,26 @@ def register_routes():
             raise AuthError("Authentication required")
         query = request.handler.path.split("?", 1)
         target = user
+        scope = "user"
         if len(query) > 1 and query[1]:
             from urllib.parse import parse_qs
 
             params = parse_qs(query[1])
-            username = params.get("username", [""])[0]
-            if username and username != user.username:
+            scope_param = params.get("scope", [""])[0]
+            if scope_param == "all":
                 if user.tier != "admin":
                     raise AuthError("Admin only")
-                target_user = get_user_by_username(request.state, username)
-                if not target_user:
-                    raise AuthError("User not found")
-                target = target_user
-        payload = list_owned_content(request.state, target)
+                scope = "all"
+            else:
+                username = params.get("username", [""])[0]
+                if username and username != user.username:
+                    if user.tier != "admin":
+                        raise AuthError("Admin only")
+                    target_user = get_user_by_username(request.state, username)
+                    if not target_user:
+                        raise AuthError("User not found")
+                    target = target_user
+        payload = list_owned_content(request.state, target if scope != "all" else None, scope=scope)
         return json_response(payload)
 
     router.add("GET", r"^/content/owned$", handle_owned_content)

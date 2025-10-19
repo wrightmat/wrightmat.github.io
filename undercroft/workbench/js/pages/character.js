@@ -405,7 +405,7 @@ import {
 
     if (elements.deleteCharacterButton) {
       elements.deleteCharacterButton.addEventListener("click", () => {
-        deleteCurrentCharacter();
+        void deleteCurrentCharacter();
       });
     }
 
@@ -776,10 +776,10 @@ import {
     if (elements.saveButton) {
       const hasChanges = hasDraft && hasUnsavedCharacterChanges();
       const isAuthenticated = dataManager.isAuthenticated();
-      const canWrite = dataManager.hasWriteAccess("characters");
-      const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
-      const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
-      elements.saveButton.disabled = !enabled;
+    const canWrite = dataManager.hasWriteAccess("characters");
+    const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
+    const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
+    elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasDraft) {
         elements.saveButton.title = "Create or load a character to save.";
@@ -813,29 +813,14 @@ import {
       elements.deleteCharacterButton.removeAttribute("title");
       return;
     }
-    let origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
-    let deletable = origin === "local";
-    if (!deletable && state.draft?.id) {
-      try {
-        const localSnapshot = dataManager.getLocal("characters", state.draft.id);
-        if (localSnapshot) {
-          deletable = true;
-          origin = "local";
-          state.characterOrigin = "local";
-        }
-      } catch (error) {
-        console.warn("Character editor: unable to inspect local character entry", error);
-      }
-    }
+    const origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
     const isBuiltin = origin === "builtin";
+    const deletable = !isBuiltin;
     elements.deleteCharacterButton.disabled = !deletable;
     elements.deleteCharacterButton.classList.toggle("disabled", !deletable);
     elements.deleteCharacterButton.setAttribute("aria-disabled", deletable ? "false" : "true");
     if (!deletable) {
-      const message = isBuiltin
-        ? "Built-in characters cannot be deleted."
-        : "Only local characters can be deleted right now.";
-      elements.deleteCharacterButton.title = message;
+      elements.deleteCharacterButton.title = "Built-in characters cannot be deleted.";
     } else {
       elements.deleteCharacterButton.removeAttribute("title");
     }
@@ -2428,7 +2413,7 @@ import {
     return true;
   }
 
-  function deleteCurrentCharacter() {
+  async function deleteCurrentCharacter() {
     const id = state.draft?.id;
     if (!id) {
       status.show("Select a character before deleting.", { type: "warning", timeout: 2000 });
@@ -2436,11 +2421,8 @@ import {
     }
     const metadata = characterCatalog.get(id) || {};
     const origin = state.characterOrigin || metadata.source || metadata.origin || state.character?.origin || "";
-    if (origin !== "local") {
-      const message = origin === "builtin"
-        ? "Built-in characters cannot be deleted."
-        : "Only local characters can be deleted right now.";
-      status.show(message, { type: origin === "builtin" ? "info" : "warning", timeout: 2400 });
+    if (origin === "builtin") {
+      status.show("Built-in characters cannot be deleted.", { type: "info", timeout: 2400 });
       return;
     }
     const label = state.draft.data?.name || metadata.title || id;
@@ -2448,10 +2430,27 @@ import {
     if (!confirmed) {
       return;
     }
+    const button = elements.deleteCharacterButton;
+    if (button) {
+      button.disabled = true;
+      button.classList.add("disabled");
+      button.setAttribute("aria-disabled", "true");
+      button.setAttribute("aria-busy", "true");
+    }
     try {
-      dataManager.removeLocal("characters", id);
+      await dataManager.delete("characters", id, { mode: "auto" });
     } catch (error) {
-      console.warn("Character editor: unable to remove character", error);
+      console.error("Character editor: unable to delete character", error);
+      if (status) {
+        status.show(error.message || "Unable to delete character", { type: "danger" });
+      }
+      if (button) {
+        button.disabled = false;
+        button.classList.remove("disabled");
+        button.setAttribute("aria-disabled", "false");
+        button.removeAttribute("aria-busy");
+      }
+      return;
     }
     const notesKey = `undercroft.workbench.character.notes.${id}`;
     try {
@@ -2479,6 +2478,9 @@ import {
     syncModeIndicator();
     syncCharacterActions();
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+    if (button) {
+      button.removeAttribute("aria-busy");
+    }
   }
 
   function exportDraft() {
