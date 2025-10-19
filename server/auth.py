@@ -204,27 +204,52 @@ def create_session(state: ServerState, user_id: int, ip: str, user_agent: str) -
     return {"token": token, "expires_at": expires_at.isoformat()}
 
 
-def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[User]:
+def _normalize_session_token(token: Optional[str]) -> Optional[str]:
+    if token is None:
+        return None
+    if isinstance(token, bytes):
+        token = token.decode("utf-8", "ignore")
+    elif not isinstance(token, str):
+        token = str(token)
+    token = token.strip()
     if not token:
         return None
-    row = state.db.execute(
-        """
-        SELECT users.id, users.email, users.username, users.tier, sessions.expires_at
-        FROM sessions JOIN users ON users.id = sessions.user_id
-        WHERE sessions.session_token = ? AND sessions.is_active = 1
-        """,
-        (token,),
-    ).fetchone()
+    # Guard against clearly malformed tokens (e.g. accidentally stored dict reprs)
+    if len(token) > 256:
+        return None
+    return token
+
+
+def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[User]:
+    normalized = _normalize_session_token(token)
+    if not normalized:
+        return None
+    try:
+        row = state.db.execute(
+            """
+            SELECT users.id, users.email, users.username, users.tier, sessions.expires_at
+            FROM sessions JOIN users ON users.id = sessions.user_id
+            WHERE sessions.session_token = ? AND sessions.is_active = 1
+            """,
+            (normalized,),
+        ).fetchone()
+    except sqlite3.InterfaceError:
+        logging.exception("Rejected malformed session token")
+        return None
     if not row:
         return None
     expires_at = datetime.fromisoformat(row["expires_at"])
     if expires_at < datetime.utcnow():
-        state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (token,))
+        state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (normalized,))
         state.db.commit()
         return None
     state.db.execute(
         "UPDATE sessions SET last_accessed_at = ?, expires_at = ? WHERE session_token = ?",
-        (datetime.utcnow().isoformat(), (datetime.utcnow() + timedelta(days=state.config.options.session_ttl_days)).isoformat(), token),
+        (
+            datetime.utcnow().isoformat(),
+            (datetime.utcnow() + timedelta(days=state.config.options.session_ttl_days)).isoformat(),
+            normalized,
+        ),
     )
     state.db.commit()
     return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"])
