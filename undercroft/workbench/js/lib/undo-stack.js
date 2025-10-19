@@ -60,6 +60,28 @@ export class UndoRedoStack {
     return entry;
   }
 
+  requeueUndo(entry) {
+    if (!entry) {
+      return;
+    }
+    if (this.redo.length && this.redo[this.redo.length - 1] === entry) {
+      this.redo.pop();
+    }
+    this.undo.push(entry);
+    this._persist();
+  }
+
+  requeueRedo(entry) {
+    if (!entry) {
+      return;
+    }
+    if (this.undo.length && this.undo[this.undo.length - 1] === entry) {
+      this.undo.pop();
+    }
+    this.redo.push(entry);
+    this._persist();
+  }
+
   clear() {
     this.undo = [];
     this.redo = [];
