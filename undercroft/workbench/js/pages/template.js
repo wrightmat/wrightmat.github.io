@@ -2321,7 +2321,7 @@ import {
       if (bodyElement instanceof HTMLElement && bodyElement.id) {
         collapseButton.setAttribute("aria-controls", bodyElement.id);
       }
-      header.insertBefore(collapseButton, header.firstChild || null);
+      header.appendChild(collapseButton);
       if (bodyElement instanceof HTMLElement) {
         bodyElement.hidden = collapsed;
       }

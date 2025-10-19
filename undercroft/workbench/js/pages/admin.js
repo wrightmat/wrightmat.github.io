@@ -23,8 +23,9 @@ const elements = {
   ownedUserSelect: document.querySelector("[data-admin-owned-user]"),
   ownedFilter: document.querySelector("[data-admin-owned-filter]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
-  groupsPanel: document.querySelector("[data-admin-groups-panel]"),
-  groupsList: document.querySelector("[data-admin-groups-list]"),
+  groupsPanel: document.querySelector("[data-admin-tab-panel='groups']"),
+  groupsTable: document.querySelector("[data-admin-groups-table]"),
+  groupsBody: document.querySelector("[data-admin-groups-rows]"),
   groupsEmpty: document.querySelector("[data-admin-groups-empty]"),
   groupCreateButton: document.querySelector("[data-admin-group-create]"),
   userSortHeaders: Array.from(document.querySelectorAll("[data-admin-users-sort]")),
@@ -89,8 +90,9 @@ const ROLE_RANKS = {
 
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
+const TAB_GROUPS = "groups";
 const TAB_USERS = "users";
-const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_USERS];
+const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_GROUPS, TAB_USERS];
 
 const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat === "function"
   ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })
@@ -252,6 +254,9 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
     }
     populateOwnedUserFilter();
     loadOwnedContent();
+  }
+  if (target === TAB_GROUPS) {
+    loadGroups();
   }
 }
 
@@ -579,6 +584,25 @@ function setOwnedLoading(message = "Loading content…") {
   cell.textContent = message;
   row.appendChild(cell);
   elements.ownedBody.replaceChildren(row);
+}
+
+function setGroupsLoading(message = "Loading groups…") {
+  if (!elements.groupsBody) {
+    return;
+  }
+  if (elements.groupsTable) {
+    elements.groupsTable.hidden = false;
+  }
+  if (elements.groupsEmpty) {
+    elements.groupsEmpty.hidden = true;
+  }
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = 4;
+  cell.className = "text-center py-4 text-body-secondary";
+  cell.textContent = message;
+  row.appendChild(cell);
+  elements.groupsBody.replaceChildren(row);
 }
 
 function showOwnedEmpty(message = "No saved content yet.") {
@@ -1358,97 +1382,166 @@ function renderGroups(groups) {
   const isAuthenticated = dataManager.isAuthenticated();
   const viewingSelf = isViewingCurrentUser() && !viewState.owned.selectedUsername;
   const showPanel = isAuthenticated && viewingSelf;
-  elements.groupsPanel.hidden = !showPanel;
+  if (elements.groupCreateButton) {
+    elements.groupCreateButton.disabled = !showPanel;
+  }
   if (!showPanel) {
-    if (elements.groupsList) {
-      elements.groupsList.innerHTML = "";
+    if (elements.groupsTable) {
+      elements.groupsTable.hidden = true;
+    }
+    if (elements.groupsBody) {
+      elements.groupsBody.innerHTML = "";
     }
     if (elements.groupsEmpty) {
-      elements.groupsEmpty.hidden = true;
+      elements.groupsEmpty.hidden = false;
+      elements.groupsEmpty.textContent = isAuthenticated
+        ? "Switch back to your account to manage groups."
+        : "Sign in to manage groups.";
     }
     return;
   }
+
   const list = Array.isArray(groups) ? groups : [];
   const hasGroups = list.length > 0;
+
   if (elements.groupsEmpty) {
     elements.groupsEmpty.hidden = hasGroups;
+    if (!hasGroups) {
+      elements.groupsEmpty.textContent = "No groups yet. Create one to start organizing characters.";
+    }
   }
-  if (!elements.groupsList) {
+  if (elements.groupsTable) {
+    elements.groupsTable.hidden = !hasGroups;
+  }
+  if (!elements.groupsBody) {
     return;
   }
   if (!hasGroups) {
-    elements.groupsList.innerHTML = "";
+    elements.groupsBody.innerHTML = "";
     return;
   }
+
   const fragment = document.createDocumentFragment();
   list.forEach((group) => {
-    fragment.appendChild(renderGroupCard(group));
+    const { summaryRow, detailsRow } = renderGroupTableRows(group);
+    fragment.appendChild(summaryRow);
+    fragment.appendChild(detailsRow);
   });
-  elements.groupsList.replaceChildren(fragment);
+  elements.groupsBody.replaceChildren(fragment);
 }
 
-function renderGroupCard(group) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "border border-body-tertiary rounded-3 p-3 d-flex flex-column gap-3";
-  wrapper.dataset.adminGroupId = group.id;
+function renderGroupTableRows(group) {
+  const summaryRow = document.createElement("tr");
+  summaryRow.className = "align-middle";
+  summaryRow.dataset.adminGroupId = group.id;
 
-  const renameForm = document.createElement("form");
-  renameForm.className = "d-flex flex-column flex-lg-row gap-2 align-items-lg-center";
-  renameForm.dataset.adminGroupRename = group.id;
+  let displayName = group.name || "Campaign group";
+  let expanded = false;
 
-  const nameWrapper = document.createElement("div");
-  nameWrapper.className = "flex-grow-1";
-  const nameLabel = document.createElement("label");
-  nameLabel.className = "form-label visually-hidden";
-  nameLabel.textContent = "Group name";
-  nameLabel.htmlFor = `admin-group-${group.id}`;
-  const nameInput = document.createElement("input");
-  nameInput.type = "text";
-  nameInput.className = "form-control form-control-sm";
-  nameInput.id = `admin-group-${group.id}`;
-  nameInput.value = group.name || "Campaign group";
-  nameInput.autocomplete = "off";
-  nameWrapper.appendChild(nameLabel);
-  nameWrapper.appendChild(nameInput);
+  const members = Array.isArray(group?.members)
+    ? group.members.filter((member) => member.content_type === "character")
+    : [];
+  const availableCount = members.filter((member) => !member.is_claimed && !member.missing).length;
+  const claimedCount = members.filter((member) => member.is_claimed).length;
 
-  const nameActions = document.createElement("div");
-  nameActions.className = "d-flex flex-wrap gap-2";
-  const saveButton = document.createElement("button");
-  saveButton.type = "submit";
-  saveButton.className = "btn btn-outline-primary btn-sm";
-  saveButton.textContent = "Save name";
+  const nameCell = document.createElement("td");
+  nameCell.className = "align-middle";
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center me-2";
+  toggleButton.dataset.adminGroupToggle = group.id;
+  const toggleIcon = document.createElement("span");
+  toggleIcon.className = "iconify";
+  toggleIcon.setAttribute("data-icon", "tabler:chevron-right");
+  toggleIcon.setAttribute("aria-hidden", "true");
+  const toggleLabel = document.createElement("span");
+  toggleLabel.className = "visually-hidden";
+  toggleButton.appendChild(toggleIcon);
+  toggleButton.appendChild(toggleLabel);
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "fw-semibold";
+  nameSpan.dataset.adminGroupName = group.id;
+  nameSpan.textContent = displayName;
+  nameCell.appendChild(toggleButton);
+  nameCell.appendChild(nameSpan);
+  summaryRow.appendChild(nameCell);
+
+  const membersCell = document.createElement("td");
+  membersCell.className = "text-body-secondary align-middle";
+  const summaryParts = [];
+  summaryParts.push(`${members.length} ${members.length === 1 ? "character" : "characters"}`);
+  summaryParts.push(`${availableCount} available`);
+  if (claimedCount) {
+    summaryParts.push(`${claimedCount} claimed`);
+  }
+  membersCell.textContent = summaryParts.join(" • ");
+  summaryRow.appendChild(membersCell);
+
+  const shareCell = document.createElement("td");
+  shareCell.className = "align-middle";
+  const shareBadge = document.createElement("span");
+  shareBadge.className = "badge text-bg-secondary";
+  shareBadge.dataset.adminGroupShareBadge = group.id;
+  const summaryCopyButton = document.createElement("button");
+  summaryCopyButton.type = "button";
+  summaryCopyButton.className = "btn btn-outline-secondary btn-sm ms-2";
+  summaryCopyButton.textContent = "Copy";
+  summaryCopyButton.dataset.adminGroupCopy = group.id;
+  shareCell.appendChild(shareBadge);
+  shareCell.appendChild(summaryCopyButton);
+  summaryRow.appendChild(shareCell);
+
+  const actionsCell = document.createElement("td");
+  actionsCell.className = "text-end align-middle";
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "d-flex flex-wrap justify-content-end gap-2";
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
   deleteButton.className = "btn btn-outline-danger btn-sm";
   deleteButton.textContent = "Delete";
   deleteButton.dataset.adminGroupDelete = group.id;
-  nameActions.appendChild(saveButton);
-  nameActions.appendChild(deleteButton);
+  actionGroup.appendChild(deleteButton);
+  actionsCell.appendChild(actionGroup);
+  summaryRow.appendChild(actionsCell);
 
-  renameForm.appendChild(nameWrapper);
+  const detailsRow = document.createElement("tr");
+  detailsRow.className = "admin-group-details d-none";
+  detailsRow.dataset.adminGroupDetails = group.id;
+  const detailsCell = document.createElement("td");
+  detailsCell.colSpan = 4;
+  const detailsWrapper = document.createElement("div");
+  detailsWrapper.className = "border rounded-3 bg-body p-3 d-flex flex-column gap-3";
+
+  const renameForm = document.createElement("form");
+  renameForm.className = "row g-2 align-items-center";
+  renameForm.dataset.adminGroupRename = group.id;
+  const nameCol = document.createElement("div");
+  nameCol.className = "col-12 col-lg";
+  const nameLabel = document.createElement("label");
+  nameLabel.className = "form-label visually-hidden";
+  nameLabel.htmlFor = `admin-group-${group.id}`;
+  nameLabel.textContent = "Group name";
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "form-control form-control-sm";
+  nameInput.id = `admin-group-${group.id}`;
+  nameInput.value = group.name || "";
+  nameInput.placeholder = "Campaign group";
+  nameInput.autocomplete = "off";
+  nameCol.appendChild(nameLabel);
+  nameCol.appendChild(nameInput);
+  const nameActions = document.createElement("div");
+  nameActions.className = "col-12 col-lg-auto d-flex gap-2";
+  const saveButton = document.createElement("button");
+  saveButton.type = "submit";
+  saveButton.className = "btn btn-outline-primary btn-sm";
+  saveButton.textContent = "Save name";
+  nameActions.appendChild(saveButton);
+  renameForm.appendChild(nameCol);
   renameForm.appendChild(nameActions);
 
-  const members = Array.isArray(group?.members)
-    ? group.members.filter((member) => member.content_type === "character")
-    : [];
-  const memberMap = new Map();
-  members.forEach((member) => {
-    memberMap.set(member.content_id, member);
-  });
-  const availableCount = members.filter((member) => !member.is_claimed && !member.missing).length;
-  const claimedCount = members.filter((member) => member.is_claimed).length;
-  const summary = document.createElement("div");
-  summary.className = "text-body-secondary small";
-  const parts = [];
-  parts.push(`${members.length} ${members.length === 1 ? "character" : "characters"}`);
-  parts.push(`${availableCount} available to claim`);
-  if (claimedCount) {
-    parts.push(`${claimedCount} claimed`);
-  }
-  summary.textContent = parts.join(" • ");
-
-  const selectWrapper = document.createElement("div");
-  selectWrapper.className = "d-flex flex-column gap-2";
+  const membersWrapper = document.createElement("div");
+  membersWrapper.className = "d-flex flex-column gap-2";
   const selectLabel = document.createElement("label");
   selectLabel.className = "form-label mb-0";
   selectLabel.textContent = "Characters in group";
@@ -1458,26 +1551,24 @@ function renderGroupCard(group) {
   membersSelect.className = "form-select";
   membersSelect.multiple = true;
   const owned = ownedCharacters();
+  const memberMap = new Map();
+  members.forEach((member) => {
+    memberMap.set(member.content_id, member);
+  });
   const seenIds = new Set();
   owned.forEach((character) => {
     const option = document.createElement("option");
     option.value = character.id;
-    const member = memberMap.get(character.id);
-    let label = character.label || character.id;
-    if (member) {
-      if (member.missing) {
-        label = `${label} (not found)`;
-      } else if (member.is_claimed) {
-        const ownerLabel = member.owner_username ? member.owner_username : "claimed";
-        label = `${label} (claimed by ${ownerLabel})`;
-      } else {
-        label = `${label} (available)`;
-      }
-      option.selected = true;
+    let label = character.name || character.title || character.id;
+    if (character.missing) {
+      label = `${label} (not found)`;
     }
     option.textContent = label;
+    option.selected = memberMap.has(character.id);
+    if (option.selected) {
+      seenIds.add(character.id);
+    }
     membersSelect.appendChild(option);
-    seenIds.add(character.id);
   });
   memberMap.forEach((member, id) => {
     if (seenIds.has(id)) {
@@ -1502,9 +1593,9 @@ function renderGroupCard(group) {
   const selectHint = document.createElement("div");
   selectHint.className = "text-body-secondary small";
   selectHint.textContent = "Select to add or remove characters from this group.";
-  selectWrapper.appendChild(selectLabel);
-  selectWrapper.appendChild(membersSelect);
-  selectWrapper.appendChild(selectHint);
+  membersWrapper.appendChild(selectLabel);
+  membersWrapper.appendChild(membersSelect);
+  membersWrapper.appendChild(selectHint);
 
   const shareControls = document.createElement("div");
   shareControls.className = "d-flex flex-column flex-lg-row gap-2 align-items-lg-center";
@@ -1518,12 +1609,10 @@ function renderGroupCard(group) {
   copyButton.type = "button";
   copyButton.className = "btn btn-outline-secondary btn-sm";
   copyButton.textContent = "Copy link";
-  copyButton.hidden = true;
   const disableButton = document.createElement("button");
   disableButton.type = "button";
   disableButton.className = "btn btn-outline-danger btn-sm";
   disableButton.textContent = "Disable link";
-  disableButton.hidden = true;
   shareButtons.appendChild(generateButton);
   shareButtons.appendChild(copyButton);
   shareButtons.appendChild(disableButton);
@@ -1533,25 +1622,89 @@ function renderGroupCard(group) {
   shareControls.appendChild(shareButtons);
   shareControls.appendChild(shareStatus);
 
+  detailsWrapper.appendChild(renameForm);
+  detailsWrapper.appendChild(membersWrapper);
+  detailsWrapper.appendChild(shareControls);
+  detailsCell.appendChild(detailsWrapper);
+  detailsRow.appendChild(detailsCell);
+
+  function updateToggleLabel() {
+    const action = expanded ? "Hide details" : "Show details";
+    const labelText = `${action} for ${displayName}`;
+    toggleButton.setAttribute("aria-label", labelText);
+    toggleLabel.textContent = labelText;
+  }
+
+  function setExpanded(next) {
+    expanded = Boolean(next);
+    if (expanded) {
+      detailsRow.classList.remove("d-none");
+      detailsRow.hidden = false;
+      toggleIcon.setAttribute("data-icon", "tabler:chevron-down");
+    } else {
+      detailsRow.classList.add("d-none");
+      detailsRow.hidden = true;
+      toggleIcon.setAttribute("data-icon", "tabler:chevron-right");
+    }
+    toggleButton.setAttribute("aria-expanded", expanded ? "true" : "false");
+    updateToggleLabel();
+  }
+
+  function updateDisplayName(nextName) {
+    displayName = nextName || "Campaign group";
+    nameSpan.textContent = displayName;
+    updateToggleLabel();
+  }
+
   function updateShareDisplay(nextLink) {
     const link = nextLink || group.share_link;
     if (link && link.token) {
       const url = buildShareUrl("groups", group.id, link.token);
+      shareBadge.className = "badge text-bg-success";
+      shareBadge.textContent = "Link active";
+      summaryCopyButton.hidden = false;
+      summaryCopyButton.dataset.shareUrl = url;
       copyButton.hidden = false;
-      disableButton.hidden = false;
-      generateButton.hidden = true;
-      shareStatus.textContent = url;
       copyButton.dataset.shareUrl = url;
+      disableButton.hidden = false;
+      shareStatus.textContent = url;
+      generateButton.hidden = true;
     } else {
+      shareBadge.className = "badge text-bg-secondary";
+      shareBadge.textContent = "No link";
+      summaryCopyButton.hidden = true;
+      summaryCopyButton.dataset.shareUrl = "";
       copyButton.hidden = true;
-      disableButton.hidden = true;
-      generateButton.hidden = false;
-      shareStatus.textContent = "No link yet.";
       copyButton.dataset.shareUrl = "";
+      disableButton.hidden = true;
+      shareStatus.textContent = "No link yet.";
+      generateButton.hidden = false;
     }
   }
 
+  setExpanded(false);
+  updateDisplayName(displayName);
   updateShareDisplay(group.share_link);
+
+  toggleButton.addEventListener("click", () => {
+    setExpanded(!expanded);
+  });
+
+  summaryCopyButton.addEventListener("click", async () => {
+    const url = summaryCopyButton.dataset.shareUrl || "";
+    if (!url) {
+      return;
+    }
+    await copyShareLink(url);
+  });
+
+  copyButton.addEventListener("click", async () => {
+    const url = copyButton.dataset.shareUrl || "";
+    if (!url) {
+      return;
+    }
+    await copyShareLink(url);
+  });
 
   renameForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1578,7 +1731,7 @@ function renderGroupCard(group) {
   });
 
   deleteButton.addEventListener("click", async () => {
-    if (!window.confirm(`Delete ${group.name || "this group"}?`)) {
+    if (!window.confirm(`Delete ${displayName || "this group"}?`)) {
       return;
     }
     deleteButton.disabled = true;
@@ -1637,14 +1790,6 @@ function renderGroupCard(group) {
     }
   });
 
-  copyButton.addEventListener("click", async () => {
-    const url = copyButton.dataset.shareUrl || "";
-    if (!url) {
-      return;
-    }
-    await copyShareLink(url);
-  });
-
   disableButton.addEventListener("click", async () => {
     disableButton.disabled = true;
     try {
@@ -1663,11 +1808,7 @@ function renderGroupCard(group) {
     }
   });
 
-  wrapper.appendChild(renameForm);
-  wrapper.appendChild(summary);
-  wrapper.appendChild(selectWrapper);
-  wrapper.appendChild(shareControls);
-  return wrapper;
+  return { summaryRow, detailsRow };
 }
 
 function isViewingCurrentUser() {
@@ -1731,7 +1872,8 @@ async function loadGroups({ refresh = false } = {}) {
   if (!elements.groupsPanel) {
     return;
   }
-  if (!dataManager.isAuthenticated() || !isViewingCurrentUser() || viewState.owned.selectedUsername) {
+  const allowed = dataManager.isAuthenticated() && isViewingCurrentUser() && !viewState.owned.selectedUsername;
+  if (!allowed) {
     viewState.groups.items = [];
     viewState.groups.stale = true;
     renderGroups([]);
@@ -1745,6 +1887,9 @@ async function loadGroups({ refresh = false } = {}) {
     renderGroups(viewState.groups.items);
     return;
   }
+  if (shouldRefresh) {
+    setGroupsLoading();
+  }
   viewState.groups.loading = true;
   try {
     const payload = await dataManager.listGroups({ refresh: shouldRefresh });
@@ -1757,8 +1902,10 @@ async function loadGroups({ refresh = false } = {}) {
     if (status) {
       status.show(error.message || "Unable to load groups", { type: "danger" });
     }
-    if (!viewState.groups.items.length) {
-      renderGroups([]);
+    if (viewState.groups.items.length) {
+      renderGroups(viewState.groups.items);
+    } else {
+      setGroupsLoading("Unable to load groups");
     }
   } finally {
     viewState.groups.loading = false;
@@ -1794,21 +1941,19 @@ if (elements.groupCreateButton) {
       }
       return;
     }
-    const suggested = "Campaign group";
-    const name = window.prompt("Group name", suggested);
-    if (name === null) {
-      return;
-    }
-    const trimmed = name.trim();
-    if (!trimmed) {
-      if (status) {
-        status.show("Enter a group name to continue.", { type: "warning", timeout: 1800 });
-      }
-      return;
+    const baseName = "Campaign group";
+    const existing = new Set(
+      viewState.groups.items.map((group) => (group.name || "").trim().toLowerCase())
+    );
+    let candidate = baseName;
+    let index = 2;
+    while (existing.has(candidate.trim().toLowerCase())) {
+      candidate = `${baseName} ${index}`;
+      index += 1;
     }
     elements.groupCreateButton.disabled = true;
     try {
-      await dataManager.createGroup({ name: trimmed });
+      await dataManager.createGroup({ name: candidate });
       if (status) {
         status.show("Group created.", { type: "success", timeout: 1600 });
       }
