@@ -23,6 +23,11 @@ const elements = {
   ownedUserSelect: document.querySelector("[data-admin-owned-user]"),
   ownedFilter: document.querySelector("[data-admin-owned-filter]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
+  groupsPanel: document.querySelector("[data-admin-tab-panel='groups']"),
+  groupsTable: document.querySelector("[data-admin-groups-table]"),
+  groupsBody: document.querySelector("[data-admin-groups-rows]"),
+  groupsEmpty: document.querySelector("[data-admin-groups-empty]"),
+  groupCreateButton: document.querySelector("[data-admin-group-create]"),
   userSortHeaders: Array.from(document.querySelectorAll("[data-admin-users-sort]")),
   emailForm: document.querySelector("[data-admin-email-form]"),
   emailError: document.querySelector("[data-admin-email-error]"),
@@ -85,8 +90,9 @@ const ROLE_RANKS = {
 
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
+const TAB_GROUPS = "groups";
 const TAB_USERS = "users";
-const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_USERS];
+const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_GROUPS, TAB_USERS];
 
 const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat === "function"
   ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })
@@ -103,6 +109,11 @@ const viewState = {
     loading: false,
     stale: true,
     sort: { key: "last_accessed_at", direction: "desc" },
+  },
+  groups: {
+    items: [],
+    loading: false,
+    stale: true,
   },
 };
 
@@ -243,6 +254,9 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
     }
     populateOwnedUserFilter();
     loadOwnedContent();
+  }
+  if (target === TAB_GROUPS) {
+    loadGroups();
   }
 }
 
@@ -572,6 +586,25 @@ function setOwnedLoading(message = "Loading content…") {
   elements.ownedBody.replaceChildren(row);
 }
 
+function setGroupsLoading(message = "Loading groups…") {
+  if (!elements.groupsBody) {
+    return;
+  }
+  if (elements.groupsTable) {
+    elements.groupsTable.hidden = false;
+  }
+  if (elements.groupsEmpty) {
+    elements.groupsEmpty.hidden = true;
+  }
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = 4;
+  cell.className = "text-center py-4 text-body-secondary";
+  cell.textContent = message;
+  row.appendChild(cell);
+  elements.groupsBody.replaceChildren(row);
+}
+
 function showOwnedEmpty(message = "No saved content yet.") {
   if (elements.ownedTable) {
     elements.ownedTable.hidden = true;
@@ -611,6 +644,7 @@ function buildShareUrl(bucket, id, token = "") {
     characters: "character.html",
     templates: "template.html",
     systems: "system.html",
+    groups: "character.html",
   };
   const page = pageMap[bucket];
   if (!page) {
@@ -1337,6 +1371,446 @@ function renderOwnedItems(items, owner) {
   updateOwnedSortIndicators();
 }
 
+function ownedCharacters() {
+  return viewState.owned.items.filter((item) => item.bucket === "characters");
+}
+
+function renderGroups(groups) {
+  if (!elements.groupsPanel) {
+    return;
+  }
+  const isAuthenticated = dataManager.isAuthenticated();
+  const viewingSelf = isViewingCurrentUser() && !viewState.owned.selectedUsername;
+  const showPanel = isAuthenticated && viewingSelf;
+  if (elements.groupCreateButton) {
+    elements.groupCreateButton.disabled = !showPanel;
+  }
+  if (!showPanel) {
+    if (elements.groupsTable) {
+      elements.groupsTable.hidden = true;
+    }
+    if (elements.groupsBody) {
+      elements.groupsBody.innerHTML = "";
+    }
+    if (elements.groupsEmpty) {
+      elements.groupsEmpty.hidden = false;
+      elements.groupsEmpty.textContent = isAuthenticated
+        ? "Switch back to your account to manage groups."
+        : "Sign in to manage groups.";
+    }
+    return;
+  }
+
+  const list = Array.isArray(groups) ? groups : [];
+  const hasGroups = list.length > 0;
+
+  if (elements.groupsEmpty) {
+    elements.groupsEmpty.hidden = hasGroups;
+    if (!hasGroups) {
+      elements.groupsEmpty.textContent = "No groups yet. Create one to start organizing characters.";
+    }
+  }
+  if (elements.groupsTable) {
+    elements.groupsTable.hidden = !hasGroups;
+  }
+  if (!elements.groupsBody) {
+    return;
+  }
+  if (!hasGroups) {
+    elements.groupsBody.innerHTML = "";
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  list.forEach((group) => {
+    const { summaryRow, detailsRow } = renderGroupTableRows(group);
+    fragment.appendChild(summaryRow);
+    fragment.appendChild(detailsRow);
+  });
+  elements.groupsBody.replaceChildren(fragment);
+}
+
+function renderGroupTableRows(group) {
+  const summaryRow = document.createElement("tr");
+  summaryRow.className = "align-middle";
+  summaryRow.dataset.adminGroupId = group.id;
+
+  let displayName = group.name || "Campaign group";
+  let expanded = false;
+
+  const members = Array.isArray(group?.members)
+    ? group.members.filter((member) => member.content_type === "character")
+    : [];
+  const availableCount = members.filter((member) => !member.is_claimed && !member.missing).length;
+  const claimedCount = members.filter((member) => member.is_claimed).length;
+
+  const nameCell = document.createElement("td");
+  nameCell.className = "align-middle";
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center me-2";
+  toggleButton.dataset.adminGroupToggle = group.id;
+  const toggleIcon = document.createElement("span");
+  toggleIcon.className = "iconify";
+  toggleIcon.setAttribute("data-icon", "tabler:chevron-right");
+  toggleIcon.setAttribute("aria-hidden", "true");
+  const toggleLabel = document.createElement("span");
+  toggleLabel.className = "visually-hidden";
+  toggleButton.appendChild(toggleIcon);
+  toggleButton.appendChild(toggleLabel);
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "fw-semibold";
+  nameSpan.dataset.adminGroupName = group.id;
+  nameSpan.textContent = displayName;
+  nameCell.appendChild(toggleButton);
+  nameCell.appendChild(nameSpan);
+  summaryRow.appendChild(nameCell);
+
+  const membersCell = document.createElement("td");
+  membersCell.className = "text-body-secondary align-middle";
+  const summaryParts = [];
+  summaryParts.push(`${members.length} ${members.length === 1 ? "character" : "characters"}`);
+  summaryParts.push(`${availableCount} available`);
+  if (claimedCount) {
+    summaryParts.push(`${claimedCount} claimed`);
+  }
+  membersCell.textContent = summaryParts.join(" • ");
+  summaryRow.appendChild(membersCell);
+
+  const shareCell = document.createElement("td");
+  shareCell.className = "align-middle";
+  const shareBadge = document.createElement("span");
+  shareBadge.className = "badge text-bg-secondary";
+  shareBadge.dataset.adminGroupShareBadge = group.id;
+  const summaryCopyButton = document.createElement("button");
+  summaryCopyButton.type = "button";
+  summaryCopyButton.className = "btn btn-outline-secondary btn-sm ms-2";
+  summaryCopyButton.textContent = "Copy";
+  summaryCopyButton.dataset.adminGroupCopy = group.id;
+  shareCell.appendChild(shareBadge);
+  shareCell.appendChild(summaryCopyButton);
+  summaryRow.appendChild(shareCell);
+
+  const actionsCell = document.createElement("td");
+  actionsCell.className = "text-end align-middle";
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "d-flex flex-wrap justify-content-end gap-2";
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "btn btn-outline-danger btn-sm";
+  deleteButton.textContent = "Delete";
+  deleteButton.dataset.adminGroupDelete = group.id;
+  actionGroup.appendChild(deleteButton);
+  actionsCell.appendChild(actionGroup);
+  summaryRow.appendChild(actionsCell);
+
+  const detailsRow = document.createElement("tr");
+  detailsRow.className = "admin-group-details d-none";
+  detailsRow.dataset.adminGroupDetails = group.id;
+  const detailsCell = document.createElement("td");
+  detailsCell.colSpan = 4;
+  const detailsWrapper = document.createElement("div");
+  detailsWrapper.className = "border rounded-3 bg-body p-3 d-flex flex-column gap-3";
+
+  const renameForm = document.createElement("form");
+  renameForm.className = "row g-2 align-items-center";
+  renameForm.dataset.adminGroupRename = group.id;
+  const nameCol = document.createElement("div");
+  nameCol.className = "col-12 col-lg";
+  const nameLabel = document.createElement("label");
+  nameLabel.className = "form-label visually-hidden";
+  nameLabel.htmlFor = `admin-group-${group.id}`;
+  nameLabel.textContent = "Group name";
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "form-control form-control-sm";
+  nameInput.id = `admin-group-${group.id}`;
+  nameInput.value = group.name || "";
+  nameInput.placeholder = "Campaign group";
+  nameInput.autocomplete = "off";
+  nameCol.appendChild(nameLabel);
+  nameCol.appendChild(nameInput);
+  const nameActions = document.createElement("div");
+  nameActions.className = "col-12 col-lg-auto d-flex gap-2";
+  const saveButton = document.createElement("button");
+  saveButton.type = "submit";
+  saveButton.className = "btn btn-outline-primary btn-sm";
+  saveButton.textContent = "Save name";
+  nameActions.appendChild(saveButton);
+  renameForm.appendChild(nameCol);
+  renameForm.appendChild(nameActions);
+
+  const membersWrapper = document.createElement("div");
+  membersWrapper.className = "d-flex flex-column gap-2";
+  const selectLabel = document.createElement("label");
+  selectLabel.className = "form-label mb-0";
+  selectLabel.textContent = "Characters in group";
+  selectLabel.htmlFor = `admin-group-${group.id}-members`;
+  const membersSelect = document.createElement("select");
+  membersSelect.id = `admin-group-${group.id}-members`;
+  membersSelect.className = "form-select";
+  membersSelect.multiple = true;
+  const owned = ownedCharacters();
+  const memberMap = new Map();
+  members.forEach((member) => {
+    memberMap.set(member.content_id, member);
+  });
+  const seenIds = new Set();
+  owned.forEach((character) => {
+    const option = document.createElement("option");
+    option.value = character.id;
+    let label = character.name || character.title || character.id;
+    if (character.missing) {
+      label = `${label} (not found)`;
+    }
+    option.textContent = label;
+    option.selected = memberMap.has(character.id);
+    if (option.selected) {
+      seenIds.add(character.id);
+    }
+    membersSelect.appendChild(option);
+  });
+  memberMap.forEach((member, id) => {
+    if (seenIds.has(id)) {
+      return;
+    }
+    const option = document.createElement("option");
+    option.value = id;
+    option.selected = true;
+    let label = member.label || id;
+    if (member.missing) {
+      label = `${label} (not found)`;
+    } else if (member.is_claimed) {
+      const ownerLabel = member.owner_username ? member.owner_username : "claimed";
+      label = `${label} (claimed by ${ownerLabel})`;
+    } else {
+      label = `${label} (available)`;
+    }
+    option.textContent = label;
+    membersSelect.appendChild(option);
+  });
+  membersSelect.size = Math.min(Math.max(membersSelect.options.length || 4, 4), 10);
+  const selectHint = document.createElement("div");
+  selectHint.className = "text-body-secondary small";
+  selectHint.textContent = "Select to add or remove characters from this group.";
+  membersWrapper.appendChild(selectLabel);
+  membersWrapper.appendChild(membersSelect);
+  membersWrapper.appendChild(selectHint);
+
+  const shareControls = document.createElement("div");
+  shareControls.className = "d-flex flex-column flex-lg-row gap-2 align-items-lg-center";
+  const shareButtons = document.createElement("div");
+  shareButtons.className = "d-flex flex-wrap gap-2";
+  const generateButton = document.createElement("button");
+  generateButton.type = "button";
+  generateButton.className = "btn btn-outline-primary btn-sm";
+  generateButton.textContent = "Generate link";
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "btn btn-outline-secondary btn-sm";
+  copyButton.textContent = "Copy link";
+  const disableButton = document.createElement("button");
+  disableButton.type = "button";
+  disableButton.className = "btn btn-outline-danger btn-sm";
+  disableButton.textContent = "Disable link";
+  shareButtons.appendChild(generateButton);
+  shareButtons.appendChild(copyButton);
+  shareButtons.appendChild(disableButton);
+  const shareStatus = document.createElement("div");
+  shareStatus.className = "text-body-secondary small";
+  shareStatus.dataset.adminGroupShareStatus = group.id;
+  shareControls.appendChild(shareButtons);
+  shareControls.appendChild(shareStatus);
+
+  detailsWrapper.appendChild(renameForm);
+  detailsWrapper.appendChild(membersWrapper);
+  detailsWrapper.appendChild(shareControls);
+  detailsCell.appendChild(detailsWrapper);
+  detailsRow.appendChild(detailsCell);
+
+  function updateToggleLabel() {
+    const action = expanded ? "Hide details" : "Show details";
+    const labelText = `${action} for ${displayName}`;
+    toggleButton.setAttribute("aria-label", labelText);
+    toggleLabel.textContent = labelText;
+  }
+
+  function setExpanded(next) {
+    expanded = Boolean(next);
+    if (expanded) {
+      detailsRow.classList.remove("d-none");
+      detailsRow.hidden = false;
+      toggleIcon.setAttribute("data-icon", "tabler:chevron-down");
+    } else {
+      detailsRow.classList.add("d-none");
+      detailsRow.hidden = true;
+      toggleIcon.setAttribute("data-icon", "tabler:chevron-right");
+    }
+    toggleButton.setAttribute("aria-expanded", expanded ? "true" : "false");
+    updateToggleLabel();
+  }
+
+  function updateDisplayName(nextName) {
+    displayName = nextName || "Campaign group";
+    nameSpan.textContent = displayName;
+    updateToggleLabel();
+  }
+
+  function updateShareDisplay(nextLink) {
+    const link = nextLink || group.share_link;
+    if (link && link.token) {
+      const url = buildShareUrl("groups", group.id, link.token);
+      shareBadge.className = "badge text-bg-success";
+      shareBadge.textContent = "Link active";
+      summaryCopyButton.hidden = false;
+      summaryCopyButton.dataset.shareUrl = url;
+      copyButton.hidden = false;
+      copyButton.dataset.shareUrl = url;
+      disableButton.hidden = false;
+      shareStatus.textContent = url;
+      generateButton.hidden = true;
+    } else {
+      shareBadge.className = "badge text-bg-secondary";
+      shareBadge.textContent = "No link";
+      summaryCopyButton.hidden = true;
+      summaryCopyButton.dataset.shareUrl = "";
+      copyButton.hidden = true;
+      copyButton.dataset.shareUrl = "";
+      disableButton.hidden = true;
+      shareStatus.textContent = "No link yet.";
+      generateButton.hidden = false;
+    }
+  }
+
+  setExpanded(false);
+  updateDisplayName(displayName);
+  updateShareDisplay(group.share_link);
+
+  toggleButton.addEventListener("click", () => {
+    setExpanded(!expanded);
+  });
+
+  summaryCopyButton.addEventListener("click", async () => {
+    const url = summaryCopyButton.dataset.shareUrl || "";
+    if (!url) {
+      return;
+    }
+    await copyShareLink(url);
+  });
+
+  copyButton.addEventListener("click", async () => {
+    const url = copyButton.dataset.shareUrl || "";
+    if (!url) {
+      return;
+    }
+    await copyShareLink(url);
+  });
+
+  renameForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const newName = nameInput.value.trim();
+    if (!newName || newName === group.name) {
+      return;
+    }
+    saveButton.disabled = true;
+    nameInput.disabled = true;
+    try {
+      await dataManager.updateGroup({ id: group.id, name: newName });
+      if (status) {
+        status.show("Group name saved.", { type: "success", timeout: 1600 });
+      }
+      await loadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Admin: unable to rename group", error);
+      if (status) {
+        status.show(error.message || "Unable to rename group", { type: "danger" });
+      }
+      saveButton.disabled = false;
+      nameInput.disabled = false;
+    }
+  });
+
+  deleteButton.addEventListener("click", async () => {
+    if (!window.confirm(`Delete ${displayName || "this group"}?`)) {
+      return;
+    }
+    deleteButton.disabled = true;
+    saveButton.disabled = true;
+    nameInput.disabled = true;
+    try {
+      await dataManager.deleteGroup(group.id);
+      if (status) {
+        status.show("Group deleted.", { type: "success", timeout: 1600 });
+      }
+      await loadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Admin: unable to delete group", error);
+      if (status) {
+        status.show(error.message || "Unable to delete group", { type: "danger" });
+      }
+      deleteButton.disabled = false;
+      saveButton.disabled = false;
+      nameInput.disabled = false;
+    }
+  });
+
+  membersSelect.addEventListener("change", async () => {
+    const selected = Array.from(membersSelect.selectedOptions).map((option) => option.value);
+    membersSelect.disabled = true;
+    try {
+      await dataManager.updateGroupMembers({ id: group.id, characterIds: selected });
+      if (status) {
+        status.show("Group updated.", { type: "success", timeout: 1400 });
+      }
+      await loadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Admin: unable to update group members", error);
+      if (status) {
+        status.show(error.message || "Unable to update group", { type: "danger" });
+      }
+      membersSelect.disabled = false;
+    }
+  });
+
+  generateButton.addEventListener("click", async () => {
+    generateButton.disabled = true;
+    try {
+      const link = await dataManager.createGroupShareLink(group.id);
+      updateShareDisplay(link);
+      if (status) {
+        status.show("Share link created.", { type: "success", timeout: 1600 });
+      }
+      await loadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Admin: unable to create group link", error);
+      if (status) {
+        status.show(error.message || "Unable to create link", { type: "danger" });
+      }
+      generateButton.disabled = false;
+    }
+  });
+
+  disableButton.addEventListener("click", async () => {
+    disableButton.disabled = true;
+    try {
+      await dataManager.revokeGroupShareLink(group.id);
+      updateShareDisplay(null);
+      if (status) {
+        status.show("Share link disabled.", { type: "success", timeout: 1600 });
+      }
+      await loadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Admin: unable to disable group link", error);
+      if (status) {
+        status.show(error.message || "Unable to disable link", { type: "danger" });
+      }
+      disableButton.disabled = false;
+    }
+  });
+
+  return { summaryRow, detailsRow };
+}
+
 function isViewingCurrentUser() {
   const current = currentUser();
   if (!current) {
@@ -1359,6 +1833,7 @@ async function loadOwnedContent({ refresh = false } = {}) {
     showOwnedEmpty("Sign in to see your saved content.");
     updateOwnedSummary(null, 0);
     updateOwnedSortIndicators();
+    renderGroups([]);
     return;
   }
   if (viewState.owned.loading) {
@@ -1380,6 +1855,7 @@ async function loadOwnedContent({ refresh = false } = {}) {
     viewState.owned.items = items;
     viewState.owned.stale = false;
     renderOwnedItems(items, owner);
+    void loadGroups({ refresh: shouldRefresh });
   } catch (error) {
     console.error("Failed to load owned content", error);
     if (status) {
@@ -1392,20 +1868,105 @@ async function loadOwnedContent({ refresh = false } = {}) {
   }
 }
 
+async function loadGroups({ refresh = false } = {}) {
+  if (!elements.groupsPanel) {
+    return;
+  }
+  const allowed = dataManager.isAuthenticated() && isViewingCurrentUser() && !viewState.owned.selectedUsername;
+  if (!allowed) {
+    viewState.groups.items = [];
+    viewState.groups.stale = true;
+    renderGroups([]);
+    return;
+  }
+  if (viewState.groups.loading) {
+    return;
+  }
+  const shouldRefresh = refresh || viewState.groups.stale;
+  if (!shouldRefresh && viewState.groups.items.length) {
+    renderGroups(viewState.groups.items);
+    return;
+  }
+  if (shouldRefresh) {
+    setGroupsLoading();
+  }
+  viewState.groups.loading = true;
+  try {
+    const payload = await dataManager.listGroups({ refresh: shouldRefresh });
+    const groups = Array.isArray(payload?.groups) ? payload.groups : [];
+    viewState.groups.items = groups;
+    viewState.groups.stale = false;
+    renderGroups(groups);
+  } catch (error) {
+    console.error("Failed to load groups", error);
+    if (status) {
+      status.show(error.message || "Unable to load groups", { type: "danger" });
+    }
+    if (viewState.groups.items.length) {
+      renderGroups(viewState.groups.items);
+    } else {
+      setGroupsLoading("Unable to load groups");
+    }
+  } finally {
+    viewState.groups.loading = false;
+  }
+}
+
 function handleOwnedContentEvent() {
   if (!dataManager.isAuthenticated()) {
     return;
   }
   const viewingEveryone = viewState.owned.selectedUsername === "__all__";
-  if (viewState.activeTab === TAB_OWNED && (isViewingCurrentUser() || viewingEveryone)) {
+  const relevant = isViewingCurrentUser() || viewingEveryone;
+  if (!relevant) {
+    return;
+  }
+  viewState.groups.stale = true;
+  if (viewState.activeTab === TAB_OWNED) {
     loadOwnedContent({ refresh: true });
-  } else if (isViewingCurrentUser() || viewingEveryone) {
+  } else {
     viewState.owned.stale = true;
   }
 }
 
 if (elements.openLogin && auth) {
   elements.openLogin.addEventListener("click", () => auth.showLogin());
+}
+
+if (elements.groupCreateButton) {
+  elements.groupCreateButton.addEventListener("click", async () => {
+    if (!dataManager.isAuthenticated()) {
+      if (status) {
+        status.show("Sign in to manage groups.", { type: "warning", timeout: 1800 });
+      }
+      return;
+    }
+    const baseName = "Campaign group";
+    const existing = new Set(
+      viewState.groups.items.map((group) => (group.name || "").trim().toLowerCase())
+    );
+    let candidate = baseName;
+    let index = 2;
+    while (existing.has(candidate.trim().toLowerCase())) {
+      candidate = `${baseName} ${index}`;
+      index += 1;
+    }
+    elements.groupCreateButton.disabled = true;
+    try {
+      await dataManager.createGroup({ name: candidate });
+      if (status) {
+        status.show("Group created.", { type: "success", timeout: 1600 });
+      }
+      await loadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Admin: unable to create group", error);
+      if (status) {
+        status.show(error.message || "Unable to create group", { type: "danger" });
+      }
+    } finally {
+      elements.groupCreateButton.disabled = false;
+    }
+  });
 }
 
 if (elements.shareLinkCopy) {
@@ -1570,6 +2131,7 @@ function handleAuthChanged() {
     populateOwnedUserFilter();
     viewState.owned.selectedUsername = "";
     viewState.owned.stale = true;
+    viewState.groups.stale = true;
     loadOwnedContent({ refresh: true });
     setActiveTab(resolveTabFromHash(), { updateHash: false, force: true });
   } else {
@@ -1580,9 +2142,12 @@ function handleAuthChanged() {
     viewState.owned.items = [];
     viewState.owned.selectedUsername = "";
     viewState.owned.stale = true;
+    viewState.groups.items = [];
+    viewState.groups.stale = true;
     populateOwnedUserFilter();
     showOwnedEmpty("Sign in to see your saved content.");
     updateOwnedSummary(null, 0);
+    renderGroups([]);
     setActiveTab(TAB_SETTINGS, { updateHash: false, force: true });
   }
 }

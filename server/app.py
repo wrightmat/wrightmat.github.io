@@ -7,6 +7,8 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from . import groups as group_store
+
 from .auth import (
     AuthError,
     User,
@@ -179,6 +181,12 @@ def register_routes():
         body = request.json()
         return body or {}
 
+    def require_user(request: Request) -> User:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        return user
+
     def bucket_from_content_type(content_type: str) -> str:
         mapping = {"character": "characters", "template": "templates", "system": "systems", "schema": "systems"}
         if content_type not in mapping:
@@ -317,6 +325,114 @@ def register_routes():
         r"^/shares/(?P<bucket>[^/]+)/(?P<content_id>[^/]+)/eligible$",
         handle_share_eligible_path,
     )
+
+    # Groups management
+
+    def handle_list_groups(request: Request) -> Response:
+        user = require_user(request)
+        payload = group_store.list_groups(request.state, user)
+        return json_response(payload)
+
+    router.add("GET", r"^/groups$", handle_list_groups)
+
+    def handle_create_group(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        name = data.get("name", "")
+        type_ = data.get("type", "")
+        group = group_store.create_group(request.state, user, name, type_)
+        return json_response(group, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups$", handle_create_group)
+
+    def handle_update_group(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        name = data.get("name")
+        group = group_store.update_group(request.state, user, group_id, name=name)
+        return json_response(group)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)$", handle_update_group)
+
+    def handle_delete_group(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        group_store.delete_group(request.state, user, group_id)
+        return json_response({"ok": True})
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/delete$", handle_delete_group)
+
+    def handle_update_group_members(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        data = require_json(request)
+        members = data.get("character_ids")
+        if members is None:
+            members = data.get("members")
+        if members is None:
+            members = data.get("characters")
+        if not isinstance(members, list):
+            members = []
+        group = group_store.update_group_members(request.state, user, group_id, members)
+        return json_response(group)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/members$", handle_update_group_members)
+
+    def handle_group_share_link(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        link = group_store.get_group_share_link(request.state, user, group_id)
+        return json_response({"link": link})
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/share-link$", handle_group_share_link)
+
+    def handle_group_share_link_create(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        link = group_store.ensure_group_share_link(request.state, user, group_id)
+        return json_response(link, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/share-link$", handle_group_share_link_create)
+
+    def handle_group_share_link_revoke(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        group_id = params["group_id"]
+        group_store.revoke_group_share_link(request.state, user, group_id)
+        return json_response({"ok": True})
+
+    router.add(
+        "POST",
+        r"^/groups/(?P<group_id>[^/]+)/share-link/revoke$",
+        handle_group_share_link_revoke,
+    )
+
+    def handle_group_share_details(request: Request) -> Response:
+        params = getattr(request, "params")
+        token = params["token"]
+        payload = group_store.get_group_share_details(request.state, token)
+        return json_response(payload)
+
+    router.add("GET", r"^/groups/share/(?P<token>[^/]+)$", handle_group_share_details)
+
+    def handle_group_share_claim(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        token = params["token"]
+        data = require_json(request)
+        character_id = data.get("character_id") or data.get("id")
+        if not character_id:
+            raise AuthError("Character id is required")
+        payload = group_store.claim_group_character(request.state, token, character_id, user)
+        return json_response(payload)
+
+    router.add("POST", r"^/groups/share/(?P<token>[^/]+)/claim$", handle_group_share_claim)
 
     # POST /auth/register
     def handle_register(request: Request) -> Response:
