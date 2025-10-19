@@ -117,18 +117,6 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="save-character"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
                   data-action="undo-character"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
@@ -173,6 +161,18 @@
                 >
                   <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
                   <span class="visually-hidden">Export JSON</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="save-character"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
                 </button>
                 <button
                   class="btn btn-outline-secondary p-2"
@@ -230,7 +230,7 @@
                     <select class="form-select" id="character-select" data-character-select></select>
                   </div>
                   <div class="col-12 col-lg-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary" type="button" data-action="new-character">New Character</button>
+                    <button class="btn btn-outline-success" type="button" data-action="new-character">New Character</button>
                     <button
                       class="btn btn-outline-danger d-none"
                       type="button"

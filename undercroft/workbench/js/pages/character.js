@@ -10,6 +10,7 @@ import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
+  listBuiltinSystems,
   markBuiltinMissing,
   markBuiltinAvailable,
   builtinIsTemporarilyMissing,
@@ -18,14 +19,25 @@ import {
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
+import {
+  normalizeOptionEntries,
+  resolveBindingFromContexts,
+  buildSystemPreviewData,
+} from "../lib/component-data.js";
 
 (async () => {
-  const { status } = initAppShell({ namespace: "character" });
+  const { status, undoStack, undo, redo } = initAppShell({
+    namespace: "character",
+    onUndo: handleUndoEntry,
+    onRedo: handleRedoEntry,
+  });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();
+  const systemCatalog = new Map();
+  const systemDefinitionCache = new Map();
 
   function sessionUser() {
     return dataManager.session?.user || null;
@@ -38,6 +50,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     character: null,
     draft: null,
     characterOrigin: null,
+    systemDefinition: null,
+    systemPreviewData: {},
   };
 
   let lastSavedCharacterSignature = null;
@@ -49,6 +63,115 @@ import { evaluateFormula } from "../lib/formula-engine.js";
   let componentCounter = 0;
   let pendingSharedRecord = resolveSharedRecordParam("characters");
 
+  function cloneValue(value) {
+    if (value === undefined) {
+      return undefined;
+    }
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(value);
+      } catch (error) {
+        // fall through to JSON clone
+      }
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function valuesEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+    if (typeof a === "number" && typeof b === "number" && Number.isNaN(a) && Number.isNaN(b)) {
+      return true;
+    }
+    if (a === undefined || b === undefined) {
+      return a === b;
+    }
+    try {
+      return JSON.stringify(a) === JSON.stringify(b);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function resolveBindingPath(binding) {
+    const normalized = normalizeBinding(binding);
+    if (!normalized || typeof normalized !== "string" || !normalized.startsWith("@")) {
+      return null;
+    }
+    const segments = normalized
+      .slice(1)
+      .split(".")
+      .map((segment) => segment.trim())
+      .filter(Boolean);
+    return segments.length ? segments : null;
+  }
+
+  function getValueAtPath(pathSegments) {
+    if (!Array.isArray(pathSegments) || !pathSegments.length) {
+      return undefined;
+    }
+    let cursor = state.draft?.data;
+    for (const segment of pathSegments) {
+      if (!cursor || typeof cursor !== "object" || !(segment in cursor)) {
+        return undefined;
+      }
+      cursor = cursor[segment];
+    }
+    return cursor;
+  }
+
+  function setValueAtPath(pathSegments, value) {
+    if (!Array.isArray(pathSegments) || !pathSegments.length) {
+      return false;
+    }
+    if (!state.draft) {
+      return false;
+    }
+    if (!state.draft.data || typeof state.draft.data !== "object") {
+      if (value === undefined) {
+        return false;
+      }
+      state.draft.data = {};
+    }
+    let cursor = state.draft.data;
+    for (let index = 0; index < pathSegments.length - 1; index += 1) {
+      const key = pathSegments[index];
+      if (!cursor[key] || typeof cursor[key] !== "object") {
+        if (value === undefined) {
+          return false;
+        }
+        cursor[key] = {};
+      }
+      cursor = cursor[key];
+    }
+    const lastKey = pathSegments[pathSegments.length - 1];
+    if (value === undefined) {
+      if (cursor && typeof cursor === "object" && Object.prototype.hasOwnProperty.call(cursor, lastKey)) {
+        delete cursor[lastKey];
+        return true;
+      }
+      return false;
+    }
+    cursor[lastKey] = value;
+    return true;
+  }
+
+  function applyBindingValue(pathSegments, value, { focusSnapshot = null } = {}) {
+    const applied = setValueAtPath(pathSegments, cloneValue(value));
+    renderCanvas();
+    if (focusSnapshot) {
+      restoreActiveField(focusSnapshot);
+    }
+    void persistDraft({ silent: true });
+    renderPreview();
+    return applied;
+  }
+
   function userOwnsCharacter(id) {
     if (!id) {
       return false;
@@ -58,7 +181,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       return true;
     }
     const ownership = (metadata.ownership || "").toLowerCase();
-    if (ownership === "shared" || ownership === "public") {
+    if (ownership === "shared") {
       return false;
     }
     if (ownership === "local" || ownership === "draft") {
@@ -74,7 +197,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (metadata.ownerUsername && user.username) {
       return metadata.ownerUsername === user.username;
     }
-    return ownership !== "shared" && ownership !== "public";
+    return ownership !== "shared";
   }
 
   function resolveOwnerLabel(metadata) {
@@ -85,6 +208,63 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       return metadata.ownerUsername;
     }
     return "the owner";
+  }
+
+  function characterOwnership(metadata) {
+    if (metadata && typeof metadata.ownership === "string" && metadata.ownership) {
+      return metadata.ownership.toLowerCase();
+    }
+    if (state.draft?.ownership && typeof state.draft.ownership === "string") {
+      return state.draft.ownership.toLowerCase();
+    }
+    return "";
+  }
+
+  function characterPermissions(metadata) {
+    const permissions = metadata?.sharePermissions ?? state.draft?.sharePermissions ?? "";
+    if (typeof permissions === "string" && permissions) {
+      return permissions.toLowerCase();
+    }
+    return "";
+  }
+
+  function characterAllowsEdits(metadata) {
+    if (!state.draft) {
+      return false;
+    }
+    if (!state.draft.id) {
+      return true;
+    }
+    if (!metadata) {
+      return true;
+    }
+    const ownership = characterOwnership(metadata);
+    if (ownership === "shared") {
+      return characterPermissions(metadata) === "edit";
+    }
+    if (ownership === "public") {
+      return false;
+    }
+    if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
+      return true;
+    }
+    if (!ownership || ownership === "remote") {
+      return userOwnsCharacter(state.draft.id);
+    }
+    return userOwnsCharacter(state.draft.id);
+  }
+
+  function describeCharacterEditRestriction(metadata) {
+    const ownership = characterOwnership(metadata);
+    const permissions = characterPermissions(metadata);
+    if (ownership === "shared" && permissions !== "edit") {
+      return "This character was shared with you as view-only.";
+    }
+    if (ownership === "public") {
+      return "Public characters are view-only.";
+    }
+    const ownerLabel = resolveOwnerLabel(metadata);
+    return `Only ${ownerLabel} can save this character.`;
   }
 
   const elements = {
@@ -157,10 +337,10 @@ import { evaluateFormula } from "../lib/formula-engine.js";
           status.show("Sign in to save characters to the server.", { type: "warning", timeout: 2600 });
           return;
         }
-        if (!userOwnsCharacter(state.draft.id)) {
-          const metadata = characterCatalog.get(state.draft.id) || {};
-          const ownerLabel = resolveOwnerLabel(metadata);
-          status.show(`Only ${ownerLabel} can save this character.`, { type: "warning", timeout: 2600 });
+        const metadata = characterCatalog.get(state.draft.id) || {};
+        if (!characterAllowsEdits(metadata)) {
+          const message = describeCharacterEditRestriction(metadata);
+          status.show(message, { type: "warning", timeout: 2800 });
           return;
         }
         if (!dataManager.hasWriteAccess("characters")) {
@@ -185,13 +365,13 @@ import { evaluateFormula } from "../lib/formula-engine.js";
 
     if (elements.undoButton) {
       elements.undoButton.addEventListener("click", () => {
-        status.show("Undo coming soon", { type: "info", timeout: 1800 });
+        undo();
       });
     }
 
     if (elements.redoButton) {
       elements.redoButton.addEventListener("click", () => {
-        status.show("Redo coming soon", { type: "info", timeout: 1800 });
+        redo();
       });
     }
 
@@ -225,7 +405,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
 
     if (elements.deleteCharacterButton) {
       elements.deleteCharacterButton.addEventListener("click", () => {
-        deleteCurrentCharacter();
+        void deleteCurrentCharacter();
       });
     }
 
@@ -304,6 +484,24 @@ import { evaluateFormula } from "../lib/formula-engine.js";
         },
       });
     });
+    listBuiltinSystems().forEach((system) => {
+      if (builtinIsTemporarilyMissing("systems", system.id)) {
+        return;
+      }
+      registerSystemRecord({
+        id: system.id,
+        title: system.title,
+        path: system.path,
+        source: "builtin",
+      });
+      verifyBuiltinAsset("systems", system, {
+        skipProbe: Boolean(dataManager.baseUrl),
+        onMissing: () => removeSystemRecord(system.id),
+        onError: (error) => {
+          console.warn("Character editor: failed to verify builtin system", system.id, error);
+        },
+      });
+    });
   }
 
   function registerTemplateRecord(record) {
@@ -317,6 +515,19 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     syncCharacterOptions();
   }
 
+  function registerSystemRecord(record) {
+    if (!record || !record.id) {
+      return;
+    }
+    const current = systemCatalog.get(record.id) || {};
+    const next = { ...current, ...record };
+    if (record.payload) {
+      next.payload = record.payload;
+      systemDefinitionCache.set(record.id, record.payload);
+    }
+    systemCatalog.set(record.id, next);
+  }
+
   function removeTemplateRecord(id) {
     if (!id) {
       return;
@@ -328,6 +539,112 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     const selected = elements.newCharacterTemplate?.value || "";
     refreshNewCharacterTemplateOptions(selected);
     syncCharacterOptions();
+  }
+
+  function removeSystemRecord(id) {
+    if (!id) {
+      return;
+    }
+    systemCatalog.delete(id);
+    systemDefinitionCache.delete(id);
+  }
+
+  function resetSystemContext() {
+    state.systemDefinition = null;
+    state.systemPreviewData = {};
+  }
+
+  async function fetchSystemDefinition(systemId) {
+    if (!systemId) {
+      return null;
+    }
+    if (systemDefinitionCache.has(systemId)) {
+      return systemDefinitionCache.get(systemId);
+    }
+    const metadata = systemCatalog.get(systemId) || {};
+    if (metadata.payload) {
+      systemDefinitionCache.set(systemId, metadata.payload);
+      return metadata.payload;
+    }
+    if (metadata.path) {
+      try {
+        if (metadata.source === "builtin" && builtinIsTemporarilyMissing("systems", systemId)) {
+          return null;
+        }
+        const response = await fetch(metadata.path, { cache: "no-store" });
+        if (!response.ok) {
+          markBuiltinMissing("systems", systemId);
+          removeSystemRecord(systemId);
+          throw new Error(`Failed to fetch system: ${response.status}`);
+        }
+        const payload = await response.json();
+        markBuiltinAvailable("systems", systemId);
+        systemDefinitionCache.set(systemId, payload);
+        registerSystemRecord({
+          id: systemId,
+          title: payload.title || systemId,
+          source: metadata.source || "builtin",
+          payload,
+        });
+        return payload;
+      } catch (error) {
+        console.warn("Character editor: unable to load builtin system", error);
+        return null;
+      }
+    }
+    try {
+      const local = dataManager.getLocal("systems", systemId);
+      if (local) {
+        systemDefinitionCache.set(systemId, local);
+        registerSystemRecord({ id: systemId, title: local.title || systemId, source: "local", payload: local });
+        return local;
+      }
+    } catch (error) {
+      console.warn("Character editor: unable to read local system", error);
+    }
+    if (!dataManager.baseUrl) {
+      return null;
+    }
+    try {
+      const shareToken = metadata.shareToken || "";
+      const result = await dataManager.get("systems", systemId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
+      const payload = result?.payload || null;
+      if (payload) {
+        systemDefinitionCache.set(systemId, payload);
+        registerSystemRecord({
+          id: systemId,
+          title: payload.title || systemId,
+          source: result?.source || "remote",
+          shareToken,
+          payload,
+        });
+      }
+      return payload;
+    } catch (error) {
+      console.warn("Character editor: unable to fetch system", error);
+      return null;
+    }
+  }
+
+  async function updateSystemContext(systemId) {
+    resetSystemContext();
+    if (!systemId) {
+      renderCanvas();
+      return;
+    }
+    try {
+      const definition = await fetchSystemDefinition(systemId);
+      if (definition) {
+        state.systemDefinition = definition;
+        state.systemPreviewData = buildSystemPreviewData(definition);
+      }
+    } catch (error) {
+      console.warn("Character editor: unable to prepare system context", error);
+    }
+    renderCanvas();
   }
 
   function normalizeCharacterRecord(record = {}, current = {}) {
@@ -344,10 +661,18 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (next.permissions !== undefined && next.sharePermissions === undefined) {
       next.sharePermissions = next.permissions;
     }
+    if (next.share_token !== undefined && next.shareToken === undefined) {
+      next.shareToken = next.share_token;
+    }
+    if (next.template_title !== undefined && next.templateTitle === undefined) {
+      next.templateTitle = next.template_title;
+    }
     delete next.owner_id;
     delete next.owner_username;
     delete next.owner_tier;
     delete next.permissions;
+    delete next.share_token;
+    delete next.template_title;
 
     if (!next.ownership && current.ownership) {
       next.ownership = current.ownership;
@@ -363,6 +688,12 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     }
     if (!next.sharePermissions && current.sharePermissions) {
       next.sharePermissions = current.sharePermissions;
+    }
+    if (!next.shareToken && current.shareToken) {
+      next.shareToken = current.shareToken;
+    }
+    if (!next.templateTitle && current.templateTitle) {
+      next.templateTitle = current.templateTitle;
     }
     Object.keys(next).forEach((key) => {
       if (next[key] === undefined) {
@@ -440,13 +771,15 @@ import { evaluateFormula } from "../lib/formula-engine.js";
 
   function syncCharacterActions() {
     const hasDraft = Boolean(state.draft);
+    const draftHasId = Boolean(state.draft?.id);
+    const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
     if (elements.saveButton) {
       const hasChanges = hasDraft && hasUnsavedCharacterChanges();
       const isAuthenticated = dataManager.isAuthenticated();
-      const canWrite = dataManager.hasWriteAccess("characters");
-      const ownsRecord = hasDraft ? userOwnsCharacter(state.draft.id) : false;
-      const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && ownsRecord;
-      elements.saveButton.disabled = !enabled;
+    const canWrite = dataManager.hasWriteAccess("characters");
+    const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
+    const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
+    elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasDraft) {
         elements.saveButton.title = "Create or load a character to save.";
@@ -457,10 +790,9 @@ import { evaluateFormula } from "../lib/formula-engine.js";
         elements.saveButton.title = required
           ? `Saving characters requires a ${required} tier.`
           : "Your tier cannot save characters.";
-      } else if (!ownsRecord) {
-        const metadata = characterCatalog.get(state.draft.id) || {};
-        const ownerLabel = resolveOwnerLabel(metadata);
-        elements.saveButton.title = `Only ${ownerLabel} can save this character.`;
+      } else if (!canEditRecord) {
+        const message = describeCharacterEditRestriction(metadata);
+        elements.saveButton.title = message;
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
@@ -471,38 +803,24 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (!elements.deleteCharacterButton) {
       return;
     }
-    const hasCharacter = Boolean(state.draft?.id);
-    elements.deleteCharacterButton.classList.toggle("d-none", !hasCharacter);
-    if (!hasCharacter) {
+    const canWrite = dataManager.hasWriteAccess("characters");
+    const canEditRecord = draftHasId ? characterAllowsEdits(metadata) : false;
+    const showDelete = draftHasId && canEditRecord && canWrite;
+    elements.deleteCharacterButton.classList.toggle("d-none", !showDelete);
+    if (!showDelete) {
       elements.deleteCharacterButton.disabled = true;
       elements.deleteCharacterButton.setAttribute("aria-disabled", "true");
       elements.deleteCharacterButton.removeAttribute("title");
       return;
     }
-    const metadata = state.draft?.id ? characterCatalog.get(state.draft.id) : null;
-    let origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
-    let deletable = origin === "local";
-    if (!deletable && state.draft?.id) {
-      try {
-        const localSnapshot = dataManager.getLocal("characters", state.draft.id);
-        if (localSnapshot) {
-          deletable = true;
-          origin = "local";
-          state.characterOrigin = "local";
-        }
-      } catch (error) {
-        console.warn("Character editor: unable to inspect local character entry", error);
-      }
-    }
+    const origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
     const isBuiltin = origin === "builtin";
+    const deletable = !isBuiltin;
     elements.deleteCharacterButton.disabled = !deletable;
     elements.deleteCharacterButton.classList.toggle("disabled", !deletable);
     elements.deleteCharacterButton.setAttribute("aria-disabled", deletable ? "false" : "true");
     if (!deletable) {
-      const message = isBuiltin
-        ? "Built-in characters cannot be deleted."
-        : "Only local characters can be deleted right now.";
-      elements.deleteCharacterButton.title = message;
+      elements.deleteCharacterButton.title = "Built-in characters cannot be deleted.";
     } else {
       elements.deleteCharacterButton.removeAttribute("title");
     }
@@ -576,24 +894,61 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       console.warn("Character editor: unable to read local templates", error);
     }
     const selected = elements.newCharacterTemplate?.value || "";
-    refreshNewCharacterTemplateOptions(selected);
+    if (!dataManager.baseUrl) {
+      refreshNewCharacterTemplateOptions(selected);
+      return;
+    }
+    try {
+      const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
+      const items = dataManager.collectListEntries(remote);
+      items.forEach((item) => {
+        if (!item || !item.id) return;
+        const shareToken = item.shareToken || item.share_token || "";
+        const ownership = item.permissions ? "shared" : item.is_public ? "public" : "remote";
+        registerTemplateRecord({
+          id: item.id,
+          title: item.title || item.id,
+          schema: item.schema || "",
+          source: "remote",
+          shareToken,
+          ownership,
+          ownerId: item.owner_id ?? item.ownerId ?? null,
+          ownerUsername: item.owner_username || item.ownerUsername || "",
+        });
+      });
+    } catch (error) {
+      console.warn("Character editor: unable to list templates", error);
+    } finally {
+      refreshNewCharacterTemplateOptions(selected);
+    }
   }
 
   async function loadCharacterRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("characters");
       const user = sessionUser();
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload, owner } = entry;
         if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
+        const isOwner = dataManager.isAuthenticated();
+        const ownerSnapshot =
+          owner ||
+          (isOwner && user
+            ? { id: user.id ?? null, username: user.username || "", tier: dataManager.getUserTier() }
+            : null);
         registerCharacterRecord({
           id,
           title: payload?.data?.name || payload?.title || id,
           template: payload?.template || "",
+          templateTitle: payload?.templateTitle || "",
           source: "local",
-          ownership: user ? "owned" : "local",
-          ownerId: user?.id ?? null,
-          ownerUsername: user?.username ?? "",
-          ownerTier: user?.tier ?? "",
+          ownership: isOwner ? "owned" : "local",
+          ownerId: ownerSnapshot?.id ?? null,
+          ownerUsername: ownerSnapshot?.username || "",
+          ownerTier: ownerSnapshot?.tier || "",
         });
       });
     } catch (error) {
@@ -613,17 +968,35 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       const { remote } = await dataManager.list("characters", { refresh: force, includeLocal: false });
       const session = sessionUser();
       const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const ownedIds = [];
       owned.forEach((entry) => {
         if (!entry || !entry.id) return;
+        ownedIds.push(entry.id);
         registerCharacterRecord({
           id: entry.id,
           title: entry.name || entry.title || entry.id,
           template: entry.template || "",
+          templateTitle: entry.template_title || "",
           source: "remote",
           ownership: "owned",
           ownerId: entry.owner_id ?? session?.id ?? null,
           ownerUsername: entry.owner_username || session?.username || "",
           ownerTier: entry.owner_tier || session?.tier || "",
+        });
+      });
+      const adopted = dataManager.adoptLegacyRecords("characters", ownedIds);
+      adopted.forEach(({ id, payload, owner }) => {
+        if (!id) return;
+        registerCharacterRecord({
+          id,
+          title: payload?.data?.name || payload?.title || id,
+          template: payload?.template || "",
+          templateTitle: payload?.templateTitle || "",
+          source: "remote",
+          ownership: "owned",
+          ownerId: owner?.id ?? session?.id ?? null,
+          ownerUsername: owner?.username || session?.username || "",
+          ownerTier: owner?.tier || session?.tier || "",
         });
       });
       const shared = Array.isArray(remote?.shared) ? remote.shared : [];
@@ -633,26 +1006,13 @@ import { evaluateFormula } from "../lib/formula-engine.js";
           id: entry.id,
           title: entry.name || entry.title || entry.id,
           template: entry.template || "",
+          templateTitle: entry.template_title || "",
           source: "remote",
           ownership: "shared",
           ownerId: entry.owner_id ?? null,
           ownerUsername: entry.owner_username || "",
           ownerTier: entry.owner_tier || "",
           sharePermissions: entry.permissions || "",
-        });
-      });
-      const publicEntries = Array.isArray(remote?.public) ? remote.public : [];
-      publicEntries.forEach((entry) => {
-        if (!entry || !entry.id) return;
-        registerCharacterRecord({
-          id: entry.id,
-          title: entry.name || entry.title || entry.id,
-          template: entry.template || "",
-          source: "remote",
-          ownership: "public",
-          ownerId: entry.owner_id ?? null,
-          ownerUsername: entry.owner_username || "",
-          ownerTier: entry.owner_tier || "",
         });
       });
       syncCharacterOptions();
@@ -665,18 +1025,14 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (!pendingSharedRecord) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedRecord();
-    } else if (status) {
-      status.show("Sign in to load the shared character.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedRecord();
   }
 
   async function loadPendingSharedRecord() {
     if (!pendingSharedRecord) {
       return;
     }
-    const targetId = pendingSharedRecord;
+    const { id: targetId, shareToken = "" } = pendingSharedRecord;
     pendingSharedRecord = null;
     registerCharacterRecord({
       id: targetId,
@@ -684,10 +1040,11 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       template: "",
       source: "remote",
       ownership: "shared",
+      shareToken,
     });
     syncCharacterOptions();
     try {
-      await loadCharacter(targetId);
+      await loadCharacter(targetId, { shareToken });
     } catch (error) {
       console.error("Character editor: unable to load shared character", error);
       if (status) {
@@ -760,11 +1117,18 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       title: payload.title || payload.name || payload.id || "",
       schema: payload.schema || payload.system || "",
       origin,
+      metadata: cloneValue(payload.metadata) || undefined,
+      data: cloneValue(payload.data) || undefined,
+      sources: cloneValue(payload.sources) || undefined,
+      preview: cloneValue(payload.preview) || undefined,
+      sample: cloneValue(payload.sample) || undefined,
+      samples: cloneValue(payload.samples) || undefined,
     };
     componentCounter = 0;
     const components = Array.isArray(payload.components)
       ? payload.components.map((component) => hydrateComponent(component)).filter(Boolean)
       : [];
+    resetSystemContext();
     state.template = template;
     state.components = components;
     if (template.id) {
@@ -778,11 +1142,12 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (state.draft) {
       state.draft.template = template.id;
     }
+    void updateSystemContext(template.schema);
     renderCanvas();
     renderPreview();
   }
 
-  async function loadCharacter(id) {
+  async function loadCharacter(id, { shareToken = "" } = {}) {
     if (!id) {
       return;
     }
@@ -791,7 +1156,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       if (!metadata) {
         throw new Error("Character metadata missing");
       }
-      const payload = await fetchCharacterPayload(metadata);
+      const token = shareToken || metadata.shareToken || "";
+      const payload = await fetchCharacterPayload(metadata, { shareToken: token });
       if (!payload) {
         throw new Error("Character payload missing");
       }
@@ -808,6 +1174,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
         ownerUsername: metadata.ownerUsername,
         ownerTier: metadata.ownerTier,
         sharePermissions: metadata.sharePermissions,
+        shareToken: token,
       });
       if (state.draft.template) {
         await loadTemplateById(state.draft.template);
@@ -877,6 +1244,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       state.characterOrigin = null;
       state.template = null;
       state.components = [];
+      resetSystemContext();
       markCharacterClean();
       renderCanvas();
       renderPreview();
@@ -890,7 +1258,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     return true;
   }
 
-  async function fetchCharacterPayload(metadata) {
+  async function fetchCharacterPayload(metadata, { shareToken = "" } = {}) {
     if (!metadata) {
       return null;
     }
@@ -937,7 +1305,10 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       }
     }
     if (metadata.source === "remote" && dataManager.baseUrl) {
-      const result = await dataManager.get("characters", metadata.id, { preferLocal: true });
+      const result = await dataManager.get("characters", metadata.id, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       return result?.payload || null;
     }
     return null;
@@ -1054,15 +1425,11 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       const select = document.createElement("select");
       select.className = "form-select";
       const currentValue = resolvedValue == null ? "" : String(resolvedValue);
-      (component.options || []).forEach((option) => {
+      const options = resolveSelectionOptions(component);
+      options.forEach(({ value, label }) => {
         const opt = document.createElement("option");
-        if (typeof option === "string") {
-          opt.value = option;
-          opt.textContent = option;
-        } else {
-          opt.value = option.value;
-          opt.textContent = option.label;
-        }
+        opt.value = value;
+        opt.textContent = label;
         if (opt.value === currentValue) {
           opt.selected = true;
         }
@@ -1076,6 +1443,24 @@ import { evaluateFormula } from "../lib/formula-engine.js";
         });
       }
       wrapper.appendChild(select);
+      return wrapper;
+    }
+
+    if (variant === "textarea") {
+      const textarea = document.createElement("textarea");
+      textarea.className = "form-control";
+      const rows = Number.isFinite(Number(component.rows)) ? Number(component.rows) : 3;
+      textarea.rows = Math.min(Math.max(Math.round(rows), 2), 12);
+      textarea.placeholder = component.placeholder || "";
+      textarea.value = resolvedValue != null ? String(resolvedValue) : "";
+      textarea.disabled = !editable;
+      assignBindingMetadata(textarea, component);
+      if (editable) {
+        textarea.addEventListener("input", () => {
+          updateBinding(component.binding, textarea.value);
+        });
+      }
+      wrapper.appendChild(textarea);
       return wrapper;
     }
 
@@ -1341,25 +1726,48 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     label.textContent = component.label || "Options";
     wrapper.appendChild(label);
     const editable = isEditable(component);
-    const value = resolveComponentValue(component, component.value ?? "");
-    const options = Array.isArray(component.options) ? component.options : [];
+    const value = resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
+    const activeValues = component.multiple
+      ? Array.isArray(value)
+        ? value.map(String)
+        : value != null
+        ? [String(value)]
+        : []
+      : value != null
+      ? String(value)
+      : "";
+    const options = resolveSelectionOptions(component);
     const group = document.createElement("div");
     group.className = "btn-group flex-wrap";
     group.setAttribute("role", "group");
-    options.forEach((option) => {
-      const optionValue = typeof option === "string" ? option : option.value;
-      const optionLabel = typeof option === "string" ? option : option.label;
+    options.forEach(({ value: optionValue, label: optionLabel }) => {
+      const normalizedOption = String(optionValue);
       const button = document.createElement("button");
       button.type = "button";
-      button.className = String(value) === String(optionValue)
-        ? "btn btn-primary btn-sm"
-        : "btn btn-outline-secondary btn-sm";
+      const isActive = component.multiple
+        ? activeValues.includes(normalizedOption)
+        : normalizedOption === activeValues;
+      button.className = isActive ? "btn btn-primary btn-sm" : "btn btn-outline-secondary btn-sm";
       button.textContent = optionLabel;
       button.disabled = !editable;
       assignBindingMetadata(button, component, { value: optionValue });
       if (editable) {
         button.addEventListener("click", () => {
-          updateBinding(component.binding, optionValue);
+          if (component.multiple) {
+            const current = resolveComponentValue(component, component.value ?? []);
+            const normalizedCurrent = Array.isArray(current)
+              ? current.map(String)
+              : current != null
+              ? [String(current)]
+              : [];
+            const exists = normalizedCurrent.includes(normalizedOption);
+            const next = exists
+              ? normalizedCurrent.filter((entry) => entry !== normalizedOption)
+              : [...normalizedCurrent, normalizedOption];
+            updateBinding(component.binding, next);
+          } else {
+            updateBinding(component.binding, optionValue);
+          }
         });
       }
       group.appendChild(button);
@@ -1377,12 +1785,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     wrapper.appendChild(label);
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
-    const boundStates = getBindingValue(component.statesBinding);
-    const states = Array.isArray(boundStates) && boundStates.length
-      ? boundStates
-      : Array.isArray(component.states)
-      ? component.states
-      : [];
+    const states = resolveToggleStates(component);
     const resolvedState = resolveComponentValue(component);
     const normalizedState = resolvedState != null ? String(resolvedState) : null;
     states.forEach((state, index) => {
@@ -1475,6 +1878,89 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     return "";
   }
 
+  function resolveSourceBindingValue(bindingOrComponent) {
+    const normalized = normalizeBinding(bindingOrComponent);
+    if (!normalized) {
+      return undefined;
+    }
+    const contexts = [];
+    if (state.draft?.data && typeof state.draft.data === "object") {
+      contexts.push({ value: state.draft.data, prefixes: ["data"], allowDirect: true });
+    }
+    if (state.draft && typeof state.draft === "object") {
+      contexts.push({ value: state.draft, prefixes: ["character"], allowDirect: true });
+    }
+    const template = state.template && typeof state.template === "object" ? state.template : null;
+    if (template) {
+      contexts.push({ value: template, prefixes: ["template"], allowDirect: true });
+      if (template.metadata && typeof template.metadata === "object") {
+        contexts.push({ value: template.metadata, prefixes: ["metadata"] });
+      }
+      if (template.data && typeof template.data === "object") {
+        contexts.push({ value: template.data, prefixes: ["data"], allowDirect: true });
+      }
+      if (template.sources && typeof template.sources === "object") {
+        contexts.push({ value: template.sources, prefixes: ["sources"], allowDirect: true });
+      }
+      if (template.preview && typeof template.preview === "object") {
+        contexts.push({ value: template.preview, prefixes: ["preview"], allowDirect: true });
+      }
+      if (template.sample && typeof template.sample === "object") {
+        contexts.push({ value: template.sample, prefixes: ["sample"], allowDirect: true });
+      }
+      if (template.samples && typeof template.samples === "object") {
+        contexts.push({ value: template.samples, prefixes: ["samples"], allowDirect: true });
+      }
+    }
+    const systemPreviewData =
+      state.systemPreviewData && typeof state.systemPreviewData === "object" ? state.systemPreviewData : null;
+    if (systemPreviewData) {
+      contexts.push({
+        value: systemPreviewData,
+        allowDirect: true,
+        prefixes: ["system", "data", "preview", "sources"],
+      });
+    }
+    const definition = state.systemDefinition && typeof state.systemDefinition === "object" ? state.systemDefinition : null;
+    if (definition) {
+      contexts.push({ value: definition, prefixes: ["system"], allowDirect: true });
+      if (definition.metadata && typeof definition.metadata === "object") {
+        contexts.push({ value: definition.metadata, prefixes: ["metadata"] });
+      }
+      if (definition.definition && typeof definition.definition === "object") {
+        contexts.push({ value: definition.definition, prefixes: ["definition"], allowDirect: true });
+      }
+      if (definition.schema && typeof definition.schema === "object") {
+        contexts.push({ value: definition.schema, prefixes: ["schema"] });
+      }
+      if (definition.data && typeof definition.data === "object") {
+        contexts.push({ value: definition.data, prefixes: ["data"], allowDirect: true });
+      }
+      if (definition.sources && typeof definition.sources === "object") {
+        contexts.push({ value: definition.sources, prefixes: ["sources"], allowDirect: true });
+      }
+      if (definition.preview && typeof definition.preview === "object") {
+        contexts.push({ value: definition.preview, prefixes: ["preview"], allowDirect: true });
+      }
+      if (definition.samples && typeof definition.samples === "object") {
+        contexts.push({ value: definition.samples, prefixes: ["samples"], allowDirect: true });
+      }
+      if (definition.sample && typeof definition.sample === "object") {
+        contexts.push({ value: definition.sample, prefixes: ["sample"], allowDirect: true });
+      }
+      if (definition.values && typeof definition.values === "object") {
+        contexts.push({ value: definition.values, prefixes: ["values"], allowDirect: true });
+      }
+      if (definition.lists && typeof definition.lists === "object") {
+        contexts.push({ value: definition.lists, prefixes: ["lists"], allowDirect: true });
+      }
+      if (definition.collections && typeof definition.collections === "object") {
+        contexts.push({ value: definition.collections, prefixes: ["collections"], allowDirect: true });
+      }
+    }
+    return resolveBindingFromContexts(normalized, contexts);
+  }
+
   function componentHasFormula(component) {
     return typeof component?.formula === "string" && component.formula.trim().length > 0;
   }
@@ -1503,6 +1989,43 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       return bound;
     }
     return fallback;
+  }
+
+  function ensureLeadingBlankOption(options) {
+    const entries = Array.isArray(options) ? options.filter(Boolean).map((entry) => ({ ...entry })) : [];
+    const blankIndex = entries.findIndex((entry) => entry && entry.value === "");
+    if (blankIndex === 0) {
+      return entries;
+    }
+    if (blankIndex > 0) {
+      const [blank] = entries.splice(blankIndex, 1);
+      return [blank, ...entries];
+    }
+    return [{ value: "", label: "" }, ...entries];
+  }
+
+  function resolveSelectionOptions(component) {
+    const expectsSource = Boolean(component?.sourceBinding);
+    const boundOptions = normalizeOptionEntries(resolveSourceBindingValue(component?.sourceBinding));
+    if (boundOptions.length || expectsSource) {
+      return expectsSource ? ensureLeadingBlankOption(boundOptions) : boundOptions;
+    }
+    const componentOptions = normalizeOptionEntries(component?.options);
+    if (componentOptions.length) {
+      return expectsSource ? ensureLeadingBlankOption(componentOptions) : componentOptions;
+    }
+    return expectsSource ? ensureLeadingBlankOption([]) : [];
+  }
+
+  function resolveToggleStates(component) {
+    const boundStates = normalizeOptionEntries(resolveSourceBindingValue(component?.statesBinding));
+    if (boundStates.length) {
+      return boundStates.map((entry) => entry.label || entry.value).filter((value) => value != null);
+    }
+    if (Array.isArray(component?.states) && component.states.length) {
+      return component.states.map((state) => (state != null ? String(state) : state)).filter((state) => state != null);
+    }
+    return [];
   }
 
   function assignBindingMetadata(element, component, { binding = null, value = null } = {}) {
@@ -1620,36 +2143,76 @@ import { evaluateFormula } from "../lib/formula-engine.js";
   }
 
   function updateBinding(binding, value) {
-    const normalizedBinding = normalizeBinding(binding);
-    if (
-      !state.draft ||
-      !normalizedBinding ||
-      typeof normalizedBinding !== "string" ||
-      !normalizedBinding.startsWith("@")
-    ) {
+    const pathSegments = resolveBindingPath(binding);
+    if (!pathSegments) {
       return;
     }
-    const path = normalizedBinding.slice(1).split(".").filter(Boolean);
-    if (!path.length) {
+    const previousValue = cloneValue(getValueAtPath(pathSegments));
+    const nextValue = cloneValue(value);
+    if (valuesEqual(previousValue, nextValue)) {
       return;
     }
     const focusSnapshot = captureActiveField();
-    if (!state.draft.data || typeof state.draft.data !== "object") {
-      state.draft.data = {};
+    const applied = applyBindingValue(pathSegments, nextValue, { focusSnapshot });
+    if (applied && undoStack) {
+      const previousValueDefined = previousValue !== undefined;
+      const nextValueDefined = nextValue !== undefined;
+      undoStack.push({
+        type: "binding",
+        characterId: state.draft?.id || "",
+        path: pathSegments,
+        previousValue: previousValueDefined ? previousValue : null,
+        previousValueDefined,
+        nextValue: nextValueDefined ? nextValue : null,
+        nextValueDefined,
+      });
     }
-    let cursor = state.draft.data;
-    for (let index = 0; index < path.length - 1; index += 1) {
-      const key = path[index];
-      if (!cursor[key] || typeof cursor[key] !== "object") {
-        cursor[key] = {};
-      }
-      cursor = cursor[key];
+  }
+
+  function ensureCharacterContext(entry) {
+    if (!entry || typeof entry !== "object") {
+      return false;
     }
-    cursor[path[path.length - 1]] = value;
-    renderCanvas();
-    restoreActiveField(focusSnapshot);
-    void persistDraft({ silent: true });
-    renderPreview();
+    const entryId = entry.characterId ?? "";
+    const currentId = state.draft?.id || "";
+    if (entryId && entryId !== currentId) {
+      return false;
+    }
+    return true;
+  }
+
+  function applyCharacterUndo(entry) {
+    if (!ensureCharacterContext(entry)) {
+      return { message: "Undo unavailable for this character", options: { type: "warning", timeout: 2200 } };
+    }
+    if (entry.type === "binding" && Array.isArray(entry.path)) {
+      const focusSnapshot = captureActiveField();
+      const previousValue = entry.previousValueDefined ? entry.previousValue : undefined;
+      applyBindingValue(entry.path, cloneValue(previousValue), { focusSnapshot });
+      return { message: "Reverted field change", options: { type: "info", timeout: 1500 } };
+    }
+    return { message: "Nothing to undo", options: { timeout: 1200 } };
+  }
+
+  function applyCharacterRedo(entry) {
+    if (!ensureCharacterContext(entry)) {
+      return { message: "Redo unavailable for this character", options: { type: "warning", timeout: 2200 } };
+    }
+    if (entry.type === "binding" && Array.isArray(entry.path)) {
+      const focusSnapshot = captureActiveField();
+      const nextValue = entry.nextValueDefined ? entry.nextValue : undefined;
+      applyBindingValue(entry.path, cloneValue(nextValue), { focusSnapshot });
+      return { message: "Reapplied field change", options: { type: "info", timeout: 1500 } };
+    }
+    return { message: "Nothing to redo", options: { timeout: 1200 } };
+  }
+
+  function handleUndoEntry(entry) {
+    return applyCharacterUndo(entry);
+  }
+
+  function handleRedoEntry(entry) {
+    return applyCharacterRedo(entry);
   }
 
   function openNewCharacterDialog() {
@@ -1850,7 +2413,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     return true;
   }
 
-  function deleteCurrentCharacter() {
+  async function deleteCurrentCharacter() {
     const id = state.draft?.id;
     if (!id) {
       status.show("Select a character before deleting.", { type: "warning", timeout: 2000 });
@@ -1858,11 +2421,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     }
     const metadata = characterCatalog.get(id) || {};
     const origin = state.characterOrigin || metadata.source || metadata.origin || state.character?.origin || "";
-    if (origin !== "local") {
-      const message = origin === "builtin"
-        ? "Built-in characters cannot be deleted."
-        : "Only local characters can be deleted right now.";
-      status.show(message, { type: origin === "builtin" ? "info" : "warning", timeout: 2400 });
+    if (origin === "builtin") {
+      status.show("Built-in characters cannot be deleted.", { type: "info", timeout: 2400 });
       return;
     }
     const label = state.draft.data?.name || metadata.title || id;
@@ -1870,10 +2430,27 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     if (!confirmed) {
       return;
     }
+    const button = elements.deleteCharacterButton;
+    if (button) {
+      button.disabled = true;
+      button.classList.add("disabled");
+      button.setAttribute("aria-disabled", "true");
+      button.setAttribute("aria-busy", "true");
+    }
     try {
-      dataManager.removeLocal("characters", id);
+      await dataManager.delete("characters", id, { mode: "auto" });
     } catch (error) {
-      console.warn("Character editor: unable to remove character", error);
+      console.error("Character editor: unable to delete character", error);
+      if (status) {
+        status.show(error.message || "Unable to delete character", { type: "danger" });
+      }
+      if (button) {
+        button.disabled = false;
+        button.classList.remove("disabled");
+        button.setAttribute("aria-disabled", "false");
+        button.removeAttribute("aria-busy");
+      }
+      return;
     }
     const notesKey = `undercroft.workbench.character.notes.${id}`;
     try {
@@ -1886,6 +2463,7 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     state.draft = null;
     state.template = null;
     state.components = [];
+    resetSystemContext();
     state.characterOrigin = null;
     state.mode = "view";
     componentCounter = 0;
@@ -1900,6 +2478,9 @@ import { evaluateFormula } from "../lib/formula-engine.js";
     syncModeIndicator();
     syncCharacterActions();
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+    if (button) {
+      button.removeAttribute("aria-busy");
+    }
   }
 
   function exportDraft() {
@@ -2105,7 +2686,8 @@ import { evaluateFormula } from "../lib/formula-engine.js";
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("Character editor: unable to parse shared record", error);
       return null;

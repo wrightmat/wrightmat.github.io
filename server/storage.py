@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Optional
 import re
 
 from .auth import AuthError, User
+from .roles import ROLE_ORDER, role_rank
+from .shares import resolve_share_token, touch_share_link
 from .state import ServerState
 
 if platform.system() != "Windows":  # pragma: no cover - platform specific
@@ -37,8 +39,6 @@ else:  # pragma: no cover
         with path.open(mode, encoding="utf-8") as handle:
             yield handle
 
-
-ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"]
 
 _METADATA_PATTERN = re.compile(r"@([\w-]+):\s*(.+)")
 
@@ -107,10 +107,29 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS share_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content_type TEXT NOT NULL,
+            content_id TEXT NOT NULL,
+            token TEXT NOT NULL,
+            permissions TEXT DEFAULT 'view',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(content_type, content_id),
+            UNIQUE(token)
+        )
+        """
+    )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_user ON shares(shared_with_user_id)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_share_links_content ON share_links(content_type, content_id)"
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_share_links_token ON share_links(token)")
     # Ensure legacy databases pick up the last_accessed_at columns
     _ensure_column(conn, "templates", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
     _ensure_column(conn, "systems", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
@@ -125,10 +144,6 @@ def _ensure_column(conn: sqlite3.Connection, table: str, column: str, type_: str
     conn.execute(
         f"ALTER TABLE {table} ADD COLUMN {column} {type_}{default_clause}"
     )
-
-
-def role_rank(role: str) -> int:
-    return ROLE_ORDER.index(role) if role in ROLE_ORDER else -1
 
 
 def bucket_root(state: ServerState, bucket: str) -> Path:
@@ -195,29 +210,73 @@ def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[s
     if mount.type != "json":
         return {"items": []}
     table = mount.table
-    if bucket in ("characters", "templates", "systems"):
-        if user:
-            owned = [dict(r) for r in state.db.execute(
-                f"SELECT * FROM {table} WHERE owner_id=? ORDER BY modified_at DESC", (user.id,)
-            )]
-            shared = [dict(r) for r in state.db.execute(
+    supports_public = bucket in ("templates", "systems")
+    public: List[Dict[str, Any]] = []
+    if supports_public:
+        public = [
+            dict(row)
+            for row in state.db.execute(
                 f"""
-                SELECT m.*, s.permissions FROM {table} m
+                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier
+                FROM {table} m
+                LEFT JOIN users u ON u.id = m.owner_id
+                WHERE m.is_public = 1
+                ORDER BY m.modified_at DESC
+                """
+            )
+        ]
+    if bucket in ("characters", "templates", "systems"):
+        if not user:
+            return {"owned": [], "shared": [], "public": public}
+        if bucket == "characters":
+            owned_query = f"""
+                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier, t.title AS template_title
+                FROM {table} m
+                LEFT JOIN users u ON u.id = m.owner_id
+                LEFT JOIN templates t ON t.id = m.template
+                WHERE m.owner_id = ?
+                ORDER BY m.modified_at DESC
+            """
+            shared_query = f"""
+                SELECT m.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier, t.title AS template_title
+                FROM {table} m
                 JOIN shares s ON s.content_id = m.id AND s.content_type = ?
+                LEFT JOIN users u ON u.id = m.owner_id
+                LEFT JOIN templates t ON t.id = m.template
                 WHERE s.shared_with_user_id = ?
                 ORDER BY m.modified_at DESC
-                """,
-                (bucket[:-1], user.id),
-            )]
-            public = [dict(r) for r in state.db.execute(
-                f"SELECT * FROM {table} WHERE is_public=1 AND (owner_id IS NULL OR owner_id != ?) ORDER BY modified_at DESC",
+            """
+        else:
+            owned_query = f"""
+                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier
+                FROM {table} m
+                LEFT JOIN users u ON u.id = m.owner_id
+                WHERE m.owner_id = ?
+                ORDER BY m.modified_at DESC
+            """
+            shared_query = f"""
+                SELECT m.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
+                FROM {table} m
+                JOIN shares s ON s.content_id = m.id AND s.content_type = ?
+                LEFT JOIN users u ON u.id = m.owner_id
+                WHERE s.shared_with_user_id = ?
+                ORDER BY m.modified_at DESC
+            """
+        owned = [
+            dict(row)
+            for row in state.db.execute(
+                owned_query,
                 (user.id,),
-            )]
-            return {"owned": owned, "shared": shared, "public": public}
-        public = [dict(r) for r in state.db.execute(
-            f"SELECT * FROM {table} WHERE is_public=1 ORDER BY modified_at DESC"
-        )]
-        return {"public": public}
+            )
+        ]
+        shared = [
+            dict(row)
+            for row in state.db.execute(
+                shared_query,
+                (bucket[:-1], user.id),
+            )
+        ]
+        return {"owned": owned, "shared": shared, "public": public}
     rows = [dict(r) for r in state.db.execute(f"SELECT * FROM {table} ORDER BY modified_at DESC")]
     return {"items": rows}
 
@@ -294,12 +353,29 @@ def ensure_read_role(state: ServerState, bucket: str, user: Optional[User]) -> N
         raise AuthError("Insufficient role")
 
 
-def get_item(state: ServerState, bucket: str, id_: str, user: Optional[User]) -> Dict[str, Any]:
+def get_item(
+    state: ServerState,
+    bucket: str,
+    id_: str,
+    user: Optional[User],
+    share_token: Optional[str] = None,
+) -> Dict[str, Any]:
     mount = state.get_mount(bucket)
     if mount.type != "json":
         raise AuthError("Bucket does not support content read")
     ensure_read_role(state, bucket, user)
-    if not (is_public(state, bucket, id_) or is_owner(state, bucket, id_, user) or is_shared(state, bucket, id_, user)):
+    base_id = id_.replace(".json", "")
+    token_info = resolve_share_token(state, share_token or "") if share_token else None
+    share_granted = False
+    if token_info and token_info.get("content_type") == bucket[:-1] and token_info.get("content_id") == base_id:
+        share_granted = True
+        touch_share_link(state, token_info.get("token", ""))
+    if not (
+        share_granted
+        or is_owner(state, bucket, id_, user)
+        or is_shared(state, bucket, id_, user)
+        or is_public(state, bucket, id_)
+    ):
         raise AuthError("Access denied")
     payload = load_json(_record_path(state, bucket, id_))
     if bucket in {"characters", "templates", "systems"}:
@@ -307,7 +383,7 @@ def get_item(state: ServerState, bucket: str, id_: str, user: Optional[User]) ->
         if table:
             state.db.execute(
                 f"UPDATE {table} SET last_accessed_at = ? WHERE id = ?",
-                (datetime.utcnow().isoformat(), id_.replace(".json", "")),
+                (datetime.utcnow().isoformat(), base_id),
             )
             state.db.commit()
     return payload
@@ -411,23 +487,19 @@ def delete_item(state: ServerState, bucket: str, id_: str, user: Optional[User])
     path = _record_path(state, bucket, id_)
     if path.exists():
         path.unlink()
-    state.db.execute(f"DELETE FROM {mount.table} WHERE id = ?", (id_.replace(".json", ""),))
+    base_id = id_.replace(".json", "")
+    state.db.execute(f"DELETE FROM {mount.table} WHERE id = ?", (base_id,))
+    if bucket in ("characters", "templates", "systems"):
+        content_type = bucket[:-1]
+        state.db.execute(
+            "DELETE FROM shares WHERE content_type = ? AND content_id = ?",
+            (content_type, base_id),
+        )
+        state.db.execute(
+            "DELETE FROM share_links WHERE content_type = ? AND content_id = ?",
+            (content_type, base_id),
+        )
     state.db.commit()
-
-
-def toggle_public(state: ServerState, bucket: str, id_: str, user: Optional[User], public: bool) -> Dict[str, Any]:
-    mount = state.get_mount(bucket)
-    if mount.type != "json":
-        raise AuthError("Bucket does not support public toggle")
-    ensure_write_role(state, bucket, user)
-    if not (is_owner(state, bucket, id_, user) or is_shared(state, bucket, id_, user, require_edit=True)):
-        raise AuthError("Only owner or editors can change visibility")
-    state.db.execute(
-        f"UPDATE {mount.table} SET is_public = ? WHERE id = ?",
-        (1 if public else 0, id_.replace(".json", "")),
-    )
-    state.db.commit()
-    return {"ok": True, "public": public}
 
 
 def _minimum_owner_role(bucket: str) -> str:
@@ -501,30 +573,52 @@ def _enforce_creation_limits(state: ServerState, bucket: str, user: Optional[Use
             raise AuthError("Your tier cannot create systems")
 
 
-def list_owned_content(state: ServerState, owner: User) -> Dict[str, Any]:
+def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "user") -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
-    now_owner = {
-        "id": owner.id,
-        "username": owner.username,
-        "email": getattr(owner, "email", ""),
-        "tier": owner.tier,
-    }
+    if scope != "all" and owner is None:
+        raise AuthError("Owner required")
     mappings = [
         ("characters", "characters", "name"),
         ("templates", "templates", "title"),
         ("systems", "systems", "title"),
     ]
     for bucket, table, label_field in mappings:
-        rows = state.db.execute(
-            f"""
-            SELECT id, {label_field} AS label, created_at, modified_at, last_accessed_at, is_public
-            FROM {table}
-            WHERE owner_id = ?
-            ORDER BY modified_at DESC
-            """,
-            (owner.id,),
-        ).fetchall()
+        if scope == "all":
+            rows = state.db.execute(
+                f"""
+                SELECT t.id AS id,
+                       t.{label_field} AS label,
+                       t.created_at AS created_at,
+                       t.modified_at AS modified_at,
+                       t.last_accessed_at AS last_accessed_at,
+                       u.username AS owner_username,
+                       u.tier AS owner_tier
+                FROM {table} AS t
+                JOIN users AS u ON u.id = t.owner_id
+                ORDER BY t.modified_at DESC
+                """
+            ).fetchall()
+        else:
+            rows = state.db.execute(
+                f"""
+                SELECT t.id AS id,
+                       t.{label_field} AS label,
+                       t.created_at AS created_at,
+                       t.modified_at AS modified_at,
+                       t.last_accessed_at AS last_accessed_at,
+                       u.username AS owner_username,
+                       u.tier AS owner_tier
+                FROM {table} AS t
+                JOIN users AS u ON u.id = t.owner_id
+                WHERE t.owner_id = ?
+                ORDER BY t.modified_at DESC
+                """,
+                (owner.id,),
+            ).fetchall()
         for row in rows:
+            keys = row.keys() if hasattr(row, "keys") else []
+            owner_username = row["owner_username"] if "owner_username" in keys else (owner.username if owner else "")
+            owner_tier = row["owner_tier"] if "owner_tier" in keys else (owner.tier if owner else "")
             items.append(
                 {
                     "bucket": bucket,
@@ -533,11 +627,26 @@ def list_owned_content(state: ServerState, owner: User) -> Dict[str, Any]:
                     "created_at": row["created_at"],
                     "modified_at": row["modified_at"],
                     "last_accessed_at": row["last_accessed_at"],
-                    "is_public": bool(row["is_public"]),
+                    "owner_username": owner_username,
+                    "owner_tier": owner_tier,
                 }
             )
     items.sort(key=lambda item: item.get("modified_at") or "", reverse=True)
-    return {"owner": now_owner, "items": items}
+    if scope == "all":
+        owner_info = {
+            "id": None,
+            "username": "__all__",
+            "display_name": "Everyone",
+            "tier": "",
+        }
+    else:
+        owner_info = {
+            "id": owner.id,
+            "username": owner.username,
+            "email": getattr(owner, "email", ""),
+            "tier": owner.tier,
+        }
+    return {"owner": owner_info, "items": items, "scope": scope}
 
 
 def list_static(state: ServerState, bucket: str, relative_path: str = "") -> List[str]:
