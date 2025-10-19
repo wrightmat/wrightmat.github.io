@@ -399,9 +399,31 @@ def get_item(
     base_id = id_.replace(".json", "")
     token_info = resolve_share_token(state, share_token or "") if share_token else None
     share_granted = False
-    if token_info and token_info.get("content_type") == bucket[:-1] and token_info.get("content_id") == base_id:
-        share_granted = True
-        touch_share_link(state, token_info.get("token", ""))
+    if token_info:
+        token_type = token_info.get("content_type")
+        token_target = token_info.get("content_id")
+        if token_type == bucket[:-1] and token_target == base_id:
+            share_granted = True
+            touch_share_link(state, token_info.get("token", ""))
+        elif token_type == "group" and bucket == "characters" and token_target:
+            row = state.db.execute(
+                """
+                SELECT g.owner_id AS group_owner_id,
+                       c.owner_id AS character_owner_id
+                FROM groups AS g
+                JOIN group_members AS gm ON gm.group_id = g.id
+                LEFT JOIN characters AS c ON c.id = gm.content_id
+                WHERE g.id = ?
+                  AND gm.content_type = 'character'
+                  AND gm.content_id = ?
+                """,
+                (token_target, base_id),
+            ).fetchone()
+            if row and row["group_owner_id"] is not None:
+                character_owner_id = row["character_owner_id"]
+                if character_owner_id is None or character_owner_id == row["group_owner_id"]:
+                    share_granted = True
+                    touch_share_link(state, token_info.get("token", ""))
     if not (
         share_granted
         or is_owner(state, bucket, id_, user)
