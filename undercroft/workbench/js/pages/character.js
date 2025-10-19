@@ -58,6 +58,7 @@ import {
     characterOrigin: null,
     systemDefinition: null,
     systemPreviewData: {},
+    viewLocked: false,
   };
 
   let lastSavedCharacterSignature = null;
@@ -323,11 +324,13 @@ import {
     deleteCharacterButton: document.querySelector('[data-delete-character]'),
     viewToggle: document.querySelector('[data-action="toggle-mode"]'),
     modeIndicator: document.querySelector("[data-mode-indicator]"),
+    notesSection: document.querySelector("[data-notes-section]"),
     noteEditor: document.querySelector("[data-note-editor]"),
     notesToggle: document.querySelector("[data-notes-toggle]"),
     notesToggleIcon: document.querySelector("[data-notes-toggle-icon]"),
     notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
     notesPanel: document.querySelector("[data-notes-panel]"),
+    jsonSection: document.querySelector("[data-json-section]"),
     jsonPreview: document.querySelector("[data-json-preview]"),
     jsonToggle: document.querySelector("[data-json-toggle]"),
     jsonToggleIcon: document.querySelector("[data-json-toggle-icon]"),
@@ -355,6 +358,8 @@ import {
     groupSharePanel: document.querySelector("[data-group-share-panel]"),
     groupShareStatus: document.querySelector("[data-group-share-status]"),
   };
+
+  assignSectionAriaConnections();
 
   const renderPreview = createJsonPreviewRenderer({
     target: elements.jsonPreview,
@@ -459,6 +464,9 @@ import {
 
     if (elements.viewToggle) {
       elements.viewToggle.addEventListener("click", async () => {
+        if (state.viewLocked) {
+          return;
+        }
         const nextMode = state.mode === "edit" ? "view" : "edit";
         if (state.mode === "edit" && state.draft?.id) {
           await persistDraft({ silent: true });
@@ -534,6 +542,10 @@ import {
     notesState.collapsed = next;
     if (elements.notesPanel) {
       elements.notesPanel.hidden = next;
+      elements.notesPanel.classList.toggle("d-none", next);
+    }
+    if (elements.notesSection) {
+      elements.notesSection.classList.toggle("is-collapsed", next);
     }
     const actionLabel = next ? "Expand notes" : "Collapse notes";
     if (elements.notesToggle) {
@@ -554,6 +566,10 @@ import {
     jsonPreviewState.collapsed = next;
     if (elements.jsonPanel) {
       elements.jsonPanel.hidden = next;
+      elements.jsonPanel.classList.toggle("d-none", next);
+    }
+    if (elements.jsonSection) {
+      elements.jsonSection.classList.toggle("is-collapsed", next);
     }
     const actionLabel = next ? "Expand JSON preview" : "Collapse JSON preview";
     if (elements.jsonToggle) {
@@ -1281,6 +1297,10 @@ import {
     const actionLabel = next ? "Expand group characters" : "Collapse group characters";
     if (elements.groupSharePanel) {
       elements.groupSharePanel.hidden = next;
+      elements.groupSharePanel.classList.toggle("d-none", next);
+    }
+    if (elements.groupShareSection) {
+      elements.groupShareSection.classList.toggle("is-collapsed", next);
     }
     if (elements.groupShareStatus) {
       const shouldHide = next || !groupShareState.token;
@@ -1297,6 +1317,45 @@ import {
     if (elements.groupShareToggleIcon) {
       elements.groupShareToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
     }
+  }
+
+  function setViewModeLocked(locked) {
+    const next = Boolean(locked);
+    state.viewLocked = next;
+    if (next && state.mode !== "view") {
+      state.mode = "view";
+      renderCanvas();
+      renderPreview();
+    }
+    syncModeIndicator();
+  }
+
+  function assignSectionAriaConnections() {
+    const notesPanelId = ensureElementId(elements.notesPanel, "character-notes");
+    if (notesPanelId && elements.notesToggle) {
+      elements.notesToggle.setAttribute("aria-controls", notesPanelId);
+    }
+    const jsonPanelId = ensureElementId(elements.jsonPanel, "character-json");
+    if (jsonPanelId && elements.jsonToggle) {
+      elements.jsonToggle.setAttribute("aria-controls", jsonPanelId);
+    }
+    const sharePanelId = ensureElementId(elements.groupSharePanel, "character-group-share");
+    if (sharePanelId && elements.groupShareToggle) {
+      elements.groupShareToggle.setAttribute("aria-controls", sharePanelId);
+    }
+  }
+
+  function ensureElementId(element, prefix) {
+    if (!element) {
+      return "";
+    }
+    if (element.id) {
+      return element.id;
+    }
+    const base = typeof prefix === "string" && prefix.trim() ? prefix.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-") : "element";
+    const id = `${base}-${Math.random().toString(36).slice(2, 9)}`;
+    element.id = id;
+    return id;
   }
 
   function setGroupShareStatus(message = "") {
@@ -1357,6 +1416,8 @@ import {
     const ownership = (metadata?.ownership || "").toLowerCase();
     const hideToolbar = viewingShared && ownership === "shared";
     elements.characterToolbar.classList.toggle("d-none", hideToolbar);
+    const lockViewMode = viewingShared && ownership === "shared";
+    setViewModeLocked(lockViewMode);
   }
 
   function renderGroupSharePanel() {
@@ -3308,14 +3369,24 @@ import {
     if (elements.viewToggle) {
       const icon = elements.viewToggle.querySelector("[data-mode-icon]");
       const label = elements.viewToggle.querySelector("[data-mode-label]");
-      const tooltipTitle = state.mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
+      const locked = state.viewLocked;
+      const tooltipTitle = locked
+        ? "Group characters are view-only until claimed."
+        : state.mode === "edit"
+          ? "Switch to view mode"
+          : "Switch to edit mode";
+      const isEditing = !locked && state.mode === "edit";
+      elements.viewToggle.disabled = locked;
+      elements.viewToggle.classList.toggle("disabled", locked);
+      elements.viewToggle.setAttribute("aria-disabled", locked ? "true" : "false");
+      elements.viewToggle.setAttribute("title", tooltipTitle);
       elements.viewToggle.setAttribute("data-bs-title", tooltipTitle);
-      elements.viewToggle.setAttribute("aria-pressed", state.mode === "edit" ? "true" : "false");
+      elements.viewToggle.setAttribute("aria-pressed", isEditing ? "true" : "false");
       if (icon) {
-        icon.setAttribute("data-icon", state.mode === "edit" ? "tabler:edit" : "tabler:eye");
+        icon.setAttribute("data-icon", isEditing ? "tabler:edit" : "tabler:eye");
       }
       if (label) {
-        label.textContent = state.mode === "edit" ? "Edit mode" : "View mode";
+        label.textContent = isEditing ? "Edit mode" : "View mode";
       }
       refreshTooltips(elements.viewToggle.parentElement || elements.viewToggle);
     }
