@@ -30,6 +30,22 @@ const elements = {
   passwordForm: document.querySelector("[data-admin-password-form]"),
   passwordError: document.querySelector("[data-admin-password-error]"),
   passwordConfirm: document.getElementById("admin-settings-password-confirm"),
+  shareModal: document.getElementById("admin-share-modal"),
+  shareModalTitle: document.querySelector("[data-admin-share-title]"),
+  shareLinkGroup: document.querySelector("[data-admin-share-link-group]"),
+  shareLinkInput: document.querySelector("[data-admin-share-link]"),
+  shareLinkCopy: document.querySelector("[data-admin-share-copy]"),
+  shareLinkGenerate: document.querySelector("[data-admin-share-generate]"),
+  shareLinkDisable: document.querySelector("[data-admin-share-disable]"),
+  shareLinkStatus: document.querySelector("[data-admin-share-link-status]"),
+  shareLinkHelp: document.querySelector("[data-admin-share-link-help]"),
+  shareAddForm: document.querySelector("[data-admin-share-add-form]"),
+  shareUsername: document.querySelector("[data-admin-share-username]"),
+  shareUsernameOptions: document.querySelector("[data-admin-share-username-options]"),
+  sharePermission: document.querySelector("[data-admin-share-permission]"),
+  shareTable: document.querySelector("[data-admin-share-table]"),
+  shareRows: document.querySelector("[data-admin-share-rows]"),
+  shareEmpty: document.querySelector("[data-admin-share-empty]"),
 };
 
 const TIER_OPTIONS = [
@@ -44,6 +60,12 @@ const OWNED_TYPE_LABELS = {
   characters: "Character",
   templates: "Template",
   systems: "System",
+};
+
+const BUCKET_TO_CONTENT_TYPE = {
+  characters: "character",
+  templates: "template",
+  systems: "system",
 };
 
 const OWNER_ROLE_REQUIREMENTS = {
@@ -83,6 +105,19 @@ const viewState = {
     sort: { key: "last_accessed_at", direction: "desc" },
   },
 };
+
+const shareState = {
+  modal: null,
+  record: null,
+  shares: [],
+  link: null,
+  loading: false,
+  linkStatus: "",
+  eligibleUsers: [],
+};
+
+const SHARE_SPECIAL_ALL_USERS = "all-users";
+const SHARE_ALL_USERS_LABEL = "All Users";
 
 function isAdminSession() {
   const session = dataManager.session;
@@ -586,7 +621,7 @@ function updateOwnedSummary(owner, itemCount = 0) {
   elements.ownedSummary.textContent = `Viewing ${subject} (${tierLabel}) — ${countLabel}.`;
 }
 
-function buildShareUrl(bucket, id) {
+function buildShareUrl(bucket, id, token = "") {
   const pageMap = {
     characters: "character.html",
     templates: "template.html",
@@ -599,6 +634,11 @@ function buildShareUrl(bucket, id) {
   const record = `${bucket}:${id}`;
   const url = new URL(page, window.location.href);
   url.searchParams.set("record", record);
+  if (token) {
+    url.searchParams.set("share", token);
+  } else {
+    url.searchParams.delete("share");
+  }
   return url.toString();
 }
 
@@ -635,6 +675,379 @@ async function copyShareLink(url) {
     }
     return false;
   }
+}
+
+function ensureShareModalInstance() {
+  if (shareState.modal || !elements.shareModal) {
+    return shareState.modal;
+  }
+  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+    shareState.modal = window.bootstrap.Modal.getOrCreateInstance(elements.shareModal);
+    elements.shareModal.addEventListener("hidden.bs.modal", resetShareModal);
+    return shareState.modal;
+  }
+  return null;
+}
+
+function resetShareModal() {
+  shareState.record = null;
+  shareState.shares = [];
+  shareState.link = null;
+  shareState.loading = false;
+  shareState.linkStatus = "";
+  shareState.eligibleUsers = null;
+  if (elements.shareAddForm) {
+    elements.shareAddForm.reset();
+  }
+  renderShareModal();
+}
+
+function updateShareUsernameOptions() {
+  if (!elements.shareUsernameOptions) {
+    return;
+  }
+  const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
+  const fragment = document.createDocumentFragment();
+  const seen = new Set();
+  options
+    .filter((user) => user && user.username)
+    .forEach((user) => {
+      const username = user.username;
+      const key = username.toLowerCase();
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      const option = document.createElement("option");
+      option.value = username;
+      if (user.special) {
+        option.dataset.special = user.special;
+      }
+      let label;
+      if (user.special === SHARE_SPECIAL_ALL_USERS) {
+        label = `${SHARE_ALL_USERS_LABEL} (View only)`;
+        option.value = SHARE_ALL_USERS_LABEL;
+      } else {
+        const tier = formatTier(normalizeTier(user.tier));
+        label = tier ? `${username} (${tier})` : username;
+      }
+      option.label = label;
+      option.textContent = label;
+      fragment.appendChild(option);
+  });
+  elements.shareUsernameOptions.replaceChildren(fragment);
+}
+
+function findEligibleShareEntry(username = "") {
+  const value = typeof username === "string" ? username.trim().toLowerCase() : "";
+  if (!value) {
+    return null;
+  }
+  const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
+  return (
+    options.find((user) => (user?.username || "").toLowerCase() === value) || null
+  );
+}
+
+function enforceSharePermissionConstraints() {
+  if (!elements.sharePermission) {
+    return;
+  }
+  const usernameValue = elements.shareUsername ? elements.shareUsername.value : "";
+  const match = findEligibleShareEntry(usernameValue);
+  const isAllUsers = Boolean(match && match.special === SHARE_SPECIAL_ALL_USERS);
+  const options = Array.from(elements.sharePermission.options || []);
+  options.forEach((option) => {
+    if (!option) {
+      return;
+    }
+    const shouldDisable = isAllUsers && option.value !== "view";
+    option.disabled = shouldDisable;
+  });
+  if (isAllUsers) {
+    elements.sharePermission.value = "view";
+  }
+}
+
+function renderShareModal() {
+  const record = shareState.record;
+  const hasRecord = Boolean(record);
+  updateShareUsernameOptions();
+  if (elements.shareModalTitle) {
+    if (hasRecord) {
+      const typeLabel = OWNED_TYPE_LABELS[record.bucket] || "Content";
+      const nameLabel = record.label || record.id;
+      elements.shareModalTitle.textContent = `${typeLabel} • ${nameLabel}`;
+    } else {
+      elements.shareModalTitle.textContent = "Manage access";
+    }
+  }
+  const hasLink = Boolean(shareState.link?.token && hasRecord);
+  if (elements.shareLinkGroup) {
+    elements.shareLinkGroup.hidden = !hasLink;
+  }
+  if (elements.shareLinkInput) {
+    elements.shareLinkInput.value = hasLink
+      ? buildShareUrl(record.bucket, record.id, shareState.link.token)
+      : "";
+  }
+  if (elements.shareLinkCopy) {
+    elements.shareLinkCopy.disabled = !hasLink;
+  }
+  if (elements.shareLinkDisable) {
+    elements.shareLinkDisable.hidden = !hasLink;
+    elements.shareLinkDisable.disabled = shareState.loading;
+  }
+  if (elements.shareLinkGenerate) {
+    elements.shareLinkGenerate.disabled = !hasRecord || shareState.loading;
+    elements.shareLinkGenerate.textContent = hasLink ? "Reset link" : "Create link";
+  }
+  if (elements.shareLinkStatus) {
+    elements.shareLinkStatus.textContent = shareState.linkStatus || "";
+  }
+  const isLoading = shareState.loading;
+  if (elements.shareAddForm) {
+    Array.from(elements.shareAddForm.elements).forEach((el) => {
+      if (typeof el.disabled === "boolean") {
+        el.disabled = !hasRecord || isLoading;
+      }
+    });
+  }
+  if (elements.sharePermission) {
+    elements.sharePermission.value = elements.sharePermission.value || "view";
+  }
+  if (elements.shareUsername) {
+    const hasEligible = Array.isArray(shareState.eligibleUsers) && shareState.eligibleUsers.length > 0;
+    const eligibleLoading = hasRecord && shareState.eligibleUsers === null;
+    if (!hasRecord) {
+      elements.shareUsername.placeholder = "Select an item to manage access.";
+    } else if (eligibleLoading) {
+      elements.shareUsername.placeholder = "Loading eligible users…";
+    } else if (!hasEligible) {
+      elements.shareUsername.placeholder = "No eligible users available.";
+    } else {
+      elements.shareUsername.placeholder = "Start typing a username…";
+    }
+    enforceSharePermissionConstraints();
+  }
+  if (!hasRecord) {
+    if (elements.shareTable) {
+      elements.shareTable.hidden = true;
+    }
+    if (elements.shareRows) {
+      elements.shareRows.innerHTML = "";
+    }
+    if (elements.shareEmpty) {
+      elements.shareEmpty.hidden = false;
+      elements.shareEmpty.textContent = "Select an item to manage access.";
+    }
+    return;
+  }
+  if (isLoading) {
+    if (elements.shareTable) {
+      elements.shareTable.hidden = true;
+    }
+    if (elements.shareRows) {
+      elements.shareRows.innerHTML = "";
+    }
+    if (elements.shareEmpty) {
+      elements.shareEmpty.hidden = false;
+      elements.shareEmpty.textContent = "Loading access…";
+    }
+    return;
+  }
+  const shareEntries = Array.isArray(shareState.shares) ? shareState.shares : [];
+  if (elements.shareTable) {
+    elements.shareTable.hidden = shareEntries.length === 0;
+  }
+  if (elements.shareEmpty) {
+    elements.shareEmpty.hidden = shareEntries.length !== 0;
+    if (shareEntries.length === 0) {
+      elements.shareEmpty.textContent = "No one else has access.";
+    }
+  }
+  if (elements.shareRows) {
+    const fragment = document.createDocumentFragment();
+    const contentType = contentTypeFromBucket(record.bucket);
+    shareEntries.forEach((entry) => {
+      const row = document.createElement("tr");
+      const userCell = document.createElement("td");
+      const special = entry?.special || "";
+      const isAllUsers = special === SHARE_SPECIAL_ALL_USERS;
+      const displayUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : entry.username;
+      userCell.textContent = displayUsername;
+      const actionCell = document.createElement("td");
+      actionCell.className = "text-end";
+
+      const permissionSelect = document.createElement("select");
+      permissionSelect.className = "form-select form-select-sm d-inline-flex w-auto";
+      [
+        { value: "view", label: "Can view" },
+        { value: "edit", label: "Can edit" },
+      ].forEach((option) => {
+        const opt = document.createElement("option");
+        opt.value = option.value;
+        opt.textContent = option.label;
+        permissionSelect.appendChild(opt);
+      });
+      permissionSelect.value = entry.permissions === "edit" ? "edit" : "view";
+      if (isAllUsers) {
+        permissionSelect.value = "view";
+        Array.from(permissionSelect.options).forEach((option) => {
+          if (option.value !== "view") {
+            option.disabled = true;
+          }
+        });
+        permissionSelect.disabled = true;
+      }
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn btn-outline-danger btn-sm ms-2";
+      removeButton.textContent = "Remove";
+
+      permissionSelect.addEventListener("change", async () => {
+        if (isAllUsers) {
+          permissionSelect.value = "view";
+          return;
+        }
+        const selected = permissionSelect.value;
+        permissionSelect.disabled = true;
+        removeButton.disabled = true;
+        try {
+          await dataManager.shareWithUser({
+            contentType,
+            contentId: record.id,
+            username: entry.username,
+            permissions: selected,
+          });
+          if (status) {
+            status.show(`Updated access for ${entry.username}.`, { type: "success", timeout: 1800 });
+          }
+          await refreshShareModal();
+        } catch (error) {
+          console.error("Failed to update share permissions", error);
+          if (status) {
+            status.show(error.message || "Unable to update permissions", { type: "danger" });
+          }
+          permissionSelect.disabled = false;
+          removeButton.disabled = false;
+        }
+      });
+
+      removeButton.addEventListener("click", async () => {
+        const confirmed = window.confirm(`Remove access for ${entry.username}?`);
+        if (!confirmed) {
+          return;
+        }
+        permissionSelect.disabled = true;
+        removeButton.disabled = true;
+        try {
+          await dataManager.revokeShare({
+            contentType,
+            contentId: record.id,
+            username: entry.username,
+          });
+          if (status) {
+            status.show(`Removed ${entry.username}.`, { type: "success", timeout: 1800 });
+          }
+          await refreshShareModal();
+        } catch (error) {
+          console.error("Failed to revoke share", error);
+          if (status) {
+            status.show(error.message || "Unable to revoke access", { type: "danger" });
+          }
+          permissionSelect.disabled = false;
+          removeButton.disabled = false;
+        }
+      });
+
+      actionCell.appendChild(permissionSelect);
+      actionCell.appendChild(removeButton);
+
+      row.appendChild(userCell);
+      row.appendChild(actionCell);
+      fragment.appendChild(row);
+    });
+    elements.shareRows.replaceChildren(fragment);
+  }
+}
+
+async function refreshShareModal() {
+  const modal = ensureShareModalInstance();
+  if (!modal || !shareState.record) {
+    return;
+  }
+  shareState.loading = true;
+  renderShareModal();
+  try {
+    const contentType = contentTypeFromBucket(shareState.record.bucket);
+    const result = await dataManager.listShares(contentType, shareState.record.id);
+    shareState.shares = Array.isArray(result?.shares) ? result.shares : [];
+    shareState.link = result?.link || null;
+  } catch (error) {
+    console.error("Failed to load share details", error);
+    if (status) {
+      status.show(error.message || "Unable to load access", { type: "danger" });
+    }
+    shareState.shares = [];
+    shareState.link = null;
+  } finally {
+    shareState.loading = false;
+    renderShareModal();
+  }
+}
+
+async function refreshShareEligibleUsers() {
+  if (!shareState.record) {
+    shareState.eligibleUsers = [];
+    renderShareModal();
+    return;
+  }
+  const contentType = contentTypeFromBucket(shareState.record.bucket);
+  if (!contentType) {
+    shareState.eligibleUsers = [];
+    renderShareModal();
+    return;
+  }
+  shareState.eligibleUsers = null;
+  renderShareModal();
+  try {
+    const result = await dataManager.listEligibleShareUsers({
+      contentType,
+      contentId: shareState.record.id,
+    });
+    const users = Array.isArray(result?.users) ? result.users : [];
+    shareState.eligibleUsers = users.map((user) => ({
+      username: user.username,
+      tier: normalizeTier(user.tier),
+      special: user.special || "",
+    }));
+  } catch (error) {
+    console.error("Failed to load eligible users", error);
+    if (status) {
+      status.show(error.message || "Unable to load eligible users", { type: "danger" });
+    }
+    shareState.eligibleUsers = [];
+  } finally {
+    renderShareModal();
+  }
+}
+
+function openShareModal(record) {
+  const modal = ensureShareModalInstance();
+  if (!modal || !record) {
+    return;
+  }
+  shareState.record = record;
+  shareState.shares = [];
+  shareState.link = null;
+  shareState.loading = true;
+  shareState.eligibleUsers = null;
+  renderShareModal();
+  modal.show();
+  void refreshShareEligibleUsers();
+  void refreshShareModal();
 }
 
 function describeOwnerOption(username, tier) {
@@ -679,6 +1092,16 @@ function buildOwnerOptions(bucket, currentOwner = { username: "", tier: "" }) {
   return options;
 }
 
+function contentTypeFromBucket(bucket) {
+  if (!bucket) {
+    return "";
+  }
+  if (BUCKET_TO_CONTENT_TYPE[bucket]) {
+    return BUCKET_TO_CONTENT_TYPE[bucket];
+  }
+  return bucket.endsWith("s") ? bucket.slice(0, -1) : bucket;
+}
+
 function ownedSortValue(item, key) {
   switch (key) {
     case "name":
@@ -696,8 +1119,6 @@ function ownedSortValue(item, key) {
       const value = Date.parse(normalized);
       return Number.isNaN(value) ? 0 : value;
     }
-    case "is_public":
-      return item.is_public ? 1 : 0;
     case "owner":
       return (viewState.owned.owner?.username || "").toLowerCase();
     default:
@@ -741,9 +1162,6 @@ function updateOwnedSortIndicators() {
 
 function defaultOwnedSortDirection(key) {
   if (key === "created_at" || key === "last_accessed_at" || key === "modified_at") {
-    return "desc";
-  }
-  if (key === "is_public") {
     return "desc";
   }
   return "asc";
@@ -806,67 +1224,15 @@ function renderOwnedItems(items, owner) {
     const ownerCell = document.createElement("td");
     ownerCell.className = "text-end";
 
-    const shareRow = document.createElement("div");
-    shareRow.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
-    const toggleWrapper = document.createElement("div");
-    toggleWrapper.className = "form-check form-switch mb-0";
-    const toggle = document.createElement("input");
-    toggle.className = "form-check-input";
-    toggle.type = "checkbox";
-    toggle.role = "switch";
-    toggle.checked = Boolean(item.is_public);
-    toggle.setAttribute("aria-label", `Toggle visibility for ${item.label || item.id}`);
-    const toggleLabel = document.createElement("label");
-    toggleLabel.className = "form-check-label";
-    toggleLabel.textContent = toggle.checked ? "Public" : "Private";
-    toggleWrapper.appendChild(toggle);
-    toggleWrapper.appendChild(toggleLabel);
-
-    toggle.addEventListener("change", async () => {
-      const desired = toggle.checked;
-      toggle.disabled = true;
-      try {
-        const result = await dataManager.toggleVisibility(item.bucket, item.id, desired);
-        const isPublic = Boolean(result?.public);
-        toggle.checked = isPublic;
-        toggleLabel.textContent = isPublic ? "Public" : "Private";
-        item.is_public = isPublic;
-        if (status) {
-          status.show(
-            isPublic ? "Content is now shareable via link." : "Content visibility set to private.",
-            { type: "success", timeout: 2000 },
-          );
-        }
-      } catch (error) {
-        console.error("Failed to toggle visibility", error);
-        toggle.checked = !desired;
-        if (status) {
-          status.show(error.message || "Unable to update visibility", { type: "danger" });
-        }
-      } finally {
-        toggle.disabled = false;
-      }
+    const shareButton = document.createElement("button");
+    shareButton.type = "button";
+    shareButton.className = "btn btn-outline-primary btn-sm";
+    shareButton.textContent = "Share";
+    shareButton.addEventListener("click", () => {
+      openShareModal({ ...item, owner });
     });
 
-    const copyButton = document.createElement("button");
-    copyButton.type = "button";
-    copyButton.className = "btn btn-outline-secondary btn-sm";
-    copyButton.textContent = "Copy link";
-    const shareUrl = buildShareUrl(item.bucket, item.id);
-    copyButton.addEventListener("click", () => {
-      copyShareLink(shareUrl);
-    });
-
-    const openLink = document.createElement("a");
-    openLink.href = shareUrl;
-    openLink.target = "_blank";
-    openLink.rel = "noopener";
-    openLink.className = "btn btn-outline-primary btn-sm";
-    openLink.textContent = "Open";
-
-    shareRow.appendChild(toggleWrapper);
-    shareRow.appendChild(copyButton);
-    shareRow.appendChild(openLink);
+    shareCell.appendChild(shareButton);
 
     const ownerRow = document.createElement("div");
     ownerRow.className = "d-flex flex-wrap justify-content-end gap-2 align-items-center";
@@ -958,7 +1324,6 @@ function renderOwnedItems(items, owner) {
     ownerRow.appendChild(ownerSelect);
     ownerRow.appendChild(deleteButton);
 
-    shareCell.appendChild(shareRow);
     ownerCell.appendChild(ownerRow);
 
     row.appendChild(nameCell);
@@ -1038,6 +1403,135 @@ function handleOwnedContentEvent() {
 
 if (elements.openLogin && auth) {
   elements.openLogin.addEventListener("click", () => auth.showLogin());
+}
+
+if (elements.shareLinkCopy) {
+  elements.shareLinkCopy.addEventListener("click", () => {
+    if (!shareState.record || !shareState.link?.token) {
+      return;
+    }
+    const url = buildShareUrl(shareState.record.bucket, shareState.record.id, shareState.link.token);
+    void copyShareLink(url);
+  });
+}
+
+if (elements.shareLinkGenerate) {
+  elements.shareLinkGenerate.addEventListener("click", async () => {
+    if (!shareState.record) {
+      return;
+    }
+    const contentType = contentTypeFromBucket(shareState.record.bucket);
+    elements.shareLinkGenerate.disabled = true;
+    if (elements.shareLinkDisable) {
+      elements.shareLinkDisable.disabled = true;
+    }
+    shareState.linkStatus = "Generating link…";
+    renderShareModal();
+    try {
+      await dataManager.createShareLink({ contentType, contentId: shareState.record.id });
+      if (status) {
+        status.show("Share link ready.", { type: "success", timeout: 1800 });
+      }
+    } catch (error) {
+      console.error("Failed to generate share link", error);
+      if (status) {
+        status.show(error.message || "Unable to create link", { type: "danger" });
+      }
+      shareState.linkStatus = error?.message || "Unable to create link.";
+    } finally {
+      await refreshShareModal();
+      shareState.linkStatus = "";
+      renderShareModal();
+    }
+  });
+}
+
+if (elements.shareLinkDisable) {
+  elements.shareLinkDisable.addEventListener("click", async () => {
+    if (!shareState.record) {
+      return;
+    }
+    const contentType = contentTypeFromBucket(shareState.record.bucket);
+    elements.shareLinkDisable.disabled = true;
+    if (elements.shareLinkGenerate) {
+      elements.shareLinkGenerate.disabled = true;
+    }
+    shareState.linkStatus = "Disabling link…";
+    renderShareModal();
+    try {
+      await dataManager.revokeShareLink({ contentType, contentId: shareState.record.id });
+      if (status) {
+        status.show("Share link disabled.", { type: "success", timeout: 1800 });
+      }
+    } catch (error) {
+      console.error("Failed to disable share link", error);
+      if (status) {
+        status.show(error.message || "Unable to disable link", { type: "danger" });
+      }
+      shareState.linkStatus = error?.message || "Unable to disable link.";
+    } finally {
+      await refreshShareModal();
+      shareState.linkStatus = "";
+      renderShareModal();
+    }
+  });
+}
+
+if (elements.shareAddForm) {
+  elements.shareAddForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!shareState.record) {
+      return;
+    }
+    const username = (elements.shareUsername?.value || "").trim();
+    let permissions = elements.sharePermission?.value || "view";
+    if (!username) {
+      if (status) {
+        status.show("Enter a username to share with.", { type: "warning", timeout: 1800 });
+      }
+      return;
+    }
+    const match = findEligibleShareEntry(username);
+    const isAllUsers = Boolean(match && match.special === SHARE_SPECIAL_ALL_USERS);
+    const targetUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : username;
+    if (isAllUsers) {
+      permissions = "view";
+    }
+    const contentType = contentTypeFromBucket(shareState.record.bucket);
+    disableForm(elements.shareAddForm, true);
+    try {
+      await dataManager.shareWithUser({
+        contentType,
+        contentId: shareState.record.id,
+        username: targetUsername,
+        permissions,
+      });
+      elements.shareAddForm.reset();
+      if (elements.sharePermission) {
+        elements.sharePermission.value = "view";
+      }
+      enforceSharePermissionConstraints();
+      if (status) {
+        status.show(`Shared with ${targetUsername}.`, { type: "success", timeout: 1800 });
+      }
+    } catch (error) {
+      console.error("Failed to share with user", error);
+      if (status) {
+        status.show(error.message || "Unable to share", { type: "danger" });
+      }
+    } finally {
+      disableForm(elements.shareAddForm, false);
+      await refreshShareModal();
+    }
+  });
+}
+
+if (elements.shareUsername) {
+  const handler = () => {
+    enforceSharePermissionConstraints();
+  };
+  elements.shareUsername.addEventListener("input", handler);
+  elements.shareUsername.addEventListener("change", handler);
 }
 
 function setEmailError(message = "") {
@@ -1239,6 +1733,6 @@ if (elements.passwordForm) {
 
 window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
 window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
-window.addEventListener("workbench:content-visibility", handleOwnedContentEvent);
 
+renderShareModal();
 handleAuthChanged();
