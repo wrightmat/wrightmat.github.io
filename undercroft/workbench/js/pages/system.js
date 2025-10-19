@@ -1998,7 +1998,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   async function loadSystemRecords() {
     try {
       const localEntries = dataManager.listLocalEntries("systems");
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload } = entry;
+        if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
         registerSystemRecord({ id, title: payload?.title || id, source: "local" }, { syncOption: true });
       });
     } catch (error) {
@@ -2010,6 +2015,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     try {
       const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
+      const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const adopted = dataManager.adoptLegacyRecords(
+        "systems",
+        owned.map((entry) => entry?.id).filter(Boolean)
+      );
+      adopted.forEach(({ id, payload }) => {
+        if (!id) return;
+        registerSystemRecord({ id, title: payload?.title || id, source: "remote" }, { syncOption: true });
+      });
       const items = remote?.items || [];
       items.forEach((item) => {
         registerSystemRecord(

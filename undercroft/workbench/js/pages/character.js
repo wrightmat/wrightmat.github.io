@@ -850,17 +850,27 @@ import {
     try {
       const localEntries = dataManager.listLocalEntries("characters");
       const user = sessionUser();
-      localEntries.forEach(({ id, payload }) => {
+      localEntries.forEach((entry) => {
+        const { id, payload, owner } = entry;
         if (!id) return;
+        if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
+          return;
+        }
+        const isOwner = dataManager.isAuthenticated();
+        const ownerSnapshot =
+          owner ||
+          (isOwner && user
+            ? { id: user.id ?? null, username: user.username || "", tier: dataManager.getUserTier() }
+            : null);
         registerCharacterRecord({
           id,
           title: payload?.data?.name || payload?.title || id,
           template: payload?.template || "",
           source: "local",
-          ownership: user ? "owned" : "local",
-          ownerId: user?.id ?? null,
-          ownerUsername: user?.username ?? "",
-          ownerTier: user?.tier ?? "",
+          ownership: isOwner ? "owned" : "local",
+          ownerId: ownerSnapshot?.id ?? null,
+          ownerUsername: ownerSnapshot?.username || "",
+          ownerTier: ownerSnapshot?.tier || "",
         });
       });
     } catch (error) {
@@ -880,8 +890,10 @@ import {
       const { remote } = await dataManager.list("characters", { refresh: force, includeLocal: false });
       const session = sessionUser();
       const owned = Array.isArray(remote?.owned) ? remote.owned : [];
+      const ownedIds = [];
       owned.forEach((entry) => {
         if (!entry || !entry.id) return;
+        ownedIds.push(entry.id);
         registerCharacterRecord({
           id: entry.id,
           title: entry.name || entry.title || entry.id,
@@ -891,6 +903,20 @@ import {
           ownerId: entry.owner_id ?? session?.id ?? null,
           ownerUsername: entry.owner_username || session?.username || "",
           ownerTier: entry.owner_tier || session?.tier || "",
+        });
+      });
+      const adopted = dataManager.adoptLegacyRecords("characters", ownedIds);
+      adopted.forEach(({ id, payload, owner }) => {
+        if (!id) return;
+        registerCharacterRecord({
+          id,
+          title: payload?.data?.name || payload?.title || id,
+          template: payload?.template || "",
+          source: "remote",
+          ownership: "owned",
+          ownerId: owner?.id ?? session?.id ?? null,
+          ownerUsername: owner?.username || session?.username || "",
+          ownerTier: owner?.tier || session?.tier || "",
         });
       });
       const shared = Array.isArray(remote?.shared) ? remote.shared : [];
