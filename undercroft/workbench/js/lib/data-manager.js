@@ -607,7 +607,7 @@ export class DataManager {
         aggregated.push(entry);
       });
     };
-    ["owned", "shared", "public", "items"].forEach((key) => addEntries(result[key]));
+    ["owned", "shared", "items"].forEach((key) => addEntries(result[key]));
     result.items = aggregated;
     return result;
   }
