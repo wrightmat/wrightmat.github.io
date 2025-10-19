@@ -56,10 +56,15 @@ def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, An
                gm.added_at,
                c.name AS character_name,
                c.system AS character_system,
+               c.template AS character_template,
+               s.title AS system_title,
+               t.title AS template_title,
                c.owner_id AS character_owner_id,
                u.username AS owner_username
         FROM group_members AS gm
         LEFT JOIN characters AS c ON gm.content_type = 'character' AND c.id = gm.content_id
+        LEFT JOIN systems AS s ON c.system = s.id
+        LEFT JOIN templates AS t ON c.template = t.id
         LEFT JOIN users AS u ON u.id = c.owner_id
         WHERE gm.group_id = ?
         ORDER BY COALESCE(c.name, gm.content_id) COLLATE NOCASE
@@ -82,6 +87,9 @@ def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, An
                 {
                     "label": row["character_name"] or content_id,
                     "system": row["character_system"] or "",
+                    "system_name": row["system_title"] or row["character_system"] or "",
+                    "template": row["character_template"] or "",
+                    "template_title": row["template_title"] or "",
                     "owner_id": row["character_owner_id"],
                     "owner_username": row["owner_username"] or "",
                     "missing": row["character_name"] is None,
