@@ -189,8 +189,8 @@ body[data-theme="dark"] .hover-lift:hover {
 }
 
 .game-log-entries {
-  max-height: 28rem;
-  min-height: 12rem;
+  max-height: 32rem;
+  min-height: 16rem;
   overflow-y: auto;
   gap: 0.75rem;
 }
@@ -212,6 +212,14 @@ body[data-theme="dark"] .hover-lift:hover {
 
 .game-log-roll-detail {
   font-size: 0.875rem;
+}
+
+.collapsible-toggle .iconify {
+  transition: transform 0.2s ease-in-out;
+}
+
+.collapsible-toggle[aria-expanded="true"] .iconify {
+  transform: rotate(90deg);
 }
 
 .component-field {
