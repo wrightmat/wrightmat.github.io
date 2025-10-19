@@ -205,7 +205,13 @@ export function initAuthControls({ root = document, status = null, dataManager =
     const dropdown = document.createElement("div");
     dropdown.className = "dropdown";
     dropdown.innerHTML = `
-      <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <button
+        class="btn btn-outline-secondary dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        data-auth-menu-toggle
+      >
         ${user.username}
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
@@ -232,6 +238,20 @@ export function initAuthControls({ root = document, status = null, dataManager =
         } finally {
           updateAuthDisplay();
           notifyAuthChange();
+        }
+      });
+    }
+    const toggle = dropdown.querySelector("[data-auth-menu-toggle]");
+    if (toggle && window.bootstrap && typeof window.bootstrap.Dropdown === "function") {
+      const instance = window.bootstrap.Dropdown.getOrCreateInstance(toggle);
+      const showMenu = () => instance.show();
+      const hideMenu = () => instance.hide();
+      dropdown.addEventListener("mouseenter", showMenu);
+      dropdown.addEventListener("mouseleave", hideMenu);
+      toggle.addEventListener("focus", showMenu);
+      dropdown.addEventListener("focusout", (event) => {
+        if (!dropdown.contains(event.relatedTarget)) {
+          hideMenu();
         }
       });
     }
