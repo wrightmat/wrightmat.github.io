@@ -7,7 +7,11 @@ import {
   initPaletteInteractions,
   setupDropzones,
 } from "../lib/editor-canvas.js";
-import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
+import {
+  createCanvasCardElement,
+  createCollapseToggleButton,
+  createStandardCardChrome,
+} from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
@@ -175,6 +179,7 @@ import {
 
   const dropzones = new Map();
   const containerActiveTabs = new Map();
+  const componentCollapsedState = new Map();
 
   function cloneComponentTree(component) {
     if (typeof structuredClone === "function") {
@@ -314,6 +319,7 @@ import {
         state.components = [];
         state.selectedId = null;
         containerActiveTabs.clear();
+        componentCollapsedState.clear();
         componentCounter = 0;
         renderCanvas();
         renderInspector();
@@ -390,6 +396,7 @@ import {
         options: ["Option A", "Option B"],
         rows: 3,
         sourceBinding: "",
+        roller: "",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -626,6 +633,14 @@ import {
     return getBindingEditorValue(component);
   }
 
+  function getComponentRollerLabel(component) {
+    if (!component || typeof component.roller !== "string") {
+      return "";
+    }
+    const trimmed = component.roller.trim();
+    return trimmed || "";
+  }
+
   function getDefinition(component) {
     if (!component) return {};
     return COMPONENT_DEFINITIONS[component.type] || {};
@@ -849,6 +864,7 @@ import {
         state.components = [];
         state.selectedId = null;
         containerActiveTabs.clear();
+        componentCollapsedState.clear();
         componentCounter = 0;
         markTemplateClean();
         ensureTemplateSelectValue();
@@ -1476,7 +1492,7 @@ import {
       return templatePermissions(metadata) === "edit";
     }
     if (ownership === "public") {
-      return false;
+      return templateOwnerMatchesCurrentUser(metadata);
     }
     if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
       return true;
@@ -2132,6 +2148,7 @@ import {
       align: "start",
       binding: "",
       readOnly: false,
+      collapsible: false,
       ...defaults,
     };
     if (!Object.prototype.hasOwnProperty.call(component, "binding") || typeof component.binding !== "string") {
@@ -2173,6 +2190,11 @@ import {
       component.statesBinding = component.statesBinding != null ? String(component.statesBinding) : "";
     }
     component.statesBinding = component.statesBinding.trim();
+    if (typeof component.roller !== "string") {
+      component.roller = "";
+    }
+    component.roller = component.roller.trim();
+    component.collapsible = Boolean(component.collapsible);
     if (component.type === "linear-track" || component.type === "circular-track") {
       if (!component.segmentBinding) {
         const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
@@ -2214,7 +2236,7 @@ import {
       wrapper.classList.add("template-component-selected");
     }
 
-    const { header, actions, iconElement } = createStandardCardChrome({
+    const { header, actions, iconElement, ensureActions } = createStandardCardChrome({
       icon: iconName,
       iconLabel: typeLabel,
       headerOptions: { classes: ["template-component-header"] },
@@ -2231,14 +2253,28 @@ import {
     });
 
     const bindingLabel = getComponentBindingLabel(component);
+    let bindingPill = null;
     if (bindingLabel) {
-      const pill = document.createElement("span");
-      pill.className = "template-binding-pill badge text-bg-secondary";
-      pill.textContent = bindingLabel;
+      bindingPill = document.createElement("span");
+      bindingPill.className = "template-binding-pill badge text-bg-secondary";
+      bindingPill.textContent = bindingLabel;
       if (iconElement && actions.contains(iconElement)) {
-        actions.insertBefore(pill, iconElement);
+        actions.insertBefore(bindingPill, iconElement);
       } else {
-        actions.appendChild(pill);
+        actions.appendChild(bindingPill);
+      }
+    }
+
+    const rollerLabel = getComponentRollerLabel(component);
+    if (rollerLabel) {
+      const rollerPill = document.createElement("span");
+      rollerPill.className = "template-roller-pill badge text-bg-secondary";
+      rollerPill.textContent = `🎲 ${rollerLabel}`;
+      const insertBefore = bindingPill && actions.contains(bindingPill) ? bindingPill : iconElement;
+      if (insertBefore && actions.contains(insertBefore)) {
+        actions.insertBefore(rollerPill, insertBefore);
+      } else {
+        actions.appendChild(rollerPill);
       }
     }
 
@@ -2249,7 +2285,57 @@ import {
     wrapper.appendChild(header);
 
     const preview = renderComponentPreview(component);
-    wrapper.appendChild(preview);
+    const bodyElement = preview instanceof Element ? preview : (() => {
+      const container = document.createElement("div");
+      container.appendChild(preview);
+      return container;
+    })();
+    const bodyId = toId([component.uid, "content"]);
+    if (bodyElement instanceof HTMLElement && bodyId) {
+      bodyElement.id = bodyId;
+    }
+    wrapper.appendChild(bodyElement);
+
+    const collapsible = Boolean(component.collapsible);
+    if (collapsible) {
+      const key = component.uid || null;
+      const collapsed = key ? componentCollapsedState.get(key) === true : false;
+      const labelText = getComponentLabel(component, typeLabel) || typeLabel;
+      const { button: collapseButton, setCollapsed } = createCollapseToggleButton({
+        label: labelText,
+        collapsed,
+        onToggle(next) {
+          if (key) {
+            if (next) {
+              componentCollapsedState.set(key, true);
+            } else {
+              componentCollapsedState.delete(key);
+            }
+          }
+          if (bodyElement instanceof HTMLElement) {
+            bodyElement.hidden = next;
+          }
+          wrapper.classList.toggle("is-collapsed", next);
+        },
+      });
+      if (bodyElement instanceof HTMLElement && bodyElement.id) {
+        collapseButton.setAttribute("aria-controls", bodyElement.id);
+      }
+      header.insertBefore(collapseButton, header.firstChild || null);
+      if (bodyElement instanceof HTMLElement) {
+        bodyElement.hidden = collapsed;
+      }
+      wrapper.classList.toggle("is-collapsed", collapsed);
+      setCollapsed(collapsed);
+    } else {
+      if (component.uid) {
+        componentCollapsedState.delete(component.uid);
+      }
+      if (bodyElement instanceof HTMLElement) {
+        bodyElement.hidden = false;
+      }
+      wrapper.classList.remove("is-collapsed");
+    }
 
     applyComponentStyles(wrapper, component);
     return wrapper;
@@ -2463,7 +2549,13 @@ import {
   }
 
   function pruneContainerState(component) {
-    if (!component || component.type !== "container") {
+    if (!component) {
+      return;
+    }
+    if (component.uid) {
+      componentCollapsedState.delete(component.uid);
+    }
+    if (component.type !== "container") {
       return;
     }
     clearActiveTab(component);
@@ -2475,6 +2567,8 @@ import {
       items.forEach((child) => {
         if (child && child.type === "container") {
           pruneContainerState(child);
+        } else if (child?.uid) {
+          componentCollapsedState.delete(child.uid);
         }
       });
     });
@@ -3020,6 +3114,7 @@ import {
     state.components = [];
     state.selectedId = null;
     containerActiveTabs.clear();
+    componentCollapsedState.clear();
     if (!skipHistory) {
       undoStack.push({
         type: "clear",
@@ -3133,6 +3228,7 @@ import {
       case "clear": {
         state.components = cloneComponentCollection(entry.components);
         restoreContainerTabsSnapshot(entry.containerTabs);
+        componentCollapsedState.clear();
         state.selectedId = entry.previousSelectedId || null;
         renderCanvas();
         renderInspector();
@@ -3259,6 +3355,7 @@ import {
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
+    componentCollapsedState.clear();
     if (markClean) {
       markTemplateClean();
     }
@@ -3388,11 +3485,13 @@ import {
       form.appendChild(appearanceSection);
     }
 
+    const behaviorControls = [createCollapsibleToggle(component)];
     if (definition.supportsReadOnly) {
-      const behaviorSection = createSection("Behavior", [createReadOnlyToggle(component)]);
-      if (behaviorSection) {
-        form.appendChild(behaviorSection);
-      }
+      behaviorControls.push(createReadOnlyToggle(component));
+    }
+    const behaviorSection = createSection("Behavior", behaviorControls);
+    if (behaviorSection) {
+      form.appendChild(behaviorSection);
     }
 
     elements.inspector.appendChild(form);
@@ -3400,14 +3499,50 @@ import {
     restoreInspectorFocus(focusSnapshot);
   }
 
+  function componentSupportsRoller(component) {
+    if (!component || typeof component !== "object") {
+      return false;
+    }
+    return component.type === "input" && (component.variant || "text") === "number";
+  }
+
+  function createRollerInputControl(component) {
+    return createBindingFormulaInput(component, {
+      labelText: "Roller",
+      placeholder: "1d20 + @abilities.strength",
+      bindingKey: "roller",
+      formulaKey: null,
+      supportsBinding: true,
+      supportsFormula: false,
+      allowedFieldCategories: ["number"],
+      helperText: "Roll20 dice expression. Supports @field references.",
+    });
+  }
+
+  function appendRollerControl(list, component) {
+    if (!Array.isArray(list)) {
+      return;
+    }
+    if (!componentSupportsRoller(component)) {
+      return;
+    }
+    const control = createRollerInputControl(component);
+    if (control) {
+      list.push(control);
+    }
+  }
+
   function createDataControls(component, definition = {}) {
     const supportsBinding = definition.supportsBinding !== false;
     const supportsFormula = definition.supportsFormula !== false;
-    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
+    if (
+      !component ||
+      (!supportsBinding && !supportsFormula && component.type !== "toggle" && !componentSupportsRoller(component))
+    ) {
       return [];
     }
     if (component.type === "input" && (component.variant || "text") === "select") {
-      return [
+      const controls = [
         createBindingFormulaInput(component, {
           labelText: "Source",
           placeholder: "@data.options",
@@ -3427,6 +3562,8 @@ import {
           allowedFieldCategories: ["string", "number"],
         }),
       ];
+      appendRollerControl(controls, component);
+      return controls;
     }
     if (component.type === "select-group") {
       const controls = [
@@ -3451,10 +3588,11 @@ import {
           allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
         })
       );
+      appendRollerControl(controls, component);
       return controls;
     }
     if (component.type === "toggle") {
-      return [
+      const controls = [
         createBindingFormulaInput(component, {
           labelText: "Source",
           placeholder: "@metadata.states",
@@ -3474,16 +3612,20 @@ import {
           allowedFieldCategories: ["string", "number"],
         }),
       ];
+      appendRollerControl(controls, component);
+      return controls;
     }
-    if (!supportsBinding && !supportsFormula) {
-      return [];
+    const controls = [];
+    if (supportsBinding || supportsFormula) {
+      controls.push(
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+        })
+      );
     }
-    return [
-      createBindingFormulaInput(component, {
-        supportsBinding,
-        supportsFormula,
-      }),
-    ];
+    appendRollerControl(controls, component);
+    return controls;
   }
 
   function captureInspectorFocus() {
@@ -3659,6 +3801,28 @@ import {
         draft.align = value;
       }, { rerenderCanvas: true });
     });
+  }
+
+  function createCollapsibleToggle(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check form-switch";
+    const id = toId([component.uid, "collapsible"]);
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = id;
+    input.checked = !!component.collapsible;
+    input.addEventListener("change", () => {
+      updateComponent(component.uid, (draft) => {
+        draft.collapsible = input.checked;
+      }, { rerenderCanvas: true });
+    });
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", id);
+    label.textContent = "Collapsible";
+    wrapper.append(input, label);
+    return wrapper;
   }
 
   function createReadOnlyToggle(component) {
@@ -4658,6 +4822,10 @@ import {
       }
       merged.sourceBinding = merged.sourceBinding.trim();
     }
+    if (typeof merged.roller !== "string") {
+      merged.roller = "";
+    }
+    merged.roller = merged.roller.trim();
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
       Object.keys(zones).forEach((key) => {
@@ -4667,6 +4835,7 @@ import {
       merged.zones = zones;
       ensureContainerZones(merged);
     }
+    merged.collapsible = Boolean(merged.collapsible);
     return merged;
   }
 

@@ -2145,7 +2145,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return systemPermissions(metadata) === "edit";
     }
     if (ownership === "public") {
-      return false;
+      return systemOwnerMatchesCurrentUser(metadata);
     }
     if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
       return true;
