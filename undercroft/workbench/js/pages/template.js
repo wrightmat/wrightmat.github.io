@@ -7,7 +7,11 @@ import {
   initPaletteInteractions,
   setupDropzones,
 } from "../lib/editor-canvas.js";
-import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
+import {
+  createCanvasCardElement,
+  createCollapseToggleButton,
+  createStandardCardChrome,
+} from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
@@ -175,6 +179,7 @@ import {
 
   const dropzones = new Map();
   const containerActiveTabs = new Map();
+  const componentCollapsedState = new Map();
 
   function cloneComponentTree(component) {
     if (typeof structuredClone === "function") {
@@ -314,6 +319,7 @@ import {
         state.components = [];
         state.selectedId = null;
         containerActiveTabs.clear();
+        componentCollapsedState.clear();
         componentCounter = 0;
         renderCanvas();
         renderInspector();
@@ -858,6 +864,7 @@ import {
         state.components = [];
         state.selectedId = null;
         containerActiveTabs.clear();
+        componentCollapsedState.clear();
         componentCounter = 0;
         markTemplateClean();
         ensureTemplateSelectValue();
@@ -2141,6 +2148,7 @@ import {
       align: "start",
       binding: "",
       readOnly: false,
+      collapsible: false,
       ...defaults,
     };
     if (!Object.prototype.hasOwnProperty.call(component, "binding") || typeof component.binding !== "string") {
@@ -2186,6 +2194,7 @@ import {
       component.roller = "";
     }
     component.roller = component.roller.trim();
+    component.collapsible = Boolean(component.collapsible);
     if (component.type === "linear-track" || component.type === "circular-track") {
       if (!component.segmentBinding) {
         const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
@@ -2227,7 +2236,7 @@ import {
       wrapper.classList.add("template-component-selected");
     }
 
-    const { header, actions, iconElement } = createStandardCardChrome({
+    const { header, actions, iconElement, ensureActions } = createStandardCardChrome({
       icon: iconName,
       iconLabel: typeLabel,
       headerOptions: { classes: ["template-component-header"] },
@@ -2259,7 +2268,7 @@ import {
     const rollerLabel = getComponentRollerLabel(component);
     if (rollerLabel) {
       const rollerPill = document.createElement("span");
-      rollerPill.className = "template-roller-pill badge text-bg-info";
+      rollerPill.className = "template-roller-pill badge text-bg-secondary";
       rollerPill.textContent = `🎲 ${rollerLabel}`;
       const insertBefore = bindingPill && actions.contains(bindingPill) ? bindingPill : iconElement;
       if (insertBefore && actions.contains(insertBefore)) {
@@ -2276,7 +2285,58 @@ import {
     wrapper.appendChild(header);
 
     const preview = renderComponentPreview(component);
-    wrapper.appendChild(preview);
+    const bodyElement = preview instanceof Element ? preview : (() => {
+      const container = document.createElement("div");
+      container.appendChild(preview);
+      return container;
+    })();
+    const bodyId = toId([component.uid, "content"]);
+    if (bodyElement instanceof HTMLElement && bodyId) {
+      bodyElement.id = bodyId;
+    }
+    wrapper.appendChild(bodyElement);
+
+    const collapsible = Boolean(component.collapsible);
+    if (collapsible) {
+      const key = component.uid || null;
+      const collapsed = key ? componentCollapsedState.get(key) === true : false;
+      const labelText = getComponentLabel(component, typeLabel) || typeLabel;
+      const actionsContainer = actions || ensureActions();
+      const { button: collapseButton, setCollapsed } = createCollapseToggleButton({
+        label: labelText,
+        collapsed,
+        onToggle(next) {
+          if (key) {
+            if (next) {
+              componentCollapsedState.set(key, true);
+            } else {
+              componentCollapsedState.delete(key);
+            }
+          }
+          if (bodyElement instanceof HTMLElement) {
+            bodyElement.hidden = next;
+          }
+          wrapper.classList.toggle("is-collapsed", next);
+        },
+      });
+      if (bodyElement instanceof HTMLElement && bodyElement.id) {
+        collapseButton.setAttribute("aria-controls", bodyElement.id);
+      }
+      actionsContainer.insertBefore(collapseButton, actionsContainer.firstChild || null);
+      if (bodyElement instanceof HTMLElement) {
+        bodyElement.hidden = collapsed;
+      }
+      wrapper.classList.toggle("is-collapsed", collapsed);
+      setCollapsed(collapsed);
+    } else {
+      if (component.uid) {
+        componentCollapsedState.delete(component.uid);
+      }
+      if (bodyElement instanceof HTMLElement) {
+        bodyElement.hidden = false;
+      }
+      wrapper.classList.remove("is-collapsed");
+    }
 
     applyComponentStyles(wrapper, component);
     return wrapper;
@@ -2490,7 +2550,13 @@ import {
   }
 
   function pruneContainerState(component) {
-    if (!component || component.type !== "container") {
+    if (!component) {
+      return;
+    }
+    if (component.uid) {
+      componentCollapsedState.delete(component.uid);
+    }
+    if (component.type !== "container") {
       return;
     }
     clearActiveTab(component);
@@ -2502,6 +2568,8 @@ import {
       items.forEach((child) => {
         if (child && child.type === "container") {
           pruneContainerState(child);
+        } else if (child?.uid) {
+          componentCollapsedState.delete(child.uid);
         }
       });
     });
@@ -3047,6 +3115,7 @@ import {
     state.components = [];
     state.selectedId = null;
     containerActiveTabs.clear();
+    componentCollapsedState.clear();
     if (!skipHistory) {
       undoStack.push({
         type: "clear",
@@ -3160,6 +3229,7 @@ import {
       case "clear": {
         state.components = cloneComponentCollection(entry.components);
         restoreContainerTabsSnapshot(entry.containerTabs);
+        componentCollapsedState.clear();
         state.selectedId = entry.previousSelectedId || null;
         renderCanvas();
         renderInspector();
@@ -3286,6 +3356,7 @@ import {
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
+    componentCollapsedState.clear();
     if (markClean) {
       markTemplateClean();
     }
@@ -3415,11 +3486,13 @@ import {
       form.appendChild(appearanceSection);
     }
 
+    const behaviorControls = [createCollapsibleToggle(component)];
     if (definition.supportsReadOnly) {
-      const behaviorSection = createSection("Behavior", [createReadOnlyToggle(component)]);
-      if (behaviorSection) {
-        form.appendChild(behaviorSection);
-      }
+      behaviorControls.push(createReadOnlyToggle(component));
+    }
+    const behaviorSection = createSection("Behavior", behaviorControls);
+    if (behaviorSection) {
+      form.appendChild(behaviorSection);
     }
 
     elements.inspector.appendChild(form);
@@ -3729,6 +3802,28 @@ import {
         draft.align = value;
       }, { rerenderCanvas: true });
     });
+  }
+
+  function createCollapsibleToggle(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check form-switch";
+    const id = toId([component.uid, "collapsible"]);
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = id;
+    input.checked = !!component.collapsible;
+    input.addEventListener("change", () => {
+      updateComponent(component.uid, (draft) => {
+        draft.collapsible = input.checked;
+      }, { rerenderCanvas: true });
+    });
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", id);
+    label.textContent = "Collapsible";
+    wrapper.append(input, label);
+    return wrapper;
   }
 
   function createReadOnlyToggle(component) {
@@ -4741,6 +4836,7 @@ import {
       merged.zones = zones;
       ensureContainerZones(merged);
     }
+    merged.collapsible = Boolean(merged.collapsible);
     return merged;
   }
 
