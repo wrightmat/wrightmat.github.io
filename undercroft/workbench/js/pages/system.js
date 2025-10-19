@@ -354,7 +354,11 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           payload = await response.json();
           markBuiltinAvailable("systems", metadata.id || selectedId);
         } else {
-          const result = await dataManager.get("systems", selectedId, { preferLocal: true });
+          const shareToken = metadata.shareToken || "";
+          const result = await dataManager.get("systems", selectedId, {
+            preferLocal: !shareToken,
+            shareToken,
+          });
           payload = result?.payload || null;
         }
         if (!payload) {
@@ -362,10 +366,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         }
         const label = payload.title || metadata.title || selectedId;
         registerSystemRecord(
-          { id: payload.id || selectedId, title: label, source: metadata.source || "remote", path: metadata.path },
+          {
+            id: payload.id || selectedId,
+            title: label,
+            source: metadata.source || "remote",
+            path: metadata.path,
+            shareToken: metadata.shareToken,
+          },
           { syncOption: true }
         );
-        applySystemData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+        applySystemData(payload, {
+          origin: metadata.source || "remote",
+          emitStatus: true,
+          statusMessage: `Loaded ${label}`,
+          shareToken: metadata.shareToken || "",
+        });
       } catch (error) {
         console.error("Unable to load system", error);
         if (metadata.source === "builtin") {
@@ -480,7 +495,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       payload.id = systemId;
       if (state.system.id !== systemId) {
         state.system.id = systemId;
-        registerSystemRecord({ id: systemId, title: payload.title || systemId, source: state.system.origin || "draft" }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id: systemId,
+            title: payload.title || systemId,
+            source: state.system.origin || "draft",
+            shareToken: state.system.shareToken || "",
+          },
+          { syncOption: true }
+        );
         ensureSelectValue();
       }
       const wantsRemote = dataManager.isAuthenticated();
@@ -504,7 +527,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         const savedToServer = result?.source === "remote";
         const label = payload.title || systemId;
         state.system.origin = savedToServer ? "remote" : "local";
-        registerSystemRecord({ id: systemId, title: label, source: state.system.origin }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id: systemId,
+            title: label,
+            source: state.system.origin,
+            shareToken: state.system.shareToken || "",
+          },
+          { syncOption: true }
+        );
         ensureSelectValue();
         if (savedToServer || !requireRemote) {
           markSystemClean(state.system);
@@ -603,7 +634,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         statusMessage: `Imported ${data.title || state.system.id || "system"}`,
         markClean: false,
       });
-      registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
+      registerSystemRecord(
+        {
+          id: state.system.id,
+          title: state.system.title,
+          source: state.system.origin,
+          shareToken: state.system.shareToken || "",
+        },
+        { syncOption: true }
+      );
       if (elements.select) {
         elements.select.value = state.system.id || "";
       }
@@ -643,7 +682,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   renderAll();
 
-  function createBlankSystem({ id = "", title = "", version = "0.1", origin = "draft" } = {}) {
+  function createBlankSystem({ id = "", title = "", version = "0.1", origin = "draft", shareToken = "" } = {}) {
     return {
       id,
       title,
@@ -654,6 +693,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       formulas: [],
       importers: [],
       origin,
+      shareToken: shareToken || "",
     };
   }
 
@@ -677,13 +717,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function applySystemData(
     data = {},
-    { origin = "remote", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+    {
+      origin = "remote",
+      emitStatus = false,
+      statusMessage = "",
+      markClean = origin !== "draft",
+      shareToken = "",
+    } = {}
   ) {
+    const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const hydrated = createBlankSystem({
       id: data.id || "",
       title: data.title || "",
       version: data.version || "0.1",
       origin,
+      shareToken: effectiveShareToken,
     });
     hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
     hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
@@ -691,13 +739,23 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
     applySystemState(hydrated, { emitStatus, statusMessage, markClean });
+    state.system.shareToken = effectiveShareToken;
   }
 
   function applySystemState(system, { emitStatus = false, statusMessage = "", markClean = true } = {}) {
     state.system = cloneSystem(system);
     state.system.origin = system.origin || state.system.origin || "draft";
+    state.system.shareToken = system.shareToken || state.system.shareToken || "";
     if (state.system.id) {
-      registerSystemRecord({ id: state.system.id, title: state.system.title, source: state.system.origin }, { syncOption: true });
+      registerSystemRecord(
+        {
+          id: state.system.id,
+          title: state.system.title,
+          source: state.system.origin,
+          shareToken: state.system.shareToken,
+        },
+        { syncOption: true }
+      );
     }
     rebuildFieldIdentities(state.system);
     state.selectedNodeId = null;
@@ -1954,7 +2012,15 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       const { remote } = await dataManager.list("systems", { refresh: true, includeLocal: false });
       const items = remote?.items || [];
       items.forEach((item) => {
-        registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id: item.id,
+            title: item.title || item.id,
+            source: "remote",
+            shareToken: item.shareToken || "",
+          },
+          { syncOption: true }
+        );
       });
       ensureSelectValue();
     } catch (error) {
@@ -1966,32 +2032,39 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!pendingSharedSystemId) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedSystem();
-    } else if (status) {
-      status.show("Sign in to load the shared system.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedSystem();
   }
 
   async function loadPendingSharedSystem() {
     if (!pendingSharedSystemId) {
       return;
     }
-    const targetId = pendingSharedSystemId;
+    const { id: targetId, shareToken = "" } = pendingSharedSystemId;
     pendingSharedSystemId = null;
-    registerSystemRecord({ id: targetId, title: targetId, source: "remote" }, { syncOption: true });
+    registerSystemRecord({ id: targetId, title: targetId, source: "remote", shareToken }, { syncOption: true });
     if (elements.select) {
       elements.select.value = targetId;
     }
     try {
-      const result = await dataManager.get("systems", targetId, { preferLocal: true });
+      const result = await dataManager.get("systems", targetId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       const payload = result?.payload;
       if (!payload) {
         throw new Error("System payload missing");
       }
       const label = payload.title || systemCatalog.get(targetId)?.title || targetId;
-      registerSystemRecord({ id: payload.id || targetId, title: label, source: "remote" }, { syncOption: true });
-      applySystemState(payload, { emitStatus: true, statusMessage: `Loaded ${label}` });
+      registerSystemRecord(
+        { id: payload.id || targetId, title: label, source: "remote", shareToken },
+        { syncOption: true }
+      );
+      applySystemData(payload, {
+        origin: "remote",
+        emitStatus: true,
+        statusMessage: `Loaded ${label}`,
+        shareToken,
+      });
     } catch (error) {
       console.error("System editor: unable to load shared system", error);
       if (status) {
@@ -2125,7 +2198,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("System editor: unable to parse shared record", error);
       return null;
