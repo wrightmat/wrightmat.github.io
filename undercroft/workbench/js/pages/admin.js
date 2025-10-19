@@ -24,6 +24,7 @@ const elements = {
   ownedFilter: document.querySelector("[data-admin-owned-filter]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
   groupsPanel: document.querySelector("[data-admin-tab-panel='groups']"),
+  groupsMessage: document.querySelector("[data-admin-groups-message]"),
   groupsTable: document.querySelector("[data-admin-groups-table]"),
   groupsBody: document.querySelector("[data-admin-groups-rows]"),
   groupCreateButton: document.querySelector("[data-admin-group-create]"),
@@ -590,19 +591,28 @@ function setGroupsLoading(message = "Loading groups…") {
 }
 
 function renderGroupsMessage(message) {
+  const text = typeof message === "string" ? message.trim() : "";
+  const hasMessage = Boolean(text);
+  if (elements.groupsMessage) {
+    elements.groupsMessage.textContent = text;
+    elements.groupsMessage.hidden = !hasMessage;
+  }
+  if (elements.groupsTable) {
+    elements.groupsTable.hidden = hasMessage;
+  }
+  if (elements.groupsBody && hasMessage) {
+    elements.groupsBody.innerHTML = "";
+  }
+}
+
+function clearGroupsMessage() {
+  if (elements.groupsMessage) {
+    elements.groupsMessage.textContent = "";
+    elements.groupsMessage.hidden = true;
+  }
   if (elements.groupsTable) {
     elements.groupsTable.hidden = false;
   }
-  if (!elements.groupsBody) {
-    return;
-  }
-  const row = document.createElement("tr");
-  const cell = document.createElement("td");
-  cell.colSpan = 4;
-  cell.className = "text-center py-4 text-body-secondary";
-  cell.textContent = message;
-  row.appendChild(cell);
-  elements.groupsBody.replaceChildren(row);
 }
 
 function showOwnedEmpty(message = "No saved content yet.") {
@@ -1396,9 +1406,6 @@ function renderGroups(groups) {
   const list = Array.isArray(groups) ? groups : [];
   const hasGroups = list.length > 0;
 
-  if (elements.groupsTable) {
-    elements.groupsTable.hidden = false;
-  }
   if (!elements.groupsBody) {
     return;
   }
@@ -1406,6 +1413,8 @@ function renderGroups(groups) {
     renderGroupsMessage("No groups yet. Create one to start organizing characters.");
     return;
   }
+
+  clearGroupsMessage();
 
   const fragment = document.createDocumentFragment();
   list.forEach((group) => {
