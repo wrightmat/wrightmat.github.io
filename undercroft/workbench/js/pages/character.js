@@ -84,7 +84,23 @@ import {
   let suppressNotesChange = false;
   let currentNotesKey = "";
   let componentCounter = 0;
-  let pendingSharedRecord = resolveSharedRecordParam("characters");
+  const initialRecordParam = parseRecordParam();
+  let pendingSharedRecord = initialRecordParam && initialRecordParam.bucket === "characters"
+    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+    : null;
+  let pendingGroupShare = initialRecordParam && initialRecordParam.bucket === "groups"
+    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+    : null;
+  const groupShareState = {
+    token: "",
+    groupId: "",
+    group: null,
+    members: [],
+    available: [],
+    loading: false,
+    error: "",
+    status: "",
+  };
 
   function cloneValue(value) {
     if (value === undefined) {
@@ -315,6 +331,10 @@ import {
     newCharacterId: document.querySelector("[data-new-character-id]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
+    groupShareModal: document.querySelector("[data-group-select-modal]"),
+    groupShareTitle: document.querySelector("[data-group-select-title]"),
+    groupShareBody: document.querySelector("[data-group-select-body]"),
+    groupShareStatus: document.querySelector("[data-group-select-status]"),
   };
 
   const renderPreview = createJsonPreviewRenderer({
@@ -328,6 +348,20 @@ import {
     const modalElement = document.getElementById("new-character-modal");
     if (modalElement) {
       newCharacterModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+    }
+  }
+
+  let groupShareModalInstance = null;
+  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+    const modalElement = elements.groupShareModal;
+    if (modalElement) {
+      groupShareModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+      modalElement.addEventListener("hidden.bs.modal", () => {
+        groupShareState.status = "";
+        if (elements.groupShareStatus) {
+          elements.groupShareStatus.textContent = "";
+        }
+      });
     }
   }
 
@@ -1149,11 +1183,208 @@ import {
     }
   }
 
-  function initializeSharedRecordHandling() {
-    if (!pendingSharedRecord) {
+  function openGroupShareModal() {
+    if (groupShareModalInstance) {
+      groupShareModalInstance.show();
+    }
+  }
+
+  function applyGroupSharePayload(payload) {
+    const group = payload && typeof payload.group === "object" ? payload.group : null;
+    groupShareState.group = group;
+    groupShareState.groupId = group?.id || groupShareState.groupId;
+    const members = Array.isArray(payload?.members) ? payload.members : [];
+    groupShareState.members = members;
+    const available = Array.isArray(payload?.available)
+      ? payload.available
+      : members.filter((member) => member.content_type === "character" && !member.is_claimed && !member.missing);
+    groupShareState.available = available;
+    groupShareState.error = "";
+    groupShareState.status = "";
+  }
+
+  function renderGroupShareModal() {
+    if (!elements.groupShareBody) {
       return;
     }
-    void loadPendingSharedRecord();
+    const body = elements.groupShareBody;
+    body.innerHTML = "";
+    const groupName = groupShareState.group?.name || "";
+    if (elements.groupShareTitle) {
+      elements.groupShareTitle.textContent = groupName
+        ? `Select a character for ${groupName}`
+        : "Select a character";
+    }
+    if (groupShareState.loading) {
+      const loading = document.createElement("div");
+      loading.className = "text-center text-body-secondary";
+      loading.textContent = "Loading available characters…";
+      body.appendChild(loading);
+      if (elements.groupShareStatus) {
+        elements.groupShareStatus.textContent = "";
+      }
+      return;
+    }
+    if (groupShareState.error) {
+      const alert = document.createElement("div");
+      alert.className = "alert alert-danger mb-0";
+      alert.textContent = groupShareState.error;
+      body.appendChild(alert);
+      if (elements.groupShareStatus) {
+        elements.groupShareStatus.textContent = "";
+      }
+      return;
+    }
+    const available = Array.isArray(groupShareState.available) ? groupShareState.available : [];
+    if (!available.length) {
+      const empty = document.createElement("div");
+      empty.className = "text-body-secondary";
+      empty.textContent = "No unclaimed characters are available in this group.";
+      body.appendChild(empty);
+      if (elements.groupShareStatus) {
+        elements.groupShareStatus.textContent = dataManager.isAuthenticated()
+          ? ""
+          : "Sign in to claim a character.";
+      }
+      return;
+    }
+    available.forEach((member) => {
+      body.appendChild(renderGroupShareOption(member));
+    });
+    if (elements.groupShareStatus) {
+      const message = groupShareState.status || (dataManager.isAuthenticated() ? "" : "Sign in to claim a character.");
+      elements.groupShareStatus.textContent = message;
+    }
+  }
+
+  function renderGroupShareOption(member) {
+    const card = document.createElement("div");
+    card.className = "border border-body-tertiary rounded-3 p-3 d-flex flex-column gap-2";
+    const title = document.createElement("h3");
+    title.className = "h6 mb-0";
+    title.textContent = member.label || member.content_id;
+    card.appendChild(title);
+    if (member.system) {
+      const system = document.createElement("div");
+      system.className = "text-body-secondary small";
+      system.textContent = `System: ${member.system}`;
+      card.appendChild(system);
+    }
+    const claimButton = document.createElement("button");
+    claimButton.type = "button";
+    claimButton.className = "btn btn-primary btn-sm align-self-start";
+    claimButton.textContent = "Claim character";
+    claimButton.addEventListener("click", () => claimGroupCharacter(member, claimButton));
+    card.appendChild(claimButton);
+    return card;
+  }
+
+  async function claimGroupCharacter(member, button) {
+    if (!groupShareState.token) {
+      return;
+    }
+    const label = member.label || member.content_id;
+    button.disabled = true;
+    if (elements.groupShareStatus) {
+      elements.groupShareStatus.textContent = `Claiming ${label}…`;
+    }
+    try {
+      await dataManager.claimGroupCharacter({ token: groupShareState.token, characterId: member.content_id });
+      groupShareState.status = "";
+      if (elements.groupShareStatus) {
+        elements.groupShareStatus.textContent = "";
+      }
+      if (status) {
+        status.show(`Claimed ${label}.`, { type: "success", timeout: 2000 });
+      }
+      if (groupShareModalInstance) {
+        groupShareModalInstance.hide();
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("record", `characters:${member.content_id}`);
+      url.searchParams.delete("share");
+      window.history.replaceState({}, "", url);
+      await refreshRemoteCharacters({ force: true });
+      await loadCharacter(member.content_id);
+    } catch (error) {
+      console.error("Character editor: unable to claim group character", error);
+      const message = error?.message || "Unable to claim this character.";
+      groupShareState.status = message;
+      if (elements.groupShareStatus) {
+        elements.groupShareStatus.textContent = message;
+      }
+      button.disabled = false;
+      if (error?.status === 401) {
+        if (status) {
+          status.show("Sign in to claim a character.", { type: "warning", timeout: 2000 });
+        }
+      } else if (status) {
+        status.show(message, { type: "danger" });
+      }
+      await refreshGroupShareDetails();
+    }
+  }
+
+  async function refreshGroupShareDetails() {
+    if (!groupShareState.token) {
+      return;
+    }
+    groupShareState.loading = true;
+    groupShareState.status = "";
+    renderGroupShareModal();
+    try {
+      const payload = await dataManager.fetchGroupShare(groupShareState.token);
+      applyGroupSharePayload(payload);
+    } catch (error) {
+      console.error("Character editor: unable to refresh group share details", error);
+      groupShareState.error = error?.message || "Unable to load available characters.";
+    } finally {
+      groupShareState.loading = false;
+      renderGroupShareModal();
+    }
+  }
+
+  async function loadPendingGroupShare() {
+    if (!pendingGroupShare) {
+      return;
+    }
+    const { id = "", shareToken = "" } = pendingGroupShare;
+    pendingGroupShare = null;
+    if (!shareToken) {
+      return;
+    }
+    groupShareState.token = shareToken;
+    groupShareState.groupId = id;
+    groupShareState.group = null;
+    groupShareState.members = [];
+    groupShareState.available = [];
+    groupShareState.error = "";
+    groupShareState.status = "";
+    groupShareState.loading = true;
+    renderGroupShareModal();
+    openGroupShareModal();
+    try {
+      const payload = await dataManager.fetchGroupShare(shareToken);
+      applyGroupSharePayload(payload);
+    } catch (error) {
+      console.error("Character editor: unable to load group share", error);
+      groupShareState.error = error?.message || "Unable to load available characters.";
+      if (status) {
+        status.show(groupShareState.error, { type: "danger" });
+      }
+    } finally {
+      groupShareState.loading = false;
+      renderGroupShareModal();
+    }
+  }
+
+  function initializeSharedRecordHandling() {
+    if (pendingGroupShare) {
+      void loadPendingGroupShare();
+    }
+    if (pendingSharedRecord) {
+      void loadPendingSharedRecord();
+    }
   }
 
   async function loadPendingSharedRecord() {
@@ -1491,7 +1722,7 @@ import {
     const collapsible = typeof collapsibleValue === "string"
       ? collapsibleValue.toLowerCase() === "true"
       : Boolean(collapsibleValue);
-    const shouldRenderActions = showTypeIcon || collapsible;
+    const shouldRenderActions = showTypeIcon;
     const wrapper = createCanvasCardElement({
       classes: ["character-component"],
       dataset: { componentId: component.uid || "" },
@@ -1522,7 +1753,6 @@ import {
       const key = component?.uid || null;
       const collapsed = key ? collapsedComponents.get(key) === true : false;
       const labelText = component.label || component.name || "Section";
-      const actionsContainer = actions || ensureActions?.();
       const { button: collapseButton, setCollapsed } = createCollapseToggleButton({
         label: labelText,
         collapsed,
@@ -1543,9 +1773,7 @@ import {
       if (body instanceof HTMLElement && body.id) {
         collapseButton.setAttribute("aria-controls", body.id);
       }
-      if (actionsContainer) {
-        actionsContainer.insertBefore(collapseButton, actionsContainer.firstChild || null);
-      }
+      header.insertBefore(collapseButton, header.firstChild || null);
       if (body instanceof HTMLElement) {
         body.hidden = collapsed;
       }
@@ -2932,7 +3160,7 @@ import {
     return `cha_${slug || "character"}_${rand}`;
   }
 
-  function resolveSharedRecordParam(expectedBucket) {
+  function parseRecordParam() {
     try {
       const params = new URLSearchParams(window.location.search || "");
       const record = params.get("record");
@@ -2941,11 +3169,11 @@ import {
       }
       const [bucket, ...rest] = record.split(":");
       const id = rest.join(":");
-      if (bucket !== expectedBucket || !id) {
+      if (!bucket || !id) {
         return null;
       }
       const shareToken = params.get("share") || "";
-      return { id, shareToken };
+      return { bucket, id, shareToken };
     } catch (error) {
       console.warn("Character editor: unable to parse shared record", error);
       return null;
