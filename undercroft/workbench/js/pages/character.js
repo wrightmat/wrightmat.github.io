@@ -77,6 +77,7 @@ import {
     groupName: "",
     shareToken: "",
     entries: [],
+    localEntries: [],
     loading: false,
     sending: false,
     error: "",
@@ -345,13 +346,11 @@ import {
     notesSection: document.querySelector("[data-notes-section]"),
     noteEditor: document.querySelector("[data-note-editor]"),
     notesToggle: document.querySelector("[data-notes-toggle]"),
-    notesToggleIcon: document.querySelector("[data-notes-toggle-icon]"),
     notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
     notesPanel: document.querySelector("[data-notes-panel]"),
     jsonSection: document.querySelector("[data-json-section]"),
     jsonPreview: document.querySelector("[data-json-preview]"),
     jsonToggle: document.querySelector("[data-json-toggle]"),
-    jsonToggleIcon: document.querySelector("[data-json-toggle-icon]"),
     jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
     jsonPanel: document.querySelector("[data-json-panel]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
@@ -362,7 +361,6 @@ import {
     diceClearButton: document.querySelector("[data-dice-clear]"),
     dicePanel: document.querySelector("[data-dice-panel]"),
     diceToggle: document.querySelector("[data-dice-toggle]"),
-    diceToggleIcon: document.querySelector("[data-dice-toggle-icon]"),
     diceToggleLabel: document.querySelector("[data-dice-toggle-label]"),
     leftPane: document.querySelector('[data-pane="left"]'),
     leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
@@ -375,7 +373,6 @@ import {
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
     groupShareSection: document.querySelector("[data-group-share-section]"),
     groupShareToggle: document.querySelector("[data-group-share-toggle]"),
-    groupShareToggleIcon: document.querySelector("[data-group-share-toggle-icon]"),
     groupShareToggleLabel: document.querySelector("[data-group-share-toggle-label]"),
     groupSharePanel: document.querySelector("[data-group-share-panel]"),
     groupShareStatus: document.querySelector("[data-group-share-status]"),
@@ -388,7 +385,6 @@ import {
     gameLogStatus: document.querySelector("[data-game-log-status]"),
     gameLogTitle: document.querySelector("[data-game-log-group]"),
     gameLogToggle: document.querySelector("[data-game-log-toggle]"),
-    gameLogToggleIcon: document.querySelector("[data-game-log-toggle-icon]"),
     gameLogToggleLabel: document.querySelector("[data-game-log-toggle-label]"),
   };
 
@@ -554,9 +550,6 @@ import {
     if (elements.gameLogToggle) {
       elements.gameLogToggle.addEventListener("click", (event) => {
         event.preventDefault();
-        if (!gameLogState.enabled) {
-          return;
-        }
         setGameLogCollapsed(!gameLogPanelState.collapsed);
       });
     }
@@ -590,100 +583,93 @@ import {
     registerBuiltinContent();
   }
 
+  function updateCollapsibleSection({
+    section,
+    panel,
+    toggle,
+    label,
+    collapsed,
+    expandLabel,
+    collapseLabel,
+  }) {
+    const next = Boolean(collapsed);
+    const expanded = !next;
+    if (panel) {
+      panel.hidden = next;
+      panel.classList.toggle("d-none", next);
+    }
+    if (section) {
+      section.classList.toggle("is-collapsed", next);
+    }
+    const actionLabel = expanded ? collapseLabel : expandLabel;
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+      if (actionLabel) {
+        toggle.setAttribute("aria-label", actionLabel);
+        toggle.setAttribute("title", actionLabel);
+      }
+      toggle.classList.toggle("is-collapsed", next);
+      toggle.dataset.collapsed = next ? "true" : "false";
+    }
+    if (label) {
+      label.textContent = actionLabel;
+    }
+  }
+
   function setNotesCollapsed(collapsed) {
     const next = Boolean(collapsed);
     notesState.collapsed = next;
-    if (elements.notesPanel) {
-      elements.notesPanel.hidden = next;
-      elements.notesPanel.classList.toggle("d-none", next);
-    }
-    if (elements.notesSection) {
-      elements.notesSection.classList.toggle("is-collapsed", next);
-    }
-    const actionLabel = next ? "Expand notes" : "Collapse notes";
-    if (elements.notesToggle) {
-      elements.notesToggle.setAttribute("aria-expanded", next ? "false" : "true");
-      elements.notesToggle.setAttribute("aria-label", actionLabel);
-      elements.notesToggle.setAttribute("title", actionLabel);
-    }
-    if (elements.notesToggleLabel) {
-      elements.notesToggleLabel.textContent = actionLabel;
-    }
-    if (elements.notesToggleIcon) {
-      elements.notesToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
-    }
+    updateCollapsibleSection({
+      section: elements.notesSection,
+      panel: elements.notesPanel,
+      toggle: elements.notesToggle,
+      label: elements.notesToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand notes",
+      collapseLabel: "Collapse notes",
+    });
   }
 
   function setJsonPreviewCollapsed(collapsed) {
     const next = Boolean(collapsed);
     jsonPreviewState.collapsed = next;
-    if (elements.jsonPanel) {
-      elements.jsonPanel.hidden = next;
-      elements.jsonPanel.classList.toggle("d-none", next);
-    }
-    if (elements.jsonSection) {
-      elements.jsonSection.classList.toggle("is-collapsed", next);
-    }
-    const actionLabel = next ? "Expand JSON preview" : "Collapse JSON preview";
-    if (elements.jsonToggle) {
-      elements.jsonToggle.setAttribute("aria-expanded", next ? "false" : "true");
-      elements.jsonToggle.setAttribute("aria-label", actionLabel);
-      elements.jsonToggle.setAttribute("title", actionLabel);
-    }
-    if (elements.jsonToggleLabel) {
-      elements.jsonToggleLabel.textContent = actionLabel;
-    }
-    if (elements.jsonToggleIcon) {
-      elements.jsonToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
-    }
+    updateCollapsibleSection({
+      section: elements.jsonSection,
+      panel: elements.jsonPanel,
+      toggle: elements.jsonToggle,
+      label: elements.jsonToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand JSON preview",
+      collapseLabel: "Collapse JSON preview",
+    });
   }
 
   function setDiceCollapsed(collapsed) {
     const next = Boolean(collapsed);
     dicePanelState.collapsed = next;
-    if (elements.dicePanel) {
-      elements.dicePanel.hidden = next;
-      elements.dicePanel.classList.toggle("d-none", next);
-    }
-    if (elements.diceSection) {
-      elements.diceSection.classList.toggle("is-collapsed", next);
-    }
-    const actionLabel = next ? "Expand dice roller" : "Collapse dice roller";
-    if (elements.diceToggle) {
-      elements.diceToggle.setAttribute("aria-expanded", next ? "false" : "true");
-      elements.diceToggle.setAttribute("aria-label", actionLabel);
-      elements.diceToggle.setAttribute("title", actionLabel);
-    }
-    if (elements.diceToggleLabel) {
-      elements.diceToggleLabel.textContent = actionLabel;
-    }
-    if (elements.diceToggleIcon) {
-      elements.diceToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
-    }
+    updateCollapsibleSection({
+      section: elements.diceSection,
+      panel: elements.dicePanel,
+      toggle: elements.diceToggle,
+      label: elements.diceToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand dice roller",
+      collapseLabel: "Collapse dice roller",
+    });
   }
 
   function setGameLogCollapsed(collapsed) {
     const next = Boolean(collapsed);
     gameLogPanelState.collapsed = next;
-    if (elements.gameLogPanel) {
-      elements.gameLogPanel.hidden = next;
-      elements.gameLogPanel.classList.toggle("d-none", next);
-    }
-    if (elements.gameLogSection) {
-      elements.gameLogSection.classList.toggle("is-collapsed", next);
-    }
-    const actionLabel = next ? "Expand game log" : "Collapse game log";
-    if (elements.gameLogToggle) {
-      elements.gameLogToggle.setAttribute("aria-expanded", next ? "false" : "true");
-      elements.gameLogToggle.setAttribute("aria-label", actionLabel);
-      elements.gameLogToggle.setAttribute("title", actionLabel);
-    }
-    if (elements.gameLogToggleLabel) {
-      elements.gameLogToggleLabel.textContent = actionLabel;
-    }
-    if (elements.gameLogToggleIcon) {
-      elements.gameLogToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
-    }
+    updateCollapsibleSection({
+      section: elements.gameLogSection,
+      panel: elements.gameLogPanel,
+      toggle: elements.gameLogToggle,
+      label: elements.gameLogToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand game log",
+      collapseLabel: "Collapse game log",
+    });
   }
 
   function registerBuiltinContent() {
@@ -1031,7 +1017,11 @@ import {
       refreshTooltips(button.parentElement || button);
     };
 
-    const locked = state.viewLocked;
+    const shareViewActive = Boolean(groupShareState.token)
+      && Boolean(groupShareState.viewOnlyCharacterId)
+      && draftHasId
+      && state.draft.id === groupShareState.viewOnlyCharacterId;
+    const locked = state.viewLocked || shareViewActive;
 
     updateToolbarButton(elements.importButton, {
       disabled: !draftHasId || locked,
@@ -1427,28 +1417,18 @@ import {
   function setGroupShareCollapsed(collapsed) {
     const next = Boolean(collapsed);
     groupShareState.collapsed = next;
-    const actionLabel = next ? "Expand group characters" : "Collapse group characters";
-    if (elements.groupSharePanel) {
-      elements.groupSharePanel.hidden = next;
-      elements.groupSharePanel.classList.toggle("d-none", next);
-    }
-    if (elements.groupShareSection) {
-      elements.groupShareSection.classList.toggle("is-collapsed", next);
-    }
+    updateCollapsibleSection({
+      section: elements.groupShareSection,
+      panel: elements.groupSharePanel,
+      toggle: elements.groupShareToggle,
+      label: elements.groupShareToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand group characters",
+      collapseLabel: "Collapse group characters",
+    });
     if (elements.groupShareStatus) {
       const shouldHide = next || !groupShareState.token;
       elements.groupShareStatus.hidden = shouldHide;
-    }
-    if (elements.groupShareToggle) {
-      elements.groupShareToggle.setAttribute("aria-expanded", next ? "false" : "true");
-      elements.groupShareToggle.setAttribute("aria-label", actionLabel);
-      elements.groupShareToggle.setAttribute("title", actionLabel);
-    }
-    if (elements.groupShareToggleLabel) {
-      elements.groupShareToggleLabel.textContent = actionLabel;
-    }
-    if (elements.groupShareToggleIcon) {
-      elements.groupShareToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
     }
   }
 
@@ -1558,9 +1538,10 @@ import {
       }
     }
     if (elements.gameLogRefresh) {
-      elements.gameLogRefresh.disabled = gameLogState.loading;
-      elements.gameLogRefresh.classList.toggle("disabled", gameLogState.loading);
-      elements.gameLogRefresh.setAttribute("aria-disabled", gameLogState.loading ? "true" : "false");
+      const refreshDisabled = !gameLogState.enabled || gameLogState.loading;
+      elements.gameLogRefresh.disabled = refreshDisabled;
+      elements.gameLogRefresh.classList.toggle("disabled", refreshDisabled);
+      elements.gameLogRefresh.setAttribute("aria-disabled", refreshDisabled ? "true" : "false");
     }
   }
 
@@ -1568,16 +1549,10 @@ import {
     if (!elements.gameLogSection) {
       return;
     }
-    const enabled = gameLogState.enabled;
-    elements.gameLogSection.hidden = !enabled;
-    elements.gameLogSection.classList.toggle("d-none", !enabled);
-    if (!enabled) {
-      if (elements.gameLogEntries) {
-        elements.gameLogEntries.innerHTML = "";
-      }
-      return;
-    }
+    elements.gameLogSection.hidden = false;
+    elements.gameLogSection.classList.remove("d-none");
     setGameLogCollapsed(gameLogPanelState.collapsed);
+    renderGameLogEntries();
   }
 
   function updateGameLogStatus() {
@@ -1597,6 +1572,8 @@ import {
       } else if (!gameLogState.loading && !gameLogState.entries.length) {
         message = "Roll dice or send a message to start the log.";
       }
+    } else if (!gameLogState.localEntries.length) {
+      message = "Roll dice to start the log.";
     }
     elements.gameLogStatus.textContent = message;
     elements.gameLogStatus.hidden = !message;
@@ -1679,23 +1656,66 @@ import {
     }
   }
 
+  function resolveGameLogTimestamp(entry) {
+    if (!entry || typeof entry !== "object") {
+      return 0;
+    }
+    if (typeof entry.__timestamp === "number") {
+      return entry.__timestamp;
+    }
+    if (entry.created_at) {
+      const created = Date.parse(entry.created_at);
+      if (!Number.isNaN(created)) {
+        return created;
+      }
+    }
+    if (entry.updated_at) {
+      const updated = Date.parse(entry.updated_at);
+      if (!Number.isNaN(updated)) {
+        return updated;
+      }
+    }
+    if (typeof entry.id === "number") {
+      return entry.id;
+    }
+    const numericId = parseInt(entry.id, 10);
+    if (!Number.isNaN(numericId)) {
+      return numericId;
+    }
+    return 0;
+  }
+
+  function sortGameLogEntriesDescending(a, b) {
+    return resolveGameLogTimestamp(b) - resolveGameLogTimestamp(a);
+  }
+
   function renderGameLogEntries() {
     if (!elements.gameLogEntries) {
       return;
     }
     elements.gameLogEntries.innerHTML = "";
-    if (!gameLogState.enabled) {
-      return;
+    const combinedEntries = [];
+    if (gameLogState.entries.length) {
+      combinedEntries.push(...gameLogState.entries);
     }
-    if (!gameLogState.entries.length) {
+    if (gameLogState.localEntries.length) {
+      combinedEntries.push(...gameLogState.localEntries);
+    }
+    if (!combinedEntries.length) {
       const placeholder = document.createElement("p");
       placeholder.className = "text-body-secondary small mb-0";
-      placeholder.textContent = gameLogState.loading ? "Loading log…" : "No activity yet.";
+      if (gameLogState.enabled && gameLogState.loading) {
+        placeholder.textContent = "Loading log…";
+      } else if (gameLogState.enabled) {
+        placeholder.textContent = "No activity yet.";
+      } else {
+        placeholder.textContent = "Roll dice to start the log.";
+      }
       elements.gameLogEntries.appendChild(placeholder);
       return;
     }
     const fragment = document.createDocumentFragment();
-    gameLogState.entries.forEach((entry) => {
+    combinedEntries.sort(sortGameLogEntriesDescending).forEach((entry) => {
       fragment.appendChild(createGameLogEntryElement(entry));
     });
     elements.gameLogEntries.appendChild(fragment);
@@ -1731,7 +1751,6 @@ import {
     gameLogState.entries = [];
     gameLogState.error = "";
     gameLogPanelState.collapsed = false;
-    setGameLogCollapsed(false);
     if (elements.gameLogTitle) {
       elements.gameLogTitle.textContent = "";
       elements.gameLogTitle.hidden = true;
@@ -1763,7 +1782,6 @@ import {
       gameLogState.entries = [];
     }
     updateGameLogVisibility();
-    renderGameLogEntries();
     updateGameLogControls();
     updateGameLogStatus();
     if (changed) {
@@ -1798,6 +1816,7 @@ import {
         }
       }
       gameLogState.entries = entries;
+      gameLogState.entries.sort(sortGameLogEntriesDescending);
       gameLogState.error = "";
       renderGameLogEntries();
     } catch (error) {
@@ -1860,11 +1879,7 @@ import {
     } else {
       gameLogState.entries.push(entry);
     }
-    gameLogState.entries.sort((a, b) => {
-      const aId = typeof a?.id === "number" ? a.id : parseInt(a?.id, 10) || 0;
-      const bId = typeof b?.id === "number" ? b.id : parseInt(b?.id, 10) || 0;
-      return aId - bId;
-    });
+    gameLogState.entries.sort(sortGameLogEntriesDescending);
     renderGameLogEntries();
     updateGameLogStatus();
   }
@@ -1889,8 +1904,35 @@ import {
     }
   }
 
+  function addLocalGameLogEntry({ type = "message", message = "", payload = null } = {}) {
+    const timestamp = Date.now();
+    const user = sessionUser();
+    const displayName =
+      (user && typeof user.display_name === "string" && user.display_name.trim())
+        ? user.display_name.trim()
+        : (user && typeof user.username === "string" && user.username.trim())
+          ? user.username.trim()
+          : "You";
+    const entry = {
+      id: `local-${timestamp}-${Math.random().toString(36).slice(2, 8)}`,
+      type,
+      message,
+      payload: payload || undefined,
+      created_at: new Date(timestamp).toISOString(),
+      author: { name: displayName },
+      local: true,
+      __timestamp: timestamp,
+    };
+    gameLogState.localEntries.push(entry);
+    if (gameLogState.localEntries.length > 100) {
+      gameLogState.localEntries.splice(0, gameLogState.localEntries.length - 100);
+    }
+    renderGameLogEntries();
+    updateGameLogStatus();
+  }
+
   function recordGameLogRoll(result, { expression = "", label = "" } = {}) {
-    if (!result || !gameLogCanPost()) {
+    if (!result) {
       return;
     }
     const context = resolveCurrentCharacterContext();
@@ -1904,6 +1946,10 @@ import {
       label: label || undefined,
       character: context || undefined,
     };
+    if (!gameLogCanPost()) {
+      addLocalGameLogEntry({ type: "roll", payload });
+      return;
+    }
     void postGameLogEntry("roll", "", payload).then((entry) => {
       if (entry) {
         integrateGameLogEntry(entry);
