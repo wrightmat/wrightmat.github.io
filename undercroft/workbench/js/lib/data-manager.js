@@ -592,26 +592,49 @@ export class DataManager {
     if (!contentType || !contentId) {
       throw new Error("contentType and contentId are required");
     }
-    const params = new URLSearchParams({
-      content_type: contentType,
-      content_id: contentId,
-    });
-    return this._request(`/shares/eligible?${params.toString()}`, { method: "GET", auth: true });
+    try {
+      return await this._request(`/shares/${contentType}/${contentId}/eligible`, {
+        method: "GET",
+        auth: true,
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "status" in error && error.status === 404) {
+        const params = new URLSearchParams({
+          content_type: contentType,
+          content_id: contentId,
+        });
+        return this._request(`/shares/eligible?${params.toString()}`, { method: "GET", auth: true });
+      }
+      throw error;
+    }
   }
 
   async createShareLink({ contentType, contentId, permissions = "view" } = {}) {
     if (!contentType || !contentId) {
       throw new Error("contentType and contentId are required");
     }
-    const result = await this._request("/shares/link", {
-      method: "POST",
-      body: {
-        content_type: contentType,
-        content_id: contentId,
-        permissions,
-      },
-      auth: true,
-    });
+    let result;
+    try {
+      result = await this._request(`/shares/${contentType}/${contentId}/link`, {
+        method: "POST",
+        body: { permissions },
+        auth: true,
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "status" in error && error.status === 404) {
+        result = await this._request("/shares/link", {
+          method: "POST",
+          body: {
+            content_type: contentType,
+            content_id: contentId,
+            permissions,
+          },
+          auth: true,
+        });
+      } else {
+        throw error;
+      }
+    }
     this._emit("workbench:content-share-link", {
       bucket: contentType,
       id: contentId,
@@ -624,14 +647,27 @@ export class DataManager {
     if (!contentType || !contentId) {
       throw new Error("contentType and contentId are required");
     }
-    const result = await this._request("/shares/link/revoke", {
-      method: "POST",
-      body: {
-        content_type: contentType,
-        content_id: contentId,
-      },
-      auth: true,
-    });
+    let result;
+    try {
+      result = await this._request(`/shares/${contentType}/${contentId}/link/revoke`, {
+        method: "POST",
+        body: {},
+        auth: true,
+      });
+    } catch (error) {
+      if (error && typeof error === "object" && "status" in error && error.status === 404) {
+        result = await this._request("/shares/link/revoke", {
+          method: "POST",
+          body: {
+            content_type: contentType,
+            content_id: contentId,
+          },
+          auth: true,
+        });
+      } else {
+        throw error;
+      }
+    }
     this._emit("workbench:content-share-link", {
       bucket: contentType,
       id: contentId,

@@ -24,14 +24,6 @@ def _normalize_permissions(value: str) -> str:
     return normalized if normalized in ALLOWED_PERMISSIONS else "view"
 
 
-ALLOWED_PERMISSIONS = {"view", "edit"}
-
-
-def _normalize_permissions(value: str) -> str:
-    normalized = (value or "").strip().lower()
-    return normalized if normalized in ALLOWED_PERMISSIONS else "view"
-
-
 def list_shares(state: ServerState, content_type: str, content_id: str, user: User) -> List[Dict[str, str]]:
     rows = state.db.execute(
         """
