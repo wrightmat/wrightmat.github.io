@@ -5,7 +5,7 @@
   "system": "sys.dnd-5e",
   "data": {
     "name": "Test",
-    "class": "Bard"
+    "class": "Paladin"
   },
   "state": {
     "timers": {},
