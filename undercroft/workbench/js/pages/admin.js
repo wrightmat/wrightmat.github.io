@@ -41,6 +41,7 @@ const elements = {
   shareLinkHelp: document.querySelector("[data-admin-share-link-help]"),
   shareAddForm: document.querySelector("[data-admin-share-add-form]"),
   shareUsername: document.querySelector("[data-admin-share-username]"),
+  shareUsernameOptions: document.querySelector("[data-admin-share-username-options]"),
   sharePermission: document.querySelector("[data-admin-share-permission]"),
   shareTable: document.querySelector("[data-admin-share-table]"),
   shareRows: document.querySelector("[data-admin-share-rows]"),
@@ -112,6 +113,7 @@ const shareState = {
   link: null,
   loading: false,
   linkStatus: "",
+  eligibleUsers: [],
 };
 
 function isAdminSession() {
@@ -690,15 +692,44 @@ function resetShareModal() {
   shareState.link = null;
   shareState.loading = false;
   shareState.linkStatus = "";
+  shareState.eligibleUsers = null;
   if (elements.shareAddForm) {
     elements.shareAddForm.reset();
   }
   renderShareModal();
 }
 
+function updateShareUsernameOptions() {
+  if (!elements.shareUsernameOptions) {
+    return;
+  }
+  const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
+  const fragment = document.createDocumentFragment();
+  const seen = new Set();
+  options
+    .filter((user) => user && user.username)
+    .forEach((user) => {
+      const username = user.username;
+      const key = username.toLowerCase();
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      const option = document.createElement("option");
+      option.value = username;
+      const tier = formatTier(normalizeTier(user.tier));
+      const label = tier ? `${username} (${tier})` : username;
+      option.label = label;
+      option.textContent = label;
+      fragment.appendChild(option);
+    });
+  elements.shareUsernameOptions.replaceChildren(fragment);
+}
+
 function renderShareModal() {
   const record = shareState.record;
   const hasRecord = Boolean(record);
+  updateShareUsernameOptions();
   if (elements.shareModalTitle) {
     if (hasRecord) {
       const typeLabel = OWNED_TYPE_LABELS[record.bucket] || "Content";
@@ -741,6 +772,19 @@ function renderShareModal() {
   }
   if (elements.sharePermission) {
     elements.sharePermission.value = elements.sharePermission.value || "view";
+  }
+  if (elements.shareUsername) {
+    const hasEligible = Array.isArray(shareState.eligibleUsers) && shareState.eligibleUsers.length > 0;
+    const eligibleLoading = hasRecord && shareState.eligibleUsers === null;
+    if (!hasRecord) {
+      elements.shareUsername.placeholder = "Select an item to manage access.";
+    } else if (eligibleLoading) {
+      elements.shareUsername.placeholder = "Loading eligible users…";
+    } else if (!hasEligible) {
+      elements.shareUsername.placeholder = "No eligible users available.";
+    } else {
+      elements.shareUsername.placeholder = "Start typing a username…";
+    }
   }
   if (!hasRecord) {
     if (elements.shareTable) {
@@ -894,6 +938,41 @@ async function refreshShareModal() {
   }
 }
 
+async function refreshShareEligibleUsers() {
+  if (!shareState.record) {
+    shareState.eligibleUsers = [];
+    renderShareModal();
+    return;
+  }
+  const contentType = contentTypeFromBucket(shareState.record.bucket);
+  if (!contentType) {
+    shareState.eligibleUsers = [];
+    renderShareModal();
+    return;
+  }
+  shareState.eligibleUsers = null;
+  renderShareModal();
+  try {
+    const result = await dataManager.listEligibleShareUsers({
+      contentType,
+      contentId: shareState.record.id,
+    });
+    const users = Array.isArray(result?.users) ? result.users : [];
+    shareState.eligibleUsers = users.map((user) => ({
+      username: user.username,
+      tier: normalizeTier(user.tier),
+    }));
+  } catch (error) {
+    console.error("Failed to load eligible users", error);
+    if (status) {
+      status.show(error.message || "Unable to load eligible users", { type: "danger" });
+    }
+    shareState.eligibleUsers = [];
+  } finally {
+    renderShareModal();
+  }
+}
+
 function openShareModal(record) {
   const modal = ensureShareModalInstance();
   if (!modal || !record) {
@@ -903,8 +982,10 @@ function openShareModal(record) {
   shareState.shares = [];
   shareState.link = null;
   shareState.loading = true;
+  shareState.eligibleUsers = null;
   renderShareModal();
   modal.show();
+  void refreshShareEligibleUsers();
   void refreshShareModal();
 }
 
