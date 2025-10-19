@@ -118,6 +118,35 @@ body[data-theme="dark"] .hover-lift:hover {
   text-overflow: ellipsis;
 }
 
+.canvas-collapse-toggle {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  padding: 0;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.canvas-collapse-toggle:hover {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.canvas-collapse-toggle:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.canvas-collapse-toggle .iconify {
+  font-size: 1rem;
+}
+
+.workbench-canvas-card.is-collapsed > :not(.workbench-canvas-card__header),
+.template-component.is-collapsed > :not(.workbench-canvas-card__header) {
+  display: none !important;
+}
+
 .template-linear-track {
   display: flex;
   gap: 0.375rem;

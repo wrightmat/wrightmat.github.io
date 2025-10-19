@@ -3,7 +3,11 @@ import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
 import { initAuthControls } from "../lib/auth-ui.js";
 import { createCanvasPlaceholder } from "../lib/editor-canvas.js";
-import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
+import {
+  createCanvasCardElement,
+  createCollapseToggleButton,
+  createStandardCardChrome,
+} from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
@@ -59,6 +63,7 @@ import {
   let lastSavedCharacterSignature = null;
 
   const componentRollDirectives = new Map();
+  const collapsedComponents = new Map();
   const diceQuickButtons = new Map();
   const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
 
@@ -303,6 +308,7 @@ import {
     diceExpression: document.querySelector("[data-dice-expression]"),
     diceResult: document.querySelector("[data-dice-result]"),
     diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
+    diceClearButton: document.querySelector("[data-dice-clear]"),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     newCharacterForm: document.querySelector("[data-new-character-form]"),
@@ -969,6 +975,24 @@ import {
       });
     });
 
+    if (elements.diceClearButton) {
+      elements.diceClearButton.setAttribute("aria-label", "Clear dice expression");
+      elements.diceClearButton.addEventListener("click", () => {
+        if (elements.diceExpression) {
+          elements.diceExpression.value = "";
+          syncQuickDiceButtons();
+          try {
+            elements.diceExpression.focus({ preventScroll: true });
+          } catch (focusError) {
+            elements.diceExpression.focus();
+          }
+        }
+        if (elements.diceResult) {
+          elements.diceResult.textContent = "Enter a dice expression like 2d6 + 3.";
+        }
+      });
+    }
+
     elements.diceExpression.addEventListener("input", () => {
       syncQuickDiceButtons();
     });
@@ -1235,6 +1259,7 @@ import {
     resetSystemContext();
     state.template = template;
     state.components = components;
+    collapsedComponents.clear();
     if (template.id) {
       registerTemplateRecord({
         id: template.id,
@@ -1348,6 +1373,7 @@ import {
       state.characterOrigin = null;
       state.template = null;
       state.components = [];
+      collapsedComponents.clear();
       resetSystemContext();
       markCharacterClean();
       renderCanvas();
@@ -1461,22 +1487,79 @@ import {
   function renderComponentCard(component) {
     const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
     const showTypeIcon = state.mode === "edit";
+    const collapsibleValue = component?.collapsible;
+    const collapsible = typeof collapsibleValue === "string"
+      ? collapsibleValue.toLowerCase() === "true"
+      : Boolean(collapsibleValue);
+    const shouldRenderActions = showTypeIcon || collapsible;
     const wrapper = createCanvasCardElement({
       classes: ["character-component"],
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
     });
-    const { header } = createStandardCardChrome({
+    const { header, actions, ensureActions } = createStandardCardChrome({
       icon: showTypeIcon ? iconName : null,
       iconLabel: component.type,
       headerOptions: { classes: ["character-component-header"], sortableHandle: false },
-      actionsOptions: { classes: ["character-component-actions"] },
+      actionsOptions: shouldRenderActions ? { classes: ["character-component-actions"] } : false,
       iconOptions: { classes: ["character-component-icon"] },
       removeButtonOptions: false,
     });
     wrapper.appendChild(header);
-    const body = renderComponentContent(component);
+    const content = renderComponentContent(component);
+    const body = content instanceof Element ? content : (() => {
+      const container = document.createElement("div");
+      container.appendChild(content);
+      return container;
+    })();
+    const bodyId = component?.uid ? `${component.uid}-content` : "";
+    if (body instanceof HTMLElement && bodyId) {
+      body.id = bodyId;
+    }
     wrapper.appendChild(body);
+
+    if (collapsible) {
+      const key = component?.uid || null;
+      const collapsed = key ? collapsedComponents.get(key) === true : false;
+      const labelText = component.label || component.name || "Section";
+      const actionsContainer = actions || ensureActions?.();
+      const { button: collapseButton, setCollapsed } = createCollapseToggleButton({
+        label: labelText,
+        collapsed,
+        onToggle(next) {
+          if (key) {
+            if (next) {
+              collapsedComponents.set(key, true);
+            } else {
+              collapsedComponents.delete(key);
+            }
+          }
+          if (body instanceof HTMLElement) {
+            body.hidden = next;
+          }
+          wrapper.classList.toggle("is-collapsed", next);
+        },
+      });
+      if (body instanceof HTMLElement && body.id) {
+        collapseButton.setAttribute("aria-controls", body.id);
+      }
+      if (actionsContainer) {
+        actionsContainer.insertBefore(collapseButton, actionsContainer.firstChild || null);
+      }
+      if (body instanceof HTMLElement) {
+        body.hidden = collapsed;
+      }
+      wrapper.classList.toggle("is-collapsed", collapsed);
+      setCollapsed(collapsed);
+    } else {
+      if (component?.uid) {
+        collapsedComponents.delete(component.uid);
+      }
+      if (body instanceof HTMLElement) {
+        body.hidden = false;
+      }
+      wrapper.classList.remove("is-collapsed");
+    }
     applyComponentStyles(wrapper, component);
     return wrapper;
   }
@@ -1973,6 +2056,11 @@ import {
       clone.roller = "";
     }
     clone.roller = clone.roller.trim();
+    if (typeof clone.collapsible === "string") {
+      clone.collapsible = clone.collapsible.toLowerCase() === "true";
+    } else {
+      clone.collapsible = Boolean(clone.collapsible);
+    }
     if (!clone.uid) {
       componentCounter += 1;
       clone.uid = `cmp-${componentCounter}`;
@@ -2632,6 +2720,7 @@ import {
     state.draft = null;
     state.template = null;
     state.components = [];
+    collapsedComponents.clear();
     resetSystemContext();
     state.characterOrigin = null;
     state.mode = "view";
