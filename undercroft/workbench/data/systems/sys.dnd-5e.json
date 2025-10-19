@@ -37,6 +37,11 @@
       "type": "string",
       "key": "species",
       "label": "Species"
+    },
+    {
+      "type": "number",
+      "key": "numberField",
+      "label": "Number Field"
     }
   ],
   "fragments": [],
