@@ -8,6 +8,20 @@ from typing import Dict, List, Optional
 
 from .auth import AuthError, User
 from .state import ServerState
+from .storage import role_rank
+
+
+ALLOWED_PERMISSIONS = {"view", "edit"}
+SHARE_ROLE_THRESHOLDS = {
+    "character": "free",
+    "template": "gm",
+    "system": "creator",
+}
+
+
+def _normalize_permissions(value: str) -> str:
+    normalized = (value or "").strip().lower()
+    return normalized if normalized in ALLOWED_PERMISSIONS else "view"
 
 
 ALLOWED_PERMISSIONS = {"view", "edit"}
@@ -29,6 +43,27 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
         (content_type, content_id),
     ).fetchall()
     return [dict(row) for row in rows]
+
+
+def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str, str]]:
+    threshold = SHARE_ROLE_THRESHOLDS.get(content_type, "free")
+    min_rank = role_rank(threshold) if threshold else -1
+    rows = state.db.execute(
+        """
+        SELECT username, tier
+        FROM users
+        WHERE is_active = 1
+        ORDER BY username COLLATE NOCASE
+        """,
+    ).fetchall()
+    eligible: List[Dict[str, str]] = []
+    for row in rows:
+        username = row["username"]
+        tier = (row["tier"] or "free").strip().lower()
+        if min_rank >= 0 and role_rank(tier) < min_rank:
+            continue
+        eligible.append({"username": username, "tier": tier})
+    return eligible
 
 
 def share_with_user(
