@@ -361,6 +361,25 @@
         </div>
       </div>
     </div>
+    <div class="modal fade" id="group-select-modal" tabindex="-1" aria-hidden="true" data-group-select-modal>
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5 mb-0" data-group-select-title>Select a character</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex flex-column gap-3" data-group-select-body>
+              <div class="text-center text-body-secondary" data-group-select-loading>Loading available characters…</div>
+            </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between align-items-center">
+            <div class="text-body-secondary small" data-group-select-status></div>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
