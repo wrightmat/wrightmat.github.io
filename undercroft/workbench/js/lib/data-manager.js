@@ -96,6 +96,34 @@ function safeJsonParse(value, fallback) {
   }
 }
 
+function normalizeSessionUser(user) {
+  if (!user || typeof user !== "object") {
+    return null;
+  }
+  const normalized = { ...user };
+  normalized.username = typeof normalized.username === "string" ? normalized.username.trim() : "";
+  if (normalized.id === undefined) {
+    normalized.id = null;
+  }
+  if (normalized.tier !== undefined) {
+    const tier = normalizeTier(normalized.tier);
+    normalized.tier = tier || "";
+  }
+  return normalized;
+}
+
+function sanitizeSession(rawSession) {
+  if (!rawSession || typeof rawSession !== "object") {
+    return null;
+  }
+  const token = typeof rawSession.token === "string" ? rawSession.token.trim() : "";
+  if (!token) {
+    return null;
+  }
+  const user = normalizeSessionUser(rawSession.user);
+  return { token, user };
+}
+
 export class DataManager {
   constructor({
     baseUrl = "",
@@ -147,7 +175,8 @@ export class DataManager {
   _loadSession() {
     try {
       const stored = this._requireStorage().getItem(this._sessionKey);
-      return safeJsonParse(stored, null);
+      const parsed = safeJsonParse(stored, null);
+      return sanitizeSession(parsed);
     } catch (error) {
       console.warn("DataManager: Unable to load session", error);
       return null;
@@ -164,9 +193,18 @@ export class DataManager {
       this._ownedCache.clear();
       return;
     }
-    storage.setItem(this._sessionKey, JSON.stringify(session));
-    this._session = session;
-    this._scope = computeScopeKey(session);
+    const sanitized = sanitizeSession(session);
+    if (!sanitized) {
+      storage.removeItem(this._sessionKey);
+      this._session = null;
+      this._scope = computeScopeKey(null);
+      this._listCache.clear();
+      this._ownedCache.clear();
+      return;
+    }
+    storage.setItem(this._sessionKey, JSON.stringify(sanitized));
+    this._session = sanitized;
+    this._scope = computeScopeKey(sanitized);
     this._listCache.clear();
     this._ownedCache.clear();
   }
@@ -190,7 +228,7 @@ export class DataManager {
     const nextUser = user ? { ...(this._session.user || {}), ...user } : this._session.user;
     const nextSession = { token: this._session.token, user: nextUser };
     this._persistSession(nextSession);
-    return nextUser;
+    return this._session ? this._session.user : null;
   }
 
   getUserTier(defaultTier = "free") {
