@@ -390,6 +390,7 @@ import {
         options: ["Option A", "Option B"],
         rows: 3,
         sourceBinding: "",
+        roller: "",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -2173,6 +2174,10 @@ import {
       component.statesBinding = component.statesBinding != null ? String(component.statesBinding) : "";
     }
     component.statesBinding = component.statesBinding.trim();
+    if (typeof component.roller !== "string") {
+      component.roller = "";
+    }
+    component.roller = component.roller.trim();
     if (component.type === "linear-track" || component.type === "circular-track") {
       if (!component.segmentBinding) {
         const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
@@ -3400,14 +3405,50 @@ import {
     restoreInspectorFocus(focusSnapshot);
   }
 
+  function componentSupportsRoller(component) {
+    if (!component || typeof component !== "object") {
+      return false;
+    }
+    return component.type === "input" && (component.variant || "text") === "number";
+  }
+
+  function createRollerInputControl(component) {
+    return createBindingFormulaInput(component, {
+      labelText: "Roller",
+      placeholder: "1d20 + @abilities.strength",
+      bindingKey: "roller",
+      formulaKey: null,
+      supportsBinding: true,
+      supportsFormula: false,
+      allowedFieldCategories: ["number"],
+      helperText: "Roll20 dice expression. Supports @field references.",
+    });
+  }
+
+  function appendRollerControl(list, component) {
+    if (!Array.isArray(list)) {
+      return;
+    }
+    if (!componentSupportsRoller(component)) {
+      return;
+    }
+    const control = createRollerInputControl(component);
+    if (control) {
+      list.push(control);
+    }
+  }
+
   function createDataControls(component, definition = {}) {
     const supportsBinding = definition.supportsBinding !== false;
     const supportsFormula = definition.supportsFormula !== false;
-    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
+    if (
+      !component ||
+      (!supportsBinding && !supportsFormula && component.type !== "toggle" && !componentSupportsRoller(component))
+    ) {
       return [];
     }
     if (component.type === "input" && (component.variant || "text") === "select") {
-      return [
+      const controls = [
         createBindingFormulaInput(component, {
           labelText: "Source",
           placeholder: "@data.options",
@@ -3427,6 +3468,8 @@ import {
           allowedFieldCategories: ["string", "number"],
         }),
       ];
+      appendRollerControl(controls, component);
+      return controls;
     }
     if (component.type === "select-group") {
       const controls = [
@@ -3451,10 +3494,11 @@ import {
           allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
         })
       );
+      appendRollerControl(controls, component);
       return controls;
     }
     if (component.type === "toggle") {
-      return [
+      const controls = [
         createBindingFormulaInput(component, {
           labelText: "Source",
           placeholder: "@metadata.states",
@@ -3474,16 +3518,20 @@ import {
           allowedFieldCategories: ["string", "number"],
         }),
       ];
+      appendRollerControl(controls, component);
+      return controls;
     }
-    if (!supportsBinding && !supportsFormula) {
-      return [];
+    const controls = [];
+    if (supportsBinding || supportsFormula) {
+      controls.push(
+        createBindingFormulaInput(component, {
+          supportsBinding,
+          supportsFormula,
+        })
+      );
     }
-    return [
-      createBindingFormulaInput(component, {
-        supportsBinding,
-        supportsFormula,
-      }),
-    ];
+    appendRollerControl(controls, component);
+    return controls;
   }
 
   function captureInspectorFocus() {
@@ -4658,6 +4706,10 @@ import {
       }
       merged.sourceBinding = merged.sourceBinding.trim();
     }
+    if (typeof merged.roller !== "string") {
+      merged.roller = "";
+    }
+    merged.roller = merged.roller.trim();
     if (merged.type === "container") {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
       Object.keys(zones).forEach((key) => {
