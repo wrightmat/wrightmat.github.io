@@ -137,6 +137,7 @@ export class DataManager {
     this.storagePrefix = storagePrefix;
     this._listCache = new Map();
     this._ownedCache = new Map();
+    this._groupCache = null;
     this._sessionKey = `${this.storagePrefix}:session`;
     this._bucketPrefix = `${this.storagePrefix}:bucket:`;
     this._legacyBucketPrefix = `${this.storagePrefix}:bucket`;
@@ -191,6 +192,7 @@ export class DataManager {
       this._scope = computeScopeKey(null);
       this._listCache.clear();
       this._ownedCache.clear();
+      this._groupCache = null;
       return;
     }
     const sanitized = sanitizeSession(session);
@@ -200,6 +202,7 @@ export class DataManager {
       this._scope = computeScopeKey(null);
       this._listCache.clear();
       this._ownedCache.clear();
+      this._groupCache = null;
       return;
     }
     storage.setItem(this._sessionKey, JSON.stringify(sanitized));
@@ -207,6 +210,7 @@ export class DataManager {
     this._scope = computeScopeKey(sanitized);
     this._listCache.clear();
     this._ownedCache.clear();
+    this._groupCache = null;
   }
 
   get session() {
@@ -840,6 +844,121 @@ export class DataManager {
     });
     this._ownedCache.set(key, payload);
     return payload;
+  }
+
+  async listGroups({ refresh = false } = {}) {
+    if (!this.isAuthenticated()) {
+      this._groupCache = null;
+      return { groups: [] };
+    }
+    if (!refresh && this._groupCache) {
+      return this._groupCache;
+    }
+    const payload = await this._request("/groups", { method: "GET", auth: true });
+    const normalized = payload && typeof payload === "object" ? payload : { groups: [] };
+    this._groupCache = normalized;
+    return normalized;
+  }
+
+  async createGroup({ name, type = "campaign" } = {}) {
+    const payload = await this._request("/groups", {
+      method: "POST",
+      body: { name, type },
+      auth: true,
+    });
+    this._groupCache = null;
+    return payload;
+  }
+
+  async updateGroup({ id, name } = {}) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    const payload = await this._request(`/groups/${encodeURIComponent(id)}`, {
+      method: "POST",
+      body: name !== undefined ? { name } : {},
+      auth: true,
+    });
+    this._groupCache = null;
+    return payload;
+  }
+
+  async deleteGroup(id) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    const result = await this._request(`/groups/${encodeURIComponent(id)}/delete`, {
+      method: "POST",
+      auth: true,
+    });
+    this._groupCache = null;
+    return result;
+  }
+
+  async updateGroupMembers({ id, characterIds = [] } = {}) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    const members = Array.isArray(characterIds) ? characterIds : [];
+    const payload = await this._request(`/groups/${encodeURIComponent(id)}/members`, {
+      method: "POST",
+      body: { character_ids: members },
+      auth: true,
+    });
+    this._groupCache = null;
+    return payload;
+  }
+
+  async getGroupShareLink(id) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    return this._request(`/groups/${encodeURIComponent(id)}/share-link`, { method: "GET", auth: true });
+  }
+
+  async createGroupShareLink(id) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    const payload = await this._request(`/groups/${encodeURIComponent(id)}/share-link`, {
+      method: "POST",
+      auth: true,
+    });
+    this._groupCache = null;
+    return payload;
+  }
+
+  async revokeGroupShareLink(id) {
+    if (!id) {
+      throw new Error("Group id is required");
+    }
+    const payload = await this._request(`/groups/${encodeURIComponent(id)}/share-link/revoke`, {
+      method: "POST",
+      auth: true,
+    });
+    this._groupCache = null;
+    return payload;
+  }
+
+  async fetchGroupShare(token) {
+    if (!token) {
+      throw new Error("Share token is required");
+    }
+    return this._request(`/groups/share/${encodeURIComponent(token)}`, { method: "GET", auth: false });
+  }
+
+  async claimGroupCharacter({ token, characterId } = {}) {
+    if (!token) {
+      throw new Error("Share token is required");
+    }
+    if (!characterId) {
+      throw new Error("characterId is required");
+    }
+    return this._request(`/groups/share/${encodeURIComponent(token)}/claim`, {
+      method: "POST",
+      body: { character_id: characterId },
+      auth: true,
+    });
   }
 
   async listBuiltins() {

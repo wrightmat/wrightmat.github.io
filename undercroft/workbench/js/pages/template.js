@@ -2301,7 +2301,6 @@ import {
       const key = component.uid || null;
       const collapsed = key ? componentCollapsedState.get(key) === true : false;
       const labelText = getComponentLabel(component, typeLabel) || typeLabel;
-      const actionsContainer = actions || ensureActions();
       const { button: collapseButton, setCollapsed } = createCollapseToggleButton({
         label: labelText,
         collapsed,
@@ -2322,7 +2321,7 @@ import {
       if (bodyElement instanceof HTMLElement && bodyElement.id) {
         collapseButton.setAttribute("aria-controls", bodyElement.id);
       }
-      actionsContainer.insertBefore(collapseButton, actionsContainer.firstChild || null);
+      header.insertBefore(collapseButton, header.firstChild || null);
       if (bodyElement instanceof HTMLElement) {
         bodyElement.hidden = collapsed;
       }
