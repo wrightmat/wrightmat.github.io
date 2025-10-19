@@ -1,6 +1,6 @@
-const SAFE_PATTERN = /^[0-9+\-*/().,@\s<>=!?&|%:'"_A-Za-z]+$/;
+const SAFE_PATTERN = /^[0-9+\-*/().,@\s<>=!?&|%:'"_\[\]A-Za-z]+$/;
 
-const SAFE_FUNCTIONS = {
+const BASE_FUNCTIONS = {
   abs: Math.abs,
   ceil: Math.ceil,
   clamp(value, min, max) {
@@ -30,8 +30,6 @@ const SAFE_FUNCTIONS = {
   not: (value) => !value,
 };
 
-const FUNCTION_NAMES = Object.keys(SAFE_FUNCTIONS);
-
 function resolvePath(context, path) {
   return path.split(".").reduce((acc, key) => {
     if (acc && typeof acc === "object" && key in acc) {
@@ -54,7 +52,7 @@ function coerceValue(value) {
   return value;
 }
 
-export function evaluateFormula(formula, context = {}) {
+export function evaluateFormula(formula, context = {}, options = {}) {
   if (typeof formula !== "string" || !formula.trim()) {
     return null;
   }
@@ -67,14 +65,27 @@ export function evaluateFormula(formula, context = {}) {
     return `__get("${path}")`;
   });
 
+  const { functions = {}, onRoll } = typeof options === "object" && options !== null ? options : {};
+  const runtimeFunctions = { ...BASE_FUNCTIONS, ...functions };
+  runtimeFunctions.roller = (notation, fallback = 0) => {
+    if (typeof onRoll === "function" && typeof notation === "string") {
+      const trimmedNotation = notation.trim();
+      if (trimmedNotation) {
+        onRoll(trimmedNotation);
+      }
+    }
+    return fallback ?? 0;
+  };
+
+  const functionNames = Object.keys(runtimeFunctions);
   const evaluator = new Function(
     "__get",
     "__fn",
-    `const { ${FUNCTION_NAMES.join(", ")} } = __fn; return (${expression});`
+    `const { ${functionNames.join(", ")} } = __fn; return (${expression});`
   );
 
   const getter = (path) => coerceValue(resolvePath(context, path));
-  return evaluator(getter, SAFE_FUNCTIONS);
+  return evaluator(getter, runtimeFunctions);
 }
 
 export function extractDependencies(formula) {
@@ -87,5 +98,5 @@ export function extractDependencies(formula) {
 }
 
 export function listFormulaFunctions() {
-  return [...FUNCTION_NAMES];
+  return [...new Set([...Object.keys(BASE_FUNCTIONS), "roller"])];
 }
