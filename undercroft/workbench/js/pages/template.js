@@ -1478,9 +1478,20 @@ import {
         if (!id) return;
         registerSystemRecord({ id, title: payload?.title || id, source: "remote", payload });
       });
-      const items = remote?.items || [];
+      const items = dataManager.collectListEntries(remote);
       items.forEach((item) => {
-        registerSystemRecord({ id: item.id, title: item.title || item.id, source: "remote" });
+        if (!item || !item.id) {
+          return;
+        }
+        registerSystemRecord({
+          id: item.id,
+          title: item.title || item.id,
+          source: "remote",
+          shareToken: item.shareToken || item.share_token || "",
+          ownership: item.permissions ? "shared" : item.is_public ? "public" : "remote",
+          ownerId: item.owner_id ?? item.ownerId ?? null,
+          ownerUsername: item.owner_username || item.ownerUsername || "",
+        });
       });
     } catch (error) {
       console.warn("Template editor: unable to list systems", error);
@@ -1524,15 +1535,21 @@ import {
           { syncOption: true }
         );
       });
-      const items = remote?.items || [];
+      const items = dataManager.collectListEntries(remote);
       items.forEach((item) => {
+        if (!item || !item.id) {
+          return;
+        }
         registerTemplateRecord(
           {
             id: item.id,
             title: item.title || item.id,
             schema: item.schema || "",
             source: "remote",
-            shareToken: item.shareToken || "",
+            shareToken: item.shareToken || item.share_token || "",
+            ownership: item.permissions ? "shared" : item.is_public ? "public" : "remote",
+            ownerId: item.owner_id ?? item.ownerId ?? null,
+            ownerUsername: item.owner_username || item.ownerUsername || "",
           },
           { syncOption: true }
         );
