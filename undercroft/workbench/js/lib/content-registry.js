@@ -1,32 +1,16 @@
 const BUILTIN_CACHE_KEY = "workbench:missing-builtins";
 const BUILTIN_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-const BUILTIN_CATALOG = {
-  systems: [
-    {
-      id: "sys.dnd5e",
-      title: "D&D 5e (Basic)",
-      path: "data/systems/sys.dnd5e.json",
-    },
-  ],
-  templates: [
-    {
-      id: "tpl.5e.flex-basic",
-      title: "5e — Flex Basic",
-      path: "data/templates/tpl.5e.flex-basic.json",
-    },
-  ],
-  characters: [
-    {
-      id: "cha_01k26cm0jxDR5V4R1Q4N56B5RH",
-      title: "Elandra (Demo)",
-      path: "data/characters/cha_01k26cm0jxDR5V4R1Q4N56B5RH.json",
-      template: "tpl.5e.flex-basic",
-    },
-  ],
-};
+const SUPPORTED_BUCKETS = ["systems", "templates", "characters"];
 
-const SUPPORTED_BUCKETS = Object.keys(BUILTIN_CATALOG);
+function createEmptyCatalog() {
+  return SUPPORTED_BUCKETS.reduce((catalog, bucket) => {
+    catalog[bucket] = [];
+    return catalog;
+  }, {});
+}
+
+let builtinCatalog = createEmptyCatalog();
 
 function createEmptyState() {
   return SUPPORTED_BUCKETS.reduce((state, bucket) => {
@@ -166,32 +150,44 @@ export function builtinIsTemporarilyMissing(bucket, id) {
   return isBuiltinMarkedMissing(bucket, id);
 }
 
-export function applyBuiltinCatalog(catalog = {}) {
-  SUPPORTED_BUCKETS.forEach((bucket) => {
-    const entries = Array.isArray(catalog[bucket]) ? catalog[bucket] : [];
-    entries.forEach((entry) => {
-      if (!entry || !entry.id) {
-        return;
+function normalizeCatalogEntries(entries) {
+  if (!Array.isArray(entries)) {
+    return [];
+  }
+  return entries
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return null;
       }
-      if (entry.available) {
-        markBuiltinAvailable(bucket, entry.id);
-      } else {
+      const id = typeof entry.id === "string" ? entry.id.trim() : "";
+      if (!id) {
+        return null;
+      }
+      return { ...entry, id };
+    })
+    .filter(Boolean);
+}
+
+export function applyBuiltinCatalog(catalog = {}) {
+  const nextCatalog = createEmptyCatalog();
+  SUPPORTED_BUCKETS.forEach((bucket) => {
+    const entries = normalizeCatalogEntries(catalog[bucket]);
+    nextCatalog[bucket] = entries;
+    entries.forEach((entry) => {
+      if (entry.available === false) {
         markBuiltinMissing(bucket, entry.id);
+      } else {
+        markBuiltinAvailable(bucket, entry.id);
       }
     });
   });
+  builtinCatalog = nextCatalog;
 }
 
 export function listBuiltinContent(bucket) {
-  const entries = Array.isArray(BUILTIN_CATALOG[bucket]) ? BUILTIN_CATALOG[bucket] : [];
+  const entries = Array.isArray(builtinCatalog[bucket]) ? builtinCatalog[bucket] : [];
   return filterAvailableBuiltins(bucket, entries);
 }
-
-export const BUILTIN_SYSTEMS = BUILTIN_CATALOG.systems;
-
-export const BUILTIN_TEMPLATES = BUILTIN_CATALOG.templates;
-
-export const BUILTIN_CHARACTERS = BUILTIN_CATALOG.characters;
 
 export function listBuiltinSystems() {
   return listBuiltinContent("systems");
