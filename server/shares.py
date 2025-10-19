@@ -9,6 +9,13 @@ from .state import ServerState
 from .roles import role_rank
 
 
+ALL_USERS_DISPLAY = "All Users"
+ALL_USERS_SPECIAL = "all-users"
+ALL_USERS_ALIASES = {alias.lower(): ALL_USERS_SPECIAL for alias in ["all users", "all-users", "allusers"]}
+ALL_USERS_CONTENT_TYPES = {"template", "system"}
+CONTENT_TABLES = {"character": "characters", "template": "templates", "system": "systems"}
+
+
 ALLOWED_PERMISSIONS = {"view", "edit"}
 SHARE_ROLE_THRESHOLDS = {
     "character": "free",
@@ -22,6 +29,46 @@ def _normalize_permissions(value: str) -> str:
     return normalized if normalized in ALLOWED_PERMISSIONS else "view"
 
 
+def _supports_all_users(content_type: str) -> bool:
+    return content_type in ALL_USERS_CONTENT_TYPES
+
+
+def _is_all_users_username(username: str) -> bool:
+    if not username:
+        return False
+    return username.strip().lower() in ALL_USERS_ALIASES
+
+
+def _content_table(content_type: str) -> Optional[str]:
+    return CONTENT_TABLES.get(content_type)
+
+
+def _record_is_public(state: ServerState, content_type: str, content_id: str) -> bool:
+    table = _content_table(content_type)
+    if not table or not content_id:
+        return False
+    row = state.db.execute(
+        f"SELECT is_public FROM {table} WHERE id = ?",
+        (content_id,),
+    ).fetchone()
+    if not row:
+        return False
+    return bool(row["is_public"])
+
+
+def _set_record_public(state: ServerState, content_type: str, content_id: str, is_public: bool) -> None:
+    table = _content_table(content_type)
+    if not table or not content_id:
+        raise AuthError("Invalid content type")
+    cursor = state.db.execute(
+        f"UPDATE {table} SET is_public = ? WHERE id = ?",
+        (1 if is_public else 0, content_id),
+    )
+    if cursor.rowcount == 0:
+        raise AuthError("Content not found")
+    state.db.commit()
+
+
 def list_shares(state: ServerState, content_type: str, content_id: str, user: User) -> List[Dict[str, str]]:
     rows = state.db.execute(
         """
@@ -32,7 +79,14 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
         """,
         (content_type, content_id),
     ).fetchall()
-    return [dict(row) for row in rows]
+    shares = [dict(row) for row in rows]
+    if _supports_all_users(content_type) and _record_is_public(state, content_type, content_id):
+        shares.append({
+            "username": ALL_USERS_DISPLAY,
+            "permissions": "view",
+            "special": ALL_USERS_SPECIAL,
+        })
+    return shares
 
 
 def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str, str]]:
@@ -53,12 +107,25 @@ def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str
         if min_rank >= 0 and role_rank(tier) < min_rank:
             continue
         eligible.append({"username": username, "tier": tier})
+    if _supports_all_users(content_type):
+        eligible.append({"username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL})
     return eligible
 
 
 def share_with_user(
     state: ServerState, content_type: str, content_id: str, username: str, permissions: str
 ) -> Dict[str, str]:
+    if _is_all_users_username(username):
+        if not _supports_all_users(content_type):
+            raise AuthError("This content cannot be shared with all users")
+        _set_record_public(state, content_type, content_id, True)
+        return {
+            "content_type": content_type,
+            "content_id": content_id,
+            "username": ALL_USERS_DISPLAY,
+            "permissions": "view",
+            "special": ALL_USERS_SPECIAL,
+        }
     user_row = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
     if not user_row:
         raise AuthError("User not found")
@@ -82,6 +149,11 @@ def share_with_user(
 
 
 def revoke_share(state: ServerState, content_type: str, content_id: str, username: str) -> None:
+    if _is_all_users_username(username):
+        if not _supports_all_users(content_type):
+            raise AuthError("This content cannot be shared with all users")
+        _set_record_public(state, content_type, content_id, False)
+        return
     user_row = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
     if not user_row:
         raise AuthError("User not found")

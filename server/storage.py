@@ -210,37 +210,73 @@ def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[s
     if mount.type != "json":
         return {"items": []}
     table = mount.table
-    if bucket in ("characters", "templates", "systems"):
-        if not user:
-            return {"owned": [], "shared": []}
-        owned = [
+    supports_public = bucket in ("templates", "systems")
+    public: List[Dict[str, Any]] = []
+    if supports_public:
+        public = [
             dict(row)
             for row in state.db.execute(
                 f"""
                 SELECT m.*, u.username AS owner_username, u.tier AS owner_tier
                 FROM {table} m
                 LEFT JOIN users u ON u.id = m.owner_id
-                WHERE m.owner_id = ?
+                WHERE m.is_public = 1
                 ORDER BY m.modified_at DESC
-                """,
-                (user.id,),
+                """
             )
         ]
-        shared = [
-            dict(row)
-            for row in state.db.execute(
-                f"""
+    if bucket in ("characters", "templates", "systems"):
+        if not user:
+            return {"owned": [], "shared": [], "public": public}
+        if bucket == "characters":
+            owned_query = f"""
+                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier, t.title AS template_title
+                FROM {table} m
+                LEFT JOIN users u ON u.id = m.owner_id
+                LEFT JOIN templates t ON t.id = m.template
+                WHERE m.owner_id = ?
+                ORDER BY m.modified_at DESC
+            """
+            shared_query = f"""
+                SELECT m.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier, t.title AS template_title
+                FROM {table} m
+                JOIN shares s ON s.content_id = m.id AND s.content_type = ?
+                LEFT JOIN users u ON u.id = m.owner_id
+                LEFT JOIN templates t ON t.id = m.template
+                WHERE s.shared_with_user_id = ?
+                ORDER BY m.modified_at DESC
+            """
+        else:
+            owned_query = f"""
+                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier
+                FROM {table} m
+                LEFT JOIN users u ON u.id = m.owner_id
+                WHERE m.owner_id = ?
+                ORDER BY m.modified_at DESC
+            """
+            shared_query = f"""
                 SELECT m.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
                 FROM {table} m
                 JOIN shares s ON s.content_id = m.id AND s.content_type = ?
                 LEFT JOIN users u ON u.id = m.owner_id
                 WHERE s.shared_with_user_id = ?
                 ORDER BY m.modified_at DESC
-                """,
+            """
+        owned = [
+            dict(row)
+            for row in state.db.execute(
+                owned_query,
+                (user.id,),
+            )
+        ]
+        shared = [
+            dict(row)
+            for row in state.db.execute(
+                shared_query,
                 (bucket[:-1], user.id),
             )
         ]
-        return {"owned": owned, "shared": shared}
+        return {"owned": owned, "shared": shared, "public": public}
     rows = [dict(r) for r in state.db.execute(f"SELECT * FROM {table} ORDER BY modified_at DESC")]
     return {"items": rows}
 
