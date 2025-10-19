@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from __future__ import annotations
-
 import secrets
 from datetime import datetime
 from typing import Dict, List, Optional
 
 from .auth import AuthError, User
 from .state import ServerState
-from .storage import role_rank
+from .roles import role_rank
 
 
 ALLOWED_PERMISSIONS = {"view", "edit"}
