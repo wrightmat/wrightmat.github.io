@@ -279,7 +279,15 @@
                     </select>
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary" type="button" data-action="new-system">New System</button>
+                    <button class="btn btn-success" type="button" data-action="new-system">New System</button>
+                    <button
+                      class="btn btn-primary d-none"
+                      type="button"
+                      data-action="duplicate-system"
+                      data-duplicate-system
+                    >
+                      Duplicate System
+                    </button>
                     <button
                       class="btn btn-outline-danger d-none"
                       type="button"
@@ -288,6 +296,9 @@
                     >
                       Delete System
                     </button>
+                  </div>
+                  <div class="col-12 col-md text-md-end">
+                    <div class="small text-body-secondary" data-system-meta>No system selected</div>
                   </div>
                 </div>
               </div>
@@ -341,7 +352,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title fs-5">Create New System</h2>
+            <h2 class="modal-title fs-5" data-new-system-modal-title>Create New System</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form class="needs-validation" novalidate data-new-system-form>

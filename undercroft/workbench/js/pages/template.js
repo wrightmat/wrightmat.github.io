@@ -226,12 +226,15 @@ import {
     importButton: document.querySelector('[data-action="import-template"]'),
     exportButton: document.querySelector('[data-action="export-template"]'),
     newTemplateButton: document.querySelector('[data-action="new-template"]'),
+    duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
     deleteTemplateButton: document.querySelector('[data-delete-template]'),
     newTemplateForm: document.querySelector("[data-new-template-form]"),
     newTemplateId: document.querySelector("[data-new-template-id]"),
     newTemplateTitle: document.querySelector("[data-new-template-title]"),
     newTemplateVersion: document.querySelector("[data-new-template-version]"),
     newTemplateSystem: document.querySelector("[data-new-template-system]"),
+    newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
+    templateMeta: document.querySelector("[data-template-meta]"),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     jsonPreview: document.querySelector("[data-json-preview]"),
@@ -288,6 +291,8 @@ import {
       newTemplateModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
     }
   }
+
+  let templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
 
   refreshTooltips(document);
 
@@ -838,7 +843,7 @@ import {
         status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
         return;
       }
-      prepareNewTemplateForm();
+      prepareNewTemplateForm({ mode: "new" });
       if (newTemplateModalInstance) {
         newTemplateModalInstance.show();
         return;
@@ -861,6 +866,48 @@ import {
     });
   }
 
+  if (elements.duplicateTemplateButton) {
+    elements.duplicateTemplateButton.addEventListener("click", () => {
+      if (!state.template) {
+        return;
+      }
+      const baseTemplate = state.template;
+      const sourceTitle = baseTemplate.title || baseTemplate.id || "template";
+      if (newTemplateModalInstance && elements.newTemplateForm) {
+        prepareNewTemplateForm({ mode: "duplicate", seedTemplate: baseTemplate });
+        newTemplateModalInstance.show();
+        return;
+      }
+      const suggestedId = generateDuplicateTemplateId(baseTemplate.id || baseTemplate.title || "template");
+      const idInput = window.prompt("Enter a template ID", suggestedId || baseTemplate.id || "");
+      if (!idInput) {
+        return;
+      }
+      const suggestedTitle = generateDuplicateTemplateTitle(baseTemplate.title || baseTemplate.id || "Template");
+      const titleInput = window.prompt("Enter a template title", suggestedTitle) || "";
+      if (!titleInput) {
+        return;
+      }
+      const versionInput = window.prompt("Enter a version", baseTemplate.version || "0.1") || baseTemplate.version || "0.1";
+      const schema = baseTemplate.schema || "";
+      if (!schema) {
+        status.show("Templates must reference a system.", { type: "warning", timeout: 2400 });
+        return;
+      }
+      const components = cloneComponentCollection(state.components);
+      startNewTemplate({
+        id: idInput.trim(),
+        title: titleInput.trim(),
+        version: (versionInput || "0.1").trim() || "0.1",
+        schema: schema.trim(),
+        origin: "draft",
+        components,
+        markClean: false,
+        statusMessage: `Duplicated ${sourceTitle}`,
+      });
+    });
+  }
+
   if (elements.newTemplateForm) {
     elements.newTemplateForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -877,7 +924,24 @@ import {
         form.classList.add("was-validated");
         return;
       }
-      startNewTemplate({ id, title, version, schema, origin: "draft" });
+      const mode = form.dataset.mode || templateCreationContext.mode || "new";
+      const isDuplicate = mode === "duplicate" && templateCreationContext.mode === "duplicate";
+      const components = isDuplicate && Array.isArray(templateCreationContext.duplicateComponents)
+        ? cloneComponentCollection(templateCreationContext.duplicateComponents)
+        : [];
+      const sourceTitle = templateCreationContext.sourceTitle || state.template?.title || state.template?.id || title;
+      startNewTemplate({
+        id,
+        title,
+        version,
+        schema,
+        origin: "draft",
+        components,
+        markClean: !isDuplicate,
+        statusMessage: isDuplicate ? `Duplicated ${sourceTitle}` : `Started ${title || id}`,
+      });
+      templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
+      form.dataset.mode = "new";
       if (newTemplateModalInstance) {
         newTemplateModalInstance.hide();
       }
@@ -987,9 +1051,13 @@ import {
     }
     const current = templateCatalog.get(record.id) || {};
     const next = { ...current, ...record };
+    next.id = record.id;
+    if (record.schema === undefined && current.schema) {
+      next.schema = current.schema;
+    }
     templateCatalog.set(record.id, next);
     if (syncOption) {
-      ensureTemplateOption(record.id, next.title || record.id);
+      ensureTemplateOption(record.id);
     }
   }
 
@@ -1100,6 +1168,7 @@ import {
       systemDefinitionCache.set(record.id, record.payload);
     }
     systemCatalog.set(record.id, next);
+    refreshTemplateOptionsForSystem(record.id);
   }
 
   function removeSystemRecord(id) {
@@ -1109,6 +1178,7 @@ import {
     systemCatalog.delete(id);
     systemDefinitionCache.delete(id);
     refreshNewTemplateSystemOptions(elements.newTemplateSystem?.value || "");
+    refreshTemplateOptionsForSystem(id);
   }
 
   function refreshNewTemplateSystemOptions(selectedValue = "") {
@@ -1209,32 +1279,57 @@ import {
     renderCanvas();
   }
 
-  function prepareNewTemplateForm() {
+  function prepareNewTemplateForm({ mode = "new", seedTemplate = null } = {}) {
     if (!elements.newTemplateForm) {
       return;
     }
+    const isDuplicate = mode === "duplicate" && seedTemplate;
+    templateCreationContext = {
+      mode: isDuplicate ? "duplicate" : "new",
+      duplicateComponents: isDuplicate ? cloneComponentCollection(state.components) : null,
+      sourceTitle: isDuplicate ? seedTemplate?.title || seedTemplate?.id || "" : "",
+    };
     elements.newTemplateForm.reset();
     elements.newTemplateForm.classList.remove("was-validated");
-    if (elements.newTemplateVersion) {
-      const defaultVersion = elements.newTemplateVersion.getAttribute("value") || "0.1";
-      elements.newTemplateVersion.value = defaultVersion;
+    elements.newTemplateForm.dataset.mode = templateCreationContext.mode;
+    if (elements.newTemplateModalTitle) {
+      elements.newTemplateModalTitle.textContent = isDuplicate ? "Duplicate Template" : "Create New Template";
     }
-    refreshNewTemplateSystemOptions();
+    const defaultVersion = elements.newTemplateVersion?.getAttribute("value") || "0.1";
+    if (elements.newTemplateVersion) {
+      elements.newTemplateVersion.value = isDuplicate
+        ? seedTemplate?.version || defaultVersion
+        : defaultVersion;
+    }
+    const selectedSchema = isDuplicate ? seedTemplate?.schema || "" : "";
+    refreshNewTemplateSystemOptions(selectedSchema);
     if (elements.newTemplateSystem) {
-      elements.newTemplateSystem.value = "";
+      elements.newTemplateSystem.value = selectedSchema;
+    }
+    if (elements.newTemplateTitle) {
+      elements.newTemplateTitle.value = isDuplicate
+        ? generateDuplicateTemplateTitle(seedTemplate?.title || seedTemplate?.id || "Template")
+        : "";
+      if (isDuplicate) {
+        elements.newTemplateTitle.select();
+      }
     }
     if (elements.newTemplateId) {
       elements.newTemplateId.setCustomValidity("");
-      const seed =
-        elements.newTemplateSystem?.value ||
-        state.template?.schema ||
-        state.template?.title ||
-        state.template?.id ||
-        "template";
       let generatedId = "";
-      do {
-        generatedId = generateTemplateId(seed || "template");
-      } while (generatedId && templateCatalog.has(generatedId));
+      if (isDuplicate) {
+        generatedId = generateDuplicateTemplateId(seedTemplate?.id || seedTemplate?.title || "template");
+      } else {
+        const seed =
+          elements.newTemplateSystem?.value ||
+          state.template?.schema ||
+          state.template?.title ||
+          state.template?.id ||
+          "template";
+        do {
+          generatedId = generateTemplateId(seed || "template");
+        } while (generatedId && templateCatalog.has(generatedId));
+      }
       elements.newTemplateId.value = generatedId;
       elements.newTemplateId.focus();
       elements.newTemplateId.select();
@@ -1275,6 +1370,15 @@ import {
         elements.clearButton.removeAttribute("title");
       }
     }
+
+    if (elements.duplicateTemplateButton) {
+      const canDuplicate = hasTemplate;
+      elements.duplicateTemplateButton.classList.toggle("d-none", !canDuplicate);
+      elements.duplicateTemplateButton.disabled = !canDuplicate;
+      elements.duplicateTemplateButton.setAttribute("aria-disabled", canDuplicate ? "false" : "true");
+    }
+
+    updateTemplateMeta();
 
     if (!elements.deleteTemplateButton) {
       return;
@@ -1318,10 +1422,13 @@ import {
 
   function registerBuiltinContent() {
     listBuiltinTemplates().forEach((template) => {
-      registerTemplateRecord(
-        { id: template.id, title: template.title, path: template.path, source: "builtin" },
-        { syncOption: false }
-      );
+      registerTemplateRecord({
+        id: template.id,
+        title: template.title,
+        path: template.path,
+        source: "builtin",
+        schema: template.schema || template.system || "",
+      });
       verifyBuiltinAsset("templates", template, {
         skipProbe: Boolean(dataManager.baseUrl),
         onMissing: () => removeTemplateRecord(template.id),
@@ -2828,7 +2935,16 @@ import {
     }
   }
 
-  function startNewTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
+  function startNewTemplate({
+    id = "",
+    title = "",
+    version = "0.1",
+    schema = "",
+    origin = "draft",
+    components = [],
+    markClean = true,
+    statusMessage = "",
+  } = {}) {
     const trimmedId = (id || "").trim();
     const trimmedTitle = (title || "").trim();
     const trimmedSchema = (schema || "").trim();
@@ -2836,14 +2952,21 @@ import {
       status.show("Provide an ID, title, and system for the template.", { type: "warning", timeout: 2200 });
       return;
     }
+    const componentClones = Array.isArray(components) ? cloneComponentCollection(components) : [];
     registerTemplateRecord(
       { id: trimmedId, title: trimmedTitle, schema: trimmedSchema, source: origin },
       { syncOption: true }
     );
     applyTemplateData(
-      { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: [] },
-      { origin, emitStatus: true, statusMessage: `Started ${trimmedTitle || trimmedId}`, markClean: true }
+      { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: componentClones },
+      {
+        origin,
+        emitStatus: true,
+        statusMessage: statusMessage || `Started ${trimmedTitle || trimmedId}`,
+        markClean,
+      }
     );
+    templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
   }
 
   function renderInspector() {
@@ -4230,10 +4353,12 @@ import {
     };
   }
 
-  function ensureTemplateOption(id, label) {
+  function ensureTemplateOption(id) {
     if (!elements.templateSelect || !id) {
       return;
     }
+    const metadata = templateCatalog.get(id) || { id, title: id };
+    const label = formatTemplateOptionLabel(metadata) || metadata.title || id;
     const escaped = escapeCss(id);
     let option = escaped ? elements.templateSelect.querySelector(`option[value="${escaped}"]`) : null;
     if (!option) {
@@ -4241,7 +4366,46 @@ import {
       option.value = id;
       elements.templateSelect.appendChild(option);
     }
-    option.textContent = label || id;
+    option.textContent = label;
+  }
+
+  function formatTemplateOptionLabel(metadata = {}) {
+    const templateTitle = metadata.title || metadata.id || "";
+    const schemaId = metadata.schema || "";
+    const systemLabel = resolveSystemLabel(schemaId);
+    if (templateTitle && systemLabel) {
+      return `${templateTitle} (${systemLabel})`;
+    }
+    return templateTitle || schemaId || metadata.id || "";
+  }
+
+  function resolveSystemLabel(schemaId) {
+    if (!schemaId) {
+      return "";
+    }
+    const metadata = systemCatalog.get(schemaId) || {};
+    return metadata.title || schemaId;
+  }
+
+  function refreshTemplateOptionsForSystem(schemaId) {
+    templateCatalog.forEach((metadata, templateId) => {
+      if (!schemaId || (metadata?.schema || "") === schemaId) {
+        ensureTemplateOption(templateId);
+      }
+    });
+  }
+
+  function updateTemplateMeta() {
+    if (!elements.templateMeta) {
+      return;
+    }
+    if (!hasActiveTemplate()) {
+      elements.templateMeta.textContent = "No template selected";
+      return;
+    }
+    const templateId = state.template?.id || "—";
+    const version = state.template?.version || "—";
+    elements.templateMeta.textContent = `ID: ${templateId || "—"} • Version: ${version || "—"}`;
   }
 
   function ensureTemplateSelectValue() {
@@ -4278,6 +4442,37 @@ import {
     const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const rand = Math.random().toString(36).slice(2, 8);
     return `tpl.${slug || "template"}.${rand}`;
+  }
+
+  function generateDuplicateTemplateId(baseId) {
+    const raw = (baseId || "").trim();
+    if (!raw) {
+      return generateTemplateId("template");
+    }
+    const normalized = raw.replace(/(\.copy\d*)$/i, "");
+    const root = normalized || raw;
+    let candidate = `${root}.copy`;
+    let counter = 2;
+    while (candidate && templateCatalog.has(candidate)) {
+      candidate = `${root}.copy${counter}`;
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function generateDuplicateTemplateTitle(baseTitle) {
+    const raw = (baseTitle || "").trim();
+    const base = raw.replace(/\(Copy(?: \d+)?\)$/i, "").trim() || raw || "Template";
+    const existing = new Set(
+      Array.from(templateCatalog.values()).map((entry) => (entry?.title || "").trim()).filter(Boolean)
+    );
+    let candidate = `${base} (Copy)`;
+    let counter = 2;
+    while (existing.has(candidate)) {
+      candidate = `${base} (Copy ${counter})`;
+      counter += 1;
+    }
+    return candidate;
   }
 
   function resolveSharedRecordParam(expectedBucket) {
