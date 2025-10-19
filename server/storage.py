@@ -122,6 +122,31 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS groups (
+            id TEXT PRIMARY KEY,
+            owner_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL DEFAULT 'campaign',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_members (
+            group_id TEXT NOT NULL,
+            content_type TEXT NOT NULL,
+            content_id TEXT NOT NULL,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (group_id, content_type, content_id),
+            FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+        )
+        """
+    )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
@@ -130,6 +155,13 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
         "CREATE INDEX IF NOT EXISTS idx_share_links_content ON share_links(content_type, content_id)"
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_share_links_token ON share_links(token)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_groups_owner ON groups(owner_id)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members(group_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_members_content ON group_members(content_type, content_id)"
+    )
     # Ensure legacy databases pick up the last_accessed_at columns
     _ensure_column(conn, "templates", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
     _ensure_column(conn, "systems", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
