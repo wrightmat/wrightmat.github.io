@@ -30,7 +30,15 @@ from .builtins import builtin_catalog
 from .config import ConfigLoader
 from .importer import run_importer
 from .router import Request, Response, Router
-from .shares import list_shares, revoke_share, share_with_user
+from .shares import (
+    create_share_link,
+    get_share_link,
+    list_shareable_users,
+    list_shares,
+    revoke_share,
+    revoke_share_link,
+    share_with_user,
+)
 from .state import ServerState, configure_logging
 from .static import serve_from_root
 from .storage import (
@@ -42,7 +50,6 @@ from .storage import (
     list_bucket,
     list_owned_content,
     save_item,
-    toggle_public,
     update_owner,
 )
 class SheetsHTTPServer(http.server.ThreadingHTTPServer):
@@ -200,7 +207,15 @@ def register_routes():
         bucket = params["bucket"]
         id_ = params["id"]
         user = request.handler.current_user()
-        payload = get_item(request.state, bucket, id_, user)
+        share_token = ""
+        if "?" in request.handler.path:
+            from urllib.parse import parse_qs, urlsplit
+
+            query = urlsplit(request.handler.path).query
+            if query:
+                parsed = parse_qs(query)
+                share_token = parsed.get("share", [""])[0]
+        payload = get_item(request.state, bucket, id_, user, share_token=share_token or None)
         return json_response(payload)
 
     router.add("GET", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)$", handle_get_content)
@@ -248,9 +263,33 @@ def register_routes():
         if user.tier != "admin" and not is_owner(request.state, bucket_name, f"{content_id}.json", user):
             raise AuthError("Only owner or admin can view shares")
         shares = list_shares(request.state, bucket, content_id, user)
-        return json_response({"shares": shares})
+        link = get_share_link(request.state, bucket, content_id)
+        return json_response({"shares": shares, "link": link})
 
     router.add("GET", r"^/shares/(?P<bucket>[^/]+)/(?P<content_id>[^/]+)$", handle_list_shares)
+
+    # GET /shares/eligible
+    def handle_share_eligible(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        query = {}
+        if "?" in request.handler.path:
+            from urllib.parse import parse_qs
+
+            query_string = request.handler.path.split("?", 1)[1]
+            query = parse_qs(query_string)
+        content_type = query.get("content_type", [""])[0]
+        content_id = query.get("content_id", [""])[0]
+        if not content_type or not content_id:
+            raise AuthError("Missing fields")
+        bucket_name = bucket_from_content_type(content_type)
+        if user.tier != "admin" and not is_owner(request.state, bucket_name, f"{content_id}.json", user):
+            raise AuthError("Only owner or admin can manage shares")
+        users = list_shareable_users(request.state, content_type)
+        return json_response({"users": users})
+
+    router.add("GET", r"^/shares/eligible$", handle_share_eligible)
 
     # POST /auth/register
     def handle_register(request: Request) -> Response:
@@ -410,26 +449,6 @@ def register_routes():
 
     router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/owner$", handle_owner_update)
 
-    # POST /content/{bucket}/{id}/public
-    def handle_public_toggle(request: Request) -> Response:
-        params = getattr(request, "params")
-        bucket = params["bucket"]
-        id_ = params["id"]
-        user = request.handler.current_user()
-        if not user:
-            raise AuthError("Authentication required")
-        query = request.handler.path.split("?")
-        public_flag = True
-        if len(query) > 1:
-            from urllib.parse import parse_qs
-
-            qs = parse_qs(query[1])
-            public_flag = qs.get("public", ["true"])[0].lower() == "true"
-        result = toggle_public(request.state, bucket, id_, user, public_flag)
-        return json_response(result)
-
-    router.add("POST", r"^/content/(?P<bucket>[^/]+)/(?P<id>[^/]+)/public$", handle_public_toggle)
-
     # POST /shares
     def handle_share(request: Request) -> Response:
         data = require_json(request)
@@ -470,6 +489,43 @@ def register_routes():
         return json_response({"ok": True})
 
     router.add("POST", r"^/shares/revoke$", handle_revoke_share)
+
+    # POST /shares/link
+    def handle_share_link(request: Request) -> Response:
+        data = require_json(request)
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        content_type = data.get("content_type")
+        content_id = data.get("content_id")
+        permissions = data.get("permissions", "view")
+        if not content_type or not content_id:
+            raise AuthError("Missing fields")
+        bucket_name = bucket_from_content_type(content_type)
+        if user.tier != "admin" and not is_owner(request.state, bucket_name, f"{content_id}.json", user):
+            raise AuthError("Only owner or admin can create links")
+        link = create_share_link(request.state, content_type, content_id, permissions)
+        return json_response({"link": link})
+
+    router.add("POST", r"^/shares/link$", handle_share_link)
+
+    # POST /shares/link/revoke
+    def handle_share_link_revoke(request: Request) -> Response:
+        data = require_json(request)
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        content_type = data.get("content_type")
+        content_id = data.get("content_id")
+        if not content_type or not content_id:
+            raise AuthError("Missing fields")
+        bucket_name = bucket_from_content_type(content_type)
+        if user.tier != "admin" and not is_owner(request.state, bucket_name, f"{content_id}.json", user):
+            raise AuthError("Only owner or admin can revoke links")
+        revoke_share_link(request.state, content_type, content_id)
+        return json_response({"ok": True})
+
+    router.add("POST", r"^/shares/link/revoke$", handle_share_link_revoke)
 
     # POST /import/{system}/{importer}
     def handle_import(request: Request) -> Response:
