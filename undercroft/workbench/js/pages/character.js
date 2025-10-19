@@ -210,6 +210,63 @@ import {
     return "the owner";
   }
 
+  function characterOwnership(metadata) {
+    if (metadata && typeof metadata.ownership === "string" && metadata.ownership) {
+      return metadata.ownership.toLowerCase();
+    }
+    if (state.draft?.ownership && typeof state.draft.ownership === "string") {
+      return state.draft.ownership.toLowerCase();
+    }
+    return "";
+  }
+
+  function characterPermissions(metadata) {
+    const permissions = metadata?.sharePermissions ?? state.draft?.sharePermissions ?? "";
+    if (typeof permissions === "string" && permissions) {
+      return permissions.toLowerCase();
+    }
+    return "";
+  }
+
+  function characterAllowsEdits(metadata) {
+    if (!state.draft) {
+      return false;
+    }
+    if (!state.draft.id) {
+      return true;
+    }
+    if (!metadata) {
+      return true;
+    }
+    const ownership = characterOwnership(metadata);
+    if (ownership === "shared") {
+      return characterPermissions(metadata) === "edit";
+    }
+    if (ownership === "public") {
+      return false;
+    }
+    if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
+      return true;
+    }
+    if (!ownership || ownership === "remote") {
+      return userOwnsCharacter(state.draft.id);
+    }
+    return userOwnsCharacter(state.draft.id);
+  }
+
+  function describeCharacterEditRestriction(metadata) {
+    const ownership = characterOwnership(metadata);
+    const permissions = characterPermissions(metadata);
+    if (ownership === "shared" && permissions !== "edit") {
+      return "This character was shared with you as view-only.";
+    }
+    if (ownership === "public") {
+      return "Public characters are view-only.";
+    }
+    const ownerLabel = resolveOwnerLabel(metadata);
+    return `Only ${ownerLabel} can save this character.`;
+  }
+
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
@@ -280,10 +337,10 @@ import {
           status.show("Sign in to save characters to the server.", { type: "warning", timeout: 2600 });
           return;
         }
-        if (!userOwnsCharacter(state.draft.id)) {
-          const metadata = characterCatalog.get(state.draft.id) || {};
-          const ownerLabel = resolveOwnerLabel(metadata);
-          status.show(`Only ${ownerLabel} can save this character.`, { type: "warning", timeout: 2600 });
+        const metadata = characterCatalog.get(state.draft.id) || {};
+        if (!characterAllowsEdits(metadata)) {
+          const message = describeCharacterEditRestriction(metadata);
+          status.show(message, { type: "warning", timeout: 2800 });
           return;
         }
         if (!dataManager.hasWriteAccess("characters")) {
@@ -714,12 +771,14 @@ import {
 
   function syncCharacterActions() {
     const hasDraft = Boolean(state.draft);
+    const draftHasId = Boolean(state.draft?.id);
+    const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
     if (elements.saveButton) {
       const hasChanges = hasDraft && hasUnsavedCharacterChanges();
       const isAuthenticated = dataManager.isAuthenticated();
       const canWrite = dataManager.hasWriteAccess("characters");
-      const ownsRecord = hasDraft ? userOwnsCharacter(state.draft.id) : false;
-      const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && ownsRecord;
+      const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
+      const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
       elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasDraft) {
@@ -731,10 +790,9 @@ import {
         elements.saveButton.title = required
           ? `Saving characters requires a ${required} tier.`
           : "Your tier cannot save characters.";
-      } else if (!ownsRecord) {
-        const metadata = characterCatalog.get(state.draft.id) || {};
-        const ownerLabel = resolveOwnerLabel(metadata);
-        elements.saveButton.title = `Only ${ownerLabel} can save this character.`;
+      } else if (!canEditRecord) {
+        const message = describeCharacterEditRestriction(metadata);
+        elements.saveButton.title = message;
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
@@ -745,15 +803,16 @@ import {
     if (!elements.deleteCharacterButton) {
       return;
     }
-    const hasCharacter = Boolean(state.draft?.id);
-    elements.deleteCharacterButton.classList.toggle("d-none", !hasCharacter);
-    if (!hasCharacter) {
+    const canWrite = dataManager.hasWriteAccess("characters");
+    const canEditRecord = draftHasId ? characterAllowsEdits(metadata) : false;
+    const showDelete = draftHasId && canEditRecord && canWrite;
+    elements.deleteCharacterButton.classList.toggle("d-none", !showDelete);
+    if (!showDelete) {
       elements.deleteCharacterButton.disabled = true;
       elements.deleteCharacterButton.setAttribute("aria-disabled", "true");
       elements.deleteCharacterButton.removeAttribute("title");
       return;
     }
-    const metadata = state.draft?.id ? characterCatalog.get(state.draft.id) : null;
     let origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
     let deletable = origin === "local";
     if (!deletable && state.draft?.id) {

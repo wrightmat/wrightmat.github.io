@@ -662,6 +662,20 @@ import {
           });
           return;
         }
+        const metadata = getTemplateMetadata(state.template?.id);
+        if (!templateAllowsEdits(metadata)) {
+          const message = describeTemplateEditRestriction(metadata);
+          status.show(message, { type: "warning", timeout: 2800 });
+          return;
+        }
+        if (!dataManager.hasWriteAccess("templates")) {
+          const required = dataManager.describeRequiredWriteTier("templates");
+          const message = required
+            ? `Saving templates requires a ${required} tier.`
+            : "Your tier cannot save templates.";
+          status.show(message, { type: "warning", timeout: 2800 });
+          return;
+        }
         insertComponentAtCanvasRoot(value);
       },
     });
@@ -1473,6 +1487,19 @@ import {
     return templateOwnerMatchesCurrentUser(metadata);
   }
 
+  function describeTemplateEditRestriction(metadata) {
+    const ownership = templateOwnership(metadata);
+    const permissions = templatePermissions(metadata);
+    if (ownership === "shared" && permissions !== "edit") {
+      return "This template was shared with you as view-only. Duplicate it to make changes.";
+    }
+    if (ownership === "public") {
+      return "Public templates are view-only. Duplicate it to customize.";
+    }
+    const ownerLabel = resolveTemplateOwnerLabel(metadata);
+    return `Only ${ownerLabel} can save this template.`;
+  }
+
   function resolveTemplateOwnerLabel(metadata) {
     const username =
       metadata?.ownerUsername ||
@@ -1502,16 +1529,7 @@ import {
           ? `Saving templates requires a ${required} tier.`
           : "Your tier cannot save templates.";
       } else if (!canEditRecord) {
-        const ownership = templateOwnership(metadata);
-        const permissions = templatePermissions(metadata);
-        if (ownership === "shared" && permissions !== "edit") {
-          elements.saveButton.title = "This template was shared with you as view-only. Duplicate it to make changes.";
-        } else if (ownership === "public") {
-          elements.saveButton.title = "Public templates are view-only. Duplicate it to customize.";
-        } else {
-          const ownerLabel = resolveTemplateOwnerLabel(metadata);
-          elements.saveButton.title = `Only ${ownerLabel} can save this template.`;
-        }
+        elements.saveButton.title = describeTemplateEditRestriction(metadata);
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
