@@ -401,6 +401,20 @@ import {
     }
   }
 
+  let groupShareModalInstance = null;
+  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+    const modalElement = elements.groupShareModal;
+    if (modalElement) {
+      groupShareModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+      modalElement.addEventListener("hidden.bs.modal", () => {
+        groupShareState.status = "";
+        if (elements.groupShareStatus) {
+          elements.groupShareStatus.textContent = "";
+        }
+      });
+    }
+  }
+
   await initializeBuiltins();
   initNotesEditor();
   initDiceRoller();
