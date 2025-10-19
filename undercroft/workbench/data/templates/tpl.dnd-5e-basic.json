@@ -27,6 +27,38 @@
         "Option A",
         "Option B"
       ],
+      "rows": 3,
+      "sourceBinding": "",
+      "formula": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": ""
+    },
+    {
+      "type": "input",
+      "id": "class",
+      "label": "Class",
+      "name": "Class",
+      "textColor": "",
+      "backgroundColor": "",
+      "borderColor": "",
+      "textSize": "md",
+      "textStyles": {
+        "bold": false,
+        "italic": false,
+        "underline": false
+      },
+      "align": "start",
+      "binding": "@class",
+      "readOnly": false,
+      "variant": "select",
+      "placeholder": "",
+      "options": [
+        "Option A",
+        "Option B"
+      ],
+      "rows": 3,
+      "sourceBinding": "@classes",
       "formula": "",
       "segmentBinding": "",
       "segmentFormula": "",
