@@ -332,7 +332,17 @@
                     <select class="form-select" id="template-select" data-template-select></select>
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary" type="button" data-action="new-template">New Template</button>
+                    <button class="btn btn-outline-success" type="button" data-action="new-template">
+                      New Template
+                    </button>
+                    <button
+                      class="btn btn-outline-primary d-none"
+                      type="button"
+                      data-action="duplicate-template"
+                      data-duplicate-template
+                    >
+                      Duplicate Template
+                    </button>
                     <button
                       class="btn btn-outline-danger d-none"
                       type="button"
@@ -341,6 +351,9 @@
                     >
                       Delete Template
                     </button>
+                  </div>
+                  <div class="col-12 col-md text-md-end">
+                    <div class="small text-body-secondary" data-template-meta>No template selected</div>
                   </div>
                 </div>
               </div>
@@ -392,7 +405,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title fs-5">Create New Template</h2>
+            <h2 class="modal-title fs-5" data-new-template-modal-title>Create New Template</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form class="needs-validation" novalidate data-new-template-form>
