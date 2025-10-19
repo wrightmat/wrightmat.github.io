@@ -7,6 +7,7 @@ import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
+import { expandPane } from "../lib/panes.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -19,6 +20,7 @@ import {
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
+import { rollDiceExpression } from "../lib/dice.js";
 import {
   normalizeOptionEntries,
   resolveBindingFromContexts,
@@ -55,6 +57,22 @@ import {
   };
 
   let lastSavedCharacterSignature = null;
+
+  const componentRollDirectives = new Map();
+  const diceQuickButtons = new Map();
+  const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+
+  function escapeHtml(value) {
+    if (value === undefined || value === null) {
+      return "";
+    }
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
 
   markCharacterClean();
 
@@ -243,7 +261,7 @@ import {
       return characterPermissions(metadata) === "edit";
     }
     if (ownership === "public") {
-      return false;
+      return userOwnsCharacter(state.draft.id);
     }
     if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
       return true;
@@ -270,7 +288,6 @@ import {
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
-    saveButton: document.querySelector('[data-action="save-character"]'),
     undoButton: document.querySelector('[data-action="undo-character"]'),
     redoButton: document.querySelector('[data-action="redo-character"]'),
     importButton: document.querySelector('[data-action="import-character"]'),
@@ -285,6 +302,9 @@ import {
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
     diceResult: document.querySelector("[data-dice-result]"),
+    diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
+    rightPane: document.querySelector('[data-pane="right"]'),
+    rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     newCharacterForm: document.querySelector("[data-new-character-form]"),
     newCharacterId: document.querySelector("[data-new-character-id]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
@@ -323,42 +343,6 @@ import {
         const selectedId = elements.characterSelect.value;
         if (selectedId) {
           await loadCharacter(selectedId);
-        }
-      });
-    }
-
-    if (elements.saveButton) {
-      elements.saveButton.addEventListener("click", async () => {
-        if (!state.draft?.id) {
-          status.show("Create or load a character first.", { type: "info", timeout: 2000 });
-          return;
-        }
-        if (!dataManager.isAuthenticated()) {
-          status.show("Sign in to save characters to the server.", { type: "warning", timeout: 2600 });
-          return;
-        }
-        const metadata = characterCatalog.get(state.draft.id) || {};
-        if (!characterAllowsEdits(metadata)) {
-          const message = describeCharacterEditRestriction(metadata);
-          status.show(message, { type: "warning", timeout: 2800 });
-          return;
-        }
-        if (!dataManager.hasWriteAccess("characters")) {
-          const required = dataManager.describeRequiredWriteTier("characters");
-          const message = required
-            ? `Saving characters requires a ${required} tier.`
-            : "Your tier cannot save characters.";
-          status.show(message, { type: "warning", timeout: 2600 });
-          return;
-        }
-        const button = elements.saveButton;
-        button.disabled = true;
-        button.setAttribute("aria-busy", "true");
-        try {
-          await persistDraft({ silent: false });
-        } finally {
-          button.disabled = false;
-          button.removeAttribute("aria-busy");
         }
       });
     }
@@ -770,36 +754,8 @@ import {
   }
 
   function syncCharacterActions() {
-    const hasDraft = Boolean(state.draft);
     const draftHasId = Boolean(state.draft?.id);
     const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
-    if (elements.saveButton) {
-      const hasChanges = hasDraft && hasUnsavedCharacterChanges();
-      const isAuthenticated = dataManager.isAuthenticated();
-    const canWrite = dataManager.hasWriteAccess("characters");
-    const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
-    const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
-    elements.saveButton.disabled = !enabled;
-      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
-      if (!hasDraft) {
-        elements.saveButton.title = "Create or load a character to save.";
-      } else if (!isAuthenticated) {
-        elements.saveButton.title = "Sign in to save characters to the server.";
-      } else if (!canWrite) {
-        const required = dataManager.describeRequiredWriteTier("characters");
-        elements.saveButton.title = required
-          ? `Saving characters requires a ${required} tier.`
-          : "Your tier cannot save characters.";
-      } else if (!canEditRecord) {
-        const message = describeCharacterEditRestriction(metadata);
-        elements.saveButton.title = message;
-      } else if (!hasChanges) {
-        elements.saveButton.title = "No changes to save.";
-      } else {
-        elements.saveButton.removeAttribute("title");
-      }
-    }
-
     if (!elements.deleteCharacterButton) {
       return;
     }
@@ -839,43 +795,191 @@ import {
     syncNotesEditor(true);
   }
 
+  function openToolsPane() {
+    if (elements.rightPane) {
+      expandPane(elements.rightPane, elements.rightPaneToggle);
+    }
+  }
+
+  function parseQuickDiceCounts(expression) {
+    const counts = Object.fromEntries(QUICK_DICE.map((die) => [die, 0]));
+    if (typeof expression !== "string" || !expression) {
+      return counts;
+    }
+    const regex = /(\d*)d(4|6|8|10|12|20|100)(?!\d)/gi;
+    let match;
+    while ((match = regex.exec(expression)) !== null) {
+      const quantity = match[1] ? parseInt(match[1], 10) : 1;
+      const die = `d${match[2]}`.toLowerCase();
+      if (Number.isFinite(quantity) && counts[die] !== undefined) {
+        counts[die] += quantity;
+      }
+    }
+    return counts;
+  }
+
+  function syncQuickDiceButtons() {
+    if (!elements.diceExpression) {
+      return;
+    }
+    const expression = elements.diceExpression.value || "";
+    const counts = parseQuickDiceCounts(expression);
+    diceQuickButtons.forEach((button, die) => {
+      const count = counts[die] || 0;
+      const baseLabel = button.dataset.label || button.textContent.trim();
+      if (count > 0) {
+        button.textContent = `${baseLabel} × ${count}`;
+        button.classList.add("btn-primary", "active");
+        button.classList.remove("btn-outline-secondary");
+        button.setAttribute("aria-label", `${baseLabel} (${count} in expression)`);
+      } else {
+        button.textContent = baseLabel;
+        button.classList.remove("btn-primary", "active");
+        button.classList.add("btn-outline-secondary");
+        button.setAttribute("aria-label", `Add ${baseLabel}`);
+      }
+    });
+  }
+
+  function incrementDieInExpression(die, expression = "") {
+    const sides = die.slice(1);
+    const patternStart = new RegExp(`^(\\s*)(\\d*)d${sides}(?!\\d)`, "i");
+    if (patternStart.test(expression)) {
+      return expression.replace(patternStart, (match, leading, count) => {
+        const base = parseInt(count || "1", 10);
+        const next = Number.isFinite(base) ? base + 1 : 2;
+        return `${leading}${next}d${sides}`;
+      });
+    }
+    const pattern = new RegExp(`([^A-Za-z0-9_])(\\d*)d${sides}(?!\\d)`, "i");
+    let replaced = false;
+    const updated = expression.replace(pattern, (match, prefix, count) => {
+      if (replaced) {
+        return match;
+      }
+      const base = parseInt(count || "1", 10);
+      const next = Number.isFinite(base) ? base + 1 : 2;
+      replaced = true;
+      return `${prefix}${next}d${sides}`;
+    });
+    if (replaced) {
+      return updated;
+    }
+    const trimmed = expression.trim();
+    if (!trimmed) {
+      return `1d${sides}`;
+    }
+    if (/[+\-*/(]$/.test(trimmed)) {
+      return `${expression} 1d${sides}`;
+    }
+    return `${trimmed} + 1d${sides}`;
+  }
+
+  function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
+    const trimmed = typeof expression === "string" ? expression.trim() : "";
+    if (!trimmed) {
+      if (elements.diceResult) {
+        elements.diceResult.textContent = "Enter a dice expression like 2d6 + 3.";
+      }
+      return null;
+    }
+    if (updateInput && elements.diceExpression) {
+      elements.diceExpression.value = trimmed;
+      syncQuickDiceButtons();
+    }
+    openToolsPane();
+    try {
+      const result = rollDiceExpression(trimmed, { context: state.draft?.data || {} });
+      if (elements.diceResult) {
+        const heading = label ? escapeHtml(label) : "Total";
+        const breakdown = result.detailHtml
+          ? `<div class="dice-breakdown text-body-secondary mt-2">${result.detailHtml}</div>`
+          : "";
+        elements.diceResult.innerHTML = `<strong>${heading}</strong>: ${escapeHtml(result.total)}${breakdown}`;
+      }
+      return result;
+    } catch (error) {
+      if (elements.diceResult) {
+        const message = error instanceof Error ? error.message : "Unable to roll dice.";
+        elements.diceResult.textContent = message;
+      }
+      return null;
+    }
+  }
+
+  function handleComponentRoll(expression, label) {
+    if (!expression) {
+      return;
+    }
+    const text = typeof label === "string" && label.trim() ? label.trim() : "";
+    executeDiceRoll(expression, { label: text, updateInput: true });
+  }
+
+  function createRollOverlayButton(component, expressions) {
+    const container = document.createElement("div");
+    container.className = "character-roll-overlay";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center";
+    const label = component.label || component.name || "Roll";
+    button.setAttribute("aria-label", `Roll ${label}`);
+    if (Array.isArray(expressions) && expressions.length) {
+      button.title = expressions.join(" • ");
+    }
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.setAttribute("data-icon", "tabler:dice-5");
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    let index = 0;
+    button.addEventListener("click", () => {
+      if (!Array.isArray(expressions) || !expressions.length) {
+        return;
+      }
+      const expression = expressions[index] || expressions[0];
+      index = (index + 1) % expressions.length;
+      handleComponentRoll(expression, label);
+    });
+    container.appendChild(button);
+    return container;
+  }
+
   function initDiceRoller() {
     if (!elements.diceForm || !elements.diceExpression || !elements.diceResult) {
       return;
     }
+    Array.from(elements.diceQuickButtons || []).forEach((button) => {
+      const die = (button.getAttribute("data-dice-button") || "").toLowerCase();
+      if (!die || !QUICK_DICE.includes(die)) {
+        return;
+      }
+      diceQuickButtons.set(die, button);
+      const label = button.textContent.trim();
+      button.dataset.label = label;
+      button.setAttribute("aria-label", `Add ${label}`);
+      button.addEventListener("click", () => {
+        const next = incrementDieInExpression(die, elements.diceExpression.value || "");
+        elements.diceExpression.value = next;
+        try {
+          elements.diceExpression.focus({ preventScroll: true });
+        } catch (focusError) {
+          elements.diceExpression.focus();
+        }
+        syncQuickDiceButtons();
+      });
+    });
+
+    elements.diceExpression.addEventListener("input", () => {
+      syncQuickDiceButtons();
+    });
+
     elements.diceForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      const expression = elements.diceExpression.value.trim();
-      if (!expression) {
-        elements.diceResult.textContent = "Enter a dice expression like 2d6 + 3.";
-        return;
-      }
-      const result = rollDiceExpression(expression);
-      if (!result) {
-        elements.diceResult.textContent = "Unsupported expression. Try NdM ± K.";
-        return;
-      }
-      const { total, rolls, modifier } = result;
-      const breakdown = `${rolls.join(" + ")}${modifier ? (modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`) : ""}`;
-      elements.diceResult.innerHTML = `<strong>Total:</strong> ${total}<br /><span class="text-body-secondary">${breakdown}</span>`;
+      const expression = elements.diceExpression.value || "";
+      executeDiceRoll(expression, { updateInput: false });
     });
-  }
 
-  function rollDiceExpression(input) {
-    const trimmed = input.replace(/\s+/g, "").toLowerCase();
-    const match = trimmed.match(/^(\d*)d(\d+)([+-]\d+)?$/);
-    if (!match) {
-      return null;
-    }
-    const count = Math.min(Math.max(parseInt(match[1] || "1", 10), 1), 100);
-    const sides = Math.min(Math.max(parseInt(match[2], 10), 2), 1000);
-    const modifier = match[3] ? parseInt(match[3], 10) : 0;
-    const rolls = [];
-    for (let index = 0; index < count; index += 1) {
-      rolls.push(1 + Math.floor(Math.random() * sides));
-    }
-    const total = rolls.reduce((sum, value) => sum + value, 0) + modifier;
-    return { total, rolls, modifier };
+    syncQuickDiceButtons();
   }
 
   async function loadTemplateRecords() {
@@ -1318,6 +1422,7 @@ import {
     if (!elements.canvasRoot) {
       return;
     }
+    componentRollDirectives.clear();
     elements.canvasRoot.dataset.canvasMode = state.mode;
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id) {
@@ -1355,13 +1460,14 @@ import {
 
   function renderComponentCard(component) {
     const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
+    const showTypeIcon = state.mode === "edit";
     const wrapper = createCanvasCardElement({
       classes: ["character-component"],
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
     });
     const { header } = createStandardCardChrome({
-      icon: iconName,
+      icon: showTypeIcon ? iconName : null,
       iconLabel: component.type,
       headerOptions: { classes: ["character-component-header"], sortableHandle: false },
       actionsOptions: { classes: ["character-component-actions"] },
@@ -1420,6 +1526,7 @@ import {
     const editable = isEditable(component);
     const resolvedValue = resolveComponentValue(component, component.value ?? "");
     const variant = component.variant || "text";
+    const componentUid = component?.uid || null;
 
     if (variant === "select") {
       const select = document.createElement("select");
@@ -1552,7 +1659,19 @@ import {
         });
       }
     }
-    wrapper.appendChild(input);
+    const inputContainer = document.createElement("div");
+    inputContainer.className = "position-relative";
+    const rollExpressions = componentUid ? componentRollDirectives.get(componentUid) : null;
+    const showRollOverlay =
+      state.mode === "view" && Array.isArray(rollExpressions) && rollExpressions.length > 0;
+    if (showRollOverlay) {
+      input.classList.add("character-rollable-input");
+    }
+    inputContainer.appendChild(input);
+    if (showRollOverlay) {
+      inputContainer.appendChild(createRollOverlayButton(component, rollExpressions));
+    }
+    wrapper.appendChild(inputContainer);
     return wrapper;
   }
 
@@ -1850,6 +1969,10 @@ import {
     if (normalizedBinding) {
       clone.binding = normalizedBinding;
     }
+    if (typeof clone.roller !== "string") {
+      clone.roller = "";
+    }
+    clone.roller = clone.roller.trim();
     if (!clone.uid) {
       componentCounter += 1;
       clone.uid = `cmp-${componentCounter}`;
@@ -1976,13 +2099,59 @@ import {
   }
 
   function resolveComponentValue(component, fallback = undefined) {
+    const componentUid = component?.uid || null;
+    const manualRolls = new Set();
+    if (typeof component?.roller === "string") {
+      const trimmedRoller = component.roller.trim();
+      if (trimmedRoller) {
+        manualRolls.add(trimmedRoller);
+      }
+    }
+    const applyRollDirectives = (extra) => {
+      if (!componentUid) {
+        return;
+      }
+      const combined = new Set(manualRolls);
+      if (extra) {
+        const values = extra instanceof Set ? Array.from(extra) : Array.isArray(extra) ? extra : [extra];
+        values.forEach((value) => {
+          if (typeof value === "string") {
+            const trimmed = value.trim();
+            if (trimmed) {
+              combined.add(trimmed);
+            }
+          }
+        });
+      }
+      if (combined.size) {
+        componentRollDirectives.set(componentUid, Array.from(combined));
+      } else {
+        componentRollDirectives.delete(componentUid);
+      }
+    };
     if (componentHasFormula(component)) {
+      const collected = new Set();
       try {
-        const result = evaluateFormula(component.formula, state.draft?.data || {});
+        const dataContext = state.draft?.data || {};
+        const result = evaluateFormula(component.formula, dataContext, {
+          onRoll: (notation) => {
+            if (typeof notation === "string") {
+              const trimmedNotation = notation.trim();
+              if (trimmedNotation) {
+                collected.add(trimmedNotation);
+              }
+            }
+          },
+          rollContext: dataContext,
+        });
+        applyRollDirectives(collected);
         return result;
       } catch (error) {
+        applyRollDirectives();
         console.warn("Character editor: unable to evaluate formula", error);
       }
+    } else {
+      applyRollDirectives();
     }
     const bound = getBindingValue(component?.binding);
     if (bound !== undefined) {
