@@ -165,18 +165,6 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="save-character"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
                   data-action="toggle-mode"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
@@ -265,6 +253,19 @@
             <section class="d-flex flex-column gap-3">
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Dice Roller</h2>
               <form class="d-flex flex-column gap-3" data-dice-form>
+                <div class="d-flex flex-column gap-2">
+                  <span class="form-label small text-body-secondary mb-0">Quick Dice</span>
+                  <div class="dice-quick-grid" data-dice-quick>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d4">d4</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d6">d6</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d8">d8</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d10">d10</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d12">d12</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d20">d20</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dice-button="d100">d100</button>
+                  </div>
+                  <small class="text-body-secondary">Click to add dice to the expression.</small>
+                </div>
                 <div class="d-flex flex-column gap-2">
                   <label class="form-label small text-body-secondary" for="dice-expression">Roll</label>
                   <div class="input-group">
