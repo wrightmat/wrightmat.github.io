@@ -102,6 +102,7 @@ import {
     status: "",
     collapsed: false,
     paneRevealed: false,
+    viewOnlyCharacterId: "",
   };
 
   function cloneValue(value) {
@@ -327,8 +328,11 @@ import {
     diceResult: document.querySelector("[data-dice-result]"),
     diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
     diceClearButton: document.querySelector("[data-dice-clear]"),
+    leftPane: document.querySelector('[data-pane="left"]'),
+    leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
     rightPane: document.querySelector('[data-pane="right"]'),
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+    characterToolbar: document.querySelector('[data-character-toolbar]'),
     newCharacterForm: document.querySelector("[data-new-character-form]"),
     newCharacterId: document.querySelector("[data-new-character-id]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
@@ -380,6 +384,7 @@ import {
   renderPreview();
   syncCharacterActions();
   initializeSharedRecordHandling();
+  syncCharacterToolbarVisibility();
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -1270,6 +1275,21 @@ import {
     });
   }
 
+  function syncCharacterToolbarVisibility() {
+    if (!elements.characterToolbar) {
+      return;
+    }
+    const currentId = state.draft?.id || "";
+    const metadata = currentId ? characterCatalog.get(currentId) : null;
+    const viewingShared =
+      Boolean(groupShareState.token) &&
+      Boolean(groupShareState.viewOnlyCharacterId) &&
+      currentId === groupShareState.viewOnlyCharacterId;
+    const ownership = (metadata?.ownership || "").toLowerCase();
+    const hideToolbar = viewingShared && ownership === "shared";
+    elements.characterToolbar.classList.toggle("d-none", hideToolbar);
+  }
+
   function renderGroupSharePanel() {
     if (!elements.groupShareSection) {
       return;
@@ -1278,10 +1298,11 @@ import {
     elements.groupShareSection.hidden = !hasToken;
     if (!hasToken) {
       setGroupShareStatus("");
+      syncCharacterToolbarVisibility();
       return;
     }
     if (!groupShareState.paneRevealed) {
-      expandPane("left");
+      expandPane(elements.leftPane, elements.leftPaneToggle);
       groupShareState.paneRevealed = true;
     }
     setGroupShareCollapsed(groupShareState.collapsed);
@@ -1365,6 +1386,7 @@ import {
     }
     setGroupShareStatus(`Loading ${label}…`);
     try {
+      groupShareState.viewOnlyCharacterId = member.content_id;
       registerCharacterRecord({
         id: member.content_id,
         title: member.label || member.content_id,
@@ -1390,6 +1412,7 @@ import {
       if (button) {
         button.disabled = false;
       }
+      syncCharacterToolbarVisibility();
       renderGroupSharePanel();
     }
   }
@@ -1411,6 +1434,8 @@ import {
       url.searchParams.set("record", `characters:${member.content_id}`);
       url.searchParams.delete("share");
       window.history.replaceState({}, "", url);
+      groupShareState.viewOnlyCharacterId = "";
+      syncCharacterToolbarVisibility();
       await refreshRemoteCharacters({ force: true });
       await loadCharacter(member.content_id);
       await refreshGroupShareDetails();
@@ -1468,7 +1493,9 @@ import {
       groupShareState.status = "";
       groupShareState.loading = false;
       groupShareState.paneRevealed = false;
+      groupShareState.viewOnlyCharacterId = "";
       renderGroupSharePanel();
+      syncCharacterToolbarVisibility();
       return;
     }
     groupShareState.token = shareToken;
@@ -1481,6 +1508,7 @@ import {
     groupShareState.loading = true;
     groupShareState.collapsed = false;
     groupShareState.paneRevealed = false;
+    groupShareState.viewOnlyCharacterId = "";
     renderGroupSharePanel();
     try {
       const payload = await dataManager.fetchGroupShare(shareToken);
@@ -1667,6 +1695,7 @@ import {
       renderPreview();
       syncCharacterOptions();
       syncCharacterActions();
+      syncCharacterToolbarVisibility();
       status.show(`Loaded ${state.draft.data?.name || metadata.title || state.draft.id}`, {
         type: "success",
         timeout: 2000,
@@ -1679,6 +1708,7 @@ import {
         : "Unable to load character";
       const type = pruned ? "warning" : "error";
       status.show(message, { type, timeout: 2800 });
+      syncCharacterToolbarVisibility();
     }
 
     return true;
