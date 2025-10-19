@@ -35,6 +35,7 @@ import {
   normalizeOptionEntries,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
+import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
@@ -397,6 +398,7 @@ import {
         rows: 3,
         sourceBinding: "",
         roller: "",
+        labelPosition: "top",
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -404,12 +406,14 @@ import {
       supportsAlignment: true,
       textControls: true,
       colorControls: ["foreground", "background", "border"],
+      supportsLabelPosition: true,
     },
     array: {
       label: "List",
       defaults: {
         name: "List",
         variant: "list",
+        labelPosition: "top",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -417,6 +421,7 @@ import {
       supportsAlignment: true,
       textControls: true,
       colorControls: ["foreground", "background", "border"],
+      supportsLabelPosition: true,
     },
     divider: {
       label: "Divider",
@@ -487,6 +492,7 @@ import {
         segmentBinding: "6",
         segmentFormula: "",
         value: 3,
+        labelPosition: "top",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -494,6 +500,7 @@ import {
       supportsAlignment: true,
       textControls: true,
       colorControls: ["foreground", "background", "border"],
+      supportsLabelPosition: true,
     },
     "circular-track": {
       label: "Circular Track",
@@ -503,6 +510,7 @@ import {
         segmentBinding: "6",
         segmentFormula: "",
         value: 3,
+        labelPosition: "top",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -510,6 +518,7 @@ import {
       supportsAlignment: true,
       textControls: true,
       colorControls: ["foreground", "background", "border"],
+      supportsLabelPosition: true,
     },
     "select-group": {
       label: "Select Group",
@@ -518,6 +527,7 @@ import {
         variant: "pills",
         multiple: false,
         sourceBinding: "",
+        labelPosition: "top",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -525,6 +535,7 @@ import {
       supportsAlignment: true,
       textControls: true,
       colorControls: ["foreground", "background", "border"],
+      supportsLabelPosition: true,
     },
     toggle: {
       label: "Toggle",
@@ -535,6 +546,7 @@ import {
         shape: "circle",
         statesBinding: "",
         value: "Novice",
+        labelPosition: "top",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -542,6 +554,7 @@ import {
       supportsAlignment: true,
       textControls: true,
       colorControls: ["foreground", "background", "border"],
+      supportsLabelPosition: true,
     },
   };
 
@@ -2195,6 +2208,15 @@ import {
     }
     component.roller = component.roller.trim();
     component.collapsible = Boolean(component.collapsible);
+    if (definition.supportsLabelPosition) {
+      const basePosition =
+        typeof component.labelPosition === "string" && component.labelPosition
+          ? component.labelPosition
+          : defaults.labelPosition || "top";
+      component.labelPosition = normalizeLabelPosition(basePosition, "top");
+    } else if (Object.prototype.hasOwnProperty.call(component, "labelPosition")) {
+      delete component.labelPosition;
+    }
     if (component.type === "linear-track" || component.type === "circular-track") {
       if (!component.segmentBinding) {
         const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
@@ -2575,73 +2597,74 @@ import {
   }
 
   function renderInputPreview(component) {
-    const container = document.createElement("div");
-    container.className = "d-flex flex-column gap-2";
     const labelText = getComponentLabel(component, "Input");
-    if (labelText) {
-      const label = document.createElement("label");
-      label.className = "form-label mb-1";
-      label.textContent = labelText;
-      applyTextFormatting(label, component);
-      container.appendChild(label);
-    }
-
-    let control;
+    const variant = (component.variant || "text").toLowerCase();
     const previewOptions = resolveSelectPreviewOptions(component);
-    switch (component.variant) {
-      case "number": {
-        control = document.createElement("input");
-        control.type = "number";
-        control.className = "form-control";
-        control.placeholder = component.placeholder || "";
-        break;
+    let control;
+    let labelTag = "label";
+    let labelFor = "";
+    if (variant === "radio" || variant === "checkbox") {
+      control = renderChoiceGroup(component, variant);
+      labelTag = "div";
+    } else if (variant === "textarea") {
+      const textarea = document.createElement("textarea");
+      textarea.className = "form-control";
+      textarea.rows = clampInteger(component.rows ?? 3, 2, 12);
+      textarea.placeholder = component.placeholder || "";
+      textarea.disabled = !!component.readOnly;
+      labelFor = toId([component.uid, "preview", "textarea"]);
+      if (labelFor) {
+        textarea.id = labelFor;
       }
-      case "select": {
-        control = document.createElement("select");
-        control.className = "form-select";
-        previewOptions.forEach((option) => {
-          const opt = document.createElement("option");
-          opt.value = option.value;
-          opt.textContent = option.label || option.value;
-          control.appendChild(opt);
-        });
-        break;
+      control = textarea;
+    } else if (variant === "select") {
+      const select = document.createElement("select");
+      select.className = "form-select";
+      previewOptions.forEach((option) => {
+        const opt = document.createElement("option");
+        opt.value = option.value;
+        opt.textContent = option.label || option.value;
+        select.appendChild(opt);
+      });
+      select.disabled = !!component.readOnly;
+      labelFor = toId([component.uid, "preview", "select"]);
+      if (labelFor) {
+        select.id = labelFor;
       }
-      case "radio": {
-        control = renderChoiceGroup(component, "radio");
-        break;
+      control = select;
+    } else {
+      const input = document.createElement("input");
+      input.className = "form-control";
+      if (variant === "number") {
+        input.type = "number";
+      } else {
+        input.type = "text";
       }
-      case "checkbox": {
-        control = renderChoiceGroup(component, "checkbox");
-        break;
+      input.placeholder = component.placeholder || "";
+      input.disabled = !!component.readOnly;
+      labelFor = toId([component.uid, "preview", "input"]);
+      if (labelFor) {
+        input.id = labelFor;
       }
-      case "textarea": {
-        control = document.createElement("textarea");
-        control.className = "form-control";
-        control.rows = clampInteger(component.rows ?? 3, 2, 12);
-        control.placeholder = component.placeholder || "";
-        break;
-      }
-      default: {
-        control = document.createElement("input");
-        control.type = "text";
-        control.className = "form-control";
-        control.placeholder = component.placeholder || "";
-        break;
-      }
+      control = input;
     }
-    if (
-      control instanceof HTMLInputElement ||
-      control instanceof HTMLSelectElement ||
-      control instanceof HTMLTextAreaElement
-    ) {
-      control.disabled = !!component.readOnly;
-    }
-    container.appendChild(control);
-    if ((component.variant || "text") === "select" && !previewOptions.length) {
+    const field = createLabeledField({
+      component,
+      control,
+      labelText,
+      labelTag,
+      labelFor,
+      labelClasses: ["form-label", "mb-1"],
+      applyFormatting: applyTextFormatting,
+    });
+    if (variant === "select" && !previewOptions.length) {
+      const container = document.createElement("div");
+      container.className = "d-flex flex-column gap-2";
+      container.appendChild(field);
       container.appendChild(createPreviewEmptyState());
+      return container;
     }
-    return container;
+    return field;
   }
 
   function renderChoiceGroup(component, type) {
@@ -2671,16 +2694,9 @@ import {
   }
 
   function renderArrayPreview(component) {
-    const container = document.createElement("div");
-    container.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "List");
-    if (headingText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold";
-      heading.textContent = headingText;
-      applyTextFormatting(heading, component);
-      container.appendChild(heading);
-    }
+    const labelText = getComponentLabel(component, "List");
+    const control = document.createElement("div");
+    control.className = "d-flex flex-column gap-2";
 
     const labelFromBinding = (() => {
       const source = (component.binding || "").replace(/^[=@]/, "");
@@ -2705,7 +2721,7 @@ import {
         col.appendChild(card);
         grid.appendChild(col);
       }
-      container.appendChild(grid);
+      control.appendChild(grid);
     } else {
       const list = document.createElement("ul");
       list.className = "list-group";
@@ -2719,9 +2735,16 @@ import {
         item.appendChild(badge);
         list.appendChild(item);
       }
-      container.appendChild(list);
+      control.appendChild(list);
     }
-    return container;
+    return createLabeledField({
+      component,
+      control,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderDividerPreview(component) {
@@ -2911,17 +2934,7 @@ import {
   }
 
   function renderLinearTrackPreview(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Track");
-    if (headingText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold";
-      heading.textContent = headingText;
-      applyTextFormatting(heading, component);
-      wrapper.appendChild(heading);
-    }
-
+    const labelText = getComponentLabel(component, "Track");
     const track = document.createElement("div");
     track.className = "template-linear-track";
     const { segments, active } = getTrackPreviewState(component);
@@ -2935,22 +2948,18 @@ import {
       segment.title = `Segment ${index + 1}`;
       track.appendChild(segment);
     }
-    wrapper.appendChild(track);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: track,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderCircularTrackPreview(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Clock");
-    if (headingText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold";
-      heading.textContent = headingText;
-      applyTextFormatting(heading, component);
-      wrapper.appendChild(heading);
-    }
-
+    const labelText = getComponentLabel(component, "Clock");
     const circle = document.createElement("div");
     circle.className = "template-circular-track";
     const { segments, active } = getTrackPreviewState(component);
@@ -2971,26 +2980,36 @@ import {
     value.className = "template-circular-track__value";
     value.textContent = `${Math.min(active, total)}/${total}`;
     circle.appendChild(value);
-    wrapper.appendChild(circle);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: circle,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderSelectGroupComponentPreview(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Select");
-    if (headingText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold";
-      heading.textContent = headingText;
-      applyTextFormatting(heading, component);
-      wrapper.appendChild(heading);
-    }
-
+    const labelText = getComponentLabel(component, "Select");
     const options = resolveSelectGroupPreviewOptions(component);
     if (!options.length) {
-      wrapper.appendChild(createPreviewEmptyState());
-      return wrapper;
+      const container = document.createElement("div");
+      container.className = "d-flex flex-column gap-2";
+      if (labelText) {
+        container.appendChild(
+          createLabeledField({
+            component,
+            control: document.createDocumentFragment(),
+            labelText,
+            labelTag: "div",
+            labelClasses: ["fw-semibold"],
+            applyFormatting: applyTextFormatting,
+          })
+        );
+      }
+      container.appendChild(createPreviewEmptyState());
+      return container;
     }
     let control;
     if (component.variant === "tags") {
@@ -3038,22 +3057,18 @@ import {
         control.appendChild(button);
       });
     }
-    wrapper.appendChild(control);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderTogglePreview(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const headingText = getComponentLabel(component, "Toggle");
-    if (headingText) {
-      const heading = document.createElement("div");
-      heading.className = "fw-semibold";
-      heading.textContent = headingText;
-      applyTextFormatting(heading, component);
-      wrapper.appendChild(heading);
-    }
-
+    const labelText = getComponentLabel(component, "Toggle");
     const states = resolveTogglePreviewStates(component);
     const shape = component.shape || "circle";
     const fallbackState = typeof component.value === "string" ? component.value.trim() : "";
@@ -3080,12 +3095,22 @@ import {
     } else {
       preview.setAttribute("aria-label", "Toggle preview");
     }
-    wrapper.appendChild(preview);
+    const field = createLabeledField({
+      component,
+      control: preview,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
     if (!hasStates) {
-      wrapper.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
+      const container = document.createElement("div");
+      container.className = "d-flex flex-column gap-2";
+      container.appendChild(field);
+      container.appendChild(createPreviewEmptyState("Select a source to preview toggle states."));
+      return container;
     }
-
-    return wrapper;
+    return field;
   }
 
   function selectComponent(uid) {
@@ -3473,6 +3498,9 @@ import {
     if (colorControls.length) {
       appearanceControls.push(createColorRow(component, colorControls));
     }
+    if (componentSupportsLabelPosition(component)) {
+      appearanceControls.push(createLabelPositionControl(component));
+    }
     if (componentHasTextControls(component)) {
       appearanceControls.push(createTextSizeControls(component));
       appearanceControls.push(createTextStyleControls(component));
@@ -3504,6 +3532,34 @@ import {
       return false;
     }
     return component.type === "input" && (component.variant || "text") === "number";
+  }
+
+  function componentSupportsLabelPosition(component) {
+    if (!component || typeof component !== "object") {
+      return false;
+    }
+    const definition = COMPONENT_DEFINITIONS[component.type] || {};
+    return Boolean(definition.supportsLabelPosition);
+  }
+
+  function createLabelPositionControl(component) {
+    const options = [
+      { value: "top", icon: "tabler:layout-align-top", label: "Top" },
+      { value: "right", icon: "tabler:layout-align-right", label: "Right" },
+      { value: "bottom", icon: "tabler:layout-align-bottom", label: "Bottom" },
+      { value: "left", icon: "tabler:layout-align-left", label: "Left" },
+    ];
+    const current = normalizeLabelPosition(component.labelPosition, "top");
+    return createRadioButtonGroup(component, "Label position", options, current, (value) => {
+      const next = normalizeLabelPosition(value, current);
+      updateComponent(
+        component.uid,
+        (draft) => {
+          draft.labelPosition = next;
+        },
+        { rerenderCanvas: true, rerenderInspector: true }
+      );
+    }, { forceSingleRow: true });
   }
 
   function createRollerInputControl(component) {
@@ -4750,6 +4806,7 @@ import {
       return null;
     }
     const type = component.type || "input";
+    const definition = COMPONENT_DEFINITIONS[type] || {};
     let base;
     try {
       base = createComponent(type);
@@ -4836,6 +4893,12 @@ import {
       ensureContainerZones(merged);
     }
     merged.collapsible = Boolean(merged.collapsible);
+    if (definition.supportsLabelPosition) {
+      const basePosition = base?.labelPosition || "top";
+      merged.labelPosition = normalizeLabelPosition(merged.labelPosition || basePosition, basePosition);
+    } else if (Object.prototype.hasOwnProperty.call(merged, "labelPosition")) {
+      delete merged.labelPosition;
+    }
     return merged;
   }
 
