@@ -4,7 +4,8 @@
   "template": "tpl.dnd-5e-basic",
   "system": "sys.dnd-5e",
   "data": {
-    "name": "Test"
+    "name": "Test",
+    "class": "Bard"
   },
   "state": {
     "timers": {},
