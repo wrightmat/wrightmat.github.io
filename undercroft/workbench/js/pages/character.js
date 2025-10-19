@@ -181,7 +181,7 @@ import {
       return true;
     }
     const ownership = (metadata.ownership || "").toLowerCase();
-    if (ownership === "shared" || ownership === "public") {
+    if (ownership === "shared") {
       return false;
     }
     if (ownership === "local" || ownership === "draft") {
@@ -197,7 +197,7 @@ import {
     if (metadata.ownerUsername && user.username) {
       return metadata.ownerUsername === user.username;
     }
-    return ownership !== "shared" && ownership !== "public";
+    return ownership !== "shared";
   }
 
   function resolveOwnerLabel(metadata) {
@@ -549,7 +549,11 @@ import {
       return null;
     }
     try {
-      const result = await dataManager.get("systems", systemId, { preferLocal: true });
+      const shareToken = metadata.shareToken || "";
+      const result = await dataManager.get("systems", systemId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       const payload = result?.payload || null;
       if (payload) {
         systemDefinitionCache.set(systemId, payload);
@@ -557,6 +561,7 @@ import {
           id: systemId,
           title: payload.title || systemId,
           source: result?.source || "remote",
+          shareToken,
           payload,
         });
       }
@@ -599,10 +604,14 @@ import {
     if (next.permissions !== undefined && next.sharePermissions === undefined) {
       next.sharePermissions = next.permissions;
     }
+    if (next.share_token !== undefined && next.shareToken === undefined) {
+      next.shareToken = next.share_token;
+    }
     delete next.owner_id;
     delete next.owner_username;
     delete next.owner_tier;
     delete next.permissions;
+    delete next.share_token;
 
     if (!next.ownership && current.ownership) {
       next.ownership = current.ownership;
@@ -618,6 +627,9 @@ import {
     }
     if (!next.sharePermissions && current.sharePermissions) {
       next.sharePermissions = current.sharePermissions;
+    }
+    if (!next.shareToken && current.shareToken) {
+      next.shareToken = current.shareToken;
     }
     Object.keys(next).forEach((key) => {
       if (next[key] === undefined) {
@@ -896,20 +908,6 @@ import {
           sharePermissions: entry.permissions || "",
         });
       });
-      const publicEntries = Array.isArray(remote?.public) ? remote.public : [];
-      publicEntries.forEach((entry) => {
-        if (!entry || !entry.id) return;
-        registerCharacterRecord({
-          id: entry.id,
-          title: entry.name || entry.title || entry.id,
-          template: entry.template || "",
-          source: "remote",
-          ownership: "public",
-          ownerId: entry.owner_id ?? null,
-          ownerUsername: entry.owner_username || "",
-          ownerTier: entry.owner_tier || "",
-        });
-      });
       syncCharacterOptions();
     } catch (error) {
       console.warn("Character editor: unable to refresh remote characters", error);
@@ -920,18 +918,14 @@ import {
     if (!pendingSharedRecord) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedRecord();
-    } else if (status) {
-      status.show("Sign in to load the shared character.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedRecord();
   }
 
   async function loadPendingSharedRecord() {
     if (!pendingSharedRecord) {
       return;
     }
-    const targetId = pendingSharedRecord;
+    const { id: targetId, shareToken = "" } = pendingSharedRecord;
     pendingSharedRecord = null;
     registerCharacterRecord({
       id: targetId,
@@ -939,10 +933,11 @@ import {
       template: "",
       source: "remote",
       ownership: "shared",
+      shareToken,
     });
     syncCharacterOptions();
     try {
-      await loadCharacter(targetId);
+      await loadCharacter(targetId, { shareToken });
     } catch (error) {
       console.error("Character editor: unable to load shared character", error);
       if (status) {
@@ -1045,7 +1040,7 @@ import {
     renderPreview();
   }
 
-  async function loadCharacter(id) {
+  async function loadCharacter(id, { shareToken = "" } = {}) {
     if (!id) {
       return;
     }
@@ -1054,7 +1049,8 @@ import {
       if (!metadata) {
         throw new Error("Character metadata missing");
       }
-      const payload = await fetchCharacterPayload(metadata);
+      const token = shareToken || metadata.shareToken || "";
+      const payload = await fetchCharacterPayload(metadata, { shareToken: token });
       if (!payload) {
         throw new Error("Character payload missing");
       }
@@ -1071,6 +1067,7 @@ import {
         ownerUsername: metadata.ownerUsername,
         ownerTier: metadata.ownerTier,
         sharePermissions: metadata.sharePermissions,
+        shareToken: token,
       });
       if (state.draft.template) {
         await loadTemplateById(state.draft.template);
@@ -1154,7 +1151,7 @@ import {
     return true;
   }
 
-  async function fetchCharacterPayload(metadata) {
+  async function fetchCharacterPayload(metadata, { shareToken = "" } = {}) {
     if (!metadata) {
       return null;
     }
@@ -1201,7 +1198,10 @@ import {
       }
     }
     if (metadata.source === "remote" && dataManager.baseUrl) {
-      const result = await dataManager.get("characters", metadata.id, { preferLocal: true });
+      const result = await dataManager.get("characters", metadata.id, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       return result?.payload || null;
     }
     return null;
@@ -2562,7 +2562,8 @@ import {
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("Character editor: unable to parse shared record", error);
       return null;

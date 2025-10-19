@@ -332,7 +332,11 @@ import {
           payload = await response.json();
           markBuiltinAvailable("templates", metadata.id || selectedId);
         } else {
-          const result = await dataManager.get("templates", selectedId, { preferLocal: true });
+          const shareToken = metadata.shareToken || "";
+          const result = await dataManager.get("templates", selectedId, {
+            preferLocal: !shareToken,
+            shareToken,
+          });
           payload = result?.payload || null;
         }
         if (!payload) {
@@ -341,10 +345,22 @@ import {
         const label = payload.title || metadata.title || selectedId;
         const schema = payload.schema || payload.system || metadata.schema || "";
         registerTemplateRecord(
-          { id: payload.id || selectedId, title: label, schema, source: metadata.source || "remote", path: metadata.path },
+          {
+            id: payload.id || selectedId,
+            title: label,
+            schema,
+            source: metadata.source || "remote",
+            path: metadata.path,
+            shareToken: metadata.shareToken,
+          },
           { syncOption: true }
         );
-        applyTemplateData(payload, { origin: metadata.source || "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+        applyTemplateData(payload, {
+          origin: metadata.source || "remote",
+          emitStatus: true,
+          statusMessage: `Loaded ${label}`,
+          shareToken: metadata.shareToken || "",
+        });
       } catch (error) {
         console.error("Unable to load template", error);
         if (metadata.source === "builtin") {
@@ -707,6 +723,7 @@ import {
             title: payload.title || templateId,
             schema: payload.schema,
             source: state.template.origin,
+            shareToken: state.template.shareToken || "",
           },
           { syncOption: true }
         );
@@ -1372,7 +1389,13 @@ import {
       const items = remote?.items || [];
       items.forEach((item) => {
         registerTemplateRecord(
-          { id: item.id, title: item.title || item.id, schema: item.schema || "", source: "remote" },
+          {
+            id: item.id,
+            title: item.title || item.id,
+            schema: item.schema || "",
+            source: "remote",
+            shareToken: item.shareToken || "",
+          },
           { syncOption: true }
         );
       });
@@ -1387,25 +1410,27 @@ import {
     if (!pendingSharedTemplate) {
       return;
     }
-    if (dataManager.isAuthenticated()) {
-      void loadPendingSharedTemplate();
-    } else if (status) {
-      status.show("Sign in to load the shared template.", { type: "info", timeout: 2600 });
-    }
+    void loadPendingSharedTemplate();
   }
 
   async function loadPendingSharedTemplate() {
     if (!pendingSharedTemplate) {
       return;
     }
-    const targetId = pendingSharedTemplate;
+    const { id: targetId, shareToken = "" } = pendingSharedTemplate;
     pendingSharedTemplate = null;
-    registerTemplateRecord({ id: targetId, title: targetId, schema: "", source: "remote" }, { syncOption: true });
+    registerTemplateRecord(
+      { id: targetId, title: targetId, schema: "", source: "remote", shareToken },
+      { syncOption: true }
+    );
     if (elements.templateSelect) {
       elements.templateSelect.value = targetId;
     }
     try {
-      const result = await dataManager.get("templates", targetId, { preferLocal: true });
+      const result = await dataManager.get("templates", targetId, {
+        preferLocal: !shareToken,
+        shareToken,
+      });
       const payload = result?.payload;
       if (!payload) {
         throw new Error("Template payload missing");
@@ -1413,10 +1438,15 @@ import {
       const label = payload.title || templateCatalog.get(targetId)?.title || targetId;
       const schema = payload.schema || payload.system || templateCatalog.get(targetId)?.schema || "";
       registerTemplateRecord(
-        { id: payload.id || targetId, title: label, schema, source: "remote" },
+        { id: payload.id || targetId, title: label, schema, source: "remote", shareToken },
         { syncOption: true },
       );
-      applyTemplateData(payload, { origin: "remote", emitStatus: true, statusMessage: `Loaded ${label}` });
+      applyTemplateData(payload, {
+        origin: "remote",
+        emitStatus: true,
+        statusMessage: `Loaded ${label}`,
+        shareToken,
+      });
     } catch (error) {
       console.error("Template editor: unable to load shared template", error);
       if (status) {
@@ -2729,20 +2759,29 @@ import {
 
   function applyTemplateData(
     data = {},
-    { origin = "draft", emitStatus = false, statusMessage = "", markClean = origin !== "draft" } = {}
+    {
+      origin = "draft",
+      emitStatus = false,
+      statusMessage = "",
+      markClean = origin !== "draft",
+      shareToken = "",
+    } = {}
   ) {
+    const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const template = createBlankTemplate({
       id: data.id || "",
       title: data.title || "",
       version: data.version || data.metadata?.version || "0.1",
       schema: data.schema || data.system || "",
       origin,
+      shareToken: effectiveShareToken,
     });
     componentCounter = 0;
     const components = Array.isArray(data.components)
       ? data.components.map((component) => hydrateComponent(component)).filter(Boolean)
       : [];
     state.template = template;
+    state.template.shareToken = effectiveShareToken;
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
@@ -4142,13 +4181,21 @@ import {
       .replace(/[^a-z0-9_-]/g, "-");
   }
 
-  function createBlankTemplate({ id = "", title = "", version = "0.1", schema = "", origin = "draft" } = {}) {
+  function createBlankTemplate({
+    id = "",
+    title = "",
+    version = "0.1",
+    schema = "",
+    origin = "draft",
+    shareToken = "",
+  } = {}) {
     return {
       id: id || "",
       title: title || "",
       version: version || "0.1",
       schema: schema || "",
       origin,
+      shareToken: shareToken || "",
     };
   }
 
@@ -4214,7 +4261,8 @@ import {
       if (bucket !== expectedBucket || !id) {
         return null;
       }
-      return id;
+      const shareToken = params.get("share") || "";
+      return { id, shareToken };
     } catch (error) {
       console.warn("Template editor: unable to parse shared record", error);
       return null;

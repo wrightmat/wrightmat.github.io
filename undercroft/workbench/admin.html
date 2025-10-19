@@ -276,7 +276,7 @@
                               <th scope="col" data-admin-owned-sort="type" role="button" tabindex="0" aria-sort="none">Type</th>
                               <th scope="col" data-admin-owned-sort="created_at" role="button" tabindex="0" aria-sort="none">Created</th>
                               <th scope="col" data-admin-owned-sort="last_accessed_at" role="button" tabindex="0" aria-sort="none">Last accessed</th>
-                              <th scope="col" data-admin-owned-sort="is_public" role="button" tabindex="0" aria-sort="none">Share</th>
+                              <th scope="col">Share</th>
                               <th scope="col" class="text-end" data-admin-owned-sort="owner" role="button" tabindex="0" aria-sort="none">Owner / Actions</th>
                             </tr>
                           </thead>
@@ -339,6 +339,95 @@
             </p>
           </div>
         </aside>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="admin-share-modal"
+      tabindex="-1"
+      aria-hidden="true"
+      data-admin-share-modal
+    >
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5 mb-0" data-admin-share-title>Manage access</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex flex-column gap-4">
+              <section class="d-flex flex-column gap-3">
+                <div>
+                  <h3 class="h6 mb-1">Share link</h3>
+                  <p class="text-body-secondary mb-0" data-admin-share-link-help>
+                    Anyone with the link can view this resource but cannot edit it on the server.
+                  </p>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                  <div class="input-group" data-admin-share-link-group hidden>
+                    <input type="text" class="form-control" data-admin-share-link readonly />
+                    <button class="btn btn-outline-secondary" type="button" data-admin-share-copy>Copy</button>
+                    <button class="btn btn-outline-danger" type="button" data-admin-share-disable>
+                      Disable link
+                    </button>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <button class="btn btn-primary" type="button" data-admin-share-generate>Create link</button>
+                    <span class="text-body-secondary small" data-admin-share-link-status></span>
+                  </div>
+                </div>
+              </section>
+              <hr class="my-0" />
+              <section class="d-flex flex-column gap-3">
+                <div>
+                  <h3 class="h6 mb-1">Shared with people</h3>
+                  <p class="text-body-secondary mb-0">
+                    Add registered users to grant ongoing access. Choose "Can edit" to allow saves.
+                  </p>
+                </div>
+                <form class="row g-2 align-items-end" data-admin-share-add-form>
+                  <div class="col-12 col-lg">
+                    <label class="form-label" for="admin-share-username">Username</label>
+                    <input
+                      class="form-control"
+                      type="text"
+                      id="admin-share-username"
+                      name="username"
+                      autocomplete="off"
+                      data-admin-share-username
+                      required
+                    />
+                  </div>
+                  <div class="col-6 col-lg-auto">
+                    <label class="form-label" for="admin-share-permission">Permission</label>
+                    <select class="form-select" id="admin-share-permission" data-admin-share-permission>
+                      <option value="view">Can view</option>
+                      <option value="edit">Can edit</option>
+                    </select>
+                  </div>
+                  <div class="col-6 col-lg-auto">
+                    <button class="btn btn-primary" type="submit">Share</button>
+                  </div>
+                </form>
+                <div class="table-responsive" data-admin-share-table hidden>
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th scope="col">User</th>
+                        <th scope="col" class="text-end">Permission</th>
+                      </tr>
+                    </thead>
+                    <tbody data-admin-share-rows></tbody>
+                  </table>
+                </div>
+                <div class="alert alert-secondary mb-0" data-admin-share-empty hidden>No one else has access.</div>
+              </section>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="status-root" data-status-root></div>

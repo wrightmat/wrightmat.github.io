@@ -381,7 +381,7 @@ export class DataManager {
         aggregated.push(entry);
       });
     };
-    ["owned", "shared", "public", "items"].forEach((key) => addEntries(result[key]));
+    ["owned", "shared", "items"].forEach((key) => addEntries(result[key]));
     result.items = aggregated;
     return result;
   }
@@ -397,14 +397,16 @@ export class DataManager {
     }
   }
 
-  async get(bucket, id, { preferLocal = true } = {}) {
-    if (preferLocal) {
+  async get(bucket, id, { preferLocal = true, shareToken = "" } = {}) {
+    const token = shareToken ? String(shareToken) : "";
+    if (preferLocal && !token) {
       const local = this.getLocal(bucket, id);
       if (local !== undefined) {
         return { source: "local", payload: local };
       }
     }
-    const payload = await this._request(`/content/${bucket}/${id}`, { method: "GET", auth: true });
+    const query = token ? `?share=${encodeURIComponent(token)}` : "";
+    const payload = await this._request(`/content/${bucket}/${id}${query}`, { method: "GET", auth: true });
     return { source: "remote", payload };
   }
 
@@ -501,19 +503,6 @@ export class DataManager {
     });
   }
 
-  async toggleVisibility(bucket, id, makePublic) {
-    const query = makePublic ? "" : "?public=false";
-    const result = await this._request(`/content/${bucket}/${id}/public${query}`, {
-      method: "POST",
-      body: {},
-      auth: true,
-    });
-    this._listCache.delete(`${bucket}`);
-    this._ownedCache.clear();
-    this._emit("workbench:content-visibility", { bucket, id, public: Boolean(result?.public) });
-    return result;
-  }
-
   async updateContentOwner(bucket, id, username) {
     if (!username) {
       throw new Error("Username is required");
@@ -544,6 +533,100 @@ export class DataManager {
 
   async listBuiltins() {
     return this._request("/content/builtins", { method: "GET" });
+  }
+
+  async listShares(contentType, contentId) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    return this._request(`/shares/${contentType}/${contentId}`, { method: "GET", auth: true });
+  }
+
+  async shareWithUser({ contentType, contentId, username, permissions = "view" } = {}) {
+    if (!contentType || !contentId || !username) {
+      throw new Error("contentType, contentId, and username are required");
+    }
+    const result = await this._request("/shares", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        username,
+        permissions,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share", {
+      bucket: contentType,
+      id: contentId,
+      username,
+      permissions,
+      action: "grant",
+    });
+    return result;
+  }
+
+  async revokeShare({ contentType, contentId, username } = {}) {
+    if (!contentType || !contentId || !username) {
+      throw new Error("contentType, contentId, and username are required");
+    }
+    const result = await this._request("/shares/revoke", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        username,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share", {
+      bucket: contentType,
+      id: contentId,
+      username,
+      action: "revoke",
+    });
+    return result;
+  }
+
+  async createShareLink({ contentType, contentId, permissions = "view" } = {}) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    const result = await this._request("/shares/link", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        permissions,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share-link", {
+      bucket: contentType,
+      id: contentId,
+      action: "created",
+    });
+    return result;
+  }
+
+  async revokeShareLink({ contentType, contentId } = {}) {
+    if (!contentType || !contentId) {
+      throw new Error("contentType and contentId are required");
+    }
+    const result = await this._request("/shares/link/revoke", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share-link", {
+      bucket: contentType,
+      id: contentId,
+      action: "revoked",
+    });
+    return result;
   }
 }
 
