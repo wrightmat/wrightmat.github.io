@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 import re
 
 from .auth import AuthError, User
+from .roles import ROLE_ORDER, role_rank
 from .shares import resolve_share_token, touch_share_link
 from .state import ServerState
 
@@ -38,8 +39,6 @@ else:  # pragma: no cover
         with path.open(mode, encoding="utf-8") as handle:
             yield handle
 
-
-ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"]
 
 _METADATA_PATTERN = re.compile(r"@([\w-]+):\s*(.+)")
 
@@ -145,10 +144,6 @@ def _ensure_column(conn: sqlite3.Connection, table: str, column: str, type_: str
     conn.execute(
         f"ALTER TABLE {table} ADD COLUMN {column} {type_}{default_clause}"
     )
-
-
-def role_rank(role: str) -> int:
-    return ROLE_ORDER.index(role) if role in ROLE_ORDER else -1
 
 
 def bucket_root(state: ServerState, bucket: str) -> Path:
