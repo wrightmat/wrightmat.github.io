@@ -32,6 +32,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
 
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
+
   const gate = initTierGate({
     root: document,
     dataManager,
@@ -603,12 +607,24 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         const savedToServer = result?.source === "remote";
         const label = payload.title || systemId;
         state.system.origin = savedToServer ? "remote" : "local";
+        const user = sessionUser();
+        const ownership = savedToServer ? "owned" : state.system.origin || "draft";
+        state.system.ownership = ownership;
+        state.system.permissions = "edit";
+        if (savedToServer && user) {
+          state.system.ownerId = user.id ?? null;
+          state.system.ownerUsername = user.username || "";
+        }
         registerSystemRecord(
           {
             id: systemId,
             title: label,
             source: state.system.origin,
             shareToken: state.system.shareToken || "",
+            ownership,
+            permissions: "edit",
+            ownerId: savedToServer ? user?.id ?? null : undefined,
+            ownerUsername: savedToServer ? user?.username || "" : undefined,
           },
           { syncOption: true }
         );
@@ -770,6 +786,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       importers: [],
       origin,
       shareToken: shareToken || "",
+      ownership: origin || "",
+      permissions: "",
+      ownerId: null,
+      ownerUsername: "",
     };
   }
 
@@ -822,6 +842,21 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     state.system = cloneSystem(system);
     state.system.origin = system.origin || state.system.origin || "draft";
     state.system.shareToken = system.shareToken || state.system.shareToken || "";
+    const metadata = state.system.id ? systemCatalog.get(state.system.id) || null : null;
+    if (metadata) {
+      const ownership = typeof metadata.ownership === "string" && metadata.ownership
+        ? metadata.ownership.toLowerCase()
+        : state.system.origin || "";
+      state.system.ownership = ownership;
+      state.system.permissions = metadata.permissions || state.system.permissions || "";
+      state.system.ownerId = metadata.ownerId ?? metadata.owner_id ?? null;
+      state.system.ownerUsername = metadata.ownerUsername || metadata.owner_username || "";
+    } else {
+      state.system.ownership = state.system.origin || state.system.ownership || "";
+      state.system.permissions = state.system.permissions || "";
+      state.system.ownerId = state.system.ownerId ?? null;
+      state.system.ownerUsername = state.system.ownerUsername || "";
+    }
     if (state.system.id) {
       registerSystemRecord(
         {
@@ -829,6 +864,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           title: state.system.title,
           source: state.system.origin,
           shareToken: state.system.shareToken,
+          ownership: state.system.ownership,
+          permissions: state.system.permissions,
+          ownerId: state.system.ownerId ?? null,
+          ownerUsername: state.system.ownerUsername || "",
         },
         { syncOption: true }
       );
@@ -1961,6 +2000,27 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const current = systemCatalog.get(record.id) || {};
     const next = { ...current, ...record };
+    if (record.ownership === undefined && current.ownership !== undefined) {
+      next.ownership = current.ownership;
+    }
+    if (record.permissions === undefined && current.permissions !== undefined) {
+      next.permissions = current.permissions;
+    }
+    if (record.ownerId === undefined && current.ownerId !== undefined) {
+      next.ownerId = current.ownerId;
+    }
+    if (record.ownerUsername === undefined && current.ownerUsername !== undefined) {
+      next.ownerUsername = current.ownerUsername;
+    }
+    if (!next.ownership) {
+      const fallbackOwnership =
+        (typeof record.ownership === "string" && record.ownership) ||
+        (typeof current.ownership === "string" && current.ownership) ||
+        (typeof record.source === "string" && record.source) ||
+        (typeof current.source === "string" && current.source) ||
+        "";
+      next.ownership = fallbackOwnership;
+    }
     systemCatalog.set(record.id, next);
     if (syncOption) {
       ensureSelectOption(record.id, next.title || record.id);
@@ -1986,12 +2046,101 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
   }
 
+  function getSystemMetadata(systemId) {
+    if (!systemId) {
+      return null;
+    }
+    return systemCatalog.get(systemId) || null;
+  }
+
+  function systemOwnership(metadata) {
+    const metaOwnership = metadata?.ownership;
+    if (typeof metaOwnership === "string" && metaOwnership) {
+      return metaOwnership.toLowerCase();
+    }
+    const stateOwnership = state.system?.ownership;
+    if (typeof stateOwnership === "string" && stateOwnership) {
+      return stateOwnership.toLowerCase();
+    }
+    const origin = state.system?.origin;
+    return typeof origin === "string" && origin ? origin.toLowerCase() : "";
+  }
+
+  function systemPermissions(metadata) {
+    if (metadata && typeof metadata.permissions === "string" && metadata.permissions) {
+      return metadata.permissions.toLowerCase();
+    }
+    if (typeof state.system?.permissions === "string" && state.system.permissions) {
+      return state.system.permissions.toLowerCase();
+    }
+    return "";
+  }
+
+  function systemOwnerMatchesCurrentUser(metadata) {
+    const ownership = systemOwnership(metadata);
+    if (ownership === "local" || ownership === "draft" || ownership === "owned") {
+      return true;
+    }
+    const user = sessionUser();
+    if (!user || !dataManager.isAuthenticated()) {
+      return false;
+    }
+    const ownerId = metadata?.ownerId ?? metadata?.owner_id ?? state.system?.ownerId ?? null;
+    if (ownerId !== null && ownerId !== undefined && user.id !== undefined && user.id !== null) {
+      if (String(ownerId) === String(user.id)) {
+        return true;
+      }
+    }
+    const ownerUsername =
+      metadata?.ownerUsername ||
+      metadata?.owner_username ||
+      state.system?.ownerUsername ||
+      "";
+    if (ownerUsername && user.username) {
+      if (ownerUsername.toLowerCase() === user.username.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function systemAllowsEdits(metadata) {
+    if (!state.system?.id) {
+      return true;
+    }
+    const ownership = systemOwnership(metadata);
+    if (ownership === "shared") {
+      return systemPermissions(metadata) === "edit";
+    }
+    if (ownership === "public") {
+      return false;
+    }
+    if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
+      return true;
+    }
+    if (!ownership || ownership === "remote") {
+      return systemOwnerMatchesCurrentUser(metadata);
+    }
+    return systemOwnerMatchesCurrentUser(metadata);
+  }
+
+  function resolveSystemOwnerLabel(metadata) {
+    const username =
+      metadata?.ownerUsername ||
+      metadata?.owner_username ||
+      state.system?.ownerUsername ||
+      "";
+    return username || "the owner";
+  }
+
   function syncSystemActions() {
     const hasSystem = Boolean(state.system);
     if (elements.saveButton) {
       const canWrite = dataManager.hasWriteAccess("systems");
+      const metadata = getSystemMetadata(state.system?.id);
+      const canEditRecord = systemAllowsEdits(metadata);
       const hasChanges = hasSystem && hasUnsavedSystemChanges();
-      const enabled = hasSystem && hasChanges && canWrite;
+      const enabled = hasSystem && hasChanges && canWrite && canEditRecord;
       elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasSystem || (!state.system.id && !state.system.title)) {
@@ -2001,6 +2150,17 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         elements.saveButton.title = required
           ? `Saving systems requires a ${required} tier.`
           : "Your tier cannot save systems.";
+      } else if (!canEditRecord) {
+        const ownership = systemOwnership(metadata);
+        const permissions = systemPermissions(metadata);
+        if (ownership === "shared" && permissions !== "edit") {
+          elements.saveButton.title = "This system was shared with you as view-only. Duplicate it to make changes.";
+        } else if (ownership === "public") {
+          elements.saveButton.title = "Public systems are view-only. Duplicate it to customize.";
+        } else {
+          const ownerLabel = resolveSystemOwnerLabel(metadata);
+          elements.saveButton.title = `Only ${ownerLabel} can save this system.`;
+        }
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
@@ -2031,9 +2191,13 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!elements.deleteButton) {
       return;
     }
+    const metadata = getSystemMetadata(state.system?.id);
+    const canWrite = dataManager.hasWriteAccess("systems");
+    const canEditRecord = systemAllowsEdits(metadata);
     const hasIdentifier = Boolean(state.system?.id);
-    elements.deleteButton.classList.toggle("d-none", !hasIdentifier);
-    if (!hasIdentifier) {
+    const showDelete = hasIdentifier && canEditRecord && canWrite;
+    elements.deleteButton.classList.toggle("d-none", !showDelete);
+    if (!showDelete) {
       elements.deleteButton.disabled = true;
       elements.deleteButton.setAttribute("aria-disabled", "true");
       elements.deleteButton.removeAttribute("title");
@@ -2071,7 +2235,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   function registerBuiltinContent() {
     listBuiltinSystems().forEach((system) => {
       registerSystemRecord(
-        { id: system.id, title: system.title, path: system.path, source: "builtin" },
+        { id: system.id, title: system.title, path: system.path, source: "builtin", ownership: "builtin" },
         { syncOption: false }
       );
       verifyBuiltinAsset("systems", system, {
@@ -2133,7 +2297,16 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
           return;
         }
-        registerSystemRecord({ id, title: payload?.title || id, source: "local" }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id,
+            title: payload?.title || id,
+            source: "local",
+            ownership: "local",
+            permissions: "edit",
+          },
+          { syncOption: true }
+        );
       });
     } catch (error) {
       console.warn("System editor: unable to read local systems", error);
@@ -2149,24 +2322,65 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         "systems",
         owned.map((entry) => entry?.id).filter(Boolean)
       );
+      const session = sessionUser();
+      const sessionId = session?.id;
+      const sessionUsername = typeof session?.username === "string" ? session.username.toLowerCase() : "";
       adopted.forEach(({ id, payload }) => {
         if (!id) return;
-        registerSystemRecord({ id, title: payload?.title || id, source: "remote" }, { syncOption: true });
+        registerSystemRecord(
+          {
+            id,
+            title: payload?.title || id,
+            source: "remote",
+            ownership: "owned",
+            permissions: "edit",
+            ownerId: sessionId ?? null,
+            ownerUsername: session?.username || "",
+          },
+          { syncOption: true }
+        );
       });
       const items = dataManager.collectListEntries(remote);
       items.forEach((item) => {
         if (!item || !item.id) {
           return;
         }
+        const rawOwnerId = item.owner_id ?? item.ownerId ?? null;
+        const ownerId = rawOwnerId === undefined ? null : rawOwnerId;
+        const ownerUsername = item.owner_username || item.ownerUsername || "";
+        const permissions = typeof item.permissions === "string" ? item.permissions.toLowerCase() : "";
+        const isPublic = Boolean(item.is_public);
+        const ownerMatches = (() => {
+          if (!session) {
+            return false;
+          }
+          if (ownerId !== null && sessionId !== undefined && sessionId !== null) {
+            if (String(ownerId) === String(sessionId)) {
+              return true;
+            }
+          }
+          if (ownerUsername && sessionUsername) {
+            return ownerUsername.toLowerCase() === sessionUsername;
+          }
+          return false;
+        })();
+        const ownership = permissions
+          ? "shared"
+          : isPublic
+          ? "public"
+          : ownerMatches
+          ? "owned"
+          : "remote";
         registerSystemRecord(
           {
             id: item.id,
             title: item.title || item.id,
             source: "remote",
             shareToken: item.shareToken || item.share_token || "",
-            ownership: item.permissions ? "shared" : item.is_public ? "public" : "remote",
-            ownerId: item.owner_id ?? item.ownerId ?? null,
-            ownerUsername: item.owner_username || item.ownerUsername || "",
+            ownership,
+            permissions: permissions || (ownerMatches ? "edit" : ""),
+            ownerId,
+            ownerUsername,
           },
           { syncOption: true }
         );
@@ -2190,7 +2404,17 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
     const { id: targetId, shareToken = "" } = pendingSharedSystemId;
     pendingSharedSystemId = null;
-    registerSystemRecord({ id: targetId, title: targetId, source: "remote", shareToken }, { syncOption: true });
+    registerSystemRecord(
+      {
+        id: targetId,
+        title: targetId,
+        source: "remote",
+        shareToken,
+        ownership: "shared",
+        permissions: "view",
+      },
+      { syncOption: true }
+    );
     if (elements.select) {
       elements.select.value = targetId;
     }

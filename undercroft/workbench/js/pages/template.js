@@ -43,6 +43,10 @@ import {
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
 
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
+
   const gate = initTierGate({
     root: document,
     dataManager,
@@ -722,6 +726,14 @@ import {
         });
         const savedToServer = result?.source === "remote";
         state.template.origin = savedToServer ? "remote" : "local";
+        const user = sessionUser();
+        const ownership = savedToServer ? "owned" : state.template.origin || "draft";
+        state.template.ownership = ownership;
+        state.template.permissions = savedToServer ? "edit" : "";
+        if (savedToServer && user) {
+          state.template.ownerId = user.id ?? null;
+          state.template.ownerUsername = user.username || "";
+        }
         registerTemplateRecord(
           {
             id: templateId,
@@ -729,6 +741,10 @@ import {
             schema: payload.schema,
             source: state.template.origin,
             shareToken: state.template.shareToken || "",
+            ownership,
+            permissions: savedToServer ? "edit" : undefined,
+            ownerId: savedToServer ? user?.id ?? null : undefined,
+            ownerUsername: savedToServer ? user?.username || "" : undefined,
           },
           { syncOption: true }
         );
@@ -1055,6 +1071,27 @@ import {
     if (record.schema === undefined && current.schema) {
       next.schema = current.schema;
     }
+    if (record.ownership === undefined && current.ownership !== undefined) {
+      next.ownership = current.ownership;
+    }
+    if (record.permissions === undefined && current.permissions !== undefined) {
+      next.permissions = current.permissions;
+    }
+    if (record.ownerId === undefined && current.ownerId !== undefined) {
+      next.ownerId = current.ownerId;
+    }
+    if (record.ownerUsername === undefined && current.ownerUsername !== undefined) {
+      next.ownerUsername = current.ownerUsername;
+    }
+    if (!next.ownership) {
+      const fallbackOwnership =
+        (typeof record.ownership === "string" && record.ownership) ||
+        (typeof current.ownership === "string" && current.ownership) ||
+        (typeof record.source === "string" && record.source) ||
+        (typeof current.source === "string" && current.source) ||
+        "";
+      next.ownership = fallbackOwnership;
+    }
     templateCatalog.set(record.id, next);
     if (syncOption) {
       ensureTemplateOption(record.id);
@@ -1163,6 +1200,27 @@ import {
     }
     const current = systemCatalog.get(record.id) || {};
     const next = { ...current, ...record };
+    if (record.ownership === undefined && current.ownership !== undefined) {
+      next.ownership = current.ownership;
+    }
+    if (record.permissions === undefined && current.permissions !== undefined) {
+      next.permissions = current.permissions;
+    }
+    if (record.ownerId === undefined && current.ownerId !== undefined) {
+      next.ownerId = current.ownerId;
+    }
+    if (record.ownerUsername === undefined && current.ownerUsername !== undefined) {
+      next.ownerUsername = current.ownerUsername;
+    }
+    if (!next.ownership) {
+      const fallbackOwnership =
+        (typeof record.ownership === "string" && record.ownership) ||
+        (typeof current.ownership === "string" && current.ownership) ||
+        (typeof record.source === "string" && record.source) ||
+        (typeof current.source === "string" && current.source) ||
+        "";
+      next.ownership = fallbackOwnership;
+    }
     if (record.payload) {
       next.payload = record.payload;
       systemDefinitionCache.set(record.id, record.payload);
@@ -1336,12 +1394,102 @@ import {
     }
   }
 
+  function getTemplateMetadata(templateId) {
+    if (!templateId) {
+      return null;
+    }
+    return templateCatalog.get(templateId) || null;
+  }
+
+  function templateOwnership(metadata) {
+    const metaOwnership = metadata?.ownership;
+    if (typeof metaOwnership === "string" && metaOwnership) {
+      return metaOwnership.toLowerCase();
+    }
+    const stateOwnership = state.template?.ownership;
+    if (typeof stateOwnership === "string" && stateOwnership) {
+      return stateOwnership.toLowerCase();
+    }
+    const origin = state.template?.origin;
+    return typeof origin === "string" && origin ? origin.toLowerCase() : "";
+  }
+
+  function templatePermissions(metadata) {
+    if (metadata && typeof metadata.permissions === "string" && metadata.permissions) {
+      return metadata.permissions.toLowerCase();
+    }
+    if (typeof state.template?.permissions === "string" && state.template.permissions) {
+      return state.template.permissions.toLowerCase();
+    }
+    return "";
+  }
+
+  function templateOwnerMatchesCurrentUser(metadata) {
+    const ownership = templateOwnership(metadata);
+    if (ownership === "local" || ownership === "draft" || ownership === "owned") {
+      return true;
+    }
+    const user = sessionUser();
+    if (!user || !dataManager.isAuthenticated()) {
+      return false;
+    }
+    const ownerId =
+      metadata?.ownerId ?? metadata?.owner_id ?? state.template?.ownerId ?? null;
+    if (ownerId !== null && ownerId !== undefined && user.id !== undefined && user.id !== null) {
+      if (String(ownerId) === String(user.id)) {
+        return true;
+      }
+    }
+    const ownerUsername =
+      metadata?.ownerUsername ||
+      metadata?.owner_username ||
+      state.template?.ownerUsername ||
+      "";
+    if (ownerUsername && user.username) {
+      if (ownerUsername.toLowerCase() === user.username.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function templateAllowsEdits(metadata) {
+    if (!state.template?.id) {
+      return true;
+    }
+    const ownership = templateOwnership(metadata);
+    if (ownership === "shared") {
+      return templatePermissions(metadata) === "edit";
+    }
+    if (ownership === "public") {
+      return false;
+    }
+    if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
+      return true;
+    }
+    if (!ownership || ownership === "remote") {
+      return templateOwnerMatchesCurrentUser(metadata);
+    }
+    return templateOwnerMatchesCurrentUser(metadata);
+  }
+
+  function resolveTemplateOwnerLabel(metadata) {
+    const username =
+      metadata?.ownerUsername ||
+      metadata?.owner_username ||
+      state.template?.ownerUsername ||
+      "";
+    return username || "the owner";
+  }
+
   function syncTemplateActions() {
     const hasTemplate = Boolean(state.template);
     if (elements.saveButton) {
       const canWrite = dataManager.hasWriteAccess("templates");
+      const metadata = getTemplateMetadata(state.template?.id);
+      const canEditRecord = templateAllowsEdits(metadata);
       const hasChanges = hasTemplate && hasUnsavedTemplateChanges();
-      const enabled = hasTemplate && hasChanges && canWrite;
+      const enabled = hasTemplate && hasChanges && canWrite && canEditRecord;
       elements.saveButton.disabled = !enabled;
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
       if (!hasTemplate) {
@@ -1353,6 +1501,17 @@ import {
         elements.saveButton.title = required
           ? `Saving templates requires a ${required} tier.`
           : "Your tier cannot save templates.";
+      } else if (!canEditRecord) {
+        const ownership = templateOwnership(metadata);
+        const permissions = templatePermissions(metadata);
+        if (ownership === "shared" && permissions !== "edit") {
+          elements.saveButton.title = "This template was shared with you as view-only. Duplicate it to make changes.";
+        } else if (ownership === "public") {
+          elements.saveButton.title = "Public templates are view-only. Duplicate it to customize.";
+        } else {
+          const ownerLabel = resolveTemplateOwnerLabel(metadata);
+          elements.saveButton.title = `Only ${ownerLabel} can save this template.`;
+        }
       } else if (!hasChanges) {
         elements.saveButton.title = "No changes to save.";
       } else {
@@ -1383,9 +1542,13 @@ import {
     if (!elements.deleteTemplateButton) {
       return;
     }
+    const metadata = getTemplateMetadata(state.template?.id);
+    const canWrite = dataManager.hasWriteAccess("templates");
+    const canEditRecord = templateAllowsEdits(metadata);
     const hasIdentifier = Boolean(state.template?.id);
-    elements.deleteTemplateButton.classList.toggle("d-none", !hasIdentifier);
-    if (!hasIdentifier) {
+    const showDelete = hasIdentifier && canEditRecord && canWrite;
+    elements.deleteTemplateButton.classList.toggle("d-none", !showDelete);
+    if (!showDelete) {
       elements.deleteTemplateButton.disabled = true;
       elements.deleteTemplateButton.setAttribute("aria-disabled", "true");
       elements.deleteTemplateButton.removeAttribute("title");
@@ -1428,6 +1591,7 @@ import {
         path: template.path,
         source: "builtin",
         schema: template.schema || template.system || "",
+        ownership: "builtin",
       });
       verifyBuiltinAsset("templates", template, {
         skipProbe: Boolean(dataManager.baseUrl),
@@ -1438,7 +1602,13 @@ import {
       });
     });
     listBuiltinSystems().forEach((system) => {
-      registerSystemRecord({ id: system.id, title: system.title, path: system.path, source: "builtin" });
+      registerSystemRecord({
+        id: system.id,
+        title: system.title,
+        path: system.path,
+        source: "builtin",
+        ownership: "builtin",
+      });
       verifyBuiltinAsset("systems", system, {
         skipProbe: Boolean(dataManager.baseUrl),
         onMissing: () => removeSystemRecord(system.id),
@@ -1458,7 +1628,14 @@ import {
         if (!dataManager.localEntryBelongsToCurrentUser(entry)) {
           return;
         }
-        registerSystemRecord({ id, title: payload?.title || id, source: "local", payload });
+        registerSystemRecord({
+          id,
+          title: payload?.title || id,
+          source: "local",
+          payload,
+          ownership: "local",
+          permissions: "edit",
+        });
       });
     } catch (error) {
       console.warn("Template editor: unable to read local systems", error);
@@ -1474,23 +1651,62 @@ import {
         "systems",
         owned.map((entry) => entry?.id).filter(Boolean)
       );
+      const session = sessionUser();
+      const sessionId = session?.id;
+      const sessionUsername = typeof session?.username === "string" ? session.username.toLowerCase() : "";
       adopted.forEach(({ id, payload }) => {
         if (!id) return;
-        registerSystemRecord({ id, title: payload?.title || id, source: "remote", payload });
+        registerSystemRecord({
+          id,
+          title: payload?.title || id,
+          source: "remote",
+          payload,
+          ownership: "owned",
+          permissions: "edit",
+          ownerId: sessionId ?? null,
+          ownerUsername: session?.username || "",
+        });
       });
       const items = dataManager.collectListEntries(remote);
       items.forEach((item) => {
         if (!item || !item.id) {
           return;
         }
+        const rawOwnerId = item.owner_id ?? item.ownerId ?? null;
+        const ownerId = rawOwnerId === undefined ? null : rawOwnerId;
+        const ownerUsername = item.owner_username || item.ownerUsername || "";
+        const permissions = typeof item.permissions === "string" ? item.permissions.toLowerCase() : "";
+        const isPublic = Boolean(item.is_public);
+        const ownerMatches = (() => {
+          if (!session) {
+            return false;
+          }
+          if (ownerId !== null && sessionId !== undefined && sessionId !== null) {
+            if (String(ownerId) === String(sessionId)) {
+              return true;
+            }
+          }
+          if (ownerUsername && sessionUsername) {
+            return ownerUsername.toLowerCase() === sessionUsername;
+          }
+          return false;
+        })();
+        const ownership = permissions
+          ? "shared"
+          : isPublic
+          ? "public"
+          : ownerMatches
+          ? "owned"
+          : "remote";
         registerSystemRecord({
           id: item.id,
           title: item.title || item.id,
           source: "remote",
           shareToken: item.shareToken || item.share_token || "",
-          ownership: item.permissions ? "shared" : item.is_public ? "public" : "remote",
-          ownerId: item.owner_id ?? item.ownerId ?? null,
-          ownerUsername: item.owner_username || item.ownerUsername || "",
+          ownership,
+          permissions: permissions || (ownerMatches ? "edit" : ""),
+          ownerId,
+          ownerUsername,
         });
       });
     } catch (error) {
@@ -1510,7 +1726,14 @@ import {
           return;
         }
         registerTemplateRecord(
-          { id, title: payload?.title || id, schema: payload?.schema || "", source: "local" },
+          {
+            id,
+            title: payload?.title || id,
+            schema: payload?.schema || "",
+            source: "local",
+            ownership: "local",
+            permissions: "edit",
+          },
           { syncOption: true }
         );
       });
@@ -1528,10 +1751,22 @@ import {
         "templates",
         owned.map((entry) => entry?.id).filter(Boolean)
       );
+      const session = sessionUser();
+      const sessionId = session?.id;
+      const sessionUsername = typeof session?.username === "string" ? session.username.toLowerCase() : "";
       adopted.forEach(({ id, payload }) => {
         if (!id) return;
         registerTemplateRecord(
-          { id, title: payload?.title || id, schema: payload?.schema || "", source: "remote" },
+          {
+            id,
+            title: payload?.title || id,
+            schema: payload?.schema || "",
+            source: "remote",
+            ownership: "owned",
+            permissions: "edit",
+            ownerId: sessionId ?? null,
+            ownerUsername: session?.username || "",
+          },
           { syncOption: true }
         );
       });
@@ -1540,6 +1775,32 @@ import {
         if (!item || !item.id) {
           return;
         }
+        const rawOwnerId = item.owner_id ?? item.ownerId ?? null;
+        const ownerId = rawOwnerId === undefined ? null : rawOwnerId;
+        const ownerUsername = item.owner_username || item.ownerUsername || "";
+        const permissions = typeof item.permissions === "string" ? item.permissions.toLowerCase() : "";
+        const isPublic = Boolean(item.is_public);
+        const ownerMatches = (() => {
+          if (!session) {
+            return false;
+          }
+          if (ownerId !== null && sessionId !== undefined && sessionId !== null) {
+            if (String(ownerId) === String(sessionId)) {
+              return true;
+            }
+          }
+          if (ownerUsername && sessionUsername) {
+            return ownerUsername.toLowerCase() === sessionUsername;
+          }
+          return false;
+        })();
+        const ownership = permissions
+          ? "shared"
+          : isPublic
+          ? "public"
+          : ownerMatches
+          ? "owned"
+          : "remote";
         registerTemplateRecord(
           {
             id: item.id,
@@ -1547,9 +1808,10 @@ import {
             schema: item.schema || "",
             source: "remote",
             shareToken: item.shareToken || item.share_token || "",
-            ownership: item.permissions ? "shared" : item.is_public ? "public" : "remote",
-            ownerId: item.owner_id ?? item.ownerId ?? null,
-            ownerUsername: item.owner_username || item.ownerUsername || "",
+            ownership,
+            permissions: permissions || (ownerMatches ? "edit" : ""),
+            ownerId,
+            ownerUsername,
           },
           { syncOption: true }
         );
@@ -1575,7 +1837,15 @@ import {
     const { id: targetId, shareToken = "" } = pendingSharedTemplate;
     pendingSharedTemplate = null;
     registerTemplateRecord(
-      { id: targetId, title: targetId, schema: "", source: "remote", shareToken },
+      {
+        id: targetId,
+        title: targetId,
+        schema: "",
+        source: "remote",
+        shareToken,
+        ownership: "shared",
+        permissions: "view",
+      },
       { syncOption: true }
     );
     if (elements.templateSelect) {
@@ -2937,6 +3207,19 @@ import {
       : [];
     state.template = template;
     state.template.shareToken = effectiveShareToken;
+    const metadata = template.id ? templateCatalog.get(template.id) || null : null;
+    if (metadata) {
+      const ownership = templateOwnership(metadata) || template.origin || "";
+      state.template.ownership = ownership;
+      state.template.permissions = metadata.permissions || state.template.permissions || "";
+      state.template.ownerId = metadata.ownerId ?? metadata.owner_id ?? null;
+      state.template.ownerUsername = metadata.ownerUsername || metadata.owner_username || "";
+    } else {
+      state.template.ownership = template.origin || state.template.ownership || "";
+      state.template.permissions = state.template.permissions || "";
+      state.template.ownerId = null;
+      state.template.ownerUsername = "";
+    }
     state.components = components;
     state.selectedId = null;
     containerActiveTabs.clear();
@@ -2971,7 +3254,14 @@ import {
     }
     const componentClones = Array.isArray(components) ? cloneComponentCollection(components) : [];
     registerTemplateRecord(
-      { id: trimmedId, title: trimmedTitle, schema: trimmedSchema, source: origin },
+      {
+        id: trimmedId,
+        title: trimmedTitle,
+        schema: trimmedSchema,
+        source: origin,
+        ownership: origin,
+        permissions: "edit",
+      },
       { syncOption: true }
     );
     applyTemplateData(
@@ -4367,6 +4657,10 @@ import {
       schema: schema || "",
       origin,
       shareToken: shareToken || "",
+      ownership: origin || "",
+      permissions: "",
+      ownerId: null,
+      ownerUsername: "",
     };
   }
 
