@@ -23,6 +23,7 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { createLabeledField } from "../lib/component-layout.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import {
@@ -123,6 +124,8 @@ import {
 
   const notesState = { collapsed: true };
   const jsonPreviewState = { collapsed: true };
+  const dicePanelState = { collapsed: false };
+  const gameLogPanelState = { collapsed: false };
 
   function cloneValue(value) {
     if (value === undefined) {
@@ -352,11 +355,15 @@ import {
     jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
     jsonPanel: document.querySelector("[data-json-panel]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+    diceSection: document.querySelector("[data-dice-section]"),
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
-    diceResult: document.querySelector("[data-dice-result]"),
     diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
     diceClearButton: document.querySelector("[data-dice-clear]"),
+    dicePanel: document.querySelector("[data-dice-panel]"),
+    diceToggle: document.querySelector("[data-dice-toggle]"),
+    diceToggleIcon: document.querySelector("[data-dice-toggle-icon]"),
+    diceToggleLabel: document.querySelector("[data-dice-toggle-label]"),
     leftPane: document.querySelector('[data-pane="left"]'),
     leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
     rightPane: document.querySelector('[data-pane="right"]'),
@@ -373,12 +380,16 @@ import {
     groupSharePanel: document.querySelector("[data-group-share-panel]"),
     groupShareStatus: document.querySelector("[data-group-share-status]"),
     gameLogSection: document.querySelector("[data-game-log-section]"),
+    gameLogPanel: document.querySelector("[data-game-log-panel]"),
     gameLogEntries: document.querySelector("[data-game-log-entries]"),
     gameLogForm: document.querySelector("[data-game-log-form]"),
     gameLogInput: document.querySelector("[data-game-log-input]"),
     gameLogRefresh: document.querySelector("[data-game-log-refresh]"),
     gameLogStatus: document.querySelector("[data-game-log-status]"),
     gameLogTitle: document.querySelector("[data-game-log-group]"),
+    gameLogToggle: document.querySelector("[data-game-log-toggle]"),
+    gameLogToggleIcon: document.querySelector("[data-game-log-toggle-icon]"),
+    gameLogToggleLabel: document.querySelector("[data-game-log-toggle-label]"),
   };
 
   assignSectionAriaConnections();
@@ -392,6 +403,8 @@ import {
   setNotesCollapsed(true);
   setJsonPreviewCollapsed(true);
   setGroupShareCollapsed(groupShareState.collapsed);
+  setDiceCollapsed(false);
+  setGameLogCollapsed(false);
 
   let newCharacterModalInstance = null;
   if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
@@ -531,6 +544,23 @@ import {
       });
     }
 
+    if (elements.diceToggle) {
+      elements.diceToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setDiceCollapsed(!dicePanelState.collapsed);
+      });
+    }
+
+    if (elements.gameLogToggle) {
+      elements.gameLogToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (!gameLogState.enabled) {
+          return;
+        }
+        setGameLogCollapsed(!gameLogPanelState.collapsed);
+      });
+    }
+
     if (elements.groupShareToggle) {
       elements.groupShareToggle.addEventListener("click", (event) => {
         event.preventDefault();
@@ -605,6 +635,54 @@ import {
     }
     if (elements.jsonToggleIcon) {
       elements.jsonToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
+    }
+  }
+
+  function setDiceCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    dicePanelState.collapsed = next;
+    if (elements.dicePanel) {
+      elements.dicePanel.hidden = next;
+      elements.dicePanel.classList.toggle("d-none", next);
+    }
+    if (elements.diceSection) {
+      elements.diceSection.classList.toggle("is-collapsed", next);
+    }
+    const actionLabel = next ? "Expand dice roller" : "Collapse dice roller";
+    if (elements.diceToggle) {
+      elements.diceToggle.setAttribute("aria-expanded", next ? "false" : "true");
+      elements.diceToggle.setAttribute("aria-label", actionLabel);
+      elements.diceToggle.setAttribute("title", actionLabel);
+    }
+    if (elements.diceToggleLabel) {
+      elements.diceToggleLabel.textContent = actionLabel;
+    }
+    if (elements.diceToggleIcon) {
+      elements.diceToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
+    }
+  }
+
+  function setGameLogCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    gameLogPanelState.collapsed = next;
+    if (elements.gameLogPanel) {
+      elements.gameLogPanel.hidden = next;
+      elements.gameLogPanel.classList.toggle("d-none", next);
+    }
+    if (elements.gameLogSection) {
+      elements.gameLogSection.classList.toggle("is-collapsed", next);
+    }
+    const actionLabel = next ? "Expand game log" : "Collapse game log";
+    if (elements.gameLogToggle) {
+      elements.gameLogToggle.setAttribute("aria-expanded", next ? "false" : "true");
+      elements.gameLogToggle.setAttribute("aria-label", actionLabel);
+      elements.gameLogToggle.setAttribute("title", actionLabel);
+    }
+    if (elements.gameLogToggleLabel) {
+      elements.gameLogToggleLabel.textContent = actionLabel;
+    }
+    if (elements.gameLogToggleIcon) {
+      elements.gameLogToggleIcon.setAttribute("data-icon", next ? "tabler:chevron-right" : "tabler:chevron-down");
     }
   }
 
@@ -1091,9 +1169,7 @@ import {
   function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
     if (!trimmed) {
-      if (elements.diceResult) {
-        elements.diceResult.textContent = "Enter a dice expression like 2d6 + 3.";
-      }
+      status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
       return null;
     }
     if (updateInput && elements.diceExpression) {
@@ -1103,20 +1179,14 @@ import {
     openToolsPane();
     try {
       const result = rollDiceExpression(trimmed, { context: state.draft?.data || {} });
-      if (elements.diceResult) {
-        const heading = label ? escapeHtml(label) : "Total";
-        const breakdown = result.detailHtml
-          ? `<div class="dice-breakdown text-body-secondary mt-2">${result.detailHtml}</div>`
-          : "";
-        elements.diceResult.innerHTML = `<strong>${heading}</strong>: ${escapeHtml(result.total)}${breakdown}`;
-      }
+      const notation = result.notation || trimmed;
+      const prefix = label ? `${label}: ` : "";
+      status.show(`${prefix}${notation} → ${result.total}`, { type: "success", timeout: 2200 });
       recordGameLogRoll(result, { expression: trimmed, label });
       return result;
     } catch (error) {
-      if (elements.diceResult) {
-        const message = error instanceof Error ? error.message : "Unable to roll dice.";
-        elements.diceResult.textContent = message;
-      }
+      const message = error instanceof Error ? error.message : "Unable to roll dice.";
+      status.show(message, { type: "danger", timeout: 2400 });
       return null;
     }
   }
@@ -1159,7 +1229,7 @@ import {
   }
 
   function initDiceRoller() {
-    if (!elements.diceForm || !elements.diceExpression || !elements.diceResult) {
+    if (!elements.diceForm || !elements.diceExpression) {
       return;
     }
     Array.from(elements.diceQuickButtons || []).forEach((button) => {
@@ -1194,9 +1264,6 @@ import {
           } catch (focusError) {
             elements.diceExpression.focus();
           }
-        }
-        if (elements.diceResult) {
-          elements.diceResult.textContent = "Enter a dice expression like 2d6 + 3.";
         }
       });
     }
@@ -1410,6 +1477,14 @@ import {
     if (sharePanelId && elements.groupShareToggle) {
       elements.groupShareToggle.setAttribute("aria-controls", sharePanelId);
     }
+    const dicePanelId = ensureElementId(elements.dicePanel, "character-dice");
+    if (dicePanelId && elements.diceToggle) {
+      elements.diceToggle.setAttribute("aria-controls", dicePanelId);
+    }
+    const gameLogPanelId = ensureElementId(elements.gameLogPanel, "character-game-log");
+    if (gameLogPanelId && elements.gameLogToggle) {
+      elements.gameLogToggle.setAttribute("aria-controls", gameLogPanelId);
+    }
   }
 
   function ensureElementId(element, prefix) {
@@ -1496,9 +1571,13 @@ import {
     const enabled = gameLogState.enabled;
     elements.gameLogSection.hidden = !enabled;
     elements.gameLogSection.classList.toggle("d-none", !enabled);
-    if (!enabled && elements.gameLogEntries) {
-      elements.gameLogEntries.innerHTML = "";
+    if (!enabled) {
+      if (elements.gameLogEntries) {
+        elements.gameLogEntries.innerHTML = "";
+      }
+      return;
     }
+    setGameLogCollapsed(gameLogPanelState.collapsed);
   }
 
   function updateGameLogStatus() {
@@ -1651,6 +1730,8 @@ import {
     gameLogState.access = "none";
     gameLogState.entries = [];
     gameLogState.error = "";
+    gameLogPanelState.collapsed = false;
+    setGameLogCollapsed(false);
     if (elements.gameLogTitle) {
       elements.gameLogTitle.textContent = "";
       elements.gameLogTitle.hidden = true;
@@ -2665,24 +2746,19 @@ import {
   }
 
   function renderInputComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
     const labelText = component.label || component.name || "Field";
-    if (labelText) {
-      const label = document.createElement("label");
-      label.className = "form-label fw-semibold text-body-secondary mb-0";
-      label.textContent = labelText;
-      applyTextFormatting(label, component);
-      wrapper.appendChild(label);
-    }
     const editable = isEditable(component);
     const resolvedValue = resolveComponentValue(component, component.value ?? "");
-    const variant = component.variant || "text";
-    const componentUid = component?.uid || null;
+    const variant = (component.variant || "text").toLowerCase();
+    const componentUid = component?.uid || "";
+    const labelClasses = ["form-label", "fw-semibold", "text-body-secondary", "mb-0"];
 
     if (variant === "select") {
       const select = document.createElement("select");
       select.className = "form-select";
+      if (componentUid) {
+        select.id = `${componentUid}-select`;
+      }
       const currentValue = resolvedValue == null ? "" : String(resolvedValue);
       const options = resolveSelectionOptions(component);
       options.forEach(({ value, label }) => {
@@ -2701,13 +2777,23 @@ import {
           updateBinding(component.binding, select.value);
         });
       }
-      wrapper.appendChild(select);
-      return wrapper;
+      return createLabeledField({
+        component,
+        control: select,
+        labelText,
+        labelTag: "label",
+        labelFor: select.id || "",
+        labelClasses,
+        applyFormatting: applyTextFormatting,
+      });
     }
 
     if (variant === "textarea") {
       const textarea = document.createElement("textarea");
       textarea.className = "form-control";
+      if (componentUid) {
+        textarea.id = `${componentUid}-textarea`;
+      }
       const rows = Number.isFinite(Number(component.rows)) ? Number(component.rows) : 3;
       textarea.rows = Math.min(Math.max(Math.round(rows), 2), 12);
       textarea.placeholder = component.placeholder || "";
@@ -2719,8 +2805,15 @@ import {
           updateBinding(component.binding, textarea.value);
         });
       }
-      wrapper.appendChild(textarea);
-      return wrapper;
+      return createLabeledField({
+        component,
+        control: textarea,
+        labelText,
+        labelTag: "label",
+        labelFor: textarea.id || "",
+        labelClasses,
+        applyFormatting: applyTextFormatting,
+      });
     }
 
     if (variant === "radio" || variant === "checkbox") {
@@ -2773,22 +2866,37 @@ import {
         formCheck.append(input, optionLabelEl);
         group.appendChild(formCheck);
       });
-      wrapper.appendChild(group);
-      return wrapper;
+      return createLabeledField({
+        component,
+        control: group,
+        labelText,
+        labelTag: "div",
+        labelClasses: ["fw-semibold", "text-body-secondary"],
+        applyFormatting: applyTextFormatting,
+      });
     }
 
     const input = document.createElement("input");
     input.className = "form-control";
+    if (componentUid) {
+      input.id = `${componentUid}-input`;
+    }
     if (variant === "number") {
       input.type = "number";
       if (component.min !== undefined) input.min = component.min;
       if (component.max !== undefined) input.max = component.max;
       if (component.step !== undefined) input.step = component.step;
       const numericValue = resolvedValue == null ? "" : resolvedValue;
-      input.value = numericValue === undefined ? "" : numericValue;
-      input.disabled = !editable;
-      assignBindingMetadata(input, component);
-      if (editable) {
+      input.value = numericValue === undefined || numericValue === null ? "" : numericValue;
+    } else {
+      input.type = component.inputType || "text";
+      input.placeholder = component.placeholder || "";
+      input.value = resolvedValue ?? "";
+    }
+    input.disabled = !editable;
+    assignBindingMetadata(input, component);
+    if (editable) {
+      if (variant === "number") {
         input.addEventListener("input", () => {
           const raw = input.value;
           if (raw === "") {
@@ -2798,14 +2906,7 @@ import {
           const next = Number(raw);
           updateBinding(component.binding, Number.isNaN(next) ? raw : next);
         });
-      }
-    } else {
-      input.type = component.inputType || "text";
-      input.placeholder = component.placeholder || "";
-      input.value = resolvedValue ?? "";
-      input.disabled = !editable;
-      assignBindingMetadata(input, component);
-      if (editable) {
+      } else {
         input.addEventListener("input", () => {
           updateBinding(component.binding, input.value);
         });
@@ -2823,21 +2924,25 @@ import {
     if (showRollOverlay) {
       inputContainer.appendChild(createRollOverlayButton(component, rollExpressions));
     }
-    wrapper.appendChild(inputContainer);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: inputContainer,
+      labelText,
+      labelTag: "label",
+      labelFor: input.id || "",
+      labelClasses,
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderArrayComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = component.label || component.name || "List";
-    applyTextFormatting(heading, component);
-    wrapper.appendChild(heading);
+    const labelText = component.label || component.name || "List";
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
     textarea.rows = component.rows || 4;
+    if (component?.uid) {
+      textarea.id = `${component.uid}-array`;
+    }
     const value = resolveComponentValue(component);
     const serialized = Array.isArray(value)
       ? JSON.stringify(value, null, 2)
@@ -2865,8 +2970,15 @@ import {
         }
       });
     }
-    wrapper.appendChild(textarea);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: textarea,
+      labelText,
+      labelTag: "label",
+      labelFor: textarea.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderDividerComponent(component) {
@@ -2934,15 +3046,13 @@ import {
   }
 
   function renderLinearTrackComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Progress";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Progress";
     const input = document.createElement("input");
     input.type = "range";
     input.className = "form-range";
+    if (component?.uid) {
+      input.id = `${component.uid}-linear-track`;
+    }
     input.min = component.min ?? 0;
     input.max = component.max ?? 100;
     const resolved = resolveComponentValue(component, component.value ?? 0);
@@ -2956,20 +3066,25 @@ import {
         updateBinding(component.binding, Number(input.value));
       });
     }
-    wrapper.appendChild(input);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: input,
+      labelText,
+      labelTag: "label",
+      labelFor: input.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderCircularTrackComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Track";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Track";
     const input = document.createElement("input");
     input.type = "number";
     input.className = "form-control";
+    if (component?.uid) {
+      input.id = `${component.uid}-circular-track`;
+    }
     input.min = 0;
     const max = component.max ?? 100;
     input.max = max;
@@ -2985,17 +3100,19 @@ import {
         updateBinding(component.binding, Number.isNaN(next) ? 0 : Math.max(0, Math.min(max, next)));
       });
     }
-    wrapper.appendChild(input);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: input,
+      labelText,
+      labelTag: "label",
+      labelFor: input.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderSelectGroupComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Options";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Options";
     const editable = isEditable(component);
     const value = resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
     const activeValues = component.multiple
@@ -3043,19 +3160,23 @@ import {
       }
       group.appendChild(button);
     });
-    wrapper.appendChild(group);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: group,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderToggleComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Toggle";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Toggle";
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
+    if (component?.uid) {
+      select.id = `${component.uid}-toggle`;
+    }
     const states = resolveToggleStates(component);
     const resolvedState = resolveComponentValue(component);
     const normalizedState = resolvedState != null ? String(resolvedState) : null;
@@ -3080,8 +3201,15 @@ import {
         updateBinding(component.binding, select.value);
       });
     }
-    wrapper.appendChild(select);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: select,
+      labelText,
+      labelTag: "label",
+      labelFor: select.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function normalizeZones(component) {
