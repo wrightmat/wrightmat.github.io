@@ -904,6 +904,42 @@ import {
   function syncCharacterActions() {
     const draftHasId = Boolean(state.draft?.id);
     const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
+    const updateToolbarButton = (button, { disabled, disabledTitle, enabledTitle }) => {
+      if (!button) {
+        return;
+      }
+      const nextDisabled = Boolean(disabled);
+      const defaultTitle =
+        button.dataset.defaultTitle || button.getAttribute("data-bs-title") || button.title || "";
+      if (!button.dataset.defaultTitle && defaultTitle) {
+        button.dataset.defaultTitle = defaultTitle;
+      }
+      const title = nextDisabled
+        ? disabledTitle || button.dataset.disabledTitle || ""
+        : enabledTitle || button.dataset.defaultTitle || defaultTitle || "";
+      button.disabled = nextDisabled;
+      button.classList.toggle("disabled", nextDisabled);
+      button.setAttribute("aria-disabled", nextDisabled ? "true" : "false");
+      if (title) {
+        button.setAttribute("title", title);
+        button.setAttribute("data-bs-title", title);
+      } else {
+        button.removeAttribute("title");
+        button.removeAttribute("data-bs-title");
+      }
+      refreshTooltips(button.parentElement || button);
+    };
+
+    updateToolbarButton(elements.importButton, {
+      disabled: !draftHasId,
+      disabledTitle: "Select a character to import data.",
+    });
+
+    updateToolbarButton(elements.exportButton, {
+      disabled: !draftHasId,
+      disabledTitle: "Select a character to export data.",
+    });
+
     if (!elements.deleteCharacterButton) {
       return;
     }
@@ -3369,13 +3405,17 @@ import {
     if (elements.viewToggle) {
       const icon = elements.viewToggle.querySelector("[data-mode-icon]");
       const label = elements.viewToggle.querySelector("[data-mode-label]");
-      const locked = state.viewLocked;
-      const tooltipTitle = locked
-        ? "Group characters are view-only until claimed."
-        : state.mode === "edit"
-          ? "Switch to view mode"
-          : "Switch to edit mode";
-      const isEditing = !locked && state.mode === "edit";
+      const hasCharacter = Boolean(state.draft?.id);
+      const locked = state.viewLocked || !hasCharacter;
+      let tooltipTitle = "";
+      if (!hasCharacter) {
+        tooltipTitle = "Select a character to enable editing.";
+      } else if (state.viewLocked) {
+        tooltipTitle = "Group characters are view-only until claimed.";
+      } else {
+        tooltipTitle = state.mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
+      }
+      const isEditing = hasCharacter && !state.viewLocked && state.mode === "edit";
       elements.viewToggle.disabled = locked;
       elements.viewToggle.classList.toggle("disabled", locked);
       elements.viewToggle.setAttribute("aria-disabled", locked ? "true" : "false");
