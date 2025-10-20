@@ -124,6 +124,12 @@ export async function initHelpSystem({ root = document, topicsUrl = DEFAULT_TOPI
   if (!root) {
     return;
   }
+  if (typeof root.querySelectorAll === "function") {
+    const headerTriggers = root.querySelectorAll(".workbench-header .help-topic-trigger");
+    headerTriggers.forEach((trigger) => {
+      trigger.remove();
+    });
+  }
   const targets = root.querySelectorAll("[data-help-topic]");
   targets.forEach((element) => {
     const topicId = element.getAttribute("data-help-topic");
