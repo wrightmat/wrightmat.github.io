@@ -122,6 +122,47 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS groups (
+            id TEXT PRIMARY KEY,
+            owner_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL DEFAULT 'campaign',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_members (
+            group_id TEXT NOT NULL,
+            content_type TEXT NOT NULL,
+            content_id TEXT NOT NULL,
+            added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (group_id, content_type, content_id),
+            FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id TEXT NOT NULL,
+            entry_type TEXT NOT NULL,
+            author_id INTEGER,
+            author_name TEXT,
+            message TEXT,
+            payload TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+            FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
+        )
+        """
+    )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
@@ -130,6 +171,19 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
         "CREATE INDEX IF NOT EXISTS idx_share_links_content ON share_links(content_type, content_id)"
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_share_links_token ON share_links(token)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_groups_owner ON groups(owner_id)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members(group_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_members_content ON group_members(content_type, content_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_logs_group ON group_logs(group_id, id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_logs_created ON group_logs(group_id, created_at)"
+    )
     # Ensure legacy databases pick up the last_accessed_at columns
     _ensure_column(conn, "templates", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
     _ensure_column(conn, "systems", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
@@ -367,9 +421,31 @@ def get_item(
     base_id = id_.replace(".json", "")
     token_info = resolve_share_token(state, share_token or "") if share_token else None
     share_granted = False
-    if token_info and token_info.get("content_type") == bucket[:-1] and token_info.get("content_id") == base_id:
-        share_granted = True
-        touch_share_link(state, token_info.get("token", ""))
+    if token_info:
+        token_type = token_info.get("content_type")
+        token_target = token_info.get("content_id")
+        if token_type == bucket[:-1] and token_target == base_id:
+            share_granted = True
+            touch_share_link(state, token_info.get("token", ""))
+        elif token_type == "group" and bucket == "characters" and token_target:
+            row = state.db.execute(
+                """
+                SELECT g.owner_id AS group_owner_id,
+                       c.owner_id AS character_owner_id
+                FROM groups AS g
+                JOIN group_members AS gm ON gm.group_id = g.id
+                LEFT JOIN characters AS c ON c.id = gm.content_id
+                WHERE g.id = ?
+                  AND gm.content_type = 'character'
+                  AND gm.content_id = ?
+                """,
+                (token_target, base_id),
+            ).fetchone()
+            if row and row["group_owner_id"] is not None:
+                character_owner_id = row["character_owner_id"]
+                if character_owner_id is None or character_owner_id == row["group_owner_id"]:
+                    share_granted = True
+                    touch_share_link(state, token_info.get("token", ""))
     if not (
         share_granted
         or is_owner(state, bucket, id_, user)
@@ -583,38 +659,78 @@ def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "
         ("systems", "systems", "title"),
     ]
     for bucket, table, label_field in mappings:
-        if scope == "all":
-            rows = state.db.execute(
-                f"""
-                SELECT t.id AS id,
-                       t.{label_field} AS label,
-                       t.created_at AS created_at,
-                       t.modified_at AS modified_at,
-                       t.last_accessed_at AS last_accessed_at,
-                       u.username AS owner_username,
-                       u.tier AS owner_tier
-                FROM {table} AS t
-                JOIN users AS u ON u.id = t.owner_id
-                ORDER BY t.modified_at DESC
-                """
-            ).fetchall()
+        if bucket == "characters":
+            if scope == "all":
+                rows = state.db.execute(
+                    """
+                    SELECT c.id AS id,
+                           c.name AS label,
+                           c.template AS template_id,
+                           t.title AS template_title,
+                           c.created_at AS created_at,
+                           c.modified_at AS modified_at,
+                           c.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM characters AS c
+                    JOIN users AS u ON u.id = c.owner_id
+                    LEFT JOIN templates AS t ON t.id = c.template
+                    ORDER BY c.modified_at DESC
+                    """
+                ).fetchall()
+            else:
+                rows = state.db.execute(
+                    """
+                    SELECT c.id AS id,
+                           c.name AS label,
+                           c.template AS template_id,
+                           t.title AS template_title,
+                           c.created_at AS created_at,
+                           c.modified_at AS modified_at,
+                           c.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM characters AS c
+                    JOIN users AS u ON u.id = c.owner_id
+                    LEFT JOIN templates AS t ON t.id = c.template
+                    WHERE c.owner_id = ?
+                    ORDER BY c.modified_at DESC
+                    """,
+                    (owner.id,),
+                ).fetchall()
         else:
-            rows = state.db.execute(
-                f"""
-                SELECT t.id AS id,
-                       t.{label_field} AS label,
-                       t.created_at AS created_at,
-                       t.modified_at AS modified_at,
-                       t.last_accessed_at AS last_accessed_at,
-                       u.username AS owner_username,
-                       u.tier AS owner_tier
-                FROM {table} AS t
-                JOIN users AS u ON u.id = t.owner_id
-                WHERE t.owner_id = ?
-                ORDER BY t.modified_at DESC
-                """,
-                (owner.id,),
-            ).fetchall()
+            if scope == "all":
+                rows = state.db.execute(
+                    f"""
+                    SELECT t.id AS id,
+                           t.{label_field} AS label,
+                           t.created_at AS created_at,
+                           t.modified_at AS modified_at,
+                           t.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM {table} AS t
+                    JOIN users AS u ON u.id = t.owner_id
+                    ORDER BY t.modified_at DESC
+                    """
+                ).fetchall()
+            else:
+                rows = state.db.execute(
+                    f"""
+                    SELECT t.id AS id,
+                           t.{label_field} AS label,
+                           t.created_at AS created_at,
+                           t.modified_at AS modified_at,
+                           t.last_accessed_at AS last_accessed_at,
+                           u.username AS owner_username,
+                           u.tier AS owner_tier
+                    FROM {table} AS t
+                    JOIN users AS u ON u.id = t.owner_id
+                    WHERE t.owner_id = ?
+                    ORDER BY t.modified_at DESC
+                    """,
+                    (owner.id,),
+                ).fetchall()
         for row in rows:
             keys = row.keys() if hasattr(row, "keys") else []
             owner_username = row["owner_username"] if "owner_username" in keys else (owner.username if owner else "")
@@ -631,6 +747,10 @@ def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "
                     "owner_tier": owner_tier,
                 }
             )
+            if bucket == "characters":
+                entry = items[-1]
+                entry["template"] = row["template_id"] if "template_id" in keys else ""
+                entry["template_title"] = row["template_title"] if "template_title" in keys else ""
     items.sort(key=lambda item: item.get("modified_at") or "", reverse=True)
     if scope == "all":
         owner_info = {
