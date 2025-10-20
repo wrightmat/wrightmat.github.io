@@ -1,7 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
 import { createCanvasPlaceholder } from "../lib/editor-canvas.js";
 import {
   createCanvasCardElement,
@@ -10,7 +7,6 @@ import {
 } from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
 import { expandPane } from "../lib/panes.js";
 import {
   listBuiltinTemplates,
@@ -31,306 +27,28 @@ import {
   resolveBindingFromContexts,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
+import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
 (async () => {
-  const { status, undoStack, undo, redo } = initAppShell({
+  const {
+    pageLoading,
+    releaseStartup,
+    status,
+    undoStack,
+    undo,
+    redo,
+    dataManager,
+    auth,
+    helpReady,
+  } = await bootstrapWorkbenchPage({
     namespace: "character",
-    onUndo: handleUndoEntry,
-    onRedo: handleRedoEntry,
+    loadingMessage: "Preparing character tools…",
   });
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  initAuthControls({ root: document, status, dataManager });
 
   const templateCatalog = new Map();
-  const characterCatalog = new Map();
   const systemCatalog = new Map();
+  const characterCatalog = new Map();
   const systemDefinitionCache = new Map();
-
-  function sessionUser() {
-    return dataManager.session?.user || null;
-  }
-
-  const state = {
-    mode: "view",
-    template: null,
-    components: [],
-    character: null,
-    draft: null,
-    characterOrigin: null,
-    systemDefinition: null,
-    systemPreviewData: {},
-    viewLocked: false,
-    shareToken: "",
-  };
-
-  let lastSavedCharacterSignature = null;
-
-  const componentRollDirectives = new Map();
-  const collapsedComponents = new Map();
-  const diceQuickButtons = new Map();
-  const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
-  const characterGroupCache = new Map();
-
-  const gameLogState = {
-    enabled: false,
-    groupId: "",
-    groupName: "",
-    shareToken: "",
-    entries: [],
-    localEntries: [],
-    loading: false,
-    sending: false,
-    error: "",
-    access: "none",
-    pollTimer: 0,
-  };
-
-  function escapeHtml(value) {
-    if (value === undefined || value === null) {
-      return "";
-    }
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  markCharacterClean();
-
-  let suppressNotesChange = false;
-  let currentNotesKey = "";
-  let componentCounter = 0;
-  const initialRecordParam = parseRecordParam();
-  let pendingSharedRecord = initialRecordParam && initialRecordParam.bucket === "characters"
-    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
-    : null;
-  let pendingGroupShare = initialRecordParam && initialRecordParam.bucket === "groups"
-    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
-    : null;
-  const groupShareState = {
-    token: "",
-    groupId: "",
-    group: null,
-    members: [],
-    available: [],
-    loading: false,
-    error: "",
-    status: "",
-    collapsed: false,
-    paneRevealed: false,
-    viewOnlyCharacterId: "",
-  };
-
-  const notesState = { collapsed: true };
-  const jsonPreviewState = { collapsed: true };
-  const dicePanelState = { collapsed: false };
-  const gameLogPanelState = { collapsed: false };
-
-  function cloneValue(value) {
-    if (value === undefined) {
-      return undefined;
-    }
-    if (typeof structuredClone === "function") {
-      try {
-        return structuredClone(value);
-      } catch (error) {
-        // fall through to JSON clone
-      }
-    }
-    try {
-      return JSON.parse(JSON.stringify(value));
-    } catch (error) {
-      return value;
-    }
-  }
-
-  function valuesEqual(a, b) {
-    if (a === b) {
-      return true;
-    }
-    if (typeof a === "number" && typeof b === "number" && Number.isNaN(a) && Number.isNaN(b)) {
-      return true;
-    }
-    if (a === undefined || b === undefined) {
-      return a === b;
-    }
-    try {
-      return JSON.stringify(a) === JSON.stringify(b);
-    } catch (error) {
-      return false;
-    }
-  }
-
-  function resolveBindingPath(binding) {
-    const normalized = normalizeBinding(binding);
-    if (!normalized || typeof normalized !== "string" || !normalized.startsWith("@")) {
-      return null;
-    }
-    const segments = normalized
-      .slice(1)
-      .split(".")
-      .map((segment) => segment.trim())
-      .filter(Boolean);
-    return segments.length ? segments : null;
-  }
-
-  function getValueAtPath(pathSegments) {
-    if (!Array.isArray(pathSegments) || !pathSegments.length) {
-      return undefined;
-    }
-    let cursor = state.draft?.data;
-    for (const segment of pathSegments) {
-      if (!cursor || typeof cursor !== "object" || !(segment in cursor)) {
-        return undefined;
-      }
-      cursor = cursor[segment];
-    }
-    return cursor;
-  }
-
-  function setValueAtPath(pathSegments, value) {
-    if (!Array.isArray(pathSegments) || !pathSegments.length) {
-      return false;
-    }
-    if (!state.draft) {
-      return false;
-    }
-    if (!state.draft.data || typeof state.draft.data !== "object") {
-      if (value === undefined) {
-        return false;
-      }
-      state.draft.data = {};
-    }
-    let cursor = state.draft.data;
-    for (let index = 0; index < pathSegments.length - 1; index += 1) {
-      const key = pathSegments[index];
-      if (!cursor[key] || typeof cursor[key] !== "object") {
-        if (value === undefined) {
-          return false;
-        }
-        cursor[key] = {};
-      }
-      cursor = cursor[key];
-    }
-    const lastKey = pathSegments[pathSegments.length - 1];
-    if (value === undefined) {
-      if (cursor && typeof cursor === "object" && Object.prototype.hasOwnProperty.call(cursor, lastKey)) {
-        delete cursor[lastKey];
-        return true;
-      }
-      return false;
-    }
-    cursor[lastKey] = value;
-    return true;
-  }
-
-  function applyBindingValue(pathSegments, value, { focusSnapshot = null } = {}) {
-    const applied = setValueAtPath(pathSegments, cloneValue(value));
-    renderCanvas();
-    if (focusSnapshot) {
-      restoreActiveField(focusSnapshot);
-    }
-    void persistDraft({ silent: true });
-    renderPreview();
-    return applied;
-  }
-
-  function userOwnsCharacter(id) {
-    if (!id) {
-      return false;
-    }
-    const metadata = characterCatalog.get(id);
-    if (!metadata) {
-      return true;
-    }
-    const ownership = (metadata.ownership || "").toLowerCase();
-    if (ownership === "shared") {
-      return false;
-    }
-    if (ownership === "local" || ownership === "draft") {
-      return true;
-    }
-    const user = sessionUser();
-    if (!user || !dataManager.isAuthenticated()) {
-      return false;
-    }
-    if (typeof metadata.ownerId === "number" && typeof user.id === "number") {
-      return metadata.ownerId === user.id;
-    }
-    if (metadata.ownerUsername && user.username) {
-      return metadata.ownerUsername === user.username;
-    }
-    return ownership !== "shared";
-  }
-
-  function resolveOwnerLabel(metadata) {
-    if (!metadata) {
-      return "the owner";
-    }
-    if (metadata.ownerUsername) {
-      return metadata.ownerUsername;
-    }
-    return "the owner";
-  }
-
-  function characterOwnership(metadata) {
-    if (metadata && typeof metadata.ownership === "string" && metadata.ownership) {
-      return metadata.ownership.toLowerCase();
-    }
-    if (state.draft?.ownership && typeof state.draft.ownership === "string") {
-      return state.draft.ownership.toLowerCase();
-    }
-    return "";
-  }
-
-  function characterPermissions(metadata) {
-    const permissions = metadata?.sharePermissions ?? state.draft?.sharePermissions ?? "";
-    if (typeof permissions === "string" && permissions) {
-      return permissions.toLowerCase();
-    }
-    return "";
-  }
-
-  function characterAllowsEdits(metadata) {
-    if (!state.draft) {
-      return false;
-    }
-    if (!state.draft.id) {
-      return true;
-    }
-    if (!metadata) {
-      return true;
-    }
-    const ownership = characterOwnership(metadata);
-    if (ownership === "shared") {
-      return characterPermissions(metadata) === "edit";
-    }
-    if (ownership === "public") {
-      return userOwnsCharacter(state.draft.id);
-    }
-    if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
-      return true;
-    }
-    if (!ownership || ownership === "remote") {
-      return userOwnsCharacter(state.draft.id);
-    }
-    return userOwnsCharacter(state.draft.id);
-  }
-
-  function describeCharacterEditRestriction(metadata) {
-    const ownership = characterOwnership(metadata);
-    const permissions = characterPermissions(metadata);
-    if (ownership === "shared" && permissions !== "edit") {
-      return "This character was shared with you as view-only.";
-    }
-    if (ownership === "public") {
-      return "Public characters are view-only.";
-    }
-    const ownerLabel = resolveOwnerLabel(metadata);
-    return `Only ${ownerLabel} can save this character.`;
-  }
 
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
@@ -390,11 +108,81 @@ import {
 
   assignSectionAriaConnections();
 
+  const state = {
+    mode: "view",
+    template: null,
+    components: [],
+    character: null,
+    draft: null,
+    characterOrigin: null,
+    systemDefinition: null,
+    systemPreviewData: {},
+    viewLocked: false,
+    shareToken: "",
+  };
+
+  let lastSavedCharacterSignature = null;
+
   const renderPreview = createJsonPreviewRenderer({
     target: elements.jsonPreview,
     bytesTarget: elements.jsonPreviewBytes,
     serialize: () => state.draft || {},
   });
+
+  const componentRollDirectives = new Map();
+  const collapsedComponents = new Map();
+  const diceQuickButtons = new Map();
+  const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  const characterGroupCache = new Map();
+
+  const notesState = { collapsed: true };
+  const jsonPreviewState = { collapsed: true };
+  const dicePanelState = { collapsed: false };
+  const gameLogPanelState = { collapsed: false };
+
+  const gameLogState = {
+    enabled: false,
+    groupId: "",
+    groupName: "",
+    shareToken: "",
+    entries: [],
+    localEntries: [],
+    loading: false,
+    sending: false,
+    error: "",
+    access: "none",
+    pollTimer: 0,
+  };
+
+  const groupShareState = {
+    token: "",
+    groupId: "",
+    group: null,
+    members: [],
+    available: [],
+    loading: false,
+    error: "",
+    status: "",
+    collapsed: false,
+    paneRevealed: false,
+    viewOnlyCharacterId: "",
+  };
+
+  let suppressNotesChange = false;
+  let currentNotesKey = "";
+  let componentCounter = 0;
+
+  const initialRecordParam = parseRecordParam();
+  let pendingSharedRecord =
+    initialRecordParam && initialRecordParam.bucket === "characters"
+      ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+      : null;
+  let pendingGroupShare =
+    initialRecordParam && initialRecordParam.bucket === "groups"
+      ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+      : null;
+
+  markCharacterClean();
 
   setNotesCollapsed(true);
   setJsonPreviewCollapsed(true);
@@ -410,33 +198,37 @@ import {
     }
   }
 
-  let groupShareModalInstance = null;
-  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
-    const modalElement = elements.groupShareModal;
-    if (modalElement) {
-      groupShareModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
-      modalElement.addEventListener("hidden.bs.modal", () => {
-        groupShareState.status = "";
-        if (elements.groupShareStatus) {
-          elements.groupShareStatus.textContent = "";
-        }
-      });
-    }
+  function sessionUser() {
+    return dataManager.session?.user || null;
   }
 
-  await initializeBuiltins();
-  initNotesEditor();
-  initDiceRoller();
-  initGameLog();
-  bindUiEvents();
-  loadTemplateRecords();
-  loadCharacterRecords();
-  syncModeIndicator();
-  renderCanvas();
-  renderPreview();
-  syncCharacterActions();
-  initializeSharedRecordHandling();
-  syncCharacterToolbarVisibility();
+  try {
+    pageLoading.setMessage("Loading character data…");
+    await pageLoading.track(initializeBuiltins());
+    const templateRecordsTask = pageLoading.track(loadTemplateRecords());
+    const characterRecordsTask = pageLoading.track(loadCharacterRecords());
+    await Promise.all([templateRecordsTask, characterRecordsTask, helpReady]);
+
+    pageLoading.setMessage("Finalising character tools…");
+    initNotesEditor();
+    initDiceRoller();
+    initGameLog();
+    bindUiEvents();
+    syncModeIndicator();
+    renderCanvas();
+    renderPreview();
+    syncCharacterActions();
+    const sharedLoad = initializeSharedRecordHandling();
+    if (sharedLoad) {
+      pageLoading.setMessage("Loading shared character…");
+      await pageLoading.track(sharedLoad);
+      pageLoading.setMessage("Finalising character tools…");
+    }
+    syncCharacterToolbarVisibility();
+  } finally {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
+  }
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -570,17 +362,19 @@ import {
   }
 
   async function initializeBuiltins() {
-    if (dataManager.baseUrl) {
-      try {
-        const catalog = await dataManager.listBuiltins();
-        if (catalog) {
-          applyBuiltinCatalog(catalog);
-        }
-      } catch (error) {
-        console.warn("Character sheet: unable to load builtin catalog", error);
-      }
-    }
     registerBuiltinContent();
+    if (!dataManager.baseUrl) {
+      return;
+    }
+    try {
+      const catalog = await dataManager.listBuiltins();
+      if (catalog) {
+        applyBuiltinCatalog(catalog);
+        registerBuiltinContent();
+      }
+    } catch (error) {
+      console.warn("Character sheet: unable to load builtin catalog", error);
+    }
   }
 
   function updateCollapsibleSection({
@@ -2409,12 +2203,17 @@ import {
   }
 
   function initializeSharedRecordHandling() {
+    const tasks = [];
     if (pendingGroupShare) {
-      void loadPendingGroupShare();
+      tasks.push(loadPendingGroupShare());
     }
     if (pendingSharedRecord) {
-      void loadPendingSharedRecord();
+      tasks.push(loadPendingSharedRecord());
     }
+    if (!tasks.length) {
+      return null;
+    }
+    return Promise.all(tasks);
   }
 
   async function loadPendingSharedRecord() {

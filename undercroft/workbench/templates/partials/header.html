@@ -1,0 +1,38 @@
+<header class="workbench-header border-bottom bg-body-tertiary">
+  <div class="container-lg d-flex align-items-center gap-3 py-3">
+    <div class="d-flex align-items-center gap-3">
+      <button
+        class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+        type="button"
+        data-pane-toggle="left"
+        aria-label="{{ left_toggle_label }}"
+      >
+        <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+        <span class="visually-hidden">{{ left_toggle_label }}</span>
+      </button>
+      <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+        <a href="{{ home_href }}" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Workbench</a>
+        {{#if header_tagline}}<span class="text-body-secondary fw-normal">{{ header_tagline }}</span>{{/if}}
+      </h1>
+    </div>
+    <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+      {{ include "theme-toggle.html" }}
+      {{#if show_auth_control}}
+      <div data-auth-control class="d-flex">
+        <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+      </div>
+      {{/if}}
+      {{#if show_right_toggle}}
+      <button
+        class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+        type="button"
+        data-pane-toggle="right"
+        aria-label="{{ right_toggle_label }}"
+      >
+        <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+        <span class="visually-hidden">{{ right_toggle_label }}</span>
+      </button>
+      {{/if}}
+    </div>
+  </div>
+</header>
