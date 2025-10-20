@@ -12,6 +12,8 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { expandPane } from "../lib/panes.js";
+import { initHelpSystem } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -32,7 +34,13 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 
+const pageLoading = initPageLoadingOverlay({
+  root: document,
+  message: "Preparing character tools…",
+});
+
 (async () => {
+  const releaseStartup = pageLoading.hold();
   const { status, undoStack, undo, redo } = initAppShell({
     namespace: "character",
     onUndo: handleUndoEntry,
@@ -40,6 +48,7 @@ import {
   });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
+  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();
@@ -424,19 +433,33 @@ import {
     }
   }
 
-  await initializeBuiltins();
-  initNotesEditor();
-  initDiceRoller();
-  initGameLog();
-  bindUiEvents();
-  loadTemplateRecords();
-  loadCharacterRecords();
-  syncModeIndicator();
-  renderCanvas();
-  renderPreview();
-  syncCharacterActions();
-  initializeSharedRecordHandling();
-  syncCharacterToolbarVisibility();
+  try {
+    pageLoading.setMessage("Loading character data…");
+    await pageLoading.track(initializeBuiltins());
+    const templateRecordsTask = pageLoading.track(loadTemplateRecords());
+    const characterRecordsTask = pageLoading.track(loadCharacterRecords());
+    await Promise.all([templateRecordsTask, characterRecordsTask, helpPromise]);
+
+    pageLoading.setMessage("Finalising character tools…");
+    initNotesEditor();
+    initDiceRoller();
+    initGameLog();
+    bindUiEvents();
+    syncModeIndicator();
+    renderCanvas();
+    renderPreview();
+    syncCharacterActions();
+    const sharedLoad = initializeSharedRecordHandling();
+    if (sharedLoad) {
+      pageLoading.setMessage("Loading shared character…");
+      await pageLoading.track(sharedLoad);
+      pageLoading.setMessage("Finalising character tools…");
+    }
+    syncCharacterToolbarVisibility();
+  } finally {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
+  }
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -570,17 +593,19 @@ import {
   }
 
   async function initializeBuiltins() {
-    if (dataManager.baseUrl) {
-      try {
-        const catalog = await dataManager.listBuiltins();
-        if (catalog) {
-          applyBuiltinCatalog(catalog);
-        }
-      } catch (error) {
-        console.warn("Character sheet: unable to load builtin catalog", error);
-      }
-    }
     registerBuiltinContent();
+    if (!dataManager.baseUrl) {
+      return;
+    }
+    try {
+      const catalog = await dataManager.listBuiltins();
+      if (catalog) {
+        applyBuiltinCatalog(catalog);
+        registerBuiltinContent();
+      }
+    } catch (error) {
+      console.warn("Character sheet: unable to load builtin catalog", error);
+    }
   }
 
   function updateCollapsibleSection({
@@ -2409,12 +2434,17 @@ import {
   }
 
   function initializeSharedRecordHandling() {
+    const tasks = [];
     if (pendingGroupShare) {
-      void loadPendingGroupShare();
+      tasks.push(loadPendingGroupShare());
     }
     if (pendingSharedRecord) {
-      void loadPendingSharedRecord();
+      tasks.push(loadPendingSharedRecord());
     }
+    if (!tasks.length) {
+      return null;
+    }
+    return Promise.all(tasks);
   }
 
   async function loadPendingSharedRecord() {
