@@ -60,9 +60,51 @@ let redoHandler = () => ({ applied: false });
     }
 
     pageLoading.setMessage("Loading system data…");
-  
+
+    const elements = {
+      select: document.querySelector("[data-system-select]"),
+      canvasRoot: document.querySelector("[data-canvas-root]"),
+      palette: document.querySelector("[data-palette]"),
+      inspector: document.querySelector("[data-inspector]"),
+      saveButton: document.querySelector('[data-action="save-system"]'),
+      undoButton: document.querySelector('[data-action="undo-system"]'),
+      redoButton: document.querySelector('[data-action="redo-system"]'),
+      newButton: document.querySelector('[data-action="new-system"]'),
+      duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
+      deleteButton: document.querySelector('[data-delete-system]'),
+      clearButton: document.querySelector('[data-action="clear-canvas"]'),
+      importButton: document.querySelector('[data-action="import-system"]'),
+      exportButton: document.querySelector('[data-action="export-system"]'),
+      jsonPreview: document.querySelector("[data-json-preview]"),
+      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+      rightPane: document.querySelector('[data-pane="right"]'),
+      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+      newSystemModal: document.getElementById("new-system-modal"),
+      newSystemForm: document.querySelector("[data-new-system-form]"),
+      newSystemId: document.querySelector("[data-new-system-id]"),
+      newSystemTitle: document.querySelector("[data-new-system-title]"),
+      newSystemVersion: document.querySelector("[data-new-system-version]"),
+      newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
+      systemMeta: document.querySelector("[data-system-meta]"),
+    };
+
+    refreshTooltips(document);
+
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
+
     const systemCatalog = new Map();
-  
+    let pendingSharedSystemId = resolveSharedRecordParam("systems");
+
+    const state = {
+      system: createBlankSystem(),
+      selectedNodeId: null,
+    };
+
+    let lastSavedSystemSignature = null;
+
+    markSystemClean(state.system);
+
     const builtinTask = pageLoading.track(initializeBuiltins());
     const systemRecordsTask = pageLoading.track(loadSystemRecords());
     await Promise.all([builtinTask, systemRecordsTask, helpReady]);
@@ -127,49 +169,6 @@ let redoHandler = () => ({ applied: false });
     function isNumericType(type) {
       return normalizeType(type) === "number";
     }
-  
-    const elements = {
-      select: document.querySelector("[data-system-select]"),
-      canvasRoot: document.querySelector("[data-canvas-root]"),
-      palette: document.querySelector("[data-palette]"),
-      inspector: document.querySelector("[data-inspector]"),
-      saveButton: document.querySelector('[data-action="save-system"]'),
-      undoButton: document.querySelector('[data-action="undo-system"]'),
-      redoButton: document.querySelector('[data-action="redo-system"]'),
-      newButton: document.querySelector('[data-action="new-system"]'),
-      duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
-      deleteButton: document.querySelector('[data-delete-system]'),
-      clearButton: document.querySelector('[data-action="clear-canvas"]'),
-      importButton: document.querySelector('[data-action="import-system"]'),
-      exportButton: document.querySelector('[data-action="export-system"]'),
-      jsonPreview: document.querySelector("[data-json-preview]"),
-      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-      rightPane: document.querySelector('[data-pane="right"]'),
-      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
-      newSystemModal: document.getElementById("new-system-modal"),
-      newSystemForm: document.querySelector("[data-new-system-form]"),
-      newSystemId: document.querySelector("[data-new-system-id]"),
-      newSystemTitle: document.querySelector("[data-new-system-title]"),
-      newSystemVersion: document.querySelector("[data-new-system-version]"),
-      newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
-      systemMeta: document.querySelector("[data-system-meta]"),
-    };
-  
-    refreshTooltips(document);
-
-    undoHandler = handleUndoEntry;
-    redoHandler = handleRedoEntry;
-
-    let pendingSharedSystemId = resolveSharedRecordParam("systems");
-  
-    const state = {
-      system: createBlankSystem(),
-      selectedNodeId: null,
-    };
-  
-    let lastSavedSystemSignature = null;
-  
-    markSystemClean(state.system);
   
     function hasActiveSystem() {
       return Boolean(state.system && (state.system.id || state.system.title));
