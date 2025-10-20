@@ -244,7 +244,10 @@
               <div class="card-body">
                 <div class="row g-3 align-items-end">
                   <div class="col-12 col-lg-4 col-xl-3">
-                    <label class="form-label fw-semibold text-body-secondary" for="character-select">Character</label>
+                    <label class="form-label fw-semibold text-body-secondary d-flex align-items-center gap-2" for="character-select">
+                      <span>Character</span>
+                      <span class="align-middle" data-help-topic="character.records" data-help-insert="replace" data-help-placement="right"></span>
+                    </label>
                     <select class="form-select" id="character-select" data-character-select></select>
                   </div>
                   <div class="col-12 col-lg-auto d-flex gap-2 flex-wrap">
@@ -282,7 +285,10 @@
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
             <section class="d-flex flex-column gap-3" data-dice-section>
               <div class="d-flex align-items-center justify-content-between">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Dice Roller</h2>
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Dice Roller</span>
+                  <span class="align-middle" data-help-topic="character.dice" data-help-insert="replace"></span>
+                </h2>
                 <button
                   class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
                   type="button"
@@ -298,7 +304,10 @@
             <section class="d-flex flex-column gap-3" data-game-log-section>
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex flex-column">
-                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Game Log</h2>
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                    <span>Game Log</span>
+                    <span class="align-middle" data-help-topic="collaboration.shares" data-help-insert="replace"></span>
+                  </h2>
                   <span class="text-body-secondary small" data-game-log-group></span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
