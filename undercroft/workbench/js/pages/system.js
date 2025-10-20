@@ -1,4 +1,7 @@
+import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
+import { DataManager } from "../lib/data-manager.js";
+import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -9,6 +12,9 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
+import { resolveApiBase } from "../lib/api.js";
+import { initHelpSystem } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
 import {
   listBuiltinSystems,
   markBuiltinMissing,
@@ -16,98 +22,56 @@ import {
   applyBuiltinCatalog,
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
-import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
+import { initTierGate, initTierVisibility } from "../lib/access.js";
 
-let undoHandler = () => ({ applied: false });
-let redoHandler = () => ({ applied: false });
+const pageLoading = initPageLoadingOverlay({
+  root: document,
+  message: "Preparing system editor…",
+  delayMs: 0,
+});
 
 (async () => {
-  const {
-    pageLoading,
-    releaseStartup,
-    status,
-    undoStack,
-    undo,
-    redo,
-    dataManager,
-    auth,
-    helpReady,
-    gate,
-  } = await bootstrapWorkbenchPage({
-    namespace: "system",
-    loadingMessage: "Preparing system editor…",
-    shellOptions: {
-      onUndo: (entry) => undoHandler(entry),
-      onRedo: (entry) => redoHandler(entry),
-    },
-    tierGate: {
+  const releaseStartup = pageLoading.hold();
+  await pageLoading.nextFrame();
+  try {
+    const { status, undoStack, undo, redo } = initAppShell({
+      namespace: "system",
+      onUndo: handleUndoEntry,
+      onRedo: handleRedoEntry,
+    });
+    const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+    const auth = initAuthControls({ root: document, status, dataManager });
+    initTierVisibility({ root: document, dataManager, status, auth });
+    const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
+  
+    function sessionUser() {
+      return dataManager.session?.user || null;
+    }
+  
+    const gate = initTierGate({
+      root: document,
+      dataManager,
+      status,
+      auth,
       requiredTier: "creator",
       gateSelector: "[data-tier-gate]",
       contentSelector: "[data-tier-content]",
       onGranted: () => window.location.reload(),
       onRevoked: () => window.location.reload(),
-    },
-  });
-
-  try {
-    function sessionUser() {
-      return dataManager.session?.user || null;
-    }
-
-    if (gate && !gate.allowed) {
-      await helpReady;
+    });
+  
+    if (!gate.allowed) {
+      await helpPromise;
       return;
     }
-
+  
     pageLoading.setMessage("Loading system data…");
-
-    const elements = {
-      select: document.querySelector("[data-system-select]"),
-      canvasRoot: document.querySelector("[data-canvas-root]"),
-      palette: document.querySelector("[data-palette]"),
-      inspector: document.querySelector("[data-inspector]"),
-      saveButton: document.querySelector('[data-action="save-system"]'),
-      undoButton: document.querySelector('[data-action="undo-system"]'),
-      redoButton: document.querySelector('[data-action="redo-system"]'),
-      newButton: document.querySelector('[data-action="new-system"]'),
-      duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
-      deleteButton: document.querySelector('[data-delete-system]'),
-      clearButton: document.querySelector('[data-action="clear-canvas"]'),
-      importButton: document.querySelector('[data-action="import-system"]'),
-      exportButton: document.querySelector('[data-action="export-system"]'),
-      jsonPreview: document.querySelector("[data-json-preview]"),
-      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-      rightPane: document.querySelector('[data-pane="right"]'),
-      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
-      newSystemModal: document.getElementById("new-system-modal"),
-      newSystemForm: document.querySelector("[data-new-system-form]"),
-      newSystemId: document.querySelector("[data-new-system-id]"),
-      newSystemTitle: document.querySelector("[data-new-system-title]"),
-      newSystemVersion: document.querySelector("[data-new-system-version]"),
-      newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
-      systemMeta: document.querySelector("[data-system-meta]"),
-    };
-
-    refreshTooltips(document);
-
-    undoHandler = handleUndoEntry;
-    redoHandler = handleRedoEntry;
-
+  
     const systemCatalog = new Map();
-    let pendingSharedSystemId = resolveSharedRecordParam("systems");
-
-    const state = {
-      system: createBlankSystem(),
-      selectedNodeId: null,
-    };
-
-    let lastSavedSystemSignature = null;
-
-    markSystemClean(state.system);
-
+  
     const builtinTask = pageLoading.track(initializeBuiltins());
     const systemRecordsTask = pageLoading.track(loadSystemRecords());
-    await Promise.all([builtinTask, systemRecordsTask, helpReady]);
+    await Promise.all([builtinTask, systemRecordsTask, helpPromise]);
   
     const sharedLoad = initializeSharedSystemHandling();
     if (sharedLoad) {
@@ -169,6 +133,46 @@ let redoHandler = () => ({ applied: false });
     function isNumericType(type) {
       return normalizeType(type) === "number";
     }
+  
+    const elements = {
+      select: document.querySelector("[data-system-select]"),
+      canvasRoot: document.querySelector("[data-canvas-root]"),
+      palette: document.querySelector("[data-palette]"),
+      inspector: document.querySelector("[data-inspector]"),
+      saveButton: document.querySelector('[data-action="save-system"]'),
+      undoButton: document.querySelector('[data-action="undo-system"]'),
+      redoButton: document.querySelector('[data-action="redo-system"]'),
+      newButton: document.querySelector('[data-action="new-system"]'),
+      duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
+      deleteButton: document.querySelector('[data-delete-system]'),
+      clearButton: document.querySelector('[data-action="clear-canvas"]'),
+      importButton: document.querySelector('[data-action="import-system"]'),
+      exportButton: document.querySelector('[data-action="export-system"]'),
+      jsonPreview: document.querySelector("[data-json-preview]"),
+      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+      rightPane: document.querySelector('[data-pane="right"]'),
+      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+      newSystemModal: document.getElementById("new-system-modal"),
+      newSystemForm: document.querySelector("[data-new-system-form]"),
+      newSystemId: document.querySelector("[data-new-system-id]"),
+      newSystemTitle: document.querySelector("[data-new-system-title]"),
+      newSystemVersion: document.querySelector("[data-new-system-version]"),
+      newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
+      systemMeta: document.querySelector("[data-system-meta]"),
+    };
+  
+    refreshTooltips(document);
+  
+    let pendingSharedSystemId = resolveSharedRecordParam("systems");
+  
+    const state = {
+      system: createBlankSystem(),
+      selectedNodeId: null,
+    };
+  
+    let lastSavedSystemSignature = null;
+  
+    markSystemClean(state.system);
   
     function hasActiveSystem() {
       return Boolean(state.system && (state.system.id || state.system.title));
@@ -2703,8 +2707,7 @@ let redoHandler = () => ({ applied: false });
       loadSystemRecords();
     }
   });
-  } finally {
-    pageLoading.setMessage("Ready");
-    releaseStartup();
-  }
+} finally {
+  releaseStartup();
+}
 })();

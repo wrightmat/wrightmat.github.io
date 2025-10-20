@@ -1,4 +1,16 @@
-import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
+import { initAppShell } from "../lib/app-shell.js";
+import { DataManager } from "../lib/data-manager.js";
+import { resolveApiBase } from "../lib/api.js";
+import { initAuthControls } from "../lib/auth-ui.js";
+import { initTierVisibility } from "../lib/access.js";
+import { initHelpSystem } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
+
+const pageLoading = initPageLoadingOverlay({
+  root: document,
+  message: "Loading workspace…",
+  delayMs: 0,
+});
 
 function renderRecentCharacters(list) {
   const target = document.querySelector("[data-recent-characters]");
@@ -17,13 +29,15 @@ function renderRecentCharacters(list) {
   });
 }
 
-
 (async () => {
-  const { pageLoading, releaseStartup, dataManager, status, helpReady } =
-    await bootstrapWorkbenchPage({
-      namespace: "index",
-      loadingMessage: "Loading workspace…",
-    });
+  const releaseStartup = pageLoading.hold();
+  await pageLoading.nextFrame();
+
+  const { status } = initAppShell({ namespace: "index" });
+  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  const auth = initAuthControls({ root: document, status, dataManager });
+  initTierVisibility({ root: document, dataManager, status, auth });
+  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
   status.show("Welcome back to the Workbench", { timeout: 2500 });
 
   try {
@@ -32,8 +46,9 @@ function renderRecentCharacters(list) {
   } catch (error) {
     console.warn("Unable to load recent characters", error);
   }
+
   try {
-    await helpReady;
+    await helpPromise;
   } catch (error) {
     console.warn("Help system failed to initialise", error);
   } finally {
