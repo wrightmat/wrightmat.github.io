@@ -1,7 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -16,7 +13,6 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinSystems,
   listBuiltinTemplates,
@@ -28,7 +24,6 @@ import {
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
-import { initTierGate, initTierVisibility } from "../lib/access.js";
 import {
   normalizeBindingValue,
   resolveBindingFromContexts,
@@ -36,54 +31,43 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
-import { initHelpSystem } from "../lib/help.js";
-import { initPageLoadingOverlay } from "../lib/loading.js";
-
-const pageLoading = initPageLoadingOverlay({
-  root: document,
-  message: "Preparing template builder…",
-  delayMs: 0,
-});
+import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
 (async () => {
-  const releaseStartup = pageLoading.hold();
-
-  await pageLoading.nextFrame();
-
-  const { status, undoStack, undo, redo } = initAppShell({
+  const {
+    pageLoading,
+    releaseStartup,
+    status,
+    undoStack,
+    undo,
+    redo,
+    dataManager,
+    auth,
+    helpReady,
+    gate,
+  } = await bootstrapWorkbenchPage({
     namespace: "template",
-    onUndo: handleUndoEntry,
-    onRedo: handleRedoEntry,
-  });
-
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  const auth = initAuthControls({ root: document, status, dataManager });
-  initTierVisibility({ root: document, dataManager, status, auth });
-  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
-
-  function sessionUser() {
-    return dataManager.session?.user || null;
-  }
-
-  const templateCatalog = new Map();
-  const systemCatalog = new Map();
-  const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
-
-  try {
-    const gate = initTierGate({
-      root: document,
-      dataManager,
-      status,
-      auth,
+    loadingMessage: "Preparing template builder…",
+    shellOptions: {
+      onUndo: handleUndoEntry,
+      onRedo: handleRedoEntry,
+    },
+    tierGate: {
       requiredTier: "gm",
       gateSelector: "[data-tier-gate]",
       contentSelector: "[data-tier-content]",
       onGranted: () => window.location.reload(),
       onRevoked: () => window.location.reload(),
-    });
+    },
+  });
 
-    if (!gate.allowed) {
-      await helpPromise;
+  try {
+    function sessionUser() {
+      return dataManager.session?.user || null;
+    }
+
+    if (gate && !gate.allowed) {
+      await helpReady;
       return;
     }
 
@@ -92,7 +76,7 @@ const pageLoading = initPageLoadingOverlay({
     const builtinTask = pageLoading.track(initializeBuiltins());
     const systemRecordsTask = pageLoading.track(loadSystemRecords());
     const templateRecordsTask = pageLoading.track(loadTemplateRecords());
-    await Promise.all([builtinTask, systemRecordsTask, templateRecordsTask, helpPromise]);
+    await Promise.all([builtinTask, systemRecordsTask, templateRecordsTask, helpReady]);
 
     const sharedTemplateLoad = initializeSharedTemplateHandling();
     if (sharedTemplateLoad) {

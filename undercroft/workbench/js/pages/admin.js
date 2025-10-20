@@ -1,24 +1,17 @@
-import { initAppShell } from "../lib/app-shell.js";
-import { DataManager } from "../lib/data-manager.js";
-import { resolveApiBase } from "../lib/api.js";
-import { initAuthControls } from "../lib/auth-ui.js";
-import { initHelpSystem } from "../lib/help.js";
-import { initPageLoadingOverlay } from "../lib/loading.js";
-
-const pageLoading = initPageLoadingOverlay({
-  root: document,
-  message: "Loading admin console…",
-  delayMs: 0,
-});
+import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
 (async () => {
-  const releaseStartup = pageLoading.hold();
-  await pageLoading.nextFrame();
-
-  const { status } = initAppShell({ namespace: "admin" });
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  const auth = initAuthControls({ root: document, status, dataManager });
-  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
+  const {
+    pageLoading,
+    releaseStartup,
+    status,
+    dataManager,
+    auth,
+    helpReady,
+  } = await bootstrapWorkbenchPage({
+    namespace: "admin",
+    loadingMessage: "Loading admin console…",
+  });
 
   const elements = {
   panel: document.querySelector("[data-admin-panel]"),
@@ -2330,8 +2323,8 @@ pageLoading.setMessage("Finalising admin tools…");
 renderShareModal();
 handleAuthChanged();
 
-  helpPromise.finally(() => {
-    pageLoading.setMessage("Ready");
-    releaseStartup();
-  });
+helpReady.finally(() => {
+  pageLoading.setMessage("Ready");
+  releaseStartup();
+});
 })();
