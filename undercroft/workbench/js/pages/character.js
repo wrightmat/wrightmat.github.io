@@ -12,6 +12,7 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { expandPane } from "../lib/panes.js";
+import { initHelpSystem } from "../lib/help.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -40,6 +41,7 @@ import {
   });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
+  initHelpSystem({ root: document });
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();
