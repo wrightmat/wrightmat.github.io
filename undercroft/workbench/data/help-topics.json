@@ -61,9 +61,9 @@
       "href": "docs/index.html#system-inspector"
     },
     {
-      "id": "system.builtins",
-      "title": "Built-in System Catalog",
-      "summary": "Import demo systems shipped with the workbench or sync new versions from the server.",
+      "id": "system.picker",
+      "title": "Active System Picker",
+      "summary": "Select an existing saved System from the server, create a New System, or Duplicate an existing System to create something new but similar.",
       "details": [
         "The content registry module checks the local cache, validates checksums, and flags missing assets in the UI.",
         "Use the \"New System\" modal to clone a builtin into your workspace with a custom id and version tag.",
