@@ -1130,23 +1130,11 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
     cardBody.appendChild(titleRow);
 
-    if (node.children && node.children.length) {
-      const summary = document.createElement("div");
-      summary.className = "text-body-secondary extra-small";
-      summary.textContent = `${node.children.length} nested ${node.children.length === 1 ? "field" : "fields"}`;
-      cardBody.appendChild(summary);
-    }
-
     card.appendChild(cardBody);
 
     if (supportsChildren(node.type)) {
       const wrapper = document.createElement("div");
       wrapper.className = "d-flex flex-column gap-2";
-
-      const label = document.createElement("div");
-      label.className = "workbench-dropzone-label text-body-secondary text-uppercase extra-small";
-      label.textContent = "Nested Fields";
-      wrapper.appendChild(label);
 
       const container = document.createElement("div");
       container.className = "workbench-dropzone";
@@ -1169,7 +1157,7 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
   function formatNodeSubtitle(node) {
     const parts = [];
-    if (node.key) parts.push(node.key);
+    if (node.key) parts.push(`(${node.key})`);
     if (node.minimum != null || node.maximum != null) {
       const range = [node.minimum ?? "", node.maximum ?? ""].filter((value) => value !== "").join(" – ");
       if (range) {
@@ -1180,6 +1168,10 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       parts.push(`${node.values.length} value${node.values.length === 1 ? "" : "s"}`);
     }
     const normalizedType = normalizeType(node.type);
+    if (supportsChildren(node.type) && Array.isArray(node.children) && node.children.length) {
+      const count = node.children.length;
+      parts.push(`${count} nested ${count === 1 ? "field" : "fields"}`);
+    }
     return parts.join(" · ") || TYPE_DEFS[normalizedType]?.description || "";
   }
 
