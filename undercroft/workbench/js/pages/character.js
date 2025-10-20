@@ -8,6 +8,8 @@ import {
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { expandPane } from "../lib/panes.js";
+import { initHelpSystem } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -44,6 +46,163 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     namespace: "character",
     loadingMessage: "Preparing character tools…",
   });
+
+  const templateCatalog = new Map();
+  const systemCatalog = new Map();
+  const characterCatalog = new Map();
+  const systemDefinitionCache = new Map();
+
+  const elements = {
+    characterSelect: document.querySelector("[data-character-select]"),
+    canvasRoot: document.querySelector("[data-canvas-root]"),
+    undoButton: document.querySelector('[data-action="undo-character"]'),
+    redoButton: document.querySelector('[data-action="redo-character"]'),
+    importButton: document.querySelector('[data-action="import-character"]'),
+    exportButton: document.querySelector('[data-action="export-character"]'),
+    newCharacterButton: document.querySelector('[data-action="new-character"]'),
+    deleteCharacterButton: document.querySelector('[data-delete-character]'),
+    viewToggle: document.querySelector('[data-action="toggle-mode"]'),
+    modeIndicator: document.querySelector("[data-mode-indicator]"),
+    notesSection: document.querySelector("[data-notes-section]"),
+    noteEditor: document.querySelector("[data-note-editor]"),
+    notesToggle: document.querySelector("[data-notes-toggle]"),
+    notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
+    notesPanel: document.querySelector("[data-notes-panel]"),
+    jsonSection: document.querySelector("[data-json-section]"),
+    jsonPreview: document.querySelector("[data-json-preview]"),
+    jsonToggle: document.querySelector("[data-json-toggle]"),
+    jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
+    jsonPanel: document.querySelector("[data-json-panel]"),
+    jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+    diceSection: document.querySelector("[data-dice-section]"),
+    diceForm: document.querySelector("[data-dice-form]"),
+    diceExpression: document.querySelector("[data-dice-expression]"),
+    diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
+    diceClearButton: document.querySelector("[data-dice-clear]"),
+    dicePanel: document.querySelector("[data-dice-panel]"),
+    diceToggle: document.querySelector("[data-dice-toggle]"),
+    diceToggleLabel: document.querySelector("[data-dice-toggle-label]"),
+    leftPane: document.querySelector('[data-pane="left"]'),
+    leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
+    rightPane: document.querySelector('[data-pane="right"]'),
+    rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+    characterToolbar: document.querySelector('[data-character-toolbar]'),
+    newCharacterForm: document.querySelector("[data-new-character-form]"),
+    newCharacterId: document.querySelector("[data-new-character-id]"),
+    newCharacterName: document.querySelector("[data-new-character-name]"),
+    newCharacterTemplate: document.querySelector("[data-new-character-template]"),
+    groupShareSection: document.querySelector("[data-group-share-section]"),
+    groupShareToggle: document.querySelector("[data-group-share-toggle]"),
+    groupShareToggleLabel: document.querySelector("[data-group-share-toggle-label]"),
+    groupSharePanel: document.querySelector("[data-group-share-panel]"),
+    groupShareStatus: document.querySelector("[data-group-share-status]"),
+    gameLogSection: document.querySelector("[data-game-log-section]"),
+    gameLogPanel: document.querySelector("[data-game-log-panel]"),
+    gameLogEntries: document.querySelector("[data-game-log-entries]"),
+    gameLogForm: document.querySelector("[data-game-log-form]"),
+    gameLogInput: document.querySelector("[data-game-log-input]"),
+    gameLogRefresh: document.querySelector("[data-game-log-refresh]"),
+    gameLogStatus: document.querySelector("[data-game-log-status]"),
+    gameLogTitle: document.querySelector("[data-game-log-group]"),
+    gameLogToggle: document.querySelector("[data-game-log-toggle]"),
+    gameLogToggleLabel: document.querySelector("[data-game-log-toggle-label]"),
+  };
+
+  assignSectionAriaConnections();
+
+  const state = {
+    mode: "view",
+    template: null,
+    components: [],
+    character: null,
+    draft: null,
+    characterOrigin: null,
+    systemDefinition: null,
+    systemPreviewData: {},
+    viewLocked: false,
+    shareToken: "",
+  };
+
+  let lastSavedCharacterSignature = null;
+
+  const renderPreview = createJsonPreviewRenderer({
+    target: elements.jsonPreview,
+    bytesTarget: elements.jsonPreviewBytes,
+    serialize: () => state.draft || {},
+  });
+
+  const componentRollDirectives = new Map();
+  const collapsedComponents = new Map();
+  const diceQuickButtons = new Map();
+  const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  const characterGroupCache = new Map();
+
+  const notesState = { collapsed: true };
+  const jsonPreviewState = { collapsed: true };
+  const dicePanelState = { collapsed: false };
+  const gameLogPanelState = { collapsed: false };
+
+  const gameLogState = {
+    enabled: false,
+    groupId: "",
+    groupName: "",
+    shareToken: "",
+    entries: [],
+    localEntries: [],
+    loading: false,
+    sending: false,
+    error: "",
+    access: "none",
+    pollTimer: 0,
+  };
+
+  const groupShareState = {
+    token: "",
+    groupId: "",
+    group: null,
+    members: [],
+    available: [],
+    loading: false,
+    error: "",
+    status: "",
+    collapsed: false,
+    paneRevealed: false,
+    viewOnlyCharacterId: "",
+  };
+
+  let suppressNotesChange = false;
+  let currentNotesKey = "";
+  let componentCounter = 0;
+
+  const initialRecordParam = parseRecordParam();
+  let pendingSharedRecord =
+    initialRecordParam && initialRecordParam.bucket === "characters"
+      ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+      : null;
+  let pendingGroupShare =
+    initialRecordParam && initialRecordParam.bucket === "groups"
+      ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+      : null;
+
+  markCharacterClean();
+
+  setNotesCollapsed(true);
+  setJsonPreviewCollapsed(true);
+  setGroupShareCollapsed(groupShareState.collapsed);
+  setDiceCollapsed(false);
+  setGameLogCollapsed(false);
+
+  let newCharacterModalInstance = null;
+  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+    const modalElement = document.getElementById("new-character-modal");
+    if (modalElement) {
+      newCharacterModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+    }
+  }
+
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
 
   try {
     pageLoading.setMessage("Loading character data…");
