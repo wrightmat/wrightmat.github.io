@@ -1,74 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="system">
-  <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Undercroft Workbench - System Editor</title>
-  <script src="js/lib/theme-bootstrap.js"></script>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-    crossorigin="anonymous"
-  />
-  
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-
+  {{ include "head.html" }}
   <body class="bg-body text-body">
-    <script src="js/lib/loading-inline.js"></script>
-
+    {{ include "loading-inline.html" }}
     <div class="workbench-app d-flex flex-column" data-tier-content>
-      <header class="workbench-header border-bottom bg-body-tertiary">
-  <div class="container-lg d-flex align-items-center gap-3 py-3">
-    <div class="d-flex align-items-center gap-3">
-      <button
-        class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-        type="button"
-        data-pane-toggle="left"
-        aria-label="Toggle tools pane"
-      >
-        <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-        <span class="visually-hidden">Toggle tools pane</span>
-      </button>
-      <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-        <a href="index.html" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Workbench</a>
-        <span class="text-body-secondary fw-normal">— System Editor</span>
-      </h1>
-    </div>
-    <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-      <div class="btn-group" role="group" aria-label="Theme toggle">
-  <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-    <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-    <span class="visually-hidden">Light theme</span>
-  </button>
-  <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-  <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-    <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-    <span class="visually-hidden">Dark theme</span>
-  </button>
-</div>
-
-      
-      <div data-auth-control class="d-flex">
-        <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-      </div>
-      
-      
-      <button
-        class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-        type="button"
-        data-pane-toggle="right"
-        aria-label="Toggle inspector pane"
-      >
-        <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-        <span class="visually-hidden">Toggle inspector pane</span>
-      </button>
-      
-    </div>
-  </div>
-</header>
-
+      {{ include "header.html" }}
       <div class="workbench-shell d-flex">
         <aside
           class="workbench-pane border-end border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar"
@@ -78,12 +14,12 @@
           data-pane-initial="expanded"
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
-            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="System actions">
+            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template actions">
               <div class="btn-group" role="group">
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="undo-system"
+                  data-action="undo-template"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="Undo"
@@ -95,7 +31,7 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="redo-system"
+                  data-action="redo-template"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="Redo"
@@ -107,7 +43,7 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="import-system"
+                  data-action="import-template"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="Import JSON"
@@ -119,7 +55,7 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="export-system"
+                  data-action="export-template"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="Export JSON"
@@ -143,7 +79,7 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-action="save-system"
+                  data-action="save-template"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="Save"
@@ -158,64 +94,119 @@
               <div class="d-flex justify-content-between align-items-center">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
                   <span>Palette</span>
-                  <span class="align-middle" data-help-topic="system.palette" data-help-insert="replace" data-help-placement="right"></span>
+                  <span class="align-middle" data-help-topic="template.library" data-help-insert="replace" data-help-placement="right"></span>
                 </h2>
                 <span class="fs-6 text-body-secondary">Drag into canvas</span>
               </div>
               <div class="d-grid gap-2" data-palette>
                 <div
                   class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
-                  data-palette-type="string"
+                  data-component-type="input"
                   data-sortable-handle="true"
                 >
                   <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
-                  <div>
-                    <div class="fw-semibold">String</div>
-                    <div class="text-body-secondary small">Free-form text value</div>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Input</div>
+                    <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
                   </div>
                 </div>
                 <div
                   class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
-                  data-palette-type="number"
+                  data-component-type="array"
                   data-sortable-handle="true"
                 >
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:hash" aria-hidden="true"></span>
-                  <div>
-                    <div class="fw-semibold">Number</div>
-                    <div class="text-body-secondary small">Numeric value with limits</div>
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">List</div>
+                    <div class="text-body-secondary extra-small text-truncate">Inventory lists and repeaters</div>
                   </div>
                 </div>
                 <div
                   class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
-                  data-palette-type="boolean"
+                  data-component-type="divider"
                   data-sortable-handle="true"
                 >
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-left" aria-hidden="true"></span>
-                  <div>
-                    <div class="fw-semibold">Boolean</div>
-                    <div class="text-body-secondary small">True / false value</div>
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:separator-horizontal" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Divider</div>
+                    <div class="text-body-secondary extra-small text-truncate">Break up sections</div>
                   </div>
                 </div>
                 <div
                   class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
-                  data-palette-type="object"
+                  data-component-type="image"
                   data-sortable-handle="true"
                 >
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:braces" aria-hidden="true"></span>
-                  <div>
-                    <div class="fw-semibold">Object</div>
-                    <div class="text-body-secondary small">Keyed set of fields</div>
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Image</div>
+                    <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or maps</div>
                   </div>
                 </div>
                 <div
                   class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
-                  data-palette-type="array"
+                  data-component-type="label"
                   data-sortable-handle="true"
                 >
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:brackets" aria-hidden="true"></span>
-                  <div>
-                    <div class="fw-semibold">Array</div>
-                    <div class="text-body-secondary small">Repeatable entries</div>
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Label</div>
+                    <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
+                  </div>
+                </div>
+                <div
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="container"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Container</div>
+                    <div class="text-body-secondary extra-small text-truncate">Tabs, grids, columns, rows</div>
+                  </div>
+                </div>
+                <div
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="linear-track"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Linear Track</div>
+                    <div class="text-body-secondary extra-small text-truncate">Segmented progress bars</div>
+                  </div>
+                </div>
+                <div
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="circular-track"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:gauge" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Circular Track</div>
+                    <div class="text-body-secondary extra-small text-truncate">Dial-style clocks</div>
+                  </div>
+                </div>
+                <div
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="select-group"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Select Group</div>
+                    <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
+                  </div>
+                </div>
+                <div
+                  class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift"
+                  data-component-type="toggle"
+                  data-sortable-handle="true"
+                >
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Toggle</div>
+                    <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
                   </div>
                 </div>
               </div>
@@ -225,14 +216,14 @@
                 class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#json-preview-collapse"
+                data-bs-target="#template-json-preview"
                 aria-expanded="false"
-                aria-controls="json-preview-collapse"
+                aria-controls="template-json-preview"
               >
                 <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
                 <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
               </button>
-              <div class="collapse" id="json-preview-collapse">
+              <div class="collapse" id="template-json-preview">
                 <div class="border rounded-3 bg-body p-3 mt-3">
                   <pre class="text-body-secondary small overflow-auto mb-0" style="max-height: 16rem" data-json-preview>{}</pre>
                 </div>
@@ -246,50 +237,43 @@
               <div class="card-body">
                 <div class="row g-3 align-items-end">
                   <div class="col-12 col-md-4 col-lg-3">
-                    <label class="form-label fw-semibold text-body-secondary d-flex align-items-center gap-2" for="system-select">
-                      <span>Active system</span>
-                      <span class="align-middle" data-help-topic="system.builtins" data-help-insert="replace" data-help-placement="right"></span>
-                    </label>
-                    <select class="form-select" id="system-select" data-system-select>
-                      <option value="" disabled selected>Select system</option>
-                    </select>
+                    <label class="form-label fw-semibold text-body-secondary" for="template-select">Active template</label>
+                    <select class="form-select" id="template-select" data-template-select></select>
                   </div>
                   <div class="col-12 col-md-auto d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-success" type="button" data-action="new-system">
-                      New System
+                    <button class="btn btn-outline-success" type="button" data-action="new-template">
+                      New Template
                     </button>
                     <button
                       class="btn btn-outline-primary d-none"
                       type="button"
-                      data-action="duplicate-system"
-                      data-duplicate-system
+                      data-action="duplicate-template"
+                      data-duplicate-template
                     >
-                      Duplicate System
+                      Duplicate Template
                     </button>
                     <button
                       class="btn btn-outline-danger d-none"
                       type="button"
-                      data-action="delete-system"
-                      data-delete-system
+                      data-action="delete-template"
+                      data-delete-template
                     >
-                      Delete System
+                      Delete Template
                     </button>
                   </div>
                   <div class="col-12 col-md text-md-end">
-                    <div class="small text-body-secondary" data-system-meta>No system selected</div>
+                    <div class="small text-body-secondary" data-template-meta>No template selected</div>
                   </div>
                 </div>
               </div>
             </section>
-            <section>
-              <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
-                <div class="card-body d-flex flex-column gap-3">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
-                    <span class="fs-6 text-body-secondary">Layout preview</span>
-                  </div>
-                  <div class="flex-grow-1 d-flex flex-column gap-3" data-canvas-root data-sortable-id="canvas"></div>
+            <section class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
+              <div class="card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
+                  <span class="fs-6 text-body-secondary">Layout preview</span>
                 </div>
+                <div class="flex-grow-1 d-flex flex-column gap-3" data-canvas-root data-sortable-id="canvas"></div>
               </div>
             </section>
           </div>
@@ -303,11 +287,11 @@
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
             <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2">
-              <span>Field Inspector</span>
-              <span class="align-middle" data-help-topic="system.inspector" data-help-insert="replace"></span>
+              <span>Component Properties</span>
+              <span class="align-middle" data-help-topic="template.properties" data-help-insert="replace"></span>
             </h2>
             <div class="d-flex flex-column gap-3 fs-6" data-inspector>
-              <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a field on the canvas to edit its configuration.</p>
+              <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a component on the canvas to edit its settings.</p>
             </div>
           </div>
         </aside>
@@ -329,72 +313,72 @@
       </div>
     </div>
     <div class="status-root" data-status-root></div>
-    <div class="modal fade" id="new-system-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="new-template-modal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title fs-5" data-new-system-modal-title>Create New System</h2>
+            <h2 class="modal-title fs-5" data-new-template-modal-title>Create New Template</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form class="needs-validation" novalidate data-new-system-form>
+          <form class="needs-validation" novalidate data-new-template-form>
             <div class="modal-body d-flex flex-column gap-3">
               <div>
-                <label class="form-label" for="new-system-id">System ID</label>
+                <label class="form-label" for="new-template-id">Template ID</label>
                 <input
-                  id="new-system-id"
+                  id="new-template-id"
                   class="form-control"
                   type="text"
                   name="id"
                   required
-                  data-new-system-id
-                  placeholder="e.g. sys.custom"
+                  data-new-template-id
+                  placeholder="e.g. tpl.custom"
                 />
-                <div class="invalid-feedback">Please provide a unique system ID.</div>
+                <div class="invalid-feedback">Please provide a unique template ID.</div>
               </div>
               <div>
-                <label class="form-label" for="new-system-title">System Title</label>
+                <label class="form-label" for="new-template-title">Template Title</label>
                 <input
-                  id="new-system-title"
+                  id="new-template-title"
                   class="form-control"
                   type="text"
                   name="title"
                   required
-                  data-new-system-title
-                  placeholder="e.g. My RPG"
+                  data-new-template-title
+                  placeholder="e.g. Hero Sheet"
                 />
                 <div class="invalid-feedback">Please provide a readable title.</div>
               </div>
               <div>
-                <label class="form-label" for="new-system-version">Starting Version</label>
+                <label class="form-label" for="new-template-version">Starting Version</label>
                 <input
-                  id="new-system-version"
+                  id="new-template-version"
                   class="form-control"
                   type="text"
                   name="version"
                   value="0.1"
-                  data-new-system-version
+                  data-new-template-version
                 />
+              </div>
+              <div>
+                <label class="form-label" for="new-template-system">System</label>
+                <select
+                  id="new-template-system"
+                  class="form-select"
+                  name="schema"
+                  required
+                  data-new-template-system
+                ></select>
+                <div class="invalid-feedback">Select a system for this template.</div>
               </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Create System</button>
+              <button type="submit" class="btn btn-primary">Create Template</button>
             </div>
           </form>
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
-<script
-  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-  crossorigin="anonymous"
-></script>
-
-<script type="module" src="js/pages/system.js"></script>
-
+    {{ include "scripts.html" }}
   </body>
 </html>

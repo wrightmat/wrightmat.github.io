@@ -1,7 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -12,9 +9,6 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
-import { initHelpSystem } from "../lib/help.js";
-import { initPageLoadingOverlay } from "../lib/loading.js";
 import {
   listBuiltinSystems,
   markBuiltinMissing,
@@ -22,56 +16,53 @@ import {
   applyBuiltinCatalog,
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
-import { initTierGate, initTierVisibility } from "../lib/access.js";
-
-const pageLoading = initPageLoadingOverlay({
-  root: document,
-  message: "Preparing system editor…",
-  delayMs: 0,
-});
+import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
 (async () => {
-  const releaseStartup = pageLoading.hold();
-  await pageLoading.nextFrame();
-  try {
-    const { status, undoStack, undo, redo } = initAppShell({
-      namespace: "system",
+  const {
+    pageLoading,
+    releaseStartup,
+    status,
+    undoStack,
+    undo,
+    redo,
+    dataManager,
+    auth,
+    helpReady,
+    gate,
+  } = await bootstrapWorkbenchPage({
+    namespace: "system",
+    loadingMessage: "Preparing system editor…",
+    shellOptions: {
       onUndo: handleUndoEntry,
       onRedo: handleRedoEntry,
-    });
-    const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-    const auth = initAuthControls({ root: document, status, dataManager });
-    initTierVisibility({ root: document, dataManager, status, auth });
-    const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
-  
-    function sessionUser() {
-      return dataManager.session?.user || null;
-    }
-  
-    const gate = initTierGate({
-      root: document,
-      dataManager,
-      status,
-      auth,
+    },
+    tierGate: {
       requiredTier: "creator",
       gateSelector: "[data-tier-gate]",
       contentSelector: "[data-tier-content]",
       onGranted: () => window.location.reload(),
       onRevoked: () => window.location.reload(),
-    });
-  
-    if (!gate.allowed) {
-      await helpPromise;
+    },
+  });
+
+  try {
+    function sessionUser() {
+      return dataManager.session?.user || null;
+    }
+
+    if (gate && !gate.allowed) {
+      await helpReady;
       return;
     }
-  
+
     pageLoading.setMessage("Loading system data…");
   
     const systemCatalog = new Map();
   
     const builtinTask = pageLoading.track(initializeBuiltins());
     const systemRecordsTask = pageLoading.track(loadSystemRecords());
-    await Promise.all([builtinTask, systemRecordsTask, helpPromise]);
+    await Promise.all([builtinTask, systemRecordsTask, helpReady]);
   
     const sharedLoad = initializeSharedSystemHandling();
     if (sharedLoad) {
@@ -2707,7 +2698,8 @@ const pageLoading = initPageLoadingOverlay({
       loadSystemRecords();
     }
   });
-} finally {
-  releaseStartup();
-}
+  } finally {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
+  }
 })();
