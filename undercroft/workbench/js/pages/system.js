@@ -18,6 +18,9 @@ import {
 } from "../lib/content-registry.js";
 import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
+let undoHandler = () => ({ applied: false });
+let redoHandler = () => ({ applied: false });
+
 (async () => {
   const {
     pageLoading,
@@ -34,8 +37,8 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     namespace: "system",
     loadingMessage: "Preparing system editor…",
     shellOptions: {
-      onUndo: handleUndoEntry,
-      onRedo: handleRedoEntry,
+      onUndo: (entry) => undoHandler(entry),
+      onRedo: (entry) => redoHandler(entry),
     },
     tierGate: {
       requiredTier: "creator",
@@ -153,7 +156,10 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     };
   
     refreshTooltips(document);
-  
+
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
+
     let pendingSharedSystemId = resolveSharedRecordParam("systems");
   
     const state = {

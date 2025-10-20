@@ -31,12 +31,6 @@ import {
 } from "../lib/component-data.js";
 import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
-const pageLoading = initPageLoadingOverlay({
-  root: document,
-  message: "Preparing character tools…",
-  delayMs: 0,
-});
-
 (async () => {
   const {
     pageLoading,
@@ -52,6 +46,14 @@ const pageLoading = initPageLoadingOverlay({
     namespace: "character",
     loadingMessage: "Preparing character tools…",
   });
+
+  const templateCatalog = new Map();
+  const systemCatalog = new Map();
+  const characterCatalog = new Map();
+
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
 
   try {
     pageLoading.setMessage("Loading character data…");
