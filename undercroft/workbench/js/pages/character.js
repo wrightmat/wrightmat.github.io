@@ -3,10 +3,15 @@ import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
 import { initAuthControls } from "../lib/auth-ui.js";
 import { createCanvasPlaceholder } from "../lib/editor-canvas.js";
-import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
+import {
+  createCanvasCardElement,
+  createCollapseToggleButton,
+  createStandardCardChrome,
+} from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
+import { expandPane } from "../lib/panes.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -18,7 +23,9 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { createLabeledField } from "../lib/component-layout.js";
 import { evaluateFormula } from "../lib/formula-engine.js";
+import { rollDiceExpression } from "../lib/dice.js";
 import {
   normalizeOptionEntries,
   resolveBindingFromContexts,
@@ -52,16 +59,74 @@ import {
     characterOrigin: null,
     systemDefinition: null,
     systemPreviewData: {},
+    viewLocked: false,
+    shareToken: "",
   };
 
   let lastSavedCharacterSignature = null;
+
+  const componentRollDirectives = new Map();
+  const collapsedComponents = new Map();
+  const diceQuickButtons = new Map();
+  const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
+  const characterGroupCache = new Map();
+
+  const gameLogState = {
+    enabled: false,
+    groupId: "",
+    groupName: "",
+    shareToken: "",
+    entries: [],
+    localEntries: [],
+    loading: false,
+    sending: false,
+    error: "",
+    access: "none",
+    pollTimer: 0,
+  };
+
+  function escapeHtml(value) {
+    if (value === undefined || value === null) {
+      return "";
+    }
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
 
   markCharacterClean();
 
   let suppressNotesChange = false;
   let currentNotesKey = "";
   let componentCounter = 0;
-  let pendingSharedRecord = resolveSharedRecordParam("characters");
+  const initialRecordParam = parseRecordParam();
+  let pendingSharedRecord = initialRecordParam && initialRecordParam.bucket === "characters"
+    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+    : null;
+  let pendingGroupShare = initialRecordParam && initialRecordParam.bucket === "groups"
+    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+    : null;
+  const groupShareState = {
+    token: "",
+    groupId: "",
+    group: null,
+    members: [],
+    available: [],
+    loading: false,
+    error: "",
+    status: "",
+    collapsed: false,
+    paneRevealed: false,
+    viewOnlyCharacterId: "",
+  };
+
+  const notesState = { collapsed: true };
+  const jsonPreviewState = { collapsed: true };
+  const dicePanelState = { collapsed: false };
+  const gameLogPanelState = { collapsed: false };
 
   function cloneValue(value) {
     if (value === undefined) {
@@ -243,7 +308,7 @@ import {
       return characterPermissions(metadata) === "edit";
     }
     if (ownership === "public") {
-      return false;
+      return userOwnsCharacter(state.draft.id);
     }
     if (ownership === "owned" || ownership === "local" || ownership === "draft" || ownership === "builtin") {
       return true;
@@ -270,7 +335,6 @@ import {
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
-    saveButton: document.querySelector('[data-action="save-character"]'),
     undoButton: document.querySelector('[data-action="undo-character"]'),
     redoButton: document.querySelector('[data-action="redo-character"]'),
     importButton: document.querySelector('[data-action="import-character"]'),
@@ -279,23 +343,64 @@ import {
     deleteCharacterButton: document.querySelector('[data-delete-character]'),
     viewToggle: document.querySelector('[data-action="toggle-mode"]'),
     modeIndicator: document.querySelector("[data-mode-indicator]"),
+    notesSection: document.querySelector("[data-notes-section]"),
     noteEditor: document.querySelector("[data-note-editor]"),
+    notesToggle: document.querySelector("[data-notes-toggle]"),
+    notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
+    notesPanel: document.querySelector("[data-notes-panel]"),
+    jsonSection: document.querySelector("[data-json-section]"),
     jsonPreview: document.querySelector("[data-json-preview]"),
+    jsonToggle: document.querySelector("[data-json-toggle]"),
+    jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
+    jsonPanel: document.querySelector("[data-json-panel]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+    diceSection: document.querySelector("[data-dice-section]"),
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
-    diceResult: document.querySelector("[data-dice-result]"),
+    diceQuickButtons: document.querySelectorAll("[data-dice-button]"),
+    diceClearButton: document.querySelector("[data-dice-clear]"),
+    dicePanel: document.querySelector("[data-dice-panel]"),
+    diceToggle: document.querySelector("[data-dice-toggle]"),
+    diceToggleLabel: document.querySelector("[data-dice-toggle-label]"),
+    leftPane: document.querySelector('[data-pane="left"]'),
+    leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
+    rightPane: document.querySelector('[data-pane="right"]'),
+    rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+    characterToolbar: document.querySelector('[data-character-toolbar]'),
     newCharacterForm: document.querySelector("[data-new-character-form]"),
     newCharacterId: document.querySelector("[data-new-character-id]"),
     newCharacterName: document.querySelector("[data-new-character-name]"),
     newCharacterTemplate: document.querySelector("[data-new-character-template]"),
+    groupShareSection: document.querySelector("[data-group-share-section]"),
+    groupShareToggle: document.querySelector("[data-group-share-toggle]"),
+    groupShareToggleLabel: document.querySelector("[data-group-share-toggle-label]"),
+    groupSharePanel: document.querySelector("[data-group-share-panel]"),
+    groupShareStatus: document.querySelector("[data-group-share-status]"),
+    gameLogSection: document.querySelector("[data-game-log-section]"),
+    gameLogPanel: document.querySelector("[data-game-log-panel]"),
+    gameLogEntries: document.querySelector("[data-game-log-entries]"),
+    gameLogForm: document.querySelector("[data-game-log-form]"),
+    gameLogInput: document.querySelector("[data-game-log-input]"),
+    gameLogRefresh: document.querySelector("[data-game-log-refresh]"),
+    gameLogStatus: document.querySelector("[data-game-log-status]"),
+    gameLogTitle: document.querySelector("[data-game-log-group]"),
+    gameLogToggle: document.querySelector("[data-game-log-toggle]"),
+    gameLogToggleLabel: document.querySelector("[data-game-log-toggle-label]"),
   };
+
+  assignSectionAriaConnections();
 
   const renderPreview = createJsonPreviewRenderer({
     target: elements.jsonPreview,
     bytesTarget: elements.jsonPreviewBytes,
     serialize: () => state.draft || {},
   });
+
+  setNotesCollapsed(true);
+  setJsonPreviewCollapsed(true);
+  setGroupShareCollapsed(groupShareState.collapsed);
+  setDiceCollapsed(false);
+  setGameLogCollapsed(false);
 
   let newCharacterModalInstance = null;
   if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
@@ -308,6 +413,7 @@ import {
   await initializeBuiltins();
   initNotesEditor();
   initDiceRoller();
+  initGameLog();
   bindUiEvents();
   loadTemplateRecords();
   loadCharacterRecords();
@@ -316,6 +422,7 @@ import {
   renderPreview();
   syncCharacterActions();
   initializeSharedRecordHandling();
+  syncCharacterToolbarVisibility();
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -323,42 +430,6 @@ import {
         const selectedId = elements.characterSelect.value;
         if (selectedId) {
           await loadCharacter(selectedId);
-        }
-      });
-    }
-
-    if (elements.saveButton) {
-      elements.saveButton.addEventListener("click", async () => {
-        if (!state.draft?.id) {
-          status.show("Create or load a character first.", { type: "info", timeout: 2000 });
-          return;
-        }
-        if (!dataManager.isAuthenticated()) {
-          status.show("Sign in to save characters to the server.", { type: "warning", timeout: 2600 });
-          return;
-        }
-        const metadata = characterCatalog.get(state.draft.id) || {};
-        if (!characterAllowsEdits(metadata)) {
-          const message = describeCharacterEditRestriction(metadata);
-          status.show(message, { type: "warning", timeout: 2800 });
-          return;
-        }
-        if (!dataManager.hasWriteAccess("characters")) {
-          const required = dataManager.describeRequiredWriteTier("characters");
-          const message = required
-            ? `Saving characters requires a ${required} tier.`
-            : "Your tier cannot save characters.";
-          status.show(message, { type: "warning", timeout: 2600 });
-          return;
-        }
-        const button = elements.saveButton;
-        button.disabled = true;
-        button.setAttribute("aria-busy", "true");
-        try {
-          await persistDraft({ silent: false });
-        } finally {
-          button.disabled = false;
-          button.removeAttribute("aria-busy");
         }
       });
     }
@@ -411,6 +482,9 @@ import {
 
     if (elements.viewToggle) {
       elements.viewToggle.addEventListener("click", async () => {
+        if (state.viewLocked) {
+          return;
+        }
         const nextMode = state.mode === "edit" ? "view" : "edit";
         if (state.mode === "edit" && state.draft?.id) {
           await persistDraft({ silent: true });
@@ -437,6 +511,48 @@ import {
         await createNewCharacterFromForm();
       });
     }
+
+    if (elements.notesToggle) {
+      elements.notesToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setNotesCollapsed(!notesState.collapsed);
+      });
+    }
+
+    if (elements.jsonToggle) {
+      elements.jsonToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setJsonPreviewCollapsed(!jsonPreviewState.collapsed);
+      });
+    }
+
+    if (elements.diceToggle) {
+      elements.diceToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setDiceCollapsed(!dicePanelState.collapsed);
+      });
+    }
+
+    if (elements.gameLogToggle) {
+      elements.gameLogToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        setGameLogCollapsed(!gameLogPanelState.collapsed);
+      });
+    }
+
+    if (elements.groupShareToggle) {
+      elements.groupShareToggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (!groupShareState.token) {
+          return;
+        }
+        const next = !groupShareState.collapsed;
+        setGroupShareCollapsed(next);
+        if (!next) {
+          renderGroupSharePanel();
+        }
+      });
+    }
   }
 
   async function initializeBuiltins() {
@@ -451,6 +567,95 @@ import {
       }
     }
     registerBuiltinContent();
+  }
+
+  function updateCollapsibleSection({
+    section,
+    panel,
+    toggle,
+    label,
+    collapsed,
+    expandLabel,
+    collapseLabel,
+  }) {
+    const next = Boolean(collapsed);
+    const expanded = !next;
+    if (panel) {
+      panel.hidden = next;
+      panel.classList.toggle("d-none", next);
+    }
+    if (section) {
+      section.classList.toggle("is-collapsed", next);
+    }
+    const actionLabel = expanded ? collapseLabel : expandLabel;
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+      if (actionLabel) {
+        toggle.setAttribute("aria-label", actionLabel);
+        toggle.setAttribute("title", actionLabel);
+      }
+      toggle.classList.toggle("is-collapsed", next);
+      toggle.dataset.collapsed = next ? "true" : "false";
+    }
+    if (label) {
+      label.textContent = actionLabel;
+    }
+  }
+
+  function setNotesCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    notesState.collapsed = next;
+    updateCollapsibleSection({
+      section: elements.notesSection,
+      panel: elements.notesPanel,
+      toggle: elements.notesToggle,
+      label: elements.notesToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand notes",
+      collapseLabel: "Collapse notes",
+    });
+  }
+
+  function setJsonPreviewCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    jsonPreviewState.collapsed = next;
+    updateCollapsibleSection({
+      section: elements.jsonSection,
+      panel: elements.jsonPanel,
+      toggle: elements.jsonToggle,
+      label: elements.jsonToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand JSON preview",
+      collapseLabel: "Collapse JSON preview",
+    });
+  }
+
+  function setDiceCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    dicePanelState.collapsed = next;
+    updateCollapsibleSection({
+      section: elements.diceSection,
+      panel: elements.dicePanel,
+      toggle: elements.diceToggle,
+      label: elements.diceToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand dice roller",
+      collapseLabel: "Collapse dice roller",
+    });
+  }
+
+  function setGameLogCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    gameLogPanelState.collapsed = next;
+    updateCollapsibleSection({
+      section: elements.gameLogSection,
+      panel: elements.gameLogPanel,
+      toggle: elements.gameLogToggle,
+      label: elements.gameLogToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand game log",
+      collapseLabel: "Collapse game log",
+    });
   }
 
   function registerBuiltinContent() {
@@ -770,35 +975,53 @@ import {
   }
 
   function syncCharacterActions() {
-    const hasDraft = Boolean(state.draft);
     const draftHasId = Boolean(state.draft?.id);
     const metadata = draftHasId ? characterCatalog.get(state.draft.id) || null : null;
-    if (elements.saveButton) {
-      const hasChanges = hasDraft && hasUnsavedCharacterChanges();
-      const isAuthenticated = dataManager.isAuthenticated();
-    const canWrite = dataManager.hasWriteAccess("characters");
-    const canEditRecord = hasDraft ? characterAllowsEdits(metadata) : false;
-    const enabled = hasDraft && hasChanges && isAuthenticated && canWrite && canEditRecord;
-    elements.saveButton.disabled = !enabled;
-      elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
-      if (!hasDraft) {
-        elements.saveButton.title = "Create or load a character to save.";
-      } else if (!isAuthenticated) {
-        elements.saveButton.title = "Sign in to save characters to the server.";
-      } else if (!canWrite) {
-        const required = dataManager.describeRequiredWriteTier("characters");
-        elements.saveButton.title = required
-          ? `Saving characters requires a ${required} tier.`
-          : "Your tier cannot save characters.";
-      } else if (!canEditRecord) {
-        const message = describeCharacterEditRestriction(metadata);
-        elements.saveButton.title = message;
-      } else if (!hasChanges) {
-        elements.saveButton.title = "No changes to save.";
-      } else {
-        elements.saveButton.removeAttribute("title");
+    const updateToolbarButton = (button, { disabled, disabledTitle, enabledTitle }) => {
+      if (!button) {
+        return;
       }
-    }
+      const nextDisabled = Boolean(disabled);
+      const defaultTitle =
+        button.dataset.defaultTitle || button.getAttribute("data-bs-title") || button.title || "";
+      if (!button.dataset.defaultTitle && defaultTitle) {
+        button.dataset.defaultTitle = defaultTitle;
+      }
+      const title = nextDisabled
+        ? disabledTitle || button.dataset.disabledTitle || ""
+        : enabledTitle || button.dataset.defaultTitle || defaultTitle || "";
+      button.disabled = nextDisabled;
+      button.classList.toggle("disabled", nextDisabled);
+      button.setAttribute("aria-disabled", nextDisabled ? "true" : "false");
+      if (title) {
+        button.setAttribute("title", title);
+        button.setAttribute("data-bs-title", title);
+      } else {
+        button.removeAttribute("title");
+        button.removeAttribute("data-bs-title");
+      }
+      refreshTooltips(button.parentElement || button);
+    };
+
+    const shareViewActive = Boolean(groupShareState.token)
+      && Boolean(groupShareState.viewOnlyCharacterId)
+      && draftHasId
+      && state.draft.id === groupShareState.viewOnlyCharacterId;
+    const locked = state.viewLocked || shareViewActive;
+
+    updateToolbarButton(elements.importButton, {
+      disabled: !draftHasId || locked,
+      disabledTitle: locked
+        ? "Group characters must be claimed before importing."
+        : "Select a character to import data.",
+    });
+
+    updateToolbarButton(elements.exportButton, {
+      disabled: !draftHasId || locked,
+      disabledTitle: locked
+        ? "Group characters must be claimed before exporting."
+        : "Select a character to export data.",
+    });
 
     if (!elements.deleteCharacterButton) {
       return;
@@ -839,43 +1062,267 @@ import {
     syncNotesEditor(true);
   }
 
-  function initDiceRoller() {
-    if (!elements.diceForm || !elements.diceExpression || !elements.diceResult) {
+  function openToolsPane() {
+    if (elements.rightPane) {
+      expandPane(elements.rightPane, elements.rightPaneToggle);
+    }
+  }
+
+  function parseQuickDiceCounts(expression) {
+    const counts = Object.fromEntries(QUICK_DICE.map((die) => [die, 0]));
+    if (typeof expression !== "string" || !expression) {
+      return counts;
+    }
+    const regex = /(\d*)d(4|6|8|10|12|20|100)(?!\d)/gi;
+    let match;
+    while ((match = regex.exec(expression)) !== null) {
+      const quantity = match[1] ? parseInt(match[1], 10) : 1;
+      const die = `d${match[2]}`.toLowerCase();
+      if (Number.isFinite(quantity) && counts[die] !== undefined) {
+        counts[die] += quantity;
+      }
+    }
+    return counts;
+  }
+
+  function syncQuickDiceButtons() {
+    if (!elements.diceExpression) {
       return;
     }
-    elements.diceForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const expression = elements.diceExpression.value.trim();
-      if (!expression) {
-        elements.diceResult.textContent = "Enter a dice expression like 2d6 + 3.";
-        return;
+    const expression = elements.diceExpression.value || "";
+    const counts = parseQuickDiceCounts(expression);
+    diceQuickButtons.forEach((button, die) => {
+      const count = counts[die] || 0;
+      const baseLabel = button.dataset.label || button.textContent.trim();
+      if (count > 0) {
+        button.textContent = `${baseLabel} × ${count}`;
+        button.classList.add("btn-primary", "active");
+        button.classList.remove("btn-outline-secondary");
+        button.setAttribute("aria-label", `${baseLabel} (${count} in expression)`);
+      } else {
+        button.textContent = baseLabel;
+        button.classList.remove("btn-primary", "active");
+        button.classList.add("btn-outline-secondary");
+        button.setAttribute("aria-label", `Add ${baseLabel}`);
       }
-      const result = rollDiceExpression(expression);
-      if (!result) {
-        elements.diceResult.textContent = "Unsupported expression. Try NdM ± K.";
-        return;
-      }
-      const { total, rolls, modifier } = result;
-      const breakdown = `${rolls.join(" + ")}${modifier ? (modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`) : ""}`;
-      elements.diceResult.innerHTML = `<strong>Total:</strong> ${total}<br /><span class="text-body-secondary">${breakdown}</span>`;
     });
   }
 
-  function rollDiceExpression(input) {
-    const trimmed = input.replace(/\s+/g, "").toLowerCase();
-    const match = trimmed.match(/^(\d*)d(\d+)([+-]\d+)?$/);
-    if (!match) {
+  function incrementDieInExpression(die, expression = "") {
+    const sides = die.slice(1);
+    const patternStart = new RegExp(`^(\\s*)(\\d*)d${sides}(?!\\d)`, "i");
+    if (patternStart.test(expression)) {
+      return expression.replace(patternStart, (match, leading, count) => {
+        const base = parseInt(count || "1", 10);
+        const next = Number.isFinite(base) ? base + 1 : 2;
+        return `${leading}${next}d${sides}`;
+      });
+    }
+    const pattern = new RegExp(`([^A-Za-z0-9_])(\\d*)d${sides}(?!\\d)`, "i");
+    let replaced = false;
+    const updated = expression.replace(pattern, (match, prefix, count) => {
+      if (replaced) {
+        return match;
+      }
+      const base = parseInt(count || "1", 10);
+      const next = Number.isFinite(base) ? base + 1 : 2;
+      replaced = true;
+      return `${prefix}${next}d${sides}`;
+    });
+    if (replaced) {
+      return updated;
+    }
+    const trimmed = expression.trim();
+    if (!trimmed) {
+      return `1d${sides}`;
+    }
+    if (/[+\-*/(]$/.test(trimmed)) {
+      return `${expression} 1d${sides}`;
+    }
+    return `${trimmed} + 1d${sides}`;
+  }
+
+  function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
+    const trimmed = typeof expression === "string" ? expression.trim() : "";
+    if (!trimmed) {
+      status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
       return null;
     }
-    const count = Math.min(Math.max(parseInt(match[1] || "1", 10), 1), 100);
-    const sides = Math.min(Math.max(parseInt(match[2], 10), 2), 1000);
-    const modifier = match[3] ? parseInt(match[3], 10) : 0;
-    const rolls = [];
-    for (let index = 0; index < count; index += 1) {
-      rolls.push(1 + Math.floor(Math.random() * sides));
+    if (updateInput && elements.diceExpression) {
+      elements.diceExpression.value = trimmed;
+      syncQuickDiceButtons();
     }
-    const total = rolls.reduce((sum, value) => sum + value, 0) + modifier;
-    return { total, rolls, modifier };
+    openToolsPane();
+    try {
+      const result = rollDiceExpression(trimmed, { context: state.draft?.data || {} });
+      const notation = result.notation || trimmed;
+      const prefix = label ? `${label}: ` : "";
+      status.show(`${prefix}${notation} → ${result.total}`, { type: "success", timeout: 2200 });
+      recordGameLogRoll(result, { expression: trimmed, label });
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to roll dice.";
+      status.show(message, { type: "danger", timeout: 2400 });
+      return null;
+    }
+  }
+
+  function handleComponentRoll(expression, label) {
+    if (!expression) {
+      return;
+    }
+    const text = typeof label === "string" && label.trim() ? label.trim() : "";
+    executeDiceRoll(expression, { label: text, updateInput: true });
+  }
+
+  function createRollOverlayButton(component, expressions) {
+    const container = document.createElement("div");
+    container.className = "character-roll-overlay";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center";
+    const label = component.label || component.name || "Roll";
+    button.setAttribute("aria-label", `Roll ${label}`);
+    if (Array.isArray(expressions) && expressions.length) {
+      button.title = expressions.join(" • ");
+    }
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.setAttribute("data-icon", "tabler:dice-5");
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    let index = 0;
+    button.addEventListener("click", () => {
+      if (!Array.isArray(expressions) || !expressions.length) {
+        return;
+      }
+      const expression = expressions[index] || expressions[0];
+      index = (index + 1) % expressions.length;
+      handleComponentRoll(expression, label);
+    });
+    container.appendChild(button);
+    return container;
+  }
+
+  function ensureDicePanelMarkup() {
+    if (!elements.dicePanel) {
+      return false;
+    }
+    elements.dicePanel.innerHTML = "";
+    const form = document.createElement("form");
+    form.className = "d-flex flex-column gap-3";
+    form.setAttribute("data-dice-form", "");
+
+    const quickGrid = document.createElement("div");
+    quickGrid.className = "dice-quick-grid";
+    quickGrid.setAttribute("data-dice-quick", "");
+    QUICK_DICE.forEach((die) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-secondary btn-sm";
+      button.setAttribute("data-dice-button", die);
+      button.textContent = die;
+      quickGrid.appendChild(button);
+    });
+    const clearButton = document.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "btn btn-outline-secondary btn-sm";
+    clearButton.setAttribute("data-dice-clear", "");
+    clearButton.textContent = "Clear";
+    quickGrid.appendChild(clearButton);
+    form.appendChild(quickGrid);
+
+    const inputId = "dice-expression";
+    const label = document.createElement("label");
+    label.className = "visually-hidden";
+    label.setAttribute("for", inputId);
+    label.textContent = "Dice expression";
+    form.appendChild(label);
+
+    const inputGroup = document.createElement("div");
+    inputGroup.className = "input-group";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = inputId;
+    input.setAttribute("inputmode", "text");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("data-dice-expression", "");
+    input.placeholder = "e.g. 2d6 + 3";
+    inputGroup.appendChild(input);
+
+    const rollButton = document.createElement("button");
+    rollButton.className = "btn btn-primary";
+    rollButton.type = "submit";
+    rollButton.textContent = "Roll";
+    inputGroup.appendChild(rollButton);
+
+    form.appendChild(inputGroup);
+    elements.dicePanel.appendChild(form);
+
+    elements.diceForm = form;
+    elements.diceExpression = input;
+    elements.diceQuickButtons = form.querySelectorAll("[data-dice-button]");
+    elements.diceClearButton = form.querySelector("[data-dice-clear]");
+    return true;
+  }
+
+  function initDiceRoller() {
+    if (!ensureDicePanelMarkup()) {
+      return;
+    }
+    diceQuickButtons.clear();
+    Array.from(elements.diceQuickButtons || []).forEach((button) => {
+      const die = (button.getAttribute("data-dice-button") || "").toLowerCase();
+      if (!die || !QUICK_DICE.includes(die)) {
+        return;
+      }
+      diceQuickButtons.set(die, button);
+      const label = button.textContent.trim();
+      button.dataset.label = label;
+      button.setAttribute("aria-label", `Add ${label}`);
+      button.addEventListener("click", () => {
+        const next = incrementDieInExpression(die, elements.diceExpression.value || "");
+        elements.diceExpression.value = next;
+        try {
+          elements.diceExpression.focus({ preventScroll: true });
+        } catch (focusError) {
+          elements.diceExpression.focus();
+        }
+        syncQuickDiceButtons();
+      });
+    });
+
+    if (elements.diceClearButton) {
+      elements.diceClearButton.setAttribute("aria-label", "Clear dice expression");
+      elements.diceClearButton.addEventListener("click", () => {
+        if (elements.diceExpression) {
+          elements.diceExpression.value = "";
+          syncQuickDiceButtons();
+          try {
+            elements.diceExpression.focus({ preventScroll: true });
+          } catch (focusError) {
+            elements.diceExpression.focus();
+          }
+        }
+      });
+    }
+
+    if (elements.diceExpression) {
+      elements.diceExpression.addEventListener("input", () => {
+        syncQuickDiceButtons();
+      });
+    }
+
+    if (elements.diceForm) {
+      elements.diceForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const expression = elements.diceExpression ? elements.diceExpression.value || "" : "";
+        executeDiceRoll(expression, { updateInput: false });
+      });
+    }
+
+    syncQuickDiceButtons();
   }
 
   async function loadTemplateRecords() {
@@ -1021,11 +1468,930 @@ import {
     }
   }
 
-  function initializeSharedRecordHandling() {
-    if (!pendingSharedRecord) {
+  function setGroupShareCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    groupShareState.collapsed = next;
+    updateCollapsibleSection({
+      section: elements.groupShareSection,
+      panel: elements.groupSharePanel,
+      toggle: elements.groupShareToggle,
+      label: elements.groupShareToggleLabel,
+      collapsed: next,
+      expandLabel: "Expand group characters",
+      collapseLabel: "Collapse group characters",
+    });
+    if (elements.groupShareStatus) {
+      const shouldHide = next || !groupShareState.token;
+      elements.groupShareStatus.hidden = shouldHide;
+    }
+  }
+
+  function setViewModeLocked(locked) {
+    const next = Boolean(locked);
+    state.viewLocked = next;
+    if (next && state.mode !== "view") {
+      state.mode = "view";
+      renderCanvas();
+      renderPreview();
+    }
+    syncModeIndicator();
+    syncCharacterActions();
+  }
+
+  function assignSectionAriaConnections() {
+    const notesPanelId = ensureElementId(elements.notesPanel, "character-notes");
+    if (notesPanelId && elements.notesToggle) {
+      elements.notesToggle.setAttribute("aria-controls", notesPanelId);
+    }
+    const jsonPanelId = ensureElementId(elements.jsonPanel, "character-json");
+    if (jsonPanelId && elements.jsonToggle) {
+      elements.jsonToggle.setAttribute("aria-controls", jsonPanelId);
+    }
+    const sharePanelId = ensureElementId(elements.groupSharePanel, "character-group-share");
+    if (sharePanelId && elements.groupShareToggle) {
+      elements.groupShareToggle.setAttribute("aria-controls", sharePanelId);
+    }
+    const dicePanelId = ensureElementId(elements.dicePanel, "character-dice");
+    if (dicePanelId && elements.diceToggle) {
+      elements.diceToggle.setAttribute("aria-controls", dicePanelId);
+    }
+    const gameLogPanelId = ensureElementId(elements.gameLogPanel, "character-game-log");
+    if (gameLogPanelId && elements.gameLogToggle) {
+      elements.gameLogToggle.setAttribute("aria-controls", gameLogPanelId);
+    }
+  }
+
+  function ensureElementId(element, prefix) {
+    if (!element) {
+      return "";
+    }
+    if (element.id) {
+      return element.id;
+    }
+    const base = typeof prefix === "string" && prefix.trim() ? prefix.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-") : "element";
+    const id = `${base}-${Math.random().toString(36).slice(2, 9)}`;
+    element.id = id;
+    return id;
+  }
+
+  function setGroupShareStatus(message = "") {
+    if (!elements.groupShareStatus) {
       return;
     }
-    void loadPendingSharedRecord();
+    const text = typeof message === "string" ? message.trim() : "";
+    elements.groupShareStatus.textContent = text;
+    const shouldHide = groupShareState.collapsed || !groupShareState.token || !text;
+    elements.groupShareStatus.hidden = shouldHide;
+  }
+
+  function initGameLog() {
+    if (elements.gameLogForm) {
+      elements.gameLogForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        void submitGameLogMessage();
+      });
+    }
+    if (elements.gameLogRefresh) {
+      elements.gameLogRefresh.addEventListener("click", () => {
+        void refreshGameLog({ force: true });
+      });
+    }
+    updateGameLogVisibility();
+    updateGameLogControls();
+    updateGameLogStatus();
+  }
+
+  function gameLogCanPost() {
+    if (!gameLogState.enabled) {
+      return false;
+    }
+    if (!dataManager.isAuthenticated()) {
+      return false;
+    }
+    if (gameLogState.shareToken) {
+      return Boolean(gameLogState.groupId);
+    }
+    if (!gameLogState.groupId) {
+      return false;
+    }
+    if (gameLogState.access === "owner" || gameLogState.access === "member") {
+      return true;
+    }
+    return dataManager.getUserTier() === "admin";
+  }
+
+  function updateGameLogControls() {
+    const canPost = gameLogCanPost();
+    if (elements.gameLogInput) {
+      elements.gameLogInput.disabled = !canPost || gameLogState.sending;
+    }
+    if (elements.gameLogForm) {
+      const submit = elements.gameLogForm.querySelector('button[type="submit"]');
+      if (submit) {
+        submit.disabled = !canPost || gameLogState.sending;
+      }
+    }
+    if (elements.gameLogRefresh) {
+      const refreshDisabled = !gameLogState.enabled || gameLogState.loading;
+      elements.gameLogRefresh.disabled = refreshDisabled;
+      elements.gameLogRefresh.classList.toggle("disabled", refreshDisabled);
+      elements.gameLogRefresh.setAttribute("aria-disabled", refreshDisabled ? "true" : "false");
+    }
+  }
+
+  function updateGameLogVisibility() {
+    if (!elements.gameLogSection) {
+      return;
+    }
+    elements.gameLogSection.hidden = false;
+    elements.gameLogSection.classList.remove("d-none");
+    setGameLogCollapsed(gameLogPanelState.collapsed);
+    renderGameLogEntries();
+  }
+
+  function updateGameLogStatus() {
+    if (!elements.gameLogStatus) {
+      return;
+    }
+    let message = "";
+    elements.gameLogStatus.classList.remove("text-danger");
+    if (gameLogState.error) {
+      message = gameLogState.error;
+      elements.gameLogStatus.classList.add("text-danger");
+    } else if (gameLogState.enabled && !gameLogCanPost()) {
+      message = dataManager.isAuthenticated()
+        ? "You can view the log but cannot post to this group."
+        : "Sign in to chat with your group.";
+    }
+    elements.gameLogStatus.textContent = message;
+    elements.gameLogStatus.hidden = !message;
+  }
+
+  function createGameLogEntryElement(entry) {
+    const container = document.createElement("article");
+    container.className = "game-log-entry";
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-baseline gap-2";
+    const author = document.createElement("span");
+    author.className = "fw-semibold";
+    author.textContent = entry?.author?.name || "System";
+    header.appendChild(author);
+    if (entry?.created_at) {
+      const timestamp = document.createElement("time");
+      timestamp.className = "text-body-secondary small";
+      timestamp.dateTime = entry.created_at;
+      timestamp.textContent = formatGameLogTimestamp(entry.created_at);
+      header.appendChild(timestamp);
+    }
+    container.appendChild(header);
+    const body = document.createElement("div");
+    body.className = "small";
+    if (entry?.type === "roll") {
+      const payload = entry && typeof entry.payload === "object" && entry.payload ? entry.payload : {};
+      const label = typeof payload.label === "string" ? payload.label.trim() : "";
+      const notation = typeof payload.expression === "string" && payload.expression.trim()
+        ? payload.expression.trim()
+        : typeof payload.notation === "string" && payload.notation.trim()
+          ? payload.notation.trim()
+          : "";
+      const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
+      let summary = "";
+      if (label) {
+        summary += `<span class="text-body-secondary">${escapeHtml(label)}:</span> `;
+      }
+      if (notation) {
+        summary += `<code>${escapeHtml(notation)}</code>`;
+      }
+      if (summary && (total || total === 0)) {
+        summary += ` ⇒ <strong>${escapeHtml(total)}</strong>`;
+      } else if (total || total === 0) {
+        summary += `<strong>${escapeHtml(total)}</strong>`;
+      }
+      if (!summary) {
+        summary = escapeHtml(entry?.message || "Roll");
+      }
+      body.innerHTML = summary;
+      if (payload.detailHtml) {
+        const detail = document.createElement("div");
+        detail.className = "game-log-roll-detail text-body-secondary mt-1";
+        detail.innerHTML = payload.detailHtml;
+        body.appendChild(detail);
+      } else if (payload.detailText) {
+        const detail = document.createElement("pre");
+        detail.className = "game-log-roll-detail text-body-secondary mb-0 mt-1";
+        detail.textContent = payload.detailText;
+        body.appendChild(detail);
+      }
+    } else {
+      body.textContent = entry?.message || "";
+    }
+    container.appendChild(body);
+    return container;
+  }
+
+  function formatGameLogTimestamp(value) {
+    if (!value) {
+      return "";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    try {
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch (error) {
+      return date.toISOString();
+    }
+  }
+
+  function resolveGameLogTimestamp(entry) {
+    if (!entry || typeof entry !== "object") {
+      return 0;
+    }
+    if (typeof entry.__timestamp === "number") {
+      return entry.__timestamp;
+    }
+    if (entry.created_at) {
+      const created = Date.parse(entry.created_at);
+      if (!Number.isNaN(created)) {
+        return created;
+      }
+    }
+    if (entry.updated_at) {
+      const updated = Date.parse(entry.updated_at);
+      if (!Number.isNaN(updated)) {
+        return updated;
+      }
+    }
+    if (typeof entry.id === "number") {
+      return entry.id;
+    }
+    const numericId = parseInt(entry.id, 10);
+    if (!Number.isNaN(numericId)) {
+      return numericId;
+    }
+    return 0;
+  }
+
+  function sortGameLogEntriesDescending(a, b) {
+    return resolveGameLogTimestamp(b) - resolveGameLogTimestamp(a);
+  }
+
+  function renderGameLogEntries() {
+    if (!elements.gameLogEntries) {
+      return;
+    }
+    elements.gameLogEntries.innerHTML = "";
+    const combinedEntries = [];
+    if (gameLogState.entries.length) {
+      combinedEntries.push(...gameLogState.entries);
+    }
+    if (gameLogState.localEntries.length) {
+      combinedEntries.push(...gameLogState.localEntries);
+    }
+    if (!combinedEntries.length) {
+      const placeholder = document.createElement("p");
+      placeholder.className = "text-body-secondary small mb-0";
+      if (gameLogState.enabled && gameLogState.loading) {
+        placeholder.textContent = "Loading log…";
+      } else {
+        placeholder.textContent = "No log activity yet.";
+      }
+      elements.gameLogEntries.appendChild(placeholder);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    combinedEntries.sort(sortGameLogEntriesDescending).forEach((entry) => {
+      fragment.appendChild(createGameLogEntryElement(entry));
+    });
+    elements.gameLogEntries.appendChild(fragment);
+  }
+
+  function stopGameLogPolling() {
+    if (gameLogState.pollTimer) {
+      window.clearInterval(gameLogState.pollTimer);
+      gameLogState.pollTimer = 0;
+    }
+  }
+
+  function startGameLogPolling() {
+    stopGameLogPolling();
+    if (!gameLogState.enabled) {
+      return;
+    }
+    gameLogState.pollTimer = window.setInterval(() => {
+      void refreshGameLog({ silent: true });
+    }, 30000);
+  }
+
+  function clearGameLogContext() {
+    if (!gameLogState.enabled && !gameLogState.groupId && !gameLogState.shareToken) {
+      return;
+    }
+    stopGameLogPolling();
+    gameLogState.enabled = false;
+    gameLogState.groupId = "";
+    gameLogState.groupName = "";
+    gameLogState.shareToken = "";
+    gameLogState.access = "none";
+    gameLogState.entries = [];
+    gameLogState.error = "";
+    gameLogPanelState.collapsed = false;
+    if (elements.gameLogTitle) {
+      elements.gameLogTitle.textContent = "";
+      elements.gameLogTitle.hidden = true;
+    }
+    updateGameLogVisibility();
+    updateGameLogControls();
+    updateGameLogStatus();
+  }
+
+  function setGameLogContext({ groupId = "", shareToken = "", groupName = "", access = "none" } = {}) {
+    const normalizedId = typeof groupId === "string" ? groupId.trim() : "";
+    const normalizedToken = typeof shareToken === "string" ? shareToken.trim() : "";
+    const normalizedAccess = typeof access === "string" ? access : "none";
+    const changed = normalizedId !== gameLogState.groupId || normalizedToken !== gameLogState.shareToken;
+    gameLogState.groupId = normalizedId;
+    gameLogState.shareToken = normalizedToken;
+    gameLogState.groupName = typeof groupName === "string" ? groupName.trim() : "";
+    gameLogState.access = normalizedAccess;
+    gameLogState.enabled = Boolean(normalizedId || normalizedToken);
+    if (elements.gameLogTitle) {
+      elements.gameLogTitle.textContent = gameLogState.groupName;
+      elements.gameLogTitle.hidden = !gameLogState.groupName;
+    }
+    if (!gameLogState.enabled) {
+      clearGameLogContext();
+      return;
+    }
+    if (changed) {
+      gameLogState.entries = [];
+    }
+    updateGameLogVisibility();
+    updateGameLogControls();
+    updateGameLogStatus();
+    if (changed) {
+      void refreshGameLog({ silent: true });
+    }
+    startGameLogPolling();
+  }
+
+  async function refreshGameLog({ silent = false, force = false } = {}) {
+    if (!gameLogState.enabled || (!gameLogState.groupId && !gameLogState.shareToken)) {
+      return;
+    }
+    if (gameLogState.loading && !force) {
+      return;
+    }
+    gameLogState.loading = true;
+    updateGameLogControls();
+    if (elements.gameLogEntries) {
+      elements.gameLogEntries.setAttribute("aria-busy", "true");
+    }
+    try {
+      const payload = await dataManager.getGroupLog({
+        groupId: gameLogState.shareToken ? "" : gameLogState.groupId,
+        shareToken: gameLogState.shareToken,
+      });
+      const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+      if (payload?.group?.name) {
+        gameLogState.groupName = String(payload.group.name);
+        if (elements.gameLogTitle) {
+          elements.gameLogTitle.textContent = gameLogState.groupName;
+          elements.gameLogTitle.hidden = !gameLogState.groupName;
+        }
+      }
+      gameLogState.entries = entries;
+      gameLogState.entries.sort(sortGameLogEntriesDescending);
+      gameLogState.error = "";
+      renderGameLogEntries();
+    } catch (error) {
+      console.error("Character editor: failed to load game log", error);
+      if (!silent) {
+        gameLogState.error = error?.message || "Unable to load the game log.";
+      }
+      renderGameLogEntries();
+    } finally {
+      gameLogState.loading = false;
+      if (elements.gameLogEntries) {
+        elements.gameLogEntries.setAttribute("aria-busy", "false");
+      }
+      updateGameLogControls();
+      updateGameLogStatus();
+    }
+  }
+
+  async function postGameLogEntry(type, message, payload) {
+    if (!gameLogCanPost()) {
+      updateGameLogStatus();
+      return null;
+    }
+    if (gameLogState.sending) {
+      return null;
+    }
+    gameLogState.sending = true;
+    updateGameLogControls();
+    try {
+      const entry = await dataManager.createGroupLogEntry({
+        groupId: gameLogState.shareToken ? "" : gameLogState.groupId,
+        shareToken: gameLogState.shareToken,
+        type,
+        message,
+        payload,
+      });
+      gameLogState.error = "";
+      return entry;
+    } catch (error) {
+      console.error("Character editor: unable to send game log entry", error);
+      gameLogState.error = error?.message || "Unable to send to the game log.";
+      updateGameLogStatus();
+      if (status) {
+        status.show(gameLogState.error, { type: "danger" });
+      }
+      return null;
+    } finally {
+      gameLogState.sending = false;
+      updateGameLogControls();
+    }
+  }
+
+  function integrateGameLogEntry(entry) {
+    if (!entry || typeof entry !== "object") {
+      return;
+    }
+    const existing = gameLogState.entries.findIndex((item) => item && item.id === entry.id);
+    if (existing >= 0) {
+      gameLogState.entries[existing] = entry;
+    } else {
+      gameLogState.entries.push(entry);
+    }
+    gameLogState.entries.sort(sortGameLogEntriesDescending);
+    renderGameLogEntries();
+    updateGameLogStatus();
+  }
+
+  async function submitGameLogMessage() {
+    if (!elements.gameLogInput) {
+      return;
+    }
+    const value = elements.gameLogInput.value.trim();
+    if (!value) {
+      return;
+    }
+    const context = resolveCurrentCharacterContext();
+    const payload = context ? { character: context } : undefined;
+    const entry = await postGameLogEntry("message", value, payload);
+    if (entry) {
+      elements.gameLogInput.value = "";
+      integrateGameLogEntry(entry);
+      void refreshGameLog({ silent: true, force: true });
+    } else {
+      updateGameLogStatus();
+    }
+  }
+
+  function addLocalGameLogEntry({ type = "message", message = "", payload = null } = {}) {
+    const timestamp = Date.now();
+    const user = sessionUser();
+    const displayName =
+      (user && typeof user.display_name === "string" && user.display_name.trim())
+        ? user.display_name.trim()
+        : (user && typeof user.username === "string" && user.username.trim())
+          ? user.username.trim()
+          : "You";
+    const entry = {
+      id: `local-${timestamp}-${Math.random().toString(36).slice(2, 8)}`,
+      type,
+      message,
+      payload: payload || undefined,
+      created_at: new Date(timestamp).toISOString(),
+      author: { name: displayName },
+      local: true,
+      __timestamp: timestamp,
+    };
+    gameLogState.localEntries.push(entry);
+    if (gameLogState.localEntries.length > 100) {
+      gameLogState.localEntries.splice(0, gameLogState.localEntries.length - 100);
+    }
+    renderGameLogEntries();
+    updateGameLogStatus();
+  }
+
+  function recordGameLogRoll(result, { expression = "", label = "" } = {}) {
+    if (!result) {
+      return;
+    }
+    const context = resolveCurrentCharacterContext();
+    const payload = {
+      expression: expression || result.expression || result.notation || "",
+      notation: result.notation || expression || "",
+      total: result.total,
+      detailHtml: result.detailHtml || undefined,
+      detailText: result.detailText || undefined,
+      dice: Array.isArray(result.dice) && result.dice.length ? result.dice : undefined,
+      label: label || undefined,
+      character: context || undefined,
+    };
+    if (!gameLogCanPost()) {
+      addLocalGameLogEntry({ type: "roll", payload });
+      return;
+    }
+    void postGameLogEntry("roll", "", payload).then((entry) => {
+      if (entry) {
+        integrateGameLogEntry(entry);
+        void refreshGameLog({ silent: true, force: true });
+      } else if (gameLogState.enabled) {
+        void refreshGameLog({ silent: true, force: true });
+      }
+    });
+  }
+
+  function resolveCurrentCharacterContext() {
+    if (!state.draft?.id) {
+      return null;
+    }
+    const name = typeof state.draft.data?.name === "string" && state.draft.data.name.trim()
+      ? state.draft.data.name.trim()
+      : state.draft.id;
+    const templateId = state.template?.id || state.draft.template || "";
+    const templateTitle = state.template?.title || "";
+    return {
+      id: state.draft.id,
+      name,
+      template: templateId,
+      template_title: templateTitle,
+    };
+  }
+
+  async function refreshCharacterGroups(characterId) {
+    if (!characterId || !dataManager.isAuthenticated()) {
+      characterGroupCache.delete(characterId);
+      return [];
+    }
+    try {
+      const payload = await dataManager.listCharacterGroups(characterId);
+      const groups = Array.isArray(payload?.groups) ? payload.groups : [];
+      characterGroupCache.set(characterId, groups);
+      return groups;
+    } catch (error) {
+      console.warn("Character editor: unable to fetch character groups", error);
+      characterGroupCache.set(characterId, []);
+      return [];
+    }
+  }
+
+  async function syncGameLogContext({ force = false } = {}) {
+    const shareToken = state.shareToken || groupShareState.token || "";
+    const shareGroupId = shareToken ? groupShareState.groupId || "" : "";
+    if (shareToken && shareGroupId) {
+      const groupName = groupShareState.group?.name || gameLogState.groupName;
+      const access = dataManager.isAuthenticated() ? "share" : "viewer";
+      setGameLogContext({ groupId: shareGroupId, shareToken, groupName, access });
+      return;
+    }
+    if (!state.draft?.id) {
+      clearGameLogContext();
+      return;
+    }
+    if (!dataManager.isAuthenticated()) {
+      characterGroupCache.delete(state.draft.id);
+      clearGameLogContext();
+      return;
+    }
+    let memberships = characterGroupCache.get(state.draft.id);
+    if (force || memberships === undefined) {
+      memberships = await refreshCharacterGroups(state.draft.id);
+    }
+    const groups = Array.isArray(memberships) ? memberships : [];
+    const campaign = groups.find((entry) => typeof entry?.type === "string" && entry.type.toLowerCase() === "campaign") || groups[0];
+    if (!campaign) {
+      clearGameLogContext();
+      return;
+    }
+    const ownerId = campaign.owner_id ?? null;
+    const userId = dataManager.session?.user?.id ?? null;
+    const access = ownerId === userId ? "owner" : "member";
+    setGameLogContext({ groupId: campaign.id, groupName: campaign.name || "", access });
+  }
+
+  function applyGroupSharePayload(payload) {
+    const group = payload && typeof payload.group === "object" ? payload.group : null;
+    groupShareState.group = group;
+    groupShareState.groupId = group?.id || groupShareState.groupId;
+    const members = Array.isArray(payload?.members) ? payload.members : [];
+    groupShareState.members = members;
+    const available = Array.isArray(payload?.available)
+      ? payload.available
+      : members.filter((member) => member.content_type === "character" && !member.is_claimed && !member.missing);
+    groupShareState.available = available;
+    groupShareState.error = "";
+    groupShareState.status = "";
+    registerGroupShareRecords();
+    void syncGameLogContext();
+  }
+
+  function registerGroupShareRecords() {
+    const available = Array.isArray(groupShareState.available) ? groupShareState.available : [];
+    available.forEach((member) => {
+      if (!member || member.content_type !== "character" || !member.content_id) {
+        return;
+      }
+      registerCharacterRecord({
+        id: member.content_id,
+        title: member.label || member.content_id,
+        template: member.template || "",
+        templateTitle: member.template_title || "",
+        system: member.system || "",
+        source: "remote",
+        ownership: "shared",
+        ownerUsername: member.owner_username || "",
+        shareToken: groupShareState.token,
+      });
+    });
+  }
+
+  function syncCharacterToolbarVisibility() {
+    if (!elements.characterToolbar) {
+      return;
+    }
+    const currentId = state.draft?.id || "";
+    const metadata = currentId ? characterCatalog.get(currentId) : null;
+    const viewingShared =
+      Boolean(groupShareState.token) &&
+      Boolean(groupShareState.viewOnlyCharacterId) &&
+      currentId === groupShareState.viewOnlyCharacterId;
+    const ownership = (metadata?.ownership || "").toLowerCase();
+    const hideToolbar = viewingShared && ownership === "shared";
+    elements.characterToolbar.classList.toggle("d-none", hideToolbar);
+    const lockViewMode = viewingShared && ownership === "shared";
+    setViewModeLocked(lockViewMode);
+  }
+
+  function renderGroupSharePanel() {
+    if (!elements.groupShareSection) {
+      return;
+    }
+    const hasToken = Boolean(groupShareState.token);
+    elements.groupShareSection.hidden = !hasToken;
+    if (!hasToken) {
+      setGroupShareStatus("");
+      syncCharacterToolbarVisibility();
+      return;
+    }
+    if (!groupShareState.paneRevealed) {
+      expandPane(elements.leftPane, elements.leftPaneToggle);
+      groupShareState.paneRevealed = true;
+    }
+    setGroupShareCollapsed(groupShareState.collapsed);
+    const container = elements.groupSharePanel;
+    if (!container) {
+      return;
+    }
+    container.innerHTML = "";
+    if (groupShareState.loading) {
+      const loading = document.createElement("div");
+      loading.className = "text-body-secondary small";
+      loading.textContent = "Loading available characters…";
+      container.appendChild(loading);
+      setGroupShareStatus("");
+      return;
+    }
+    if (groupShareState.error) {
+      const alert = document.createElement("div");
+      alert.className = "alert alert-danger mb-0";
+      alert.textContent = groupShareState.error;
+      container.appendChild(alert);
+      setGroupShareStatus("");
+      return;
+    }
+    const available = Array.isArray(groupShareState.available) ? groupShareState.available : [];
+    if (!available.length) {
+      const empty = document.createElement("div");
+      empty.className = "text-body-secondary small";
+      empty.textContent = "No unclaimed characters are available in this group.";
+      container.appendChild(empty);
+      const message = dataManager.isAuthenticated() ? "" : "Sign in to claim a character.";
+      setGroupShareStatus(message);
+      return;
+    }
+    available.forEach((member) => {
+      container.appendChild(renderGroupShareOption(member));
+    });
+    const message = groupShareState.status || (dataManager.isAuthenticated() ? "" : "Sign in to claim a character.");
+    setGroupShareStatus(message);
+  }
+
+  function formatGroupMemberLabel(member) {
+    if (!member) {
+      return "Character";
+    }
+    const id = typeof member.content_id === "string" && member.content_id
+      ? member.content_id
+      : typeof member.id === "string" && member.id
+        ? member.id
+        : "";
+    const rawName = member.label || member.name || member.title || id;
+    const name = typeof rawName === "string" && rawName.trim() ? rawName.trim() : id || "Character";
+    const rawTemplate = member.template_title || member.templateTitle || member.template;
+    const templateLabel = typeof rawTemplate === "string" && rawTemplate.trim() ? rawTemplate.trim() : "";
+    return templateLabel ? `${name} (${templateLabel})` : name;
+  }
+
+  function renderGroupShareOption(member) {
+    const card = document.createElement("div");
+    card.className = "border border-body-tertiary rounded-3 p-3 d-flex flex-column gap-3";
+    const header = document.createElement("div");
+    header.className = "d-flex flex-column gap-1";
+    const title = document.createElement("div");
+    title.className = "fw-semibold";
+    title.textContent = formatGroupMemberLabel(member);
+    header.appendChild(title);
+    const systemLabel = member.system_name || member.system;
+    if (systemLabel) {
+      const system = document.createElement("div");
+      system.className = "text-body-secondary small";
+      system.textContent = systemLabel;
+      header.appendChild(system);
+    }
+    card.appendChild(header);
+    const buttonRow = document.createElement("div");
+    buttonRow.className = "d-flex flex-wrap gap-2";
+    const viewButton = document.createElement("button");
+    viewButton.type = "button";
+    viewButton.className = "btn btn-outline-secondary btn-sm";
+    viewButton.textContent = "View";
+    viewButton.addEventListener("click", () => viewGroupCharacter(member, viewButton));
+    buttonRow.appendChild(viewButton);
+    const claimButton = document.createElement("button");
+    claimButton.type = "button";
+    claimButton.className = "btn btn-primary btn-sm";
+    claimButton.textContent = "Claim";
+    claimButton.addEventListener("click", () => claimGroupCharacter(member, claimButton));
+    buttonRow.appendChild(claimButton);
+    card.appendChild(buttonRow);
+    return card;
+  }
+
+  async function viewGroupCharacter(member, button) {
+    if (!groupShareState.token) {
+      return;
+    }
+    const label = formatGroupMemberLabel(member);
+    if (button) {
+      button.disabled = true;
+    }
+    setGroupShareStatus(`Loading ${label}…`);
+    try {
+      groupShareState.viewOnlyCharacterId = member.content_id;
+      registerCharacterRecord({
+        id: member.content_id,
+        title: member.label || member.content_id,
+        template: member.template || "",
+        templateTitle: member.template_title || "",
+        system: member.system || "",
+        source: "remote",
+        ownership: "shared",
+        ownerUsername: member.owner_username || "",
+        shareToken: groupShareState.token,
+      });
+      await loadCharacter(member.content_id, { shareToken: groupShareState.token });
+      groupShareState.status = dataManager.isAuthenticated() ? "" : "Sign in to claim a character.";
+    } catch (error) {
+      console.error("Character editor: unable to load group character", error);
+      const message = error?.message || `Unable to load ${label}.`;
+      groupShareState.status = message;
+      setGroupShareStatus(message);
+      if (status) {
+        status.show(message, { type: "danger" });
+      }
+    } finally {
+      if (button) {
+        button.disabled = false;
+      }
+      syncCharacterToolbarVisibility();
+      renderGroupSharePanel();
+    }
+  }
+  async function claimGroupCharacter(member, button) {
+    if (!groupShareState.token) {
+      return;
+    }
+    const label = formatGroupMemberLabel(member);
+    button.disabled = true;
+    setGroupShareStatus(`Claiming ${label}…`);
+    try {
+      await dataManager.claimGroupCharacter({ token: groupShareState.token, characterId: member.content_id });
+      groupShareState.status = "";
+      setGroupShareStatus("");
+      if (status) {
+        status.show(`Claimed ${label}.`, { type: "success", timeout: 2000 });
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("record", `characters:${member.content_id}`);
+      url.searchParams.delete("share");
+      window.history.replaceState({}, "", url);
+      groupShareState.viewOnlyCharacterId = "";
+      syncCharacterToolbarVisibility();
+      await refreshRemoteCharacters({ force: true });
+      await loadCharacter(member.content_id);
+      await refreshGroupShareDetails();
+      renderGroupSharePanel();
+    } catch (error) {
+      console.error("Character editor: unable to claim group character", error);
+      const message = error?.message || "Unable to claim this character.";
+      groupShareState.status = message;
+      setGroupShareStatus(message);
+      button.disabled = false;
+      if (error?.status === 401) {
+        if (status) {
+          status.show("Sign in to claim a character.", { type: "warning", timeout: 2000 });
+        }
+      } else if (status) {
+        status.show(message, { type: "danger" });
+      }
+      await refreshGroupShareDetails();
+      renderGroupSharePanel();
+    }
+  }
+
+  async function refreshGroupShareDetails() {
+    if (!groupShareState.token) {
+      return;
+    }
+    groupShareState.loading = true;
+    groupShareState.status = "";
+    renderGroupSharePanel();
+    try {
+      const payload = await dataManager.fetchGroupShare(groupShareState.token);
+      applyGroupSharePayload(payload);
+    } catch (error) {
+      console.error("Character editor: unable to refresh group share details", error);
+      groupShareState.error = error?.message || "Unable to load available characters.";
+    } finally {
+      groupShareState.loading = false;
+      renderGroupSharePanel();
+    }
+  }
+
+  async function loadPendingGroupShare() {
+    if (!pendingGroupShare) {
+      return;
+    }
+    const { id = "", shareToken = "" } = pendingGroupShare;
+    pendingGroupShare = null;
+    if (!shareToken) {
+      groupShareState.token = "";
+      groupShareState.groupId = id;
+      groupShareState.group = null;
+      groupShareState.members = [];
+      groupShareState.available = [];
+      groupShareState.error = "";
+      groupShareState.status = "";
+      groupShareState.loading = false;
+      groupShareState.paneRevealed = false;
+      groupShareState.viewOnlyCharacterId = "";
+      renderGroupSharePanel();
+      syncCharacterToolbarVisibility();
+      state.shareToken = "";
+      clearGameLogContext();
+      return;
+    }
+    groupShareState.token = shareToken;
+    groupShareState.groupId = id;
+    groupShareState.group = null;
+    groupShareState.members = [];
+    groupShareState.available = [];
+    groupShareState.error = "";
+    groupShareState.status = "";
+    groupShareState.loading = true;
+    groupShareState.collapsed = false;
+    groupShareState.paneRevealed = false;
+    groupShareState.viewOnlyCharacterId = "";
+    renderGroupSharePanel();
+    try {
+      const payload = await dataManager.fetchGroupShare(shareToken);
+      applyGroupSharePayload(payload);
+    } catch (error) {
+      console.error("Character editor: unable to load group share", error);
+      groupShareState.error = error?.message || "Unable to load available characters.";
+      if (status) {
+        status.show(groupShareState.error, { type: "danger" });
+      }
+    } finally {
+      groupShareState.loading = false;
+      renderGroupSharePanel();
+      state.shareToken = shareToken;
+      void syncGameLogContext({ force: true });
+    }
+  }
+
+  function initializeSharedRecordHandling() {
+    if (pendingGroupShare) {
+      void loadPendingGroupShare();
+    }
+    if (pendingSharedRecord) {
+      void loadPendingSharedRecord();
+    }
   }
 
   async function loadPendingSharedRecord() {
@@ -1131,6 +2497,7 @@ import {
     resetSystemContext();
     state.template = template;
     state.components = components;
+    collapsedComponents.clear();
     if (template.id) {
       registerTemplateRecord({
         id: template.id,
@@ -1151,6 +2518,7 @@ import {
     if (!id) {
       return;
     }
+    state.shareToken = shareToken || "";
     try {
       const metadata = characterCatalog.get(id);
       if (!metadata) {
@@ -1188,10 +2556,12 @@ import {
       renderPreview();
       syncCharacterOptions();
       syncCharacterActions();
+      syncCharacterToolbarVisibility();
       status.show(`Loaded ${state.draft.data?.name || metadata.title || state.draft.id}`, {
         type: "success",
         timeout: 2000,
       });
+      await syncGameLogContext({ force: true });
     } catch (error) {
       console.error("Character editor: failed to load character", error);
       const pruned = handleCharacterLoadFailure(id, error);
@@ -1200,6 +2570,8 @@ import {
         : "Unable to load character";
       const type = pruned ? "warning" : "error";
       status.show(message, { type, timeout: 2800 });
+      syncCharacterToolbarVisibility();
+      await syncGameLogContext({ force: true });
     }
 
     return true;
@@ -1244,11 +2616,14 @@ import {
       state.characterOrigin = null;
       state.template = null;
       state.components = [];
+      collapsedComponents.clear();
       resetSystemContext();
       markCharacterClean();
       renderCanvas();
       renderPreview();
       syncCharacterActions();
+      state.shareToken = "";
+      clearGameLogContext();
     }
 
     if (elements.characterSelect && elements.characterSelect.value === id) {
@@ -1318,6 +2693,7 @@ import {
     if (!elements.canvasRoot) {
       return;
     }
+    componentRollDirectives.clear();
     elements.canvasRoot.dataset.canvasMode = state.mode;
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id) {
@@ -1355,22 +2731,77 @@ import {
 
   function renderComponentCard(component) {
     const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
+    const showTypeIcon = state.mode === "edit";
+    const collapsibleValue = component?.collapsible;
+    const collapsible = typeof collapsibleValue === "string"
+      ? collapsibleValue.toLowerCase() === "true"
+      : Boolean(collapsibleValue);
+    const shouldRenderActions = showTypeIcon;
     const wrapper = createCanvasCardElement({
       classes: ["character-component"],
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
     });
-    const { header } = createStandardCardChrome({
-      icon: iconName,
+    const { header, actions, ensureActions } = createStandardCardChrome({
+      icon: showTypeIcon ? iconName : null,
       iconLabel: component.type,
       headerOptions: { classes: ["character-component-header"], sortableHandle: false },
-      actionsOptions: { classes: ["character-component-actions"] },
+      actionsOptions: shouldRenderActions ? { classes: ["character-component-actions"] } : false,
       iconOptions: { classes: ["character-component-icon"] },
       removeButtonOptions: false,
     });
     wrapper.appendChild(header);
-    const body = renderComponentContent(component);
+    const content = renderComponentContent(component);
+    const body = content instanceof Element ? content : (() => {
+      const container = document.createElement("div");
+      container.appendChild(content);
+      return container;
+    })();
+    const bodyId = component?.uid ? `${component.uid}-content` : "";
+    if (body instanceof HTMLElement && bodyId) {
+      body.id = bodyId;
+    }
     wrapper.appendChild(body);
+
+    if (collapsible) {
+      const key = component?.uid || null;
+      const collapsed = key ? collapsedComponents.get(key) === true : false;
+      const labelText = component.label || component.name || "Section";
+      const { button: collapseButton, setCollapsed } = createCollapseToggleButton({
+        label: labelText,
+        collapsed,
+        onToggle(next) {
+          if (key) {
+            if (next) {
+              collapsedComponents.set(key, true);
+            } else {
+              collapsedComponents.delete(key);
+            }
+          }
+          if (body instanceof HTMLElement) {
+            body.hidden = next;
+          }
+          wrapper.classList.toggle("is-collapsed", next);
+        },
+      });
+      if (body instanceof HTMLElement && body.id) {
+        collapseButton.setAttribute("aria-controls", body.id);
+      }
+      header.appendChild(collapseButton);
+      if (body instanceof HTMLElement) {
+        body.hidden = collapsed;
+      }
+      wrapper.classList.toggle("is-collapsed", collapsed);
+      setCollapsed(collapsed);
+    } else {
+      if (component?.uid) {
+        collapsedComponents.delete(component.uid);
+      }
+      if (body instanceof HTMLElement) {
+        body.hidden = false;
+      }
+      wrapper.classList.remove("is-collapsed");
+    }
     applyComponentStyles(wrapper, component);
     return wrapper;
   }
@@ -1407,23 +2838,19 @@ import {
   }
 
   function renderInputComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
     const labelText = component.label || component.name || "Field";
-    if (labelText) {
-      const label = document.createElement("label");
-      label.className = "form-label fw-semibold text-body-secondary mb-0";
-      label.textContent = labelText;
-      applyTextFormatting(label, component);
-      wrapper.appendChild(label);
-    }
     const editable = isEditable(component);
     const resolvedValue = resolveComponentValue(component, component.value ?? "");
-    const variant = component.variant || "text";
+    const variant = (component.variant || "text").toLowerCase();
+    const componentUid = component?.uid || "";
+    const labelClasses = ["form-label", "fw-semibold", "text-body-secondary", "mb-0"];
 
     if (variant === "select") {
       const select = document.createElement("select");
       select.className = "form-select";
+      if (componentUid) {
+        select.id = `${componentUid}-select`;
+      }
       const currentValue = resolvedValue == null ? "" : String(resolvedValue);
       const options = resolveSelectionOptions(component);
       options.forEach(({ value, label }) => {
@@ -1442,13 +2869,23 @@ import {
           updateBinding(component.binding, select.value);
         });
       }
-      wrapper.appendChild(select);
-      return wrapper;
+      return createLabeledField({
+        component,
+        control: select,
+        labelText,
+        labelTag: "label",
+        labelFor: select.id || "",
+        labelClasses,
+        applyFormatting: applyTextFormatting,
+      });
     }
 
     if (variant === "textarea") {
       const textarea = document.createElement("textarea");
       textarea.className = "form-control";
+      if (componentUid) {
+        textarea.id = `${componentUid}-textarea`;
+      }
       const rows = Number.isFinite(Number(component.rows)) ? Number(component.rows) : 3;
       textarea.rows = Math.min(Math.max(Math.round(rows), 2), 12);
       textarea.placeholder = component.placeholder || "";
@@ -1460,8 +2897,15 @@ import {
           updateBinding(component.binding, textarea.value);
         });
       }
-      wrapper.appendChild(textarea);
-      return wrapper;
+      return createLabeledField({
+        component,
+        control: textarea,
+        labelText,
+        labelTag: "label",
+        labelFor: textarea.id || "",
+        labelClasses,
+        applyFormatting: applyTextFormatting,
+      });
     }
 
     if (variant === "radio" || variant === "checkbox") {
@@ -1514,22 +2958,37 @@ import {
         formCheck.append(input, optionLabelEl);
         group.appendChild(formCheck);
       });
-      wrapper.appendChild(group);
-      return wrapper;
+      return createLabeledField({
+        component,
+        control: group,
+        labelText,
+        labelTag: "div",
+        labelClasses: ["fw-semibold", "text-body-secondary"],
+        applyFormatting: applyTextFormatting,
+      });
     }
 
     const input = document.createElement("input");
     input.className = "form-control";
+    if (componentUid) {
+      input.id = `${componentUid}-input`;
+    }
     if (variant === "number") {
       input.type = "number";
       if (component.min !== undefined) input.min = component.min;
       if (component.max !== undefined) input.max = component.max;
       if (component.step !== undefined) input.step = component.step;
       const numericValue = resolvedValue == null ? "" : resolvedValue;
-      input.value = numericValue === undefined ? "" : numericValue;
-      input.disabled = !editable;
-      assignBindingMetadata(input, component);
-      if (editable) {
+      input.value = numericValue === undefined || numericValue === null ? "" : numericValue;
+    } else {
+      input.type = component.inputType || "text";
+      input.placeholder = component.placeholder || "";
+      input.value = resolvedValue ?? "";
+    }
+    input.disabled = !editable;
+    assignBindingMetadata(input, component);
+    if (editable) {
+      if (variant === "number") {
         input.addEventListener("input", () => {
           const raw = input.value;
           if (raw === "") {
@@ -1539,34 +2998,43 @@ import {
           const next = Number(raw);
           updateBinding(component.binding, Number.isNaN(next) ? raw : next);
         });
-      }
-    } else {
-      input.type = component.inputType || "text";
-      input.placeholder = component.placeholder || "";
-      input.value = resolvedValue ?? "";
-      input.disabled = !editable;
-      assignBindingMetadata(input, component);
-      if (editable) {
+      } else {
         input.addEventListener("input", () => {
           updateBinding(component.binding, input.value);
         });
       }
     }
-    wrapper.appendChild(input);
-    return wrapper;
+    const inputContainer = document.createElement("div");
+    inputContainer.className = "position-relative";
+    const rollExpressions = componentUid ? componentRollDirectives.get(componentUid) : null;
+    const showRollOverlay =
+      state.mode === "view" && Array.isArray(rollExpressions) && rollExpressions.length > 0;
+    if (showRollOverlay) {
+      input.classList.add("character-rollable-input");
+    }
+    inputContainer.appendChild(input);
+    if (showRollOverlay) {
+      inputContainer.appendChild(createRollOverlayButton(component, rollExpressions));
+    }
+    return createLabeledField({
+      component,
+      control: inputContainer,
+      labelText,
+      labelTag: "label",
+      labelFor: input.id || "",
+      labelClasses,
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderArrayComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const heading = document.createElement("div");
-    heading.className = "fw-semibold text-body-secondary";
-    heading.textContent = component.label || component.name || "List";
-    applyTextFormatting(heading, component);
-    wrapper.appendChild(heading);
+    const labelText = component.label || component.name || "List";
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
     textarea.rows = component.rows || 4;
+    if (component?.uid) {
+      textarea.id = `${component.uid}-array`;
+    }
     const value = resolveComponentValue(component);
     const serialized = Array.isArray(value)
       ? JSON.stringify(value, null, 2)
@@ -1594,8 +3062,15 @@ import {
         }
       });
     }
-    wrapper.appendChild(textarea);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: textarea,
+      labelText,
+      labelTag: "label",
+      labelFor: textarea.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderDividerComponent(component) {
@@ -1663,15 +3138,13 @@ import {
   }
 
   function renderLinearTrackComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Progress";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Progress";
     const input = document.createElement("input");
     input.type = "range";
     input.className = "form-range";
+    if (component?.uid) {
+      input.id = `${component.uid}-linear-track`;
+    }
     input.min = component.min ?? 0;
     input.max = component.max ?? 100;
     const resolved = resolveComponentValue(component, component.value ?? 0);
@@ -1685,20 +3158,25 @@ import {
         updateBinding(component.binding, Number(input.value));
       });
     }
-    wrapper.appendChild(input);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: input,
+      labelText,
+      labelTag: "label",
+      labelFor: input.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderCircularTrackComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Track";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Track";
     const input = document.createElement("input");
     input.type = "number";
     input.className = "form-control";
+    if (component?.uid) {
+      input.id = `${component.uid}-circular-track`;
+    }
     input.min = 0;
     const max = component.max ?? 100;
     input.max = max;
@@ -1714,17 +3192,19 @@ import {
         updateBinding(component.binding, Number.isNaN(next) ? 0 : Math.max(0, Math.min(max, next)));
       });
     }
-    wrapper.appendChild(input);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: input,
+      labelText,
+      labelTag: "label",
+      labelFor: input.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderSelectGroupComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Options";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Options";
     const editable = isEditable(component);
     const value = resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
     const activeValues = component.multiple
@@ -1772,19 +3252,23 @@ import {
       }
       group.appendChild(button);
     });
-    wrapper.appendChild(group);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: group,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function renderToggleComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
-    const label = document.createElement("div");
-    label.className = "fw-semibold text-body-secondary";
-    label.textContent = component.label || "Toggle";
-    wrapper.appendChild(label);
+    const labelText = component.label || "Toggle";
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
+    if (component?.uid) {
+      select.id = `${component.uid}-toggle`;
+    }
     const states = resolveToggleStates(component);
     const resolvedState = resolveComponentValue(component);
     const normalizedState = resolvedState != null ? String(resolvedState) : null;
@@ -1809,8 +3293,15 @@ import {
         updateBinding(component.binding, select.value);
       });
     }
-    wrapper.appendChild(select);
-    return wrapper;
+    return createLabeledField({
+      component,
+      control: select,
+      labelText,
+      labelTag: "label",
+      labelFor: select.id || "",
+      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      applyFormatting: applyTextFormatting,
+    });
   }
 
   function normalizeZones(component) {
@@ -1849,6 +3340,15 @@ import {
     const normalizedBinding = normalizeBinding(clone.binding ?? clone.bind ?? "");
     if (normalizedBinding) {
       clone.binding = normalizedBinding;
+    }
+    if (typeof clone.roller !== "string") {
+      clone.roller = "";
+    }
+    clone.roller = clone.roller.trim();
+    if (typeof clone.collapsible === "string") {
+      clone.collapsible = clone.collapsible.toLowerCase() === "true";
+    } else {
+      clone.collapsible = Boolean(clone.collapsible);
     }
     if (!clone.uid) {
       componentCounter += 1;
@@ -1976,13 +3476,59 @@ import {
   }
 
   function resolveComponentValue(component, fallback = undefined) {
+    const componentUid = component?.uid || null;
+    const manualRolls = new Set();
+    if (typeof component?.roller === "string") {
+      const trimmedRoller = component.roller.trim();
+      if (trimmedRoller) {
+        manualRolls.add(trimmedRoller);
+      }
+    }
+    const applyRollDirectives = (extra) => {
+      if (!componentUid) {
+        return;
+      }
+      const combined = new Set(manualRolls);
+      if (extra) {
+        const values = extra instanceof Set ? Array.from(extra) : Array.isArray(extra) ? extra : [extra];
+        values.forEach((value) => {
+          if (typeof value === "string") {
+            const trimmed = value.trim();
+            if (trimmed) {
+              combined.add(trimmed);
+            }
+          }
+        });
+      }
+      if (combined.size) {
+        componentRollDirectives.set(componentUid, Array.from(combined));
+      } else {
+        componentRollDirectives.delete(componentUid);
+      }
+    };
     if (componentHasFormula(component)) {
+      const collected = new Set();
       try {
-        const result = evaluateFormula(component.formula, state.draft?.data || {});
+        const dataContext = state.draft?.data || {};
+        const result = evaluateFormula(component.formula, dataContext, {
+          onRoll: (notation) => {
+            if (typeof notation === "string") {
+              const trimmedNotation = notation.trim();
+              if (trimmedNotation) {
+                collected.add(trimmedNotation);
+              }
+            }
+          },
+          rollContext: dataContext,
+        });
+        applyRollDirectives(collected);
         return result;
       } catch (error) {
+        applyRollDirectives();
         console.warn("Character editor: unable to evaluate formula", error);
       }
+    } else {
+      applyRollDirectives();
     }
     const bound = getBindingValue(component?.binding);
     if (bound !== undefined) {
@@ -2409,6 +3955,8 @@ import {
     renderPreview();
     syncModeIndicator();
     syncCharacterActions();
+    state.shareToken = "";
+    clearGameLogContext();
     status.show(`Started ${trimmedName}`, { type: "success", timeout: 2000 });
     return true;
   }
@@ -2463,6 +4011,7 @@ import {
     state.draft = null;
     state.template = null;
     state.components = [];
+    collapsedComponents.clear();
     resetSystemContext();
     state.characterOrigin = null;
     state.mode = "view";
@@ -2471,12 +4020,14 @@ import {
     if (elements.characterSelect) {
       elements.characterSelect.value = "";
     }
+    state.shareToken = "";
     markCharacterClean();
     syncNotesEditor();
     renderCanvas();
     renderPreview();
     syncModeIndicator();
     syncCharacterActions();
+    clearGameLogContext();
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
     if (button) {
       button.removeAttribute("aria-busy");
@@ -2585,14 +4136,28 @@ import {
     if (elements.viewToggle) {
       const icon = elements.viewToggle.querySelector("[data-mode-icon]");
       const label = elements.viewToggle.querySelector("[data-mode-label]");
-      const tooltipTitle = state.mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
+      const hasCharacter = Boolean(state.draft?.id);
+      const locked = state.viewLocked || !hasCharacter;
+      let tooltipTitle = "";
+      if (!hasCharacter) {
+        tooltipTitle = "Select a character to enable editing.";
+      } else if (state.viewLocked) {
+        tooltipTitle = "Group characters are view-only until claimed.";
+      } else {
+        tooltipTitle = state.mode === "edit" ? "Switch to view mode" : "Switch to edit mode";
+      }
+      const isEditing = hasCharacter && !state.viewLocked && state.mode === "edit";
+      elements.viewToggle.disabled = locked;
+      elements.viewToggle.classList.toggle("disabled", locked);
+      elements.viewToggle.setAttribute("aria-disabled", locked ? "true" : "false");
+      elements.viewToggle.setAttribute("title", tooltipTitle);
       elements.viewToggle.setAttribute("data-bs-title", tooltipTitle);
-      elements.viewToggle.setAttribute("aria-pressed", state.mode === "edit" ? "true" : "false");
+      elements.viewToggle.setAttribute("aria-pressed", isEditing ? "true" : "false");
       if (icon) {
-        icon.setAttribute("data-icon", state.mode === "edit" ? "tabler:edit" : "tabler:eye");
+        icon.setAttribute("data-icon", isEditing ? "tabler:edit" : "tabler:eye");
       }
       if (label) {
-        label.textContent = state.mode === "edit" ? "Edit mode" : "View mode";
+        label.textContent = isEditing ? "Edit mode" : "View mode";
       }
       refreshTooltips(elements.viewToggle.parentElement || elements.viewToggle);
     }
@@ -2674,7 +4239,7 @@ import {
     return `cha_${slug || "character"}_${rand}`;
   }
 
-  function resolveSharedRecordParam(expectedBucket) {
+  function parseRecordParam() {
     try {
       const params = new URLSearchParams(window.location.search || "");
       const record = params.get("record");
@@ -2683,11 +4248,11 @@ import {
       }
       const [bucket, ...rest] = record.split(":");
       const id = rest.join(":");
-      if (bucket !== expectedBucket || !id) {
+      if (!bucket || !id) {
         return null;
       }
       const shareToken = params.get("share") || "";
-      return { id, shareToken };
+      return { bucket, id, shareToken };
     } catch (error) {
       console.warn("Character editor: unable to parse shared record", error);
       return null;
