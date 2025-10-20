@@ -1,7 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -12,7 +9,6 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinSystems,
   markBuiltinMissing,
@@ -20,294 +16,585 @@ import {
   applyBuiltinCatalog,
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
-import { initTierGate, initTierVisibility } from "../lib/access.js";
+import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
+
+let undoHandler = () => ({ applied: false });
+let redoHandler = () => ({ applied: false });
 
 (async () => {
-  const { status, undoStack, undo, redo } = initAppShell({
-    namespace: "system",
-    onUndo: handleUndoEntry,
-    onRedo: handleRedoEntry,
-  });
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  const auth = initAuthControls({ root: document, status, dataManager });
-  initTierVisibility({ root: document, dataManager, status, auth });
-
-  function sessionUser() {
-    return dataManager.session?.user || null;
-  }
-
-  const gate = initTierGate({
-    root: document,
-    dataManager,
+  const {
+    pageLoading,
+    releaseStartup,
     status,
-    auth,
-    requiredTier: "creator",
-    gateSelector: "[data-tier-gate]",
-    contentSelector: "[data-tier-content]",
-    onGranted: () => window.location.reload(),
-    onRevoked: () => window.location.reload(),
-  });
-
-  if (!gate.allowed) {
-    return;
-  }
-
-  const systemCatalog = new Map();
-
-  await initializeBuiltins();
-
-  const TYPE_DEFS = {
-    string: {
-      label: "String",
-      icon: "tabler:forms",
-      description: "Free-form text value",
-      palette: true,
-    },
-    number: {
-      label: "Number",
-      icon: "tabler:hash",
-      description: "Numeric value with limits",
-      palette: true,
-    },
-    boolean: {
-      label: "Boolean",
-      icon: "tabler:toggle-left",
-      description: "True or false value",
-      palette: true,
-    },
-    object: {
-      label: "Object",
-      icon: "tabler:braces",
-      description: "Keyed set of fields",
-      palette: true,
-    },
-    array: {
-      label: "Array",
-      icon: "tabler:brackets",
-      description: "Repeatable entries",
-      palette: true,
-    },
-  };
-
-  const TYPE_ALIASES = {
-    integer: "number",
-  };
-
-  const TYPE_OPTIONS = ["string", "number", "boolean", "object", "array"];
-
-  function normalizeType(type) {
-    if (!type) return "string";
-    const raw = String(type).trim().toLowerCase();
-    const key = raw in TYPE_DEFS ? raw : TYPE_ALIASES[raw] || raw;
-    if (TYPE_DEFS[key]) {
-      return key;
-    }
-    return "string";
-  }
-
-  function isNumericType(type) {
-    return normalizeType(type) === "number";
-  }
-
-  const elements = {
-    select: document.querySelector("[data-system-select]"),
-    canvasRoot: document.querySelector("[data-canvas-root]"),
-    palette: document.querySelector("[data-palette]"),
-    inspector: document.querySelector("[data-inspector]"),
-    saveButton: document.querySelector('[data-action="save-system"]'),
-    undoButton: document.querySelector('[data-action="undo-system"]'),
-    redoButton: document.querySelector('[data-action="redo-system"]'),
-    newButton: document.querySelector('[data-action="new-system"]'),
-    duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
-    deleteButton: document.querySelector('[data-delete-system]'),
-    clearButton: document.querySelector('[data-action="clear-canvas"]'),
-    importButton: document.querySelector('[data-action="import-system"]'),
-    exportButton: document.querySelector('[data-action="export-system"]'),
-    jsonPreview: document.querySelector("[data-json-preview]"),
-    jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-    rightPane: document.querySelector('[data-pane="right"]'),
-    rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
-    newSystemModal: document.getElementById("new-system-modal"),
-    newSystemForm: document.querySelector("[data-new-system-form]"),
-    newSystemId: document.querySelector("[data-new-system-id]"),
-    newSystemTitle: document.querySelector("[data-new-system-title]"),
-    newSystemVersion: document.querySelector("[data-new-system-version]"),
-    newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
-    systemMeta: document.querySelector("[data-system-meta]"),
-  };
-
-  refreshTooltips(document);
-
-  let pendingSharedSystemId = resolveSharedRecordParam("systems");
-
-  loadSystemRecords();
-  initializeSharedSystemHandling();
-
-  const state = {
-    system: createBlankSystem(),
-    selectedNodeId: null,
-  };
-
-  let lastSavedSystemSignature = null;
-
-  markSystemClean(state.system);
-
-  function hasActiveSystem() {
-    return Boolean(state.system && (state.system.id || state.system.title));
-  }
-
-  const insertFieldAtCanvasRoot = createRootInsertionHandler({
-    createItem: (type) => {
-      const normalized = normalizeType(type);
-      return applyFieldIdentity(createFieldNode(normalized));
-    },
-    beforeInsert: (type, node) => {
-      const parentId = "root";
-      const collection = getCollection(parentId);
-      const index = collection ? collection.length : 0;
-      const previousSelectedId = state.selectedNodeId || null;
-      state.selectedNodeId = node.id;
-      return { parentId, index, type: normalizeType(type), previousSelectedId };
-    },
-    insertItem: (type, node, context) => {
-      insertNode(context.parentId, context.index, node);
-    },
-    createUndoEntry: (type, node, context) => ({
-      type: "add",
-      systemId: state.system?.id || "",
-      node: cloneNode(node),
-      parentId: context.parentId,
-      index: context.index,
-      previousSelectedId: context.previousSelectedId || null,
-    }),
-    afterInsert: () => {
-      renderAll();
-      expandInspectorPane();
-    },
     undoStack,
-    status,
-    getStatusMessage: (type, node, context) => ({
-      message: `Added ${TYPE_DEFS[context.type]?.label || context.type} field`,
-      options: { timeout: 1500 },
-    }),
-  });
-
-  const drafts = new Map();
-
-  const dropzones = new Map();
-  const typeCounters = new Map();
-
-  function cloneNode(node) {
-    if (typeof structuredClone === "function") {
-      try {
-        return structuredClone(node);
-      } catch (error) {
-        // ignore structuredClone errors and fall back
-      }
-    }
-    return JSON.parse(JSON.stringify(node));
-  }
-
-  function cloneNodeCollection(nodes) {
-    return Array.isArray(nodes) ? nodes.map((node) => cloneNode(node)) : [];
-  }
-
-  function cloneValue(value) {
-    if (value === undefined || value === null) {
-      return value;
-    }
-    if (typeof value !== "object") {
-      return value;
-    }
-    if (typeof structuredClone === "function") {
-      try {
-        return structuredClone(value);
-      } catch (error) {
-        // ignore structuredClone errors and fall back
-      }
-    }
-    try {
-      return JSON.parse(JSON.stringify(value));
-    } catch (error) {
-      if (Array.isArray(value)) {
-        return value.slice();
-      }
-      return { ...value };
-    }
-  }
-
-  function areValuesEqual(a, b) {
-    if (a === b) {
-      return true;
-    }
-    if (Number.isNaN(a) && Number.isNaN(b)) {
-      return true;
-    }
-    if (a == null || b == null) {
-      return a === b;
-    }
-    if (Array.isArray(a) || Array.isArray(b)) {
-      if (!Array.isArray(a) || !Array.isArray(b)) {
-        return false;
-      }
-      if (a.length !== b.length) {
-        return false;
-      }
-      for (let index = 0; index < a.length; index += 1) {
-        if (!areValuesEqual(a[index], b[index])) {
-          return false;
-        }
-      }
-      return true;
-    }
-    if (typeof a === "object" && typeof b === "object") {
-      const keysA = Object.keys(a);
-      const keysB = Object.keys(b);
-      if (keysA.length !== keysB.length) {
-        return false;
-      }
-      for (const key of keysA) {
-        if (!Object.prototype.hasOwnProperty.call(b, key)) {
-          return false;
-        }
-        if (!areValuesEqual(a[key], b[key])) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  const renderPreview = createJsonPreviewRenderer({
-    resolvePreviewElement: () => elements.jsonPreview,
-    resolveBytesElement: () => elements.jsonPreviewBytes,
-    serialize: () => serializeSystem(state.system),
-    onAfterRender: () => {
-      rememberDraft(state.system);
+    undo,
+    redo,
+    dataManager,
+    auth,
+    helpReady,
+    gate,
+  } = await bootstrapWorkbenchPage({
+    namespace: "system",
+    loadingMessage: "Preparing system editor…",
+    shellOptions: {
+      onUndo: (entry) => undoHandler(entry),
+      onRedo: (entry) => redoHandler(entry),
+    },
+    tierGate: {
+      requiredTier: "creator",
+      gateSelector: "[data-tier-gate]",
+      contentSelector: "[data-tier-content]",
+      onGranted: () => window.location.reload(),
+      onRevoked: () => window.location.reload(),
     },
   });
 
-  rebuildFieldIdentities(state.system);
-  if (elements.palette) {
-    initPaletteInteractions(elements.palette, {
-      groupName: "system-canvas",
-      dataAttribute: "data-palette-type",
-      onActivate: ({ value }) => {
-        if (!value) {
+  try {
+    function sessionUser() {
+      return dataManager.session?.user || null;
+    }
+
+    if (gate && !gate.allowed) {
+      await helpReady;
+      return;
+    }
+
+    pageLoading.setMessage("Loading system data…");
+  
+    const systemCatalog = new Map();
+  
+    const builtinTask = pageLoading.track(initializeBuiltins());
+    const systemRecordsTask = pageLoading.track(loadSystemRecords());
+    await Promise.all([builtinTask, systemRecordsTask, helpReady]);
+  
+    const sharedLoad = initializeSharedSystemHandling();
+    if (sharedLoad) {
+      pageLoading.setMessage("Loading shared system…");
+      await pageLoading.track(sharedLoad);
+    }
+  
+    pageLoading.setMessage("Finalising editor…");
+  
+    const TYPE_DEFS = {
+      string: {
+        label: "String",
+        icon: "tabler:forms",
+        description: "Free-form text value",
+        palette: true,
+      },
+      number: {
+        label: "Number",
+        icon: "tabler:hash",
+        description: "Numeric value with limits",
+        palette: true,
+      },
+      boolean: {
+        label: "Boolean",
+        icon: "tabler:toggle-left",
+        description: "True or false value",
+        palette: true,
+      },
+      object: {
+        label: "Object",
+        icon: "tabler:braces",
+        description: "Keyed set of fields",
+        palette: true,
+      },
+      array: {
+        label: "Array",
+        icon: "tabler:brackets",
+        description: "Repeatable entries",
+        palette: true,
+      },
+    };
+  
+    const TYPE_ALIASES = {
+      integer: "number",
+    };
+  
+    const TYPE_OPTIONS = ["string", "number", "boolean", "object", "array"];
+  
+    function normalizeType(type) {
+      if (!type) return "string";
+      const raw = String(type).trim().toLowerCase();
+      const key = raw in TYPE_DEFS ? raw : TYPE_ALIASES[raw] || raw;
+      if (TYPE_DEFS[key]) {
+        return key;
+      }
+      return "string";
+    }
+  
+    function isNumericType(type) {
+      return normalizeType(type) === "number";
+    }
+  
+    const elements = {
+      select: document.querySelector("[data-system-select]"),
+      canvasRoot: document.querySelector("[data-canvas-root]"),
+      palette: document.querySelector("[data-palette]"),
+      inspector: document.querySelector("[data-inspector]"),
+      saveButton: document.querySelector('[data-action="save-system"]'),
+      undoButton: document.querySelector('[data-action="undo-system"]'),
+      redoButton: document.querySelector('[data-action="redo-system"]'),
+      newButton: document.querySelector('[data-action="new-system"]'),
+      duplicateButton: document.querySelector('[data-action="duplicate-system"]'),
+      deleteButton: document.querySelector('[data-delete-system]'),
+      clearButton: document.querySelector('[data-action="clear-canvas"]'),
+      importButton: document.querySelector('[data-action="import-system"]'),
+      exportButton: document.querySelector('[data-action="export-system"]'),
+      jsonPreview: document.querySelector("[data-json-preview]"),
+      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+      rightPane: document.querySelector('[data-pane="right"]'),
+      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+      newSystemModal: document.getElementById("new-system-modal"),
+      newSystemForm: document.querySelector("[data-new-system-form]"),
+      newSystemId: document.querySelector("[data-new-system-id]"),
+      newSystemTitle: document.querySelector("[data-new-system-title]"),
+      newSystemVersion: document.querySelector("[data-new-system-version]"),
+      newSystemModalTitle: document.querySelector("[data-new-system-modal-title]"),
+      systemMeta: document.querySelector("[data-system-meta]"),
+    };
+  
+    refreshTooltips(document);
+
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
+
+    let pendingSharedSystemId = resolveSharedRecordParam("systems");
+  
+    const state = {
+      system: createBlankSystem(),
+      selectedNodeId: null,
+    };
+  
+    let lastSavedSystemSignature = null;
+  
+    markSystemClean(state.system);
+  
+    function hasActiveSystem() {
+      return Boolean(state.system && (state.system.id || state.system.title));
+    }
+  
+    const insertFieldAtCanvasRoot = createRootInsertionHandler({
+      createItem: (type) => {
+        const normalized = normalizeType(type);
+        return applyFieldIdentity(createFieldNode(normalized));
+      },
+      beforeInsert: (type, node) => {
+        const parentId = "root";
+        const collection = getCollection(parentId);
+        const index = collection ? collection.length : 0;
+        const previousSelectedId = state.selectedNodeId || null;
+        state.selectedNodeId = node.id;
+        return { parentId, index, type: normalizeType(type), previousSelectedId };
+      },
+      insertItem: (type, node, context) => {
+        insertNode(context.parentId, context.index, node);
+      },
+      createUndoEntry: (type, node, context) => ({
+        type: "add",
+        systemId: state.system?.id || "",
+        node: cloneNode(node),
+        parentId: context.parentId,
+        index: context.index,
+        previousSelectedId: context.previousSelectedId || null,
+      }),
+      afterInsert: () => {
+        renderAll();
+        expandInspectorPane();
+      },
+      undoStack,
+      status,
+      getStatusMessage: (type, node, context) => ({
+        message: `Added ${TYPE_DEFS[context.type]?.label || context.type} field`,
+        options: { timeout: 1500 },
+      }),
+    });
+  
+    const drafts = new Map();
+  
+    const dropzones = new Map();
+    const typeCounters = new Map();
+  
+    function cloneNode(node) {
+      if (typeof structuredClone === "function") {
+        try {
+          return structuredClone(node);
+        } catch (error) {
+          // ignore structuredClone errors and fall back
+        }
+      }
+      return JSON.parse(JSON.stringify(node));
+    }
+  
+    function cloneNodeCollection(nodes) {
+      return Array.isArray(nodes) ? nodes.map((node) => cloneNode(node)) : [];
+    }
+  
+    function cloneValue(value) {
+      if (value === undefined || value === null) {
+        return value;
+      }
+      if (typeof value !== "object") {
+        return value;
+      }
+      if (typeof structuredClone === "function") {
+        try {
+          return structuredClone(value);
+        } catch (error) {
+          // ignore structuredClone errors and fall back
+        }
+      }
+      try {
+        return JSON.parse(JSON.stringify(value));
+      } catch (error) {
+        if (Array.isArray(value)) {
+          return value.slice();
+        }
+        return { ...value };
+      }
+    }
+  
+    function areValuesEqual(a, b) {
+      if (a === b) {
+        return true;
+      }
+      if (Number.isNaN(a) && Number.isNaN(b)) {
+        return true;
+      }
+      if (a == null || b == null) {
+        return a === b;
+      }
+      if (Array.isArray(a) || Array.isArray(b)) {
+        if (!Array.isArray(a) || !Array.isArray(b)) {
+          return false;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let index = 0; index < a.length; index += 1) {
+          if (!areValuesEqual(a[index], b[index])) {
+            return false;
+          }
+        }
+        return true;
+      }
+      if (typeof a === "object" && typeof b === "object") {
+        const keysA = Object.keys(a);
+        const keysB = Object.keys(b);
+        if (keysA.length !== keysB.length) {
+          return false;
+        }
+        for (const key of keysA) {
+          if (!Object.prototype.hasOwnProperty.call(b, key)) {
+            return false;
+          }
+          if (!areValuesEqual(a[key], b[key])) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
+    }
+  
+    const renderPreview = createJsonPreviewRenderer({
+      resolvePreviewElement: () => elements.jsonPreview,
+      resolveBytesElement: () => elements.jsonPreviewBytes,
+      serialize: () => serializeSystem(state.system),
+      onAfterRender: () => {
+        rememberDraft(state.system);
+      },
+    });
+  
+    rebuildFieldIdentities(state.system);
+    if (elements.palette) {
+      initPaletteInteractions(elements.palette, {
+        groupName: "system-canvas",
+        dataAttribute: "data-palette-type",
+        onActivate: ({ value }) => {
+          if (!value) {
+            return;
+          }
+          if (!hasActiveSystem()) {
+            status.show("Create or load a system before adding fields.", {
+              type: "warning",
+              timeout: 2400,
+            });
+            return;
+          }
+          const metadata = getSystemMetadata(state.system?.id);
+          if (!systemAllowsEdits(metadata)) {
+            const message = describeSystemEditRestriction(metadata);
+            status.show(message, { type: "warning", timeout: 2800 });
+            return;
+          }
+          if (!dataManager.hasWriteAccess("systems")) {
+            const required = dataManager.describeRequiredWriteTier("systems");
+            const message = required
+              ? `Saving systems requires a ${required} tier.`
+              : "Your tier cannot save systems.";
+            status.show(message, { type: "warning", timeout: 2800 });
+            return;
+          }
+          insertFieldAtCanvasRoot(value);
+        },
+      });
+    }
+  
+    let newSystemModalInstance = null;
+    if (elements.newSystemModal && window.bootstrap && typeof window.bootstrap.Modal === "function") {
+      newSystemModalInstance = new window.bootstrap.Modal(elements.newSystemModal);
+      elements.newSystemModal.addEventListener("shown.bs.modal", () => {
+        if (elements.newSystemId) {
+          elements.newSystemId.focus();
+          elements.newSystemId.select();
+        }
+      });
+    }
+  
+    let systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+  
+    if (elements.select) {
+      populateSelect(
+        elements.select,
+        listBuiltinSystems().map((system) => ({ value: system.id, label: system.title })),
+        { placeholder: "Select system" }
+      );
+      elements.select.addEventListener("change", async () => {
+        persistCurrentDraft();
+        const selectedId = elements.select.value;
+        if (!selectedId) {
           return;
         }
-        if (!hasActiveSystem()) {
-          status.show("Create or load a system before adding fields.", {
-            type: "warning",
-            timeout: 2400,
+        if (state.system.id === selectedId && state.system.origin !== "draft") {
+          return;
+        }
+  
+        const draft = restoreDraft(selectedId);
+        if (draft) {
+          applySystemState(draft, { emitStatus: true, statusMessage: `Restored ${draft.title || selectedId}` });
+          return;
+        }
+  
+        const metadata = systemCatalog.get(selectedId);
+        if (!metadata) {
+          const fallback = createBlankSystem({ id: selectedId, title: selectedId, origin: "draft" });
+          registerSystemRecord({ id: fallback.id, title: fallback.title, source: "draft" }, { syncOption: true });
+          applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
+          return;
+        }
+        if (metadata.source === "draft") {
+          const fallback = createBlankSystem({ id: metadata.id, title: metadata.title, origin: "draft" });
+          applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
+          return;
+        }
+        try {
+          let payload = null;
+          if (metadata.source === "builtin" && metadata.path) {
+            const response = await fetch(metadata.path);
+            payload = await response.json();
+            markBuiltinAvailable("systems", metadata.id || selectedId);
+          } else {
+            const shareToken = metadata.shareToken || "";
+            const result = await dataManager.get("systems", selectedId, {
+              preferLocal: !shareToken,
+              shareToken,
+            });
+            payload = result?.payload || null;
+          }
+          if (!payload) {
+            throw new Error("System payload missing");
+          }
+          const label = payload.title || metadata.title || selectedId;
+          registerSystemRecord(
+            {
+              id: payload.id || selectedId,
+              title: label,
+              source: metadata.source || "remote",
+              path: metadata.path,
+              shareToken: metadata.shareToken,
+            },
+            { syncOption: true }
+          );
+          applySystemData(payload, {
+            origin: metadata.source || "remote",
+            emitStatus: true,
+            statusMessage: `Loaded ${label}`,
+            shareToken: metadata.shareToken || "",
           });
+        } catch (error) {
+          console.error("Unable to load system", error);
+          if (metadata.source === "builtin") {
+            markBuiltinMissing("systems", metadata.id || selectedId);
+          }
+          status.show("Failed to load system", { type: "error", timeout: 2500 });
+          ensureSelectValue();
+        }
+      });
+    }
+  
+    if (elements.newButton) {
+      elements.newButton.addEventListener("click", () => {
+        if (newSystemModalInstance && elements.newSystemForm) {
+          prepareNewSystemForm({ mode: "new" });
+          newSystemModalInstance.show();
           return;
         }
-        const metadata = getSystemMetadata(state.system?.id);
-        if (!systemAllowsEdits(metadata)) {
-          const message = describeSystemEditRestriction(metadata);
-          status.show(message, { type: "warning", timeout: 2800 });
+  
+        const id = window.prompt("Enter a system ID", state.system.id || "");
+        if (id === null) {
+          return;
+        }
+        const title = window.prompt("Enter a system title", state.system.title || "");
+        if (title === null) {
+          return;
+        }
+        const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
+        startNewSystem({
+          id: id.trim(),
+          title: title.trim(),
+          version: (version || "0.1").trim() || "0.1",
+          origin: "draft",
+        });
+      });
+    }
+  
+    if (elements.duplicateButton) {
+      elements.duplicateButton.addEventListener("click", () => {
+        if (!hasActiveSystem()) {
+          return;
+        }
+        const sourceSystem = cloneSystem(state.system);
+        sourceSystem.shareToken = "";
+        const sourceTitle = state.system.title || state.system.id || "system";
+        if (newSystemModalInstance && elements.newSystemForm) {
+          prepareNewSystemForm({ mode: "duplicate", seedSystem: state.system });
+          newSystemModalInstance.show();
+          return;
+        }
+        const suggestedId = generateDuplicateSystemId(state.system.id || state.system.title || "system");
+        const idInput = window.prompt("Enter a system ID", suggestedId || state.system.id || "");
+        if (!idInput) {
+          return;
+        }
+        const suggestedTitle = generateDuplicateSystemTitle(state.system.title || state.system.id || "System");
+        const titleInput = window.prompt("Enter a system title", suggestedTitle) || "";
+        if (!titleInput) {
+          return;
+        }
+        const versionInput = window.prompt("Enter a version", state.system.version || "0.1") || state.system.version || "0.1";
+        startNewSystem({
+          id: idInput.trim(),
+          title: titleInput.trim(),
+          version: (versionInput || "0.1").trim() || "0.1",
+          origin: "draft",
+          sourceSystem,
+          markClean: false,
+          statusMessage: `Duplicated ${sourceTitle}`,
+        });
+      });
+    }
+  
+    if (elements.newSystemForm) {
+      elements.newSystemForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = elements.newSystemForm;
+        if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+          form.classList.add("was-validated");
+          return;
+        }
+  
+        const id = (elements.newSystemId?.value || "").trim();
+        const title = (elements.newSystemTitle?.value || "").trim();
+        const version = ((elements.newSystemVersion?.value || "0.1").trim() || "0.1");
+  
+        if (!id || !title) {
+          form.classList.add("was-validated");
+          return;
+        }
+  
+        const mode = form.dataset.mode || systemCreationContext.mode || "new";
+        const isDuplicate = mode === "duplicate" && systemCreationContext.mode === "duplicate";
+        const sourceSystem = isDuplicate && systemCreationContext.duplicateSystem
+          ? cloneSystem(systemCreationContext.duplicateSystem)
+          : null;
+        const sourceTitle = systemCreationContext.sourceTitle || state.system.title || state.system.id || title;
+        startNewSystem({
+          id,
+          title,
+          version,
+          origin: "draft",
+          sourceSystem,
+          markClean: !isDuplicate,
+          statusMessage: isDuplicate ? `Duplicated ${sourceTitle}` : `Started ${title || id}`,
+        });
+        systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+        form.dataset.mode = "new";
+        if (newSystemModalInstance) {
+          newSystemModalInstance.hide();
+        }
+        form.reset();
+        form.classList.remove("was-validated");
+      });
+    }
+  
+    function prepareNewSystemForm({ mode = "new", seedSystem = null } = {}) {
+      if (!elements.newSystemForm) {
+        return;
+      }
+      const isDuplicate = mode === "duplicate" && seedSystem;
+      systemCreationContext = {
+        mode: isDuplicate ? "duplicate" : "new",
+        duplicateSystem: isDuplicate ? cloneSystem(seedSystem) : null,
+        sourceTitle: isDuplicate ? seedSystem?.title || seedSystem?.id || "" : "",
+      };
+      elements.newSystemForm.reset();
+      elements.newSystemForm.classList.remove("was-validated");
+      elements.newSystemForm.dataset.mode = systemCreationContext.mode;
+      if (elements.newSystemModalTitle) {
+        elements.newSystemModalTitle.textContent = isDuplicate ? "Duplicate System" : "Create New System";
+      }
+      const defaultVersion = elements.newSystemVersion?.getAttribute("value") || "0.1";
+      if (elements.newSystemVersion) {
+        elements.newSystemVersion.value = isDuplicate
+          ? seedSystem?.version || defaultVersion
+          : defaultVersion;
+      }
+      if (elements.newSystemTitle) {
+        elements.newSystemTitle.value = isDuplicate
+          ? generateDuplicateSystemTitle(seedSystem?.title || seedSystem?.id || "System")
+          : "";
+        if (isDuplicate) {
+          elements.newSystemTitle.select();
+        }
+      }
+      if (elements.newSystemId) {
+        elements.newSystemId.setCustomValidity("");
+        let generatedId = "";
+        if (isDuplicate) {
+          generatedId = generateDuplicateSystemId(seedSystem?.id || seedSystem?.title || "system");
+        } else {
+          const seed = state.system?.title || state.system?.id || "system";
+          do {
+            generatedId = generateSystemId(seed || "system");
+          } while (generatedId && systemCatalog.has(generatedId));
+        }
+        elements.newSystemId.value = generatedId;
+        elements.newSystemId.focus();
+        elements.newSystemId.select();
+      }
+    }
+  
+    if (elements.saveButton) {
+      elements.saveButton.addEventListener("click", async () => {
+        if (!state.system) {
+          return;
+        }
+        const payload = serializeSystem(state.system);
+        const systemId = (payload.id || "").trim();
+        if (!systemId) {
+          status.show("Set a system ID before saving.", { type: "warning", timeout: 2500 });
           return;
         }
         if (!dataManager.hasWriteAccess("systems")) {
@@ -318,346 +605,78 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           status.show(message, { type: "warning", timeout: 2800 });
           return;
         }
-        insertFieldAtCanvasRoot(value);
-      },
-    });
-  }
-
-  let newSystemModalInstance = null;
-  if (elements.newSystemModal && window.bootstrap && typeof window.bootstrap.Modal === "function") {
-    newSystemModalInstance = new window.bootstrap.Modal(elements.newSystemModal);
-    elements.newSystemModal.addEventListener("shown.bs.modal", () => {
-      if (elements.newSystemId) {
-        elements.newSystemId.focus();
-        elements.newSystemId.select();
-      }
-    });
-  }
-
-  let systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
-
-  if (elements.select) {
-    populateSelect(
-      elements.select,
-      listBuiltinSystems().map((system) => ({ value: system.id, label: system.title })),
-      { placeholder: "Select system" }
-    );
-    elements.select.addEventListener("change", async () => {
-      persistCurrentDraft();
-      const selectedId = elements.select.value;
-      if (!selectedId) {
-        return;
-      }
-      if (state.system.id === selectedId && state.system.origin !== "draft") {
-        return;
-      }
-
-      const draft = restoreDraft(selectedId);
-      if (draft) {
-        applySystemState(draft, { emitStatus: true, statusMessage: `Restored ${draft.title || selectedId}` });
-        return;
-      }
-
-      const metadata = systemCatalog.get(selectedId);
-      if (!metadata) {
-        const fallback = createBlankSystem({ id: selectedId, title: selectedId, origin: "draft" });
-        registerSystemRecord({ id: fallback.id, title: fallback.title, source: "draft" }, { syncOption: true });
-        applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
-        return;
-      }
-      if (metadata.source === "draft") {
-        const fallback = createBlankSystem({ id: metadata.id, title: metadata.title, origin: "draft" });
-        applySystemState(fallback, { emitStatus: true, statusMessage: `Loaded ${fallback.title}` });
-        return;
-      }
-      try {
-        let payload = null;
-        if (metadata.source === "builtin" && metadata.path) {
-          const response = await fetch(metadata.path);
-          payload = await response.json();
-          markBuiltinAvailable("systems", metadata.id || selectedId);
-        } else {
-          const shareToken = metadata.shareToken || "";
-          const result = await dataManager.get("systems", selectedId, {
-            preferLocal: !shareToken,
-            shareToken,
-          });
-          payload = result?.payload || null;
+        payload.id = systemId;
+        if (state.system.id !== systemId) {
+          state.system.id = systemId;
+          registerSystemRecord(
+            {
+              id: systemId,
+              title: payload.title || systemId,
+              source: state.system.origin || "draft",
+              shareToken: state.system.shareToken || "",
+            },
+            { syncOption: true }
+          );
+          ensureSelectValue();
         }
-        if (!payload) {
-          throw new Error("System payload missing");
-        }
-        const label = payload.title || metadata.title || selectedId;
-        registerSystemRecord(
-          {
-            id: payload.id || selectedId,
-            title: label,
-            source: metadata.source || "remote",
-            path: metadata.path,
-            shareToken: metadata.shareToken,
-          },
-          { syncOption: true }
-        );
-        applySystemData(payload, {
-          origin: metadata.source || "remote",
-          emitStatus: true,
-          statusMessage: `Loaded ${label}`,
-          shareToken: metadata.shareToken || "",
-        });
-      } catch (error) {
-        console.error("Unable to load system", error);
-        if (metadata.source === "builtin") {
-          markBuiltinMissing("systems", metadata.id || selectedId);
-        }
-        status.show("Failed to load system", { type: "error", timeout: 2500 });
-        ensureSelectValue();
-      }
-    });
-  }
-
-  if (elements.newButton) {
-    elements.newButton.addEventListener("click", () => {
-      if (newSystemModalInstance && elements.newSystemForm) {
-        prepareNewSystemForm({ mode: "new" });
-        newSystemModalInstance.show();
-        return;
-      }
-
-      const id = window.prompt("Enter a system ID", state.system.id || "");
-      if (id === null) {
-        return;
-      }
-      const title = window.prompt("Enter a system title", state.system.title || "");
-      if (title === null) {
-        return;
-      }
-      const version = window.prompt("Enter a version", state.system.version || "0.1") || "0.1";
-      startNewSystem({
-        id: id.trim(),
-        title: title.trim(),
-        version: (version || "0.1").trim() || "0.1",
-        origin: "draft",
-      });
-    });
-  }
-
-  if (elements.duplicateButton) {
-    elements.duplicateButton.addEventListener("click", () => {
-      if (!hasActiveSystem()) {
-        return;
-      }
-      const sourceSystem = cloneSystem(state.system);
-      sourceSystem.shareToken = "";
-      const sourceTitle = state.system.title || state.system.id || "system";
-      if (newSystemModalInstance && elements.newSystemForm) {
-        prepareNewSystemForm({ mode: "duplicate", seedSystem: state.system });
-        newSystemModalInstance.show();
-        return;
-      }
-      const suggestedId = generateDuplicateSystemId(state.system.id || state.system.title || "system");
-      const idInput = window.prompt("Enter a system ID", suggestedId || state.system.id || "");
-      if (!idInput) {
-        return;
-      }
-      const suggestedTitle = generateDuplicateSystemTitle(state.system.title || state.system.id || "System");
-      const titleInput = window.prompt("Enter a system title", suggestedTitle) || "";
-      if (!titleInput) {
-        return;
-      }
-      const versionInput = window.prompt("Enter a version", state.system.version || "0.1") || state.system.version || "0.1";
-      startNewSystem({
-        id: idInput.trim(),
-        title: titleInput.trim(),
-        version: (versionInput || "0.1").trim() || "0.1",
-        origin: "draft",
-        sourceSystem,
-        markClean: false,
-        statusMessage: `Duplicated ${sourceTitle}`,
-      });
-    });
-  }
-
-  if (elements.newSystemForm) {
-    elements.newSystemForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const form = elements.newSystemForm;
-      if (typeof form.reportValidity === "function" && !form.reportValidity()) {
-        form.classList.add("was-validated");
-        return;
-      }
-
-      const id = (elements.newSystemId?.value || "").trim();
-      const title = (elements.newSystemTitle?.value || "").trim();
-      const version = ((elements.newSystemVersion?.value || "0.1").trim() || "0.1");
-
-      if (!id || !title) {
-        form.classList.add("was-validated");
-        return;
-      }
-
-      const mode = form.dataset.mode || systemCreationContext.mode || "new";
-      const isDuplicate = mode === "duplicate" && systemCreationContext.mode === "duplicate";
-      const sourceSystem = isDuplicate && systemCreationContext.duplicateSystem
-        ? cloneSystem(systemCreationContext.duplicateSystem)
-        : null;
-      const sourceTitle = systemCreationContext.sourceTitle || state.system.title || state.system.id || title;
-      startNewSystem({
-        id,
-        title,
-        version,
-        origin: "draft",
-        sourceSystem,
-        markClean: !isDuplicate,
-        statusMessage: isDuplicate ? `Duplicated ${sourceTitle}` : `Started ${title || id}`,
-      });
-      systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
-      form.dataset.mode = "new";
-      if (newSystemModalInstance) {
-        newSystemModalInstance.hide();
-      }
-      form.reset();
-      form.classList.remove("was-validated");
-    });
-  }
-
-  function prepareNewSystemForm({ mode = "new", seedSystem = null } = {}) {
-    if (!elements.newSystemForm) {
-      return;
-    }
-    const isDuplicate = mode === "duplicate" && seedSystem;
-    systemCreationContext = {
-      mode: isDuplicate ? "duplicate" : "new",
-      duplicateSystem: isDuplicate ? cloneSystem(seedSystem) : null,
-      sourceTitle: isDuplicate ? seedSystem?.title || seedSystem?.id || "" : "",
-    };
-    elements.newSystemForm.reset();
-    elements.newSystemForm.classList.remove("was-validated");
-    elements.newSystemForm.dataset.mode = systemCreationContext.mode;
-    if (elements.newSystemModalTitle) {
-      elements.newSystemModalTitle.textContent = isDuplicate ? "Duplicate System" : "Create New System";
-    }
-    const defaultVersion = elements.newSystemVersion?.getAttribute("value") || "0.1";
-    if (elements.newSystemVersion) {
-      elements.newSystemVersion.value = isDuplicate
-        ? seedSystem?.version || defaultVersion
-        : defaultVersion;
-    }
-    if (elements.newSystemTitle) {
-      elements.newSystemTitle.value = isDuplicate
-        ? generateDuplicateSystemTitle(seedSystem?.title || seedSystem?.id || "System")
-        : "";
-      if (isDuplicate) {
-        elements.newSystemTitle.select();
-      }
-    }
-    if (elements.newSystemId) {
-      elements.newSystemId.setCustomValidity("");
-      let generatedId = "";
-      if (isDuplicate) {
-        generatedId = generateDuplicateSystemId(seedSystem?.id || seedSystem?.title || "system");
-      } else {
-        const seed = state.system?.title || state.system?.id || "system";
-        do {
-          generatedId = generateSystemId(seed || "system");
-        } while (generatedId && systemCatalog.has(generatedId));
-      }
-      elements.newSystemId.value = generatedId;
-      elements.newSystemId.focus();
-      elements.newSystemId.select();
-    }
-  }
-
-  if (elements.saveButton) {
-    elements.saveButton.addEventListener("click", async () => {
-      if (!state.system) {
-        return;
-      }
-      const payload = serializeSystem(state.system);
-      const systemId = (payload.id || "").trim();
-      if (!systemId) {
-        status.show("Set a system ID before saving.", { type: "warning", timeout: 2500 });
-        return;
-      }
-      if (!dataManager.hasWriteAccess("systems")) {
-        const required = dataManager.describeRequiredWriteTier("systems");
-        const message = required
-          ? `Saving systems requires a ${required} tier.`
-          : "Your tier cannot save systems.";
-        status.show(message, { type: "warning", timeout: 2800 });
-        return;
-      }
-      payload.id = systemId;
-      if (state.system.id !== systemId) {
-        state.system.id = systemId;
-        registerSystemRecord(
-          {
-            id: systemId,
-            title: payload.title || systemId,
-            source: state.system.origin || "draft",
-            shareToken: state.system.shareToken || "",
-          },
-          { syncOption: true }
-        );
-        ensureSelectValue();
-      }
-      const wantsRemote = dataManager.isAuthenticated();
-      if (wantsRemote && !dataManager.baseUrl) {
-        status.show("Server connection not configured. Start the Workbench server to save.", {
-          type: "error",
-          timeout: 3000,
-        });
-        return;
-      }
-      const button = elements.saveButton;
-      button.disabled = true;
-      button.setAttribute("aria-busy", "true");
-      const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("systems");
-      try {
-        const result = await dataManager.save("systems", systemId, payload, {
-          mode: wantsRemote ? "remote" : "auto",
-        });
-        undoStack.push({ type: "save", systemId, timestamp: Date.now() });
-        rememberDraft(state.system);
-        const savedToServer = result?.source === "remote";
-        const label = payload.title || systemId;
-        state.system.origin = savedToServer ? "remote" : "local";
-        const user = sessionUser();
-        const ownership = savedToServer ? "owned" : state.system.origin || "draft";
-        state.system.ownership = ownership;
-        state.system.permissions = "edit";
-        if (savedToServer && user) {
-          state.system.ownerId = user.id ?? null;
-          state.system.ownerUsername = user.username || "";
-        }
-        registerSystemRecord(
-          {
-            id: systemId,
-            title: label,
-            source: state.system.origin,
-            shareToken: state.system.shareToken || "",
-            ownership,
-            permissions: "edit",
-            ownerId: savedToServer ? user?.id ?? null : undefined,
-            ownerUsername: savedToServer ? user?.username || "" : undefined,
-          },
-          { syncOption: true }
-        );
-        ensureSelectValue();
-        if (savedToServer || !requireRemote) {
-          markSystemClean(state.system);
-        }
-        if (savedToServer) {
-          status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
-        } else {
-          status.show(`Saved ${label} locally. Log in to sync with the server.`, {
-            type: "info",
+        const wantsRemote = dataManager.isAuthenticated();
+        if (wantsRemote && !dataManager.baseUrl) {
+          status.show("Server connection not configured. Start the Workbench server to save.", {
+            type: "error",
             timeout: 3000,
           });
+          return;
         }
-      } catch (error) {
-        console.error("Failed to save system", error);
-        const message = error?.message || "Unable to save system";
-        status.show(message, { type: "error", timeout: 3000 });
+        const button = elements.saveButton;
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("systems");
+        try {
+          const result = await dataManager.save("systems", systemId, payload, {
+            mode: wantsRemote ? "remote" : "auto",
+          });
+          undoStack.push({ type: "save", systemId, timestamp: Date.now() });
+          rememberDraft(state.system);
+          const savedToServer = result?.source === "remote";
+          const label = payload.title || systemId;
+          state.system.origin = savedToServer ? "remote" : "local";
+          const user = sessionUser();
+          const ownership = savedToServer ? "owned" : state.system.origin || "draft";
+          state.system.ownership = ownership;
+          state.system.permissions = "edit";
+          if (savedToServer && user) {
+            state.system.ownerId = user.id ?? null;
+            state.system.ownerUsername = user.username || "";
+          }
+          registerSystemRecord(
+            {
+              id: systemId,
+              title: label,
+              source: state.system.origin,
+              shareToken: state.system.shareToken || "",
+              ownership,
+              permissions: "edit",
+              ownerId: savedToServer ? user?.id ?? null : undefined,
+              ownerUsername: savedToServer ? user?.username || "" : undefined,
+            },
+            { syncOption: true }
+          );
+          ensureSelectValue();
+          if (savedToServer || !requireRemote) {
+            markSystemClean(state.system);
+          }
+          if (savedToServer) {
+            status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
+          } else {
+            status.show(`Saved ${label} locally. Log in to sync with the server.`, {
+              type: "info",
+              timeout: 3000,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to save system", error);
+          const message = error?.message || "Unable to save system";
+          status.show(message, { type: "error", timeout: 3000 });
       } finally {
         button.disabled = false;
         button.removeAttribute("aria-busy");
@@ -2255,17 +2274,19 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   }
 
   async function initializeBuiltins() {
-    if (dataManager.baseUrl) {
-      try {
-        const catalog = await dataManager.listBuiltins();
-        if (catalog) {
-          applyBuiltinCatalog(catalog);
-        }
-      } catch (error) {
-        console.warn("System editor: unable to load builtin catalog", error);
-      }
-    }
     registerBuiltinContent();
+    if (!dataManager.baseUrl) {
+      return;
+    }
+    try {
+      const catalog = await dataManager.listBuiltins();
+      if (catalog) {
+        applyBuiltinCatalog(catalog);
+        registerBuiltinContent();
+      }
+    } catch (error) {
+      console.warn("System editor: unable to load builtin catalog", error);
+    }
   }
 
   function registerBuiltinContent() {
@@ -2429,9 +2450,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function initializeSharedSystemHandling() {
     if (!pendingSharedSystemId) {
-      return;
+      return null;
     }
-    void loadPendingSharedSystem();
+    return loadPendingSharedSystem();
   }
 
   async function loadPendingSharedSystem() {
@@ -2659,6 +2680,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
   }
 
+  pageLoading.setMessage("Ready");
+
   window.addEventListener("workbench:auth-changed", () => {
     if (dataManager.isAuthenticated()) {
       loadSystemRecords();
@@ -2681,4 +2704,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       loadSystemRecords();
     }
   });
+  } finally {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
+  }
 })();

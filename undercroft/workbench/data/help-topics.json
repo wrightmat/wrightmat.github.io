@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2024-07-07",
+    "description": "Contextual help topics for the Undercroft Workbench tools."
+  },
+  "topics": [
+    {
+      "id": "workspace.overview",
+      "title": "Shared Workspace Layout",
+      "summary": "Each tool uses the same tri-pane layout with collapsible navigation, canvas, and utilities panes.",
+      "details": [
+        "The left pane exposes navigation, palettes, and recent records. Use the sidebar toggle or the \"Layout\" button in the header to show or hide it.",
+        "The center canvas adjusts to the active tool: system schema trees, template layout boards, or interactive character sheets.",
+        "The right pane hosts inspectors, metadata, and contextual utilities such as JSON previews or collaboration panels."],
+      "category": "Workbench Fundamentals",
+      "href": "docs/index.html#workspace-overview"
+    },
+    {
+      "id": "workspace.theme",
+      "title": "Theme & Accessibility Controls",
+      "summary": "Switch between light, dark, and system themes without reloading the page.",
+      "details": [
+        "The theme buttons in the header persist your preference in local storage under the `undercroft.workbench.theme` key.",
+        "System theme uses the browser's `prefers-color-scheme` media query. All panes recompute colors immediately when toggled.",
+        "Bootstrap tooltips and icons inherit the active theme for consistent contrast."],
+      "category": "Workbench Fundamentals",
+      "href": "docs/index.html#workspace-theme"
+    },
+    {
+      "id": "workspace.undo",
+      "title": "Undo, Redo, & Keyboard Shortcuts",
+      "summary": "Undo/redo stacks persist per tool and mirror standard editor shortcuts.",
+      "details": [
+        "Each page registers a namespaced undo stack capped by the optional limit set in the app shell.",
+        "Use Ctrl+Z / Cmd+Z to undo and Ctrl+Shift+Z / Cmd+Shift+Z to redo. Buttons in toolbars mirror the same behaviour.",
+        "Undo history is serialised to local storage so reloading restores the last working state, even when offline."],
+      "category": "Workbench Fundamentals",
+      "href": "docs/index.html#workspace-undo"
+    },
+    {
+      "id": "system.palette",
+      "title": "System Field Palette",
+      "summary": "Drag fields from the palette to add them to the active system schema.",
+      "details": [
+        "Palette entries mirror the canonical schema types defined in `TYPE_DEFS` and include icons, descriptions, and drag handles.",
+        "Dropping a field onto the canvas assigns a stable node id and queues an undo entry so the action can be reverted.",
+        "Numeric fields expose additional constraints (min, max, step) once selected in the inspector."],
+      "category": "System Editor",
+      "href": "docs/index.html#system-palette"
+    },
+    {
+      "id": "system.inspector",
+      "title": "System Field Inspector",
+      "summary": "Select any node to edit titles, ids, validation rules, and computed formulas.",
+      "details": [
+        "Inspector controls update the reactive system state; changes mark the draft dirty and emit status messages.",
+        "The inspector honours tier restrictions—creator tier is required to persist systems to the server.",
+        "Computed expressions use the shared formula engine so templates and characters evaluate the same syntax."],
+      "category": "System Editor",
+      "href": "docs/index.html#system-inspector"
+    },
+    {
+      "id": "system.builtins",
+      "title": "Built-in System Catalog",
+      "summary": "Import demo systems shipped with the workbench or sync new versions from the server.",
+      "details": [
+        "The content registry module checks the local cache, validates checksums, and flags missing assets in the UI.",
+        "Use the \"New System\" modal to clone a builtin into your workspace with a custom id and version tag.",
+        "When a builtin asset is temporarily unavailable, a status badge surfaces the outage without blocking other work."],
+      "category": "System Editor",
+      "href": "docs/index.html#system-builtins"
+    },
+    {
+      "id": "template.library",
+      "title": "Template Component Library",
+      "summary": "Arrange reusable components—sections, inputs, tracks, notes—by dragging them from the component pane.",
+      "details": [
+        "Component definitions share icon metadata from `COMPONENT_ICONS` so they stay consistent across tools.",
+        "Dropping a component hydrates default styles, labels, and bindings that can be refined in the properties panel.",
+        "Repeaters and groups retain nested child components and expose quick actions for duplication or removal."],
+      "category": "Template Builder",
+      "href": "docs/index.html#template-library"
+    },
+    {
+      "id": "template.properties",
+      "title": "Template Properties Panel",
+      "summary": "Configure binding targets, layout rules, and conditional visibility for each component.",
+      "details": [
+        "Properties sync bidirectionally: editing inputs updates the live canvas immediately and records an undo snapshot.",
+        "Binding pickers are populated from the active system schema via the shared `component-data` helpers.",
+        "Advanced sections toggle formatting, colour accents, and responsive behaviour without custom CSS."],
+      "category": "Template Builder",
+      "href": "docs/index.html#template-properties"
+    },
+    {
+      "id": "character.records",
+      "title": "Character Record Lifecycle",
+      "summary": "Load templates, capture values, and maintain offline drafts before syncing to the server.",
+      "details": [
+        "When a template is selected the renderer builds component trees, preserving persistent ids for diffing and undo.",
+        "Local drafts are saved in IndexedDB/localStorage namespaces scoped by the current authenticated user.",
+        "Saving pushes the draft to the API with ownership metadata so access tiers and share permissions stay intact."],
+      "category": "Character Sheet",
+      "href": "docs/index.html#character-records"
+    },
+    {
+      "id": "character.dice",
+      "title": "Dice Roller & Formulas",
+      "summary": "Inline dice expressions evaluate with the shared roller and formula engine.",
+      "details": [
+        "Use `/roll 2d6+3` in notes or click quick dice buttons to push results to the game log pane.",
+        "Component formulas resolve bindings through the same evaluation pipeline as the system editor.",
+        "Roll history persists per-session so the log survives page reloads during an active play session."],
+      "category": "Character Sheet",
+      "href": "docs/index.html#character-dice"
+    },
+    {
+      "id": "collaboration.shares",
+      "title": "Sharing & Collaboration",
+      "summary": "Grant access via direct shares, reusable share links, or campaign groups.",
+      "details": [
+        "The server enforces owner/admin checks before creating shares. Eligible users are filtered by tier and existing permissions.",
+        "Share links carry randomly generated tokens stored alongside the content id; access is logged for auditing.",
+        "Campaign groups bind characters to a shared log so dice rolls and notes broadcast to every participant."],
+      "category": "Collaboration",
+      "href": "docs/index.html#collaboration-shares"
+    },
+    {
+      "id": "accounts.roles",
+      "title": "Account Tiers & Access Gates",
+      "summary": "Feature availability is driven by user tier with graceful fallbacks for anonymous users.",
+      "details": [
+        "Tier metadata comes from the session token; anonymous users operate in read-only mode with local drafts only.",
+        "Tier gates wrap tool content and automatically reload once a user upgrades or downgrades permissions.",
+        "Visual badges communicate when an action (like publishing a template) requires elevated privileges."],
+      "category": "Collaboration",
+      "href": "docs/index.html#accounts-roles"
+    }
+  ]
+}
