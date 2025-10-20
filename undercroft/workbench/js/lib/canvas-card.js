@@ -151,24 +151,83 @@ export function createStandardCardChrome({
   removeButtonOptions = {},
 } = {}) {
   const header = createCardHeaderElement(headerOptions);
-  const actions = createCardActionsElement(actionsOptions);
+
+  let actions = null;
+
+  function ensureActions() {
+    if (actions) {
+      return actions;
+    }
+    const options = actionsOptions === false ? {} : actionsOptions;
+    actions = createCardActionsElement(options);
+    header.appendChild(actions);
+    return actions;
+  }
+
+  if (actionsOptions !== false) {
+    ensureActions();
+  }
 
   let iconElement = null;
   if (icon) {
+    const target = ensureActions();
     iconElement = createTypeIconElement({
       icon,
       label: iconLabel,
       ...iconOptions,
     });
-    actions.appendChild(iconElement);
+    target.appendChild(iconElement);
   }
 
   let deleteButton = null;
   if (removeButtonOptions !== false) {
+    const target = ensureActions();
     deleteButton = createDeleteButton(removeButtonOptions);
-    actions.appendChild(deleteButton);
+    target.appendChild(deleteButton);
   }
 
-  header.appendChild(actions);
-  return { header, actions, iconElement, deleteButton };
+  if (actions) {
+    header.appendChild(actions);
+  }
+
+  return { header, actions, iconElement, deleteButton, ensureActions };
+}
+
+export function createCollapseToggleButton({ label = "section", collapsed = false, onToggle } = {}) {
+  let isCollapsed = Boolean(collapsed);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.classList.add("canvas-collapse-toggle", "d-inline-flex", "align-items-center", "justify-content-center");
+
+  const icon = document.createElement("span");
+  icon.className = "iconify";
+  icon.setAttribute("aria-hidden", "true");
+  button.appendChild(icon);
+
+  function update(nextState) {
+    isCollapsed = Boolean(nextState);
+    const expandedLabel = label ? ` ${label}` : "";
+    const actionLabel = isCollapsed ? `Expand${expandedLabel}` : `Collapse${expandedLabel}`;
+    icon.setAttribute("data-icon", isCollapsed ? "tabler:chevron-right" : "tabler:chevron-down");
+    button.setAttribute("aria-expanded", String(!isCollapsed));
+    button.setAttribute("aria-label", actionLabel);
+    button.setAttribute("title", actionLabel);
+  }
+
+  update(isCollapsed);
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const next = !isCollapsed;
+    update(next);
+    if (typeof onToggle === "function") {
+      onToggle(next);
+    }
+  });
+
+  return {
+    button,
+    setCollapsed: update,
+  };
 }
