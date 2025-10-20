@@ -33,6 +33,9 @@ import {
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
 import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
+let undoHandler = () => ({ applied: false });
+let redoHandler = () => ({ applied: false });
+
 (async () => {
   const {
     pageLoading,
@@ -49,8 +52,8 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     namespace: "template",
     loadingMessage: "Preparing template builder…",
     shellOptions: {
-      onUndo: handleUndoEntry,
-      onRedo: handleRedoEntry,
+      onUndo: (entry) => undoHandler(entry),
+      onRedo: (entry) => redoHandler(entry),
     },
     tierGate: {
       requiredTier: "gm",
@@ -61,17 +64,76 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     },
   });
 
-  try {
-    function sessionUser() {
-      return dataManager.session?.user || null;
-    }
+  const systemCatalog = new Map();
+  const templateCatalog = new Map();
+  const systemDefinitionCache = new Map();
 
+  const state = {
+    template: null,
+    components: [],
+    selectedId: null,
+    systemDefinition: null,
+    systemPreviewData: {},
+    bindingFields: [],
+  };
+
+    pageLoading.setMessage("Loading template data…");
+
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
+
+    const builtinTask = pageLoading.track(initializeBuiltins());
+    const systemRecordsTask = pageLoading.track(loadSystemRecords());
+    const templateRecordsTask = pageLoading.track(loadTemplateRecords());
+    await Promise.all([builtinTask, systemRecordsTask, templateRecordsTask, helpReady]);
+
+  const dropzones = new Map();
+  const containerActiveTabs = new Map();
+  const componentCollapsedState = new Map();
+
+  const elements = {
+    templateSelect: document.querySelector("[data-template-select]"),
+    palette: document.querySelector("[data-palette]"),
+    canvasRoot: document.querySelector("[data-canvas-root]"),
+    inspector: document.querySelector("[data-inspector]"),
+    saveButton: document.querySelector('[data-action="save-template"]'),
+    undoButton: document.querySelector('[data-action="undo-template"]'),
+    redoButton: document.querySelector('[data-action="redo-template"]'),
+    clearButton: document.querySelector('[data-action="clear-canvas"]'),
+    importButton: document.querySelector('[data-action="import-template"]'),
+    exportButton: document.querySelector('[data-action="export-template"]'),
+    newTemplateButton: document.querySelector('[data-action="new-template"]'),
+    duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
+    deleteTemplateButton: document.querySelector('[data-delete-template]'),
+    newTemplateForm: document.querySelector("[data-new-template-form]"),
+    newTemplateId: document.querySelector("[data-new-template-id]"),
+    newTemplateTitle: document.querySelector("[data-new-template-title]"),
+    newTemplateVersion: document.querySelector("[data-new-template-version]"),
+    newTemplateSystem: document.querySelector("[data-new-template-system]"),
+    newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
+    templateMeta: document.querySelector("[data-template-meta]"),
+    rightPane: document.querySelector('[data-pane="right"]'),
+    rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+    jsonPreview: document.querySelector("[data-json-preview]"),
+    jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+  };
+
+  refreshTooltips(document);
+
+  function sessionUser() {
+    return dataManager.session?.user || null;
+  }
+
+  try {
     if (gate && !gate.allowed) {
       await helpReady;
       return;
     }
 
     pageLoading.setMessage("Loading template data…");
+
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
 
     const builtinTask = pageLoading.track(initializeBuiltins());
     const systemRecordsTask = pageLoading.track(loadSystemRecords());
@@ -175,31 +237,10 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
       return categories.includes(entryCategory) || categories.includes("any");
     }
   
-    const systemDefinitionCache = new Map();
-  
-    const state = {
-      template: null,
-      components: [],
-      selectedId: null,
-      systemDefinition: null,
-      systemPreviewData: {},
-      bindingFields: [],
-    };
-  
-    let lastSavedTemplateSignature = null;
-  
-    markTemplateClean();
-  
-    let pendingSharedTemplate = resolveSharedRecordParam("templates");
-  
     function hasActiveTemplate() {
       return Boolean(state.template && (state.template.id || state.template.title));
     }
-  
-    const dropzones = new Map();
-    const containerActiveTabs = new Map();
-    const componentCollapsedState = new Map();
-  
+
     function cloneComponentTree(component) {
       if (typeof structuredClone === "function") {
         try {
@@ -239,35 +280,6 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
       };
       window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
     }
-  
-    await initializeBuiltins();
-  
-    const elements = {
-      templateSelect: document.querySelector("[data-template-select]"),
-      palette: document.querySelector("[data-palette]"),
-      canvasRoot: document.querySelector("[data-canvas-root]"),
-      inspector: document.querySelector("[data-inspector]"),
-      saveButton: document.querySelector('[data-action="save-template"]'),
-      undoButton: document.querySelector('[data-action="undo-template"]'),
-      redoButton: document.querySelector('[data-action="redo-template"]'),
-      clearButton: document.querySelector('[data-action="clear-canvas"]'),
-      importButton: document.querySelector('[data-action="import-template"]'),
-      exportButton: document.querySelector('[data-action="export-template"]'),
-      newTemplateButton: document.querySelector('[data-action="new-template"]'),
-      duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
-      deleteTemplateButton: document.querySelector('[data-delete-template]'),
-      newTemplateForm: document.querySelector("[data-new-template-form]"),
-      newTemplateId: document.querySelector("[data-new-template-id]"),
-      newTemplateTitle: document.querySelector("[data-new-template-title]"),
-      newTemplateVersion: document.querySelector("[data-new-template-version]"),
-      newTemplateSystem: document.querySelector("[data-new-template-system]"),
-      newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
-      templateMeta: document.querySelector("[data-template-meta]"),
-      rightPane: document.querySelector('[data-pane="right"]'),
-      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
-      jsonPreview: document.querySelector("[data-json-preview]"),
-      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-    };
   
     const insertComponentAtCanvasRoot = createRootInsertionHandler({
       createItem: (type) => {
