@@ -6,18 +6,18 @@
     {
       "type": "string",
       "key": "name",
-      "label": "Name"
+      "label": "Name",
+      "required": true
     },
     {
       "type": "string",
       "key": "class",
-      "label": "class"
+      "label": "Class"
     },
     {
       "type": "array",
       "key": "classes",
       "label": "Classes",
-      "required": true,
       "values": [
         "Barbarian",
         "Bard",
@@ -39,9 +39,25 @@
       "label": "Species"
     },
     {
-      "type": "number",
-      "key": "numberField",
-      "label": "Number Field"
+      "type": "object",
+      "key": "abilities",
+      "label": "Abilities",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "minimum": 1,
+          "maximum": 20
+        }
+      ]
     }
   ],
   "fragments": [],
