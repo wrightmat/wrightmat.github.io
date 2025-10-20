@@ -36,6 +36,7 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
+import { initHelpSystem } from "../lib/help.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
@@ -47,6 +48,7 @@ import { createLabeledField, normalizeLabelPosition } from "../lib/component-lay
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
+  initHelpSystem({ root: document });
 
   function sessionUser() {
     return dataManager.session?.user || null;
