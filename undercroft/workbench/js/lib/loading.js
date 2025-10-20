@@ -58,7 +58,7 @@ export function initPageLoadingOverlay({
   const overlay = ensureOverlay({ root, message });
   const messageNode = overlay.querySelector("[data-page-loading-message]");
   let holdCount = 0;
-  let visible = false;
+  let visible = overlay.classList.contains("is-visible");
   let showTimer = 0;
   let hideTimer = 0;
   let visibleAt = 0;
@@ -74,6 +74,7 @@ export function initPageLoadingOverlay({
     if (nextVisible) {
       if (!visible) {
         overlay.classList.add("is-visible");
+        delete overlay.dataset.pageLoadingInitial;
         visible = true;
         visibleAt = Date.now();
       }
@@ -83,12 +84,20 @@ export function initPageLoadingOverlay({
       return;
     }
     overlay.classList.remove("is-visible");
+    delete overlay.dataset.pageLoadingInitial;
     visible = false;
   }
 
   function scheduleShow() {
     hideTimer = clearTimer(hideTimer);
-    if (visible || showTimer) {
+    if (visible) {
+      return;
+    }
+    if (delayMs <= 0) {
+      setVisible(true);
+      return;
+    }
+    if (showTimer) {
       return;
     }
     showTimer = window.setTimeout(() => {
