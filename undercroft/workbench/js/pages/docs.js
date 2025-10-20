@@ -1,5 +1,11 @@
 import { initThemeControls } from "../lib/theme.js";
 import { loadHelpTopics } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
+
+const pageLoading = initPageLoadingOverlay({
+  root: document,
+  message: "Loading documentation…",
+});
 
 function slugify(value) {
   return String(value || "")
@@ -165,12 +171,14 @@ function groupTopicsByCategory(topics) {
 }
 
 (async () => {
+  const releaseStartup = pageLoading.hold();
+  pageLoading.setMessage("Preparing documentation…");
   initThemeControls(document);
   const tocRoot = document.querySelector("[data-docs-toc]");
   const contentRoot = document.querySelector("[data-docs-root]");
   const metaRoot = document.querySelector("[data-docs-metadata]");
   try {
-    const { topics, raw } = await loadHelpTopics("../data/help-topics.json");
+    const { topics, raw } = await pageLoading.track(loadHelpTopics("../data/help-topics.json"));
     if (!topics.length) {
       if (contentRoot) {
         contentRoot.innerHTML = "";
@@ -183,6 +191,7 @@ function groupTopicsByCategory(topics) {
       buildTocList(tocRoot, []);
       return;
     }
+    pageLoading.setMessage("Finalising topics…");
     const grouped = groupTopicsByCategory(topics);
     renderMetadata(metaRoot, raw?.metadata || {}, topics);
     buildTocList(tocRoot, grouped);
@@ -203,5 +212,8 @@ function groupTopicsByCategory(topics) {
       item.textContent = "Unable to load topics";
       tocRoot.appendChild(item);
     }
+  } finally {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
   }
 })();
