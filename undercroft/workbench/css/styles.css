@@ -199,6 +199,7 @@ body[data-theme="dark"] .hover-lift:hover {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  padding: 0.25rem 0;
 }
 
 .game-log-entry + .game-log-entry {
@@ -206,12 +207,45 @@ body[data-theme="dark"] .hover-lift:hover {
   padding-top: 0.75rem;
 }
 
-.game-log-entry time {
+.game-log-entry__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.game-log-entry__meta {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.game-log-entry__meta time {
   white-space: nowrap;
 }
 
+.game-log-roll-summary {
+  width: 100%;
+}
+
+.game-log-roll-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.game-log-roll-notation {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color);
+}
+
+.game-log-roll-total {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 .game-log-roll-detail {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  margin: 0.25rem 0 0;
 }
 
 .collapsible-toggle .iconify {
