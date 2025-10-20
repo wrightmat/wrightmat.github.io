@@ -8,6 +8,8 @@ import {
 import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { expandPane } from "../lib/panes.js";
+import { initHelpSystem } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -28,6 +30,12 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
+
+const pageLoading = initPageLoadingOverlay({
+  root: document,
+  message: "Preparing character tools…",
+  delayMs: 0,
+});
 
 (async () => {
   const {
