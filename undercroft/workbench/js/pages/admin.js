@@ -3,18 +3,11 @@ import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
 import { initHelpSystem } from "../lib/help.js";
-import { initPageLoadingOverlay } from "../lib/loading.js";
-
-const pageLoading = initPageLoadingOverlay({
-  root: document,
-  message: "Loading admin console…",
-});
-const releaseStartup = pageLoading.hold();
 
 const { status } = initAppShell({ namespace: "admin" });
 const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 const auth = initAuthControls({ root: document, status, dataManager });
-const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
+initHelpSystem({ root: document });
 
 const elements = {
   panel: document.querySelector("[data-admin-panel]"),
@@ -2322,11 +2315,5 @@ if (elements.passwordForm) {
 window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
 window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
 
-pageLoading.setMessage("Finalising admin tools…");
 renderShareModal();
 handleAuthChanged();
-
-helpPromise.finally(() => {
-  pageLoading.setMessage("Ready");
-  releaseStartup();
-});

@@ -13,7 +13,6 @@ import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import { expandPane } from "../lib/panes.js";
 import { initHelpSystem } from "../lib/help.js";
-import { initPageLoadingOverlay } from "../lib/loading.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
@@ -34,13 +33,7 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 
-const pageLoading = initPageLoadingOverlay({
-  root: document,
-  message: "Preparing character tools…",
-});
-
 (async () => {
-  const releaseStartup = pageLoading.hold();
   const { status, undoStack, undo, redo } = initAppShell({
     namespace: "character",
     onUndo: handleUndoEntry,
@@ -48,7 +41,7 @@ const pageLoading = initPageLoadingOverlay({
   });
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
-  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
+  initHelpSystem({ root: document });
 
   const templateCatalog = new Map();
   const characterCatalog = new Map();
@@ -433,33 +426,19 @@ const pageLoading = initPageLoadingOverlay({
     }
   }
 
-  try {
-    pageLoading.setMessage("Loading character data…");
-    await pageLoading.track(initializeBuiltins());
-    const templateRecordsTask = pageLoading.track(loadTemplateRecords());
-    const characterRecordsTask = pageLoading.track(loadCharacterRecords());
-    await Promise.all([templateRecordsTask, characterRecordsTask, helpPromise]);
-
-    pageLoading.setMessage("Finalising character tools…");
-    initNotesEditor();
-    initDiceRoller();
-    initGameLog();
-    bindUiEvents();
-    syncModeIndicator();
-    renderCanvas();
-    renderPreview();
-    syncCharacterActions();
-    const sharedLoad = initializeSharedRecordHandling();
-    if (sharedLoad) {
-      pageLoading.setMessage("Loading shared character…");
-      await pageLoading.track(sharedLoad);
-      pageLoading.setMessage("Finalising character tools…");
-    }
-    syncCharacterToolbarVisibility();
-  } finally {
-    pageLoading.setMessage("Ready");
-    releaseStartup();
-  }
+  await initializeBuiltins();
+  initNotesEditor();
+  initDiceRoller();
+  initGameLog();
+  bindUiEvents();
+  loadTemplateRecords();
+  loadCharacterRecords();
+  syncModeIndicator();
+  renderCanvas();
+  renderPreview();
+  syncCharacterActions();
+  initializeSharedRecordHandling();
+  syncCharacterToolbarVisibility();
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -593,19 +572,17 @@ const pageLoading = initPageLoadingOverlay({
   }
 
   async function initializeBuiltins() {
-    registerBuiltinContent();
-    if (!dataManager.baseUrl) {
-      return;
-    }
-    try {
-      const catalog = await dataManager.listBuiltins();
-      if (catalog) {
-        applyBuiltinCatalog(catalog);
-        registerBuiltinContent();
+    if (dataManager.baseUrl) {
+      try {
+        const catalog = await dataManager.listBuiltins();
+        if (catalog) {
+          applyBuiltinCatalog(catalog);
+        }
+      } catch (error) {
+        console.warn("Character sheet: unable to load builtin catalog", error);
       }
-    } catch (error) {
-      console.warn("Character sheet: unable to load builtin catalog", error);
     }
+    registerBuiltinContent();
   }
 
   function updateCollapsibleSection({
@@ -2434,17 +2411,12 @@ const pageLoading = initPageLoadingOverlay({
   }
 
   function initializeSharedRecordHandling() {
-    const tasks = [];
     if (pendingGroupShare) {
-      tasks.push(loadPendingGroupShare());
+      void loadPendingGroupShare();
     }
     if (pendingSharedRecord) {
-      tasks.push(loadPendingSharedRecord());
+      void loadPendingSharedRecord();
     }
-    if (!tasks.length) {
-      return null;
-    }
-    return Promise.all(tasks);
   }
 
   async function loadPendingSharedRecord() {

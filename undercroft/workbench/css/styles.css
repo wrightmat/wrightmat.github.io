@@ -203,43 +203,6 @@ body[data-theme="dark"] .hover-lift:hover {
   padding: 0.25rem 0;
 }
 
-.workbench-loading-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background-color: rgba(33, 37, 41, 0.45);
-  backdrop-filter: blur(2px);
-  z-index: 2000;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.18s ease, visibility 0s linear 0.18s;
-}
-
-.workbench-loading-overlay.is-visible {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.18s ease;
-}
-
-.workbench-loading-dialog {
-  max-width: 22rem;
-  width: 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .workbench-loading-overlay {
-    transition: none;
-  }
-  .workbench-loading-overlay.is-visible {
-    transition: none;
-  }
-}
-
 .game-log-entry + .game-log-entry {
   border-top: 1px solid var(--bs-border-color);
   padding-top: 0.5rem;

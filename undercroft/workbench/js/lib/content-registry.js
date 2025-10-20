@@ -1,5 +1,3 @@
-import { FALLBACK_BUILTIN_CATALOG } from "../data/builtin-catalog.js";
-
 const BUILTIN_CACHE_KEY = "workbench:missing-builtins";
 const BUILTIN_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -258,5 +256,3 @@ export function verifyBuiltinAsset(
       }
     });
 }
-
-applyBuiltinCatalog(FALLBACK_BUILTIN_CATALOG);
