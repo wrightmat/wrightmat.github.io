@@ -186,7 +186,10 @@
             </div>
             <section class="d-flex flex-column gap-3">
               <div class="d-flex justify-content-between align-items-center">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Palette</h2>
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Palette</span>
+                  <span class="align-middle" data-help-topic="system.palette" data-help-insert="replace" data-help-placement="right"></span>
+                </h2>
                 <span class="fs-6 text-body-secondary">Drag into canvas</span>
               </div>
               <div class="d-grid gap-2" data-palette>
@@ -273,7 +276,10 @@
               <div class="card-body">
                 <div class="row g-3 align-items-end">
                   <div class="col-12 col-md-4 col-lg-3">
-                    <label class="form-label fw-semibold text-body-secondary" for="system-select">Active system</label>
+                    <label class="form-label fw-semibold text-body-secondary d-flex align-items-center gap-2" for="system-select">
+                      <span>Active system</span>
+                      <span class="align-middle" data-help-topic="system.builtins" data-help-insert="replace" data-help-placement="right"></span>
+                    </label>
                     <select class="form-select" id="system-select" data-system-select>
                       <option value="" disabled selected>Select system</option>
                     </select>
@@ -326,7 +332,10 @@
           data-pane-initial="collapsed"
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
-            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Field Inspector</h2>
+            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2">
+              <span>Field Inspector</span>
+              <span class="align-middle" data-help-topic="system.inspector" data-help-insert="replace"></span>
+            </h2>
             <div class="d-flex flex-column gap-3 fs-6" data-inspector>
               <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a field on the canvas to edit its configuration.</p>
             </div>
