@@ -47,27 +47,3 @@ This guide explains how we can collaborate on Project Undercroft: Workbench, how
 3. I’ll confirm the task breakdown and begin the workflow above.
 
 By following this loop, we maintain transparency on what’s being built, how it’s validated, and what’s next on deck.
-
-## Redundancy Reduction Toolkit
-
-The planned clean-up is now in place. Here is how to work with the shared pieces going forward:
-
-### Template-driven HTML
-- Author the outer shell for each page in `templates/pages/`. Reusable fragments (head, header, quick links, inline loader, script bundle) live under `templates/partials/`.
-- Update `templates/navigation.json` when quick-link destinations or tier requirements change. The build step hydrates every page with consistent navigation badges.
-- Run `python scripts/render_templates.py` from the `workbench/` folder whenever you change a template or partial. The script regenerates the deployable HTML files with the latest shared chrome and asset paths.
-
-### `bootstrapWorkbenchPage`
-- `js/lib/workbench-page.js` exposes `bootstrapWorkbenchPage(options)`. It wraps the common page plumbing: loading overlay, app shell, data manager, auth UI, tier gate, and help system.
-- Each page passes its namespace, loading copy, undo handlers (where applicable), and tier gate metadata. The helper returns `{ pageLoading, releaseStartup, status, dataManager, auth, helpReady, gate, undoStack, undo, redo }` so editors can focus on their domain logic.
-- Skip unused services by setting `useDataManager`, `useAuth`, or `useHelp` to `false` in the options object. The documentation site, for example, only uses the overlay.
-
-### Shared Theme Bootstrap
-- `js/lib/theme-bootstrap.js` contains the canonical inline theme loader. Templates pull it in automatically, so there is no longer a need to duplicate the preference script inside each page.
-
-### Navigation Consistency
-- The quick-link rail is generated from `templates/navigation.json`. Adjust labels, hrefs, or tier requirements there; rerun the template renderer to propagate updates across home, system, template, character, admin, and docs.
-
-### Follow-up Opportunities
-- The bootstrap helper highlights remaining duplication (e.g., editor-specific initialization pipelines). Capture any reusable patterns you spot while working in `ROADMAP.md` so we can plan additional clean-up passes.
-
