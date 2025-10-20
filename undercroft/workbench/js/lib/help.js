@@ -124,27 +124,6 @@ export async function initHelpSystem({ root = document, topicsUrl = DEFAULT_TOPI
   if (!root) {
     return;
   }
-  if (typeof root.querySelectorAll === "function") {
-    const headerDocs = root.querySelectorAll(
-      ".workbench-header .help-topic-trigger, .workbench-header [data-docs-link], .workbench-header [data-help-topic]"
-    );
-    headerDocs.forEach((element) => {
-      const node = /** @type {HTMLElement} */ (element);
-      if (node.classList.contains("help-topic-trigger")) {
-        node.remove();
-        return;
-      }
-      const tag = node.tagName;
-      if (tag === "BUTTON" || tag === "A") {
-        node.remove();
-        return;
-      }
-      node.removeAttribute("data-help-topic");
-      if (!node.textContent?.trim() && !node.children.length) {
-        node.remove();
-      }
-    });
-  }
   const targets = root.querySelectorAll("[data-help-topic]");
   targets.forEach((element) => {
     const topicId = element.getAttribute("data-help-topic");
@@ -153,10 +132,6 @@ export async function initHelpSystem({ root = document, topicsUrl = DEFAULT_TOPI
     }
     const trimmedId = topicId.trim();
     if (!trimmedId || element.dataset.helpTopicAttached === "true") {
-      return;
-    }
-    if (element.closest(".workbench-header")) {
-      element.dataset.helpTopicAttached = "true";
       return;
     }
     const topic = map.get(trimmedId);

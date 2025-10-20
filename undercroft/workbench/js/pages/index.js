@@ -9,8 +9,16 @@ import { initPageLoadingOverlay } from "../lib/loading.js";
 const pageLoading = initPageLoadingOverlay({
   root: document,
   message: "Loading workspace…",
-  delayMs: 0,
 });
+
+const releaseStartup = pageLoading.hold();
+
+const { status } = initAppShell({ namespace: "index" });
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+const auth = initAuthControls({ root: document, status, dataManager });
+initTierVisibility({ root: document, dataManager, status, auth });
+const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
+status.show("Welcome back to the Workbench", { timeout: 2500 });
 
 function renderRecentCharacters(list) {
   const target = document.querySelector("[data-recent-characters]");
@@ -29,30 +37,14 @@ function renderRecentCharacters(list) {
   });
 }
 
-(async () => {
-  const releaseStartup = pageLoading.hold();
-  await pageLoading.nextFrame();
+try {
+  const entries = dataManager.listLocalEntries("characters");
+  renderRecentCharacters(entries);
+} catch (error) {
+  console.warn("Unable to load recent characters", error);
+}
 
-  const { status } = initAppShell({ namespace: "index" });
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  const auth = initAuthControls({ root: document, status, dataManager });
-  initTierVisibility({ root: document, dataManager, status, auth });
-  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
-  status.show("Welcome back to the Workbench", { timeout: 2500 });
-
-  try {
-    const entries = dataManager.listLocalEntries("characters");
-    renderRecentCharacters(entries);
-  } catch (error) {
-    console.warn("Unable to load recent characters", error);
-  }
-
-  try {
-    await helpPromise;
-  } catch (error) {
-    console.warn("Help system failed to initialise", error);
-  } finally {
-    pageLoading.setMessage("Ready");
-    releaseStartup();
-  }
-})();
+helpPromise.finally(() => {
+  pageLoading.setMessage("Ready");
+  releaseStartup();
+});
