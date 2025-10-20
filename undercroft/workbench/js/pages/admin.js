@@ -2,10 +2,12 @@ import { initAppShell } from "../lib/app-shell.js";
 import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
+import { initHelpSystem } from "../lib/help.js";
 
 const { status } = initAppShell({ namespace: "admin" });
 const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 const auth = initAuthControls({ root: document, status, dataManager });
+initHelpSystem({ root: document });
 
 const elements = {
   panel: document.querySelector("[data-admin-panel]"),

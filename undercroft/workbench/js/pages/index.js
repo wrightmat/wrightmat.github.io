@@ -3,11 +3,13 @@ import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
 import { initTierVisibility } from "../lib/access.js";
+import { initHelpSystem } from "../lib/help.js";
 
 const { status } = initAppShell({ namespace: "index" });
 const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 const auth = initAuthControls({ root: document, status, dataManager });
 initTierVisibility({ root: document, dataManager, status, auth });
+initHelpSystem({ root: document });
 status.show("Welcome back to the Workbench", { timeout: 2500 });
 
 function renderRecentCharacters(list) {
