@@ -54,6 +54,7 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body">
+    <script src="js/lib/loading-inline.js"></script>
     <div class="d-flex flex-column min-vh-100">
       <header class="border-bottom bg-body-tertiary">
         <div class="container-lg d-flex align-items-center gap-3 py-3">
@@ -139,7 +140,10 @@
           <section class="container-lg d-flex flex-column gap-4">
             <div class="card border-0 shadow-theme">
               <div class="card-body">
-                <h2 class="card-title h3">Welcome to the Workbench</h2>
+                <h2 class="card-title h3 d-flex align-items-center gap-2">
+                  <span>Welcome to the Workbench</span>
+                  <span class="align-middle" data-help-topic="workspace.overview" data-help-insert="replace"></span>
+                </h2>
                 <p class="card-text">
                   Start by exploring the editors below. Systems define fields, templates design layouts, and characters bring everything to life. All tools share the same responsive workspace.
                 </p>
@@ -194,7 +198,10 @@
                 <a href="character.html" class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift">
                   <div class="card-body d-flex flex-column gap-2">
                     <div>
-                      <h3 class="card-title h5 mb-0">Character Sheets</h3>
+                      <h3 class="card-title h5 mb-0 d-flex align-items-center gap-2">
+                        <span>Character Sheets</span>
+                        <span class="align-middle" data-help-topic="character.records" data-help-insert="replace"></span>
+                      </h3>
                       <p class="card-text fs-6 text-body-secondary mb-0">
                         Load a template, fill in values, and keep track of adventures with offline-friendly drafts that can sync later.
                       </p>
@@ -207,20 +214,23 @@
                 </a>
               </div>
               <div class="col d-flex">
-                <div class="card border-0 shadow-theme flex-grow-1 text-reset">
+                <a
+                  href="docs/index.html"
+                  class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift"
+                >
                   <div class="card-body d-flex flex-column gap-2">
                     <div>
-                      <h3 class="card-title h5 mb-0">Shared Utilities</h3>
+                      <h3 class="card-title h5 mb-0">Documentation</h3>
                       <p class="card-text fs-6 text-body-secondary mb-0">
-                        Undo/redo, keyboard shortcuts, dropdown helpers, and formula parsing live in shared modules so every tool behaves consistently.
+                        Read in-depth guides for every editor, shared services, and workflows. Updated from a single JSON help catalog.
                       </p>
                     </div>
-                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-body-secondary fw-medium">
-                      Learn more in docs soon
-                      <span class="iconify" data-icon="tabler:book" aria-hidden="true"></span>
+                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
+                      Browse the docs
+                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
                     </span>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
           </section>
