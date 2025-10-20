@@ -134,6 +134,10 @@ export async function initHelpSystem({ root = document, topicsUrl = DEFAULT_TOPI
     if (!trimmedId || element.dataset.helpTopicAttached === "true") {
       return;
     }
+    if (element.closest(".workbench-header")) {
+      element.dataset.helpTopicAttached = "true";
+      return;
+    }
     const topic = map.get(trimmedId);
     if (!topic) {
       console.warn(`Missing help topic: ${trimmedId}`);
