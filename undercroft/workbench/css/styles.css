@@ -779,3 +779,22 @@ body[data-theme="dark"] .hover-lift:hover {
 .dice-roll-value.exploded {
   border: 1px dashed var(--bs-border-color);
 }
+.help-topic-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  color: var(--bs-secondary-color) !important;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.help-topic-trigger .iconify {
+  font-size: 1.05rem;
+}
+
+.help-topic-trigger:hover,
+.help-topic-trigger:focus-visible {
+  color: var(--bs-primary) !important;
+  text-decoration: none;
+}

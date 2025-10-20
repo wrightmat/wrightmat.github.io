@@ -13,6 +13,7 @@ import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
+import { initHelpSystem } from "../lib/help.js";
 import {
   listBuiltinSystems,
   markBuiltinMissing,
@@ -31,6 +32,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
+  initHelpSystem({ root: document });
 
   function sessionUser() {
     return dataManager.session?.user || null;
