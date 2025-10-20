@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  {{ include "head.html" }}
+  <body class="bg-body text-body">
+    {{ include "loading-inline.html" }}
+    <div class="d-flex flex-column min-vh-100">
+      {{ include "header.html" }}
+      <div class="d-flex flex-grow-1 overflow-hidden">
+        <aside
+          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
+          data-pane="left"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="collapsed"
+        >
+          {{ include "sidebar-quick-links.html" }}
+        </aside>
+        <main class="flex-grow-1 overflow-auto bg-body-secondary py-5">
+          <section class="container-lg d-flex flex-column gap-4">
+            <div class="card border-0 shadow-theme">
+              <div class="card-body d-flex flex-column gap-3">
+                <div>
+                  <h2 class="card-title h3 mb-2">Explore the Workbench Knowledge Base</h2>
+                  <p class="card-text text-body-secondary mb-0">
+                    Reference guides for every editor, shared service, and workflow live here. Update <code>data/help-topics.json</code> to keep topics current.
+                  </p>
+                </div>
+                <div class="d-flex align-items-center gap-3 flex-wrap" data-docs-metadata></div>
+              </div>
+            </div>
+            <div class="d-flex flex-column flex-lg-row gap-4">
+              <nav class="flex-shrink-0" aria-label="Documentation navigation">
+                <div class="card border-0 shadow-theme" style="min-width: 16rem;">
+                  <div class="card-body">
+                    <h2 class="h5 mb-3">Topics</h2>
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-2" data-docs-toc>
+                      <li class="text-body-secondary">Loading topics…</li>
+                    </ul>
+                  </div>
+                </div>
+              </nav>
+              <div class="flex-grow-1">
+                <div class="card border-0 shadow-theme">
+                  <div class="card-body d-flex flex-column gap-4" data-docs-root>
+                    <p class="text-body-secondary mb-0">Topics will appear here once the help catalog loads.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+        <aside
+          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg"
+          data-pane="right"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="collapsed"
+        >
+          <div class="d-flex flex-column gap-2">
+            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Maintainer Tips</h2>
+            <p class="text-body-secondary mb-0">
+              Add, update, or remove help topics in <code>data/help-topics.json</code>. Use the <code>data-help-topic</code> attribute to link UI elements to documentation.
+            </p>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Need context?</h3>
+            <p class="text-body-secondary mb-0">Use the Quick Links pane to jump directly into the editors while keeping the docs handy.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+    {{ include "scripts.html" }}
+  </body>
+</html>

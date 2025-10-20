@@ -1,0 +1,35 @@
+{
+  "quickLinks": [
+    {
+      "id": "home",
+      "label": "Home",
+      "href": "index.html"
+    },
+    {
+      "id": "system",
+      "label": "System Editor",
+      "href": "system.html",
+      "requiresTier": "creator",
+      "accessLabel": "Requires Creator",
+      "accessBehavior": "disable"
+    },
+    {
+      "id": "template",
+      "label": "Template Builder",
+      "href": "template.html",
+      "requiresTier": "gm",
+      "accessLabel": "Requires GM",
+      "accessBehavior": "disable"
+    },
+    {
+      "id": "character",
+      "label": "Character Sheet",
+      "href": "character.html"
+    },
+    {
+      "id": "docs",
+      "label": "Documentation",
+      "href": "docs/index.html"
+    }
+  ]
+}
