@@ -77,11 +77,15 @@ let redoHandler = () => ({ applied: false });
     bindingFields: [],
   };
 
-  let lastSavedTemplateSignature = null;
+    pageLoading.setMessage("Loading template data…");
 
-  markTemplateClean();
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
 
-  let pendingSharedTemplate = resolveSharedRecordParam("templates");
+    const builtinTask = pageLoading.track(initializeBuiltins());
+    const systemRecordsTask = pageLoading.track(loadSystemRecords());
+    const templateRecordsTask = pageLoading.track(loadTemplateRecords());
+    await Promise.all([builtinTask, systemRecordsTask, templateRecordsTask, helpReady]);
 
   const dropzones = new Map();
   const containerActiveTabs = new Map();
