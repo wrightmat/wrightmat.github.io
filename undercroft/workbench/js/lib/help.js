@@ -125,9 +125,24 @@ export async function initHelpSystem({ root = document, topicsUrl = DEFAULT_TOPI
     return;
   }
   if (typeof root.querySelectorAll === "function") {
-    const headerTriggers = root.querySelectorAll(".workbench-header .help-topic-trigger");
-    headerTriggers.forEach((trigger) => {
-      trigger.remove();
+    const headerDocs = root.querySelectorAll(
+      ".workbench-header .help-topic-trigger, .workbench-header [data-docs-link], .workbench-header [data-help-topic]"
+    );
+    headerDocs.forEach((element) => {
+      const node = /** @type {HTMLElement} */ (element);
+      if (node.classList.contains("help-topic-trigger")) {
+        node.remove();
+        return;
+      }
+      const tag = node.tagName;
+      if (tag === "BUTTON" || tag === "A") {
+        node.remove();
+        return;
+      }
+      node.removeAttribute("data-help-topic");
+      if (!node.textContent?.trim() && !node.children.length) {
+        node.remove();
+      }
     });
   }
   const targets = root.querySelectorAll("[data-help-topic]");

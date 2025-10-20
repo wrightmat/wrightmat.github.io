@@ -37,10 +37,12 @@ import {
 const pageLoading = initPageLoadingOverlay({
   root: document,
   message: "Preparing character tools…",
+  delayMs: 0,
 });
 
 (async () => {
   const releaseStartup = pageLoading.hold();
+  await pageLoading.nextFrame();
   const { status, undoStack, undo, redo } = initAppShell({
     namespace: "character",
     onUndo: handleUndoEntry,

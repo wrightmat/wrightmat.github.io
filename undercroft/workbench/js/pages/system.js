@@ -27,10 +27,12 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 const pageLoading = initPageLoadingOverlay({
   root: document,
   message: "Preparing system editor…",
+  delayMs: 0,
 });
 
 (async () => {
   const releaseStartup = pageLoading.hold();
+  await pageLoading.nextFrame();
   try {
     const { status, undoStack, undo, redo } = initAppShell({
       namespace: "system",

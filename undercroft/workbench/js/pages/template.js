@@ -42,10 +42,13 @@ import { initPageLoadingOverlay } from "../lib/loading.js";
 const pageLoading = initPageLoadingOverlay({
   root: document,
   message: "Preparing template builder…",
+  delayMs: 0,
 });
 
 (async () => {
   const releaseStartup = pageLoading.hold();
+
+  await pageLoading.nextFrame();
 
   const { status, undoStack, undo, redo } = initAppShell({
     namespace: "template",

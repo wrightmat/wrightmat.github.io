@@ -5,6 +5,7 @@ import { initPageLoadingOverlay } from "../lib/loading.js";
 const pageLoading = initPageLoadingOverlay({
   root: document,
   message: "Loading documentation…",
+  delayMs: 0,
 });
 
 function slugify(value) {
@@ -172,6 +173,7 @@ function groupTopicsByCategory(topics) {
 
 (async () => {
   const releaseStartup = pageLoading.hold();
+  await pageLoading.nextFrame();
   pageLoading.setMessage("Preparing documentation…");
   initThemeControls(document);
   const tocRoot = document.querySelector("[data-docs-toc]");

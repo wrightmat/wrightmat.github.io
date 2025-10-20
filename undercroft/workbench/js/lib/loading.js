@@ -162,5 +162,15 @@ export function initPageLoadingOverlay({
     setVisible(false);
   }
 
-  return { element: overlay, hold, track, setMessage, done };
+  function nextFrame() {
+    return new Promise((resolve) => {
+      if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(() => resolve());
+        return;
+      }
+      window.setTimeout(() => resolve(), 16);
+    });
+  }
+
+  return { element: overlay, hold, track, setMessage, done, nextFrame };
 }
