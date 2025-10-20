@@ -826,6 +826,11 @@ body[data-theme="dark"] .hover-lift:hover {
   vertical-align: middle;
 }
 
+.workbench-header .help-topic-trigger,
+.workbench-header [data-docs-link] {
+  display: none !important;
+}
+
 .help-topic-trigger .iconify {
   font-size: 1.05rem;
 }
