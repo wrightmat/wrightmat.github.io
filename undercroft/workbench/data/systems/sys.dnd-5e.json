@@ -56,6 +56,83 @@
           "label": "Dexterity",
           "minimum": 1,
           "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "minimum": 1,
+          "maximum": 20
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saving Throws",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.strength",
+          "label": "Strength Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.dexterity",
+          "label": "Dexterity Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.constitution",
+          "label": "Constitution Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.intelligence",
+          "label": "Intelligence Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.wisdom",
+          "label": "Wisdom Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.charisma",
+          "label": "Charisma Saving Throw",
+          "minimum": 1,
+          "maximum": 20
         }
       ]
     }
