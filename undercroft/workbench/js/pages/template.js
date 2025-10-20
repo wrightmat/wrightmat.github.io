@@ -33,6 +33,9 @@ import {
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
 import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
+let undoHandler = () => ({ applied: false });
+let redoHandler = () => ({ applied: false });
+
 (async () => {
   const {
     pageLoading,
@@ -49,8 +52,8 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     namespace: "template",
     loadingMessage: "Preparing template builder…",
     shellOptions: {
-      onUndo: handleUndoEntry,
-      onRedo: handleRedoEntry,
+      onUndo: (entry) => undoHandler(entry),
+      onRedo: (entry) => redoHandler(entry),
     },
     tierGate: {
       requiredTier: "gm",
@@ -60,6 +63,9 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
       onRevoked: () => window.location.reload(),
     },
   });
+
+  const systemCatalog = new Map();
+  const templateCatalog = new Map();
 
   try {
     function sessionUser() {
@@ -72,6 +78,9 @@ import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
     }
 
     pageLoading.setMessage("Loading template data…");
+
+    undoHandler = handleUndoEntry;
+    redoHandler = handleRedoEntry;
 
     const builtinTask = pageLoading.track(initializeBuiltins());
     const systemRecordsTask = pageLoading.track(loadSystemRecords());
