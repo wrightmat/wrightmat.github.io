@@ -1663,46 +1663,29 @@ import {
       const total = payload.total !== undefined && payload.total !== null ? payload.total : "";
 
       const summaryRow = document.createElement("div");
-      summaryRow.className = "game-log-roll-summary d-flex flex-wrap align-items-baseline gap-2";
+      summaryRow.className = "game-log-roll-summary d-flex flex-wrap align-items-baseline justify-content-between gap-2";
 
-      if (label) {
-        const labelEl = document.createElement("span");
-        labelEl.className = "game-log-roll-label text-body-secondary text-uppercase";
-        labelEl.textContent = `${label}:`;
-        summaryRow.appendChild(labelEl);
+      const expressionEl = document.createElement("span");
+      expressionEl.className = "game-log-roll-expression";
+      if (label && notation) {
+        expressionEl.textContent = `${label} (${notation})`;
+      } else if (label) {
+        expressionEl.textContent = label;
+      } else if (notation) {
+        expressionEl.textContent = notation;
+      } else {
+        expressionEl.textContent = entry?.message || "Roll";
       }
-
-      if (notation) {
-        const notationEl = document.createElement("code");
-        notationEl.className = "game-log-roll-notation";
-        notationEl.textContent = notation;
-        summaryRow.appendChild(notationEl);
-      }
+      summaryRow.appendChild(expressionEl);
 
       if (total || total === 0) {
         const totalEl = document.createElement("span");
-        totalEl.className = `game-log-roll-total${summaryRow.children.length ? " ms-auto" : ""}`;
+        totalEl.className = "game-log-roll-total";
         totalEl.textContent = total;
         summaryRow.appendChild(totalEl);
       }
 
-      if (!summaryRow.children.length) {
-        summaryRow.textContent = entry?.message || "Roll";
-      }
-
       summary.appendChild(summaryRow);
-
-      if (payload.detailHtml) {
-        const detail = document.createElement("div");
-        detail.className = "game-log-roll-detail text-body-secondary";
-        detail.innerHTML = payload.detailHtml;
-        summary.appendChild(detail);
-      } else if (payload.detailText) {
-        const detail = document.createElement("pre");
-        detail.className = "game-log-roll-detail text-body-secondary";
-        detail.textContent = payload.detailText;
-        summary.appendChild(detail);
-      }
     } else {
       container.classList.add("game-log-entry--message");
       summary.textContent = entry?.message || "";
@@ -1711,7 +1694,7 @@ import {
     container.appendChild(summary);
 
     const meta = document.createElement("div");
-    meta.className = "game-log-entry__meta text-body-secondary small d-flex justify-content-between align-items-center gap-2 flex-wrap";
+    meta.className = "game-log-entry__meta text-body-secondary d-flex justify-content-between align-items-center gap-2 flex-wrap";
     const author = document.createElement("span");
     author.className = "game-log-entry__author";
     author.textContent = entry?.author?.name || "System";
