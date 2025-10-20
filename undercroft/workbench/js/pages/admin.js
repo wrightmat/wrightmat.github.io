@@ -2,12 +2,25 @@ import { initAppShell } from "../lib/app-shell.js";
 import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
+import { initHelpSystem } from "../lib/help.js";
+import { initPageLoadingOverlay } from "../lib/loading.js";
 
-const { status } = initAppShell({ namespace: "admin" });
-const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-const auth = initAuthControls({ root: document, status, dataManager });
+const pageLoading = initPageLoadingOverlay({
+  root: document,
+  message: "Loading admin console…",
+  delayMs: 0,
+});
 
-const elements = {
+(async () => {
+  const releaseStartup = pageLoading.hold();
+  await pageLoading.nextFrame();
+
+  const { status } = initAppShell({ namespace: "admin" });
+  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  const auth = initAuthControls({ root: document, status, dataManager });
+  const helpPromise = pageLoading.track(initHelpSystem({ root: document }));
+
+  const elements = {
   panel: document.querySelector("[data-admin-panel]"),
   gate: document.querySelector("[data-admin-gate]"),
   usersBody: document.querySelector("[data-admin-users]"),
@@ -51,23 +64,23 @@ const elements = {
   shareTable: document.querySelector("[data-admin-share-table]"),
   shareRows: document.querySelector("[data-admin-share-rows]"),
   shareEmpty: document.querySelector("[data-admin-share-empty]"),
-};
+  };
 
-const TIER_OPTIONS = [
+  const TIER_OPTIONS = [
   { value: "free", label: "Free" },
   { value: "player", label: "Player" },
   { value: "gm", label: "GM" },
   { value: "creator", label: "Creator" },
   { value: "admin", label: "Admin" },
-];
+  ];
 
-const OWNED_TYPE_LABELS = {
+  const OWNED_TYPE_LABELS = {
   characters: "Character",
   templates: "Template",
   systems: "System",
-};
+  };
 
-const BUCKET_TO_CONTENT_TYPE = {
+  const BUCKET_TO_CONTENT_TYPE = {
   characters: "character",
   templates: "template",
   systems: "system",
@@ -2313,5 +2326,12 @@ if (elements.passwordForm) {
 window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
 window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
 
+pageLoading.setMessage("Finalising admin tools…");
 renderShareModal();
 handleAuthChanged();
+
+  helpPromise.finally(() => {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
+  });
+})();
