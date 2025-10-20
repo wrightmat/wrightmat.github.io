@@ -11,9 +11,9 @@
 - Other directories to be added later as additional tools are developed under this suite.
 
 ## Core Principles
-1. **No Redundancy** – Extend or generalise existing behaviour instead of duplicating functions or styles.
+1. **No Redundancy** – Extend or generalize existing behavior instead of duplicating functions or styles. Create re-usable libraries rather than duplicating functions or code across multiple pages.
 2. **KISS (Keep It Simple, Stupid)** – Choose the simplest implementation that satisfies requirements; avoid speculative abstractions.
-3. **Vanilla-First UI** – Stick to plain JavaScript and DOM APIs. SortableJS is the sole approved helper for drag-and-drop interactions, and Toast UI Editor for rich text.
+3. **Vanilla-First UI** – Stick to plain JavaScript and DOM APIs (without Node). SortableJS is the sole approved helper for drag-and-drop interactions, and Toast UI Editor for rich text.
 4. **Bootstrap via CDN** – Use Bootstrap 5 utilities and components loaded from a CDN. Keep custom CSS minimal, centralised in `css/styles.css`, and lean on Bootstrap classes whenever possible.
 5. **Consistent Layout** – Maintain the three-pane layout (left tools, center canvas, right utilities) with collapsible panes and a shared app shell.
 
