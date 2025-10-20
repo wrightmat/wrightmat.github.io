@@ -1,7 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -16,7 +13,6 @@ import { createJsonPreviewRenderer } from "../lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../lib/panes.js";
 import { refreshTooltips } from "../lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinSystems,
   listBuiltinTemplates,
@@ -28,7 +24,6 @@ import {
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
 import { listFormulaFunctions } from "../lib/formula-engine.js";
-import { initTierGate, initTierVisibility } from "../lib/access.js";
 import {
   normalizeBindingValue,
   resolveBindingFromContexts,
@@ -36,664 +31,726 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
+import { bootstrapWorkbenchPage } from "../lib/workbench-page.js";
 
 (async () => {
-  const { status, undoStack, undo, redo } = initAppShell({
-    namespace: "template",
-    onUndo: handleUndoEntry,
-    onRedo: handleRedoEntry,
-  });
-
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  const auth = initAuthControls({ root: document, status, dataManager });
-  initTierVisibility({ root: document, dataManager, status, auth });
-
-  function sessionUser() {
-    return dataManager.session?.user || null;
-  }
-
-  const gate = initTierGate({
-    root: document,
-    dataManager,
+  const {
+    pageLoading,
+    releaseStartup,
     status,
+    undoStack,
+    undo,
+    redo,
+    dataManager,
     auth,
-    requiredTier: "gm",
-    gateSelector: "[data-tier-gate]",
-    contentSelector: "[data-tier-content]",
-    onGranted: () => window.location.reload(),
-    onRevoked: () => window.location.reload(),
+    helpReady,
+    gate,
+  } = await bootstrapWorkbenchPage({
+    namespace: "template",
+    loadingMessage: "Preparing template builder…",
+    shellOptions: {
+      onUndo: handleUndoEntry,
+      onRedo: handleRedoEntry,
+    },
+    tierGate: {
+      requiredTier: "gm",
+      gateSelector: "[data-tier-gate]",
+      contentSelector: "[data-tier-content]",
+      onGranted: () => window.location.reload(),
+      onRevoked: () => window.location.reload(),
+    },
   });
 
-  if (!gate.allowed) {
-    return;
-  }
+  try {
+    function sessionUser() {
+      return dataManager.session?.user || null;
+    }
 
-  const templateCatalog = new Map();
-  const systemCatalog = new Map();
-  const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
+    if (gate && !gate.allowed) {
+      await helpReady;
+      return;
+    }
+
+    pageLoading.setMessage("Loading template data…");
+
+    const builtinTask = pageLoading.track(initializeBuiltins());
+    const systemRecordsTask = pageLoading.track(loadSystemRecords());
+    const templateRecordsTask = pageLoading.track(loadTemplateRecords());
+    await Promise.all([builtinTask, systemRecordsTask, templateRecordsTask, helpReady]);
+
+    const sharedTemplateLoad = initializeSharedTemplateHandling();
+    if (sharedTemplateLoad) {
+      pageLoading.setMessage("Loading shared template…");
+      await pageLoading.track(sharedTemplateLoad);
+    }
+
+    pageLoading.setMessage("Finalising builder…");
+  } finally {
+    pageLoading.setMessage("Ready");
+    releaseStartup();
+  }
 
   const FORMULA_FUNCTION_SIGNATURES = {
-    abs: "abs(value)",
-    avg: "avg(...values)",
-    ceil: "ceil(value)",
-    clamp: "clamp(value, min, max)",
-    floor: "floor(value)",
-    if: "if(condition, whenTrue, whenFalse)",
-    max: "max(...values)",
-    min: "min(...values)",
-    mod: "mod(dividend, divisor)",
-    not: "not(value)",
-    or: "or(...values)",
-    and: "and(...values)",
-    pow: "pow(base, exponent)",
-    round: "round(value)",
-    sqrt: "sqrt(value)",
-    sum: "sum(...values)",
-  };
-
-  const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
-    name,
-    signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
-  }));
-
-  const FIELD_TYPE_META = {
-    string: { icon: "tabler:letter-case", label: "String" },
-    number: { icon: "tabler:123", label: "Number" },
-    boolean: { icon: "tabler:switch-3", label: "Boolean" },
-    array: { icon: "tabler:brackets", label: "Array" },
-    object: { icon: "tabler:braces", label: "Object" },
-  };
-
-  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
-
-  function resolveFieldTypeMeta(categoryOrType) {
-    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
-    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
-  }
-
-  function getComponentBindingCategories(component) {
-    if (!component || typeof component !== "object") {
-      return null;
+      abs: "abs(value)",
+      avg: "avg(...values)",
+      ceil: "ceil(value)",
+      clamp: "clamp(value, min, max)",
+      floor: "floor(value)",
+      if: "if(condition, whenTrue, whenFalse)",
+      max: "max(...values)",
+      min: "min(...values)",
+      mod: "mod(dividend, divisor)",
+      not: "not(value)",
+      or: "or(...values)",
+      and: "and(...values)",
+      pow: "pow(base, exponent)",
+      round: "round(value)",
+      sqrt: "sqrt(value)",
+      sum: "sum(...values)",
+    };
+  
+    const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
+      name,
+      signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
+    }));
+  
+    const FIELD_TYPE_META = {
+      string: { icon: "tabler:letter-case", label: "String" },
+      number: { icon: "tabler:123", label: "Number" },
+      boolean: { icon: "tabler:switch-3", label: "Boolean" },
+      array: { icon: "tabler:brackets", label: "Array" },
+      object: { icon: "tabler:braces", label: "Object" },
+    };
+  
+    const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
+  
+    function resolveFieldTypeMeta(categoryOrType) {
+      const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
+      return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
     }
-    switch (component.type) {
-      case "input": {
-        const variant = component.variant || "text";
-        if (variant === "number") {
-          return ["number"];
-        }
-        if (variant === "checkbox" || variant === "radio") {
-          return variant === "checkbox" ? ["array", "object"] : ["string", "number"];
-        }
-        if (variant === "select") {
+  
+    function getComponentBindingCategories(component) {
+      if (!component || typeof component !== "object") {
+        return null;
+      }
+      switch (component.type) {
+        case "input": {
+          const variant = component.variant || "text";
+          if (variant === "number") {
+            return ["number"];
+          }
+          if (variant === "checkbox" || variant === "radio") {
+            return variant === "checkbox" ? ["array", "object"] : ["string", "number"];
+          }
+          if (variant === "select") {
+            return ["string", "number"];
+          }
+          if (variant === "textarea") {
+            return ["string"];
+          }
           return ["string", "number"];
         }
-        if (variant === "textarea") {
-          return ["string"];
-        }
-        return ["string", "number"];
-      }
-      case "linear-track":
-      case "circular-track":
-        return ["number"];
-      case "array":
-        return ["array", "object"];
-      case "select-group":
-        return component.multiple ? ["array", "object"] : ["string", "number"];
-      case "toggle":
-        return ["string", "number"];
-      default:
-        return null;
-    }
-  }
-
-  function fieldMatchesCategories(entry, categories) {
-    if (!Array.isArray(categories) || !categories.length) {
-      return true;
-    }
-    const entryCategory = entry?.category || categorizeFieldType(entry?.type);
-    if (!entryCategory) {
-      return categories.includes("string") || categories.includes("any");
-    }
-    return categories.includes(entryCategory) || categories.includes("any");
-  }
-
-  const systemDefinitionCache = new Map();
-
-  const state = {
-    template: null,
-    components: [],
-    selectedId: null,
-    systemDefinition: null,
-    systemPreviewData: {},
-    bindingFields: [],
-  };
-
-  let lastSavedTemplateSignature = null;
-
-  markTemplateClean();
-
-  let pendingSharedTemplate = resolveSharedRecordParam("templates");
-
-  function hasActiveTemplate() {
-    return Boolean(state.template && (state.template.id || state.template.title));
-  }
-
-  const dropzones = new Map();
-  const containerActiveTabs = new Map();
-  const componentCollapsedState = new Map();
-
-  function cloneComponentTree(component) {
-    if (typeof structuredClone === "function") {
-      try {
-        return structuredClone(component);
-      } catch (error) {
-        // fall through to JSON clone
+        case "linear-track":
+        case "circular-track":
+          return ["number"];
+        case "array":
+          return ["array", "object"];
+        case "select-group":
+          return component.multiple ? ["array", "object"] : ["string", "number"];
+        case "toggle":
+          return ["string", "number"];
+        default:
+          return null;
       }
     }
-    return JSON.parse(JSON.stringify(component));
-  }
-
-  function cloneComponentCollection(components) {
-    return Array.isArray(components) ? components.map((component) => cloneComponentTree(component)) : [];
-  }
-
-  function snapshotContainerTabs() {
-    return Array.from(containerActiveTabs.entries());
-  }
-
-  function restoreContainerTabsSnapshot(snapshot) {
-    containerActiveTabs.clear();
-    if (!Array.isArray(snapshot)) {
-      return;
+  
+    function fieldMatchesCategories(entry, categories) {
+      if (!Array.isArray(categories) || !categories.length) {
+        return true;
+      }
+      const entryCategory = entry?.category || categorizeFieldType(entry?.type);
+      if (!entryCategory) {
+        return categories.includes("string") || categories.includes("any");
+      }
+      return categories.includes(entryCategory) || categories.includes("any");
     }
-    snapshot.forEach(([key, value]) => {
-      containerActiveTabs.set(key, value);
-    });
-  }
-
-  function emitBindingFieldsReady(schemaId = "") {
-    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
-      return;
-    }
-    const detail = {
-      schemaId: schemaId || "",
-      count: Array.isArray(state.bindingFields) ? state.bindingFields.length : 0,
+  
+    const systemDefinitionCache = new Map();
+  
+    const state = {
+      template: null,
+      components: [],
+      selectedId: null,
+      systemDefinition: null,
+      systemPreviewData: {},
+      bindingFields: [],
     };
-    window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
-  }
-
-  await initializeBuiltins();
-
-  const elements = {
-    templateSelect: document.querySelector("[data-template-select]"),
-    palette: document.querySelector("[data-palette]"),
-    canvasRoot: document.querySelector("[data-canvas-root]"),
-    inspector: document.querySelector("[data-inspector]"),
-    saveButton: document.querySelector('[data-action="save-template"]'),
-    undoButton: document.querySelector('[data-action="undo-template"]'),
-    redoButton: document.querySelector('[data-action="redo-template"]'),
-    clearButton: document.querySelector('[data-action="clear-canvas"]'),
-    importButton: document.querySelector('[data-action="import-template"]'),
-    exportButton: document.querySelector('[data-action="export-template"]'),
-    newTemplateButton: document.querySelector('[data-action="new-template"]'),
-    duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
-    deleteTemplateButton: document.querySelector('[data-delete-template]'),
-    newTemplateForm: document.querySelector("[data-new-template-form]"),
-    newTemplateId: document.querySelector("[data-new-template-id]"),
-    newTemplateTitle: document.querySelector("[data-new-template-title]"),
-    newTemplateVersion: document.querySelector("[data-new-template-version]"),
-    newTemplateSystem: document.querySelector("[data-new-template-system]"),
-    newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
-    templateMeta: document.querySelector("[data-template-meta]"),
-    rightPane: document.querySelector('[data-pane="right"]'),
-    rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
-    jsonPreview: document.querySelector("[data-json-preview]"),
-    jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-  };
-
-  const insertComponentAtCanvasRoot = createRootInsertionHandler({
-    createItem: (type) => {
-      if (!COMPONENT_DEFINITIONS[type]) {
-        return null;
-      }
-      return createComponent(type);
-    },
-    beforeInsert: (type, component) => {
-      const previousSelectedId = state.selectedId || null;
-      state.selectedId = component.uid;
-      return {
-        parentId: "",
-        zoneKey: "root",
-        index: state.components.length,
-        definition: COMPONENT_DEFINITIONS[type],
-        previousSelectedId,
-      };
-    },
-    insertItem: (type, component, context) => {
-      insertComponent(context.parentId, context.zoneKey, context.index, component);
-    },
-    createUndoEntry: (type, component, context) => ({
-      type: "add",
-      templateId: state.template?.id || "",
-      component: cloneComponentTree(component),
-      parentId: context.parentId,
-      zoneKey: context.zoneKey,
-      index: context.index,
-      previousSelectedId: context.previousSelectedId || null,
-    }),
-    afterInsert: () => {
-      renderCanvas();
-      renderInspector();
-      expandInspectorPane();
-    },
-    undoStack,
-    status,
-    getStatusMessage: (type, component, context) => ({
-      message: `${context.definition?.label || type} added to canvas`,
-      options: { type: "success", timeout: 1800 },
-    }),
-  });
-
-  let newTemplateModalInstance = null;
-  if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
-    const modalElement = document.getElementById("new-template-modal");
-    if (modalElement) {
-      newTemplateModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+  
+    let lastSavedTemplateSignature = null;
+  
+    markTemplateClean();
+  
+    let pendingSharedTemplate = resolveSharedRecordParam("templates");
+  
+    function hasActiveTemplate() {
+      return Boolean(state.template && (state.template.id || state.template.title));
     }
-  }
-
-  let templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
-
-  refreshTooltips(document);
-
-  loadSystemRecords();
-  loadTemplateRecords();
-  initializeSharedTemplateHandling();
-
-  if (elements.templateSelect) {
-    const builtinOptions = listBuiltinTemplates().map((tpl) => ({ value: tpl.id, label: tpl.title }));
-    populateSelect(elements.templateSelect, builtinOptions, { placeholder: "Select template" });
-    elements.templateSelect.addEventListener("change", async () => {
-      const selectedId = elements.templateSelect.value;
-      if (!selectedId) {
-        state.template = null;
-        state.components = [];
-        state.selectedId = null;
-        containerActiveTabs.clear();
-        componentCollapsedState.clear();
-        componentCounter = 0;
+  
+    const dropzones = new Map();
+    const containerActiveTabs = new Map();
+    const componentCollapsedState = new Map();
+  
+    function cloneComponentTree(component) {
+      if (typeof structuredClone === "function") {
+        try {
+          return structuredClone(component);
+        } catch (error) {
+          // fall through to JSON clone
+        }
+      }
+      return JSON.parse(JSON.stringify(component));
+    }
+  
+    function cloneComponentCollection(components) {
+      return Array.isArray(components) ? components.map((component) => cloneComponentTree(component)) : [];
+    }
+  
+    function snapshotContainerTabs() {
+      return Array.from(containerActiveTabs.entries());
+    }
+  
+    function restoreContainerTabsSnapshot(snapshot) {
+      containerActiveTabs.clear();
+      if (!Array.isArray(snapshot)) {
+        return;
+      }
+      snapshot.forEach(([key, value]) => {
+        containerActiveTabs.set(key, value);
+      });
+    }
+  
+    function emitBindingFieldsReady(schemaId = "") {
+      if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") {
+        return;
+      }
+      const detail = {
+        schemaId: schemaId || "",
+        count: Array.isArray(state.bindingFields) ? state.bindingFields.length : 0,
+      };
+      window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
+    }
+  
+    await initializeBuiltins();
+  
+    const elements = {
+      templateSelect: document.querySelector("[data-template-select]"),
+      palette: document.querySelector("[data-palette]"),
+      canvasRoot: document.querySelector("[data-canvas-root]"),
+      inspector: document.querySelector("[data-inspector]"),
+      saveButton: document.querySelector('[data-action="save-template"]'),
+      undoButton: document.querySelector('[data-action="undo-template"]'),
+      redoButton: document.querySelector('[data-action="redo-template"]'),
+      clearButton: document.querySelector('[data-action="clear-canvas"]'),
+      importButton: document.querySelector('[data-action="import-template"]'),
+      exportButton: document.querySelector('[data-action="export-template"]'),
+      newTemplateButton: document.querySelector('[data-action="new-template"]'),
+      duplicateTemplateButton: document.querySelector('[data-action="duplicate-template"]'),
+      deleteTemplateButton: document.querySelector('[data-delete-template]'),
+      newTemplateForm: document.querySelector("[data-new-template-form]"),
+      newTemplateId: document.querySelector("[data-new-template-id]"),
+      newTemplateTitle: document.querySelector("[data-new-template-title]"),
+      newTemplateVersion: document.querySelector("[data-new-template-version]"),
+      newTemplateSystem: document.querySelector("[data-new-template-system]"),
+      newTemplateModalTitle: document.querySelector("[data-new-template-modal-title]"),
+      templateMeta: document.querySelector("[data-template-meta]"),
+      rightPane: document.querySelector('[data-pane="right"]'),
+      rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
+      jsonPreview: document.querySelector("[data-json-preview]"),
+      jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+    };
+  
+    const insertComponentAtCanvasRoot = createRootInsertionHandler({
+      createItem: (type) => {
+        if (!COMPONENT_DEFINITIONS[type]) {
+          return null;
+        }
+        return createComponent(type);
+      },
+      beforeInsert: (type, component) => {
+        const previousSelectedId = state.selectedId || null;
+        state.selectedId = component.uid;
+        return {
+          parentId: "",
+          zoneKey: "root",
+          index: state.components.length,
+          definition: COMPONENT_DEFINITIONS[type],
+          previousSelectedId,
+        };
+      },
+      insertItem: (type, component, context) => {
+        insertComponent(context.parentId, context.zoneKey, context.index, component);
+      },
+      createUndoEntry: (type, component, context) => ({
+        type: "add",
+        templateId: state.template?.id || "",
+        component: cloneComponentTree(component),
+        parentId: context.parentId,
+        zoneKey: context.zoneKey,
+        index: context.index,
+        previousSelectedId: context.previousSelectedId || null,
+      }),
+      afterInsert: () => {
         renderCanvas();
         renderInspector();
-        ensureTemplateSelectValue();
-        syncTemplateActions();
-        return;
-      }
-      const metadata = templateCatalog.get(selectedId);
-      if (!metadata) {
-        status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
-        return;
-      }
-      if (state.template?.id === selectedId && state.template?.origin === metadata.source) {
-        return;
-      }
-      if (metadata.source === "draft") {
-        status.show("Save the template before reloading it.", { type: "info", timeout: 2200 });
-        ensureTemplateSelectValue();
-        return;
-      }
-      try {
-        let payload = null;
-        if (metadata.source === "builtin" && metadata.path) {
-          const response = await fetch(metadata.path);
-          payload = await response.json();
-          markBuiltinAvailable("templates", metadata.id || selectedId);
-        } else {
-          const shareToken = metadata.shareToken || "";
-          const result = await dataManager.get("templates", selectedId, {
-            preferLocal: !shareToken,
-            shareToken,
-          });
-          payload = result?.payload || null;
-        }
-        if (!payload) {
-          throw new Error("Template payload missing");
-        }
-        const label = payload.title || metadata.title || selectedId;
-        const schema = payload.schema || payload.system || metadata.schema || "";
-        registerTemplateRecord(
-          {
-            id: payload.id || selectedId,
-            title: label,
-            schema,
-            source: metadata.source || "remote",
-            path: metadata.path,
-            shareToken: metadata.shareToken,
-          },
-          { syncOption: true }
-        );
-        applyTemplateData(payload, {
-          origin: metadata.source || "remote",
-          emitStatus: true,
-          statusMessage: `Loaded ${label}`,
-          shareToken: metadata.shareToken || "",
-        });
-      } catch (error) {
-        console.error("Unable to load template", error);
-        if (metadata.source === "builtin") {
-          markBuiltinMissing("templates", metadata.id || selectedId);
-        }
-        status.show("Failed to load template", { type: "error", timeout: 2500 });
-      }
+        expandInspectorPane();
+      },
+      undoStack,
+      status,
+      getStatusMessage: (type, component, context) => ({
+        message: `${context.definition?.label || type} added to canvas`,
+        options: { type: "success", timeout: 1800 },
+      }),
     });
-  }
-
-  const COMPONENT_DEFINITIONS = {
-    input: {
-      label: "Input",
-      defaults: {
-        name: "Input Field",
-        variant: "text",
-        placeholder: "",
-        options: ["Option A", "Option B"],
-        rows: 3,
-        sourceBinding: "",
-        roller: "",
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: true,
-      supportsReadOnly: true,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    array: {
-      label: "List",
-      defaults: {
-        name: "List",
-        variant: "list",
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    divider: {
-      label: "Divider",
-      defaults: {
-        name: "Divider",
-        style: "solid",
-        thickness: 2,
-      },
-      supportsBinding: false,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: false,
-      textControls: false,
-      colorControls: ["foreground"],
-    },
-    image: {
-      label: "Image",
-      defaults: {
-        name: "Image",
-        src: "https://placekitten.com/320/180",
-        alt: "Illustration",
-        fit: "contain",
-        height: 180,
-      },
-      supportsBinding: false,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: false,
-      textControls: false,
-      colorControls: [],
-    },
-    label: {
-      label: "Label",
-      defaults: {
-        name: "Label",
-        text: "Label text",
-      },
-      supportsBinding: false,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-    },
-    container: {
-      label: "Container",
-      defaults: {
-        name: "Container",
-        containerType: "columns",
-        columns: 2,
-        rows: 2,
-        tabLabels: ["Tab 1", "Tab 2"],
-        gap: 16,
-        zones: {},
-      },
-      supportsBinding: false,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-    },
-    "linear-track": {
-      label: "Linear Track",
-      defaults: {
-        name: "Linear Track",
-        segments: 6,
-        segmentBinding: "6",
-        segmentFormula: "",
-        value: 3,
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    "circular-track": {
-      label: "Circular Track",
-      defaults: {
-        name: "Circular Track",
-        segments: 6,
-        segmentBinding: "6",
-        segmentFormula: "",
-        value: 3,
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    "select-group": {
-      label: "Select Group",
-      defaults: {
-        name: "Select Group",
-        variant: "pills",
-        multiple: false,
-        sourceBinding: "",
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: false,
-      supportsReadOnly: true,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    toggle: {
-      label: "Toggle",
-      defaults: {
-        name: "Toggle",
-        states: ["Novice", "Skilled", "Expert"],
-        activeIndex: 0,
-        shape: "circle",
-        statesBinding: "",
-        value: "Novice",
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: false,
-      supportsReadOnly: true,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-  };
-
-  let componentCounter = 0;
-
-  const renderPreview = createJsonPreviewRenderer({
-    resolvePreviewElement: () => elements.jsonPreview,
-    resolveBytesElement: () => elements.jsonPreviewBytes,
-    serialize: serializeTemplateState,
-  });
-
-  function getActiveTabIndex(component, total = 0) {
-    if (!component?.uid) return 0;
-    const current = containerActiveTabs.get(component.uid) ?? 0;
-    if (!Number.isFinite(total) || total <= 0) {
-      return Math.max(0, current);
-    }
-    const maxIndex = Math.max(0, total - 1);
-    return Math.min(Math.max(0, current), maxIndex);
-  }
-
-  function setActiveTabIndex(component, index) {
-    if (!component?.uid) return;
-    containerActiveTabs.set(component.uid, Math.max(0, index));
-  }
-
-  function clearActiveTab(component) {
-    if (!component?.uid) return;
-    containerActiveTabs.delete(component.uid);
-  }
-
-  const COLOR_FIELD_MAP = {
-    foreground: { label: "Foreground", prop: "textColor" },
-    background: { label: "Background", prop: "backgroundColor" },
-    border: { label: "Border", prop: "borderColor" },
-  };
-
-  function getComponentLabel(component, fallback = "") {
-    if (!component) return fallback || "";
-    const { type } = component;
-
-    if (Object.prototype.hasOwnProperty.call(component, "label")) {
-      const value = typeof component.label === "string" ? component.label.trim() : "";
-      if (value) return value;
-      return "";
-    }
-
-    const candidates = [component.name, component.text];
-    for (const candidate of candidates) {
-      if (typeof candidate === "string") {
-        const trimmed = candidate.trim();
-        if (trimmed) {
-          return trimmed;
-        }
+  
+    let newTemplateModalInstance = null;
+    if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+      const modalElement = document.getElementById("new-template-modal");
+      if (modalElement) {
+        newTemplateModalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
       }
     }
-
-    const definition = type ? COMPONENT_DEFINITIONS[type] : null;
-    if (definition?.label) {
-      return definition.label;
-    }
-
-    return fallback || "";
-  }
-
-  function componentHasFormula(component, { formulaKey = "formula" } = {}) {
-    if (!formulaKey) {
-      return false;
-    }
-    const value = component && typeof component[formulaKey] === "string" ? component[formulaKey] : "";
-    return normalizeBindingValue(value).length > 0;
-  }
-
-  function getBindingEditorValue(component, { bindingKey = "binding", formulaKey = "formula" } = {}) {
-    if (!component || typeof component !== "object") {
-      return "";
-    }
-    if (componentHasFormula(component, { formulaKey })) {
-      const expression = normalizeBindingValue(component[formulaKey]);
-      return expression ? `=${expression}` : "";
-    }
-    if (!bindingKey) {
-      return "";
-    }
-    return normalizeBindingValue(component[bindingKey]);
-  }
-
-  function getComponentBindingLabel(component) {
-    return getBindingEditorValue(component);
-  }
-
-  function getComponentRollerLabel(component) {
-    if (!component || typeof component.roller !== "string") {
-      return "";
-    }
-    const trimmed = component.roller.trim();
-    return trimmed || "";
-  }
-
-  function getDefinition(component) {
-    if (!component) return {};
-    return COMPONENT_DEFINITIONS[component.type] || {};
-  }
-
-  function getColorControls(component) {
-    const definition = getDefinition(component);
-    if (Array.isArray(definition.colorControls)) {
-      return definition.colorControls.filter((key) => COLOR_FIELD_MAP[key]);
-    }
-    return Object.keys(COLOR_FIELD_MAP);
-  }
-
-  function componentHasTextControls(component) {
-    const definition = getDefinition(component);
-    if (definition.textControls === false) {
-      return false;
-    }
-    return true;
-  }
-
-  if (elements.palette) {
-    initPaletteInteractions(elements.palette, {
-      groupName: "template-canvas",
-      dataAttribute: "data-component-type",
-      onActivate: ({ value }) => {
-        if (!value || !COMPONENT_DEFINITIONS[value]) {
+  
+    let templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
+  
+    refreshTooltips(document);
+  
+    if (elements.templateSelect) {
+      const builtinOptions = listBuiltinTemplates().map((tpl) => ({ value: tpl.id, label: tpl.title }));
+      populateSelect(elements.templateSelect, builtinOptions, { placeholder: "Select template" });
+      elements.templateSelect.addEventListener("change", async () => {
+        const selectedId = elements.templateSelect.value;
+        if (!selectedId) {
+          state.template = null;
+          state.components = [];
+          state.selectedId = null;
+          containerActiveTabs.clear();
+          componentCollapsedState.clear();
+          componentCounter = 0;
+          renderCanvas();
+          renderInspector();
+          ensureTemplateSelectValue();
+          syncTemplateActions();
           return;
         }
-        if (!hasActiveTemplate()) {
-          status.show("Create or load a template before adding components.", {
-            type: "warning",
-            timeout: 2400,
+        const metadata = templateCatalog.get(selectedId);
+        if (!metadata) {
+          status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+          return;
+        }
+        if (state.template?.id === selectedId && state.template?.origin === metadata.source) {
+          return;
+        }
+        if (metadata.source === "draft") {
+          status.show("Save the template before reloading it.", { type: "info", timeout: 2200 });
+          ensureTemplateSelectValue();
+          return;
+        }
+        try {
+          let payload = null;
+          if (metadata.source === "builtin" && metadata.path) {
+            const response = await fetch(metadata.path);
+            payload = await response.json();
+            markBuiltinAvailable("templates", metadata.id || selectedId);
+          } else {
+            const shareToken = metadata.shareToken || "";
+            const result = await dataManager.get("templates", selectedId, {
+              preferLocal: !shareToken,
+              shareToken,
+            });
+            payload = result?.payload || null;
+          }
+          if (!payload) {
+            throw new Error("Template payload missing");
+          }
+          const label = payload.title || metadata.title || selectedId;
+          const schema = payload.schema || payload.system || metadata.schema || "";
+          registerTemplateRecord(
+            {
+              id: payload.id || selectedId,
+              title: label,
+              schema,
+              source: metadata.source || "remote",
+              path: metadata.path,
+              shareToken: metadata.shareToken,
+            },
+            { syncOption: true }
+          );
+          applyTemplateData(payload, {
+            origin: metadata.source || "remote",
+            emitStatus: true,
+            statusMessage: `Loaded ${label}`,
+            shareToken: metadata.shareToken || "",
           });
+        } catch (error) {
+          console.error("Unable to load template", error);
+          if (metadata.source === "builtin") {
+            markBuiltinMissing("templates", metadata.id || selectedId);
+          }
+          status.show("Failed to load template", { type: "error", timeout: 2500 });
+        }
+      });
+    }
+  
+    const COMPONENT_DEFINITIONS = {
+      input: {
+        label: "Input",
+        defaults: {
+          name: "Input Field",
+          variant: "text",
+          placeholder: "",
+          options: ["Option A", "Option B"],
+          rows: 3,
+          sourceBinding: "",
+          roller: "",
+          labelPosition: "top",
+        },
+        supportsBinding: true,
+        supportsFormula: true,
+        supportsReadOnly: true,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+        supportsLabelPosition: true,
+      },
+      array: {
+        label: "List",
+        defaults: {
+          name: "List",
+          variant: "list",
+          labelPosition: "top",
+        },
+        supportsBinding: true,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+        supportsLabelPosition: true,
+      },
+      divider: {
+        label: "Divider",
+        defaults: {
+          name: "Divider",
+          style: "solid",
+          thickness: 2,
+        },
+        supportsBinding: false,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: false,
+        textControls: false,
+        colorControls: ["foreground"],
+      },
+      image: {
+        label: "Image",
+        defaults: {
+          name: "Image",
+          src: "https://placekitten.com/320/180",
+          alt: "Illustration",
+          fit: "contain",
+          height: 180,
+        },
+        supportsBinding: false,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: false,
+        textControls: false,
+        colorControls: [],
+      },
+      label: {
+        label: "Label",
+        defaults: {
+          name: "Label",
+          text: "Label text",
+        },
+        supportsBinding: false,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+      },
+      container: {
+        label: "Container",
+        defaults: {
+          name: "Container",
+          containerType: "columns",
+          columns: 2,
+          rows: 2,
+          tabLabels: ["Tab 1", "Tab 2"],
+          gap: 16,
+          zones: {},
+        },
+        supportsBinding: false,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+      },
+      "linear-track": {
+        label: "Linear Track",
+        defaults: {
+          name: "Linear Track",
+          segments: 6,
+          segmentBinding: "6",
+          segmentFormula: "",
+          value: 3,
+          labelPosition: "top",
+        },
+        supportsBinding: true,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+        supportsLabelPosition: true,
+      },
+      "circular-track": {
+        label: "Circular Track",
+        defaults: {
+          name: "Circular Track",
+          segments: 6,
+          segmentBinding: "6",
+          segmentFormula: "",
+          value: 3,
+          labelPosition: "top",
+        },
+        supportsBinding: true,
+        supportsFormula: false,
+        supportsReadOnly: false,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+        supportsLabelPosition: true,
+      },
+      "select-group": {
+        label: "Select Group",
+        defaults: {
+          name: "Select Group",
+          variant: "pills",
+          multiple: false,
+          sourceBinding: "",
+          labelPosition: "top",
+        },
+        supportsBinding: true,
+        supportsFormula: false,
+        supportsReadOnly: true,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+        supportsLabelPosition: true,
+      },
+      toggle: {
+        label: "Toggle",
+        defaults: {
+          name: "Toggle",
+          states: ["Novice", "Skilled", "Expert"],
+          activeIndex: 0,
+          shape: "circle",
+          statesBinding: "",
+          value: "Novice",
+          labelPosition: "top",
+        },
+        supportsBinding: true,
+        supportsFormula: false,
+        supportsReadOnly: true,
+        supportsAlignment: true,
+        textControls: true,
+        colorControls: ["foreground", "background", "border"],
+        supportsLabelPosition: true,
+      },
+    };
+  
+    let componentCounter = 0;
+  
+    const renderPreview = createJsonPreviewRenderer({
+      resolvePreviewElement: () => elements.jsonPreview,
+      resolveBytesElement: () => elements.jsonPreviewBytes,
+      serialize: serializeTemplateState,
+    });
+  
+    function getActiveTabIndex(component, total = 0) {
+      if (!component?.uid) return 0;
+      const current = containerActiveTabs.get(component.uid) ?? 0;
+      if (!Number.isFinite(total) || total <= 0) {
+        return Math.max(0, current);
+      }
+      const maxIndex = Math.max(0, total - 1);
+      return Math.min(Math.max(0, current), maxIndex);
+    }
+  
+    function setActiveTabIndex(component, index) {
+      if (!component?.uid) return;
+      containerActiveTabs.set(component.uid, Math.max(0, index));
+    }
+  
+    function clearActiveTab(component) {
+      if (!component?.uid) return;
+      containerActiveTabs.delete(component.uid);
+    }
+  
+    const COLOR_FIELD_MAP = {
+      foreground: { label: "Foreground", prop: "textColor" },
+      background: { label: "Background", prop: "backgroundColor" },
+      border: { label: "Border", prop: "borderColor" },
+    };
+  
+    function getComponentLabel(component, fallback = "") {
+      if (!component) return fallback || "";
+      const { type } = component;
+  
+      if (Object.prototype.hasOwnProperty.call(component, "label")) {
+        const value = typeof component.label === "string" ? component.label.trim() : "";
+        if (value) return value;
+        return "";
+      }
+  
+      const candidates = [component.name, component.text];
+      for (const candidate of candidates) {
+        if (typeof candidate === "string") {
+          const trimmed = candidate.trim();
+          if (trimmed) {
+            return trimmed;
+          }
+        }
+      }
+  
+      const definition = type ? COMPONENT_DEFINITIONS[type] : null;
+      if (definition?.label) {
+        return definition.label;
+      }
+  
+      return fallback || "";
+    }
+  
+    function componentHasFormula(component, { formulaKey = "formula" } = {}) {
+      if (!formulaKey) {
+        return false;
+      }
+      const value = component && typeof component[formulaKey] === "string" ? component[formulaKey] : "";
+      return normalizeBindingValue(value).length > 0;
+    }
+  
+    function getBindingEditorValue(component, { bindingKey = "binding", formulaKey = "formula" } = {}) {
+      if (!component || typeof component !== "object") {
+        return "";
+      }
+      if (componentHasFormula(component, { formulaKey })) {
+        const expression = normalizeBindingValue(component[formulaKey]);
+        return expression ? `=${expression}` : "";
+      }
+      if (!bindingKey) {
+        return "";
+      }
+      return normalizeBindingValue(component[bindingKey]);
+    }
+  
+    function getComponentBindingLabel(component) {
+      return getBindingEditorValue(component);
+    }
+  
+    function getComponentRollerLabel(component) {
+      if (!component || typeof component.roller !== "string") {
+        return "";
+      }
+      const trimmed = component.roller.trim();
+      return trimmed || "";
+    }
+  
+    function getDefinition(component) {
+      if (!component) return {};
+      return COMPONENT_DEFINITIONS[component.type] || {};
+    }
+  
+    function getColorControls(component) {
+      const definition = getDefinition(component);
+      if (Array.isArray(definition.colorControls)) {
+        return definition.colorControls.filter((key) => COLOR_FIELD_MAP[key]);
+      }
+      return Object.keys(COLOR_FIELD_MAP);
+    }
+  
+    function componentHasTextControls(component) {
+      const definition = getDefinition(component);
+      if (definition.textControls === false) {
+        return false;
+      }
+      return true;
+    }
+  
+    if (elements.palette) {
+      initPaletteInteractions(elements.palette, {
+        groupName: "template-canvas",
+        dataAttribute: "data-component-type",
+        onActivate: ({ value }) => {
+          if (!value || !COMPONENT_DEFINITIONS[value]) {
+            return;
+          }
+          if (!hasActiveTemplate()) {
+            status.show("Create or load a template before adding components.", {
+              type: "warning",
+              timeout: 2400,
+            });
+            return;
+          }
+          const metadata = getTemplateMetadata(state.template?.id);
+          if (!templateAllowsEdits(metadata)) {
+            const message = describeTemplateEditRestriction(metadata);
+            status.show(message, { type: "warning", timeout: 2800 });
+            return;
+          }
+          if (!dataManager.hasWriteAccess("templates")) {
+            const required = dataManager.describeRequiredWriteTier("templates");
+            const message = required
+              ? `Saving templates requires a ${required} tier.`
+              : "Your tier cannot save templates.";
+            status.show(message, { type: "warning", timeout: 2800 });
+            return;
+          }
+          insertComponentAtCanvasRoot(value);
+        },
+      });
+    }
+  
+    if (elements.canvasRoot) {
+      elements.canvasRoot.addEventListener("click", (event) => {
+        const deleteButton = event.target.closest('[data-action="remove-component"]');
+        if (deleteButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          removeComponent(deleteButton.dataset.componentId);
           return;
         }
-        const metadata = getTemplateMetadata(state.template?.id);
-        if (!templateAllowsEdits(metadata)) {
-          const message = describeTemplateEditRestriction(metadata);
-          status.show(message, { type: "warning", timeout: 2800 });
+        const target = event.target.closest("[data-component-id]");
+        if (!target) return;
+        selectComponent(target.dataset.componentId);
+      });
+    }
+  
+    if (elements.saveButton) {
+      elements.saveButton.addEventListener("click", async () => {
+        if (!state.template) {
+          return;
+        }
+        const payload = serializeTemplateState();
+        const templateId = (payload.id || "").trim();
+        if (!templateId) {
+          status.show("Set a template ID before saving.", { type: "warning", timeout: 2400 });
+          return;
+        }
+        if (!payload.schema) {
+          status.show("Select a system for this template before saving.", { type: "warning", timeout: 2400 });
           return;
         }
         if (!dataManager.hasWriteAccess("templates")) {
@@ -704,115 +761,72 @@ import { createLabeledField, normalizeLabelPosition } from "../lib/component-lay
           status.show(message, { type: "warning", timeout: 2800 });
           return;
         }
-        insertComponentAtCanvasRoot(value);
-      },
-    });
-  }
-
-  if (elements.canvasRoot) {
-    elements.canvasRoot.addEventListener("click", (event) => {
-      const deleteButton = event.target.closest('[data-action="remove-component"]');
-      if (deleteButton) {
-        event.preventDefault();
-        event.stopPropagation();
-        removeComponent(deleteButton.dataset.componentId);
-        return;
-      }
-      const target = event.target.closest("[data-component-id]");
-      if (!target) return;
-      selectComponent(target.dataset.componentId);
-    });
-  }
-
-  if (elements.saveButton) {
-    elements.saveButton.addEventListener("click", async () => {
-      if (!state.template) {
-        return;
-      }
-      const payload = serializeTemplateState();
-      const templateId = (payload.id || "").trim();
-      if (!templateId) {
-        status.show("Set a template ID before saving.", { type: "warning", timeout: 2400 });
-        return;
-      }
-      if (!payload.schema) {
-        status.show("Select a system for this template before saving.", { type: "warning", timeout: 2400 });
-        return;
-      }
-      if (!dataManager.hasWriteAccess("templates")) {
-        const required = dataManager.describeRequiredWriteTier("templates");
-        const message = required
-          ? `Saving templates requires a ${required} tier.`
-          : "Your tier cannot save templates.";
-        status.show(message, { type: "warning", timeout: 2800 });
-        return;
-      }
-      state.template.id = templateId;
-      state.template.title = payload.title || templateId;
-      state.template.schema = payload.schema;
-      const wantsRemote = dataManager.isAuthenticated();
-      if (wantsRemote && !dataManager.baseUrl) {
-        status.show("Server connection not configured. Start the Workbench server to save.", {
-          type: "error",
-          timeout: 3000,
-        });
-        return;
-      }
-      const button = elements.saveButton;
-      button.disabled = true;
-      button.setAttribute("aria-busy", "true");
-      const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("templates");
-      try {
-        const result = await dataManager.save("templates", templateId, payload, {
-          mode: wantsRemote ? "remote" : "auto",
-        });
-        const savedToServer = result?.source === "remote";
-        state.template.origin = savedToServer ? "remote" : "local";
-        const user = sessionUser();
-        const ownership = savedToServer ? "owned" : state.template.origin || "draft";
-        state.template.ownership = ownership;
-        state.template.permissions = savedToServer ? "edit" : "";
-        if (savedToServer && user) {
-          state.template.ownerId = user.id ?? null;
-          state.template.ownerUsername = user.username || "";
-        }
-        registerTemplateRecord(
-          {
-            id: templateId,
-            title: payload.title || templateId,
-            schema: payload.schema,
-            source: state.template.origin,
-            shareToken: state.template.shareToken || "",
-            ownership,
-            permissions: savedToServer ? "edit" : undefined,
-            ownerId: savedToServer ? user?.id ?? null : undefined,
-            ownerUsername: savedToServer ? user?.username || "" : undefined,
-          },
-          { syncOption: true }
-        );
-        ensureTemplateSelectValue();
-        syncTemplateActions();
-        undoStack.push({
-          type: "save",
-          templateId: state.template?.id || "",
-          count: state.components.length,
-        });
-        if (savedToServer || !requireRemote) {
-          markTemplateClean();
-        }
-        const label = payload.title || templateId;
-        if (savedToServer) {
-          status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
-        } else {
-          status.show(`Saved ${label} locally. Log in to sync with the server.`, {
-            type: "info",
+        state.template.id = templateId;
+        state.template.title = payload.title || templateId;
+        state.template.schema = payload.schema;
+        const wantsRemote = dataManager.isAuthenticated();
+        if (wantsRemote && !dataManager.baseUrl) {
+          status.show("Server connection not configured. Start the Workbench server to save.", {
+            type: "error",
             timeout: 3000,
           });
+          return;
         }
-      } catch (error) {
-        console.error("Failed to save template", error);
-        const message = error?.message || "Unable to save template";
-        status.show(message, { type: "error", timeout: 3000 });
+        const button = elements.saveButton;
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+        const requireRemote = dataManager.isAuthenticated() && dataManager.hasWriteAccess("templates");
+        try {
+          const result = await dataManager.save("templates", templateId, payload, {
+            mode: wantsRemote ? "remote" : "auto",
+          });
+          const savedToServer = result?.source === "remote";
+          state.template.origin = savedToServer ? "remote" : "local";
+          const user = sessionUser();
+          const ownership = savedToServer ? "owned" : state.template.origin || "draft";
+          state.template.ownership = ownership;
+          state.template.permissions = savedToServer ? "edit" : "";
+          if (savedToServer && user) {
+            state.template.ownerId = user.id ?? null;
+            state.template.ownerUsername = user.username || "";
+          }
+          registerTemplateRecord(
+            {
+              id: templateId,
+              title: payload.title || templateId,
+              schema: payload.schema,
+              source: state.template.origin,
+              shareToken: state.template.shareToken || "",
+              ownership,
+              permissions: savedToServer ? "edit" : undefined,
+              ownerId: savedToServer ? user?.id ?? null : undefined,
+              ownerUsername: savedToServer ? user?.username || "" : undefined,
+            },
+            { syncOption: true }
+          );
+          ensureTemplateSelectValue();
+          syncTemplateActions();
+          undoStack.push({
+            type: "save",
+            templateId: state.template?.id || "",
+            count: state.components.length,
+          });
+          if (savedToServer || !requireRemote) {
+            markTemplateClean();
+          }
+          const label = payload.title || templateId;
+          if (savedToServer) {
+            status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
+          } else {
+            status.show(`Saved ${label} locally. Log in to sync with the server.`, {
+              type: "info",
+              timeout: 3000,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to save template", error);
+          const message = error?.message || "Unable to save template";
+          status.show(message, { type: "error", timeout: 3000 });
       } finally {
         button.disabled = false;
         button.removeAttribute("aria-busy");
@@ -1617,17 +1631,19 @@ import { createLabeledField, normalizeLabelPosition } from "../lib/component-lay
   }
 
   async function initializeBuiltins() {
-    if (dataManager.baseUrl) {
-      try {
-        const catalog = await dataManager.listBuiltins();
-        if (catalog) {
-          applyBuiltinCatalog(catalog);
-        }
-      } catch (error) {
-        console.warn("Template editor: unable to load builtin catalog", error);
-      }
-    }
     registerBuiltinContent();
+    if (!dataManager.baseUrl) {
+      return;
+    }
+    try {
+      const catalog = await dataManager.listBuiltins();
+      if (catalog) {
+        applyBuiltinCatalog(catalog);
+        registerBuiltinContent();
+      }
+    } catch (error) {
+      console.warn("Template editor: unable to load builtin catalog", error);
+    }
   }
 
   function registerBuiltinContent() {
@@ -1872,9 +1888,9 @@ import { createLabeledField, normalizeLabelPosition } from "../lib/component-lay
 
   function initializeSharedTemplateHandling() {
     if (!pendingSharedTemplate) {
-      return;
+      return null;
     }
-    void loadPendingSharedTemplate();
+    return loadPendingSharedTemplate();
   }
 
   async function loadPendingSharedTemplate() {
@@ -5073,6 +5089,8 @@ import { createLabeledField, normalizeLabelPosition } from "../lib/component-lay
       return null;
     }
   }
+
+  pageLoading.setMessage("Ready");
 
   window.addEventListener("workbench:auth-changed", () => {
     if (dataManager.isAuthenticated()) {
