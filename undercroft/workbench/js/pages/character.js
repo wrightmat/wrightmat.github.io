@@ -1218,10 +1218,74 @@ import {
     return container;
   }
 
+  function ensureDicePanelMarkup() {
+    if (!elements.dicePanel) {
+      return false;
+    }
+    elements.dicePanel.innerHTML = "";
+    const form = document.createElement("form");
+    form.className = "d-flex flex-column gap-3";
+    form.setAttribute("data-dice-form", "");
+
+    const quickGrid = document.createElement("div");
+    quickGrid.className = "dice-quick-grid";
+    quickGrid.setAttribute("data-dice-quick", "");
+    QUICK_DICE.forEach((die) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-secondary btn-sm";
+      button.setAttribute("data-dice-button", die);
+      button.textContent = die;
+      quickGrid.appendChild(button);
+    });
+    const clearButton = document.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "btn btn-outline-secondary btn-sm";
+    clearButton.setAttribute("data-dice-clear", "");
+    clearButton.textContent = "Clear";
+    quickGrid.appendChild(clearButton);
+    form.appendChild(quickGrid);
+
+    const inputId = "dice-expression";
+    const label = document.createElement("label");
+    label.className = "visually-hidden";
+    label.setAttribute("for", inputId);
+    label.textContent = "Dice expression";
+    form.appendChild(label);
+
+    const inputGroup = document.createElement("div");
+    inputGroup.className = "input-group";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = inputId;
+    input.setAttribute("inputmode", "text");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("data-dice-expression", "");
+    input.placeholder = "e.g. 2d6 + 3";
+    inputGroup.appendChild(input);
+
+    const rollButton = document.createElement("button");
+    rollButton.className = "btn btn-primary";
+    rollButton.type = "submit";
+    rollButton.textContent = "Roll";
+    inputGroup.appendChild(rollButton);
+
+    form.appendChild(inputGroup);
+    elements.dicePanel.appendChild(form);
+
+    elements.diceForm = form;
+    elements.diceExpression = input;
+    elements.diceQuickButtons = form.querySelectorAll("[data-dice-button]");
+    elements.diceClearButton = form.querySelector("[data-dice-clear]");
+    return true;
+  }
+
   function initDiceRoller() {
-    if (!elements.diceForm || !elements.diceExpression) {
+    if (!ensureDicePanelMarkup()) {
       return;
     }
+    diceQuickButtons.clear();
     Array.from(elements.diceQuickButtons || []).forEach((button) => {
       const die = (button.getAttribute("data-dice-button") || "").toLowerCase();
       if (!die || !QUICK_DICE.includes(die)) {
@@ -1258,15 +1322,19 @@ import {
       });
     }
 
-    elements.diceExpression.addEventListener("input", () => {
-      syncQuickDiceButtons();
-    });
+    if (elements.diceExpression) {
+      elements.diceExpression.addEventListener("input", () => {
+        syncQuickDiceButtons();
+      });
+    }
 
-    elements.diceForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const expression = elements.diceExpression.value || "";
-      executeDiceRoll(expression, { updateInput: false });
-    });
+    if (elements.diceForm) {
+      elements.diceForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const expression = elements.diceExpression ? elements.diceExpression.value || "" : "";
+        executeDiceRoll(expression, { updateInput: false });
+      });
+    }
 
     syncQuickDiceButtons();
   }
@@ -1564,16 +1632,10 @@ import {
     if (gameLogState.error) {
       message = gameLogState.error;
       elements.gameLogStatus.classList.add("text-danger");
-    } else if (gameLogState.enabled) {
-      if (!gameLogCanPost()) {
-        message = dataManager.isAuthenticated()
-          ? "You can view the log but cannot post to this group."
-          : "Sign in to chat with your group.";
-      } else if (!gameLogState.loading && !gameLogState.entries.length) {
-        message = "Roll dice or send a message to start the log.";
-      }
-    } else if (!gameLogState.localEntries.length) {
-      message = "Roll dice to start the log.";
+    } else if (gameLogState.enabled && !gameLogCanPost()) {
+      message = dataManager.isAuthenticated()
+        ? "You can view the log but cannot post to this group."
+        : "Sign in to chat with your group.";
     }
     elements.gameLogStatus.textContent = message;
     elements.gameLogStatus.hidden = !message;
@@ -1706,10 +1768,8 @@ import {
       placeholder.className = "text-body-secondary small mb-0";
       if (gameLogState.enabled && gameLogState.loading) {
         placeholder.textContent = "Loading log…";
-      } else if (gameLogState.enabled) {
-        placeholder.textContent = "No activity yet.";
       } else {
-        placeholder.textContent = "Roll dice to start the log.";
+        placeholder.textContent = "No log activity yet.";
       }
       elements.gameLogEntries.appendChild(placeholder);
       return;
