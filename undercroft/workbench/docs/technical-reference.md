@@ -82,6 +82,18 @@ The character page initialises the app shell, loads DataManager session state, a
 
 All editors expose import/export buttons bound to shared helpers. `json-preview.js` renders JSON snapshots into the right pane, while toolbar buttons call into DataManager save operations or download raw payloads using the shared downloader utilities.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】【F:undercroft/workbench/system.html†L170-L237】 Character, template, and system toolbars provide consistent undo/redo and clear actions, leveraging the same command wiring through the app shell.【F:undercroft/workbench/template.html†L160-L208】【F:undercroft/workbench/character.html†L18-L103】
 
+### Importer pipeline roadmap
+
+System definitions already reserve an `importers` collection so creators can describe how outside data maps into their schema.【F:undercroft/workbench/js/pages/system.js†L800-L815】【F:undercroft/workbench/data/systems/sys.dnd-5e.json†L1-L39】 To turn that placeholder into a working feature we plan to:
+
+1. **Model importer steps.** Extend the system schema so each importer captures a source label, supported file type (initially JSON), the top-level path to iterate over, and an ordered list of field mappings. Each mapping ties a system field path to either a direct JSON pointer or a formula expression evaluated with the existing formula runtime.【F:undercroft/workbench/js/pages/system.js†L1820-L2042】
+2. **Surface a builder UI.** Add an “Importers” tab to the System inspector that lists configured importers, lets creators add/edit steps, and reuses the formula autocomplete widget for transformation expressions so field references and helper functions are easy to discover.【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L316】
+3. **Provide sample-data previews.** Allow creators to paste or upload a JSON example, run it through the importer configuration, and render a diff-style preview of the resulting system payload before saving. The preview flow should log validation errors inline so creators can refine mappings without leaving the modal.
+4. **Match advanced transformation needs.** Support chaining formulas per field (e.g., normalising enumerations, splitting strings) and expose helper hooks inspired by the existing D&D Beyond parser so complex conversions stay possible without bespoke scripts.【F:codex/ddb_parser.js†L1-L72】
+5. **Integrate with saves and exports.** Persist importer definitions alongside the system so export/import keeps them intact, and surface an “Run importer” command in the toolbar that prompts for JSON input and writes the transformed result into the canvas draft.
+
+This roadmap ensures importers evolve in phases—starting with configuration storage, then UI, then execution—so we can ship incremental value while validating the workflow with real datasets.
+
 ### Collaboration
 
 Share management flows on the client call `list_shareable_users`, `create_share_link`, and `share_with_user` endpoints while enforcing tier checks via `ensure_share_permission` on the server.【F:server/app.py†L219-L338】 Group game logs persist via `group_log` handlers and surface in the character sheet’s collaboration pane, which polls for new entries and merges them with local drafts.【F:server/app.py†L339-L424】【F:undercroft/workbench/js/pages/character.js†L630-L1104】 Shared help topics now explain these flows directly in the UI via tooltips anchored to game log headers and character selectors.【F:undercroft/workbench/character.html†L40-L119】【F:undercroft/workbench/js/lib/help.js†L97-L136】
