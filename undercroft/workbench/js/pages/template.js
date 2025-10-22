@@ -27,7 +27,9 @@ import {
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
-import { listFormulaFunctions } from "../lib/formula-engine.js";
+import { attachFormulaAutocomplete } from "../lib/formula-autocomplete.js";
+import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
+import { listFormulaFunctionMetadata } from "../lib/formula-metadata.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 import {
   normalizeBindingValue,
@@ -74,44 +76,7 @@ import { initHelpSystem } from "../lib/help.js";
   const systemCatalog = new Map();
   const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
 
-  const FORMULA_FUNCTION_SIGNATURES = {
-    abs: "abs(value)",
-    avg: "avg(...values)",
-    ceil: "ceil(value)",
-    clamp: "clamp(value, min, max)",
-    floor: "floor(value)",
-    if: "if(condition, whenTrue, whenFalse)",
-    max: "max(...values)",
-    min: "min(...values)",
-    mod: "mod(dividend, divisor)",
-    not: "not(value)",
-    or: "or(...values)",
-    and: "and(...values)",
-    pow: "pow(base, exponent)",
-    round: "round(value)",
-    sqrt: "sqrt(value)",
-    sum: "sum(...values)",
-  };
-
-  const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
-    name,
-    signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
-  }));
-
-  const FIELD_TYPE_META = {
-    string: { icon: "tabler:letter-case", label: "String" },
-    number: { icon: "tabler:123", label: "Number" },
-    boolean: { icon: "tabler:switch-3", label: "Boolean" },
-    array: { icon: "tabler:brackets", label: "Array" },
-    object: { icon: "tabler:braces", label: "Object" },
-  };
-
-  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
-
-  function resolveFieldTypeMeta(categoryOrType) {
-    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
-    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
-  }
+  const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
 
   function getComponentBindingCategories(component) {
     if (!component || typeof component !== "object") {
@@ -3964,51 +3929,13 @@ import { initHelpSystem } from "../lib/help.js";
     wrapper.append(label, inputWrapper);
 
     const MAX_SUGGESTIONS = 12;
-    let suggestionItems = [];
-    let activeIndex = -1;
-    let currentContext = null;
     let listeningForUpdates = false;
 
     const handleBindingFieldsReady = () => {
       if (document.activeElement === input) {
-        updateSuggestions();
+        autocomplete.update();
       }
     };
-
-    function closeSuggestions() {
-      suggestionItems = [];
-      activeIndex = -1;
-      currentContext = null;
-      suggestions.innerHTML = "";
-      suggestions.classList.add("d-none");
-      input.removeAttribute("aria-activedescendant");
-    }
-
-    function setActive(index) {
-      if (!suggestionItems.length) {
-        return;
-      }
-      const clamped = Math.max(0, Math.min(index, suggestionItems.length - 1));
-      activeIndex = clamped;
-      const options = Array.from(suggestions.querySelectorAll("[data-suggestion-index]"));
-      options.forEach((option) => {
-        const optionIndex = Number(option.dataset.suggestionIndex);
-        if (optionIndex === activeIndex) {
-          option.classList.add("active");
-          input.setAttribute("aria-activedescendant", option.id);
-        } else {
-          option.classList.remove("active");
-        }
-      });
-    }
-
-    function moveActive(delta) {
-      if (!suggestionItems.length) {
-        return;
-      }
-      const nextIndex = activeIndex < 0 ? 0 : activeIndex + delta;
-      setActive(nextIndex);
-    }
 
     function getFieldSuggestions(query = "") {
       if (!supportsBinding) {
@@ -4053,119 +3980,6 @@ import { initHelpSystem } from "../lib/help.js";
       }));
     }
 
-    function renderSuggestions(items, context) {
-      suggestionItems = items;
-      currentContext = context;
-      suggestions.innerHTML = "";
-      if (!items.length) {
-        closeSuggestions();
-        return;
-      }
-      items.forEach((item, index) => {
-        const option = document.createElement("button");
-        option.type = "button";
-        option.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
-        option.dataset.suggestionIndex = String(index);
-        option.id = `${suggestions.id}-option-${index}`;
-        option.addEventListener("mousedown", (event) => event.preventDefault());
-        option.addEventListener("click", () => {
-          applySuggestion(index);
-        });
-
-        const row = document.createElement("div");
-        row.className = "d-flex align-items-center gap-2 flex-grow-1 text-start";
-        row.style.minWidth = "0";
-        if (item.type === "field") {
-          const fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
-          const icon = document.createElement("span");
-          icon.className = "iconify flex-shrink-0 text-body-tertiary";
-          icon.dataset.icon = fieldMeta.icon;
-          icon.setAttribute("aria-hidden", "true");
-          icon.title = fieldMeta.label;
-          icon.style.fontSize = "1rem";
-          row.appendChild(icon);
-        }
-
-        const label = document.createElement("span");
-        label.className = "text-truncate";
-        label.textContent = item.display;
-        row.appendChild(label);
-
-        option.appendChild(row);
-
-        if (item.description) {
-          const hint = document.createElement("small");
-          hint.className = "text-body-secondary text-nowrap text-end ms-auto";
-          hint.textContent = item.description;
-          option.appendChild(hint);
-        }
-
-        suggestions.appendChild(option);
-      });
-      suggestions.classList.remove("d-none");
-      setActive(0);
-    }
-
-    function updateSuggestions() {
-      const value = input.value;
-      const caret = typeof input.selectionStart === "number" ? input.selectionStart : value.length;
-      const beforeCaret = value.slice(0, caret);
-
-      if (supportsBinding) {
-        const atIndex = beforeCaret.lastIndexOf("@");
-        if (atIndex !== -1) {
-          const query = beforeCaret.slice(atIndex + 1);
-          const items = getFieldSuggestions(query);
-          if (items.length) {
-            renderSuggestions(items, { type: "field", startIndex: atIndex + 1, endIndex: caret });
-            return;
-          }
-        }
-      }
-
-      if (supportsFormula && value.trim().startsWith("=")) {
-        const equalsIndex = value.indexOf("=");
-        if (equalsIndex !== -1 && caret >= equalsIndex + 1) {
-          const rawQuery = value.slice(equalsIndex + 1, caret);
-          const items = getFunctionSuggestions(rawQuery);
-          if (items.length) {
-            renderSuggestions(items, { type: "function", startIndex: equalsIndex + 1, endIndex: caret });
-            return;
-          }
-        }
-      }
-
-      closeSuggestions();
-    }
-
-    function applySuggestion(index) {
-      if (index < 0 || index >= suggestionItems.length || !currentContext) {
-        return;
-      }
-      const item = suggestionItems[index];
-      const value = input.value;
-      const start = currentContext.startIndex;
-      const end = currentContext.endIndex;
-      const before = value.slice(0, start);
-      const after = value.slice(end);
-      if (item.type === "field") {
-        const inserted = item.path;
-        const nextValue = `${before}${inserted}${after}`;
-        input.value = nextValue;
-        const caret = before.length + inserted.length;
-        input.setSelectionRange(caret, caret);
-      } else if (item.type === "function") {
-        const prefix = value.slice(0, start);
-        const suffix = value.slice(end);
-        const nextValue = `${prefix}${item.name}()${suffix}`;
-        input.value = nextValue;
-        const caret = prefix.length + item.name.length + 1;
-        input.setSelectionRange(caret, caret);
-      }
-      commitValue(input.value);
-      closeSuggestions();
-    }
-
     function commitValue(raw) {
       const source = typeof raw === "string" ? raw : "";
       const trimmed = source.trim();
@@ -4207,9 +4021,23 @@ import { initHelpSystem } from "../lib/help.js";
       );
     }
 
+    const autocomplete = attachFormulaAutocomplete(input, {
+      container: suggestions,
+      supportsBinding,
+      supportsFunctions: supportsFormula,
+      getFieldItems: (query) => getFieldSuggestions(query),
+      getFunctionItems: (query) => getFunctionSuggestions(query),
+      resolveFieldMeta: resolveFieldTypeMeta,
+      maxItems: MAX_SUGGESTIONS,
+      applySuggestion: ({ applyDefault }) => {
+        applyDefault();
+        commitValue(input.value);
+      },
+    });
+
     input.addEventListener("input", () => {
       commitValue(input.value);
-      updateSuggestions();
+      autocomplete.update();
     });
 
     input.addEventListener("focus", () => {
@@ -4217,37 +4045,16 @@ import { initHelpSystem } from "../lib/help.js";
         window.addEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
         listeningForUpdates = true;
       }
-      updateSuggestions();
+      autocomplete.update();
     });
 
     input.addEventListener("click", () => {
-      updateSuggestions();
-    });
-
-    input.addEventListener("keydown", (event) => {
-      if (!suggestionItems.length) {
-        return;
-      }
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        moveActive(1);
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        moveActive(-1);
-      } else if (event.key === "Enter") {
-        event.preventDefault();
-        if (activeIndex >= 0) {
-          applySuggestion(activeIndex);
-        }
-      } else if (event.key === "Escape") {
-        event.preventDefault();
-        closeSuggestions();
-      }
+      autocomplete.update();
     });
 
     input.addEventListener("blur", () => {
       setTimeout(() => {
-        closeSuggestions();
+        autocomplete.close();
         if (listeningForUpdates) {
           window.removeEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
           listeningForUpdates = false;
