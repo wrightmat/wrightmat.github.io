@@ -161,7 +161,9 @@ export function attachFormulaAutocomplete(input, options = {}) {
     const options = Array.from(container.querySelectorAll("[data-suggestion-index]"));
     options.forEach((option) => {
       const optionIndex = Number(option.dataset.suggestionIndex);
-      if (optionIndex === clamped) {
+      const isActive = optionIndex === clamped;
+      option.setAttribute("aria-selected", isActive ? "true" : "false");
+      if (isActive) {
         option.classList.add("active");
         input.setAttribute("aria-activedescendant", option.id);
       } else {
@@ -226,6 +228,9 @@ export function attachFormulaAutocomplete(input, options = {}) {
       option.dataset.suggestionIndex = String(index);
       option.id = `${baseId}-option-${index}`;
       option.setAttribute("role", "option");
+      option.tabIndex = -1;
+      option.setAttribute("tabindex", "-1");
+      option.setAttribute("aria-selected", "false");
       option.addEventListener("mousedown", (event) => event.preventDefault());
       option.addEventListener("click", () => {
         applySuggestionAt(index);
