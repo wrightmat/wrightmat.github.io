@@ -803,9 +803,6 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       title,
       version,
       fields: [],
-      fragments: [],
-      metadata: [],
-      formulas: [],
       importers: [],
       origin,
       shareToken: shareToken || "",
@@ -853,9 +850,6 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       shareToken: effectiveShareToken,
     });
     hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
-    hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
-    hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
-    hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
     applySystemState(hydrated, { emitStatus, statusMessage, markClean });
     state.system.shareToken = effectiveShareToken;
@@ -930,9 +924,6 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
     } else {
       nextSystem = createBlankSystem({ id: trimmedId, title: trimmedTitle, version: trimmedVersion, origin });
       nextSystem.fields = [];
-      nextSystem.fragments = [];
-      nextSystem.metadata = [];
-      nextSystem.formulas = [];
       nextSystem.importers = [];
     }
     nextSystem.id = trimmedId;
@@ -2151,9 +2142,6 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       title: system.title || "",
       version: system.version || "0.1",
       fields: Array.isArray(system.fields) ? system.fields.map(serializeFieldNode) : [],
-      fragments: Array.isArray(system.fragments) ? system.fragments : [],
-      metadata: Array.isArray(system.metadata) ? system.metadata : [],
-      formulas: Array.isArray(system.formulas) ? system.formulas : [],
       importers: Array.isArray(system.importers) ? system.importers : [],
     };
   }
