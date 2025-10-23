@@ -813,6 +813,18 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
     };
   }
 
+  function createArrayItemMetadata(overrides = {}) {
+    const raw = overrides && typeof overrides === "object" ? overrides : {};
+    const metadata = { ...raw };
+    metadata.type = normalizeType(raw.type) || "object";
+    metadata.label = typeof raw.label === "string" ? raw.label : "";
+    metadata.displayField = typeof raw.displayField === "string" ? raw.displayField : "";
+    if (Array.isArray(metadata.children)) {
+      delete metadata.children;
+    }
+    return metadata;
+  }
+
   function createFieldNode(type = "string", overrides = {}) {
     const normalizedType = normalizeType(type);
     const node = {
@@ -826,9 +838,32 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       maximum: null,
       values: [],
       children: [],
+      item: normalizedType === "array" ? createArrayItemMetadata() : null,
+      displayField: "",
     };
-    node.children = Array.isArray(node.children) ? node.children : [];
-    return Object.assign(node, overrides);
+
+    const merged = Object.assign(node, overrides);
+    merged.type = normalizedType;
+    if (!Array.isArray(merged.children)) {
+      merged.children = [];
+    }
+
+    if (normalizedType === "array") {
+      const metadata = createArrayItemMetadata(merged.item || {});
+      const displayField =
+        typeof merged.displayField === "string" && merged.displayField.trim()
+          ? merged.displayField.trim()
+          : typeof metadata.displayField === "string" && metadata.displayField.trim()
+          ? metadata.displayField.trim()
+          : "";
+      merged.item = { ...metadata, displayField };
+      merged.displayField = displayField;
+    } else {
+      merged.item = null;
+      merged.displayField = "";
+    }
+
+    return merged;
   }
 
   function applySystemData(
@@ -959,6 +994,25 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
     const normalized = normalizeType(field.type);
     if (normalized === "object" && Array.isArray(field.children) && field.children.length) {
       node.children = field.children.map(hydrateFieldNode);
+    } else if (normalized === "array") {
+      const itemContract = field.item && typeof field.item === "object" ? field.item : {};
+      const rawChildren = Array.isArray(itemContract.children)
+        ? itemContract.children
+        : Array.isArray(field.children)
+        ? field.children
+        : [];
+      node.children = rawChildren.map(hydrateFieldNode);
+      node.item = createArrayItemMetadata(itemContract);
+      const displayField =
+        typeof itemContract.displayField === "string" && itemContract.displayField.trim()
+          ? itemContract.displayField.trim()
+          : typeof field.displayField === "string" && field.displayField.trim()
+          ? field.displayField.trim()
+          : "";
+      node.displayField = displayField;
+      if (node.item) {
+        node.item.displayField = displayField;
+      }
     }
     return node;
   }
@@ -1159,7 +1213,15 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       parts.push(`${node.values.length} value${node.values.length === 1 ? "" : "s"}`);
     }
     const normalizedType = normalizeType(node.type);
-    if (supportsChildren(node.type) && Array.isArray(node.children) && node.children.length) {
+    if (normalizedType === "array") {
+      const count = Array.isArray(node.children) ? node.children.length : 0;
+      if (count) {
+        parts.push(`${count} column${count === 1 ? "" : "s"}`);
+      }
+      if (typeof node.displayField === "string" && node.displayField.trim()) {
+        parts.push(`display ${node.displayField.trim()}`);
+      }
+    } else if (supportsChildren(node.type) && Array.isArray(node.children) && node.children.length) {
       const count = node.children.length;
       parts.push(`${count} nested ${count === 1 ? "field" : "fields"}`);
     }
@@ -1168,7 +1230,7 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
   function supportsChildren(type) {
     const normalized = normalizeType(type);
-    return normalized === "object";
+    return normalized === "object" || normalized === "array";
   }
 
   function handleDrop(event) {
@@ -1394,6 +1456,20 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
     }
     const { collection, index } = found;
     const [removed] = collection.splice(index, 1);
+    if (found.parentId && found.parentId !== "root") {
+      const parentLocation = findNode(found.parentId);
+      const parentNode = parentLocation?.node;
+      if (parentNode && normalizeType(parentNode.type) === "array") {
+        const removedKey = typeof removed?.key === "string" ? removed.key.trim() : "";
+        const currentDisplay = typeof parentNode.displayField === "string" ? parentNode.displayField.trim() : "";
+        if (removedKey && currentDisplay === removedKey) {
+          parentNode.displayField = "";
+          if (parentNode.item && typeof parentNode.item === "object") {
+            parentNode.item.displayField = "";
+          }
+        }
+      }
+    }
     const previousSelectedId = state.selectedNodeId || null;
     if (state.selectedNodeId === nodeId) {
       state.selectedNodeId = found.parentId && found.parentId !== "root" ? found.parentId : null;
@@ -1747,6 +1823,7 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
     if (normalizedType === "array") {
       form.appendChild(createTextarea(node, "Values (one per line)", "values"));
+      form.appendChild(createArrayDisplayFieldSelect(node));
     }
 
     elements.inspector.appendChild(form);
@@ -2014,6 +2091,74 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
     return wrapper;
   }
 
+  function createArrayDisplayFieldSelect(node) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Display column";
+
+    const select = document.createElement("select");
+    select.className = "form-select";
+    const fieldId = createInspectorFieldId(node.id, "displayField", "select");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
+
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Add columns to enable selection";
+    select.appendChild(defaultOption);
+
+    const children = Array.isArray(node.children) ? node.children : [];
+    const currentValue = typeof node.displayField === "string" ? node.displayField.trim() : "";
+    let hasSelectableOption = false;
+
+    children.forEach((child) => {
+      const key = typeof child.key === "string" ? child.key.trim() : "";
+      if (!key) {
+        return;
+      }
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = child.label || key;
+      if (key === currentValue) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+      hasSelectableOption = true;
+    });
+
+    if (!hasSelectableOption) {
+      select.disabled = true;
+    } else if (!currentValue) {
+      defaultOption.textContent = "Choose a column";
+      select.value = "";
+    } else {
+      defaultOption.textContent = "Choose a column";
+    }
+
+    select.addEventListener("change", () => {
+      const value = select.value;
+      updateNodeProperty(node.id, "displayField", value, { defined: Boolean(value) });
+      const normalizedValue = typeof value === "string" ? value : "";
+      if (node.item && typeof node.item === "object") {
+        node.item.displayField = normalizedValue;
+      }
+    });
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(select);
+
+    const hint = document.createElement("div");
+    hint.className = "form-text";
+    hint.textContent = "Shown when templates need a label for each row.";
+    wrapper.appendChild(hint);
+
+    return wrapper;
+  }
+
   function getSystemFormulaFieldSuggestions(query = "") {
     const normalized = query.trim().toLowerCase();
     const entries = collectSystemFields(state.system);
@@ -2087,6 +2232,13 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
       });
     }
     applyNodePropertyChange(found.node, property, value, { defined });
+    handleRelatedPropertyUpdates({
+      node: found.node,
+      property,
+      previousValue: hasCurrent ? currentValue : undefined,
+      nextValue: value,
+      parentId: found.parentId,
+    });
     renderCanvas();
     renderPreview();
     renderInspector();
@@ -2096,11 +2248,52 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
     if (!targetNode) {
       return;
     }
+    if (property === "displayField") {
+      if (!defined) {
+        delete targetNode.displayField;
+        if (targetNode.item && typeof targetNode.item === "object") {
+          targetNode.item.displayField = "";
+        }
+        return;
+      }
+      const normalizedValue = typeof value === "string" ? value.trim() : "";
+      targetNode.displayField = normalizedValue;
+      if (targetNode.item && typeof targetNode.item === "object") {
+        targetNode.item.displayField = normalizedValue;
+      }
+      return;
+    }
     if (!defined) {
       delete targetNode[property];
       return;
     }
     targetNode[property] = cloneValue(value);
+  }
+
+  function handleRelatedPropertyUpdates({ node, property, previousValue, nextValue, parentId }) {
+    if (!node) {
+      return;
+    }
+    if (property === "key") {
+      const previousKey = typeof previousValue === "string" ? previousValue.trim() : "";
+      const nextKey = typeof nextValue === "string" ? nextValue.trim() : "";
+      if (!previousKey || !parentId || parentId === "root") {
+        return;
+      }
+      const parentLocation = findNode(parentId);
+      const parentNode = parentLocation?.node;
+      if (!parentNode || normalizeType(parentNode.type) !== "array") {
+        return;
+      }
+      const currentDisplay = typeof parentNode.displayField === "string" ? parentNode.displayField.trim() : "";
+      if (currentDisplay === previousKey) {
+        const nextValue = nextKey || "";
+        parentNode.displayField = nextValue;
+        if (parentNode.item && typeof parentNode.item === "object") {
+          parentNode.item.displayField = nextValue;
+        }
+      }
+    }
   }
 
   function changeNodeType(nodeId, nextType) {
@@ -2190,6 +2383,28 @@ import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
     if (normalizedType === "object" && Array.isArray(node.children) && node.children.length) {
       output.children = node.children.map(serializeFieldNode);
+    } else if (normalizedType === "array") {
+      const metadata = node.item && typeof node.item === "object" ? node.item : {};
+      const item = {
+        type: normalizeType(metadata.type) || "object",
+      };
+      if (typeof metadata.label === "string" && metadata.label.trim()) {
+        item.label = metadata.label.trim();
+      }
+      const displayField =
+        typeof node.displayField === "string" && node.displayField.trim()
+          ? node.displayField.trim()
+          : typeof metadata.displayField === "string" && metadata.displayField.trim()
+          ? metadata.displayField.trim()
+          : "";
+      if (displayField) {
+        item.displayField = displayField;
+      }
+      const children = Array.isArray(node.children) ? node.children : [];
+      if (children.length) {
+        item.children = children.map(serializeFieldNode);
+      }
+      output.item = item;
     }
 
     return output;

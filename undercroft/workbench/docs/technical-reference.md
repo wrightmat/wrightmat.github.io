@@ -84,7 +84,7 @@ All editors expose import/export buttons bound to shared helpers. `json-preview.
 
 ### Importer pipeline roadmap
 
-System definitions already reserve an `importers` collection so creators can describe how outside data maps into their schema.【F:undercroft/workbench/js/pages/system.js†L800-L815】【F:undercroft/workbench/data/systems/sys.dnd-5e.json†L1-L39】 To turn that placeholder into a working feature we plan to:
+System definitions already reserve an `importers` collection so creators can describe how outside data maps into their schema.【F:undercroft/workbench/js/pages/system.js†L800-L815】【F:undercroft/workbench/data/systems/sys.dnd5e.json†L1-L39】 To turn that placeholder into a working feature we plan to:
 
 1. **Model importer steps.** Extend the system schema so each importer captures a source label, supported file type (initially JSON), the top-level path to iterate over, and an ordered list of field mappings. Each mapping ties a system field path to either a direct JSON pointer or a formula expression evaluated with the existing formula runtime.【F:undercroft/workbench/js/pages/system.js†L1820-L2042】
 2. **Surface a builder UI.** Add an “Importers” tab to the System inspector that lists configured importers, lets creators add/edit steps, and reuses the formula autocomplete widget for transformation expressions so field references and helper functions are easy to discover.【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L316】
@@ -99,8 +99,10 @@ This roadmap ensures importers evolve in phases—starting with configuration st
 Complex inventories (e.g., an equipment table with name, quantity, weight, notes) require richer structure than the current "flat" field definitions. Delivering them touches every layer of the stack, so we will stage the work as follows:
 
 1. **Extend the system schema to describe collections.**
-   - Promote `array` fields to carry an `item` contract that mirrors `object` children (e.g., `{ type: "array", key: "inventory", item: { type: "object", children: [...] } }`). The inspector needs UI to add/remove item columns, choose primitive types, mark required columns, and flag a display label column for templates.【F:undercroft/workbench/js/pages/system.js†L1719-L1753】
-   - Update field identity helpers (`collectSystemFields`, palette metadata, formula autocomplete) to surface child paths such as `inventory[].quantity` so formulas and bindings understand nested arrays.【F:undercroft/workbench/js/lib/system-schema.js†L1-L66】【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L316】
+   - Promote `array` fields to carry an `item` contract that mirrors `object` children (e.g., `{ type: "array", key: "inventory", item: { type: "object", children: [...] } }`). The inspector needs UI to add/remove item columns, choose primitive types, mark required columns, and flag a display label column for templates.【F:undercroft/workbench/js/pages/system.js†L816-L866】【F:undercroft/workbench/js/pages/system.js†L2068-L2159】
+   - Update field identity helpers (`collectSystemFields`, palette metadata, formula autocomplete) to surface child paths such as `inventory[].quantity` so formulas and bindings understand nested arrays.【F:undercroft/workbench/js/lib/system-schema.js†L1-L143】【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L200】
+
+   Array fields now persist this `item` contract in exported systems, and the bundled D&D 5E schema ships with an inline `inventory` table covering Name, Quantity, Weight, and Notes so authors can validate the flow immediately.【F:undercroft/workbench/js/pages/system.js†L816-L866】【F:undercroft/workbench/data/systems/sys.dnd5e.json†L1-L153】
 
 2. **Teach the template editor how to render list layouts from schema metadata.**
    - Give the List component a `sourceBinding` (mirroring Select components) that targets the parent array while the regular `binding` points to a computed selection if needed. When a binding is chosen, pre-fill the column designer from the system `item` contract and allow authors to toggle visibility, override column labels, or add calculated columns (formula-backed, read-only cells).【F:undercroft/workbench/js/pages/template.js†L360-L438】【F:undercroft/workbench/js/pages/template.js†L2560-L2724】
