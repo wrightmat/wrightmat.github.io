@@ -2667,8 +2667,10 @@ import { initHelpSystem } from "../lib/help.js";
     const control = document.createElement("div");
     control.className = "d-flex flex-column gap-2";
 
+    const bindingSource =
+      normalizeBindingValue(component?.sourceBinding) || normalizeBindingValue(component?.binding);
     const labelFromBinding = (() => {
-      const source = (component.binding || "").replace(/^[=@]/, "");
+      const source = bindingSource.replace(/^[=@]/, "");
       if (!source) return "Item";
       const parts = source.split(/[.\[\]]/).filter(Boolean);
       if (!parts.length) return "Item";
@@ -3565,6 +3567,33 @@ import { initHelpSystem } from "../lib/help.js";
       (!supportsBinding && !supportsFormula && component.type !== "toggle" && !componentSupportsRoller(component))
     ) {
       return [];
+    }
+    if (component.type === "array") {
+      const controls = [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@inventory",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+            }
+          },
+        }),
+      ];
+      controls.push(
+        createBindingFormulaInput(component, {
+          labelText: supportsFormula ? "Binding / Formula" : "Binding",
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["array", "object", "string", "number", "boolean"],
+        })
+      );
+      appendRollerControl(controls, component);
+      return controls;
     }
     if (component.type === "input" && (component.variant || "text") === "select") {
       const controls = [
