@@ -100,7 +100,6 @@ Complex inventories (e.g., an equipment table with name, quantity, weight, notes
 
 1. **Extend the system schema to describe collections.**
    - Promote `array` fields to carry an `item` contract that mirrors `object` children (e.g., `{ type: "array", key: "inventory", item: { type: "object", children: [...] } }`). The inspector needs UI to add/remove item columns, choose primitive types, mark required columns, and flag a display label column for templates.【F:undercroft/workbench/js/pages/system.js†L1719-L1753】
-   - Allow reusable shapes by introducing an optional `definitions` bucket at the system root so authors can declare a column set once (e.g., `definitions.inventoryItem`) and reference it from multiple lists. The field form should offer "inline" or "definition" modes so creators can either embed columns directly or point to a shared definition.
    - Update field identity helpers (`collectSystemFields`, palette metadata, formula autocomplete) to surface child paths such as `inventory[].quantity` so formulas and bindings understand nested arrays.【F:undercroft/workbench/js/lib/system-schema.js†L1-L66】【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L316】
 
 2. **Teach the template editor how to render list layouts from schema metadata.**
@@ -114,7 +113,7 @@ Complex inventories (e.g., an equipment table with name, quantity, weight, notes
    - Extend formula evaluation to expose helper functions for aggregations (e.g., `=sum(@inventory[].quantity)`), enabling summary fields like total weight. This requires the formula engine to understand list iteration and provide guards against undefined rows.
 
 4. **Round out supporting workflows.**
-   - Update import/export, JSON previews, and validation to include the new `definitions` bucket and `item` metadata so inventories survive round-trips without manual editing.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】
+   - Update import/export, JSON previews, and validation to include the new `item` metadata so inventories survive round-trips without manual editing.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】
    - Add documentation snippets and starter content (e.g., an SRD-friendly backpack list) so creators can copy a working pattern into their systems and templates.
 
 Phasing the work this way lets us unlock author-friendly inventory tables without regressing simpler lists: the schema gains the expressiveness first, the template editor consumes that structure next, and finally the character UI delivers a polished editing experience.
