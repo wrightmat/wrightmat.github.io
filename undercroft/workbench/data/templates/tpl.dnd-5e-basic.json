@@ -1,0 +1,104 @@
+{
+  "id": "tpl.dnd-5e-basic",
+  "title": "D&D 5E Basic",
+  "version": "0.1",
+  "schema": "sys.dnd-5e",
+  "components": [
+    {
+      "type": "input",
+      "id": "name",
+      "label": "Name",
+      "name": "Name",
+      "textColor": "",
+      "backgroundColor": "",
+      "borderColor": "",
+      "textSize": "md",
+      "textStyles": {
+        "bold": false,
+        "italic": false,
+        "underline": false
+      },
+      "align": "start",
+      "binding": "@name",
+      "readOnly": false,
+      "collapsible": false,
+      "variant": "text",
+      "placeholder": "",
+      "options": [
+        "Option A",
+        "Option B"
+      ],
+      "rows": 3,
+      "sourceBinding": "",
+      "roller": "",
+      "formula": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": ""
+    },
+    {
+      "type": "input",
+      "id": "class",
+      "label": "Class",
+      "name": "Class",
+      "textColor": "",
+      "backgroundColor": "",
+      "borderColor": "",
+      "textSize": "md",
+      "textStyles": {
+        "bold": false,
+        "italic": false,
+        "underline": false
+      },
+      "align": "start",
+      "binding": "@class",
+      "readOnly": false,
+      "collapsible": false,
+      "variant": "select",
+      "placeholder": "",
+      "options": [
+        "Option A",
+        "Option B"
+      ],
+      "rows": 3,
+      "sourceBinding": "@classes",
+      "roller": "",
+      "formula": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": ""
+    },
+    {
+      "type": "input",
+      "id": "cmp-3",
+      "label": "Roller",
+      "name": "Roller",
+      "textColor": "",
+      "backgroundColor": "",
+      "borderColor": "",
+      "textSize": "md",
+      "textStyles": {
+        "bold": false,
+        "italic": false,
+        "underline": false
+      },
+      "align": "start",
+      "binding": "@numberField",
+      "readOnly": false,
+      "collapsible": true,
+      "variant": "number",
+      "placeholder": "",
+      "options": [
+        "Option A",
+        "Option B"
+      ],
+      "rows": 3,
+      "sourceBinding": "",
+      "roller": "1d20 + @numberField",
+      "formula": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": ""
+    }
+  ]
+}
