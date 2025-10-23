@@ -1,5 +1,5 @@
 {
-  "id": "sys.dnd-5e",
+  "id": "sys.dnd5e",
   "title": "D&D 5E",
   "version": "0.1",
   "fields": [
@@ -135,6 +135,41 @@
           "maximum": 20
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "item": {
+        "type": "object",
+        "label": "Item",
+        "displayField": "inventory[].name",
+        "children": [
+          {
+            "type": "string",
+            "key": "inventory[].name",
+            "label": "Item Name",
+            "required": true
+          },
+          {
+            "type": "number",
+            "key": "inventory[].quantity",
+            "label": "Quantity",
+            "minimum": 0
+          },
+          {
+            "type": "number",
+            "key": "inventory[].weight",
+            "label": "Weight (lb)",
+            "minimum": 0
+          },
+          {
+            "type": "string",
+            "key": "inventory[].notes",
+            "label": "Notes"
+          }
+        ]
+      }
     }
   ],
   "importers": []
