@@ -1,5 +1,23 @@
 const OBJECT_TYPES = new Set(["object"]);
 
+function normalizeDefinitions(system) {
+  if (!system || typeof system !== "object") {
+    return {};
+  }
+  const source = system.definitions;
+  if (!source || typeof source !== "object") {
+    return {};
+  }
+  return Object.entries(source).reduce((accumulator, [key, value]) => {
+    if (typeof key !== "string" || !key.trim() || !value || typeof value !== "object") {
+      return accumulator;
+    }
+    const trimmedKey = key.trim();
+    accumulator[trimmedKey] = value;
+    return accumulator;
+  }, {});
+}
+
 function normalizeType(type) {
   if (typeof type !== "string") {
     return "";
@@ -52,7 +70,20 @@ function pushPath(results, pathSegments, node) {
   results.push({ path, label, type, category: categorizeFieldType(rawType) });
 }
 
-function traverseField(node, prefix, results) {
+function collectArrayChildren(node, definitions) {
+  if (!node || typeof node !== "object") {
+    return [];
+  }
+  if (normalizeType(node.type) === "array") {
+    if (node.itemMode === "definition" && typeof node.itemRef === "string" && node.itemRef) {
+      const definition = definitions?.[node.itemRef] || null;
+      return Array.isArray(definition?.children) ? definition.children : [];
+    }
+  }
+  return Array.isArray(node.children) ? node.children : [];
+}
+
+function traverseField(node, prefix, results, definitions) {
   if (!node || typeof node !== "object") {
     return;
   }
@@ -64,8 +95,17 @@ function traverseField(node, prefix, results) {
   const type = normalizeType(node.type) || "value";
   if (OBJECT_TYPES.has(type) && Array.isArray(node.children)) {
     node.children.forEach((child) => {
-      traverseField(child, nextPrefix, results);
+      traverseField(child, nextPrefix, results, definitions);
     });
+  } else if (type === "array") {
+    const children = collectArrayChildren(node, definitions);
+    if (children.length) {
+      const base = nextPrefix.length ? `${nextPrefix[nextPrefix.length - 1]}[]` : "[]";
+      const arrayPrefix = nextPrefix.length ? [...nextPrefix.slice(0, -1), base] : [base];
+      children.forEach((child) => {
+        traverseField(child, arrayPrefix, results, definitions);
+      });
+    }
   }
 }
 
@@ -75,6 +115,7 @@ export function collectSystemFields(system) {
   }
   const results = [];
   const seen = new Set();
+  const definitions = normalizeDefinitions(system);
   const candidateSets = [];
   if (Array.isArray(system.fields)) {
     candidateSets.push(system.fields);
@@ -96,7 +137,7 @@ export function collectSystemFields(system) {
   candidateSets.forEach((fields) => {
     if (Array.isArray(fields)) {
       fields.forEach((field) => {
-        traverseField(field, [], results);
+        traverseField(field, [], results, definitions);
       });
     }
   });
@@ -115,3 +156,59 @@ export function collectSystemFields(system) {
 }
 
 export default collectSystemFields;
+
+export function resolveSystemFieldPath(system, pathSegments) {
+  if (!system || typeof system !== "object") {
+    return null;
+  }
+  const segments = Array.isArray(pathSegments) ? pathSegments.map(normalizeKey).filter(Boolean) : [];
+  if (!segments.length) {
+    return null;
+  }
+  const definitions = normalizeDefinitions(system);
+  let collection = Array.isArray(system.fields)
+    ? system.fields
+    : system.fields && typeof system.fields === "object"
+    ? Object.values(system.fields)
+    : [];
+  let node = null;
+  for (let index = 0; index < segments.length; index += 1) {
+    const key = segments[index];
+    if (!Array.isArray(collection)) {
+      return null;
+    }
+    node = collection.find((field) => normalizeKey(field?.key) === key) || null;
+    if (!node) {
+      return null;
+    }
+    const type = normalizeType(node.type);
+    if (type === "object") {
+      collection = Array.isArray(node.children) ? node.children : [];
+      continue;
+    }
+    if (type === "array") {
+      const children = collectArrayChildren(node, definitions);
+      collection = children;
+      continue;
+    }
+    collection = [];
+  }
+  if (!node) {
+    return null;
+  }
+  return { node, definitions };
+}
+
+export function resolveSystemArray(system, pathSegments) {
+  const result = resolveSystemFieldPath(system, pathSegments);
+  if (!result) {
+    return null;
+  }
+  const { node, definitions } = result;
+  if (normalizeType(node.type) !== "array") {
+    return { node, definitions, columns: [] };
+  }
+  const columns = collectArrayChildren(node, definitions);
+  const definition = node.itemMode === "definition" ? definitions?.[node.itemRef] || null : null;
+  return { node, definitions, columns, definition };
+}

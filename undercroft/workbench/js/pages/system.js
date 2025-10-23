@@ -22,6 +22,10 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
+import { collectSystemFields } from "../lib/system-schema.js";
+import { attachFormulaAutocomplete } from "../lib/formula-autocomplete.js";
+import { listFormulaFunctionMetadata } from "../lib/formula-metadata.js";
+import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
@@ -97,6 +101,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   const TYPE_OPTIONS = ["string", "number", "boolean", "object", "array"];
 
+  const MAX_FORMULA_SUGGESTIONS = 12;
+  const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
+
   function normalizeType(type) {
     if (!type) return "string";
     const raw = String(type).trim().toLowerCase();
@@ -148,6 +155,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   const state = {
     system: createBlankSystem(),
     selectedNodeId: null,
+    selectedDefinitionId: null,
   };
 
   let lastSavedSystemSignature = null;
@@ -236,6 +244,42 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       }
       return { ...value };
     }
+  }
+
+  function cloneDefinition(definition) {
+    if (!definition) {
+      return null;
+    }
+    if (typeof structuredClone === "function") {
+      try {
+        return structuredClone(definition);
+      } catch (error) {
+        // ignore structuredClone errors
+      }
+    }
+    try {
+      return JSON.parse(JSON.stringify(definition));
+    } catch (error) {
+      const copy = { ...definition };
+      if (Array.isArray(definition.children)) {
+        copy.children = definition.children.map((child) => cloneNode(child));
+      }
+      return copy;
+    }
+  }
+
+  function cloneDefinitionMap(definitions) {
+    if (!definitions || typeof definitions !== "object") {
+      return {};
+    }
+    const output = {};
+    Object.entries(definitions).forEach(([key, definition]) => {
+      if (!key) {
+        return;
+      }
+      output[key] = cloneDefinition(definition);
+    });
+    return output;
   }
 
   function areValuesEqual(a, b) {
@@ -796,9 +840,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       title,
       version,
       fields: [],
-      fragments: [],
-      metadata: [],
-      formulas: [],
+      definitions: {},
       importers: [],
       origin,
       shareToken: shareToken || "",
@@ -822,9 +864,40 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       maximum: null,
       values: [],
       children: [],
+      itemMode: normalizedType === "array" ? "inline" : "inline",
+      itemRef: "",
+      displayField: "",
     };
     node.children = Array.isArray(node.children) ? node.children : [];
     return Object.assign(node, overrides);
+  }
+
+  function createDefinitionNode(key = "") {
+    const trimmedKey = typeof key === "string" ? key.trim() : "";
+    const identifier = trimmedKey || generateDefinitionKey("Definition");
+    return {
+      uid: generateId(),
+      id: identifier,
+      label: "",
+      type: "object",
+      displayField: "",
+      children: [],
+    };
+  }
+
+  function generateDefinitionKey(seed = "Definition") {
+    const base = toCamelCase(seed || "definition") || "definition";
+    const definitions = state.system?.definitions || {};
+    if (!definitions[base]) {
+      return base;
+    }
+    let counter = 2;
+    let candidate = `${base}${counter}`;
+    while (definitions[candidate]) {
+      counter += 1;
+      candidate = `${base}${counter}`;
+    }
+    return candidate;
   }
 
   function applySystemData(
@@ -846,9 +919,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       shareToken: effectiveShareToken,
     });
     hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
-    hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
-    hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
-    hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
+    hydrated.definitions = hydrateSystemDefinitions(data.definitions);
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
     applySystemState(hydrated, { emitStatus, statusMessage, markClean });
     state.system.shareToken = effectiveShareToken;
@@ -923,9 +994,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     } else {
       nextSystem = createBlankSystem({ id: trimmedId, title: trimmedTitle, version: trimmedVersion, origin });
       nextSystem.fields = [];
-      nextSystem.fragments = [];
-      nextSystem.metadata = [];
-      nextSystem.formulas = [];
       nextSystem.importers = [];
     }
     nextSystem.id = trimmedId;
@@ -942,6 +1010,36 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       elements.select.value = trimmedId;
     }
     systemCreationContext = { mode: "new", duplicateSystem: null, sourceTitle: "" };
+  }
+
+  function hydrateSystemDefinitions(source) {
+    const output = {};
+    if (!source || typeof source !== "object") {
+      return output;
+    }
+    Object.entries(source).forEach(([key, value]) => {
+      if (typeof key !== "string" || !key.trim()) {
+        return;
+      }
+      const definition = createDefinitionNode(key.trim());
+      if (value && typeof value === "object") {
+        const normalizedType = normalizeType(value.type) || "object";
+        definition.type = normalizedType === "object" ? "object" : normalizedType;
+        if (typeof value.label === "string") {
+          definition.label = value.label.trim();
+        }
+        if (typeof value.displayField === "string") {
+          definition.displayField = value.displayField.trim();
+        }
+        if (Array.isArray(value.children) && value.children.length) {
+          definition.children = value.children.map(hydrateFieldNode);
+        } else if (value.item && Array.isArray(value.item.children)) {
+          definition.children = value.item.children.map(hydrateFieldNode);
+        }
+      }
+      output[definition.id] = definition;
+    });
+    return output;
   }
 
   function hydrateFieldNode(field) {
@@ -961,6 +1059,24 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     const normalized = normalizeType(field.type);
     if (normalized === "object" && Array.isArray(field.children) && field.children.length) {
       node.children = field.children.map(hydrateFieldNode);
+    }
+    if (normalized === "array") {
+      if (field.item && typeof field.item === "object") {
+        if (typeof field.item.ref === "string" && field.item.ref.trim()) {
+          node.itemMode = "definition";
+          node.itemRef = field.item.ref.trim();
+          node.children = [];
+        } else if (normalizeType(field.item.type) === "object" && Array.isArray(field.item.children)) {
+          node.itemMode = "inline";
+          node.children = field.item.children.map(hydrateFieldNode);
+        }
+      } else if (Array.isArray(field.children) && field.children.length) {
+        node.itemMode = "inline";
+        node.children = field.children.map(hydrateFieldNode);
+      }
+      if (typeof field.displayField === "string") {
+        node.displayField = field.displayField.trim();
+      }
     }
     return node;
   }
@@ -1049,7 +1165,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       selectNode(node.id);
     });
 
-    const { header } = createStandardCardChrome({
+    const { header, ensureActions, deleteButton } = createStandardCardChrome({
       icon: typeMeta.icon || TYPE_DEFS.string.icon,
       iconLabel: typeMeta.label || normalizedType,
       removeButtonOptions: {
@@ -1060,38 +1176,74 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         },
       },
     });
+    if (node.required) {
+      const indicatorContainer = document.createElement("span");
+      indicatorContainer.className = "d-inline-flex align-items-center justify-content-center";
+      indicatorContainer.dataset.bsToggle = "tooltip";
+      indicatorContainer.dataset.bsPlacement = "bottom";
+      indicatorContainer.dataset.bsTitle = "Required field";
+
+      const indicatorSymbol = document.createElement("span");
+      indicatorSymbol.className = "text-danger fw-semibold small";
+      indicatorSymbol.setAttribute("aria-hidden", "true");
+      indicatorSymbol.textContent = "*";
+
+      const indicatorSr = document.createElement("span");
+      indicatorSr.className = "visually-hidden";
+      indicatorSr.textContent = "Required field";
+
+      indicatorContainer.append(indicatorSymbol, indicatorSr);
+      const actionsContainer = ensureActions();
+      actionsContainer.prepend(indicatorContainer);
+    }
+
+    const duplicateButton = document.createElement("button");
+    duplicateButton.type = "button";
+    duplicateButton.className = "btn btn-outline-secondary btn-sm";
+    duplicateButton.innerHTML =
+      '<span class="iconify" data-icon="tabler:copy" aria-hidden="true"></span><span class="visually-hidden">Duplicate field</span>';
+    duplicateButton.dataset.bsToggle = "tooltip";
+    duplicateButton.dataset.bsPlacement = "bottom";
+    duplicateButton.dataset.bsTitle = "Duplicate field";
+    duplicateButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      duplicateNode(node.id);
+    });
+    const actionHost = ensureActions();
+    if (deleteButton && deleteButton.parentElement === actionHost) {
+      actionHost.insertBefore(duplicateButton, deleteButton);
+    } else {
+      actionHost.appendChild(duplicateButton);
+    }
+
     card.appendChild(header);
 
     const cardBody = document.createElement("div");
-    cardBody.className = "d-flex flex-column gap-1";
+    cardBody.className = "d-flex flex-column gap-2";
 
-    const heading = document.createElement("div");
+    const titleRow = document.createElement("div");
+    titleRow.className = "d-flex flex-wrap align-items-baseline gap-2";
+
+    const heading = document.createElement("span");
     heading.className = "fw-semibold";
     heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
-    cardBody.appendChild(heading);
+    titleRow.appendChild(heading);
 
-    const subtitle = document.createElement("div");
-    subtitle.className = "text-body-secondary small";
-    subtitle.textContent = formatNodeSubtitle(node);
-    cardBody.appendChild(subtitle);
-
-    if (node.children && node.children.length) {
-      const summary = document.createElement("div");
-      summary.className = "text-body-secondary extra-small";
-      summary.textContent = `${node.children.length} nested ${node.children.length === 1 ? "field" : "fields"}`;
-      cardBody.appendChild(summary);
+    const subtitleText = formatNodeSubtitle(node);
+    if (subtitleText) {
+      const subtitle = document.createElement("span");
+      subtitle.className = "text-body-secondary small";
+      subtitle.textContent = subtitleText;
+      titleRow.appendChild(subtitle);
     }
+
+    cardBody.appendChild(titleRow);
 
     card.appendChild(cardBody);
 
-    if (supportsChildren(node.type)) {
+    if (supportsChildren(node)) {
       const wrapper = document.createElement("div");
       wrapper.className = "d-flex flex-column gap-2";
-
-      const label = document.createElement("div");
-      label.className = "workbench-dropzone-label text-body-secondary text-uppercase extra-small";
-      label.textContent = "Nested Fields";
-      wrapper.appendChild(label);
 
       const container = document.createElement("div");
       container.className = "workbench-dropzone";
@@ -1107,6 +1259,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       }
       wrapper.appendChild(container);
       card.appendChild(wrapper);
+    } else if (normalizedType === "array" && node.itemMode === "definition" && node.itemRef) {
+      const info = document.createElement("div");
+      info.className = "text-body-secondary small fst-italic";
+      const definition = state.system.definitions?.[node.itemRef] || null;
+      if (definition) {
+        const count = Array.isArray(definition.children) ? definition.children.length : 0;
+        const label = definition.label || definition.id || node.itemRef;
+        info.textContent = `${label} definition (${count} column${count === 1 ? "" : "s"})`;
+      } else {
+        info.textContent = `Definition ${node.itemRef} is missing.`;
+      }
+      card.appendChild(info);
     }
 
     return card;
@@ -1114,8 +1278,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function formatNodeSubtitle(node) {
     const parts = [];
-    if (node.key) parts.push(node.key);
-    if (node.required) parts.push("required");
+    if (node.key) parts.push(`(${node.key})`);
     if (node.minimum != null || node.maximum != null) {
       const range = [node.minimum ?? "", node.maximum ?? ""].filter((value) => value !== "").join(" – ");
       if (range) {
@@ -1126,12 +1289,34 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       parts.push(`${node.values.length} value${node.values.length === 1 ? "" : "s"}`);
     }
     const normalizedType = normalizeType(node.type);
+    if (supportsChildren(node) && Array.isArray(node.children) && node.children.length) {
+      const count = node.children.length;
+      if (normalizedType === "array") {
+        parts.push(`${count} column${count === 1 ? "" : "s"}`);
+      } else {
+        parts.push(`${count} nested ${count === 1 ? "field" : "fields"}`);
+      }
+    } else if (normalizedType === "array" && node.itemMode === "definition" && node.itemRef) {
+      const definition = state.system.definitions?.[node.itemRef] || null;
+      const count = definition && Array.isArray(definition.children) ? definition.children.length : 0;
+      const label = definition ? definition.label || definition.id || node.itemRef : node.itemRef;
+      parts.push(`${count} column${count === 1 ? "" : "s"} via ${label}`);
+    }
     return parts.join(" · ") || TYPE_DEFS[normalizedType]?.description || "";
   }
 
-  function supportsChildren(type) {
-    const normalized = normalizeType(type);
-    return normalized === "object";
+  function supportsChildren(node) {
+    if (!node || typeof node !== "object") {
+      return false;
+    }
+    const normalized = normalizeType(node.type);
+    if (normalized === "object") {
+      return true;
+    }
+    if (normalized === "array") {
+      return (node.itemMode || "inline") !== "definition";
+    }
+    return false;
   }
 
   function handleDrop(event) {
@@ -1267,6 +1452,89 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     };
   }
 
+  function duplicateNode(nodeId) {
+    const found = findNode(nodeId);
+    if (!found) {
+      return;
+    }
+
+    const metadata = getSystemMetadata(state.system?.id);
+    if (!systemAllowsEdits(metadata)) {
+      const message = describeSystemEditRestriction(metadata);
+      status.show(message, { type: "warning", timeout: 2800 });
+      return;
+    }
+    if (!dataManager.hasWriteAccess("systems")) {
+      const required = dataManager.describeRequiredWriteTier("systems");
+      const message = required
+        ? `Saving systems requires a ${required} tier.`
+        : "Your tier cannot save systems.";
+      status.show(message, { type: "warning", timeout: 2800 });
+      return;
+    }
+
+    const { node, collection, index, parentId } = found;
+    if (!collection) {
+      return;
+    }
+
+    const duplicate = cloneNode(node);
+    regenerateFieldIdentifiers(duplicate);
+    ensureDuplicateFieldKey(duplicate, collection);
+
+    const previousSelectedId = state.selectedNodeId || null;
+    collection.splice(index + 1, 0, duplicate);
+    rebuildFieldIdentities(state.system);
+    undoStack.push({
+      type: "add",
+      systemId: state.system?.id || "",
+      node: cloneNode(duplicate),
+      parentId,
+      index: index + 1,
+      previousSelectedId,
+    });
+    state.selectedNodeId = duplicate.id;
+    renderAll();
+    status.show("Duplicated field", { timeout: 1500 });
+  }
+
+  function regenerateFieldIdentifiers(node) {
+    if (!node || typeof node !== "object") {
+      return;
+    }
+    node.id = generateId();
+    if (Array.isArray(node.children) && node.children.length) {
+      node.children.forEach((child) => {
+        regenerateFieldIdentifiers(child);
+      });
+    } else if (!Array.isArray(node.children)) {
+      node.children = [];
+    }
+  }
+
+  function ensureDuplicateFieldKey(node, siblings) {
+    if (!node || !Array.isArray(siblings)) {
+      return;
+    }
+    const normalizedType = normalizeType(node.type);
+    const siblingKeys = new Set(
+      siblings
+        .map((sibling) => (typeof sibling.key === "string" ? sibling.key.trim() : ""))
+        .filter(Boolean)
+    );
+    const rawBase = typeof node.key === "string" ? node.key.trim() : "";
+    const sanitizedBase = rawBase.replace(/[^A-Za-z0-9_-]/g, "");
+    const fallbackBase = toCamelCase(node.label || TYPE_DEFS[normalizedType]?.label || "Field");
+    const keyBase = sanitizedBase || fallbackBase || "field";
+    let candidate = `${keyBase}Copy`;
+    let counter = 2;
+    while (siblingKeys.has(candidate)) {
+      candidate = `${keyBase}Copy${counter}`;
+      counter += 1;
+    }
+    node.key = candidate;
+  }
+
   function deleteNode(nodeId, { skipHistory = false, silent = false, suppressRender = false } = {}) {
     const found = findNode(nodeId);
     if (!found) {
@@ -1383,6 +1651,62 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         });
         return {
           message: "Reverted field change",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "definition-add": {
+        if (!entry.definitionId) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        const next = cloneDefinitionMap(state.system.definitions);
+        if (next && Object.prototype.hasOwnProperty.call(next, entry.definitionId)) {
+          delete next[entry.definitionId];
+          state.system.definitions = next;
+          if (state.selectedDefinitionId === entry.definitionId) {
+            state.selectedDefinitionId = null;
+          }
+          renderCanvas();
+          renderInspector();
+          renderPreview();
+          return {
+            message: "Removed definition",
+            options: { type: "info", timeout: 1500 },
+            applied: true,
+          };
+        }
+        return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+      }
+      case "definition-remove": {
+        if (!entry.definitionId || !entry.definition) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        const next = cloneDefinitionMap(state.system.definitions);
+        next[entry.definitionId] = cloneDefinition(entry.definition);
+        state.system.definitions = next;
+        state.selectedDefinitionId = entry.definitionId;
+        renderCanvas();
+        renderInspector();
+        renderPreview();
+        return {
+          message: "Restored definition",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "definition-update": {
+        if (!entry.definitionId || !entry.previous) {
+          return { message: "Nothing to undo", options: { timeout: 1200 }, applied: false };
+        }
+        const next = cloneDefinitionMap(state.system.definitions);
+        next[entry.definitionId] = cloneDefinition(entry.previous);
+        state.system.definitions = next;
+        state.selectedDefinitionId = entry.definitionId;
+        renderCanvas();
+        renderInspector();
+        renderPreview();
+        return {
+          message: "Reverted definition change",
           options: { type: "info", timeout: 1500 },
           applied: true,
         };
@@ -1505,6 +1829,62 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
           applied: true,
         };
       }
+      case "definition-add": {
+        if (!entry.definitionId || !entry.definition) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        const next = cloneDefinitionMap(state.system.definitions);
+        next[entry.definitionId] = cloneDefinition(entry.definition);
+        state.system.definitions = next;
+        state.selectedDefinitionId = entry.definitionId;
+        renderCanvas();
+        renderInspector();
+        renderPreview();
+        return {
+          message: "Reapplied definition",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
+      case "definition-remove": {
+        if (!entry.definitionId) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        const next = cloneDefinitionMap(state.system.definitions);
+        if (Object.prototype.hasOwnProperty.call(next, entry.definitionId)) {
+          delete next[entry.definitionId];
+          state.system.definitions = next;
+          if (state.selectedDefinitionId === entry.definitionId) {
+            state.selectedDefinitionId = null;
+          }
+          renderCanvas();
+          renderInspector();
+          renderPreview();
+          return {
+            message: "Reapplied definition removal",
+            options: { type: "info", timeout: 1500 },
+            applied: true,
+          };
+        }
+        return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+      }
+      case "definition-update": {
+        if (!entry.definitionId || !entry.next) {
+          return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
+        }
+        const next = cloneDefinitionMap(state.system.definitions);
+        next[entry.definitionId] = cloneDefinition(entry.next);
+        state.system.definitions = next;
+        state.selectedDefinitionId = entry.definitionId;
+        renderCanvas();
+        renderInspector();
+        renderPreview();
+        return {
+          message: "Reapplied definition change",
+          options: { type: "info", timeout: 1500 },
+          applied: true,
+        };
+      }
       case "type": {
         if (!entry.nodeId || !entry.next) {
           return { message: "Nothing to redo", options: { timeout: 1200 }, applied: false };
@@ -1558,9 +1938,169 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       return;
     }
     state.selectedNodeId = nodeId;
+    state.selectedDefinitionId = null;
     renderCanvas();
     renderInspector();
     expandInspectorPane();
+  }
+
+  function selectDefinition(definitionId) {
+    if (state.selectedDefinitionId === definitionId) {
+      expandInspectorPane();
+      return;
+    }
+    state.selectedDefinitionId = definitionId;
+    state.selectedNodeId = null;
+    renderInspector();
+    expandInspectorPane();
+  }
+
+  function addDefinition({ seedLabel = "" } = {}) {
+    const definition = createDefinitionNode();
+    if (seedLabel) {
+      definition.label = seedLabel;
+    }
+    if (!state.system.definitions || typeof state.system.definitions !== "object") {
+      state.system.definitions = {};
+    }
+    const key = definition.id;
+    state.system.definitions = {
+      ...state.system.definitions,
+      [key]: definition,
+    };
+    undoStack.push({
+      type: "definition-add",
+      systemId: state.system?.id || "",
+      definitionId: key,
+      definition: cloneDefinition(definition),
+    });
+    selectDefinition(key);
+    renderCanvas();
+    renderPreview();
+  }
+
+  function definitionInUse(definitionId, nodes = state.system.fields) {
+    if (!definitionId) {
+      return false;
+    }
+    if (!Array.isArray(nodes)) {
+      return false;
+    }
+    for (const node of nodes) {
+      if (!node || typeof node !== "object") {
+        continue;
+      }
+      if (normalizeType(node.type) === "array" && node.itemMode === "definition" && node.itemRef === definitionId) {
+        return true;
+      }
+      if (Array.isArray(node.children) && node.children.length) {
+        if (definitionInUse(definitionId, node.children)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function removeDefinition(definitionId) {
+    if (!definitionId || !state.system.definitions || !state.system.definitions[definitionId]) {
+      return;
+    }
+    if (definitionInUse(definitionId)) {
+      status.show("Lists are still referencing this definition. Update them before deleting it.", {
+        type: "warning",
+        timeout: 2600,
+      });
+      return;
+    }
+    const previous = cloneDefinition(state.system.definitions[definitionId]);
+    const next = cloneDefinitionMap(state.system.definitions);
+    delete next[definitionId];
+    state.system.definitions = next;
+    undoStack.push({
+      type: "definition-remove",
+      systemId: state.system?.id || "",
+      definitionId,
+      definition: previous,
+    });
+    if (state.selectedDefinitionId === definitionId) {
+      state.selectedDefinitionId = null;
+    }
+    renderInspector();
+    renderPreview();
+  }
+
+  function updateDefinition(definitionId, mutate, { skipHistory = false } = {}) {
+    if (!definitionId || typeof mutate !== "function") {
+      return;
+    }
+    const existing = state.system.definitions?.[definitionId];
+    if (!existing) {
+      return;
+    }
+    const previous = cloneDefinition(existing);
+    mutate(existing);
+    const next = cloneDefinition(existing);
+    if (!skipHistory && !areValuesEqual(previous, next)) {
+      undoStack.push({
+        type: "definition-update",
+        systemId: state.system?.id || "",
+        definitionId,
+        previous,
+        next,
+      });
+    }
+    renderInspector();
+    renderCanvas();
+    renderPreview();
+  }
+
+  function addDefinitionColumn(definitionId, type = "string") {
+    updateDefinition(definitionId, (draft) => {
+      draft.children = Array.isArray(draft.children) ? draft.children : [];
+      const column = applyFieldIdentity(createFieldNode(type));
+      draft.children.push(column);
+      if (!draft.displayField) {
+        draft.displayField = column.key || "";
+      }
+    });
+  }
+
+  function removeDefinitionColumn(definitionId, columnId) {
+    updateDefinition(definitionId, (draft) => {
+      draft.children = Array.isArray(draft.children) ? draft.children : [];
+      const index = draft.children.findIndex((child) => child.id === columnId);
+      if (index === -1) {
+        return;
+      }
+      draft.children.splice(index, 1);
+      if (draft.displayField) {
+        const match = draft.children.find((child) => child.key === draft.displayField);
+        if (!match) {
+          draft.displayField = draft.children[0]?.key || "";
+        }
+      }
+    });
+  }
+
+  function moveDefinitionColumn(definitionId, columnId, direction) {
+    const offset = direction === "up" ? -1 : 1;
+    if (offset === 0) {
+      return;
+    }
+    updateDefinition(definitionId, (draft) => {
+      draft.children = Array.isArray(draft.children) ? draft.children : [];
+      const index = draft.children.findIndex((child) => child.id === columnId);
+      if (index === -1) {
+        return;
+      }
+      const nextIndex = index + offset;
+      if (nextIndex < 0 || nextIndex >= draft.children.length) {
+        return;
+      }
+      const [entry] = draft.children.splice(index, 1);
+      draft.children.splice(nextIndex, 0, entry);
+    });
   }
 
   function expandInspectorPane() {
@@ -1600,12 +2140,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     if (!elements.inspector) return;
     const focusSnapshot = captureInspectorFocus();
     const node = state.selectedNodeId ? findNode(state.selectedNodeId)?.node : null;
+    const definition = state.selectedDefinitionId
+      ? state.system.definitions?.[state.selectedDefinitionId] || null
+      : null;
     elements.inspector.innerHTML = "";
+    if (definition) {
+      renderDefinitionInspector(definition);
+      restoreInspectorFocus(focusSnapshot);
+      return;
+    }
     if (!node) {
-      const placeholder = document.createElement("p");
-      placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
-      placeholder.textContent = "Select a field on the canvas to edit its configuration.";
-      elements.inspector.appendChild(placeholder);
+      renderDefinitionOverview();
+      restoreInspectorFocus(focusSnapshot);
       return;
     }
     const form = document.createElement("form");
@@ -1617,8 +2163,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     form.appendChild(createTextInput(node, "ID", "key"));
     form.appendChild(createTextInput(node, "Label", "label"));
     form.appendChild(createTypeSelect(node));
+    form.appendChild(createFormulaInput(node));
     form.appendChild(createCheckbox(node, "Required", "required"));
-    form.appendChild(createTextInput(node, "Formula", "formula", { placeholder: "Optional formula expression" }));
 
     if (isNumericType(normalizedType)) {
       form.appendChild(createNumberInput(node, "Minimum", "minimum"));
@@ -1626,11 +2172,463 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     }
 
     if (normalizedType === "array") {
-      form.appendChild(createTextarea(node, "Values (one per line)", "values"));
+      form.appendChild(createArrayModeControl(node));
+      if (node.itemMode === "definition") {
+        form.appendChild(createArrayDefinitionSelect(node));
+      }
+      const displayControl = createArrayDisplaySelect(node);
+      if (displayControl) {
+        form.appendChild(displayControl);
+      }
+      if (node.itemMode !== "definition") {
+        form.appendChild(createArrayInlineHint());
+        if (!Array.isArray(node.children) || !node.children.length) {
+          form.appendChild(createTextarea(node, "Values (one per line)", "values"));
+        }
+      }
     }
 
     elements.inspector.appendChild(form);
     restoreInspectorFocus(focusSnapshot);
+  }
+
+  function renderDefinitionOverview() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-3";
+
+    const placeholder = document.createElement("p");
+    placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
+    placeholder.textContent = "Select a field on the canvas to edit its configuration.";
+    wrapper.appendChild(placeholder);
+
+    const hint = document.createElement("p");
+    hint.className = "text-body-secondary small mb-0";
+    hint.textContent = "Need reusable column sets? Create definitions below and reference them from array fields.";
+    wrapper.appendChild(hint);
+
+    const list = createDefinitionListSection();
+    if (list) {
+      wrapper.appendChild(list);
+    }
+
+    elements.inspector.appendChild(wrapper);
+  }
+
+  function createDefinitionListSection() {
+    const definitions = state.system.definitions && typeof state.system.definitions === "object"
+      ? Object.values(state.system.definitions)
+      : [];
+    const entries = Array.isArray(definitions)
+      ? definitions
+          .filter((entry) => entry && typeof entry === "object")
+          .sort((a, b) => {
+            const aLabel = (a.label || a.id || "").toLowerCase();
+            const bLabel = (b.label || b.id || "").toLowerCase();
+            return aLabel.localeCompare(bLabel, undefined, { sensitivity: "base" });
+          })
+      : [];
+
+    const section = document.createElement("section");
+    section.className = "d-flex flex-column gap-2";
+
+    const headerRow = document.createElement("div");
+    headerRow.className = "d-flex justify-content-between align-items-center";
+
+    const heading = document.createElement("h6");
+    heading.className = "mb-0";
+    heading.textContent = "Reusable column definitions";
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn btn-sm btn-outline-primary";
+    addButton.textContent = "New definition";
+    addButton.addEventListener("click", () => {
+      addDefinition();
+    });
+
+    headerRow.append(heading, addButton);
+    section.appendChild(headerRow);
+
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-2";
+
+    if (!entries.length) {
+      const empty = document.createElement("p");
+      empty.className = "text-body-secondary small mb-0";
+      empty.textContent = "No reusable definitions yet.";
+      list.appendChild(empty);
+    } else {
+      entries.forEach((definition) => {
+        list.appendChild(renderDefinitionListItem(definition));
+      });
+    }
+
+    section.appendChild(list);
+    return section;
+  }
+
+  function renderDefinitionListItem(definition) {
+    const card = document.createElement("div");
+    card.className = "border rounded-3 p-3 d-flex flex-column gap-2";
+
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-start gap-2";
+
+    const title = document.createElement("div");
+    title.className = "fw-semibold";
+    title.textContent = definition.label || definition.id || "Definition";
+
+    const actions = document.createElement("div");
+    actions.className = "d-flex gap-2";
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "btn btn-sm btn-outline-primary";
+    editButton.textContent = "Edit";
+    editButton.addEventListener("click", () => {
+      selectDefinition(definition.id);
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "btn btn-sm btn-outline-danger";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => {
+      removeDefinition(definition.id);
+    });
+
+    actions.append(editButton, deleteButton);
+
+    header.append(title, actions);
+    card.appendChild(header);
+
+    const meta = document.createElement("div");
+    meta.className = "text-body-secondary small";
+    const columnCount = Array.isArray(definition.children) ? definition.children.length : 0;
+    const displayKey = definition.displayField ? ` · display ${definition.displayField}` : "";
+    meta.textContent = `${columnCount} column${columnCount === 1 ? "" : "s"}${displayKey}`;
+    card.appendChild(meta);
+
+    return card;
+  }
+
+  function renderDefinitionInspector(definition) {
+    const form = document.createElement("form");
+    form.className = "d-flex flex-column gap-3";
+    form.addEventListener("submit", (event) => event.preventDefault());
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "btn btn-link btn-sm ps-0";
+    backButton.textContent = "← Back to definitions";
+    backButton.addEventListener("click", () => {
+      state.selectedDefinitionId = null;
+      renderInspector();
+    });
+    form.appendChild(backButton);
+
+    const heading = document.createElement("h5");
+    heading.className = "mb-0";
+    heading.textContent = definition.label || definition.id || "Definition";
+    form.appendChild(heading);
+
+    const idGroup = document.createElement("div");
+    idGroup.className = "d-flex flex-column";
+    const idLabel = document.createElement("label");
+    idLabel.className = "form-label fw-semibold text-body-secondary";
+    idLabel.textContent = "Definition ID";
+    const idInput = document.createElement("input");
+    idInput.type = "text";
+    idInput.className = "form-control";
+    idInput.readOnly = true;
+    idInput.value = definition.id || "";
+    idGroup.append(idLabel, idInput);
+    form.appendChild(idGroup);
+
+    const labelGroup = document.createElement("div");
+    labelGroup.className = "d-flex flex-column";
+    const labelLabel = document.createElement("label");
+    labelLabel.className = "form-label fw-semibold text-body-secondary";
+    labelLabel.textContent = "Display label";
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+    labelInput.className = "form-control";
+    const labelFieldId = createInspectorFieldId(definition.id, "label", "definition-label");
+    labelInput.id = labelFieldId;
+    labelInput.dataset.inspectorField = labelFieldId;
+    labelLabel.setAttribute("for", labelFieldId);
+    labelInput.placeholder = "Inventory Item";
+    labelInput.value = definition.label || "";
+    labelInput.addEventListener("change", () => {
+      const value = labelInput.value.trim();
+      updateDefinition(definition.id, (draft) => {
+        draft.label = value;
+      });
+    });
+    labelGroup.append(labelLabel, labelInput);
+    form.appendChild(labelGroup);
+
+    const displayFieldControl = createDefinitionDisplaySelect(definition);
+    if (displayFieldControl) {
+      form.appendChild(displayFieldControl);
+    }
+
+    const columnsSection = createDefinitionColumnsSection(definition);
+    if (columnsSection) {
+      form.appendChild(columnsSection);
+    }
+
+    elements.inspector.appendChild(form);
+  }
+
+  function createDefinitionDisplaySelect(definition) {
+    const options = Array.isArray(definition.children)
+      ? definition.children.filter((child) => child && typeof child === "object" && child.key)
+      : [];
+    if (!options.length) {
+      return null;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Display column";
+    const select = document.createElement("select");
+    select.className = "form-select";
+    const fieldId = createInspectorFieldId(definition.id, "displayField", "definition-display");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
+
+    const placeholderOption = document.createElement("option");
+    placeholderOption.value = "";
+    placeholderOption.textContent = "Auto";
+    select.appendChild(placeholderOption);
+
+    options.forEach((child) => {
+      const option = document.createElement("option");
+      option.value = child.key;
+      option.textContent = child.label || child.key;
+      if (definition.displayField && definition.displayField === child.key) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", () => {
+      updateDefinition(definition.id, (draft) => {
+        draft.displayField = select.value || "";
+      });
+    });
+
+    wrapper.append(label, select);
+    return wrapper;
+  }
+
+  function createDefinitionColumnsSection(definition) {
+    const section = document.createElement("section");
+    section.className = "d-flex flex-column gap-2";
+
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-center";
+
+    const heading = document.createElement("h6");
+    heading.className = "mb-0";
+    heading.textContent = "Columns";
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn btn-sm btn-outline-primary";
+    addButton.textContent = "Add column";
+    addButton.addEventListener("click", () => {
+      addDefinitionColumn(definition.id);
+    });
+
+    header.append(heading, addButton);
+    section.appendChild(header);
+
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-2";
+
+    if (!Array.isArray(definition.children) || !definition.children.length) {
+      const empty = document.createElement("p");
+      empty.className = "text-body-secondary small mb-0";
+      empty.textContent = "No columns yet.";
+      list.appendChild(empty);
+    } else {
+      definition.children.forEach((child, index) => {
+        list.appendChild(renderDefinitionColumn(definition, child, index));
+      });
+    }
+
+    section.appendChild(list);
+    return section;
+  }
+
+  function renderDefinitionColumn(definition, column, index) {
+    const card = document.createElement("div");
+    card.className = "border rounded-3 p-3 d-flex flex-column gap-2";
+
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-center gap-2";
+
+    const title = document.createElement("div");
+    title.className = "fw-semibold";
+    title.textContent = column.label || column.key || `Column ${index + 1}`;
+
+    const controls = document.createElement("div");
+    controls.className = "d-flex gap-1";
+
+    const upButton = document.createElement("button");
+    upButton.type = "button";
+    upButton.className = "btn btn-sm btn-outline-secondary";
+    upButton.textContent = "↑";
+    upButton.disabled = index === 0;
+    upButton.addEventListener("click", () => {
+      moveDefinitionColumn(definition.id, column.id, "up");
+    });
+
+    const downButton = document.createElement("button");
+    downButton.type = "button";
+    downButton.className = "btn btn-sm btn-outline-secondary";
+    downButton.textContent = "↓";
+    downButton.disabled = !definition.children || index === definition.children.length - 1;
+    downButton.addEventListener("click", () => {
+      moveDefinitionColumn(definition.id, column.id, "down");
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "btn btn-sm btn-outline-danger";
+    deleteButton.textContent = "Remove";
+    deleteButton.addEventListener("click", () => {
+      removeDefinitionColumn(definition.id, column.id);
+    });
+
+    controls.append(upButton, downButton, deleteButton);
+    header.append(title, controls);
+    card.appendChild(header);
+
+    const fields = document.createElement("div");
+    fields.className = "row g-3";
+
+    const keyControl = createDefinitionColumnTextInput(definition, column, "key", "ID", "quantity");
+    keyControl.classList.add("col-12", "col-md-3");
+    fields.appendChild(keyControl);
+
+    const labelControl = createDefinitionColumnTextInput(definition, column, "label", "Label", "Quantity");
+    labelControl.classList.add("col-12", "col-md-3");
+    fields.appendChild(labelControl);
+
+    const typeControl = createDefinitionColumnTypeSelect(definition, column);
+    typeControl.classList.add("col-12", "col-md-3");
+    fields.appendChild(typeControl);
+
+    const requiredControl = createDefinitionColumnRequiredToggle(definition, column);
+    requiredControl.classList.add("col-12", "col-md-3", "align-self-center");
+    fields.appendChild(requiredControl);
+
+    card.appendChild(fields);
+
+    return card;
+  }
+
+  function createDefinitionColumnTextInput(definition, column, property, labelText, placeholder = "") {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = labelText;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "form-control";
+    const fieldId = createInspectorFieldId(column.id, property, "definition" + property);
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
+    input.placeholder = placeholder;
+    input.value = column[property] || "";
+    input.addEventListener("change", () => {
+      const value = input.value.trim();
+      updateDefinition(definition.id, (draft) => {
+        const target = draft.children?.find((child) => child.id === column.id);
+        if (!target) {
+          return;
+        }
+        target[property] = value;
+        if (property === "key" && draft.displayField && draft.displayField === column.key) {
+          draft.displayField = value || draft.children.find((child) => child.key)?.key || "";
+        }
+      });
+    });
+    wrapper.append(label, input);
+    return wrapper;
+  }
+
+  function createDefinitionColumnTypeSelect(definition, column) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Type";
+    const select = document.createElement("select");
+    select.className = "form-select";
+    const fieldId = createInspectorFieldId(column.id, "type", "definition-type");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
+
+    const allowedTypes = ["string", "number", "boolean"];
+    const current = normalizeType(column.type) || "string";
+    allowedTypes.forEach((type) => {
+      const option = document.createElement("option");
+      option.value = type;
+      option.textContent = TYPE_DEFS[type]?.label || type;
+      if (type === current) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", () => {
+      updateDefinition(definition.id, (draft) => {
+        const target = draft.children?.find((child) => child.id === column.id);
+        if (!target) {
+          return;
+        }
+        target.type = select.value;
+      });
+    });
+
+    wrapper.append(label, select);
+    return wrapper;
+  }
+
+  function createDefinitionColumnRequiredToggle(definition, column) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "form-check-input";
+    const fieldId = createInspectorFieldId(column.id, "required", "definition-required");
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    input.checked = Boolean(column.required);
+    input.addEventListener("change", () => {
+      updateDefinition(definition.id, (draft) => {
+        const target = draft.children?.find((child) => child.id === column.id);
+        if (!target) {
+          return;
+        }
+        target.required = input.checked;
+      });
+    });
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", fieldId);
+    label.textContent = "Required";
+    wrapper.append(input, label);
+    return wrapper;
   }
 
   function captureInspectorFocus() {
@@ -1720,6 +2718,84 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     fieldset.appendChild(label);
     fieldset.appendChild(select);
     return fieldset;
+  }
+
+  function createFormulaInput(node) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-1";
+
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Formula";
+
+    const fieldId = createInspectorFieldId(node.id, "formula", "input");
+    label.setAttribute("for", fieldId);
+
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "position-relative";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "form-control";
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    input.placeholder = "=sum(@attributes.strength, @attributes.dexterity)";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = node.formula ?? "";
+    input.setAttribute("aria-autocomplete", "list");
+
+    const suggestions = document.createElement("div");
+    suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    suggestions.id = `${fieldId}-suggestions`;
+    suggestions.setAttribute("role", "listbox");
+    suggestions.style.zIndex = "1300";
+    suggestions.style.fontSize = "0.8125rem";
+    suggestions.style.maxHeight = "16rem";
+    suggestions.style.overflowY = "auto";
+    input.setAttribute("aria-controls", suggestions.id);
+
+    inputWrapper.append(input, suggestions);
+    wrapper.append(label, inputWrapper);
+
+    const commitValue = (raw) => {
+      const value = typeof raw === "string" ? raw.trim() : "";
+      updateNodeProperty(node.id, "formula", value);
+    };
+
+    const autocomplete = attachFormulaAutocomplete(input, {
+      container: suggestions,
+      supportsBinding: true,
+      supportsFunctions: true,
+      getFieldItems: (query) => getSystemFormulaFieldSuggestions(query),
+      getFunctionItems: (query) => getSystemFormulaFunctionSuggestions(query),
+      resolveFieldMeta: resolveFieldTypeMeta,
+      maxItems: MAX_FORMULA_SUGGESTIONS,
+      applySuggestion: ({ applyDefault }) => {
+        applyDefault();
+        commitValue(input.value);
+      },
+    });
+
+    input.addEventListener("input", () => {
+      commitValue(input.value);
+      autocomplete.update();
+    });
+
+    input.addEventListener("change", () => {
+      commitValue(input.value);
+      autocomplete.update();
+    });
+
+    input.addEventListener("focus", () => {
+      autocomplete.update();
+    });
+
+    input.addEventListener("click", () => {
+      autocomplete.update();
+    });
+
+    return wrapper;
   }
 
   function createTextInput(node, labelText, property, { placeholder = "" } = {}) {
@@ -1816,6 +2892,230 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return wrapper;
   }
 
+  function createArrayModeControl(node) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Column mode";
+    const select = document.createElement("select");
+    select.className = "form-select";
+    const fieldId = createInspectorFieldId(node.id, "itemMode", "array-mode");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
+    const mode = node.itemMode === "definition" ? "definition" : "inline";
+    const options = [
+      { value: "inline", label: "Inline (custom columns)" },
+      { value: "definition", label: "Reusable definition" },
+    ];
+    options.forEach((option) => {
+      const opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      if (option.value === mode) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+    select.addEventListener("change", () => {
+      const value = select.value === "definition" ? "definition" : "inline";
+      if (value === "definition") {
+        const keys = Object.keys(state.system.definitions || {});
+        if (!keys.length) {
+          status.show("Create a definition before using this mode.", { type: "warning", timeout: 2400 });
+          select.value = "inline";
+          return;
+        }
+        if (!node.itemRef || !keys.includes(node.itemRef)) {
+          updateNodeProperty(node.id, "itemRef", keys[0]);
+        }
+      } else if (node.itemMode === "definition" && node.itemRef) {
+        updateNodeProperty(node.id, "itemRef", "");
+      }
+      updateNodeProperty(node.id, "itemMode", value);
+    });
+    wrapper.append(label, select);
+    return wrapper;
+  }
+
+  function createArrayDefinitionSelect(node) {
+    const definitions = state.system.definitions && typeof state.system.definitions === "object"
+      ? Object.entries(state.system.definitions)
+      : [];
+    if (!definitions.length) {
+      const warning = document.createElement("div");
+      warning.className = "alert alert-warning mb-0";
+      warning.textContent = "No definitions available. Create one in the list above.";
+      return warning;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-1";
+
+    const labelRow = document.createElement("div");
+    labelRow.className = "d-flex justify-content-between align-items-center gap-2";
+
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary mb-0";
+    const fieldId = createInspectorFieldId(node.id, "itemRef", "array-definition");
+    label.setAttribute("for", fieldId);
+    label.textContent = "Definition";
+
+    const manageButton = document.createElement("button");
+    manageButton.type = "button";
+    manageButton.className = "btn btn-sm btn-outline-secondary";
+    manageButton.textContent = "Manage";
+    manageButton.addEventListener("click", () => {
+      if (node.itemRef) {
+        selectDefinition(node.itemRef);
+      } else if (definitions.length) {
+        selectDefinition(definitions[0][0]);
+      }
+    });
+
+    labelRow.append(label, manageButton);
+
+    const select = document.createElement("select");
+    select.className = "form-select";
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    definitions
+      .sort((a, b) => {
+        const aLabel = (a[1].label || a[0]).toLowerCase();
+        const bLabel = (b[1].label || b[0]).toLowerCase();
+        return aLabel.localeCompare(bLabel, undefined, { sensitivity: "base" });
+      })
+      .forEach(([key, definition]) => {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = definition.label || key;
+        if (node.itemRef === key) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+    });
+    select.addEventListener("change", () => {
+      const value = select.value;
+      updateNodeProperty(node.id, "itemRef", value);
+      const definition = state.system.definitions?.[value] || null;
+      if (definition) {
+        const fallback = definition.displayField || (definition.children?.[0]?.key ?? "");
+        const nextDisplay = fallback || "";
+        if ((node.displayField || "") !== nextDisplay) {
+          updateNodeProperty(node.id, "displayField", nextDisplay);
+        }
+      } else if (node.displayField) {
+        updateNodeProperty(node.id, "displayField", "");
+      }
+    });
+
+    wrapper.append(labelRow, select);
+    return wrapper;
+  }
+
+  function getArrayColumnCandidates(node) {
+    if (!node || typeof node !== "object") {
+      return [];
+    }
+    if (node.itemMode === "definition" && node.itemRef) {
+      const definition = state.system.definitions?.[node.itemRef] || null;
+      return Array.isArray(definition?.children) ? definition.children : [];
+    }
+    return Array.isArray(node.children) ? node.children : [];
+  }
+
+  function createArrayDisplaySelect(node) {
+    const columns = getArrayColumnCandidates(node);
+    if (!columns.length) {
+      return null;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Display column";
+    const select = document.createElement("select");
+    select.className = "form-select";
+    const fieldId = createInspectorFieldId(node.id, "displayField", "array-display");
+    select.id = fieldId;
+    select.dataset.inspectorField = fieldId;
+    label.setAttribute("for", fieldId);
+
+    const blank = document.createElement("option");
+    blank.value = "";
+    blank.textContent = "Auto";
+    select.appendChild(blank);
+
+    columns.forEach((column) => {
+      if (!column || !column.key) {
+        return;
+      }
+      const option = document.createElement("option");
+      option.value = column.key;
+      option.textContent = column.label || column.key;
+      if (node.displayField && node.displayField === column.key) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+
+    select.addEventListener("change", () => {
+      updateNodeProperty(node.id, "displayField", select.value);
+    });
+
+    wrapper.append(label, select);
+    return wrapper;
+  }
+
+  function createArrayInlineHint() {
+    const hint = document.createElement("p");
+    hint.className = "text-body-secondary small mb-0";
+    hint.textContent = "Drag fields onto the array card to add columns.";
+    return hint;
+  }
+
+  function getSystemFormulaFieldSuggestions(query = "") {
+    const normalized = query.trim().toLowerCase();
+    const entries = collectSystemFields(state.system);
+    const results = [];
+    entries.forEach((entry) => {
+      const path = entry?.path || "";
+      if (!path) {
+        return;
+      }
+      const label = entry.label || "";
+      if (normalized) {
+        const pathMatch = path.toLowerCase().includes(normalized);
+        const labelMatch = label.toLowerCase().includes(normalized);
+        if (!pathMatch && !labelMatch) {
+          return;
+        }
+      }
+      results.push({
+        type: "field",
+        path,
+        display: `@${path}`,
+        description: label && label !== path ? label : "",
+        fieldType: entry.type || "",
+        fieldCategory: entry.category || "",
+      });
+    });
+    return results.slice(0, MAX_FORMULA_SUGGESTIONS);
+  }
+
+  function getSystemFormulaFunctionSuggestions(query = "") {
+    const normalized = query.trim().toLowerCase();
+    const matches = normalized
+      ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+      : FORMULA_FUNCTIONS;
+    return matches.slice(0, MAX_FORMULA_SUGGESTIONS).map((fn) => ({
+      type: "function",
+      name: fn.name,
+      display: fn.signature,
+      description: fn.name,
+    }));
+  }
+
   function updateNodeProperty(
     nodeId,
     property,
@@ -1897,16 +3197,18 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   }
 
   function serializeSystem(system) {
-    return {
+    const payload = {
       id: system.id || "",
       title: system.title || "",
       version: system.version || "0.1",
       fields: Array.isArray(system.fields) ? system.fields.map(serializeFieldNode) : [],
-      fragments: Array.isArray(system.fragments) ? system.fragments : [],
-      metadata: Array.isArray(system.metadata) ? system.metadata : [],
-      formulas: Array.isArray(system.formulas) ? system.formulas : [],
       importers: Array.isArray(system.importers) ? system.importers : [],
     };
+    const definitions = serializeSystemDefinitions(system.definitions);
+    if (Object.keys(definitions).length) {
+      payload.definitions = definitions;
+    }
+    return payload;
   }
 
   function computeSystemSignature(system = state.system) {
@@ -1955,7 +3257,50 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       output.children = node.children.map(serializeFieldNode);
     }
 
+    if (normalizedType === "array") {
+      if (node.itemMode === "definition" && node.itemRef) {
+        output.item = { ref: node.itemRef };
+      } else if (Array.isArray(node.children) && node.children.length) {
+        output.item = {
+          type: "object",
+          children: node.children.map(serializeFieldNode),
+        };
+      }
+      if (node.displayField) {
+        output.displayField = node.displayField;
+      }
+    }
+
     return output;
+  }
+
+  function serializeSystemDefinitions(definitions) {
+    if (!definitions || typeof definitions !== "object") {
+      return {};
+    }
+    const entries = {};
+    Object.entries(definitions).forEach(([key, definition]) => {
+      if (!definition || typeof key !== "string") {
+        return;
+      }
+      const trimmedKey = key.trim();
+      if (!trimmedKey) {
+        return;
+      }
+      const normalizedType = normalizeType(definition.type) || "object";
+      const payload = { type: normalizedType || "object" };
+      if (definition.label) {
+        payload.label = definition.label;
+      }
+      if (definition.displayField) {
+        payload.displayField = definition.displayField;
+      }
+      if (normalizedType === "object" && Array.isArray(definition.children) && definition.children.length) {
+        payload.children = definition.children.map(serializeFieldNode);
+      }
+      entries[trimmedKey] = payload;
+    });
+    return entries;
   }
 
   function rebuildFieldIdentities(system) {
