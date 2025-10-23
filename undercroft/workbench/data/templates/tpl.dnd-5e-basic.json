@@ -99,6 +99,84 @@
       "segmentBinding": "",
       "segmentFormula": "",
       "statesBinding": ""
+    },
+    {
+      "type": "array",
+      "id": "inventory",
+      "label": "Inventory",
+      "name": "Inventory",
+      "textColor": "",
+      "backgroundColor": "",
+      "borderColor": "",
+      "textSize": "md",
+      "textStyles": {
+        "bold": false,
+        "italic": false,
+        "underline": false
+      },
+      "align": "start",
+      "binding": "@inventory",
+      "readOnly": false,
+      "collapsible": false,
+      "variant": "list",
+      "placeholder": "",
+      "options": [],
+      "rows": 3,
+      "sourceBinding": "@inventory",
+      "roller": "",
+      "formula": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": "",
+      "labelPosition": "top",
+      "columns": [
+        {
+          "key": "name",
+          "field": "name",
+          "label": "Item",
+          "type": "string",
+          "visible": true,
+          "mode": "field",
+          "removable": false
+        },
+        {
+          "key": "quantity",
+          "field": "quantity",
+          "label": "Qty",
+          "type": "number",
+          "visible": true,
+          "mode": "field",
+          "removable": false
+        },
+        {
+          "key": "weight",
+          "field": "weight",
+          "label": "Weight",
+          "type": "number",
+          "visible": true,
+          "mode": "field",
+          "removable": false
+        },
+        {
+          "key": "totalWeight",
+          "label": "Total Weight",
+          "type": "number",
+          "visible": true,
+          "mode": "formula",
+          "formula": "@row.quantity * @row.weight",
+          "removable": true
+        },
+        {
+          "key": "notes",
+          "field": "notes",
+          "label": "Notes",
+          "type": "string",
+          "visible": true,
+          "mode": "field",
+          "removable": false
+        }
+      ],
+      "displayField": "name"
     }
   ]
 }

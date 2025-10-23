@@ -26,14 +26,22 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
-import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
-import { listFormulaFunctions } from "../lib/formula-engine.js";
+import {
+  collectSystemFields,
+  categorizeFieldType,
+  resolveSystemArray,
+} from "../lib/system-schema.js";
+import { normalizeListColumn, resolveDisplayColumn } from "../lib/list-columns.js";
+import { attachFormulaAutocomplete } from "../lib/formula-autocomplete.js";
+import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
+import { listFormulaFunctionMetadata } from "../lib/formula-metadata.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 import {
   normalizeBindingValue,
   resolveBindingFromContexts,
   normalizeOptionEntries,
   buildSystemPreviewData,
+  parseBindingPathSegments,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
 import { initHelpSystem } from "../lib/help.js";
@@ -74,44 +82,7 @@ import { initHelpSystem } from "../lib/help.js";
   const systemCatalog = new Map();
   const BINDING_FIELDS_EVENT = "template:binding-fields-ready";
 
-  const FORMULA_FUNCTION_SIGNATURES = {
-    abs: "abs(value)",
-    avg: "avg(...values)",
-    ceil: "ceil(value)",
-    clamp: "clamp(value, min, max)",
-    floor: "floor(value)",
-    if: "if(condition, whenTrue, whenFalse)",
-    max: "max(...values)",
-    min: "min(...values)",
-    mod: "mod(dividend, divisor)",
-    not: "not(value)",
-    or: "or(...values)",
-    and: "and(...values)",
-    pow: "pow(base, exponent)",
-    round: "round(value)",
-    sqrt: "sqrt(value)",
-    sum: "sum(...values)",
-  };
-
-  const FORMULA_FUNCTIONS = listFormulaFunctions().map((name) => ({
-    name,
-    signature: FORMULA_FUNCTION_SIGNATURES[name] || `${name}(...)`,
-  }));
-
-  const FIELD_TYPE_META = {
-    string: { icon: "tabler:letter-case", label: "String" },
-    number: { icon: "tabler:123", label: "Number" },
-    boolean: { icon: "tabler:switch-3", label: "Boolean" },
-    array: { icon: "tabler:brackets", label: "Array" },
-    object: { icon: "tabler:braces", label: "Object" },
-  };
-
-  const DEFAULT_FIELD_TYPE_META = { icon: "tabler:question-mark", label: "Value" };
-
-  function resolveFieldTypeMeta(categoryOrType) {
-    const category = categoryOrType ? String(categoryOrType).toLowerCase() : "";
-    return FIELD_TYPE_META[category] || DEFAULT_FIELD_TYPE_META;
-  }
+  const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
 
   function getComponentBindingCategories(component) {
     if (!component || typeof component !== "object") {
@@ -416,9 +387,11 @@ import { initHelpSystem } from "../lib/help.js";
         name: "List",
         variant: "list",
         labelPosition: "top",
+        columns: [],
+        displayField: "",
       },
       supportsBinding: true,
-      supportsFormula: false,
+      supportsFormula: true,
       supportsReadOnly: false,
       supportsAlignment: true,
       textControls: true,
@@ -561,6 +534,7 @@ import { initHelpSystem } from "../lib/help.js";
   };
 
   let componentCounter = 0;
+  let columnCounter = 0;
 
   const renderPreview = createJsonPreviewRenderer({
     resolvePreviewElement: () => elements.jsonPreview,
@@ -2242,6 +2216,10 @@ import { initHelpSystem } from "../lib/help.js";
     if (component.type === "container") {
       ensureContainerZones(component);
     }
+    if (component.type === "array") {
+      ensureListColumns(component);
+      ensureDisplayColumn(component);
+    }
     return component;
   }
 
@@ -2700,45 +2678,97 @@ import { initHelpSystem } from "../lib/help.js";
     const control = document.createElement("div");
     control.className = "d-flex flex-column gap-2";
 
-    const labelFromBinding = (() => {
-      const source = (component.binding || "").replace(/^[=@]/, "");
-      if (!source) return "Item";
-      const parts = source.split(/[.\[\]]/).filter(Boolean);
-      if (!parts.length) return "Item";
-      const raw = parts[parts.length - 1].replace(/[-_]+/g, " ").trim();
-      if (!raw) return "Item";
-      return raw.charAt(0).toUpperCase() + raw.slice(1);
-    })();
+    const { visible, displayField } = resolveDisplayColumn(
+      component.columns,
+      component.displayField
+    );
+    const variant = component.variant === "cards" ? "cards" : "list";
+    if (!visible.length) {
+      control.appendChild(createPreviewEmptyState("Add columns to configure this list."));
+      return createLabeledField({
+        component,
+        control,
+        labelText,
+        labelTag: "div",
+        labelClasses: ["fw-semibold", "text-body-secondary"],
+        applyFormatting: applyTextFormatting,
+      });
+    }
 
-    if (component.variant === "cards") {
+    const displayColumn = visible.find((column) => column.key === displayField) || visible[0];
+
+    const sampleValue = (column, index) => {
+      if (!column) {
+        return "";
+      }
+      if (column.mode === "formula") {
+        return "= formula";
+      }
+      if (column.type === "number") {
+        return String((index + 1) * 2);
+      }
+      if (column.type === "boolean") {
+        return index % 2 === 0 ? "Yes" : "No";
+      }
+      return `${column.label || column.key} ${index + 1}`;
+    };
+
+    if (variant === "cards") {
       const grid = document.createElement("div");
       grid.className = "row g-2";
       for (let index = 0; index < 2; index += 1) {
         const col = document.createElement("div");
-        col.className = "col-12 col-md-6";
+        col.className = "col-12 col-lg-6";
         const card = document.createElement("div");
         card.className = "border rounded-3 p-3 bg-body";
-        const itemLabel = `${labelFromBinding} ${index + 1}`;
-        card.innerHTML = `<div class=\"fw-semibold\">${itemLabel}</div><div class=\"text-body-secondary small\">Repeatable entry</div>`;
+        const header = document.createElement("div");
+        header.className = "fw-semibold";
+        header.textContent = `${displayColumn.label || displayColumn.key} ${index + 1}`;
+        card.appendChild(header);
+        visible.forEach((column) => {
+          const row = document.createElement("div");
+          row.className = "d-flex justify-content-between text-body-secondary small";
+          const label = document.createElement("span");
+          label.textContent = column.label || column.key;
+          const value = document.createElement("span");
+          value.textContent = sampleValue(column, index);
+          row.append(label, value);
+          card.appendChild(row);
+        });
         col.appendChild(card);
         grid.appendChild(col);
       }
       control.appendChild(grid);
     } else {
-      const list = document.createElement("ul");
-      list.className = "list-group";
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-responsive";
+      const table = document.createElement("table");
+      table.className = "table table-sm align-middle mb-0";
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      visible.forEach((column) => {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.textContent = column.label || column.key;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
       for (let index = 0; index < 3; index += 1) {
-        const item = document.createElement("li");
-        item.className = "list-group-item d-flex justify-content-between align-items-center";
-        item.textContent = `${labelFromBinding} ${index + 1}`;
-        const badge = document.createElement("span");
-        badge.className = "badge text-bg-secondary";
-        badge.textContent = "Value";
-        item.appendChild(badge);
-        list.appendChild(item);
+        const row = document.createElement("tr");
+        visible.forEach((column) => {
+          const cell = document.createElement("td");
+          cell.textContent = sampleValue(column, index);
+          row.appendChild(cell);
+        });
+        tbody.appendChild(row);
       }
-      control.appendChild(list);
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      control.appendChild(wrapper);
     }
+
     return createLabeledField({
       component,
       control,
@@ -3599,6 +3629,45 @@ import { initHelpSystem } from "../lib/help.js";
     ) {
       return [];
     }
+    if (component.type === "array") {
+      const controls = [];
+      controls.push(
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@system.inventory",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsBinding: true,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          helperText: "References the system list that defines available columns.",
+          afterCommit: ({ draft, result }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+              return { syncColumns: false };
+            }
+            return { syncColumns: result.type === "binding" && !!result.value };
+          },
+        })
+      );
+      controls.push(
+        createBindingFormulaInput(component, {
+          labelText: "Data",
+          placeholder: "@data.inventory",
+          supportsBinding,
+          supportsFormula: true,
+          allowedFieldCategories: ["array", "object"],
+          helperText: "Rows are stored at this binding; formulas can return derived lists.",
+          afterCommit: ({ result }) => {
+            if (!result || result.type === "empty") {
+              return null;
+            }
+            return { syncColumns: result.type === "binding" && !!result.value };
+          },
+        })
+      );
+      return controls;
+    }
     if (component.type === "input" && (component.variant || "text") === "select") {
       const controls = [
         createBindingFormulaInput(component, {
@@ -3964,51 +4033,13 @@ import { initHelpSystem } from "../lib/help.js";
     wrapper.append(label, inputWrapper);
 
     const MAX_SUGGESTIONS = 12;
-    let suggestionItems = [];
-    let activeIndex = -1;
-    let currentContext = null;
     let listeningForUpdates = false;
 
     const handleBindingFieldsReady = () => {
       if (document.activeElement === input) {
-        updateSuggestions();
+        autocomplete.update();
       }
     };
-
-    function closeSuggestions() {
-      suggestionItems = [];
-      activeIndex = -1;
-      currentContext = null;
-      suggestions.innerHTML = "";
-      suggestions.classList.add("d-none");
-      input.removeAttribute("aria-activedescendant");
-    }
-
-    function setActive(index) {
-      if (!suggestionItems.length) {
-        return;
-      }
-      const clamped = Math.max(0, Math.min(index, suggestionItems.length - 1));
-      activeIndex = clamped;
-      const options = Array.from(suggestions.querySelectorAll("[data-suggestion-index]"));
-      options.forEach((option) => {
-        const optionIndex = Number(option.dataset.suggestionIndex);
-        if (optionIndex === activeIndex) {
-          option.classList.add("active");
-          input.setAttribute("aria-activedescendant", option.id);
-        } else {
-          option.classList.remove("active");
-        }
-      });
-    }
-
-    function moveActive(delta) {
-      if (!suggestionItems.length) {
-        return;
-      }
-      const nextIndex = activeIndex < 0 ? 0 : activeIndex + delta;
-      setActive(nextIndex);
-    }
 
     function getFieldSuggestions(query = "") {
       if (!supportsBinding) {
@@ -4053,123 +4084,11 @@ import { initHelpSystem } from "../lib/help.js";
       }));
     }
 
-    function renderSuggestions(items, context) {
-      suggestionItems = items;
-      currentContext = context;
-      suggestions.innerHTML = "";
-      if (!items.length) {
-        closeSuggestions();
-        return;
-      }
-      items.forEach((item, index) => {
-        const option = document.createElement("button");
-        option.type = "button";
-        option.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
-        option.dataset.suggestionIndex = String(index);
-        option.id = `${suggestions.id}-option-${index}`;
-        option.addEventListener("mousedown", (event) => event.preventDefault());
-        option.addEventListener("click", () => {
-          applySuggestion(index);
-        });
-
-        const row = document.createElement("div");
-        row.className = "d-flex align-items-center gap-2 flex-grow-1 text-start";
-        row.style.minWidth = "0";
-        if (item.type === "field") {
-          const fieldMeta = resolveFieldTypeMeta(item.fieldCategory || item.fieldType);
-          const icon = document.createElement("span");
-          icon.className = "iconify flex-shrink-0 text-body-tertiary";
-          icon.dataset.icon = fieldMeta.icon;
-          icon.setAttribute("aria-hidden", "true");
-          icon.title = fieldMeta.label;
-          icon.style.fontSize = "1rem";
-          row.appendChild(icon);
-        }
-
-        const label = document.createElement("span");
-        label.className = "text-truncate";
-        label.textContent = item.display;
-        row.appendChild(label);
-
-        option.appendChild(row);
-
-        if (item.description) {
-          const hint = document.createElement("small");
-          hint.className = "text-body-secondary text-nowrap text-end ms-auto";
-          hint.textContent = item.description;
-          option.appendChild(hint);
-        }
-
-        suggestions.appendChild(option);
-      });
-      suggestions.classList.remove("d-none");
-      setActive(0);
-    }
-
-    function updateSuggestions() {
-      const value = input.value;
-      const caret = typeof input.selectionStart === "number" ? input.selectionStart : value.length;
-      const beforeCaret = value.slice(0, caret);
-
-      if (supportsBinding) {
-        const atIndex = beforeCaret.lastIndexOf("@");
-        if (atIndex !== -1) {
-          const query = beforeCaret.slice(atIndex + 1);
-          const items = getFieldSuggestions(query);
-          if (items.length) {
-            renderSuggestions(items, { type: "field", startIndex: atIndex + 1, endIndex: caret });
-            return;
-          }
-        }
-      }
-
-      if (supportsFormula && value.trim().startsWith("=")) {
-        const equalsIndex = value.indexOf("=");
-        if (equalsIndex !== -1 && caret >= equalsIndex + 1) {
-          const rawQuery = value.slice(equalsIndex + 1, caret);
-          const items = getFunctionSuggestions(rawQuery);
-          if (items.length) {
-            renderSuggestions(items, { type: "function", startIndex: equalsIndex + 1, endIndex: caret });
-            return;
-          }
-        }
-      }
-
-      closeSuggestions();
-    }
-
-    function applySuggestion(index) {
-      if (index < 0 || index >= suggestionItems.length || !currentContext) {
-        return;
-      }
-      const item = suggestionItems[index];
-      const value = input.value;
-      const start = currentContext.startIndex;
-      const end = currentContext.endIndex;
-      const before = value.slice(0, start);
-      const after = value.slice(end);
-      if (item.type === "field") {
-        const inserted = item.path;
-        const nextValue = `${before}${inserted}${after}`;
-        input.value = nextValue;
-        const caret = before.length + inserted.length;
-        input.setSelectionRange(caret, caret);
-      } else if (item.type === "function") {
-        const prefix = value.slice(0, start);
-        const suffix = value.slice(end);
-        const nextValue = `${prefix}${item.name}()${suffix}`;
-        input.value = nextValue;
-        const caret = prefix.length + item.name.length + 1;
-        input.setSelectionRange(caret, caret);
-      }
-      commitValue(input.value);
-      closeSuggestions();
-    }
-
     function commitValue(raw) {
       const source = typeof raw === "string" ? raw : "";
       const trimmed = source.trim();
       let result = { type: "empty", value: "" };
+      let afterResult = null;
       updateComponent(
         component.uid,
         (draft) => {
@@ -4200,16 +4119,33 @@ import { initHelpSystem } from "../lib/help.js";
             result = { type: "binding", value: trimmed };
           }
           if (typeof afterCommit === "function") {
-            afterCommit({ draft, raw: source, trimmed, result });
+            afterResult = afterCommit({ draft, raw: source, trimmed, result }) || null;
           }
         },
         { rerenderCanvas: true }
       );
+      if (afterResult && afterResult.syncColumns) {
+        syncListColumnsFromSystem(component.uid);
+      }
     }
+
+    const autocomplete = attachFormulaAutocomplete(input, {
+      container: suggestions,
+      supportsBinding,
+      supportsFunctions: supportsFormula,
+      getFieldItems: (query) => getFieldSuggestions(query),
+      getFunctionItems: (query) => getFunctionSuggestions(query),
+      resolveFieldMeta: resolveFieldTypeMeta,
+      maxItems: MAX_SUGGESTIONS,
+      applySuggestion: ({ applyDefault }) => {
+        applyDefault();
+        commitValue(input.value);
+      },
+    });
 
     input.addEventListener("input", () => {
       commitValue(input.value);
-      updateSuggestions();
+      autocomplete.update();
     });
 
     input.addEventListener("focus", () => {
@@ -4217,37 +4153,16 @@ import { initHelpSystem } from "../lib/help.js";
         window.addEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
         listeningForUpdates = true;
       }
-      updateSuggestions();
+      autocomplete.update();
     });
 
     input.addEventListener("click", () => {
-      updateSuggestions();
-    });
-
-    input.addEventListener("keydown", (event) => {
-      if (!suggestionItems.length) {
-        return;
-      }
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        moveActive(1);
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        moveActive(-1);
-      } else if (event.key === "Enter") {
-        event.preventDefault();
-        if (activeIndex >= 0) {
-          applySuggestion(activeIndex);
-        }
-      } else if (event.key === "Escape") {
-        event.preventDefault();
-        closeSuggestions();
-      }
+      autocomplete.update();
     });
 
     input.addEventListener("blur", () => {
       setTimeout(() => {
-        closeSuggestions();
+        autocomplete.close();
         if (listeningForUpdates) {
           window.removeEventListener(BINDING_FIELDS_EVENT, handleBindingFieldsReady);
           listeningForUpdates = false;
@@ -4524,7 +4439,8 @@ import { initHelpSystem } from "../lib/help.js";
   }
 
   function renderArrayInspector(component) {
-    return [
+    const controls = [];
+    controls.push(
       createRadioButtonGroup(
         component,
         "Layout",
@@ -4538,8 +4454,11 @@ import { initHelpSystem } from "../lib/help.js";
             draft.variant = value;
           }, { rerenderCanvas: true });
         }
-      ),
-    ];
+      )
+    );
+    controls.push(createListSyncControl(component));
+    controls.push(createListColumnsEditor(component));
+    return controls.filter(Boolean);
   }
 
   function renderDividerInspector(component) {
@@ -4803,6 +4722,516 @@ import { initHelpSystem } from "../lib/help.js";
     return JSON.parse(JSON.stringify(defaults));
   }
 
+  function normalizeKey(value) {
+    return typeof value === "string" ? value.trim() : "";
+  }
+
+  function ensureListColumns(component) {
+    if (!component || component.type !== "array") {
+      return;
+    }
+    if (!Array.isArray(component.columns)) {
+      component.columns = [];
+    }
+    component.columns = component.columns.map((column) => {
+      const seeded = column?.uid ? column : { ...column, uid: generateColumnId() };
+      return normalizeListColumn(seeded);
+    });
+  }
+
+  function ensureDisplayColumn(component) {
+    if (!component || component.type !== "array") {
+      return;
+    }
+    ensureListColumns(component);
+    const { displayField } = resolveDisplayColumn(component.columns, component.displayField);
+    component.displayField = displayField;
+  }
+
+  function getArraySchemaForComponent(component) {
+    if (!component || component.type !== "array") {
+      return null;
+    }
+    const binding = normalizeBindingValue(component.sourceBinding || component.binding);
+    const segments = parseBindingPathSegments(binding);
+    if (!segments || !segments.length) {
+      return null;
+    }
+    if (!state.systemDefinition) {
+      return null;
+    }
+    return resolveSystemArray(state.systemDefinition, segments);
+  }
+
+  function getListAvailableFields(component) {
+    const schema = getArraySchemaForComponent(component);
+    if (!schema) {
+      return [];
+    }
+    const fields = Array.isArray(schema.columns) ? schema.columns : [];
+    return fields
+      .filter((field) => field && typeof field === "object")
+      .map((field) => ({
+        key: normalizeKey(field.key),
+        label: field.label || field.key || "",
+        type: field.type || "string",
+      }))
+      .filter((entry) => entry.key);
+  }
+
+  function syncListColumnsFromSystem(componentUid, { force = false } = {}) {
+    const target = findComponent(componentUid);
+    if (!target) {
+      return;
+    }
+    const component = target.component;
+    if (!component || component.type !== "array") {
+      return;
+    }
+    const schema = getArraySchemaForComponent(component);
+    if (!schema) {
+      if (force) {
+        status.show("Select a source array before syncing columns.", { type: "warning", timeout: 2200 });
+      }
+      return;
+    }
+    const systemColumns = Array.isArray(schema.columns) ? schema.columns : [];
+    updateComponent(
+      componentUid,
+      (draft) => {
+        ensureListColumns(draft);
+        const previous = Array.isArray(draft.columns) ? draft.columns : [];
+        const previousByField = new Map(
+          previous
+            .filter((column) => column.mode === "field" && column.field)
+            .map((column) => [column.field, column])
+        );
+        const nextColumns = systemColumns.map((field) => {
+          const fieldKey = normalizeKey(field.key);
+          const existing = previousByField.get(fieldKey) || null;
+          return normalizeListColumn({
+            uid: existing?.uid || generateColumnId(),
+            key: existing?.key || fieldKey || generateColumnId(),
+            field: fieldKey,
+            label: existing?.label || field.label || fieldKey || "Column",
+            type: existing?.type || field.type || "string",
+            visible: existing?.visible !== false,
+            mode: "field",
+            removable: false,
+          });
+        });
+        const formulaColumns = previous
+          .filter((column) => column.mode === "formula")
+          .map((column) => normalizeListColumn(column));
+        draft.columns = [...nextColumns, ...formulaColumns];
+        if (schema.definition && schema.definition.displayField) {
+          draft.displayField = schema.definition.displayField;
+        }
+        ensureDisplayColumn(draft);
+      },
+      { rerenderCanvas: true, rerenderInspector: true }
+    );
+  }
+
+  function updateListColumn(componentUid, columnUid, mutate, { rerenderCanvas = false } = {}) {
+    if (typeof mutate !== "function") {
+      return;
+    }
+    updateComponent(
+      componentUid,
+      (draft) => {
+        ensureListColumns(draft);
+        const column = draft.columns.find((entry) => entry.uid === columnUid);
+        if (!column) {
+          return;
+        }
+        mutate(column);
+        column.label = column.label && column.label.trim() ? column.label.trim() : column.field || column.key || "Column";
+        column.key = column.key || column.field || column.uid;
+        if (column.mode === "formula") {
+          column.readOnly = true;
+          column.removable = true;
+        }
+        ensureDisplayColumn(draft);
+      },
+      { rerenderInspector: true, rerenderCanvas }
+    );
+  }
+
+  function moveListColumn(componentUid, columnUid, direction) {
+    const offset = direction === "up" ? -1 : 1;
+    if (!offset) {
+      return;
+    }
+    updateComponent(
+      componentUid,
+      (draft) => {
+        ensureListColumns(draft);
+        const index = draft.columns.findIndex((column) => column.uid === columnUid);
+        if (index === -1) {
+          return;
+        }
+        const target = index + offset;
+        if (target < 0 || target >= draft.columns.length) {
+          return;
+        }
+        const [entry] = draft.columns.splice(index, 1);
+        draft.columns.splice(target, 0, entry);
+        ensureDisplayColumn(draft);
+      },
+      { rerenderInspector: true, rerenderCanvas: true }
+    );
+  }
+
+  function removeListColumn(componentUid, columnUid) {
+    updateComponent(
+      componentUid,
+      (draft) => {
+        ensureListColumns(draft);
+        const index = draft.columns.findIndex((column) => column.uid === columnUid);
+        if (index === -1) {
+          return;
+        }
+        draft.columns.splice(index, 1);
+        ensureDisplayColumn(draft);
+      },
+      { rerenderInspector: true, rerenderCanvas: true }
+    );
+  }
+
+  function addFormulaColumn(componentUid) {
+    updateComponent(
+      componentUid,
+      (draft) => {
+        ensureListColumns(draft);
+        const count = draft.columns.filter((column) => column.mode === "formula").length + 1;
+        const uid = generateColumnId();
+        draft.columns.push(
+          normalizeListColumn({
+            uid,
+            key: uid,
+            label: `Formula ${count}`,
+            type: "string",
+            mode: "formula",
+            formula: "",
+            visible: true,
+            removable: true,
+          })
+        );
+        ensureDisplayColumn(draft);
+      },
+      { rerenderInspector: true, rerenderCanvas: true }
+    );
+  }
+
+  function getRowFieldSuggestions(component) {
+    const fields = getListAvailableFields(component);
+    return fields.map((field) => ({
+      type: "field",
+      path: `@row.${field.key}`,
+      display: `@row.${field.key}`,
+      description: field.label || field.key,
+      fieldType: field.type || "",
+    }));
+  }
+
+  function createListSyncControl(component) {
+    const schema = getArraySchemaForComponent(component);
+    if (!schema) {
+      const alert = document.createElement("div");
+      alert.className = "alert alert-info mb-0";
+      alert.textContent = "Select a source binding to sync columns from the system schema.";
+      return alert;
+    }
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline-secondary";
+    button.textContent = "Sync columns from system";
+    button.addEventListener("click", () => {
+      syncListColumnsFromSystem(component.uid, { force: true });
+    });
+    const hint = document.createElement("p");
+    hint.className = "text-body-secondary small mb-0";
+    hint.textContent = "Updates the column list to match the system's definition.";
+    wrapper.append(button, hint);
+    return wrapper;
+  }
+
+  function createListColumnsEditor(component) {
+    ensureListColumns(component);
+    ensureDisplayColumn(component);
+    const wrapper = document.createElement("section");
+    wrapper.className = "d-flex flex-column gap-2";
+
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-center";
+    const heading = document.createElement("h6");
+    heading.className = "mb-0";
+    heading.textContent = "Columns";
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn btn-sm btn-outline-primary";
+    addButton.textContent = "Add formula column";
+    addButton.addEventListener("click", () => {
+      addFormulaColumn(component.uid);
+    });
+    header.append(heading, addButton);
+    wrapper.appendChild(header);
+
+    const { visible: visibleColumns, displayField } = resolveDisplayColumn(
+      component.columns,
+      component.displayField
+    );
+
+    const displayWrapper = document.createElement("div");
+    displayWrapper.className = "d-flex flex-column";
+    const displayLabel = document.createElement("label");
+    displayLabel.className = "form-label fw-semibold text-body-secondary";
+    displayLabel.textContent = "Display column";
+    const displaySelect = document.createElement("select");
+    displaySelect.className = "form-select";
+    const displayFieldId = createInspectorFieldId(component.uid, "displayField", "list-display");
+    displaySelect.id = displayFieldId;
+    displaySelect.dataset.inspectorField = displayFieldId;
+    displayLabel.setAttribute("for", displayFieldId);
+
+    const autoOption = document.createElement("option");
+    autoOption.value = "";
+    autoOption.textContent = "Auto";
+    displaySelect.appendChild(autoOption);
+
+    component.columns.forEach((column) => {
+      if (!column || !column.key) {
+        return;
+      }
+      const option = document.createElement("option");
+      option.value = column.key;
+      option.textContent = column.label || column.key;
+      if (column.visible === false) {
+        option.textContent += " (hidden)";
+      }
+      displaySelect.appendChild(option);
+    });
+    displaySelect.value = displayField || "";
+    displaySelect.addEventListener("change", () => {
+      updateComponent(
+        component.uid,
+        (draft) => {
+          ensureListColumns(draft);
+          draft.displayField = displaySelect.value || "";
+          ensureDisplayColumn(draft);
+        },
+        { rerenderCanvas: true, rerenderInspector: true }
+      );
+    });
+
+    if (!visibleColumns.length) {
+      displaySelect.disabled = true;
+    }
+
+    displayWrapper.append(displayLabel, displaySelect);
+    wrapper.appendChild(displayWrapper);
+
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-2";
+    const availableFields = getListAvailableFields(component);
+    if (!component.columns.length) {
+      const empty = document.createElement("p");
+      empty.className = "text-body-secondary small mb-0";
+      empty.textContent = "No columns configured.";
+      list.appendChild(empty);
+    } else {
+      component.columns.forEach((column, index) => {
+        list.appendChild(renderListColumnCard(component, column, index, availableFields));
+      });
+    }
+    wrapper.appendChild(list);
+    return wrapper;
+  }
+
+  function renderListColumnCard(component, column, index, availableFields) {
+    const card = document.createElement("div");
+    card.className = "border rounded-3 p-3 d-flex flex-column gap-2";
+
+    const header = document.createElement("div");
+    header.className = "d-flex justify-content-between align-items-center gap-2";
+    const title = document.createElement("div");
+    title.className = "fw-semibold";
+    title.textContent = column.label || column.field || `Column ${index + 1}`;
+    header.appendChild(title);
+
+    const actions = document.createElement("div");
+    actions.className = "d-flex gap-1";
+    const upButton = document.createElement("button");
+    upButton.type = "button";
+    upButton.className = "btn btn-sm btn-outline-secondary";
+    upButton.textContent = "↑";
+    upButton.disabled = index === 0;
+    upButton.addEventListener("click", () => moveListColumn(component.uid, column.uid, "up"));
+    const downButton = document.createElement("button");
+    downButton.type = "button";
+    downButton.className = "btn btn-sm btn-outline-secondary";
+    downButton.textContent = "↓";
+    downButton.disabled = index === component.columns.length - 1;
+    downButton.addEventListener("click", () => moveListColumn(component.uid, column.uid, "down"));
+    actions.append(upButton, downButton);
+    if (column.removable !== false) {
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn btn-sm btn-outline-danger";
+      removeButton.textContent = "Remove";
+      removeButton.addEventListener("click", () => removeListColumn(component.uid, column.uid));
+      actions.appendChild(removeButton);
+    }
+    header.appendChild(actions);
+    card.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "row g-3";
+
+    const labelGroup = document.createElement("div");
+    labelGroup.className = "col-12 col-md-4";
+    const labelLabel = document.createElement("label");
+    labelLabel.className = "form-label fw-semibold text-body-secondary";
+    labelLabel.textContent = "Label";
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+    labelInput.className = "form-control";
+    const labelFieldId = createInspectorFieldId(component.uid, column.uid, "column-label");
+    labelInput.id = labelFieldId;
+    labelInput.dataset.inspectorField = labelFieldId;
+    labelLabel.setAttribute("for", labelFieldId);
+    labelInput.value = column.label || "";
+    labelInput.addEventListener("change", () => {
+      updateListColumn(component.uid, column.uid, (draftColumn) => {
+        draftColumn.label = labelInput.value.trim();
+      });
+    });
+    labelGroup.append(labelLabel, labelInput);
+    body.appendChild(labelGroup);
+
+    if (column.mode === "field") {
+      const fieldGroup = document.createElement("div");
+      fieldGroup.className = "col-12 col-md-4";
+      const fieldLabel = document.createElement("label");
+      fieldLabel.className = "form-label fw-semibold text-body-secondary";
+      fieldLabel.textContent = "Field";
+      const fieldValue = document.createElement("div");
+      fieldValue.className = "form-control-plaintext";
+      const match = availableFields.find((field) => field.key === column.field);
+      fieldValue.textContent = match ? `${match.label || match.key} (${match.key})` : column.field || "";
+      fieldGroup.append(fieldLabel, fieldValue);
+      body.appendChild(fieldGroup);
+    } else {
+      const formulaGroup = document.createElement("div");
+      formulaGroup.className = "col-12 col-md-6";
+      const formulaLabel = document.createElement("label");
+      formulaLabel.className = "form-label fw-semibold text-body-secondary";
+      formulaLabel.textContent = "Formula";
+      const wrapper = document.createElement("div");
+      wrapper.className = "position-relative";
+      const fieldId = createInspectorFieldId(component.uid, column.uid, "column-formula");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "form-control";
+      input.id = fieldId;
+      input.dataset.inspectorField = fieldId;
+      input.placeholder = "=@row.quantity * @row.weight";
+      input.value = column.formula || "";
+      const suggestions = document.createElement("div");
+      suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+      suggestions.id = `${fieldId}-suggestions`;
+      suggestions.style.zIndex = "1300";
+      suggestions.style.fontSize = "0.8125rem";
+      suggestions.style.maxHeight = "16rem";
+      suggestions.style.overflowY = "auto";
+      input.setAttribute("aria-controls", suggestions.id);
+      wrapper.append(input, suggestions);
+      formulaGroup.append(formulaLabel, wrapper);
+      body.appendChild(formulaGroup);
+
+      const commitFormula = (value) => {
+        updateListColumn(component.uid, column.uid, (draftColumn) => {
+          draftColumn.formula = value;
+          draftColumn.mode = "formula";
+          draftColumn.type = column.type || "string";
+        }, { rerenderCanvas: true });
+      };
+
+      const fieldItems = getRowFieldSuggestions(component);
+      const autocomplete = attachFormulaAutocomplete(input, {
+        container: suggestions,
+        supportsBinding: true,
+        supportsFunctions: true,
+        getFieldItems: (query) => {
+          const normalized = query.trim().toLowerCase();
+          const items = normalized
+            ? fieldItems.filter((item) => item.path.toLowerCase().includes(normalized))
+            : fieldItems;
+          return items.slice(0, 12);
+        },
+        getFunctionItems: (query) => {
+          const normalized = query.trim().toLowerCase();
+          const entries = normalized
+            ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().includes(normalized))
+            : FORMULA_FUNCTIONS;
+          return entries.slice(0, 12).map((fn) => ({
+            type: "function",
+            name: fn.name,
+            display: fn.signature,
+            description: fn.name,
+          }));
+        },
+        resolveFieldMeta: resolveFieldTypeMeta,
+        applySuggestion: ({ applyDefault }) => {
+          applyDefault();
+          commitFormula(input.value);
+        },
+      });
+
+      input.addEventListener("change", () => {
+        commitFormula(input.value.trim());
+      });
+      input.addEventListener("blur", () => {
+        commitFormula(input.value.trim());
+      });
+    }
+
+    const visibilityGroup = document.createElement("div");
+    visibilityGroup.className = "col-12 col-md-2 align-self-center";
+    const visibilityWrapper = document.createElement("div");
+    visibilityWrapper.className = "form-check";
+    const visibilityInput = document.createElement("input");
+    visibilityInput.type = "checkbox";
+    visibilityInput.className = "form-check-input";
+    const visibilityId = createInspectorFieldId(component.uid, column.uid, "column-visible");
+    visibilityInput.id = visibilityId;
+    visibilityInput.dataset.inspectorField = visibilityId;
+    visibilityInput.checked = column.visible !== false;
+    visibilityInput.addEventListener("change", () => {
+      updateListColumn(
+        component.uid,
+        column.uid,
+        (draftColumn) => {
+          draftColumn.visible = visibilityInput.checked;
+        },
+        { rerenderCanvas: true }
+      );
+    });
+    const visibilityLabel = document.createElement("label");
+    visibilityLabel.className = "form-check-label";
+    visibilityLabel.setAttribute("for", visibilityId);
+    visibilityLabel.textContent = "Visible";
+    visibilityWrapper.append(visibilityInput, visibilityLabel);
+    visibilityGroup.appendChild(visibilityWrapper);
+    body.appendChild(visibilityGroup);
+
+    card.appendChild(body);
+    return card;
+  }
+
   function hydrateComponent(component) {
     if (!component || typeof component !== "object") {
       return null;
@@ -4820,6 +5249,10 @@ import { initHelpSystem } from "../lib/help.js";
     merged.uid = base.uid;
     if (!merged.id) {
       merged.id = merged.uid;
+    }
+    if (merged.type === "array") {
+      ensureListColumns(merged);
+      ensureDisplayColumn(merged);
     }
     if (merged.type === "linear-track" || merged.type === "circular-track") {
       if (Array.isArray(copy.activeSegments)) {
@@ -5023,6 +5456,11 @@ import { initHelpSystem } from "../lib/help.js";
     const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     const rand = Math.random().toString(36).slice(2, 8);
     return `tpl.${slug || "template"}.${rand}`;
+  }
+
+  function generateColumnId() {
+    columnCounter += 1;
+    return `col-${columnCounter}`;
   }
 
   function generateDuplicateTemplateId(baseId) {

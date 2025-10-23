@@ -42,10 +42,44 @@
       "type": "number",
       "key": "numberField",
       "label": "Number Field"
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "displayField": "name",
+      "item": {
+        "ref": "inventoryItem"
+      }
     }
   ],
-  "fragments": [],
-  "metadata": [],
-  "formulas": [],
+  "definitions": {
+    "inventoryItem": {
+      "label": "Inventory Item",
+      "displayField": "name",
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item"
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Qty"
+        },
+        {
+          "type": "number",
+          "key": "weight",
+          "label": "Weight"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    }
+  },
   "importers": []
 }

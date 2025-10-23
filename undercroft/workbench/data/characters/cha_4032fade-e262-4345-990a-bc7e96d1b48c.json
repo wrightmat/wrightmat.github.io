@@ -6,7 +6,27 @@
   "data": {
     "name": "Test",
     "class": "Bard",
-    "numberField": 10
+    "numberField": 10,
+    "inventory": [
+      {
+        "name": "Rope",
+        "quantity": 1,
+        "weight": 10,
+        "notes": "50-foot hempen"
+      },
+      {
+        "name": "Torch",
+        "quantity": 5,
+        "weight": 1,
+        "notes": "Burns for 1 hour"
+      },
+      {
+        "name": "Rations",
+        "quantity": 3,
+        "weight": 2,
+        "notes": "One day each"
+      }
+    ]
   },
   "state": {
     "timers": {},

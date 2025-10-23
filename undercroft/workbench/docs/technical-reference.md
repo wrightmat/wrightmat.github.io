@@ -82,6 +82,43 @@ The character page initialises the app shell, loads DataManager session state, a
 
 All editors expose import/export buttons bound to shared helpers. `json-preview.js` renders JSON snapshots into the right pane, while toolbar buttons call into DataManager save operations or download raw payloads using the shared downloader utilities.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】【F:undercroft/workbench/system.html†L170-L237】 Character, template, and system toolbars provide consistent undo/redo and clear actions, leveraging the same command wiring through the app shell.【F:undercroft/workbench/template.html†L160-L208】【F:undercroft/workbench/character.html†L18-L103】
 
+### Importer pipeline roadmap
+
+System definitions already reserve an `importers` collection so creators can describe how outside data maps into their schema.【F:undercroft/workbench/js/pages/system.js†L800-L815】【F:undercroft/workbench/data/systems/sys.dnd-5e.json†L1-L39】 To turn that placeholder into a working feature we plan to:
+
+1. **Model importer steps.** Extend the system schema so each importer captures a source label, supported file type (initially JSON), the top-level path to iterate over, and an ordered list of field mappings. Each mapping ties a system field path to either a direct JSON pointer or a formula expression evaluated with the existing formula runtime.【F:undercroft/workbench/js/pages/system.js†L1820-L2042】
+2. **Surface a builder UI.** Add an “Importers” tab to the System inspector that lists configured importers, lets creators add/edit steps, and reuses the formula autocomplete widget for transformation expressions so field references and helper functions are easy to discover.【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L316】
+3. **Provide sample-data previews.** Allow creators to paste or upload a JSON example, run it through the importer configuration, and render a diff-style preview of the resulting system payload before saving. The preview flow should log validation errors inline so creators can refine mappings without leaving the modal.
+4. **Match advanced transformation needs.** Support chaining formulas per field (e.g., normalising enumerations, splitting strings) and expose helper hooks inspired by the existing D&D Beyond parser so complex conversions stay possible without bespoke scripts.【F:codex/ddb_parser.js†L1-L72】
+5. **Integrate with saves and exports.** Persist importer definitions alongside the system so export/import keeps them intact, and surface an “Run importer” command in the toolbar that prompts for JSON input and writes the transformed result into the canvas draft.
+
+This roadmap ensures importers evolve in phases—starting with configuration storage, then UI, then execution—so we can ship incremental value while validating the workflow with real datasets.
+
+### Inventory data modelling plan
+
+Complex inventories (e.g., an equipment table with name, quantity, weight, notes) require richer structure than the current "flat" field definitions. Delivering them touches every layer of the stack, so we will stage the work as follows:
+
+1. **Extend the system schema to describe collections.**
+   - Promote `array` fields to carry an `item` contract that mirrors `object` children (e.g., `{ type: "array", key: "inventory", item: { type: "object", children: [...] } }`). The inspector needs UI to add/remove item columns, choose primitive types, mark required columns, and flag a display label column for templates.【F:undercroft/workbench/js/pages/system.js†L1719-L1753】
+   - Allow reusable shapes by introducing an optional `definitions` bucket at the system root so authors can declare a column set once (e.g., `definitions.inventoryItem`) and reference it from multiple lists. The field form should offer "inline" or "definition" modes so creators can either embed columns directly or point to a shared definition.
+   - Update field identity helpers (`collectSystemFields`, palette metadata, formula autocomplete) to surface child paths such as `inventory[].quantity` so formulas and bindings understand nested arrays.【F:undercroft/workbench/js/lib/system-schema.js†L1-L66】【F:undercroft/workbench/js/lib/formula-autocomplete.js†L1-L316】
+
+2. **Teach the template editor how to render list layouts from schema metadata.**
+   - Give the List component a `sourceBinding` (mirroring Select components) that targets the parent array while the regular `binding` points to a computed selection if needed. When a binding is chosen, pre-fill the column designer from the system `item` contract and allow authors to toggle visibility, override column labels, or add calculated columns (formula-backed, read-only cells).【F:undercroft/workbench/js/pages/template.js†L360-L438】【F:undercroft/workbench/js/pages/template.js†L2560-L2724】
+   - Support multiple presentation variants (table, compact list, cards). Table mode should use Bootstrap responsive tables with editable cells, while cards reuse the existing grid preview but map each column to labeled rows inside the card.
+   - Persist column settings in the component JSON (e.g., `columns: [{ key: "name", label: "Item", type: "string" }, …]`) so the character sheet renderer can build editors without re-deriving layout each load.
+
+3. **Upgrade the character runtime to handle structured lists.**
+   - Replace the JSON textarea renderer for `array` components with a purpose-built collection editor. It should list existing rows, provide add/remove controls, validate cell input against the system column types, and respect read-only or formula-derived columns by preventing edits and showing computed values.【F:undercroft/workbench/js/pages/character.js†L3055-L3101】
+   - Ensure persistence writes back an array of objects that matches the system contract and fires undo entries per row edit so the existing history tooling continues to function.【F:undercroft/workbench/js/pages/character.js†L2828-L2891】
+   - Extend formula evaluation to expose helper functions for aggregations (e.g., `=sum(@inventory[].quantity)`), enabling summary fields like total weight. This requires the formula engine to understand list iteration and provide guards against undefined rows.
+
+4. **Round out supporting workflows.**
+   - Update import/export, JSON previews, and validation to include the new `definitions` bucket and `item` metadata so inventories survive round-trips without manual editing.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】
+   - Add documentation snippets and starter content (e.g., an SRD-friendly backpack list) so creators can copy a working pattern into their systems and templates.
+
+Phasing the work this way lets us unlock author-friendly inventory tables without regressing simpler lists: the schema gains the expressiveness first, the template editor consumes that structure next, and finally the character UI delivers a polished editing experience.
+
 ### Collaboration
 
 Share management flows on the client call `list_shareable_users`, `create_share_link`, and `share_with_user` endpoints while enforcing tier checks via `ensure_share_permission` on the server.【F:server/app.py†L219-L338】 Group game logs persist via `group_log` handlers and surface in the character sheet’s collaboration pane, which polls for new entries and merges them with local drafts.【F:server/app.py†L339-L424】【F:undercroft/workbench/js/pages/character.js†L630-L1104】 Shared help topics now explain these flows directly in the UI via tooltips anchored to game log headers and character selectors.【F:undercroft/workbench/character.html†L40-L119】【F:undercroft/workbench/js/lib/help.js†L97-L136】

@@ -32,6 +32,7 @@ import {
   resolveBindingFromContexts,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
+import { normalizeListColumns, resolveDisplayColumn } from "../lib/list-columns.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
@@ -3054,46 +3055,303 @@ import {
 
   function renderArrayComponent(component) {
     const labelText = component.label || component.name || "List";
-    const textarea = document.createElement("textarea");
-    textarea.className = "form-control";
-    textarea.rows = component.rows || 4;
-    if (component?.uid) {
-      textarea.id = `${component.uid}-array`;
-    }
-    const value = resolveComponentValue(component);
-    const serialized = Array.isArray(value)
-      ? JSON.stringify(value, null, 2)
-      : value != null
-      ? String(value)
-      : "";
-    textarea.value = serialized;
-    const editable = isEditable(component);
-    textarea.readOnly = !editable;
-    assignBindingMetadata(textarea, component);
-    if (editable) {
-      textarea.addEventListener("blur", async () => {
-        const text = textarea.value.trim();
-        if (!text) {
-          updateBinding(component.binding, []);
-          await persistDraft({ silent: true });
-          return;
+    const bindingPath = normalizeBinding(component.binding || component.sourceBinding || "");
+    const editable = isEditable(component) && Boolean(bindingPath);
+    const control = document.createElement("div");
+    control.className = "d-flex flex-column gap-3";
+    assignBindingMetadata(control, component, { binding: bindingPath });
+
+    const rowsValue = resolveComponentValue(component, []);
+    const rows = Array.isArray(rowsValue)
+      ? rowsValue.map((entry) => (entry && typeof entry === "object" && !Array.isArray(entry) ? { ...entry } : {}))
+      : [];
+
+    const sanitizedColumns = normalizeListColumns(component.columns || []);
+    const { visible: visibleColumns, displayField } = resolveDisplayColumn(
+      sanitizedColumns,
+      component.displayField
+    );
+
+    const dataContext = state.draft?.data || {};
+
+    const ensureRowObject = (entry) =>
+      entry && typeof entry === "object" && !Array.isArray(entry) ? { ...entry } : {};
+
+    const evaluateColumnFormula = (column, rowData, index) => {
+      if (!column || column.mode !== "formula" || !column.formula) {
+        return "";
+      }
+      try {
+        const context = { ...dataContext, row: rowData, item: rowData, index, rowIndex: index };
+        return evaluateFormula(column.formula, context, { rollContext: dataContext });
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate list formula", error);
+        return "";
+      }
+    };
+
+    const resolveCellValue = (column, rowData, index) => {
+      const normalizedRow = ensureRowObject(rowData);
+      if (column.mode === "formula") {
+        return evaluateColumnFormula(column, normalizedRow, index);
+      }
+      return normalizedRow[column.key];
+    };
+
+    const commitRows = (nextRows) => {
+      if (!bindingPath) {
+        return;
+      }
+      updateBinding(bindingPath, nextRows);
+    };
+
+    const commitRowValue = (rowIndex, column, value) => {
+      if (!bindingPath) {
+        return;
+      }
+      const nextRows = rows.map((row, index) => {
+        if (index !== rowIndex) {
+          return row;
         }
-        try {
-          const parsed = JSON.parse(text);
-          updateBinding(component.binding, parsed);
-          await persistDraft({ silent: true });
-        } catch (error) {
-          status.show("Enter valid JSON for this list.", { type: "warning", timeout: 2000 });
+        const base = ensureRowObject(row);
+        if (value === undefined) {
+          delete base[column.key];
+        } else {
+          base[column.key] = value;
         }
+        return base;
       });
+      commitRows(nextRows);
+    };
+
+    const handleRemoveRow = (rowIndex) => {
+      if (!bindingPath) {
+        return;
+      }
+      const nextRows = rows.filter((_, index) => index !== rowIndex);
+      commitRows(nextRows);
+    };
+
+    const createTextCell = (rowIndex, column, initialValue) => {
+      const input = document.createElement("input");
+      input.type = column.type === "number" ? "number" : "text";
+      input.className = "form-control form-control-sm";
+      input.value = initialValue != null ? initialValue : "";
+      input.disabled = !editable;
+      assignBindingMetadata(input, component, {
+        binding: bindingPath,
+        value: `${column.key}:${rowIndex}`,
+      });
+      if (editable) {
+        input.addEventListener("change", () => {
+          const raw = input.value;
+          if (!raw && column.type === "number") {
+            commitRowValue(rowIndex, column, undefined);
+            return;
+          }
+          if (column.type === "number") {
+            const parsed = Number(raw);
+            commitRowValue(rowIndex, column, Number.isNaN(parsed) ? undefined : parsed);
+          } else {
+            commitRowValue(rowIndex, column, raw);
+          }
+        });
+      }
+      return input;
+    };
+
+    const createBooleanCell = (rowIndex, column, initialValue) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "form-check m-0";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.className = "form-check-input";
+      input.checked = Boolean(initialValue);
+      input.disabled = !editable;
+      assignBindingMetadata(input, component, {
+        binding: bindingPath,
+        value: `${column.key}:${rowIndex}`,
+      });
+      if (editable) {
+        input.addEventListener("change", () => {
+          commitRowValue(rowIndex, column, input.checked);
+        });
+      }
+      wrapper.appendChild(input);
+      return wrapper;
+    };
+
+    if (!bindingPath) {
+      const helper = document.createElement("div");
+      helper.className = "text-body-secondary small fst-italic";
+      helper.textContent = "Select a data binding to enable editing.";
+      control.appendChild(helper);
+    } else if (!editable) {
+      const helper = document.createElement("div");
+      helper.className = "text-body-secondary small fst-italic";
+      helper.textContent = "This list is read-only.";
+      control.appendChild(helper);
     }
+
+    if (editable) {
+      const toolbar = document.createElement("div");
+      toolbar.className = "d-flex justify-content-end";
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className = "btn btn-sm btn-outline-primary";
+      addButton.textContent = "Add row";
+      addButton.addEventListener("click", () => {
+        commitRows([...rows, {}]);
+      });
+      toolbar.appendChild(addButton);
+      control.appendChild(toolbar);
+    }
+
+    const variant = component.variant === "cards" ? "cards" : "list";
+
+    if (!visibleColumns.length) {
+      const empty = document.createElement("div");
+      empty.className = "text-body-secondary small fst-italic";
+      empty.textContent = "Configure columns in the template to edit this list.";
+      control.appendChild(empty);
+    } else if (variant === "cards") {
+      const grid = document.createElement("div");
+      grid.className = "row g-3";
+      if (!rows.length) {
+        const placeholder = document.createElement("div");
+        placeholder.className = "col-12";
+        const message = document.createElement("div");
+        message.className = "text-body-secondary small fst-italic";
+        message.textContent = editable ? "No rows yet. Add a row to get started." : "No rows available.";
+        placeholder.appendChild(message);
+        grid.appendChild(placeholder);
+      }
+      rows.forEach((row, rowIndex) => {
+        const rowData = ensureRowObject(row);
+        const col = document.createElement("div");
+        col.className = "col-12 col-lg-6";
+        const card = document.createElement("div");
+        card.className = "border rounded-3 p-3 bg-body d-flex flex-column gap-2";
+        const header = document.createElement("div");
+        header.className = "fw-semibold";
+        const displayColumn = visibleColumns.find((column) => column.key === displayField) || visibleColumns[0];
+        const displayValue = resolveCellValue(displayColumn, rowData, rowIndex);
+        header.textContent = displayValue != null && displayValue !== "" ? String(displayValue) : displayColumn.label || displayColumn.key;
+        card.appendChild(header);
+        visibleColumns.forEach((column) => {
+          const fieldWrapper = document.createElement("div");
+          fieldWrapper.className = "d-flex flex-column gap-1";
+          const label = document.createElement("span");
+          label.className = "text-body-secondary small";
+          label.textContent = column.label || column.key;
+          fieldWrapper.appendChild(label);
+          if (column.mode === "formula") {
+            const value = document.createElement("div");
+            value.className = "fw-semibold";
+            const result = resolveCellValue(column, rowData, rowIndex);
+            value.textContent = result != null && result !== "" ? String(result) : "—";
+            fieldWrapper.appendChild(value);
+          } else if (column.type === "boolean") {
+            fieldWrapper.appendChild(
+              createBooleanCell(rowIndex, column, resolveCellValue(column, rowData, rowIndex))
+            );
+          } else {
+            fieldWrapper.appendChild(
+              createTextCell(rowIndex, column, resolveCellValue(column, rowData, rowIndex))
+            );
+          }
+          card.appendChild(fieldWrapper);
+        });
+        if (editable) {
+          const actions = document.createElement("div");
+          actions.className = "d-flex justify-content-end";
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.className = "btn btn-sm btn-outline-danger";
+          removeButton.textContent = "Remove";
+          removeButton.addEventListener("click", () => handleRemoveRow(rowIndex));
+          actions.appendChild(removeButton);
+          card.appendChild(actions);
+        }
+        col.appendChild(card);
+        grid.appendChild(col);
+      });
+      control.appendChild(grid);
+    } else {
+      const wrapper = document.createElement("div");
+      wrapper.className = "table-responsive";
+      const table = document.createElement("table");
+      table.className = "table table-sm align-middle mb-0";
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      visibleColumns.forEach((column) => {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.textContent = column.label || column.key;
+        headerRow.appendChild(th);
+      });
+      if (editable) {
+        const actionsTh = document.createElement("th");
+        actionsTh.scope = "col";
+        actionsTh.className = "text-end";
+        actionsTh.textContent = "Actions";
+        headerRow.appendChild(actionsTh);
+      }
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      if (!rows.length) {
+        const emptyRow = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = visibleColumns.length + (editable ? 1 : 0);
+        cell.className = "text-body-secondary small fst-italic";
+        cell.textContent = editable ? "No rows yet. Add a row to get started." : "No rows available.";
+        emptyRow.appendChild(cell);
+        tbody.appendChild(emptyRow);
+      }
+      rows.forEach((row, rowIndex) => {
+        const rowData = ensureRowObject(row);
+        const tr = document.createElement("tr");
+        visibleColumns.forEach((column) => {
+          const td = document.createElement("td");
+          if (column.mode === "formula") {
+            const result = resolveCellValue(column, rowData, rowIndex);
+            td.textContent = result != null && result !== "" ? String(result) : "—";
+          } else if (column.type === "boolean") {
+            td.appendChild(
+              createBooleanCell(rowIndex, column, resolveCellValue(column, rowData, rowIndex))
+            );
+          } else {
+            td.appendChild(
+              createTextCell(rowIndex, column, resolveCellValue(column, rowData, rowIndex))
+            );
+          }
+          tr.appendChild(td);
+        });
+        if (editable) {
+          const actionsCell = document.createElement("td");
+          actionsCell.className = "text-end";
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.className = "btn btn-sm btn-outline-danger";
+          removeButton.textContent = "Remove";
+          removeButton.addEventListener("click", () => handleRemoveRow(rowIndex));
+          actionsCell.appendChild(removeButton);
+          tr.appendChild(actionsCell);
+        }
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      control.appendChild(wrapper);
+    }
+
     return createLabeledField({
       component,
-      control: textarea,
+      control,
       labelText,
-      labelTag: "label",
-      labelFor: textarea.id || "",
-      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
       applyFormatting: applyTextFormatting,
     });
   }
