@@ -63,7 +63,13 @@ function pushPath(results, path, node) {
   const label = rawLabel || fallbackLabel || path;
   const rawType = typeof node.type === "string" ? node.type : "";
   const type = rawType || "value";
-  results.push({ path, label, type, category: categorizeFieldType(rawType) });
+  const rawDisplayField = typeof node.displayField === "string" ? node.displayField.trim() : "";
+  const itemDisplayField =
+    node && typeof node.item === "object" && typeof node.item.displayField === "string"
+      ? node.item.displayField.trim()
+      : "";
+  const displayField = rawDisplayField || itemDisplayField || "";
+  results.push({ path, label, type, category: categorizeFieldType(rawType), displayField });
 }
 
 function traverseField(node, parentPath, results) {

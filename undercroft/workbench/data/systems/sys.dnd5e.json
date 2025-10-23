@@ -172,5 +172,27 @@
       }
     }
   ],
+  "preview": {
+    "inventory": [
+      {
+        "name": "Longsword",
+        "quantity": 1,
+        "weight": 3,
+        "notes": "Trusted martial weapon"
+      },
+      {
+        "name": "Explorer's Pack",
+        "quantity": 1,
+        "weight": 10,
+        "notes": "Bedroll, rations, tinderbox, and more"
+      },
+      {
+        "name": "Potion of Healing",
+        "quantity": 2,
+        "weight": 0.5,
+        "notes": "Restores 2d4+2 hit points"
+      }
+    ]
+  },
   "importers": []
 }
