@@ -36,6 +36,7 @@ import {
   resolveBindingFromContexts,
   normalizeOptionEntries,
   buildSystemPreviewData,
+  parseBindingPathSegments,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
 import { initHelpSystem } from "../lib/help.js";
@@ -122,6 +123,124 @@ import { initHelpSystem } from "../lib/help.js";
       return categories.includes("string") || categories.includes("any");
     }
     return categories.includes(entryCategory) || categories.includes("any");
+  }
+
+  function normalizeBindingPath(binding) {
+    const normalized = normalizeBindingValue(binding);
+    if (!normalized || normalized.startsWith("=")) {
+      return "";
+    }
+    if (normalized.startsWith("@")) {
+      return normalized.slice(1).trim();
+    }
+    return normalized;
+  }
+
+  function findBindingFieldEntry(binding, allowedCategories = null) {
+    const path = normalizeBindingPath(binding);
+    if (!path) {
+      return null;
+    }
+    const entry = state.bindingFields.find((field) => field?.path === path) || null;
+    if (!entry) {
+      return null;
+    }
+    if (!fieldMatchesCategories(entry, allowedCategories)) {
+      return null;
+    }
+    return entry;
+  }
+
+  function formatSegmentLabel(segment) {
+    if (!segment) {
+      return "";
+    }
+    const cleaned = segment.replace(/\[\]/g, "").replace(/[-_]+/g, " ").trim();
+    if (!cleaned) {
+      return "";
+    }
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  function formatBindingLabel(binding) {
+    const path = normalizeBindingPath(binding);
+    if (!path) {
+      return "";
+    }
+    const parts = path.split(/[.\[\]]/).filter(Boolean);
+    if (!parts.length) {
+      return "";
+    }
+    return formatSegmentLabel(parts[parts.length - 1]);
+  }
+
+  function resolveRelativeSegments(sourceBinding, targetBinding) {
+    const sourceSegments = parseBindingPathSegments(sourceBinding) || [];
+    const targetSegments = parseBindingPathSegments(targetBinding) || [];
+    if (!sourceSegments.length || !targetSegments.length) {
+      return [];
+    }
+    const sourceRoot = sourceSegments[0];
+    if (targetSegments[0] !== sourceRoot) {
+      return [];
+    }
+    if (targetSegments.length > sourceSegments.length && sourceSegments.every((segment, index) => segment === targetSegments[index])) {
+      return targetSegments.slice(sourceSegments.length);
+    }
+    if (targetSegments.length > 1) {
+      return targetSegments.slice(1);
+    }
+    return [];
+  }
+
+  function getValueFromSegments(target, segments = []) {
+    if (!segments.length) {
+      return undefined;
+    }
+    let cursor = target;
+    for (const segment of segments) {
+      if (!segment) {
+        return undefined;
+      }
+      if (Array.isArray(cursor)) {
+        const index = Number(segment);
+        if (Number.isFinite(index) && index >= 0 && index < cursor.length) {
+          cursor = cursor[index];
+        } else {
+          return undefined;
+        }
+      } else if (cursor && typeof cursor === "object" && segment in cursor) {
+        cursor = cursor[segment];
+      } else {
+        return undefined;
+      }
+    }
+    return cursor;
+  }
+
+  function fallbackItemLabel(baseLabel, item, index) {
+    if (typeof item === "string") {
+      const trimmed = item.trim();
+      if (trimmed) {
+        return trimmed;
+      }
+    }
+    if (typeof item === "number") {
+      return String(item);
+    }
+    if (item && typeof item === "object") {
+      const candidates = ["name", "title", "label", "id"];
+      for (const key of candidates) {
+        const value = item[key];
+        if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (trimmed) {
+            return trimmed;
+          }
+        }
+      }
+    }
+    return `${baseLabel} ${index + 1}`;
   }
 
   const systemDefinitionCache = new Map();
@@ -2667,45 +2786,146 @@ import { initHelpSystem } from "../lib/help.js";
     const control = document.createElement("div");
     control.className = "d-flex flex-column gap-2";
 
-    const bindingSource =
-      normalizeBindingValue(component?.sourceBinding) || normalizeBindingValue(component?.binding);
-    const labelFromBinding = (() => {
-      const source = bindingSource.replace(/^[=@]/, "");
-      if (!source) return "Item";
-      const parts = source.split(/[.\[\]]/).filter(Boolean);
-      if (!parts.length) return "Item";
-      const raw = parts[parts.length - 1].replace(/[-_]+/g, " ").trim();
-      if (!raw) return "Item";
-      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    const previewModel = (() => {
+      const sourceBinding = normalizeBindingValue(component?.sourceBinding);
+      const fallbackBinding = normalizeBindingValue(component?.binding);
+      const activeBinding = sourceBinding || fallbackBinding;
+      const sourceField = findBindingFieldEntry(activeBinding, ["array", "object"]);
+      const hasValidSource = Boolean(sourceField);
+      const baseLabel = hasValidSource
+        ? sourceField?.label?.trim() || formatBindingLabel(activeBinding) || "Item"
+        : "Item";
+      const bindingForPreview = hasValidSource ? activeBinding : "";
+      const bindingWithSource = hasValidSource ? sourceBinding || fallbackBinding : "";
+      let resolvedItems = [];
+      if (bindingWithSource) {
+        const boundItems = resolvePreviewBindingValue(bindingWithSource);
+        if (Array.isArray(boundItems)) {
+          resolvedItems = boundItems;
+        }
+      }
+      const displayBinding =
+        hasValidSource && typeof sourceField?.displayField === "string" && sourceField.displayField.trim()
+          ? sourceField.displayField.trim()
+          : "";
+      const displaySegments =
+        bindingForPreview && displayBinding
+          ? resolveRelativeSegments(
+              bindingForPreview,
+              displayBinding.startsWith("@") ? displayBinding : `@${displayBinding}`
+            )
+          : [];
+      const valueBinding = normalizeBindingValue(component?.binding);
+      const valueSegments =
+        bindingForPreview && valueBinding
+          ? resolveRelativeSegments(bindingForPreview, valueBinding)
+          : [];
+      const hasValueBinding = valueSegments.length > 0;
+      const valueLabel = hasValueBinding ? formatSegmentLabel(valueSegments[valueSegments.length - 1]) : "";
+      const entryCount = component.variant === "cards" ? 2 : 3;
+      const itemsToRender = [];
+      for (let index = 0; index < entryCount; index += 1) {
+        if (resolvedItems[index] !== undefined) {
+          itemsToRender.push(resolvedItems[index]);
+        } else {
+          itemsToRender.push(null);
+        }
+      }
+      const entries = itemsToRender.map((item, index) => {
+        const isPlaceholder = item === null || item === undefined;
+        const fallbackLabel = fallbackItemLabel(baseLabel, item, index);
+        let text = fallbackLabel;
+        if (!isPlaceholder && displaySegments.length) {
+          const raw = getValueFromSegments(item, displaySegments);
+          if (raw !== undefined && raw !== null) {
+            const stringValue = String(raw).trim();
+            if (stringValue) {
+              text = stringValue;
+            }
+          }
+        } else if (!isPlaceholder && typeof item === "string") {
+          const trimmed = item.trim();
+          if (trimmed) {
+            text = trimmed;
+          }
+        }
+        let badgeText = "";
+        let showBadge = false;
+        if (hasValueBinding) {
+          showBadge = true;
+          if (!isPlaceholder) {
+            const rawBadge = getValueFromSegments(item, valueSegments);
+            if (rawBadge !== undefined && rawBadge !== null) {
+              const badgeString = String(rawBadge).trim();
+              badgeText = badgeString || "—";
+            } else {
+              badgeText = "—";
+            }
+          } else {
+            badgeText = "—";
+          }
+        } else if (isPlaceholder) {
+          showBadge = true;
+          badgeText = "Value";
+        }
+        return {
+          text,
+          badgeText,
+          showBadge,
+          isPlaceholder,
+          hasValueBinding,
+          valueLabel,
+        };
+      });
+
+      return {
+        label: baseLabel,
+        items: entries,
+      };
     })();
 
     if (component.variant === "cards") {
       const grid = document.createElement("div");
       grid.className = "row g-2";
-      for (let index = 0; index < 2; index += 1) {
+      previewModel.items.forEach((entry) => {
         const col = document.createElement("div");
         col.className = "col-12 col-md-6";
         const card = document.createElement("div");
         card.className = "border rounded-3 p-3 bg-body";
-        const itemLabel = `${labelFromBinding} ${index + 1}`;
-        card.innerHTML = `<div class=\"fw-semibold\">${itemLabel}</div><div class=\"text-body-secondary small\">Repeatable entry</div>`;
+        const heading = document.createElement("div");
+        heading.className = "fw-semibold";
+        heading.textContent = entry.text;
+        card.appendChild(heading);
+        const detail = document.createElement("div");
+        detail.className = "text-body-secondary small";
+        if (entry.hasValueBinding) {
+          const label = entry.valueLabel || "Value";
+          detail.textContent = `${label}: ${entry.badgeText || "—"}`;
+        } else {
+          detail.textContent = entry.isPlaceholder ? "Repeatable entry" : "Repeatable entry";
+        }
+        card.appendChild(detail);
         col.appendChild(card);
         grid.appendChild(col);
-      }
+      });
       control.appendChild(grid);
     } else {
       const list = document.createElement("ul");
       list.className = "list-group";
-      for (let index = 0; index < 3; index += 1) {
+      previewModel.items.forEach((entry) => {
         const item = document.createElement("li");
         item.className = "list-group-item d-flex justify-content-between align-items-center";
-        item.textContent = `${labelFromBinding} ${index + 1}`;
-        const badge = document.createElement("span");
-        badge.className = "badge text-bg-secondary";
-        badge.textContent = "Value";
-        item.appendChild(badge);
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = entry.text;
+        item.appendChild(labelSpan);
+        if (entry.showBadge) {
+          const badge = document.createElement("span");
+          badge.className = "badge text-bg-secondary";
+          badge.textContent = entry.badgeText || "";
+          item.appendChild(badge);
+        }
         list.appendChild(item);
-      }
+      });
       control.appendChild(list);
     }
     return createLabeledField({
