@@ -36,6 +36,7 @@ import {
   resolveBindingFromContexts,
   normalizeOptionEntries,
   buildSystemPreviewData,
+  parseBindingPathSegments,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
 import { initHelpSystem } from "../lib/help.js";
@@ -124,6 +125,124 @@ import { initHelpSystem } from "../lib/help.js";
     return categories.includes(entryCategory) || categories.includes("any");
   }
 
+  function normalizeBindingPath(binding) {
+    const normalized = normalizeBindingValue(binding);
+    if (!normalized || normalized.startsWith("=")) {
+      return "";
+    }
+    if (normalized.startsWith("@")) {
+      return normalized.slice(1).trim();
+    }
+    return normalized;
+  }
+
+  function findBindingFieldEntry(binding, allowedCategories = null) {
+    const path = normalizeBindingPath(binding);
+    if (!path) {
+      return null;
+    }
+    const entry = state.bindingFields.find((field) => field?.path === path) || null;
+    if (!entry) {
+      return null;
+    }
+    if (!fieldMatchesCategories(entry, allowedCategories)) {
+      return null;
+    }
+    return entry;
+  }
+
+  function formatSegmentLabel(segment) {
+    if (!segment) {
+      return "";
+    }
+    const cleaned = segment.replace(/\[\]/g, "").replace(/[-_]+/g, " ").trim();
+    if (!cleaned) {
+      return "";
+    }
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  function formatBindingLabel(binding) {
+    const path = normalizeBindingPath(binding);
+    if (!path) {
+      return "";
+    }
+    const parts = path.split(/[.\[\]]/).filter(Boolean);
+    if (!parts.length) {
+      return "";
+    }
+    return formatSegmentLabel(parts[parts.length - 1]);
+  }
+
+  function resolveRelativeSegments(sourceBinding, targetBinding) {
+    const sourceSegments = parseBindingPathSegments(sourceBinding) || [];
+    const targetSegments = parseBindingPathSegments(targetBinding) || [];
+    if (!sourceSegments.length || !targetSegments.length) {
+      return [];
+    }
+    const sourceRoot = sourceSegments[0];
+    if (targetSegments[0] !== sourceRoot) {
+      return [];
+    }
+    if (targetSegments.length > sourceSegments.length && sourceSegments.every((segment, index) => segment === targetSegments[index])) {
+      return targetSegments.slice(sourceSegments.length);
+    }
+    if (targetSegments.length > 1) {
+      return targetSegments.slice(1);
+    }
+    return [];
+  }
+
+  function getValueFromSegments(target, segments = []) {
+    if (!segments.length) {
+      return undefined;
+    }
+    let cursor = target;
+    for (const segment of segments) {
+      if (!segment) {
+        return undefined;
+      }
+      if (Array.isArray(cursor)) {
+        const index = Number(segment);
+        if (Number.isFinite(index) && index >= 0 && index < cursor.length) {
+          cursor = cursor[index];
+        } else {
+          return undefined;
+        }
+      } else if (cursor && typeof cursor === "object" && segment in cursor) {
+        cursor = cursor[segment];
+      } else {
+        return undefined;
+      }
+    }
+    return cursor;
+  }
+
+  function fallbackItemLabel(baseLabel, item, index) {
+    if (typeof item === "string") {
+      const trimmed = item.trim();
+      if (trimmed) {
+        return trimmed;
+      }
+    }
+    if (typeof item === "number") {
+      return String(item);
+    }
+    if (item && typeof item === "object") {
+      const candidates = ["name", "title", "label", "id"];
+      for (const key of candidates) {
+        const value = item[key];
+        if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (trimmed) {
+            return trimmed;
+          }
+        }
+      }
+    }
+    return `${baseLabel} ${index + 1}`;
+  }
+
   const systemDefinitionCache = new Map();
 
   const state = {
@@ -189,9 +308,11 @@ import { initHelpSystem } from "../lib/help.js";
     window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
   }
 
+  const elements = {};
+
   await initializeBuiltins();
 
-  const elements = {
+  Object.assign(elements, {
     templateSelect: document.querySelector("[data-template-select]"),
     palette: document.querySelector("[data-palette]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
@@ -216,7 +337,7 @@ import { initHelpSystem } from "../lib/help.js";
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     jsonPreview: document.querySelector("[data-json-preview]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-  };
+  });
 
   const insertComponentAtCanvasRoot = createRootInsertionHandler({
     createItem: (type) => {
@@ -2665,43 +2786,146 @@ import { initHelpSystem } from "../lib/help.js";
     const control = document.createElement("div");
     control.className = "d-flex flex-column gap-2";
 
-    const labelFromBinding = (() => {
-      const source = (component.binding || "").replace(/^[=@]/, "");
-      if (!source) return "Item";
-      const parts = source.split(/[.\[\]]/).filter(Boolean);
-      if (!parts.length) return "Item";
-      const raw = parts[parts.length - 1].replace(/[-_]+/g, " ").trim();
-      if (!raw) return "Item";
-      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    const previewModel = (() => {
+      const sourceBinding = normalizeBindingValue(component?.sourceBinding);
+      const fallbackBinding = normalizeBindingValue(component?.binding);
+      const activeBinding = sourceBinding || fallbackBinding;
+      const sourceField = findBindingFieldEntry(activeBinding, ["array", "object"]);
+      const hasValidSource = Boolean(sourceField);
+      const baseLabel = hasValidSource
+        ? sourceField?.label?.trim() || formatBindingLabel(activeBinding) || "Item"
+        : "Item";
+      const bindingForPreview = hasValidSource ? activeBinding : "";
+      const bindingWithSource = hasValidSource ? sourceBinding || fallbackBinding : "";
+      let resolvedItems = [];
+      if (bindingWithSource) {
+        const boundItems = resolvePreviewBindingValue(bindingWithSource);
+        if (Array.isArray(boundItems)) {
+          resolvedItems = boundItems;
+        }
+      }
+      const displayBinding =
+        hasValidSource && typeof sourceField?.displayField === "string" && sourceField.displayField.trim()
+          ? sourceField.displayField.trim()
+          : "";
+      const displaySegments =
+        bindingForPreview && displayBinding
+          ? resolveRelativeSegments(
+              bindingForPreview,
+              displayBinding.startsWith("@") ? displayBinding : `@${displayBinding}`
+            )
+          : [];
+      const valueBinding = normalizeBindingValue(component?.binding);
+      const valueSegments =
+        bindingForPreview && valueBinding
+          ? resolveRelativeSegments(bindingForPreview, valueBinding)
+          : [];
+      const hasValueBinding = valueSegments.length > 0;
+      const valueLabel = hasValueBinding ? formatSegmentLabel(valueSegments[valueSegments.length - 1]) : "";
+      const entryCount = component.variant === "cards" ? 2 : 3;
+      const itemsToRender = [];
+      for (let index = 0; index < entryCount; index += 1) {
+        if (resolvedItems[index] !== undefined) {
+          itemsToRender.push(resolvedItems[index]);
+        } else {
+          itemsToRender.push(null);
+        }
+      }
+      const entries = itemsToRender.map((item, index) => {
+        const isPlaceholder = item === null || item === undefined;
+        const fallbackLabel = fallbackItemLabel(baseLabel, item, index);
+        let text = fallbackLabel;
+        if (!isPlaceholder && displaySegments.length) {
+          const raw = getValueFromSegments(item, displaySegments);
+          if (raw !== undefined && raw !== null) {
+            const stringValue = String(raw).trim();
+            if (stringValue) {
+              text = stringValue;
+            }
+          }
+        } else if (!isPlaceholder && typeof item === "string") {
+          const trimmed = item.trim();
+          if (trimmed) {
+            text = trimmed;
+          }
+        }
+        let badgeText = "";
+        let showBadge = false;
+        if (hasValueBinding) {
+          showBadge = true;
+          if (!isPlaceholder) {
+            const rawBadge = getValueFromSegments(item, valueSegments);
+            if (rawBadge !== undefined && rawBadge !== null) {
+              const badgeString = String(rawBadge).trim();
+              badgeText = badgeString || "—";
+            } else {
+              badgeText = "—";
+            }
+          } else {
+            badgeText = "—";
+          }
+        } else if (isPlaceholder) {
+          showBadge = true;
+          badgeText = "Value";
+        }
+        return {
+          text,
+          badgeText,
+          showBadge,
+          isPlaceholder,
+          hasValueBinding,
+          valueLabel,
+        };
+      });
+
+      return {
+        label: baseLabel,
+        items: entries,
+      };
     })();
 
     if (component.variant === "cards") {
       const grid = document.createElement("div");
       grid.className = "row g-2";
-      for (let index = 0; index < 2; index += 1) {
+      previewModel.items.forEach((entry) => {
         const col = document.createElement("div");
         col.className = "col-12 col-md-6";
         const card = document.createElement("div");
         card.className = "border rounded-3 p-3 bg-body";
-        const itemLabel = `${labelFromBinding} ${index + 1}`;
-        card.innerHTML = `<div class=\"fw-semibold\">${itemLabel}</div><div class=\"text-body-secondary small\">Repeatable entry</div>`;
+        const heading = document.createElement("div");
+        heading.className = "fw-semibold";
+        heading.textContent = entry.text;
+        card.appendChild(heading);
+        const detail = document.createElement("div");
+        detail.className = "text-body-secondary small";
+        if (entry.hasValueBinding) {
+          const label = entry.valueLabel || "Value";
+          detail.textContent = `${label}: ${entry.badgeText || "—"}`;
+        } else {
+          detail.textContent = entry.isPlaceholder ? "Repeatable entry" : "Repeatable entry";
+        }
+        card.appendChild(detail);
         col.appendChild(card);
         grid.appendChild(col);
-      }
+      });
       control.appendChild(grid);
     } else {
       const list = document.createElement("ul");
       list.className = "list-group";
-      for (let index = 0; index < 3; index += 1) {
+      previewModel.items.forEach((entry) => {
         const item = document.createElement("li");
         item.className = "list-group-item d-flex justify-content-between align-items-center";
-        item.textContent = `${labelFromBinding} ${index + 1}`;
-        const badge = document.createElement("span");
-        badge.className = "badge text-bg-secondary";
-        badge.textContent = "Value";
-        item.appendChild(badge);
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = entry.text;
+        item.appendChild(labelSpan);
+        if (entry.showBadge) {
+          const badge = document.createElement("span");
+          badge.className = "badge text-bg-secondary";
+          badge.textContent = entry.badgeText || "";
+          item.appendChild(badge);
+        }
         list.appendChild(item);
-      }
+      });
       control.appendChild(list);
     }
     return createLabeledField({
@@ -3564,6 +3788,38 @@ import { initHelpSystem } from "../lib/help.js";
     ) {
       return [];
     }
+    if (component.type === "array") {
+      const controls = [
+        createBindingFormulaInput(component, {
+          labelText: "Source",
+          placeholder: "@inventory",
+          bindingKey: "sourceBinding",
+          formulaKey: null,
+          supportsFormula: false,
+          allowedFieldCategories: ["array", "object"],
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
+            if (!result || result.type === "empty") {
+              draft.sourceBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.sourceBinding = previousValue || "";
+            }
+          },
+        }),
+      ];
+      controls.push(
+        createBindingFormulaInput(component, {
+          labelText: supportsFormula ? "Binding / Formula" : "Binding",
+          supportsBinding,
+          supportsFormula,
+          allowedFieldCategories: ["array", "object", "string", "number", "boolean"],
+        })
+      );
+      appendRollerControl(controls, component);
+      return controls;
+    }
     if (component.type === "input" && (component.variant || "text") === "select") {
       const controls = [
         createBindingFormulaInput(component, {
@@ -3573,9 +3829,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           supportsFormula: false,
           allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.sourceBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.sourceBinding = previousValue || "";
             }
           },
         }),
@@ -3597,9 +3858,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           supportsFormula: false,
           allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.sourceBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.sourceBinding = previousValue || "";
             }
           },
         }),
@@ -3623,9 +3889,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           allowedFieldCategories: ["array"],
           supportsFormula: false,
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.statesBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.statesBinding = previousValue || "";
             }
           },
         }),
@@ -3882,6 +4153,7 @@ import { initHelpSystem } from "../lib/help.js";
       allowedFieldCategories: categoryOverride = null,
       helperText = null,
       afterCommit = null,
+      requireValidField = false,
     } = {}
   ) {
     const wrapper = document.createElement("div");
@@ -3895,6 +4167,8 @@ import { initHelpSystem } from "../lib/help.js";
     const allowedFieldCategories = Array.isArray(categoryOverride) && categoryOverride.length
       ? categoryOverride.map((category) => String(category).toLowerCase())
       : getComponentBindingCategories(component);
+
+    const enforceValidField = Boolean(requireValidField && supportsBinding);
 
     const inputWrapper = document.createElement("div");
     inputWrapper.className = "position-relative";
@@ -3937,18 +4211,46 @@ import { initHelpSystem } from "../lib/help.js";
       }
     };
 
+    function buildQueryTokens(query = "") {
+      const raw = typeof query === "string" ? query.trim().toLowerCase() : "";
+      if (!raw) {
+        return [];
+      }
+      const tokens = new Set();
+      const withoutBraces = raw.replace(/^\{+/, "").replace(/\}+$/, "");
+      const withoutPrefix = withoutBraces.replace(/^@+/, "");
+      const withoutArrayHints = withoutPrefix.replace(/\[\]/g, "");
+      [raw, withoutBraces, withoutPrefix, withoutArrayHints].forEach((value) => {
+        if (typeof value !== "string") {
+          return;
+        }
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return;
+        }
+        if (!/[a-z0-9]/.test(trimmed)) {
+          return;
+        }
+        tokens.add(trimmed);
+      });
+      return Array.from(tokens);
+    }
+
     function getFieldSuggestions(query = "") {
       if (!supportsBinding) {
         return [];
       }
-      const normalized = query.trim().toLowerCase();
+      const searchTokens = buildQueryTokens(query);
       const entries = Array.isArray(state.bindingFields) ? state.bindingFields : [];
       const typed = entries.filter((entry) => fieldMatchesCategories(entry, allowedFieldCategories));
-      const filtered = normalized
+      const filtered = searchTokens.length
         ? typed.filter((entry) => {
             const path = entry.path?.toLowerCase?.() || "";
+            const collapsedPath = path.replace(/\[\]/g, "");
             const labelText = entry.label?.toLowerCase?.() || "";
-            return path.includes(normalized) || labelText.includes(normalized);
+            return searchTokens.some((token) =>
+              path.includes(token) || collapsedPath.includes(token) || labelText.includes(token)
+            );
           })
         : typed;
       return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => {
@@ -3982,8 +4284,14 @@ import { initHelpSystem } from "../lib/help.js";
 
     function commitValue(raw) {
       const source = typeof raw === "string" ? raw : "";
-      const trimmed = source.trim();
+      const trimmed = normalizeBindingValue(source);
+      const previousValue =
+        bindingKey && typeof component?.[bindingKey] === "string"
+          ? normalizeBindingValue(component[bindingKey])
+          : "";
       let result = { type: "empty", value: "" };
+      let validBinding = false;
+
       updateComponent(
         component.uid,
         (draft) => {
@@ -4013,8 +4321,30 @@ import { initHelpSystem } from "../lib/help.js";
             }
             result = { type: "binding", value: trimmed };
           }
+
+          if (enforceValidField && result.type === "binding") {
+            const normalizedBinding = normalizeBindingValue(result.value);
+            const entry = findBindingFieldEntry(normalizedBinding, allowedFieldCategories);
+            validBinding = Boolean(entry);
+            if (!validBinding && bindingKey) {
+              draft[bindingKey] = previousValue;
+            } else if (validBinding && bindingKey) {
+              draft[bindingKey] = normalizedBinding;
+            }
+            result = { ...result, normalized: normalizedBinding };
+          } else {
+            validBinding = result.type === "binding";
+          }
+
           if (typeof afterCommit === "function") {
-            afterCommit({ draft, raw: source, trimmed, result });
+            afterCommit({
+              draft,
+              raw: source,
+              trimmed,
+              result,
+              previousValue,
+              validBinding,
+            });
           }
         },
         { rerenderCanvas: true }
