@@ -22,6 +22,10 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
+import { collectSystemFields } from "../lib/system-schema.js";
+import { attachFormulaAutocomplete } from "../lib/formula-autocomplete.js";
+import { listFormulaFunctionMetadata } from "../lib/formula-metadata.js";
+import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
@@ -96,6 +100,9 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
   };
 
   const TYPE_OPTIONS = ["string", "number", "boolean", "object", "array"];
+
+  const MAX_FORMULA_SUGGESTIONS = 12;
+  const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
 
   function normalizeType(type) {
     if (!type) return "string";
@@ -796,9 +803,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       title,
       version,
       fields: [],
-      fragments: [],
-      metadata: [],
-      formulas: [],
       importers: [],
       origin,
       shareToken: shareToken || "",
@@ -846,9 +850,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       shareToken: effectiveShareToken,
     });
     hydrated.fields = Array.isArray(data.fields) ? data.fields.map(hydrateFieldNode) : [];
-    hydrated.fragments = Array.isArray(data.fragments) ? data.fragments : [];
-    hydrated.metadata = Array.isArray(data.metadata) ? data.metadata : [];
-    hydrated.formulas = Array.isArray(data.formulas) ? data.formulas : [];
     hydrated.importers = Array.isArray(data.importers) ? data.importers : [];
     applySystemState(hydrated, { emitStatus, statusMessage, markClean });
     state.system.shareToken = effectiveShareToken;
@@ -923,9 +924,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     } else {
       nextSystem = createBlankSystem({ id: trimmedId, title: trimmedTitle, version: trimmedVersion, origin });
       nextSystem.fields = [];
-      nextSystem.fragments = [];
-      nextSystem.metadata = [];
-      nextSystem.formulas = [];
       nextSystem.importers = [];
     }
     nextSystem.id = trimmedId;
@@ -1049,7 +1047,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       selectNode(node.id);
     });
 
-    const { header } = createStandardCardChrome({
+    const { header, ensureActions, deleteButton } = createStandardCardChrome({
       icon: typeMeta.icon || TYPE_DEFS.string.icon,
       iconLabel: typeMeta.label || normalizedType,
       removeButtonOptions: {
@@ -1060,38 +1058,74 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
         },
       },
     });
+    if (node.required) {
+      const indicatorContainer = document.createElement("span");
+      indicatorContainer.className = "d-inline-flex align-items-center justify-content-center";
+      indicatorContainer.dataset.bsToggle = "tooltip";
+      indicatorContainer.dataset.bsPlacement = "bottom";
+      indicatorContainer.dataset.bsTitle = "Required field";
+
+      const indicatorSymbol = document.createElement("span");
+      indicatorSymbol.className = "text-danger fw-semibold small";
+      indicatorSymbol.setAttribute("aria-hidden", "true");
+      indicatorSymbol.textContent = "*";
+
+      const indicatorSr = document.createElement("span");
+      indicatorSr.className = "visually-hidden";
+      indicatorSr.textContent = "Required field";
+
+      indicatorContainer.append(indicatorSymbol, indicatorSr);
+      const actionsContainer = ensureActions();
+      actionsContainer.prepend(indicatorContainer);
+    }
+
+    const duplicateButton = document.createElement("button");
+    duplicateButton.type = "button";
+    duplicateButton.className = "btn btn-outline-secondary btn-sm";
+    duplicateButton.innerHTML =
+      '<span class="iconify" data-icon="tabler:copy" aria-hidden="true"></span><span class="visually-hidden">Duplicate field</span>';
+    duplicateButton.dataset.bsToggle = "tooltip";
+    duplicateButton.dataset.bsPlacement = "bottom";
+    duplicateButton.dataset.bsTitle = "Duplicate field";
+    duplicateButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      duplicateNode(node.id);
+    });
+    const actionHost = ensureActions();
+    if (deleteButton && deleteButton.parentElement === actionHost) {
+      actionHost.insertBefore(duplicateButton, deleteButton);
+    } else {
+      actionHost.appendChild(duplicateButton);
+    }
+
     card.appendChild(header);
 
     const cardBody = document.createElement("div");
-    cardBody.className = "d-flex flex-column gap-1";
+    cardBody.className = "d-flex flex-column gap-2";
 
-    const heading = document.createElement("div");
+    const titleRow = document.createElement("div");
+    titleRow.className = "d-flex flex-wrap align-items-baseline gap-2";
+
+    const heading = document.createElement("span");
     heading.className = "fw-semibold";
     heading.textContent = node.label || node.key || typeMeta.label || normalizedType;
-    cardBody.appendChild(heading);
+    titleRow.appendChild(heading);
 
-    const subtitle = document.createElement("div");
-    subtitle.className = "text-body-secondary small";
-    subtitle.textContent = formatNodeSubtitle(node);
-    cardBody.appendChild(subtitle);
-
-    if (node.children && node.children.length) {
-      const summary = document.createElement("div");
-      summary.className = "text-body-secondary extra-small";
-      summary.textContent = `${node.children.length} nested ${node.children.length === 1 ? "field" : "fields"}`;
-      cardBody.appendChild(summary);
+    const subtitleText = formatNodeSubtitle(node);
+    if (subtitleText) {
+      const subtitle = document.createElement("span");
+      subtitle.className = "text-body-secondary small";
+      subtitle.textContent = subtitleText;
+      titleRow.appendChild(subtitle);
     }
+
+    cardBody.appendChild(titleRow);
 
     card.appendChild(cardBody);
 
     if (supportsChildren(node.type)) {
       const wrapper = document.createElement("div");
       wrapper.className = "d-flex flex-column gap-2";
-
-      const label = document.createElement("div");
-      label.className = "workbench-dropzone-label text-body-secondary text-uppercase extra-small";
-      label.textContent = "Nested Fields";
-      wrapper.appendChild(label);
 
       const container = document.createElement("div");
       container.className = "workbench-dropzone";
@@ -1114,8 +1148,7 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
 
   function formatNodeSubtitle(node) {
     const parts = [];
-    if (node.key) parts.push(node.key);
-    if (node.required) parts.push("required");
+    if (node.key) parts.push(`(${node.key})`);
     if (node.minimum != null || node.maximum != null) {
       const range = [node.minimum ?? "", node.maximum ?? ""].filter((value) => value !== "").join(" – ");
       if (range) {
@@ -1126,6 +1159,10 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       parts.push(`${node.values.length} value${node.values.length === 1 ? "" : "s"}`);
     }
     const normalizedType = normalizeType(node.type);
+    if (supportsChildren(node.type) && Array.isArray(node.children) && node.children.length) {
+      const count = node.children.length;
+      parts.push(`${count} nested ${count === 1 ? "field" : "fields"}`);
+    }
     return parts.join(" · ") || TYPE_DEFS[normalizedType]?.description || "";
   }
 
@@ -1265,6 +1302,89 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       from: { parentId: fromParentId, index: fromIndex },
       to: { parentId: targetParentId, index: safeIndex },
     };
+  }
+
+  function duplicateNode(nodeId) {
+    const found = findNode(nodeId);
+    if (!found) {
+      return;
+    }
+
+    const metadata = getSystemMetadata(state.system?.id);
+    if (!systemAllowsEdits(metadata)) {
+      const message = describeSystemEditRestriction(metadata);
+      status.show(message, { type: "warning", timeout: 2800 });
+      return;
+    }
+    if (!dataManager.hasWriteAccess("systems")) {
+      const required = dataManager.describeRequiredWriteTier("systems");
+      const message = required
+        ? `Saving systems requires a ${required} tier.`
+        : "Your tier cannot save systems.";
+      status.show(message, { type: "warning", timeout: 2800 });
+      return;
+    }
+
+    const { node, collection, index, parentId } = found;
+    if (!collection) {
+      return;
+    }
+
+    const duplicate = cloneNode(node);
+    regenerateFieldIdentifiers(duplicate);
+    ensureDuplicateFieldKey(duplicate, collection);
+
+    const previousSelectedId = state.selectedNodeId || null;
+    collection.splice(index + 1, 0, duplicate);
+    rebuildFieldIdentities(state.system);
+    undoStack.push({
+      type: "add",
+      systemId: state.system?.id || "",
+      node: cloneNode(duplicate),
+      parentId,
+      index: index + 1,
+      previousSelectedId,
+    });
+    state.selectedNodeId = duplicate.id;
+    renderAll();
+    status.show("Duplicated field", { timeout: 1500 });
+  }
+
+  function regenerateFieldIdentifiers(node) {
+    if (!node || typeof node !== "object") {
+      return;
+    }
+    node.id = generateId();
+    if (Array.isArray(node.children) && node.children.length) {
+      node.children.forEach((child) => {
+        regenerateFieldIdentifiers(child);
+      });
+    } else if (!Array.isArray(node.children)) {
+      node.children = [];
+    }
+  }
+
+  function ensureDuplicateFieldKey(node, siblings) {
+    if (!node || !Array.isArray(siblings)) {
+      return;
+    }
+    const normalizedType = normalizeType(node.type);
+    const siblingKeys = new Set(
+      siblings
+        .map((sibling) => (typeof sibling.key === "string" ? sibling.key.trim() : ""))
+        .filter(Boolean)
+    );
+    const rawBase = typeof node.key === "string" ? node.key.trim() : "";
+    const sanitizedBase = rawBase.replace(/[^A-Za-z0-9_-]/g, "");
+    const fallbackBase = toCamelCase(node.label || TYPE_DEFS[normalizedType]?.label || "Field");
+    const keyBase = sanitizedBase || fallbackBase || "field";
+    let candidate = `${keyBase}Copy`;
+    let counter = 2;
+    while (siblingKeys.has(candidate)) {
+      candidate = `${keyBase}Copy${counter}`;
+      counter += 1;
+    }
+    node.key = candidate;
   }
 
   function deleteNode(nodeId, { skipHistory = false, silent = false, suppressRender = false } = {}) {
@@ -1617,8 +1737,8 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     form.appendChild(createTextInput(node, "ID", "key"));
     form.appendChild(createTextInput(node, "Label", "label"));
     form.appendChild(createTypeSelect(node));
+    form.appendChild(createFormulaInput(node));
     form.appendChild(createCheckbox(node, "Required", "required"));
-    form.appendChild(createTextInput(node, "Formula", "formula", { placeholder: "Optional formula expression" }));
 
     if (isNumericType(normalizedType)) {
       form.appendChild(createNumberInput(node, "Minimum", "minimum"));
@@ -1722,6 +1842,84 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return fieldset;
   }
 
+  function createFormulaInput(node) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-1";
+
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = "Formula";
+
+    const fieldId = createInspectorFieldId(node.id, "formula", "input");
+    label.setAttribute("for", fieldId);
+
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "position-relative";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "form-control";
+    input.id = fieldId;
+    input.dataset.inspectorField = fieldId;
+    input.placeholder = "=sum(@attributes.strength, @attributes.dexterity)";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = node.formula ?? "";
+    input.setAttribute("aria-autocomplete", "list");
+
+    const suggestions = document.createElement("div");
+    suggestions.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    suggestions.id = `${fieldId}-suggestions`;
+    suggestions.setAttribute("role", "listbox");
+    suggestions.style.zIndex = "1300";
+    suggestions.style.fontSize = "0.8125rem";
+    suggestions.style.maxHeight = "16rem";
+    suggestions.style.overflowY = "auto";
+    input.setAttribute("aria-controls", suggestions.id);
+
+    inputWrapper.append(input, suggestions);
+    wrapper.append(label, inputWrapper);
+
+    const commitValue = (raw) => {
+      const value = typeof raw === "string" ? raw.trim() : "";
+      updateNodeProperty(node.id, "formula", value);
+    };
+
+    const autocomplete = attachFormulaAutocomplete(input, {
+      container: suggestions,
+      supportsBinding: true,
+      supportsFunctions: true,
+      getFieldItems: (query) => getSystemFormulaFieldSuggestions(query),
+      getFunctionItems: (query) => getSystemFormulaFunctionSuggestions(query),
+      resolveFieldMeta: resolveFieldTypeMeta,
+      maxItems: MAX_FORMULA_SUGGESTIONS,
+      applySuggestion: ({ applyDefault }) => {
+        applyDefault();
+        commitValue(input.value);
+      },
+    });
+
+    input.addEventListener("input", () => {
+      commitValue(input.value);
+      autocomplete.update();
+    });
+
+    input.addEventListener("change", () => {
+      commitValue(input.value);
+      autocomplete.update();
+    });
+
+    input.addEventListener("focus", () => {
+      autocomplete.update();
+    });
+
+    input.addEventListener("click", () => {
+      autocomplete.update();
+    });
+
+    return wrapper;
+  }
+
   function createTextInput(node, labelText, property, { placeholder = "" } = {}) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column";
@@ -1816,6 +2014,48 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
     return wrapper;
   }
 
+  function getSystemFormulaFieldSuggestions(query = "") {
+    const normalized = query.trim().toLowerCase();
+    const entries = collectSystemFields(state.system);
+    const results = [];
+    entries.forEach((entry) => {
+      const path = entry?.path || "";
+      if (!path) {
+        return;
+      }
+      const label = entry.label || "";
+      if (normalized) {
+        const pathMatch = path.toLowerCase().includes(normalized);
+        const labelMatch = label.toLowerCase().includes(normalized);
+        if (!pathMatch && !labelMatch) {
+          return;
+        }
+      }
+      results.push({
+        type: "field",
+        path,
+        display: `@${path}`,
+        description: label && label !== path ? label : "",
+        fieldType: entry.type || "",
+        fieldCategory: entry.category || "",
+      });
+    });
+    return results.slice(0, MAX_FORMULA_SUGGESTIONS);
+  }
+
+  function getSystemFormulaFunctionSuggestions(query = "") {
+    const normalized = query.trim().toLowerCase();
+    const matches = normalized
+      ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+      : FORMULA_FUNCTIONS;
+    return matches.slice(0, MAX_FORMULA_SUGGESTIONS).map((fn) => ({
+      type: "function",
+      name: fn.name,
+      display: fn.signature,
+      description: fn.name,
+    }));
+  }
+
   function updateNodeProperty(
     nodeId,
     property,
@@ -1902,9 +2142,6 @@ import { initTierGate, initTierVisibility } from "../lib/access.js";
       title: system.title || "",
       version: system.version || "0.1",
       fields: Array.isArray(system.fields) ? system.fields.map(serializeFieldNode) : [],
-      fragments: Array.isArray(system.fragments) ? system.fragments : [],
-      metadata: Array.isArray(system.metadata) ? system.metadata : [],
-      formulas: Array.isArray(system.formulas) ? system.formulas : [],
       importers: Array.isArray(system.importers) ? system.importers : [],
     };
   }
