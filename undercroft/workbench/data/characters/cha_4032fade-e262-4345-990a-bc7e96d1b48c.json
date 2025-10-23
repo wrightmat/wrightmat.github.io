@@ -1,8 +1,8 @@
 {
   "id": "cha_4032fade-e262-4345-990a-bc7e96d1b48c",
   "title": "Test",
-  "template": "tpl.dnd-5e-basic",
-  "system": "sys.dnd-5e",
+  "template": "tpl.5e.flex-basic",
+  "system": "sys.dnd5e",
   "data": {
     "name": "Test",
     "class": "Bard",
