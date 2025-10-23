@@ -1,8 +1,8 @@
 {
-  "id": "tpl.dnd-5e-basic",
+  "id": "tpl.5e.flex-basic",
   "title": "D&D 5E Basic",
   "version": "0.1",
-  "schema": "sys.dnd-5e",
+  "schema": "sys.dnd5e",
   "components": [
     {
       "type": "input",
