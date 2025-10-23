@@ -1,5 +1,3 @@
-const OBJECT_TYPES = new Set(["object"]);
-
 function normalizeType(type) {
   if (typeof type !== "string") {
     return "";
@@ -39,32 +37,63 @@ function normalizeKey(key) {
   return key.trim();
 }
 
-function pushPath(results, pathSegments, node) {
-  if (!Array.isArray(pathSegments) || !pathSegments.length) {
+function resolveNodePath(parentPath, key) {
+  const normalizedKey = normalizeKey(key);
+  if (!normalizedKey) {
+    return parentPath;
+  }
+  if (!parentPath) {
+    return normalizedKey;
+  }
+  const startsWithParentDot = normalizedKey.startsWith(`${parentPath}.`);
+  const startsWithParentBracket = normalizedKey.startsWith(`${parentPath}[`);
+  if (normalizedKey === parentPath || startsWithParentDot || startsWithParentBracket) {
+    return normalizedKey;
+  }
+  return `${parentPath}.${normalizedKey}`;
+}
+
+function pushPath(results, path, node) {
+  if (!path) {
     return;
   }
-  const path = pathSegments.join(".");
-  const label = typeof node.label === "string" && node.label.trim()
-    ? node.label.trim()
-    : pathSegments[pathSegments.length - 1];
+  const rawLabel = typeof node.label === "string" ? node.label.trim() : "";
+  const fallbackSegment = path.split(".").pop() || path;
+  const fallbackLabel = fallbackSegment.replace(/\[\]/g, "");
+  const label = rawLabel || fallbackLabel || path;
   const rawType = typeof node.type === "string" ? node.type : "";
-  const type = rawType ? rawType : "value";
+  const type = rawType || "value";
   results.push({ path, label, type, category: categorizeFieldType(rawType) });
 }
 
-function traverseField(node, prefix, results) {
+function traverseField(node, parentPath, results) {
   if (!node || typeof node !== "object") {
     return;
   }
   const key = normalizeKey(node.key);
-  const nextPrefix = key ? [...prefix, key] : prefix;
-  if (nextPrefix.length) {
-    pushPath(results, nextPrefix, node);
+  const type = normalizeType(node.type);
+  const nextPath = resolveNodePath(parentPath, key);
+  if (nextPath) {
+    pushPath(results, nextPath, node);
   }
-  const type = normalizeType(node.type) || "value";
-  if (OBJECT_TYPES.has(type) && Array.isArray(node.children)) {
-    node.children.forEach((child) => {
-      traverseField(child, nextPrefix, results);
+
+  if (type === "object") {
+    const childParent = nextPath || parentPath;
+    const children = Array.isArray(node.children) ? node.children : [];
+    children.forEach((child) => {
+      traverseField(child, childParent, results);
+    });
+    return;
+  }
+
+  if (type === "array") {
+    const arrayParent = nextPath ? (nextPath.endsWith("[]") ? nextPath : `${nextPath}[]`) : parentPath;
+    let children = Array.isArray(node.children) ? node.children : [];
+    if (!children.length && node.item && typeof node.item === "object" && Array.isArray(node.item.children)) {
+      children = node.item.children;
+    }
+    children.forEach((child) => {
+      traverseField(child, arrayParent, results);
     });
   }
 }
@@ -96,7 +125,7 @@ export function collectSystemFields(system) {
   candidateSets.forEach((fields) => {
     if (Array.isArray(fields)) {
       fields.forEach((field) => {
-        traverseField(field, [], results);
+        traverseField(field, "", results);
       });
     }
   });
