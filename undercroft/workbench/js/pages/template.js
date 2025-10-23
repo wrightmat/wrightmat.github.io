@@ -3797,9 +3797,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           supportsFormula: false,
           allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.sourceBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.sourceBinding = previousValue || "";
             }
           },
         }),
@@ -3824,9 +3829,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           supportsFormula: false,
           allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.sourceBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.sourceBinding = previousValue || "";
             }
           },
         }),
@@ -3848,9 +3858,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           supportsFormula: false,
           allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.sourceBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.sourceBinding = previousValue || "";
             }
           },
         }),
@@ -3874,9 +3889,14 @@ import { initHelpSystem } from "../lib/help.js";
           formulaKey: null,
           allowedFieldCategories: ["array"],
           supportsFormula: false,
-          afterCommit: ({ draft, result }) => {
+          requireValidField: true,
+          afterCommit: ({ draft, result, validBinding, previousValue }) => {
             if (!result || result.type === "empty") {
               draft.statesBinding = "";
+              return;
+            }
+            if (!validBinding) {
+              draft.statesBinding = previousValue || "";
             }
           },
         }),
@@ -4133,6 +4153,7 @@ import { initHelpSystem } from "../lib/help.js";
       allowedFieldCategories: categoryOverride = null,
       helperText = null,
       afterCommit = null,
+      requireValidField = false,
     } = {}
   ) {
     const wrapper = document.createElement("div");
@@ -4146,6 +4167,8 @@ import { initHelpSystem } from "../lib/help.js";
     const allowedFieldCategories = Array.isArray(categoryOverride) && categoryOverride.length
       ? categoryOverride.map((category) => String(category).toLowerCase())
       : getComponentBindingCategories(component);
+
+    const enforceValidField = Boolean(requireValidField && supportsBinding);
 
     const inputWrapper = document.createElement("div");
     inputWrapper.className = "position-relative";
@@ -4188,18 +4211,46 @@ import { initHelpSystem } from "../lib/help.js";
       }
     };
 
+    function buildQueryTokens(query = "") {
+      const raw = typeof query === "string" ? query.trim().toLowerCase() : "";
+      if (!raw) {
+        return [];
+      }
+      const tokens = new Set();
+      const withoutBraces = raw.replace(/^\{+/, "").replace(/\}+$/, "");
+      const withoutPrefix = withoutBraces.replace(/^@+/, "");
+      const withoutArrayHints = withoutPrefix.replace(/\[\]/g, "");
+      [raw, withoutBraces, withoutPrefix, withoutArrayHints].forEach((value) => {
+        if (typeof value !== "string") {
+          return;
+        }
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return;
+        }
+        if (!/[a-z0-9]/.test(trimmed)) {
+          return;
+        }
+        tokens.add(trimmed);
+      });
+      return Array.from(tokens);
+    }
+
     function getFieldSuggestions(query = "") {
       if (!supportsBinding) {
         return [];
       }
-      const normalized = query.trim().toLowerCase();
+      const searchTokens = buildQueryTokens(query);
       const entries = Array.isArray(state.bindingFields) ? state.bindingFields : [];
       const typed = entries.filter((entry) => fieldMatchesCategories(entry, allowedFieldCategories));
-      const filtered = normalized
+      const filtered = searchTokens.length
         ? typed.filter((entry) => {
             const path = entry.path?.toLowerCase?.() || "";
+            const collapsedPath = path.replace(/\[\]/g, "");
             const labelText = entry.label?.toLowerCase?.() || "";
-            return path.includes(normalized) || labelText.includes(normalized);
+            return searchTokens.some((token) =>
+              path.includes(token) || collapsedPath.includes(token) || labelText.includes(token)
+            );
           })
         : typed;
       return filtered.slice(0, MAX_SUGGESTIONS).map((entry) => {
@@ -4233,8 +4284,14 @@ import { initHelpSystem } from "../lib/help.js";
 
     function commitValue(raw) {
       const source = typeof raw === "string" ? raw : "";
-      const trimmed = source.trim();
+      const trimmed = normalizeBindingValue(source);
+      const previousValue =
+        bindingKey && typeof component?.[bindingKey] === "string"
+          ? normalizeBindingValue(component[bindingKey])
+          : "";
       let result = { type: "empty", value: "" };
+      let validBinding = false;
+
       updateComponent(
         component.uid,
         (draft) => {
@@ -4264,8 +4321,30 @@ import { initHelpSystem } from "../lib/help.js";
             }
             result = { type: "binding", value: trimmed };
           }
+
+          if (enforceValidField && result.type === "binding") {
+            const normalizedBinding = normalizeBindingValue(result.value);
+            const entry = findBindingFieldEntry(normalizedBinding, allowedFieldCategories);
+            validBinding = Boolean(entry);
+            if (!validBinding && bindingKey) {
+              draft[bindingKey] = previousValue;
+            } else if (validBinding && bindingKey) {
+              draft[bindingKey] = normalizedBinding;
+            }
+            result = { ...result, normalized: normalizedBinding };
+          } else {
+            validBinding = result.type === "binding";
+          }
+
           if (typeof afterCommit === "function") {
-            afterCommit({ draft, raw: source, trimmed, result });
+            afterCommit({
+              draft,
+              raw: source,
+              trimmed,
+              result,
+              previousValue,
+              validBinding,
+            });
           }
         },
         { rerenderCanvas: true }
