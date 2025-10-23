@@ -189,9 +189,11 @@ import { initHelpSystem } from "../lib/help.js";
     window.dispatchEvent(new CustomEvent(BINDING_FIELDS_EVENT, { detail }));
   }
 
+  const elements = {};
+
   await initializeBuiltins();
 
-  const elements = {
+  Object.assign(elements, {
     templateSelect: document.querySelector("[data-template-select]"),
     palette: document.querySelector("[data-palette]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
@@ -216,7 +218,7 @@ import { initHelpSystem } from "../lib/help.js";
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     jsonPreview: document.querySelector("[data-json-preview]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
-  };
+  });
 
   const insertComponentAtCanvasRoot = createRootInsertionHandler({
     createItem: (type) => {
