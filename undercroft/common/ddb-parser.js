@@ -202,8 +202,7 @@ const RULES = [
     from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'],
     handler: buildSkills,
   },
-  { section: 'passives', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'], handler: buildPassives },
-  { section: 'senses', from: ['modifiers'], handler: buildSenses },
+  { section: 'senses', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'], handler: buildSenses },
   { section: 'speeds', from: ['race', 'customSpeeds', 'modifiers'], handler: buildSpeeds },
   { section: 'ac', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'inventory'], handler: buildArmorClass },
   { section: 'hp', from: ['baseHitPoints', 'bonusHitPoints', 'overrideHitPoints', 'removedHitPoints', 'temporaryHitPoints'], handler: buildHitPoints },
@@ -212,7 +211,8 @@ const RULES = [
   { section: 'currencies', from: ['currencies'], handler: buildCurrencies },
   { section: 'feats', from: ['feats'], handler: buildFeats },
   { section: 'proficiencies', from: ['modifiers'], handler: buildProficiencies },
-  { section: 'attacks', from: ['actions', 'inventory', 'modifiers', 'classes', 'stats', 'bonusStats', 'overrideStats'], handler: buildAttacks },
+  { section: 'attacking', from: ['modifiers', 'feats'], handler: buildAttacking },
+  { section: 'attacks', from: ['actions', 'inventory', 'modifiers', 'classes', 'stats', 'bonusStats', 'overrideStats', 'spells'], handler: buildAttacks },
   { section: 'limitedUses', from: ['actions', 'features', 'feats'], handler: buildLimitedUses },
   { section: 'spellCasting', from: ['classes', 'spells', 'pactMagic', 'spellSlots'], handler: buildSpellcasting },
   { section: 'spells', from: ['spells'], handler: buildSpells },
@@ -319,26 +319,12 @@ function buildSkills(context, rawCharacter) {
   });
 }
 
-function buildPassives(context, rawCharacter) {
-  const skills = buildSkills(context, rawCharacter);
-  const lookup = skills.reduce((map, skill) => {
-    map[skill.name] = skill.value;
-    return map;
-  }, {});
+function buildSenses(context, rawCharacter) {
+  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const allowed = new Set(SENSES.map((sense) => sense.name));
 
-  return {
-    perception: 10 + (lookup['perception'] || 0),
-    investigation: 10 + (lookup['investigation'] || 0),
-    insight: 10 + (lookup['insight'] || 0),
-  };
-}
-
-function buildSenses(context) {
-  const modifiers = flattenModifiers(context.modifiers);
-  if (!Array.isArray(modifiers) || modifiers.length === 0) return [];
-
-  const senses = modifiers
-    .filter((modifier) => modifier.subType && ['sense', 'set', 'set-base'].includes(modifier.type))
+  const senses = (Array.isArray(modifiers) ? modifiers : [])
+    .filter((modifier) => modifier.subType && allowed.has(modifier.subType.toLowerCase()))
     .map((modifier) => {
       const normalized = modifier.subType.toLowerCase();
       const baseSense = SENSES.find((sense) => sense.name === normalized) || {
@@ -361,7 +347,20 @@ function buildSenses(context) {
     }
   });
 
-  return Object.values(deduped);
+  const skills = buildSkills(context, rawCharacter);
+  const lookup = skills.reduce((map, skill) => {
+    map[skill.name] = skill.value;
+    return map;
+  }, {});
+
+  return {
+    senses: Object.values(deduped),
+    passives: {
+      perception: 10 + (lookup['perception'] || 0),
+      investigation: 10 + (lookup['investigation'] || 0),
+      insight: 10 + (lookup['insight'] || 0),
+    },
+  };
 }
 
 function buildInventory(context) {
@@ -407,9 +406,9 @@ function buildArmorClass(context, rawCharacter) {
   const armorValues = equippedArmor.map((item) => {
     const def = item.definition || {};
     const armorBase = def.armorClass || 0;
-    if (/light/i.test(def.type)) return armorBase + dexMod;
-    if (/medium/i.test(def.type)) return armorBase + Math.min(dexMod, 2);
-    if (/heavy/i.test(def.type)) return armorBase;
+    if (/light/i.test(def.type) || def.armorTypeId === 1) return armorBase + dexMod;
+    if (/medium/i.test(def.type) || def.armorTypeId === 2) return armorBase + Math.min(dexMod, 2);
+    if (/heavy/i.test(def.type) || def.armorTypeId === 3) return armorBase;
     return armorBase + dexMod;
   });
 
@@ -480,27 +479,47 @@ function buildAttacks(context, rawCharacter) {
   const dexMod = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
   const strMod = Math.floor(((abilityScores.strength || 10) - 10) / 2);
 
-  const actions = flattenActions(context.actions);
-  const equipmentAttacks = (context.inventory || []).filter((item) => item.equipped && item.definition?.attackType);
-  const combined = [...actions, ...equipmentAttacks.map((item) => item.definition)];
+  const spellNameSet = collectSpellNames(context.spells);
+  const actions = flattenActions(context.actions).filter((action) => action.displayAsAttack);
+  const filteredActions = actions.filter((action) => !spellNameSet.has((action.name || '').toLowerCase()));
 
-  return combined.map((action) => {
+  const equipmentAttacks = (context.inventory || []).filter((item) => item.equipped && item.definition?.attackType);
+  const combined = [...filteredActions, ...equipmentAttacks.map((item) => item.definition)];
+
+  const seen = new Set();
+  return combined.reduce((list, action) => {
+    const nameKey = (action.name || 'Attack').toLowerCase();
+    if (seen.has(nameKey)) return list;
+    seen.add(nameKey);
+
     const activation = ACTIVATIONS[action.activation?.type || 0] || '';
     const usesDex = action.attackSubtype === 3 || WEAPONS.ranged.includes(action.name || '');
     const abilityMod = usesDex ? dexMod : strMod;
     const attackBonus = (action.fixedToHit ?? action.value ?? 0) + abilityMod;
 
-    return {
+    list.push({
       name: action.name || 'Attack',
       type: action.actionType || action.attackType || 'action',
       activation,
       range: action.range || action.attackTypeRange || '',
       attackBonus,
       damage: action.dice || null,
-      damageType: CONDITIONS[action.damageTypeId || 0] || null,
+      damageType: DAMAGES[action.damageTypeId || 0] || null,
       description: action.description || action.snippet || '',
-    };
-  });
+    });
+    return list;
+  }, []);
+}
+
+function buildAttacking(context) {
+  const modifiers = flattenModifiers(context.modifiers);
+  const extraAttacks = collectMaxSet(modifiers, 'extra-attacks');
+  const fightingStyle = determineFightingStyle(context.feats);
+
+  return {
+    attacksPerAction: 1 + extraAttacks,
+    fightingStyle,
+  };
 }
 
 function buildLimitedUses(context) {
@@ -571,6 +590,43 @@ function calculateAbilityScores(context, modifiers) {
     scores[ability.name] = finalScore;
     return scores;
   }, {});
+}
+
+function collectSpellNames(spellsBucket) {
+  if (!spellsBucket || typeof spellsBucket !== 'object') return new Set();
+  const names = [];
+  Object.values(spellsBucket).forEach((entries) => {
+    if (Array.isArray(entries)) {
+      entries.forEach((spell) => {
+        if (spell?.definition?.name) names.push(spell.definition.name.toLowerCase());
+      });
+    }
+  });
+  return new Set(names);
+}
+
+function determineFightingStyle(feats) {
+  if (!Array.isArray(feats)) return null;
+  const fightingStyles = new Set([
+    'archery',
+    'blind fighting',
+    'defense',
+    'dueling',
+    'great weapon fighting',
+    'interception',
+    'protection',
+    'superior technique',
+    'thrown weapon fighting',
+    'two-weapon fighting',
+  ]);
+
+  const match = feats.find((feat) => {
+    const name = feat?.definition?.name || feat?.name;
+    if (!name) return false;
+    return fightingStyles.has(name.toLowerCase());
+  });
+
+  return (match?.definition?.name || match?.name) ?? null;
 }
 
 function mapStats(statsArray) {
