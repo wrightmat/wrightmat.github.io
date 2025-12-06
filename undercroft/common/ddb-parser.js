@@ -195,6 +195,7 @@ const RULES = [
   { section: 'campaign', from: ['campaign'], handler: (context) => context.campaign || null },
   { section: 'decorations', from: ['decorations'], handler: (context) => context.decorations || null },
   { section: 'alignment', from: ['alignmentId'], handler: (context) => ALIGNMENTS.find((entry) => entry.id === context.alignmentId) || null },
+  { section: 'conditions', from: ['conditions'], handler: buildConditions },
   {
     section: 'abilities',
     from: ['stats', 'bonusStats', 'overrideStats', 'modifiers'],
@@ -417,6 +418,13 @@ function buildSenses(context, rawCharacter) {
   });
 
   return flattened;
+}
+
+function buildConditions(context) {
+  if (!Array.isArray(context.conditions)) return [];
+  return context.conditions
+    .map((value) => CONDITIONS[value] || null)
+    .filter(Boolean);
 }
 
 function buildInventory(context) {
@@ -669,13 +677,82 @@ function buildAttacks(context, rawCharacter) {
   const abilityScores = calculateAbilityScores(context, modifiers);
   const dexMod = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
   const strMod = Math.floor(((abilityScores.strength || 10) - 10) / 2);
+  const totalLevel = getTotalLevel(context.classes);
+  const proficiencyBonus = getProficiencyBonus(totalLevel);
 
   const spellNameSet = collectSpellNames(context.spells);
   const actions = flattenActions(context.actions).filter((action) => action.displayAsAttack);
   const filteredActions = actions.filter((action) => !spellNameSet.has((action.name || '').toLowerCase()));
 
-  const equipmentAttacks = (context.inventory || []).filter((item) => item.equipped && item.definition?.attackType);
-  const combined = [...filteredActions, ...equipmentAttacks.map((item) => item.definition)];
+  const itemsByContainer = new Set((context.inventory || []).map((item) => item.id));
+
+  const equipmentAttacks = (context.inventory || [])
+    .filter((item) => item.definition?.attackType || item.definition?.damage)
+    .map((item) => {
+      const definition = item.definition || {};
+      const isRanged = definition.attackType === 2 || WEAPONS.ranged.includes((definition.name || '').toLowerCase());
+      const isFinesse = Array.isArray(definition.properties)
+        ? definition.properties.some((prop) => (prop.name || '').toLowerCase() === 'finesse')
+        : false;
+      const abilityMod = isRanged || (isFinesse && dexMod >= strMod) ? dexMod : strMod;
+
+      const proficiency = isWeaponProficient(definition, modifiers) ? proficiencyBonus : 0;
+      const attackBonus =
+        (definition.attackBonus ?? 0) +
+        abilityMod +
+        proficiency +
+        collectModifiers(modifiers, 'weapon-attacks', 'bonus') +
+        collectModifiers(modifiers, isRanged ? 'ranged-attacks' : 'melee-attacks', 'bonus');
+
+      const dice = definition.damage?.diceString || '';
+      const damageMod = abilityMod ? formatSigned(abilityMod) : '';
+      const damage = dice ? `${dice}${damageMod}` : null;
+      const damageType = definition.damageType || null;
+      const damageString = damageType ? `${damage || ''} ${damageType.toLowerCase()}`.trim() : damage;
+
+      const properties = Array.isArray(definition.properties) ? definition.properties.map((prop) => prop.name).filter(Boolean) : [];
+      const notes = properties.join(', ');
+      const longRange = definition.longRange ? `${definition.longRange} ft.` : null;
+      const range = definition.range ? `${definition.range} ft.` : null;
+      const weight = (definition.weight || 0) * (item.quantity || 1) * (definition.weightMultiplier || 1);
+
+      return {
+        name: definition.name || 'Attack',
+        type: definition.attackType || 'action',
+        activation: '1A',
+        range,
+        longRange,
+        attackBonus,
+        damage: damageString || null,
+        damageType,
+        description: definition.description || definition.snippet || '',
+        notes,
+        equipped: Boolean(item.equipped),
+        isAttuned: Boolean(item.isAttuned),
+        isContained: Boolean(item.containerEntityId && itemsByContainer.has(item.containerEntityId)),
+        weight,
+      };
+    });
+
+  const combined = [
+    ...filteredActions.map((action) => ({
+      name: action.name || 'Attack',
+      type: action.actionType || action.attackType || 'action',
+      activation: '1A',
+      range: action.range || action.attackTypeRange || '',
+      longRange: action.longRange || null,
+      attackBonus: action.fixedToHit ?? action.value ?? 0,
+      damage: formatActionDamage(action.dice, action.damageTypeId),
+      damageType: DAMAGES[action.damageTypeId || 0] || null,
+      description: action.description || action.snippet || '',
+      notes: '',
+      equipped: false,
+      isAttuned: false,
+      isContained: false,
+      weight: 0,
+    })),
+    ...equipmentAttacks,
+  ];
 
   const seen = new Set();
   const attacks = combined.reduce((list, action) => {
@@ -683,20 +760,9 @@ function buildAttacks(context, rawCharacter) {
     if (seen.has(nameKey)) return list;
     seen.add(nameKey);
 
-    const activation = ACTIVATIONS[action.activation?.type || 0] || '';
-    const usesDex = action.attackSubtype === 3 || WEAPONS.ranged.includes(action.name || '');
-    const abilityMod = usesDex ? dexMod : strMod;
-    const attackBonus = (action.fixedToHit ?? action.value ?? 0) + abilityMod;
-
     list.push({
-      name: action.name || 'Attack',
-      type: action.actionType || action.attackType || 'action',
-      activation,
-      range: action.range || action.attackTypeRange || '',
-      attackBonus,
-      damage: action.dice || null,
-      damageType: DAMAGES[action.damageTypeId || 0] || null,
-      description: action.description || action.snippet || '',
+      ...action,
+      activation: action.activation || '1A',
     });
     return list;
   }, []);
@@ -716,34 +782,17 @@ function buildAttacking(context) {
 }
 
 function buildFeatures(context) {
-  const whitelist = new Set([
-    'core ranger traits',
-    'spellcasting',
-    'favored enemy',
-    'deft explorer',
-    'dread ambusher',
-    'gloom stalker spells',
-    'umbral sight',
-    'extra attack',
-    'roving',
-    'iron mind',
-    'resourceful',
-    'skillful',
-    'skillfull',
-    'versatile',
-  ]);
-
   const classFeatures = (context.classes || [])
-    .flatMap((cls) => cls.classFeatures || [])
+    .flatMap((cls) => [
+      ...(cls.classFeatures || []),
+      ...(cls.subclassDefinition?.classFeatures || []),
+    ])
     .map((feature) => feature.definition)
-    .filter(Boolean)
-    .filter((feature) => whitelist.has((feature.name || '').toLowerCase()));
-  const racialTraits = (context.race?.racialTraits || [])
-    .map((trait) => trait.definition)
-    .filter(Boolean)
-    .filter((feature) => whitelist.has((feature.name || '').toLowerCase()));
+    .filter(Boolean);
+  const racialTraits = (context.race?.racialTraits || []).map((trait) => trait.definition).filter(Boolean);
+  const featFeatures = (context.feats || []).map((feat) => feat.definition).filter(Boolean);
 
-  const combined = [...classFeatures, ...racialTraits];
+  const combined = [...classFeatures, ...racialTraits, ...featFeatures];
   const seen = new Set();
 
   return combined.reduce((list, feature) => {
@@ -1006,9 +1055,38 @@ function determineFightingStyle(feats) {
   return match || null;
 }
 
+function isWeaponProficient(definition, modifiers) {
+  if (!definition) return false;
+  const proficiencies = Array.isArray(modifiers)
+    ? modifiers.filter((modifier) => modifier.type === 'proficiency').map((modifier) => (modifier.subType || '').toLowerCase())
+    : [];
+
+  const name = (definition.type || definition.name || '').toLowerCase();
+  if (!name) return false;
+
+  if (proficiencies.some((subtype) => subtype === name || subtype === `${name}-weapons`)) return true;
+
+  const isSimple = WEAPONS.simple.some((weapon) => weapon.toLowerCase() === name);
+  const isMartial = WEAPONS.martial.some((weapon) => weapon.toLowerCase() === name);
+  const isRanged = WEAPONS.ranged.some((weapon) => weapon.toLowerCase() === name);
+
+  if (isSimple && proficiencies.includes('simple-weapons')) return true;
+  if (isMartial && proficiencies.includes('martial-weapons')) return true;
+  if (isRanged && proficiencies.includes('martial-weapons')) return true;
+
+  return false;
+}
+
 function formatSigned(value) {
   const sign = value >= 0 ? '+' : '';
   return `${sign}${value}`;
+}
+
+function formatActionDamage(dice, damageTypeId) {
+  if (!dice) return null;
+  const base = typeof dice === 'string' ? dice : dice.diceString || '';
+  const damageType = DAMAGES[damageTypeId || 0] || '';
+  return [base, damageType].filter(Boolean).join(' ').trim() || null;
 }
 
 function mapStats(statsArray) {
@@ -1043,9 +1121,9 @@ function determineProficiencyLevel(modifiers, subtype) {
   modifiers
     .filter((modifier) => modifier.subType === subtype)
     .forEach((modifier) => {
-      if (modifier.type === 'proficiency') level = Math.max(level, 1);
-      if (modifier.type === 'expertise') level = Math.max(level, 2);
-      if (modifier.type === 'half-proficiency') level = Math.max(level, 0.5);
+      if (modifier.type === 'proficiency') level = Math.max(level, modifier.value ?? 1);
+      if (modifier.type === 'expertise') level = Math.max(level, modifier.value ?? 2);
+      if (modifier.type === 'half-proficiency') level = Math.max(level, modifier.value ?? 0.5);
     });
   return level;
 }
