@@ -216,7 +216,11 @@ const RULES = [
     from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'],
     handler: buildSkills,
   },
-  { section: 'senses', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'], handler: buildSenses },
+  {
+    section: 'senses',
+    from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes', 'customSenses', 'race'],
+    handler: buildSenses,
+  },
   { section: 'speeds', from: ['race', 'customSpeeds', 'modifiers'], handler: buildSpeeds },
   { section: 'ac', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'inventory'], handler: buildArmorClass },
   {
@@ -322,13 +326,14 @@ function buildSavingThrows(context, rawCharacter) {
   return ABILITIES.map((ability) => {
     const subtype = SAVING_THROW_SUBTYPES[ability.name];
     const abilityModifier = Math.floor(((abilityScores[ability.name] || 10) - 10) / 2);
-    const proficiencyLevel = determineProficiencyLevel(modifiers, subtype);
-    const savingThrowBonus = collectModifiers(modifiers, subtype, 'bonus');
+    const { level, roundUp } = determineProficiencyLevel(modifiers, [subtype, 'saving-throws']);
+    const savingThrowBonus = collectModifiers(modifiers, [subtype, 'saving-throws'], 'bonus');
+    const proficiencyValue = applyProficiency(level, proficiencyBonus, roundUp);
 
     return {
       ...ability,
-      value: abilityModifier + Math.floor(proficiencyBonus * proficiencyLevel) + savingThrowBonus,
-      proficiency: proficiencyLevel,
+      value: abilityModifier + proficiencyValue + savingThrowBonus,
+      proficiency: level,
     };
   });
 }
@@ -340,10 +345,10 @@ function buildInitiative(context, rawCharacter) {
   const proficiencyBonus = getProficiencyBonus(totalLevel);
 
   const dexModifier = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
-  const proficiencyLevel = determineProficiencyLevel(modifiers, 'initiative');
-  const bonus = collectModifiers(modifiers, 'initiative', 'bonus');
+  const { level, roundUp } = determineProficiencyLevel(modifiers, ['initiative', 'dexterity-ability-checks', 'ability-checks']);
+  const bonus = collectModifiers(modifiers, ['initiative', 'dexterity-ability-checks', 'ability-checks'], 'bonus');
 
-  const value = dexModifier + Math.floor(proficiencyBonus * proficiencyLevel) + bonus;
+  const value = dexModifier + applyProficiency(level, proficiencyBonus, roundUp) + bonus;
   const advantage = modifiers.some((modifier) => modifier.subType === 'initiative' && modifier.type === 'advantage');
   const disadvantage = modifiers.some((modifier) => modifier.subType === 'initiative' && modifier.type === 'disadvantage');
 
@@ -359,14 +364,14 @@ function buildSkills(context, rawCharacter) {
   return SKILLS.map((skill) => {
     const linkedAbility = ABILITIES[skill.stat];
     const abilityModifier = Math.floor(((abilityScores[linkedAbility.name] || 10) - 10) / 2);
-    const proficiencyLevel = determineProficiencyLevel(modifiers, skill.name);
-    const skillBonus = collectModifiers(modifiers, skill.name, 'bonus');
+    const { level, roundUp } = determineProficiencyLevel(modifiers, [skill.name, `${linkedAbility.name}-ability-checks`, 'ability-checks']);
+    const skillBonus = collectModifiers(modifiers, [skill.name, `${linkedAbility.name}-ability-checks`, 'ability-checks'], 'bonus');
 
     return {
       ...skill,
       ability: linkedAbility.shortName,
-      value: abilityModifier + Math.floor(proficiencyBonus * proficiencyLevel) + skillBonus,
-      proficiency: proficiencyLevel,
+      value: abilityModifier + applyProficiency(level, proficiencyBonus, roundUp) + skillBonus,
+      proficiency: level,
     };
   });
 }
@@ -374,24 +379,49 @@ function buildSkills(context, rawCharacter) {
 function buildSenses(context, rawCharacter) {
   const modifiers = flattenModifiers(rawCharacter.modifiers);
   const allowed = new Set(SENSES.map((sense) => sense.name));
+  const knownSenses = [];
 
-  const senses = (Array.isArray(modifiers) ? modifiers : [])
+  (Array.isArray(modifiers) ? modifiers : [])
     .filter((modifier) => modifier.subType && allowed.has(modifier.subType.toLowerCase()))
-    .map((modifier) => {
+    .forEach((modifier) => {
       const normalized = modifier.subType.toLowerCase();
       const baseSense = SENSES.find((sense) => sense.name === normalized) || {
         id: modifier.id,
-        name: modifier.subType,
+        name: normalized,
       };
 
-      return {
+      knownSenses.push({
         ...baseSense,
         range: modifier.fixedValue ?? modifier.value ?? null,
-      };
+      });
     });
 
+  const raceModifiers = (context.race?.racialTraits || [])
+    .flatMap((trait) => trait.definition?.grantedModifiers || [])
+    .filter((modifier) => modifier.subType && allowed.has(modifier.subType.toLowerCase()));
+  raceModifiers.forEach((modifier) => {
+    const normalized = modifier.subType.toLowerCase();
+    const baseSense = SENSES.find((sense) => sense.name === normalized) || {
+      id: modifier.id,
+      name: normalized,
+    };
+
+    knownSenses.push({
+      ...baseSense,
+      range: modifier.fixedValue ?? modifier.value ?? null,
+    });
+  });
+
+  const customSenses = context.customSenses || rawCharacter.customSenses || [];
+  customSenses.forEach((entry) => {
+    const baseSense = SENSES.find((sense) => sense.id === entry.senseId || sense.id === entry.id);
+    const name = (baseSense?.name || entry.name || '').toLowerCase();
+    if (!name) return;
+    knownSenses.push({ id: baseSense?.id || entry.id, name, range: entry.distance ?? entry.value ?? null });
+  });
+
   const deduped = {};
-  senses.forEach((sense) => {
+  knownSenses.forEach((sense) => {
     const key = sense.name;
     const current = deduped[key];
     if (!current || (sense.range ?? 0) > (current.range ?? 0)) {
@@ -624,6 +654,8 @@ function buildProficiencies(context) {
     const subtype = (prof.subType || '').toLowerCase();
     const friendly = prof.friendlySubtypeName || prof.subType || 'Unknown';
 
+    if (prof.isGranted === false) return;
+
     if (prof.type === 'language') {
       buckets.languages.push(friendly);
       return;
@@ -690,7 +722,9 @@ function buildAttacks(context, rawCharacter) {
     .filter((item) => item.definition?.attackType || item.definition?.damage)
     .map((item) => {
       const definition = item.definition || {};
-      const isRanged = definition.attackType === 2 || WEAPONS.ranged.includes((definition.name || '').toLowerCase());
+      const loweredName = (definition.name || '').toLowerCase();
+      const isRanged =
+        definition.attackType === 2 || WEAPONS.ranged.some((weapon) => weapon.toLowerCase() === loweredName);
       const isFinesse = Array.isArray(definition.properties)
         ? definition.properties.some((prop) => (prop.name || '').toLowerCase() === 'finesse')
         : false;
@@ -708,7 +742,6 @@ function buildAttacks(context, rawCharacter) {
       const damageMod = abilityMod ? formatSigned(abilityMod) : '';
       const damage = dice ? `${dice}${damageMod}` : null;
       const damageType = definition.damageType || null;
-      const damageString = damageType ? `${damage || ''} ${damageType.toLowerCase()}`.trim() : damage;
 
       const properties = Array.isArray(definition.properties) ? definition.properties.map((prop) => prop.name).filter(Boolean) : [];
       const notes = properties.join(', ');
@@ -723,7 +756,7 @@ function buildAttacks(context, rawCharacter) {
         range,
         longRange,
         attackBonus,
-        damage: damageString || null,
+        damage: damage || null,
         damageType,
         description: definition.description || definition.snippet || '',
         notes,
@@ -742,7 +775,7 @@ function buildAttacks(context, rawCharacter) {
       range: action.range || action.attackTypeRange || '',
       longRange: action.longRange || null,
       attackBonus: action.fixedToHit ?? action.value ?? 0,
-      damage: formatActionDamage(action.dice, action.damageTypeId),
+      damage: formatActionDamage(action.dice),
       damageType: DAMAGES[action.damageTypeId || 0] || null,
       description: action.description || action.snippet || '',
       notes: '',
@@ -1082,11 +1115,10 @@ function formatSigned(value) {
   return `${sign}${value}`;
 }
 
-function formatActionDamage(dice, damageTypeId) {
+function formatActionDamage(dice) {
   if (!dice) return null;
   const base = typeof dice === 'string' ? dice : dice.diceString || '';
-  const damageType = DAMAGES[damageTypeId || 0] || '';
-  return [base, damageType].filter(Boolean).join(' ').trim() || null;
+  return base || null;
 }
 
 function mapStats(statsArray) {
@@ -1110,22 +1142,47 @@ function flattenModifiers(modifierGroups) {
 
 function collectModifiers(modifiers, subtype, type) {
   if (!Array.isArray(modifiers)) return 0;
+  const subtypes = Array.isArray(subtype) ? subtype.filter(Boolean) : [subtype];
+  const normalized = subtypes.map((entry) => (entry || '').toLowerCase()).filter(Boolean);
+  if (!normalized.length) return 0;
+
   return modifiers
-    .filter((modifier) => modifier.subType === subtype && (!type || modifier.type === type))
+    .filter((modifier) =>
+      (!type || modifier.type === type) && normalized.includes((modifier.subType || '').toLowerCase())
+    )
     .reduce((total, modifier) => total + (modifier.fixedValue ?? modifier.value ?? 0), 0);
 }
 
 function determineProficiencyLevel(modifiers, subtype) {
-  if (!Array.isArray(modifiers)) return 0;
+  if (!Array.isArray(modifiers)) return { level: 0, roundUp: false };
+  const subtypes = Array.isArray(subtype) ? subtype.filter(Boolean) : [subtype];
+  const normalized = subtypes.map((entry) => (entry || '').toLowerCase()).filter(Boolean);
   let level = 0;
+  let roundUp = false;
+
   modifiers
-    .filter((modifier) => modifier.subType === subtype)
+    .filter((modifier) => normalized.includes((modifier.subType || '').toLowerCase()))
     .forEach((modifier) => {
       if (modifier.type === 'proficiency') level = Math.max(level, modifier.value ?? 1);
       if (modifier.type === 'expertise') level = Math.max(level, modifier.value ?? 2);
       if (modifier.type === 'half-proficiency') level = Math.max(level, modifier.value ?? 0.5);
+      if (modifier.type === 'half-proficiency-round-up') {
+        level = Math.max(level, modifier.value ?? 0.5);
+        roundUp = true;
+      }
     });
-  return level;
+  return { level, roundUp };
+}
+
+function applyProficiency(level, proficiencyBonus, roundUp = false) {
+  if (!level || !proficiencyBonus) return 0;
+  if (level === PROFICIENCY_FULL || level === 1) return proficiencyBonus;
+  if (level === PROFICIENCY_EXPERTISE || level === 2) return proficiencyBonus * 2;
+  if (level === PROFICIENCY_HALF || level === 0.5) {
+    const scaled = proficiencyBonus / 2;
+    return roundUp ? Math.ceil(scaled) : Math.floor(scaled);
+  }
+  return Math.floor(proficiencyBonus * level);
 }
 
 function collectMaxSet(modifiers, subtype) {
