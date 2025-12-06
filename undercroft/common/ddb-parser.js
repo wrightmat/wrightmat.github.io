@@ -185,7 +185,11 @@ const PROFICIENCY_EXPERTISE = 4;
 const DEFAULT_OPTIONS = {};
 
 const RULES = [
-  { section: 'identity', from: ['id', 'username', 'name', 'classes', 'race', 'alignmentId', 'inspiration', 'notes'], handler: buildIdentity },
+  {
+    section: 'identity',
+    from: ['id', 'userId', 'username', 'name', 'classes', 'race', 'alignmentId', 'inspiration', 'notes', 'age', 'eyes', 'hair', 'skin', 'height', 'weight', 'faith'],
+    handler: buildIdentity,
+  },
   { section: 'alignment', from: ['alignmentId'], handler: buildAlignment },
   {
     section: 'abilities',
@@ -234,11 +238,16 @@ const RULES = [
   { section: 'proficiencies', from: ['modifiers'], handler: buildProficiencies },
   { section: 'attacking', from: ['modifiers', 'feats'], handler: buildAttacking },
   { section: 'attacks', from: ['actions', 'inventory', 'modifiers', 'classes', 'stats', 'bonusStats', 'overrideStats', 'spells'], handler: buildAttacks },
-  { section: 'limitedUses', from: ['actions', 'features', 'feats', 'spellSlots'], handler: buildLimitedUses },
-  { section: 'spellCasting', from: ['classes', 'spells', 'pactMagic', 'spellSlots'], handler: buildSpellcasting },
-  { section: 'spells', from: ['spells'], handler: buildSpells },
+  { section: 'limitedUses', from: ['actions', 'features', 'feats', 'spellSlots', 'classes'], handler: buildLimitedUses },
+  {
+    section: 'spellCasting',
+    from: ['classes', 'spells', 'pactMagic', 'spellSlots', 'stats', 'bonusStats', 'overrideStats', 'modifiers'],
+    handler: buildSpellcasting,
+  },
+  { section: 'spells', from: ['spells', 'classSpells'], handler: buildSpells },
   { section: 'inventory', from: ['inventory'], handler: buildInventory },
   { section: 'notes', from: ['notes'], handler: buildNotes },
+  { section: 'traits', from: ['age', 'eyes', 'hair', 'skin', 'height', 'weight', 'faith', 'traits'], handler: buildTraits },
 ];
 
 function ddbParseCharacter(rawInput, options = DEFAULT_OPTIONS) {
@@ -275,9 +284,14 @@ function buildIdentity(context, rawCharacter) {
     .filter((cls) => (cls.definition?.name || '').toLowerCase() === 'monk')
     .reduce((total, cls) => total + (cls.level || 0), 0);
   const totalLevel = getTotalLevel(classes);
+  const primaryClassName = (primaryClass.definition?.name || '').toLowerCase();
+  const primaryLevels = classes
+    .filter((cls) => (cls.definition?.name || '').toLowerCase() === primaryClassName)
+    .reduce((sum, cls) => sum + (cls.level || 0), 0);
 
   return {
     id: rawCharacter.id || null,
+    userId: rawCharacter.userId || null,
     username: rawCharacter.username || '',
     name: context.name || '',
     class: className,
@@ -290,10 +304,19 @@ function buildIdentity(context, rawCharacter) {
     level: totalLevel,
     levels: {
       level_monk: monkLevels,
-      level_multiclass: Math.max(totalLevel - monkLevels, 0),
+      level_multiclass: Math.max(totalLevel - primaryLevels, 0),
     },
     alignment,
     inspiration: Boolean(context.inspiration),
+    traits: {
+      age: context.age ?? null,
+      eyes: context.eyes || '',
+      hair: context.hair || '',
+      skin: context.skin || '',
+      height: context.height || '',
+      weight: context.weight ?? null,
+      faith: context.faith || '',
+    },
   };
 }
 
@@ -449,12 +472,21 @@ function buildSpeeds(context) {
   const modifiers = flattenModifiers(context.modifiers);
   const baseSpeeds = context.race?.weightSpeeds?.normal || {};
 
+  const generalBonus = collectModifiers(modifiers, 'speed', 'bonus');
+  const walkSpeed = (baseSpeeds.walk || 0) + generalBonus;
+
   return SPEEDS.reduce((speeds, speed) => {
     const innateSubtype = `innate-speed-${speed.innate}`;
-    const base = baseSpeeds[speed.name] || 0;
+    const base = (baseSpeeds[speed.name] || 0) + (speed.name === 'walk' ? generalBonus : 0);
     const innate = collectMaxSet(modifiers, innateSubtype);
     const bonus = collectModifiers(modifiers, `${speed.name}-speed`, 'bonus');
-    speeds[speed.name] = Math.max(base, innate || 0) + bonus;
+
+    const hasInnate = Array.isArray(modifiers)
+      ? modifiers.some((modifier) => modifier.subType === innateSubtype && ['set', 'set-base'].includes(modifier.type))
+      : false;
+
+    const innateBase = innate || (hasInnate ? walkSpeed : 0);
+    speeds[speed.name] = Math.max(base, innateBase) + bonus;
     return speeds;
   }, {});
 }
@@ -731,41 +763,90 @@ function buildLimitedUses(context) {
       });
     });
   }
+  const derivedSlots = deriveSpellSlots(context.classes || []);
+  derivedSlots.forEach((slot) => {
+    const existing = pools.find((pool) => pool.name === `Level ${slot.level} Spell Slots`);
+    if (existing) {
+      if (!existing.total) {
+        existing.total = slot.total;
+        existing.available = slot.total;
+        existing.used = 0;
+      }
+    } else {
+      pools.push({
+        name: `Level ${slot.level} Spell Slots`,
+        total: slot.total,
+        available: slot.total,
+        used: 0,
+        reset: 'Long Rest',
+      });
+    }
+  });
   return pools;
 }
 
 function buildSpellcasting(context) {
-  const totalLevel = getTotalLevel(context.classes);
+  const classes = Array.isArray(context.classes) ? context.classes : [];
+  const spellcastingClass = classes.find((cls) => cls.definition?.canCastSpells) || classes[0] || {};
+  const abilityId = spellcastingClass.definition?.spellCastingAbilityId || null;
+  const ability = ABILITIES.find((entry) => entry.id === abilityId);
+  const modifiers = flattenModifiers(context.modifiers);
+  const abilityScores = calculateAbilityScores(context, modifiers);
+  const modScore = ability ? abilityScores[ability.name] ?? 10 : 10;
+  const abilityMod = Math.floor((modScore - 10) / 2);
+  const totalLevel = getTotalLevel(classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
   return {
-    spellSlots: context.spellSlots || [],
-    pactMagic: context.pactMagic || null,
-    proficiencyBonus,
+    abilityId: abilityId || null,
+    ability: ability?.shortName || null,
+    mod: formatSigned(abilityMod),
+    attack: formatSigned(abilityMod + proficiencyBonus),
+    save: 8 + proficiencyBonus + abilityMod,
   };
 }
 
 function buildSpells(context) {
-  if (!context.spells || typeof context.spells !== 'object') return [];
-  const buckets = ['class', 'race', 'item', 'feat'];
-  const spells = [];
-  buckets.forEach((bucket) => {
-    const entries = context.spells[bucket];
-    if (Array.isArray(entries)) {
-      entries.forEach((spell) => {
-        spells.push({
-          name: spell.definition?.name || 'Unknown Spell',
-          level: spell.definition?.level || 0,
-          prepared: spell.prepared || false,
-          castingTime: spell.definition?.activation?.activationTime || '',
-          range: spell.definition?.range || '',
-          components: (spell.definition?.components || []).map((comp) => COMPONENTS[comp] || comp),
-          school: spell.definition?.school || '',
-          source: bucket,
-        });
-      });
+  const grouped = {};
+  const addSpell = (spell, source) => {
+    const level = spell.definition?.level || 0;
+    const name = spell.definition?.name || 'Unknown Spell';
+    const entry = {
+      name,
+      level,
+      prepared: spell.prepared || false,
+      castingTime: spell.definition?.activation?.activationTime || '',
+      range: spell.definition?.range || '',
+      components: (spell.definition?.components || []).map((comp) => COMPONENTS[comp] || comp),
+      school: spell.definition?.school || '',
+      source,
+    };
+
+    if (!grouped[level]) grouped[level] = [];
+    if (!grouped[level].some((existing) => existing.name === name)) {
+      grouped[level].push(entry);
     }
-  });
-  return spells;
+  };
+
+  if (context.spells && typeof context.spells === 'object') {
+    ['class', 'race', 'feat'].forEach((bucket) => {
+      const entries = context.spells[bucket];
+      if (Array.isArray(entries)) {
+        entries.forEach((spell) => addSpell(spell, bucket));
+      }
+    });
+  }
+
+  if (Array.isArray(context.classSpells)) {
+    context.classSpells.forEach((classSpell) => {
+      (classSpell.spells || []).forEach((spell) => addSpell(spell, 'class'));
+    });
+  }
+
+  const levels = Object.keys(grouped)
+    .map((lvl) => Number(lvl))
+    .sort((a, b) => a - b);
+
+  return levels.map((level) => grouped[level].sort((a, b) => a.name.localeCompare(b.name)));
 }
 
 function calculateAbilityScores(context, modifiers) {
@@ -796,6 +877,17 @@ function collectSpellNames(spellsBucket) {
   return new Set(names);
 }
 
+function deriveSpellSlots(classes) {
+  if (!Array.isArray(classes)) return [];
+  const caster = classes.find((cls) => cls.definition?.canCastSpells);
+  if (!caster) return [];
+  const levelSlots = caster.definition?.spellRules?.levelSpellSlots || [];
+  const slots = levelSlots[caster.level] || [];
+  return slots
+    .map((total, index) => ({ level: index + 1, total }))
+    .filter((entry) => entry.total > 0);
+}
+
 function determineFightingStyle(feats) {
   if (!Array.isArray(feats)) return null;
   const fightingStyles = new Set([
@@ -818,6 +910,29 @@ function determineFightingStyle(feats) {
   });
 
   return match || null;
+}
+
+function buildTraits(context) {
+  const traits = context.traits || {};
+  return {
+    age: context.age ?? null,
+    appearance: traits.appearance || '',
+    bonds: traits.bonds || '',
+    eyes: context.eyes || '',
+    faith: context.faith || '',
+    flaws: traits.flaws || '',
+    hair: context.hair || '',
+    ideals: traits.ideals || '',
+    personalityTraits: traits.personalityTraits || '',
+    skin: context.skin || '',
+    height: context.height || '',
+    weight: context.weight ?? null,
+  };
+}
+
+function formatSigned(value) {
+  const sign = value >= 0 ? '+' : '';
+  return `${sign}${value}`;
 }
 
 function mapStats(statsArray) {
