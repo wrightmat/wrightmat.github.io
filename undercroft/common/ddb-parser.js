@@ -193,6 +193,7 @@ const RULES = [
     handler: buildIdentity,
   },
   { section: 'campaign', from: ['campaign'], handler: (context) => context.campaign || null },
+  { section: 'decorations', from: ['decorations'], handler: (context) => context.decorations || null },
   { section: 'alignment', from: ['alignmentId'], handler: (context) => ALIGNMENTS.find((entry) => entry.id === context.alignmentId) || null },
   {
     section: 'abilities',
@@ -422,6 +423,7 @@ function buildInventory(context) {
   if (!Array.isArray(context.inventory)) return [];
 
   const itemsByContainer = new Map();
+  const containerIds = new Set(context.inventory.map((item) => item.id).filter(Boolean));
   const simplify = (item) => {
     const definition = item.definition || {};
     const weight = (definition.weightMultiplier || 1) * (definition.weight || 0) * (item.quantity || 0);
@@ -435,7 +437,7 @@ function buildInventory(context) {
       canEquip: Boolean(definition.canEquip),
       isEquipped: Boolean(item.equipped),
       canContain: itemsByContainer.has(item.id),
-      isContained: Boolean(item.containerEntityId),
+      isContained: Boolean(item.containerEntityId && containerIds.has(item.containerEntityId)),
     };
   };
 
@@ -507,15 +509,23 @@ function buildArmorClass(context, rawCharacter) {
   const armorValues = equippedArmor.map((item) => {
     const def = item.definition || {};
     const armorBase = def.armorClass || 0;
-    if (/light/i.test(def.type) || def.armorTypeId === 1) return armorBase + dexMod;
-    if (/medium/i.test(def.type) || def.armorTypeId === 2) return armorBase + Math.min(dexMod, 2);
-    if (/heavy/i.test(def.type) || def.armorTypeId === 3) return armorBase;
-    return armorBase + dexMod;
+    const dexContribution = /light/i.test(def.type) || def.armorTypeId === 1
+      ? dexMod
+      : /medium/i.test(def.type) || def.armorTypeId === 2
+      ? Math.min(dexMod, 2)
+      : /heavy/i.test(def.type) || def.armorTypeId === 3
+      ? 0
+      : dexMod;
+
+    return { value: armorBase + dexContribution, dexContribution };
   });
 
   const naturalAc = 10 + dexMod;
-  const calculated = Math.max(naturalAc, ...armorValues) + baseBonus + shieldBonus;
-  return { value: calculated, shieldBonus, bonus: baseBonus };
+  const bestArmor = armorValues.sort((a, b) => (b?.value || 0) - (a?.value || 0))[0] || null;
+  const baseAc = bestArmor?.value || naturalAc;
+  const dexContribution = bestArmor?.dexContribution ?? dexMod;
+  const calculated = baseAc + baseBonus + shieldBonus;
+  return { value: calculated, shieldBonus, bonus: dexContribution + baseBonus };
 }
 
 function buildHitPoints(context, rawCharacter) {
@@ -538,7 +548,7 @@ function buildHitPoints(context, rawCharacter) {
     current: current < 0 ? 0 : current,
     temp,
     hitDice: totalLevel,
-    hitDiceSize: hitDiceSize ? `d${hitDiceSize}` : null,
+    hitDiceSize: hitDiceSize ? `1d${hitDiceSize}${conMod ? formatSigned(conMod) : ''}` : null,
   };
 }
 
@@ -611,7 +621,7 @@ function buildProficiencies(context) {
       return;
     }
     if (prof.type === 'resistance' || prof.type === 'immunity' || prof.type === 'vulnerability') {
-      buckets.defenses.push(friendly);
+      buckets.defenses.push({ name: friendly, type: prof.type });
       return;
     }
     if (prof.type !== 'proficiency') {
@@ -802,9 +812,7 @@ function buildLimitedUses(context) {
 
 function buildSpellcasting(context) {
   const classes = Array.isArray(context.classes) ? context.classes : [];
-  const spellcastingClass = classes.find((cls) => cls.definition?.canCastSpells) || classes[0] || {};
-  const abilityId = spellcastingClass.definition?.spellCastingAbilityId || null;
-  const ability = ABILITIES.find((entry) => entry.id === abilityId);
+  const ability = determineSpellcastingAbility(classes);
   const modifiers = flattenModifiers(context.modifiers);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const modScore = ability ? abilityScores[ability.name] ?? 10 : 10;
@@ -812,7 +820,7 @@ function buildSpellcasting(context) {
   const totalLevel = getTotalLevel(classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
   return {
-    abilityId: abilityId || null,
+    abilityId: ability?.id || null,
     ability: ability?.shortName || null,
     mod: formatSigned(abilityMod),
     attack: formatSigned(abilityMod + proficiencyBonus),
@@ -820,20 +828,52 @@ function buildSpellcasting(context) {
   };
 }
 
-function buildSpells(context) {
+function buildSpells(context, rawCharacter) {
+  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const abilityScores = calculateAbilityScores(rawCharacter, modifiers);
+  const totalLevel = getTotalLevel(rawCharacter.classes);
+  const proficiencyBonus = getProficiencyBonus(totalLevel);
+  const spellcastingAbility = determineSpellcastingAbility(rawCharacter.classes);
+  const abilityMod = spellcastingAbility ? Math.floor(((abilityScores[spellcastingAbility.name] || 10) - 10) / 2) : 0;
+  const saveDc = 8 + proficiencyBonus + abilityMod;
+
   const grouped = {};
   const addSpell = (spell, source) => {
     const level = spell.definition?.level || 0;
     const name = spell.definition?.name || 'Unknown Spell';
+    const activationType = spell.definition?.activation?.activationType || 0;
+    const activation = ACTIVATIONS[activationType] || '';
+    const concentration = Boolean(spell.definition?.concentration);
+    const ritual = Boolean(spell.definition?.ritual);
+    const saveAbility = ABILITIES.find((ability) => ability.id === spell.definition?.saveDcAbilityId);
+    const requiresSave = Boolean(spell.definition?.requiresSavingThrow);
+    const requiresAttack = Boolean(spell.definition?.requiresAttackRoll);
+    const dc = requiresSave
+      ? `${saveAbility?.shortName || spellcastingAbility?.shortName || ''}${spell.overrideSaveDc || saveDc}`
+      : null;
+    const toHit = requiresAttack ? formatSigned(proficiencyBonus + abilityMod) : null;
+    const tags = Array.isArray(spell.definition?.tags) ? spell.definition.tags : [];
+    const effect = tags.length ? tags[0] : null;
+    const duration = spell.definition?.duration
+      ? `${spell.definition.duration.durationInterval || ''} ${spell.definition.duration.durationUnit || ''}`.trim() +
+        (spell.definition.duration.durationType ? ` (${spell.definition.duration.durationType})` : '')
+      : '';
+
     const entry = {
       name,
       level,
       prepared: spell.prepared || false,
-      castingTime: spell.definition?.activation?.activationTime || '',
+      castingTime: activation,
       range: spell.definition?.range || '',
       components: (spell.definition?.components || []).map((comp) => COMPONENTS[comp] || comp),
       school: spell.definition?.school || '',
       source,
+      concentration,
+      ritual,
+      toHit,
+      dc,
+      effect,
+      duration: duration || null,
     };
 
     if (!grouped[level]) grouped[level] = [];
@@ -933,6 +973,13 @@ function deriveSpellSlots(classes) {
   return slots
     .map((total, index) => ({ level: index + 1, total }))
     .filter((entry) => entry.total > 0);
+}
+
+function determineSpellcastingAbility(classes) {
+  if (!Array.isArray(classes)) return null;
+  const caster = classes.find((cls) => cls.definition?.canCastSpells) || classes[0];
+  if (!caster) return null;
+  return ABILITIES.find((entry) => entry.id === caster.definition?.spellCastingAbilityId) || null;
 }
 
 function determineFightingStyle(feats) {
