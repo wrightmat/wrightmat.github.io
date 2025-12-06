@@ -1,6 +1,7 @@
 // D&D Beyond character parser for Undercroft
 // Architecture follows the declarative rules model described in PARSER.md.
 
+// Constants
 const ACTIVATIONS = ['', 'A', '', 'BA', 'R', 's', 'm', 'h', 'S'];
 const COMPONENTS = ['', 'V', 'S', 'M'];
 const CONDITIONS = [
@@ -184,14 +185,15 @@ const PROFICIENCY_EXPERTISE = 4;
 
 const DEFAULT_OPTIONS = {};
 
+// Rules
 const RULES = [
   {
     section: 'identity',
-    from: ['id', 'userId', 'username', 'name', 'classes', 'race', 'alignmentId', 'inspiration', 'notes', 'age', 'eyes', 'hair', 'skin', 'height', 'weight', 'faith'],
+    from: ['id', 'userId', 'username', 'name', 'classes', 'race', 'inspiration', 'notes', 'age', 'eyes', 'hair', 'skin', 'height', 'weight', 'faith'],
     handler: buildIdentity,
   },
-  { section: 'campaign', from: ['campaign'], handler: buildCampaign },
-  { section: 'alignment', from: ['alignmentId'], handler: buildAlignment },
+  { section: 'campaign', from: ['campaign'], handler: (context) => context.campaign || null },
+  { section: 'alignment', from: ['alignmentId'], handler: (context) => ALIGNMENTS.find((entry) => entry.id === context.alignmentId) || null },
   {
     section: 'abilities',
     from: ['stats', 'bonusStats', 'overrideStats', 'modifiers'],
@@ -252,6 +254,7 @@ const RULES = [
   { section: 'traits', from: ['age', 'eyes', 'hair', 'skin', 'height', 'weight', 'faith', 'traits'], handler: buildTraits },
 ];
 
+// Handlers
 function ddbParseCharacter(rawInput, options = DEFAULT_OPTIONS) {
   const rawCharacter = normaliseRawCharacter(rawInput);
   if (!rawCharacter || typeof rawCharacter !== 'object') return {};
@@ -264,24 +267,10 @@ function ddbParseCharacter(rawInput, options = DEFAULT_OPTIONS) {
   }, {});
 }
 
-function normaliseRawCharacter(rawInput) {
-  if (!rawInput || typeof rawInput !== 'object') return null;
-  if (rawInput.data && rawInput.data.stats) return rawInput.data;
-  return rawInput.stats ? rawInput : null;
-}
-
-function pickContext(rawCharacter, fields) {
-  return fields.reduce((acc, key) => {
-    acc[key] = rawCharacter[key];
-    return acc;
-  }, {});
-}
-
 function buildIdentity(context, rawCharacter) {
   const classes = Array.isArray(context.classes) ? context.classes : [];
   const primaryClass = classes.find((cls) => cls.isStartingClass) || classes[0] || {};
   const className = primaryClass.definition?.name || '';
-  const alignment = findAlignment(context.alignmentId);
   const monkLevels = classes
     .filter((cls) => (cls.definition?.name || '').toLowerCase() === 'monk')
     .reduce((total, cls) => total + (cls.level || 0), 0);
@@ -308,17 +297,8 @@ function buildIdentity(context, rawCharacter) {
       level_monk: monkLevels,
       level_multiclass: Math.max(totalLevel - primaryLevels, 0),
     },
-    alignment,
     inspiration: Boolean(context.inspiration),
   };
-}
-
-function buildAlignment(context) {
-  return findAlignment(context.alignmentId);
-}
-
-function buildCampaign(context) {
-  return context.campaign || null;
 }
 
 function buildAbilities(context, rawCharacter) {
@@ -450,6 +430,12 @@ function buildInventory(context) {
       quantity: item.quantity || 0,
       weight,
       notes: definition.snippet || definition.description || '',
+      canAttune: Boolean(definition.canAttune),
+      isAttuned: Boolean(item.isAttuned),
+      canEquip: Boolean(definition.canEquip),
+      isEquipped: Boolean(item.equipped),
+      canContain: itemsByContainer.has(item.id),
+      isContained: Boolean(item.containerEntityId),
     };
   };
 
@@ -878,6 +864,38 @@ function buildSpells(context) {
   return levels.map((level) => grouped[level].sort((a, b) => a.name.localeCompare(b.name)));
 }
 
+function buildTraits(context) {
+  const traits = context.traits || {};
+  return {
+    age: context.age ?? null,
+    appearance: traits.appearance || '',
+    bonds: traits.bonds || '',
+    eyes: context.eyes || '',
+    faith: context.faith || '',
+    flaws: traits.flaws || '',
+    hair: context.hair || '',
+    ideals: traits.ideals || '',
+    personalityTraits: traits.personalityTraits || '',
+    skin: context.skin || '',
+    height: context.height || '',
+    weight: context.weight ?? null,
+  };
+}
+
+// Helper Functions
+function normaliseRawCharacter(rawInput) {
+  if (!rawInput || typeof rawInput !== 'object') return null;
+  if (rawInput.data && rawInput.data.stats) return rawInput.data;
+  return rawInput.stats ? rawInput : null;
+}
+
+function pickContext(rawCharacter, fields) {
+  return fields.reduce((acc, key) => {
+    acc[key] = rawCharacter[key];
+    return acc;
+  }, {});
+}
+
 function calculateAbilityScores(context, modifiers) {
   const baseStats = mapStats(context.stats);
   const bonusStats = mapStats(context.bonusStats);
@@ -941,24 +959,6 @@ function determineFightingStyle(feats) {
   return match || null;
 }
 
-function buildTraits(context) {
-  const traits = context.traits || {};
-  return {
-    age: context.age ?? null,
-    appearance: traits.appearance || '',
-    bonds: traits.bonds || '',
-    eyes: context.eyes || '',
-    faith: context.faith || '',
-    flaws: traits.flaws || '',
-    hair: context.hair || '',
-    ideals: traits.ideals || '',
-    personalityTraits: traits.personalityTraits || '',
-    skin: context.skin || '',
-    height: context.height || '',
-    weight: context.weight ?? null,
-  };
-}
-
 function formatSigned(value) {
   const sign = value >= 0 ? '+' : '';
   return `${sign}${value}`;
@@ -1018,10 +1018,6 @@ function flattenActions(actions) {
   }, []);
 }
 
-function findAlignment(alignmentId) {
-  return ALIGNMENTS.find((entry) => entry.id === alignmentId) || null;
-}
-
 function getTotalLevel(classes) {
   if (!Array.isArray(classes)) return 0;
   return classes.reduce((total, cls) => total + (cls.level || 0), 0);
@@ -1050,5 +1046,3 @@ function ddbGetFromEndpoint(r_type, r_id, r_async) {
   });
   return r_json;
 }
-
-const parseDdbCharacter = ddbParseCharacter;
