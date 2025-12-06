@@ -185,7 +185,7 @@ const PROFICIENCY_EXPERTISE = 4;
 const DEFAULT_OPTIONS = {};
 
 const RULES = [
-  { section: 'identity', from: ['id', 'username', 'name', 'classes', 'race', 'alignmentId'], handler: buildIdentity },
+  { section: 'identity', from: ['id', 'username', 'name', 'classes', 'race', 'alignmentId', 'inspiration', 'notes'], handler: buildIdentity },
   { section: 'alignment', from: ['alignmentId'], handler: buildAlignment },
   {
     section: 'abilities',
@@ -226,7 +226,7 @@ const RULES = [
     ],
     handler: buildHitPoints,
   },
-  { section: 'pb', from: ['classes'], handler: buildProficiencyBonus },
+  { section: 'proficiency', from: ['classes'], handler: buildProficiencyBonus },
   { section: 'background', from: ['background'], handler: buildBackground },
   { section: 'currencies', from: ['currencies'], handler: buildCurrencies },
   { section: 'feats', from: ['feats'], handler: buildFeats },
@@ -234,10 +234,11 @@ const RULES = [
   { section: 'proficiencies', from: ['modifiers'], handler: buildProficiencies },
   { section: 'attacking', from: ['modifiers', 'feats'], handler: buildAttacking },
   { section: 'attacks', from: ['actions', 'inventory', 'modifiers', 'classes', 'stats', 'bonusStats', 'overrideStats', 'spells'], handler: buildAttacks },
-  { section: 'limitedUses', from: ['actions', 'features', 'feats'], handler: buildLimitedUses },
+  { section: 'limitedUses', from: ['actions', 'features', 'feats', 'spellSlots'], handler: buildLimitedUses },
   { section: 'spellCasting', from: ['classes', 'spells', 'pactMagic', 'spellSlots'], handler: buildSpellcasting },
   { section: 'spells', from: ['spells'], handler: buildSpells },
   { section: 'inventory', from: ['inventory'], handler: buildInventory },
+  { section: 'notes', from: ['notes'], handler: buildNotes },
 ];
 
 function ddbParseCharacter(rawInput, options = DEFAULT_OPTIONS) {
@@ -270,6 +271,10 @@ function buildIdentity(context, rawCharacter) {
   const primaryClass = classes.find((cls) => cls.isStartingClass) || classes[0] || {};
   const className = primaryClass.definition?.name || '';
   const alignment = findAlignment(context.alignmentId);
+  const monkLevels = classes
+    .filter((cls) => (cls.definition?.name || '').toLowerCase() === 'monk')
+    .reduce((total, cls) => total + (cls.level || 0), 0);
+  const totalLevel = getTotalLevel(classes);
 
   return {
     id: rawCharacter.id || null,
@@ -282,8 +287,13 @@ function buildIdentity(context, rawCharacter) {
       subclass: cls.subclassDefinition?.name || null,
     })),
     race: context.race || null,
-    level: getTotalLevel(classes),
+    level: totalLevel,
+    levels: {
+      level_monk: monkLevels,
+      level_multiclass: Math.max(totalLevel - monkLevels, 0),
+    },
     alignment,
+    inspiration: Boolean(context.inspiration),
   };
 }
 
@@ -393,14 +403,19 @@ function buildSenses(context, rawCharacter) {
     return map;
   }, {});
 
-  return {
-    senses: Object.values(deduped),
+  const flattened = {
     passives: {
       perception: 10 + (lookup['perception'] || 0),
       investigation: 10 + (lookup['investigation'] || 0),
       insight: 10 + (lookup['insight'] || 0),
     },
   };
+
+  Object.values(deduped).forEach((sense) => {
+    flattened[sense.name] = sense.range ?? null;
+  });
+
+  return flattened;
 }
 
 function buildInventory(context) {
@@ -415,6 +430,19 @@ function buildInventory(context) {
       notes: definition.snippet || definition.description || '',
     };
   });
+}
+
+function buildNotes(context) {
+  const notes = context.notes || {};
+  return {
+    allies: notes.allies || '',
+    backstory: notes.backstory || '',
+    enemies: notes.enemies || '',
+    organizations: notes.organizations || '',
+    personalPossessions: notes.personalPossessions || '',
+    otherHoldings: notes.otherHoldings || '',
+    otherNotes: notes.otherNotes || '',
+  };
 }
 
 function buildSpeeds(context) {
@@ -513,11 +541,70 @@ function buildFeats(context) {
 }
 
 function buildProficiencies(context) {
-  const profs = flattenModifiers(context.modifiers).filter((modifier) => modifier.type === 'proficiency');
-  return profs.map((prof) => ({
-    name: prof.friendlySubtypeName || prof.subType || 'Unknown',
-    type: prof.friendlyTypeName || 'Proficiency',
-  }));
+  const profs = flattenModifiers(context.modifiers);
+  const buckets = {
+    armor: [],
+    defenses: [],
+    languages: [],
+    saves: [],
+    scores: [],
+    senses: [],
+    skills: [],
+    tools: [],
+    weapons: [],
+    other: [],
+  };
+
+  profs.forEach((prof) => {
+    const subtype = (prof.subType || '').toLowerCase();
+    const friendly = prof.friendlySubtypeName || prof.subType || 'Unknown';
+
+    if (prof.type === 'language') {
+      buckets.languages.push(friendly);
+      return;
+    }
+    if (prof.type === 'resistance' || prof.type === 'immunity' || prof.type === 'vulnerability') {
+      buckets.defenses.push(friendly);
+      return;
+    }
+    if (prof.type !== 'proficiency') {
+      buckets.other.push(friendly);
+      return;
+    }
+
+    if (subtype.includes('armor') || subtype === 'shields') {
+      buckets.armor.push(friendly);
+      return;
+    }
+    if (subtype.endsWith('saving-throws')) {
+      buckets.saves.push(friendly);
+      return;
+    }
+    if (SKILLS.some((skill) => skill.name === subtype)) {
+      buckets.skills.push(friendly);
+      return;
+    }
+    if (ABILITIES.some((ability) => ability.name === subtype)) {
+      buckets.scores.push(friendly);
+      return;
+    }
+    if (SENSES.some((sense) => sense.name === subtype)) {
+      buckets.senses.push(friendly);
+      return;
+    }
+    if (subtype.includes('tools') || subtype.includes('kit')) {
+      buckets.tools.push(friendly);
+      return;
+    }
+    if (subtype.includes('weapon')) {
+      buckets.weapons.push(friendly);
+      return;
+    }
+
+    buckets.other.push(friendly);
+  });
+
+  return buckets;
 }
 
 function buildAttacks(context, rawCharacter) {
@@ -629,6 +716,21 @@ function buildLimitedUses(context) {
       });
     }
   });
+  if (Array.isArray(context.spellSlots)) {
+    context.spellSlots.forEach((slot) => {
+      const level = slot.level || 0;
+      const available = slot.available ?? 0;
+      const used = slot.used ?? 0;
+      const total = available + used;
+      pools.push({
+        name: `Level ${level} Spell Slots`,
+        total,
+        available,
+        used,
+        reset: 'Long Rest',
+      });
+    });
+  }
   return pools;
 }
 
