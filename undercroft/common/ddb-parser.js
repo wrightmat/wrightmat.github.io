@@ -185,7 +185,7 @@ const PROFICIENCY_EXPERTISE = 4;
 const DEFAULT_OPTIONS = {};
 
 const RULES = [
-  { section: 'identity', from: ['name', 'classes', 'race', 'alignmentId'], handler: buildIdentity },
+  { section: 'identity', from: ['id', 'username', 'name', 'classes', 'race', 'alignmentId'], handler: buildIdentity },
   { section: 'alignment', from: ['alignmentId'], handler: buildAlignment },
   {
     section: 'abilities',
@@ -198,6 +198,11 @@ const RULES = [
     handler: buildSavingThrows,
   },
   {
+    section: 'initiative',
+    from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'],
+    handler: buildInitiative,
+  },
+  {
     section: 'skills',
     from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'],
     handler: buildSkills,
@@ -205,11 +210,27 @@ const RULES = [
   { section: 'senses', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'classes'], handler: buildSenses },
   { section: 'speeds', from: ['race', 'customSpeeds', 'modifiers'], handler: buildSpeeds },
   { section: 'ac', from: ['stats', 'bonusStats', 'overrideStats', 'modifiers', 'inventory'], handler: buildArmorClass },
-  { section: 'hp', from: ['baseHitPoints', 'bonusHitPoints', 'overrideHitPoints', 'removedHitPoints', 'temporaryHitPoints'], handler: buildHitPoints },
+  {
+    section: 'hp',
+    from: [
+      'baseHitPoints',
+      'bonusHitPoints',
+      'overrideHitPoints',
+      'removedHitPoints',
+      'temporaryHitPoints',
+      'stats',
+      'bonusStats',
+      'overrideStats',
+      'modifiers',
+      'classes',
+    ],
+    handler: buildHitPoints,
+  },
   { section: 'pb', from: ['classes'], handler: buildProficiencyBonus },
   { section: 'background', from: ['background'], handler: buildBackground },
   { section: 'currencies', from: ['currencies'], handler: buildCurrencies },
   { section: 'feats', from: ['feats'], handler: buildFeats },
+  { section: 'features', from: ['classes', 'race'], handler: buildFeatures },
   { section: 'proficiencies', from: ['modifiers'], handler: buildProficiencies },
   { section: 'attacking', from: ['modifiers', 'feats'], handler: buildAttacking },
   { section: 'attacks', from: ['actions', 'inventory', 'modifiers', 'classes', 'stats', 'bonusStats', 'overrideStats', 'spells'], handler: buildAttacks },
@@ -244,13 +265,15 @@ function pickContext(rawCharacter, fields) {
   }, {});
 }
 
-function buildIdentity(context) {
+function buildIdentity(context, rawCharacter) {
   const classes = Array.isArray(context.classes) ? context.classes : [];
   const primaryClass = classes.find((cls) => cls.isStartingClass) || classes[0] || {};
   const className = primaryClass.definition?.name || '';
   const alignment = findAlignment(context.alignmentId);
 
   return {
+    id: rawCharacter.id || null,
+    username: rawCharacter.username || '',
     name: context.name || '',
     class: className,
     classes: classes.map((cls) => ({
@@ -258,7 +281,7 @@ function buildIdentity(context) {
       level: cls.level || 0,
       subclass: cls.subclassDefinition?.name || null,
     })),
-    species: context.race?.fullName || context.race?.baseRaceName || '',
+    race: context.race || null,
     level: getTotalLevel(classes),
     alignment,
   };
@@ -296,6 +319,23 @@ function buildSavingThrows(context, rawCharacter) {
       proficiency: proficiencyLevel,
     };
   });
+}
+
+function buildInitiative(context, rawCharacter) {
+  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const abilityScores = calculateAbilityScores(context, modifiers);
+  const totalLevel = getTotalLevel(context.classes);
+  const proficiencyBonus = getProficiencyBonus(totalLevel);
+
+  const dexModifier = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
+  const proficiencyLevel = determineProficiencyLevel(modifiers, 'initiative');
+  const bonus = collectModifiers(modifiers, 'initiative', 'bonus');
+
+  const value = dexModifier + Math.floor(proficiencyBonus * proficiencyLevel) + bonus;
+  const advantage = modifiers.some((modifier) => modifier.subType === 'initiative' && modifier.type === 'advantage');
+  const disadvantage = modifiers.some((modifier) => modifier.subType === 'initiative' && modifier.type === 'disadvantage');
+
+  return { value, advantage, disadvantage };
 }
 
 function buildSkills(context, rawCharacter) {
@@ -417,13 +457,20 @@ function buildArmorClass(context, rawCharacter) {
   return { value: calculated, shieldBonus, bonus: baseBonus };
 }
 
-function buildHitPoints(context) {
+function buildHitPoints(context, rawCharacter) {
+  const modifiers = flattenModifiers(context.modifiers);
+  const abilityScores = calculateAbilityScores(context, modifiers);
+  const conMod = Math.floor(((abilityScores.constitution || 10) - 10) / 2);
+  const totalLevel = getTotalLevel(context.classes);
+  const perLevelBonus = collectModifiers(modifiers, 'hit-points-per-level', 'bonus');
+
   const base = context.overrideHitPoints || (context.baseHitPoints || 0) + (context.bonusHitPoints || 0);
   const damageTaken = context.removedHitPoints || 0;
   const temp = context.temporaryHitPoints || 0;
-  const current = base - damageTaken + temp;
+  const max = base + totalLevel * (conMod + perLevelBonus);
+  const current = max - damageTaken + temp;
   return {
-    max: base,
+    max,
     current: current < 0 ? 0 : current,
     temp,
   };
@@ -487,7 +534,7 @@ function buildAttacks(context, rawCharacter) {
   const combined = [...filteredActions, ...equipmentAttacks.map((item) => item.definition)];
 
   const seen = new Set();
-  return combined.reduce((list, action) => {
+  const attacks = combined.reduce((list, action) => {
     const nameKey = (action.name || 'Attack').toLowerCase();
     if (seen.has(nameKey)) return list;
     seen.add(nameKey);
@@ -509,6 +556,8 @@ function buildAttacks(context, rawCharacter) {
     });
     return list;
   }, []);
+
+  return attacks.reverse();
 }
 
 function buildAttacking(context) {
@@ -520,6 +569,46 @@ function buildAttacking(context) {
     attacksPerAction: 1 + extraAttacks,
     fightingStyle,
   };
+}
+
+function buildFeatures(context) {
+  const whitelist = new Set([
+    'core ranger traits',
+    'spellcasting',
+    'favored enemy',
+    'deft explorer',
+    'dread ambusher',
+    'gloom stalker spells',
+    'umbral sight',
+    'extra attack',
+    'roving',
+    'iron mind',
+    'resourceful',
+    'skillful',
+    'skillfull',
+    'versatile',
+  ]);
+
+  const classFeatures = (context.classes || [])
+    .flatMap((cls) => cls.classFeatures || [])
+    .map((feature) => feature.definition)
+    .filter(Boolean)
+    .filter((feature) => whitelist.has((feature.name || '').toLowerCase()));
+  const racialTraits = (context.race?.racialTraits || [])
+    .map((trait) => trait.definition)
+    .filter(Boolean)
+    .filter((feature) => whitelist.has((feature.name || '').toLowerCase()));
+
+  const combined = [...classFeatures, ...racialTraits];
+  const seen = new Set();
+
+  return combined.reduce((list, feature) => {
+    const name = feature.name || feature.friendlySubtypeName;
+    if (!name || seen.has(name.toLowerCase())) return list;
+    seen.add(name.toLowerCase());
+    list.push({ name, description: feature.description || feature.snippet || '' });
+    return list;
+  }, []);
 }
 
 function buildLimitedUses(context) {
@@ -626,7 +715,7 @@ function determineFightingStyle(feats) {
     return fightingStyles.has(name.toLowerCase());
   });
 
-  return (match?.definition?.name || match?.name) ?? null;
+  return match || null;
 }
 
 function mapStats(statsArray) {
