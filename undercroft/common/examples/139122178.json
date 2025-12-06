@@ -1,0 +1,2102 @@
+{
+    "identity": {
+        "id": 139122178,
+        "userId": 110628680,
+        "username": "Percellophane",
+        "name": "Zsehissu Sulsall Uistihi (Mina)",
+        "class": "Warlock",
+        "classes": [
+            {
+                "name": "Warlock",
+                "level": 11,
+                "subclass": "The Genie (TCoE)"
+            }
+        ],
+        "race": {
+            "isSubRace": false,
+            "baseRaceName": "Yuan-ti",
+            "entityRaceId": 1026407,
+            "entityRaceTypeId": 1743923279,
+            "definitionKey": "1743923279:1026407",
+            "fullName": "Yuan-ti",
+            "baseRaceId": 1026407,
+            "baseRaceTypeId": 1743923279,
+            "description": "<p>Blessed with resistance to magical and poisonous effects by the rituals that created them, each of these yuan-ti manifests their serpentine heritage in a variety of ways.</p>\r\n<p class=\"characters-statblock\" style=\"font-family: Roboto Condensed;\"><strong>Yuan-ti Traits</strong><br />Darkvision, Magic Resistance, Poison Resilience, Serpentine Spellcasting</p>",
+            "avatarUrl": null,
+            "largeAvatarUrl": "https://www.dndbeyond.com/avatars/25746/895/637880558385787668.png?width=1000&height=1000&fit=bounds&quality=95&auto=webp",
+            "portraitAvatarUrl": "https://www.dndbeyond.com/avatars/25746/897/637880558389478162.jpeg?width=1000&height=1000&fit=bounds&quality=95&auto=webp",
+            "moreDetailsUrl": "/species/1026407-yuan-ti",
+            "isHomebrew": false,
+            "isLegacy": false,
+            "groupIds": [],
+            "type": 1,
+            "supportsSubrace": null,
+            "subRaceShortName": null,
+            "baseName": "Yuan-ti",
+            "racialTraits": [
+                {
+                    "definition": {
+                        "id": 8429628,
+                        "definitionKey": "racial-trait:8429628",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 1,
+                        "name": "Ability Score Increases",
+                        "description": "<p>When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The &ldquo;Quick Build&rdquo; section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.</p>",
+                        "snippet": "When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 5,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 5,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": false,
+                        "entityType": "racial-trait",
+                        "entityID": "8429628",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "ABILITYSCORE": 1,
+                            "RACIALTRAIT": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": [
+                            {
+                                "id": 556,
+                                "entityTypeId": 1960452172,
+                                "entityId": 8429628,
+                                "definitionKey": "1960452172:8429628",
+                                "entityTagId": 2,
+                                "tagName": "__INITIAL_ASI"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429629,
+                        "definitionKey": "racial-trait:8429629",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 2,
+                        "name": "Languages",
+                        "description": "<p>Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The <em><a title=\"Player’s Handbook\" href=\"https://www.dndbeyond.com/sources/phb\">Player’s Handbook</a></em> offers a list of languages to choose from. The DM is free to modify that list for a campaign.</p>",
+                        "snippet": "Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 5,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 5,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": false,
+                        "entityType": "racial-trait",
+                        "entityID": "8429629",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "LANGUAGE": 1,
+                            "RACIALTRAIT": 0,
+                            "ABILITYSCORE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429630,
+                        "definitionKey": "racial-trait:8429630",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 3,
+                        "name": "Creature Type",
+                        "description": "<p>You are a Humanoid.</p>",
+                        "snippet": "You are a Humanoid.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": false,
+                        "entityType": "racial-trait",
+                        "entityID": "8429630",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429631,
+                        "definitionKey": "racial-trait:8429631",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 4,
+                        "name": "Size",
+                        "description": "<p>You are Medium or Small. You choose the size when you select this race.</p>",
+                        "snippet": "You are Medium or Small. You choose the size when you select this race.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": false,
+                        "entityType": "racial-trait",
+                        "entityID": "8429631",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429632,
+                        "definitionKey": "racial-trait:8429632",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 5,
+                        "name": "Speed",
+                        "description": "<p>Your walking speed is 30 feet.</p>",
+                        "snippet": "Your walking speed is 30 ft.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": false,
+                        "entityType": "racial-trait",
+                        "entityID": "8429632",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429633,
+                        "definitionKey": "racial-trait:8429633",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 6,
+                        "name": "Darkvision",
+                        "description": "<p>You can see in dim light within 60 feet of you as if it were bright light and in darkness as if it were dim light. You discern colors in that darkness only as shades of gray.</p>",
+                        "snippet": "You can see in dim light within 60 ft. of you as if it were bright light and in darkness as if it were dim light, only discerning colors in that darkness as shades of gray.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": true,
+                        "entityType": "racial-trait",
+                        "entityID": "8429633",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429634,
+                        "definitionKey": "racial-trait:8429634",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 7,
+                        "name": "Magic Resistance",
+                        "description": "<p>You have advantage on saving throws against spells.</p>",
+                        "snippet": "You have advantage on saving throws against spells.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": true,
+                        "entityType": "racial-trait",
+                        "entityID": "8429634",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429635,
+                        "definitionKey": "racial-trait:8429635",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 8,
+                        "name": "Poison Resilience",
+                        "description": "<p>You have advantage on saving throws you make to avoid or end the poisoned condition on yourself. You also have resistance to poison damage.</p>",
+                        "snippet": "You have advantage on saving throws you make to avoid or end the poisoned condition and you have resistance to poison damage.",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": true,
+                        "entityType": "racial-trait",
+                        "entityID": "8429635",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                },
+                {
+                    "definition": {
+                        "id": 8429636,
+                        "definitionKey": "racial-trait:8429636",
+                        "entityTypeId": 1960452172,
+                        "displayOrder": 9,
+                        "name": "Serpentine Spellcasting",
+                        "description": "<p>You know the poison spray cantrip. You can cast animal friendship an unlimited number of times with this trait, but you can target only snakes with it. Starting at 3rd level, you can also cast suggestion with this trait. Once you cast it, you can’t do so again until you finish a long rest. You can also cast it using any spell slots you have of 2nd level or higher.</p>\r\n<p>Intelligence, Wisdom, or Charisma is your spellcasting ability for these spells when you cast them with this trait (choose when you select this race).</p>",
+                        "snippet": "You learn <em>poison spray</em>. You can cast <em>animal friendship</em> an unlimited number of times with this trait but can only target snakes. At 3rd level you can cast <em>suggestion</em> once per long rest. You can also cast it normally using any spell slots of 2nd level or higher. \r\n\r\nYour spellcasting ability is either Intelligence, Wisdom, or Charisma (choose when you select this race).",
+                        "hideInBuilder": false,
+                        "hideInSheet": false,
+                        "activation": null,
+                        "sourceId": 85,
+                        "sourcePageNumber": 36,
+                        "creatureRules": [],
+                        "spellListIds": [],
+                        "featureType": 1,
+                        "sources": [
+                            {
+                                "sourceId": 85,
+                                "pageNumber": 36,
+                                "sourceType": 1
+                            }
+                        ],
+                        "affectedFeatureDefinitionKeys": [],
+                        "isCalledOut": true,
+                        "entityType": "racial-trait",
+                        "entityID": "8429636",
+                        "entityRaceId": 1026407,
+                        "entityRaceTypeId": 1743923279,
+                        "displayConfiguration": {
+                            "RACIALTRAIT": 1,
+                            "ABILITYSCORE": 0,
+                            "LANGUAGE": 0,
+                            "CLASSFEATURE": 0
+                        },
+                        "requiredLevel": null,
+                        "categories": []
+                    }
+                }
+            ],
+            "weightSpeeds": {
+                "normal": {
+                    "walk": 30,
+                    "fly": 0,
+                    "burrow": 0,
+                    "swim": 0,
+                    "climb": 0
+                },
+                "encumbered": null,
+                "heavilyEncumbered": null,
+                "pushDragLift": null,
+                "override": null
+            },
+            "featIds": [],
+            "size": null,
+            "sizeId": 10,
+            "sources": [
+                {
+                    "sourceId": 85,
+                    "pageNumber": 36,
+                    "sourceType": 1
+                }
+            ]
+        },
+        "level": 11,
+        "levels": {
+            "level_monk": 0,
+            "level_multiclass": 0
+        },
+        "inspiration": false
+    },
+    "campaign": {
+        "id": 2994388,
+        "name": "A Merry Band of Gaymers",
+        "description": "",
+        "link": "/campaigns/2994388",
+        "publicNotes": "",
+        "dmUserId": 100499308,
+        "dmUsername": "wrighmat",
+        "characters": [
+            {
+                "userId": 105833984,
+                "username": "DredDrain09",
+                "characterId": 140220699,
+                "characterName": "Shear, The Shapless",
+                "characterUrl": "/profile/DredDrain09/characters/140220699",
+                "avatarUrl": "https://www.dndbeyond.com/avatars/41845/856/1581111423-124734006.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+                "privacyType": 3,
+                "campaignId": null,
+                "isAssigned": true
+            },
+            {
+                "userId": 109793170,
+                "username": "cardinal460",
+                "characterId": 140271664,
+                "characterName": "Alton Vorn'kyr Prescott",
+                "characterUrl": "/profile/cardinal460/characters/140271664",
+                "avatarUrl": "https://www.dndbeyond.com/avatars/49032/257/1581111423-140271664.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+                "privacyType": 3,
+                "campaignId": null,
+                "isAssigned": true
+            },
+            {
+                "userId": 113371594,
+                "username": "kheathcomo",
+                "characterId": 140308454,
+                "characterName": "Hawthorne Winters",
+                "characterUrl": "/profile/kheathcomo/characters/140308454",
+                "avatarUrl": "https://www.dndbeyond.com/avatars/49300/153/1581111423-140308454.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+                "privacyType": 3,
+                "campaignId": null,
+                "isAssigned": true
+            },
+            {
+                "userId": 108397581,
+                "username": "J_Harper",
+                "characterId": 140534465,
+                "characterName": "Cosset Theris",
+                "characterUrl": "/profile/J_Harper/characters/140534465",
+                "avatarUrl": null,
+                "privacyType": 3,
+                "campaignId": null,
+                "isAssigned": true
+            },
+            {
+                "userId": 110628680,
+                "username": "Percellophane",
+                "characterId": 139122178,
+                "characterName": "Zsehissu Sulsall Uistihi (Mina)",
+                "characterUrl": "/profile/Percellophane/characters/139122178",
+                "avatarUrl": "https://www.dndbeyond.com/avatars/47132/580/1581111423-139122178.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+                "privacyType": 3,
+                "campaignId": null,
+                "isAssigned": true
+            }
+        ]
+    },
+    "decorations": {
+        "avatarUrl": "https://www.dndbeyond.com/avatars/47132/580/1581111423-139122178.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+        "frameAvatarUrl": "https://www.dndbeyond.com/avatars/47701/539/638764491061879754.png",
+        "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/224/638609652095595639.jpeg",
+        "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/225/638609652097585653.jpeg",
+        "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/226/638609652100415663.jpeg",
+        "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/44658/135/638634728832732853.jpeg",
+        "defaultBackdrop": {
+            "backdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/224/638609652095595639.jpeg",
+            "smallBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/225/638609652097585653.jpeg",
+            "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/226/638609652100415663.jpeg",
+            "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/44658/135/638634728832732853.jpeg"
+        },
+        "avatarId": 47132580,
+        "portraitDecorationKey": null,
+        "frameAvatarDecorationKey": "subs-snake-king|circle",
+        "frameAvatarId": 47701539,
+        "backdropAvatarDecorationKey": "e833443e-5f3b-423b-8846-9b5c914903c2",
+        "backdropAvatarId": 43993224,
+        "smallBackdropAvatarDecorationKey": "43993225",
+        "smallBackdropAvatarId": 43993225,
+        "largeBackdropAvatarDecorationKey": "43993226",
+        "largeBackdropAvatarId": 43993226,
+        "thumbnailBackdropAvatarDecorationKey": "44658135",
+        "thumbnailBackdropAvatarId": 44658135,
+        "themeColor": {
+            "themeColorId": 500,
+            "themeColor": "#99C476",
+            "backgroundColor": "#FEFEFE",
+            "name": "I Love Flumphs",
+            "raceId": null,
+            "subRaceId": null,
+            "classId": null,
+            "tags": [
+                "WDotMM Themes"
+            ],
+            "decorationKey": "500"
+        }
+    },
+    "alignment": {
+        "id": 6,
+        "name": "chaotic-neutral",
+        "friendlyName": "Chaotic Neutral",
+        "shortName": "CN"
+    },
+    "abilities": [
+        {
+            "id": 1,
+            "name": "strength",
+            "friendlyName": "Strength",
+            "shortName": "STR",
+            "score": 8,
+            "modifier": -1
+        },
+        {
+            "id": 2,
+            "name": "dexterity",
+            "friendlyName": "Dexterity",
+            "shortName": "DEX",
+            "score": 12,
+            "modifier": 1
+        },
+        {
+            "id": 3,
+            "name": "constitution",
+            "friendlyName": "Constitution",
+            "shortName": "CON",
+            "score": 18,
+            "modifier": 4
+        },
+        {
+            "id": 4,
+            "name": "intelligence",
+            "friendlyName": "Intelligence",
+            "shortName": "INT",
+            "score": 11,
+            "modifier": 0
+        },
+        {
+            "id": 5,
+            "name": "wisdom",
+            "friendlyName": "Wisdom",
+            "shortName": "WIS",
+            "score": 10,
+            "modifier": 0
+        },
+        {
+            "id": 6,
+            "name": "charisma",
+            "friendlyName": "Charisma",
+            "shortName": "CHA",
+            "score": 20,
+            "modifier": 5
+        }
+    ],
+    "saves": [
+        {
+            "id": 1,
+            "name": "strength",
+            "friendlyName": "Strength",
+            "shortName": "STR",
+            "value": -1,
+            "proficiency": 0
+        },
+        {
+            "id": 2,
+            "name": "dexterity",
+            "friendlyName": "Dexterity",
+            "shortName": "DEX",
+            "value": 1,
+            "proficiency": 0
+        },
+        {
+            "id": 3,
+            "name": "constitution",
+            "friendlyName": "Constitution",
+            "shortName": "CON",
+            "value": 4,
+            "proficiency": 0
+        },
+        {
+            "id": 4,
+            "name": "intelligence",
+            "friendlyName": "Intelligence",
+            "shortName": "INT",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 5,
+            "name": "wisdom",
+            "friendlyName": "Wisdom",
+            "shortName": "WIS",
+            "value": 4,
+            "proficiency": 1
+        },
+        {
+            "id": 6,
+            "name": "charisma",
+            "friendlyName": "Charisma",
+            "shortName": "CHA",
+            "value": 9,
+            "proficiency": 1
+        }
+    ],
+    "initiative": {
+        "value": 2,
+        "advantage": false,
+        "disadvantage": false
+    },
+    "skills": [
+        {
+            "id": 3,
+            "name": "acrobatics",
+            "friendlyName": "Acrobatics",
+            "stat": 1,
+            "ability": "DEX",
+            "value": 1,
+            "proficiency": 0
+        },
+        {
+            "id": 11,
+            "name": "animal-handling",
+            "friendlyName": "Animal Handling",
+            "stat": 4,
+            "ability": "WIS",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 6,
+            "name": "arcana",
+            "friendlyName": "Arcana",
+            "stat": 3,
+            "ability": "INT",
+            "value": 4,
+            "proficiency": 1
+        },
+        {
+            "id": 2,
+            "name": "athletics",
+            "friendlyName": "Athletics",
+            "stat": 0,
+            "ability": "STR",
+            "value": -1,
+            "proficiency": 0
+        },
+        {
+            "id": 16,
+            "name": "deception",
+            "friendlyName": "Deception",
+            "stat": 5,
+            "ability": "CHA",
+            "value": 9,
+            "proficiency": 1
+        },
+        {
+            "id": 7,
+            "name": "history",
+            "friendlyName": "History",
+            "stat": 3,
+            "ability": "INT",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 12,
+            "name": "insight",
+            "friendlyName": "Insight",
+            "stat": 4,
+            "ability": "WIS",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 17,
+            "name": "intimidation",
+            "friendlyName": "Intimidation",
+            "stat": 5,
+            "ability": "CHA",
+            "value": 9,
+            "proficiency": 1
+        },
+        {
+            "id": 8,
+            "name": "investigation",
+            "friendlyName": "Investigation",
+            "stat": 3,
+            "ability": "INT",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 13,
+            "name": "medicine",
+            "friendlyName": "Medicine",
+            "stat": 4,
+            "ability": "WIS",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 9,
+            "name": "nature",
+            "friendlyName": "Nature",
+            "stat": 3,
+            "ability": "INT",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 14,
+            "name": "perception",
+            "friendlyName": "Perception",
+            "stat": 4,
+            "ability": "WIS",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 18,
+            "name": "performance",
+            "friendlyName": "Performance",
+            "stat": 5,
+            "ability": "CHA",
+            "value": 5,
+            "proficiency": 0
+        },
+        {
+            "id": 19,
+            "name": "persuasion",
+            "friendlyName": "Persuasion",
+            "stat": 5,
+            "ability": "CHA",
+            "value": 5,
+            "proficiency": 0
+        },
+        {
+            "id": 10,
+            "name": "religion",
+            "friendlyName": "Religion",
+            "stat": 3,
+            "ability": "INT",
+            "value": 0,
+            "proficiency": 0
+        },
+        {
+            "id": 4,
+            "name": "sleight-of-hand",
+            "friendlyName": "Sleight of Hand",
+            "stat": 1,
+            "ability": "DEX",
+            "value": 1,
+            "proficiency": 0
+        },
+        {
+            "id": 5,
+            "name": "stealth",
+            "friendlyName": "Stealth",
+            "stat": 1,
+            "ability": "DEX",
+            "value": 5,
+            "proficiency": 1
+        },
+        {
+            "id": 15,
+            "name": "survival",
+            "friendlyName": "Survival",
+            "stat": 4,
+            "ability": "WIS",
+            "value": 0,
+            "proficiency": 0
+        }
+    ],
+    "senses": {
+        "passives": {
+            "perception": 10,
+            "investigation": 10,
+            "insight": 10
+        },
+        "darkvision": 60
+    },
+    "speeds": {
+        "walk": 30,
+        "burrow": 0,
+        "climb": 0,
+        "fly": 0,
+        "swim": 0
+    },
+    "ac": {
+        "value": 13,
+        "shieldBonus": 0,
+        "bonus": 2
+    },
+    "hp": {
+        "max": 102,
+        "current": 33,
+        "temp": 0,
+        "hitDice": 11,
+        "hitDiceSize": "1d8+4"
+    },
+    "deathSaves": {
+        "successes": 3,
+        "failures": 0,
+        "stabilized": false
+    },
+    "proficiency": 4,
+    "background": {
+        "name": "Volstrucker Agent",
+        "description": "<p>The Volstrucker are a clandestine organization of arcane assassins and enforcers in the service of the Cerberus Assembly. Their operatives bear no official title, but are referred to in hushed tones as &ldquo;scourgers&rdquo; by residents of large Dwendalian cities such as Zadash and Rexxentrum.</p>\r\n<p>You are a Volstrucker agent. Your duty is to silence dissidents who would undermine the will of King Dwendal&mdash;and more importantly, the will of the Assembly.</p>\r\n<div class=\"line character height1 marginTop20 marginBottom20\">&nbsp;</div>\r\n<p class=\"Core-Styles_Core-Hanging\"><strong>Skill Proficiencies:</strong> Deception<span class=\"No-Break\">, Stealth</span><br /><strong>Tool Proficiencies:</strong>&nbsp;Poisoner’s kit<br /><strong>Languages:</strong> One of your choice<br /><strong>Equipment</strong>: A set of common clothes, a black cloak with a hood, a poisoner’s kit, and a pouch containing 10 gp</p>\r\n<div class=\"line character height1 marginTop20 marginBottom20\">&nbsp;</div>\r\n<h4 class=\"compendium-hr\">Tragedy</h4>\r\n<p class=\"Core-Styles_Core-Body\">Happy people aren’t selected to join the Volstrucker. The Cerberus Assembly preys upon talented individuals who have been broken by tragedy&mdash;in some cases, tragedy that the Volstrucker has arranged for. A slightly broken mind is more easily reshaped and reeducated. Choose the tragedy that set you on this path, or roll on the Tragedies table.</p>\r\n<p class=\"Table-Styles_Table-Title\"><b>TRAGEDIES</b></p>\r\n<table>\r\n<thead>\r\n<tr>\r\n<th>d6</th>\r\n<th>TRAGEDIES</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td><strong>Familicide.</strong> Through deceit or manipulation, the Volstrucker convinced you to slaughter your own family.</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td><strong>Amnesia.</strong> You were forced to study magic so potent that it strained your mind beyond mortal limits, stealing away the memories of your past.</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td><strong>Capture.</strong> You were captured and tortured by agent of the Kryn Dynasty, and barely escaped.</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td><strong>Starvation.</strong> A terrible blight afflicted your rural village, and many of your friends and family members starved to death. You survived, but only barely.</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td><strong>Disfigurement.</strong> One of your arcane experiments went wrong and scarred or dismembered you so gravely that others now shun you. Only the Volstrucker showed you kindness after that day.</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td><strong>Vicissitude.</strong> You were once the scion of a wealthy family who lost their entire fortune in the blink of an eye.</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<blockquote>\r\n<p class=\"Table-Styles_Table-Body\"><span class=\"CharOverride-1\"><br /><strong>FEATURE:&nbsp;SHADOW NETWORK</strong></span></p>\r\n<p>You have access to the Volstrucker shadow network, which allows you to communicate with other members of the order over long distances. If you write a letter in a special arcane ink, address it to a member of the Volstrucker, and cast it into a fire, the letter will burn to cinders and materialize whole again on the person of the agent you addressed it to.</p>\r\n<p>The ink used to send a letter across the shadow network is the same as that used by a wizard to scribe spells in a spellbook. Writing a letter in this ink costs 10 gp per page.</p>\r\n</blockquote>\r\n<div class=\"line character height1 marginTop20 marginBottom20\">&nbsp;</div>\r\n<h4 class=\"compendium-hr\">Suggested Characteristics</h4>\r\n<p class=\"Core-Styles_Core-Body--Extra-Space-After-\">Agents of the Volstrucker are groomed to follow orders without question and to kill without mercy. The trauma that brings one into the order can fester even more strongly against the darkness of a Volstrucker agent’s assignments. Officially, no one ever leaves the order&mdash;but those desperate enough do whatever it takes to gain some measure of freedom.</p>\r\n<table>\r\n<thead>\r\n<tr>\r\n<th>d8</th>\r\n<th>Volstrucker Agent Personality Traits</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>I prefer to keep my thoughts to myself.</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>I indulge vice in excess to quiet my conscience.</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>I’ve left emotion behind me. I’m now perfectly placid.</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>Some event from the past keeps worming its way into my mind, making me restless.</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>I always keep my word&mdash;except when I’m commanded to break it.</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td>I laugh off insults and never take them personally.</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<table>\r\n<thead>\r\n<tr>\r\n<th>d6</th>\r\n<th>Volstrucker Agent Ideals</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td><strong>Order.</strong>&nbsp;The will of the crown is absolute. (Law)</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td><strong>True Loyalty.</strong>&nbsp;The Cerberus Assembly is greater than any power, even the crown. (Law)</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td><strong>Death.</strong>&nbsp;The penalty for disloyalty is death. (Evil)</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td><strong>Determination.</strong>&nbsp;I cannot fail. Not ever. (Neutral)</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td><strong>Fear.</strong>&nbsp;People should not respect power. They should fear it. (Evil)</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td><strong>Escape.</strong>&nbsp;The Volstrucker are pure evil! I can’t atone for what I’ve done for them, but I can escape with my life. (Any)</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<table>\r\n<thead>\r\n<tr>\r\n<th>d4</th>\r\n<th>Volstrucker Agent Bonds</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>The job is all that matters. I will see it through.</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>My orders are important, but my comrades are worth more than anything. I would die for them.</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>Everything I’ve done, I’ve done to protect someone close to me.</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>If the empire falls, all of civilization falls with it. I will hold back chaos and barbarism at any cost.</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<table>\r\n<thead>\r\n<tr>\r\n<th>d4</th>\r\n<th>Volstrucker Agent Flaws</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>I drink to dull the pain in the back of my head.</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>I go a bit mad when I see blood.</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>I can hear the voices of everyone I’ve killed. I see their faces. I can’t be free of these ghosts.</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>Fear is a powerful motivator. I will do whatever it takes to prevent those who know what I am from seeing me fail, and from those I care about from knowing what I am.</td>\r\n</tr>\r\n</tbody>\r\n</table>",
+        "feature": "Shadow Network",
+        "characteristics": []
+    },
+    "currencies": {
+        "cp": 0,
+        "sp": 0,
+        "ep": 0,
+        "gp": 72,
+        "pp": 1
+    },
+    "feats": [
+        {
+            "name": "Ability Score Improvement",
+            "description": "<p><em>General Feat (Prerequisite: Level 4+)</em></p>\r\n<p>Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can’t increase an ability score above 20.</p>\r\n<p><em><strong>Repeatable.</strong></em> You can take this feat more than once.</p>",
+            "level": null,
+            "limitedUse": null
+        },
+        {
+            "name": "Spell Sniper",
+            "description": "<p><em>General Feat (Prerequisite: Level 4+, Spellcasting or Pact Magic Feature)</em></p>\r\n<p>You gain the following benefits.</p>\r\n<p><em><strong>Ability Score Increase.</strong></em> Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20.</p>\r\n<p><em><strong> Bypass Cover.</strong></em> Your attack rolls for spells ignore Half Cover and Three-Quarters Cover.</p>\r\n<p><em><strong> Casting in Melee.</strong></em> Being within 5 feet of an enemy doesn’t impose Disadvantage on your attack rolls with spells.</p>\r\n<p><em><strong> Increased Range.</strong></em> When you cast a spell that has a range of at least 10 feet and requires you to make an attack roll, you can increase the spell’s range by 60 feet.</p>",
+            "level": null,
+            "limitedUse": null
+        }
+    ],
+    "features": [],
+    "proficiencies": {
+        "armor": [
+            "Light Armor"
+        ],
+        "defenses": [
+            {
+                "name": "Poison",
+                "type": "resistance"
+            },
+            {
+                "name": "Bludgeoning",
+                "type": "resistance"
+            },
+            {
+                "name": "Fire",
+                "type": "resistance"
+            }
+        ],
+        "languages": [
+            "Draconic",
+            "Common",
+            "Elvish"
+        ],
+        "saves": [
+            "Wisdom Saving Throws",
+            "Charisma Saving Throws"
+        ],
+        "scores": [],
+        "senses": [],
+        "skills": [
+            "Arcana",
+            "Intimidation",
+            "Deception",
+            "Stealth"
+        ],
+        "tools": [
+            "Poisoner's Kit"
+        ],
+        "weapons": [
+            "Simple Weapons"
+        ],
+        "other": [
+            "Medium",
+            "Darkvision",
+            "Saving Throws",
+            "Saving Throws",
+            "Charisma Score",
+            "Constitution Score",
+            "Subclass",
+            "Constitution Saving Throws",
+            "Bonus Damage",
+            "Enable Pact Weapon",
+            "Charisma Score",
+            "Devil’s Sight",
+            "Armor Class",
+            "Saving Throws",
+            "Ability Checks",
+            "Saving Throws",
+            "Initiative",
+            "Hit Points",
+            "Hit Points",
+            "Stealth",
+            "Charisma Score",
+            "Constitution Score",
+            "Charisma Score"
+        ]
+    },
+    "attacking": {
+        "attacksPerAction": 1,
+        "fightingStyle": null
+    },
+    "attacks": [
+        {
+            "name": "Handaxe",
+            "type": 1,
+            "activation": "",
+            "range": 20,
+            "attackBonus": -1,
+            "damage": null,
+            "damageType": null,
+            "description": "<p>Proficiency with a Handaxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>"
+        },
+        {
+            "name": "Dagger",
+            "type": 1,
+            "activation": "",
+            "range": 20,
+            "attackBonus": -1,
+            "damage": null,
+            "damageType": null,
+            "description": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>"
+        }
+    ],
+    "limitedUses": [
+        {
+            "name": "Level 1 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 2 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 3 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 4 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 5 Spell Slots",
+            "total": 3,
+            "available": 3,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 6 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 7 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 8 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        },
+        {
+            "name": "Level 9 Spell Slots",
+            "total": 0,
+            "available": 0,
+            "used": 0,
+            "reset": "Long Rest"
+        }
+    ],
+    "spellCasting": {
+        "abilityId": 6,
+        "ability": "CHA",
+        "mod": "+5",
+        "attack": "+9",
+        "save": 17
+    },
+    "spells": [
+        [
+            {
+                "name": "Chill Touch",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Touch",
+                    "rangeValue": null,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Necromancy",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": "+9",
+                "dc": null,
+                "effect": "Damage",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Eldritch Blast",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 120,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Evocation",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": "+9",
+                "dc": null,
+                "effect": "Damage",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Friends",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 10,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "S",
+                    "M"
+                ],
+                "school": "Enchantment",
+                "source": "class",
+                "concentration": true,
+                "ritual": false,
+                "toHit": null,
+                "dc": "WIS17",
+                "effect": "Buff",
+                "duration": "1 Minute (Concentration)"
+            },
+            {
+                "name": "Mage Hand",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 30,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Conjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": "Utility",
+                "duration": "1 Minute (Time)"
+            },
+            {
+                "name": "Minor Illusion",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 30,
+                    "aoeType": "Cube",
+                    "aoeValue": 5
+                },
+                "components": [
+                    "S",
+                    "M"
+                ],
+                "school": "Illusion",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": "Control",
+                "duration": "1 Minute (Time)"
+            },
+            {
+                "name": "Poison Spray",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 10,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Conjuration",
+                "source": "race",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": "CON17",
+                "effect": "Damage",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Prestidigitation",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 10,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Transmutation",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": "Utility",
+                "duration": "1 Hour (Time)"
+            },
+            {
+                "name": "Sorcerous Burst",
+                "level": 0,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 120,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Evocation",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": "+9",
+                "dc": null,
+                "effect": null,
+                "duration": " (Instantaneous)"
+            }
+        ],
+        [
+            {
+                "name": "Animal Friendship",
+                "level": 1,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 30,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Enchantment",
+                "source": "race",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": "WIS17",
+                "effect": "Control",
+                "duration": "24 Hour (Time)"
+            },
+            {
+                "name": "Find Familiar",
+                "level": 1,
+                "prepared": false,
+                "castingTime": "h",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 10,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Conjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": true,
+                "toHit": null,
+                "dc": null,
+                "effect": "Summoning",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Speak with Animals",
+                "level": 1,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Self",
+                    "rangeValue": 0,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Divination",
+                "source": "class",
+                "concentration": false,
+                "ritual": true,
+                "toHit": null,
+                "dc": null,
+                "effect": "Communication",
+                "duration": "10 Minute (Time)"
+            }
+        ],
+        [
+            {
+                "name": "Flock of Familiars",
+                "level": 2,
+                "prepared": false,
+                "castingTime": "m",
+                "range": {
+                    "origin": "Touch",
+                    "rangeValue": null,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Conjuration",
+                "source": "class",
+                "concentration": true,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": null,
+                "duration": "1 Hour (Concentration)"
+            },
+            {
+                "name": "Suggestion",
+                "level": 2,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 30,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "M"
+                ],
+                "school": "Enchantment",
+                "source": "race",
+                "concentration": true,
+                "ritual": false,
+                "toHit": null,
+                "dc": "WIS17",
+                "effect": "Control",
+                "duration": "8 Hour (Concentration)"
+            }
+        ],
+        [
+            {
+                "name": "Counterspell",
+                "level": 3,
+                "prepared": false,
+                "castingTime": "R",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 60,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "S"
+                ],
+                "school": "Abjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": "CON17",
+                "effect": "Negation",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Dispel Magic",
+                "level": 3,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 120,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S"
+                ],
+                "school": "Abjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": "Control",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Fireball",
+                "level": 3,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 150,
+                    "aoeType": "Sphere",
+                    "aoeValue": 20
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Evocation",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": "DEX17",
+                "effect": "Damage",
+                "duration": " (Instantaneous)"
+            },
+            {
+                "name": "Magic Circle",
+                "level": 3,
+                "prepared": false,
+                "castingTime": "m",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 10,
+                    "aoeType": "Cylinder",
+                    "aoeValue": 10
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Abjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": "CHA17",
+                "effect": null,
+                "duration": "1 Hour (Time)"
+            }
+        ],
+        [
+            {
+                "name": "Conjure Anomaly",
+                "level": 5,
+                "prepared": false,
+                "castingTime": "m",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 90,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Conjuration",
+                "source": "class",
+                "concentration": true,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": null,
+                "duration": "1 Hour (Concentration)"
+            },
+            {
+                "name": "Contact Other Plane",
+                "level": 5,
+                "prepared": false,
+                "castingTime": "m",
+                "range": {
+                    "origin": "Self",
+                    "rangeValue": 0,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V"
+                ],
+                "school": "Divination",
+                "source": "class",
+                "concentration": false,
+                "ritual": true,
+                "toHit": null,
+                "dc": null,
+                "effect": "Communication",
+                "duration": "1 Minute (Time)"
+            },
+            {
+                "name": "Infernal Calling",
+                "level": 5,
+                "prepared": false,
+                "castingTime": "m",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 90,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Conjuration",
+                "source": "class",
+                "concentration": true,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": "Summoning",
+                "duration": "1 Hour (Concentration)"
+            },
+            {
+                "name": "Planar Binding",
+                "level": 5,
+                "prepared": false,
+                "castingTime": "h",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 60,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Abjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": "CHA17",
+                "effect": "Control",
+                "duration": "24 Hour (Time)"
+            },
+            {
+                "name": "Teleportation Circle",
+                "level": 5,
+                "prepared": false,
+                "castingTime": "m",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 10,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "M"
+                ],
+                "school": "Conjuration",
+                "source": "class",
+                "concentration": false,
+                "ritual": false,
+                "toHit": null,
+                "dc": null,
+                "effect": "Teleportation",
+                "duration": "1 Round (Time)"
+            },
+            {
+                "name": "Wall of Light",
+                "level": 5,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 120,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "V",
+                    "S",
+                    "M"
+                ],
+                "school": "Evocation",
+                "source": "class",
+                "concentration": true,
+                "ritual": false,
+                "toHit": "+9",
+                "dc": "CON17",
+                "effect": "Damage",
+                "duration": "10 Minute (Concentration)"
+            }
+        ],
+        [
+            {
+                "name": "Mental Prison",
+                "level": 6,
+                "prepared": false,
+                "castingTime": "A",
+                "range": {
+                    "origin": "Ranged",
+                    "rangeValue": 60,
+                    "aoeType": null,
+                    "aoeValue": null
+                },
+                "components": [
+                    "S"
+                ],
+                "school": "Illusion",
+                "source": "class",
+                "concentration": true,
+                "ritual": false,
+                "toHit": null,
+                "dc": "INT17",
+                "effect": "Damage",
+                "duration": "1 Minute (Concentration)"
+            }
+        ]
+    ],
+    "inventory": [
+        [
+            {
+                "name": "Bag of Tricks",
+                "quantity": 1,
+                "weight": 0.5,
+                "notes": "<p>This ordinary bag, made from gray, rust, or tan cloth, appears empty. Reaching inside the bag, however, reveals the presence of a small, fuzzy object. The bag weighs 1/2 pound.</p>\r\n<p>You can use an action to pull the fuzzy object from the bag and throw it up to 20 feet. When the object lands, it transforms into a creature you determine by rolling a d8 and consulting the table that corresponds to the bag's color. See the <span style=\"color: #bc0f0f;\"><strong><a style=\"color: #bc0f0f;\" title=\"Monsters Listing\" href=\"https://www.dndbeyond.com/monsters\">Monsters Listing</a></strong></span> for the creature's statistics. The creature vanishes at the next dawn or when it is reduced to 0 hit points.</p>\r\n<p>The creature is friendly to you and your companions, and it acts on your turn. You can use a bonus action to command how the creature moves and what action it takes on its next turn, or to give it general orders, such as to attack your enemies. In the absence of such orders, the creature acts in a fashion appropriate to its nature.</p>\r\n<p>Once three fuzzy objects have been pulled from the bag, the bag can't be used again until the next dawn.</p>\r\n<h4>Gray Bag of Tricks</h4>\r\n<table class=\"compendium-left-aligned-table\">\r\n<thead>\r\n<tr>\r\n<th><strong>d8</strong></th>\r\n<th><strong>Creature</strong></th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>Weasel</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>Giant rat</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>Badger</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>Boar</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>Panther</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td>Giant badger</td>\r\n</tr>\r\n<tr>\r\n<td>7</td>\r\n<td>Dire wolf</td>\r\n</tr>\r\n<tr>\r\n<td>8</td>\r\n<td>Giant elk</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<h4>Rust Bag of Tricks</h4>\r\n<table class=\"compendium-left-aligned-table\">\r\n<thead>\r\n<tr>\r\n<th>d8</th>\r\n<th>Creature</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>Rat</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>Owl</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>Mastiff</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>Goat</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>Giant goat</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td>Giant boar</td>\r\n</tr>\r\n<tr>\r\n<td>7</td>\r\n<td>Lion</td>\r\n</tr>\r\n<tr>\r\n<td>8</td>\r\n<td>Brown bear</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<h4>Tan Bag of Tricks</h4>\r\n<table class=\"compendium-left-aligned-table\">\r\n<thead>\r\n<tr>\r\n<th>d8</th>\r\n<th>Creature</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>Jackal</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>Ape</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>Baboon</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>Axe beak</td>\r\n</tr>\r\n<tr>\r\n<td>5</td>\r\n<td>Black bear</td>\r\n</tr>\r\n<tr>\r\n<td>6</td>\r\n<td>Giant weasel</td>\r\n</tr>\r\n<tr>\r\n<td>7</td>\r\n<td>Giant hyena</td>\r\n</tr>\r\n<tr>\r\n<td>8</td>\r\n<td>Tiger</td>\r\n</tr>\r\n</tbody>\r\n</table>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Cloak of Protection",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>You gain a +1 bonus to Armor Class and saving throws while you wear this cloak.</p>",
+                "canAttune": true,
+                "isAttuned": true,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Stone of Good Luck (Luckstone)",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>While this polished agate is on your person, you gain a +1 bonus to ability checks and saving throws.</p>",
+                "canAttune": true,
+                "isAttuned": true,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Elemental Gem (Emerald)",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>This emerald contains a mote of elemental energy. When you use an action to break the gem, a water elemental is summoned as if you had cast the conjure elemental spell, and the gem’s magic is lost.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Potion of Healing (Greater)",
+                "quantity": 1,
+                "weight": 0.5,
+                "notes": "<p>You regain 4d4 + 4 Hit Points when you drink this potion.</p>\r\n<p>Whatever its potency, the potion’s red liquid glimmers when agitated.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Potion of Healing",
+                "quantity": 1,
+                "weight": 0.5,
+                "notes": "<p>This potion is a magic item. As a Bonus Action, you can drink it or administer it to another creature within 5 feet of yourself. The creature that drinks the magical red fluid in this vial regains 2d4 + 2 Hit Points.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Leather",
+                "quantity": 1,
+                "weight": 10,
+                "notes": "<p>The breastplate and shoulder protectors of this armor are made of leather that has been stiffened by being boiled in oil. The rest of the armor is made of softer and more flexible materials.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Dagger",
+                "quantity": 1,
+                "weight": 1,
+                "notes": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Dagger",
+                "quantity": 1,
+                "weight": 1,
+                "notes": "<p>Proficiency with a Dagger allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Handaxe",
+                "quantity": 1,
+                "weight": 2,
+                "notes": "<p>Proficiency with a Handaxe allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Vex.</em></strong> If you hit a creature with this weapon and deal damage to the creature, you have Advantage on your next attack roll against that creature before the end of your next turn.</p>\r\n</div>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": true,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Sickle",
+                "quantity": 1,
+                "weight": 2,
+                "notes": "<p>Proficiency with a Sickle allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Nick.</em></strong> When you make the extra attack of the Light property, you can make it as part of the Attack action instead of as a Bonus Action. You can make this extra attack only once per turn.</p>\r\n</div>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Clothes, Common",
+                "quantity": 1,
+                "weight": 3,
+                "notes": "<p>This set of clothes could consist of a loose shirt and baggy breeches, or a loose shirt and skirt or overdress. Cloth wrappings are used for shoes.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Pouch",
+                "quantity": 1,
+                "weight": 1,
+                "notes": "<p>A cloth or leather pouch can hold 1/5 cubic foot/ 6 pounds of gear - or up to 20 sling bullets or 50 blowgun needles, among other things. A compartmentalized pouch for holding spell components is called a component pouch.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": false,
+                "canContain": true,
+                "isContained": false
+            },
+            {
+                "name": "Poisoner's Kit",
+                "quantity": 1,
+                "weight": 2,
+                "notes": "<p>A poisoner's kit includes the vials, chemicals, and other equipment necessary for the creation of poisons. Proficiency with this kit lets you add your proficiency bonus to any ability checks you make to craft or use poisons.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Backpack",
+                "quantity": 1,
+                "weight": 5,
+                "notes": "<p>A Backpack holds up to 30 pounds within 1 cubic foot. It can also serve as a saddlebag.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": false,
+                "canContain": true,
+                "isContained": false
+            },
+            {
+                "name": "Orb",
+                "quantity": 1,
+                "weight": 3,
+                "notes": "<p>An Arcane Focus is bejeweled or carved to channel arcane magic. A Sorcerer, Warlock, or Wizard can use such an item as a Spellcasting Focus.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": false
+            },
+            {
+                "name": "Potion of Fire Resistance",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>When you drink this potion, you gain resistance to fire damage for 1 hour.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Cloak of Elvenkind",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>While you wear this cloak with its hood up, Wisdom (Perception) checks made to see you have disadvantage, and you have advantage on Dexterity (Stealth) checks made to hide, as the cloak's color shifts to camouflage you. Pulling the hood up or down requires an action.</p>",
+                "canAttune": true,
+                "isAttuned": false,
+                "canEquip": true,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Oil",
+                "quantity": 10,
+                "weight": 10,
+                "notes": "<p>You can douse a creature, object, or space with Oil or use it as fuel, as detailed below.</p>\r\n<p><strong><em>Dousing a Creature or an Object.</em></strong> When you take the Attack action, you can replace one of your attacks with throwing an Oil flask. Target one creature or object within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or be covered in oil. If the target takes Fire damage before the oil dries (after 1 minute), the target takes an extra 5 Fire damage from burning oil.</p>\r\n<p><strong><em>Dousing a Space.</em></strong> You can take the Utilize action to pour an Oil flask on level ground to cover a 5-foot-square area within 5 feet of yourself. If lit, the oil burns until the end of the turn 2 rounds from when the oil was lit (or 12 seconds) and deals 5 Fire damage to any creature that enters the area or ends its turn there. A creature can take this damage only once per turn.</p>\r\n<p><strong><em>Fuel.</em></strong> Oil serves as fuel for Lamps and Lanterns. Once lit, a flask of Oil burns for 6 hours in a Lamp or Lantern. That duration doesn’t need to be consecutive; you can extinguish the burning Oil (as a Utilize action) and rekindle it again until it has burned for a total of 6 hours.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Parchment",
+                "quantity": 10,
+                "weight": 0,
+                "notes": "<p>One sheet of Parchment can hold about 250 handwritten words.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Tinderbox",
+                "quantity": 1,
+                "weight": 1,
+                "notes": "<p>A Tinderbox is a small container holding flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a Candle, Lamp, Lantern, or Torch&mdash;or anything else with exposed fuel&mdash;takes a Bonus Action. Lighting any other fire takes 1 minute.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Book",
+                "quantity": 1,
+                "weight": 5,
+                "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Lamp",
+                "quantity": 1,
+                "weight": 1,
+                "notes": "<p>A Lamp burns Oil as fuel to cast Bright Light in a 15-foot radius and Dim Light for an additional 30 feet.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Ink Pen",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>Using Ink, an Ink Pen is used to write or draw.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            },
+            {
+                "name": "Ink",
+                "quantity": 1,
+                "weight": 0,
+                "notes": "<p>Ink comes in a 1-ounce bottle, which provides enough ink to write about 500 pages.</p>",
+                "canAttune": false,
+                "isAttuned": false,
+                "canEquip": false,
+                "isEquipped": false,
+                "canContain": false,
+                "isContained": true
+            }
+        ],
+        {
+            "name": "Pouch",
+            "quantity": 1,
+            "weight": 1,
+            "notes": "<p>A cloth or leather pouch can hold 1/5 cubic foot/ 6 pounds of gear - or up to 20 sling bullets or 50 blowgun needles, among other things. A compartmentalized pouch for holding spell components is called a component pouch.</p>",
+            "canAttune": false,
+            "isAttuned": false,
+            "canEquip": true,
+            "isEquipped": false,
+            "canContain": true,
+            "isContained": false,
+            "items": [
+                {
+                    "name": "Potion of Fire Resistance",
+                    "quantity": 1,
+                    "weight": 0,
+                    "notes": "<p>When you drink this potion, you gain resistance to fire damage for 1 hour.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                }
+            ]
+        },
+        {
+            "name": "Backpack",
+            "quantity": 1,
+            "weight": 5,
+            "notes": "<p>A Backpack holds up to 30 pounds within 1 cubic foot. It can also serve as a saddlebag.</p>",
+            "canAttune": false,
+            "isAttuned": false,
+            "canEquip": true,
+            "isEquipped": false,
+            "canContain": true,
+            "isContained": false,
+            "items": [
+                {
+                    "name": "Cloak of Elvenkind",
+                    "quantity": 1,
+                    "weight": 0,
+                    "notes": "<p>While you wear this cloak with its hood up, Wisdom (Perception) checks made to see you have disadvantage, and you have advantage on Dexterity (Stealth) checks made to hide, as the cloak's color shifts to camouflage you. Pulling the hood up or down requires an action.</p>",
+                    "canAttune": true,
+                    "isAttuned": false,
+                    "canEquip": true,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Oil",
+                    "quantity": 10,
+                    "weight": 10,
+                    "notes": "<p>You can douse a creature, object, or space with Oil or use it as fuel, as detailed below.</p>\r\n<p><strong><em>Dousing a Creature or an Object.</em></strong> When you take the Attack action, you can replace one of your attacks with throwing an Oil flask. Target one creature or object within 20 feet of yourself. The target must succeed on a Dexterity saving throw (DC 8 plus your Dexterity modifier and Proficiency Bonus) or be covered in oil. If the target takes Fire damage before the oil dries (after 1 minute), the target takes an extra 5 Fire damage from burning oil.</p>\r\n<p><strong><em>Dousing a Space.</em></strong> You can take the Utilize action to pour an Oil flask on level ground to cover a 5-foot-square area within 5 feet of yourself. If lit, the oil burns until the end of the turn 2 rounds from when the oil was lit (or 12 seconds) and deals 5 Fire damage to any creature that enters the area or ends its turn there. A creature can take this damage only once per turn.</p>\r\n<p><strong><em>Fuel.</em></strong> Oil serves as fuel for Lamps and Lanterns. Once lit, a flask of Oil burns for 6 hours in a Lamp or Lantern. That duration doesn’t need to be consecutive; you can extinguish the burning Oil (as a Utilize action) and rekindle it again until it has burned for a total of 6 hours.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Parchment",
+                    "quantity": 10,
+                    "weight": 0,
+                    "notes": "<p>One sheet of Parchment can hold about 250 handwritten words.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Tinderbox",
+                    "quantity": 1,
+                    "weight": 1,
+                    "notes": "<p>A Tinderbox is a small container holding flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a Candle, Lamp, Lantern, or Torch&mdash;or anything else with exposed fuel&mdash;takes a Bonus Action. Lighting any other fire takes 1 minute.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Book",
+                    "quantity": 1,
+                    "weight": 5,
+                    "notes": "<p>A Book contains fiction or nonfiction. If you consult an accurate nonfiction Book about its topic, you gain a +5 bonus to Intelligence (Arcana, History, Nature, or Religion) checks you make about that topic.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Lamp",
+                    "quantity": 1,
+                    "weight": 1,
+                    "notes": "<p>A Lamp burns Oil as fuel to cast Bright Light in a 15-foot radius and Dim Light for an additional 30 feet.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Ink Pen",
+                    "quantity": 1,
+                    "weight": 0,
+                    "notes": "<p>Using Ink, an Ink Pen is used to write or draw.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                },
+                {
+                    "name": "Ink",
+                    "quantity": 1,
+                    "weight": 0,
+                    "notes": "<p>Ink comes in a 1-ounce bottle, which provides enough ink to write about 500 pages.</p>",
+                    "canAttune": false,
+                    "isAttuned": false,
+                    "canEquip": false,
+                    "isEquipped": false,
+                    "canContain": false,
+                    "isContained": true
+                }
+            ]
+        }
+    ],
+    "notes": {
+        "allies": "gretta gorunn+1\n\n4 dice:\n+d4 arcana or\n+d4 insight",
+        "backstory": "Genie: Naram-Sin",
+        "enemies": "strixhaven showbands lacks the raw emotion of her original compositions - plays the herdy guerdy\nis a dwanpier and is destined for greatness (she thinks this and is certain of this)\nnew name is a persona \n-aurora\n",
+        "organizations": "",
+        "personalPossessions": "a black cloak with a hood",
+        "otherHoldings": "",
+        "otherNotes": "warg fur\n\nemerald -water elemental (elemental gem)\n"
+    },
+    "traits": {
+        "age": null,
+        "appearance": "",
+        "bonds": "",
+        "eyes": "",
+        "faith": "",
+        "flaws": "",
+        "hair": "",
+        "ideals": "",
+        "personalityTraits": "",
+        "skin": "",
+        "height": "",
+        "weight": null
+    }
+}
