@@ -88,7 +88,21 @@ const RULES = [
   { section: 'inventory', from: ['inventory'], handler: buildInventory },
 ];
 
-export function parseDdbCharacter(rawInput, options = DEFAULT_OPTIONS) {
+function ddbGetFromEndpoint( r_type, r_id, r_async ) {
+  var r_json, r_proxy, r_url;
+  r_proxy = "https://corsproxy.io/?url="  // Run through proxy to avoid CORS errors
+  if ( r_type == "character" ) r_url = r_proxy + "https://character-service.dndbeyond.com/character/v5/character/" + r_id
+  if ( r_type == "monster" ) r_url = r_proxy + "https://monster-service.dndbeyond.com/v1/Monster/" + r_id
+  $.get({
+    url: r_url,
+    success: function(result) { r_json = result },
+    error: function(xhr, error) { console.log(xhr) },
+    async: r_async || false
+  });
+  return r_json;
+}
+
+function ddbParseCharacter(rawInput, options = DEFAULT_OPTIONS) {
   const rawCharacter = normaliseRawCharacter(rawInput);
   if (!rawCharacter || typeof rawCharacter !== 'object') return {};
 
@@ -285,5 +299,3 @@ function determineProficiencyLevel(modifiers, subtype) {
     });
   return level;
 }
-
-export default parseDdbCharacter;
