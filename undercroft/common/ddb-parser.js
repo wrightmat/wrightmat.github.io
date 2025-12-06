@@ -190,6 +190,7 @@ const RULES = [
     from: ['id', 'userId', 'username', 'name', 'classes', 'race', 'alignmentId', 'inspiration', 'notes', 'age', 'eyes', 'hair', 'skin', 'height', 'weight', 'faith'],
     handler: buildIdentity,
   },
+  { section: 'campaign', from: ['campaign'], handler: buildCampaign },
   { section: 'alignment', from: ['alignmentId'], handler: buildAlignment },
   {
     section: 'abilities',
@@ -230,6 +231,7 @@ const RULES = [
     ],
     handler: buildHitPoints,
   },
+  { section: 'deathSaves', from: ['deathSaves'], handler: buildDeathSaves },
   { section: 'proficiency', from: ['classes'], handler: buildProficiencyBonus },
   { section: 'background', from: ['background'], handler: buildBackground },
   { section: 'currencies', from: ['currencies'], handler: buildCurrencies },
@@ -308,20 +310,15 @@ function buildIdentity(context, rawCharacter) {
     },
     alignment,
     inspiration: Boolean(context.inspiration),
-    traits: {
-      age: context.age ?? null,
-      eyes: context.eyes || '',
-      hair: context.hair || '',
-      skin: context.skin || '',
-      height: context.height || '',
-      weight: context.weight ?? null,
-      faith: context.faith || '',
-    },
   };
 }
 
 function buildAlignment(context) {
   return findAlignment(context.alignmentId);
+}
+
+function buildCampaign(context) {
+  return context.campaign || null;
 }
 
 function buildAbilities(context, rawCharacter) {
@@ -443,7 +440,9 @@ function buildSenses(context, rawCharacter) {
 
 function buildInventory(context) {
   if (!Array.isArray(context.inventory)) return [];
-  return context.inventory.map((item) => {
+
+  const itemsByContainer = new Map();
+  const simplify = (item) => {
     const definition = item.definition || {};
     const weight = (definition.weightMultiplier || 1) * (definition.weight || 0) * (item.quantity || 0);
     return {
@@ -452,7 +451,23 @@ function buildInventory(context) {
       weight,
       notes: definition.snippet || definition.description || '',
     };
+  };
+
+  context.inventory.forEach((item) => {
+    const bucket = itemsByContainer.get(item.containerEntityId) || [];
+    bucket.push(item);
+    itemsByContainer.set(item.containerEntityId, bucket);
   });
+
+  const fullInventory = context.inventory.map((item) => simplify(item));
+
+  const containers = context.inventory.filter((candidate) => itemsByContainer.has(candidate.id));
+  const nested = containers.map((container) => ({
+    ...simplify(container),
+    items: (itemsByContainer.get(container.id) || []).map((item) => simplify(item)),
+  }));
+
+  return [fullInventory, ...nested];
 }
 
 function buildNotes(context) {
@@ -529,16 +544,30 @@ function buildHitPoints(context, rawCharacter) {
   const temp = context.temporaryHitPoints || 0;
   const max = base + totalLevel * (conMod + perLevelBonus);
   const current = max - damageTaken + temp;
+  const primaryClass = (context.classes || []).find((cls) => cls.isStartingClass) || (context.classes || [])[0] || {};
+  const hitDiceSize = primaryClass.definition?.hitDice || null;
+
   return {
     max,
     current: current < 0 ? 0 : current,
     temp,
+    hitDice: totalLevel,
+    hitDiceSize: hitDiceSize ? `d${hitDiceSize}` : null,
   };
 }
 
 function buildProficiencyBonus(context) {
   const totalLevel = getTotalLevel(context.classes);
   return getProficiencyBonus(totalLevel);
+}
+
+function buildDeathSaves(context) {
+  const saves = context.deathSaves || {};
+  return {
+    successes: saves.successCount ?? 0,
+    failures: saves.failCount ?? 0,
+    stabilized: Boolean(saves.isStabilized),
+  };
 }
 
 function buildBackground(context) {
@@ -769,8 +798,8 @@ function buildLimitedUses(context) {
     if (existing) {
       if (!existing.total) {
         existing.total = slot.total;
-        existing.available = slot.total;
-        existing.used = 0;
+        existing.used = existing.used ?? 0;
+        existing.available = Math.max(slot.total - existing.used, 0);
       }
     } else {
       pools.push({
