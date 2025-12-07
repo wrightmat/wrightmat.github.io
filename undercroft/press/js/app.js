@@ -51,10 +51,14 @@ function applyOverlays(page, template, { forPrint = false } = {}) {
     guides.className = "page-overlay trim-lines card-guides";
 
     const { size, card } = template;
-    const gridWidth = card.width * 3 + card.gutter * 2;
-    const gridHeight = card.height * 3 + card.gutter * 2;
-    const horizontalInset = size.margin + (size.width - size.margin * 2 - gridWidth) / 2;
-    const verticalInset = size.margin;
+    const columns = card.columns ?? 3;
+    const rows = card.rows ?? 3;
+    const gridWidth = card.width * columns + card.gutter * (columns - 1);
+    const gridHeight = card.height * rows + card.gutter * (rows - 1);
+    const availableWidth = size.width - size.margin * 2;
+    const availableHeight = size.height - size.margin * 2;
+    const horizontalInset = size.margin + Math.max(0, (availableWidth - gridWidth) / 2);
+    const verticalInset = size.margin + Math.max(0, (availableHeight - gridHeight) / 2);
 
     const addGuide = (orientation, position, length, start) => {
       const guide = document.createElement("div");
@@ -71,12 +75,12 @@ function applyOverlays(page, template, { forPrint = false } = {}) {
       guides.appendChild(guide);
     };
 
-    [0, 1, 2, 3].forEach((index) => {
+    Array.from({ length: columns + 1 }).forEach((_, index) => {
       const x = horizontalInset + index * (card.width + card.gutter);
       addGuide("vertical", x, gridHeight, verticalInset);
     });
 
-    [0, 1, 2, 3].forEach((index) => {
+    Array.from({ length: rows + 1 }).forEach((_, index) => {
       const y = verticalInset + index * (card.height + card.gutter);
       addGuide("horizontal", y, gridWidth, horizontalInset);
     });
