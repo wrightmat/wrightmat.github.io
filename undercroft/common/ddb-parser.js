@@ -981,28 +981,23 @@ function buildLimitedUses(context) {
   });
 
   if (hasPactMagicFeature) {
-    const spellSlotPools = pools
-      .map((pool, index) => {
+    const highest = pools.reduce(
+      (best, pool, index) => {
         const explicitLevel = pool.level ?? null;
         const parsedLevel =
           explicitLevel ??
           (typeof pool.name === 'string' && pool.name.match(/Level\s+(\d+)/i)
             ? Number(pool.name.match(/Level\s+(\d+)/i)[1])
             : null);
-        return { pool, index, level: parsedLevel };
-      })
-      .filter((entry) => entry.level != null && /spell slots/i.test(entry.pool.name || ''));
-
-    const highest = spellSlotPools.reduce(
-      (best, entry) => {
-        if (best == null || entry.level > best.level) return entry;
+        if (parsedLevel == null) return best;
+        if (best.index === -1 || parsedLevel > best.level) return { index, level: parsedLevel };
         return best;
       },
-      null
+      { index: -1, level: null }
     );
 
-    if (highest) {
-      const current = highest.pool;
+    if (highest.index !== -1) {
+      const current = pools[highest.index];
       const total = hasPactMagicData
         ? pactTotal || pactAvailable + pactUsed
         : current.total ?? current.available + (current.used ?? 0);
