@@ -322,10 +322,7 @@ function buildSavingThrows(context, rawCharacter) {
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
-  const generalSaveBonus = Math.max(
-    collectMaxModifier(modifiers, 'saving-throws', 'bonus'),
-    collectMaxModifier(modifiers, 'all-saving-throws', 'bonus'),
-  );
+  const generalSaveBonus = collectGeneralSavingThrowBonus(modifiers);
 
   return ABILITIES.map((ability) => {
     const subtype = SAVING_THROW_SUBTYPES[ability.name];
@@ -922,6 +919,7 @@ function buildLimitedUses(context) {
       const total = available + used;
       pools.push({
         name: `Level ${level} Spell Slots`,
+        level,
         total,
         available,
         used,
@@ -984,6 +982,7 @@ function buildLimitedUses(context) {
     } else {
       pools.push({
         name: `Level ${slot.level} Spell Slots`,
+        level: slot.level,
         total: slot.total,
         available: slot.total,
         used: 0,
@@ -991,6 +990,34 @@ function buildLimitedUses(context) {
       });
     }
   });
+
+  const hasPactMagicFeature = (Array.isArray(context.classes) ? context.classes : []).some((cls) => {
+    const classFeatures = [
+      ...(Array.isArray(cls.classFeatures) ? cls.classFeatures : []),
+      ...(Array.isArray(cls.subclassDefinition?.classFeatures) ? cls.subclassDefinition.classFeatures : []),
+    ];
+    return classFeatures.some((feature) => (feature.definition?.name || '').toLowerCase() === 'pact magic');
+  });
+
+  if (hasPactMagicFeature) {
+    const spellSlotPools = pools
+      .map((pool, index) => ({
+        pool,
+        index,
+        level:
+          pool.level ?? (typeof pool.name === 'string' && pool.name.match(/Level\s+(\d+)/i)
+            ? Number(pool.name.match(/Level\s+(\d+)/i)[1])
+            : null),
+      }))
+      .filter((entry) => entry.level != null)
+      .sort((a, b) => a.level - b.level);
+
+    const highest = spellSlotPools.pop();
+    if (highest) {
+      const updated = { ...highest.pool, name: 'Pact Magic', reset: 'Short Rest' };
+      pools[highest.index] = updated;
+    }
+  }
   return pools;
 }
 
@@ -1346,6 +1373,18 @@ function collectMaxModifier(modifiers, subtype, type) {
       const modSubtype = (modifier.subType || '').toLowerCase();
       const cleanedSubtype = modSubtype.startsWith('skill-') ? modSubtype.slice(6) : modSubtype;
       return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
+    })
+    .reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
+}
+
+function collectGeneralSavingThrowBonus(modifiers) {
+  if (!Array.isArray(modifiers)) return 0;
+  const abilitySubtypes = new Set(Object.values(SAVING_THROW_SUBTYPES));
+  return modifiers
+    .filter((modifier) => (modifier.type || '').toLowerCase() === 'bonus')
+    .filter((modifier) => {
+      const subtype = (modifier.subType || '').toLowerCase();
+      return subtype.includes('saving') && !abilitySubtypes.has(subtype);
     })
     .reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
 }
