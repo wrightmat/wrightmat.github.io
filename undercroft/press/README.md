@@ -1,8 +1,9 @@
 # Undercroft Press
 
-Undercroft Press is the printing utility for the Undercroft suite. It focuses on
-print fidelity first, ensuring the on-screen preview matches printed output for
-cards and sheets.
+Undercroft Press is the printing utility for the Undercroft suite. It uses the
+shared Workbench shell (theme controls, collapsible panes, and header actions)
+and focuses on print fidelity first, ensuring the on-screen preview matches
+printed output for cards and sheets.
 
 ## Current State (Epic 1)
 - US Letter surfaces (8.5in × 11in) with 0.25in margins for trimming safety.
@@ -13,9 +14,10 @@ cards and sheets.
 
 ## Usage
 1. Open `index.html` in a browser (served relative to this folder).
-2. Pick a template to see the matching page size and supported sides.
+2. Expand the left pane to pick a template and see the matching page size and
+   supported sides.
 3. Toggle "Preview back side" to check duplex alignment; use the overlay toggle
-   to show trim and safe areas.
+   to show trim and safe areas in both preview and print outputs.
 4. Press **Print Both Sides** and choose 100% scaling / Actual Size. Enable
    double-sided printing and flip on the long edge for portrait layouts.
 

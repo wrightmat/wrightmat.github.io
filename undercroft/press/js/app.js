@@ -1,3 +1,5 @@
+import { initPaneToggles } from "../../workbench/js/lib/panes.js";
+import { initThemeControls } from "../../workbench/js/lib/theme.js";
 import { getTemplateById, getTemplates } from "./templates.js";
 
 const templateSelect = document.getElementById("templateSelect");
@@ -9,6 +11,11 @@ const printStack = document.getElementById("printStack");
 const sideLabel = document.getElementById("sideLabel");
 const swapSideButton = document.getElementById("swapSide");
 const printButton = document.getElementById("printButton");
+
+function initShell() {
+  initThemeControls(document);
+  initPaneToggles(document);
+}
 
 function populateTemplates() {
   const templates = getTemplates();
@@ -82,6 +89,7 @@ function wireEvents() {
   printButton.addEventListener("click", () => window.print());
 }
 
+initShell();
 populateTemplates();
 updateSummary(getActiveTemplate());
 renderPreview();
