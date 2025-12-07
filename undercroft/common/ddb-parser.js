@@ -935,6 +935,8 @@ function buildLimitedUses(context) {
       const available = slot.available ?? 0;
       const used = slot.used ?? 0;
       const total = available + used;
+      if (!total) return;
+
       pools.push({
         name: `Level ${level} Spell Slots`,
         level,
@@ -988,7 +990,11 @@ function buildLimitedUses(context) {
             ? Number(pool.name.match(/Level\s+(\d+)/i)[1])
             : null),
       }))
-      .filter((entry) => entry.level != null)
+      .filter(
+        (entry) =>
+          entry.level != null &&
+          ((entry.pool.total ?? 0) > 0 || (entry.pool.available ?? 0) > 0 || (entry.pool.used ?? 0) > 0)
+      )
       .sort((a, b) => b.level - a.level);
 
     const highest = spellSlotPools[0];
@@ -1008,6 +1014,15 @@ function buildLimitedUses(context) {
         available: available ?? 0,
         reset: 'Short Rest',
       };
+    } else if (hasPactMagicData) {
+      pools.push({
+        name: 'Pact Magic',
+        level: pactLevel,
+        total: pactTotal,
+        used: pactUsed,
+        available: pactAvailable,
+        reset: 'Short Rest',
+      });
     }
   }
   return pools;
@@ -1317,7 +1332,10 @@ function getActiveModifiers(rawCharacter, options = {}) {
   return Object.entries(modifiers).reduce((all, [group, entries]) => {
     if (!Array.isArray(entries)) return all;
     entries.forEach((modifier) => {
-      if (group === 'item' && !activeComponentIds.has(modifier.componentId)) return;
+      if (group === 'item') {
+        if (modifier.componentId && !activeComponentIds.has(modifier.componentId)) return;
+        if (!modifier.componentId && !activeComponentIds.size) return;
+      }
       if (respectIsGranted && modifier.isGranted === false) return;
       all.push(modifier);
     });
