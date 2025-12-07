@@ -1,0 +1,194 @@
+/* Press-specific styling builds on the shared Workbench shell. */
+
+.preview-stage {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.print-page {
+  background: #fff;
+  color: #212529;
+  box-shadow: 0 0.5rem 1rem rgba(33, 37, 41, 0.15);
+  border: 1px solid rgba(33, 37, 41, 0.08);
+  position: relative;
+  isolation: isolate;
+}
+
+.print-page::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 0.35rem;
+  right: 0.5rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  letter-spacing: 0.05em;
+}
+
+.page-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.page-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+}
+
+.page-overlay.trim-lines {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 1in 1in;
+  mask-image:
+    linear-gradient(#000, #000 40px, transparent 80px, transparent calc(100% - 80px), #000 calc(100% - 40px), #000);
+}
+
+.page-overlay.safe-area {
+  border: 2px dashed rgba(13, 110, 253, 0.6);
+  inset: 0.25in;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.card-tile {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(13, 110, 253, 0));
+  border: 1px solid rgba(13, 110, 253, 0.35);
+  border-radius: 0.35rem;
+  padding: 0.125in;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card-meta {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.card-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+.card-body-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.card-footer {
+  font-size: 0.8rem;
+  color: #495057;
+  border-top: 1px dashed rgba(73, 80, 87, 0.35);
+  padding-top: 0.25rem;
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.panel-box {
+  border: 1px solid rgba(108, 117, 125, 0.4);
+  border-radius: 0.35rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.panel-box h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.panel-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.panel-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.35rem;
+}
+
+.note-lines {
+  flex-grow: 1;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 18px,
+    rgba(0, 0, 0, 0.08) 19px,
+    transparent 20px
+  );
+  border-radius: 0.25rem;
+  border: 1px dashed rgba(108, 117, 125, 0.35);
+}
+
+@media (max-width: 991.98px) {
+  .preview-stage {
+    min-height: 50vh;
+  }
+}
+
+@media print {
+  @page {
+    size: 8.5in 11in;
+    margin: 0;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #printStack {
+    display: block !important;
+  }
+
+  .print-page {
+    box-shadow: none;
+    border: none;
+    margin: 0 auto;
+    page-break-after: always;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-page::after {
+    content: none !important;
+    display: none !important;
+  }
+}
