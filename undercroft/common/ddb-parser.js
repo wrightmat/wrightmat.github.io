@@ -640,7 +640,7 @@ function buildFeats(context) {
 }
 
 function buildProficiencies(context, rawCharacter) {
-  const profs = getActiveModifiers(rawCharacter);
+  const profs = getActiveModifiers(rawCharacter, { includeUngrantedProficiencies: true });
   const buckets = {
     armor: [],
     defenses: [],
@@ -702,6 +702,10 @@ function buildProficiencies(context, rawCharacter) {
       buckets.saves.push(friendly);
       return;
     }
+    if (normalizedSubtype === 'ability-checks' && profType.includes('proficiency')) {
+      buckets.skills.push(friendly);
+      return;
+    }
     if (SKILLS.some((skill) => skill.name === normalizedSubtype)) {
       buckets.skills.push(friendly);
       return;
@@ -720,7 +724,8 @@ function buildProficiencies(context, rawCharacter) {
       subtype.includes('suppl') ||
       subtype.includes('instrument') ||
       subtype.includes('gaming-set') ||
-      subtype.includes('vehicle')
+      subtype.includes('vehicle') ||
+      prof.entityTypeId === 2103445194
     ) {
       buckets.tools.push(friendly);
       return;
@@ -1214,11 +1219,12 @@ function flattenModifiers(modifierGroups) {
   }, []);
 }
 
-function getActiveModifiers(rawCharacter) {
+function getActiveModifiers(rawCharacter, options = {}) {
   if (!rawCharacter || typeof rawCharacter !== 'object') return [];
   const modifiers = rawCharacter.modifiers || {};
   const inventory = Array.isArray(rawCharacter.inventory) ? rawCharacter.inventory : [];
   const activeComponentIds = new Set();
+  const includeUngrantedProficiencies = Boolean(options.includeUngrantedProficiencies);
 
   inventory.forEach((item) => {
     const defId = item.definition?.id;
@@ -1236,7 +1242,7 @@ function getActiveModifiers(rawCharacter) {
   return Object.entries(modifiers).reduce((all, [group, entries]) => {
     if (!Array.isArray(entries)) return all;
     entries.forEach((modifier) => {
-      if (modifier.isGranted === false) return;
+      if (modifier.isGranted === false && !(includeUngrantedProficiencies && modifier.type === 'proficiency')) return;
       if (group === 'item' && !activeComponentIds.has(modifier.componentId)) return;
       all.push(modifier);
     });
