@@ -327,7 +327,7 @@ function buildSavingThrows(context, rawCharacter) {
     const subtype = SAVING_THROW_SUBTYPES[ability.name];
     const abilityModifier = Math.floor(((abilityScores[ability.name] || 10) - 10) / 2);
     const { level, roundUp } = determineProficiencyLevel(modifiers, [subtype, 'saving-throws']);
-    const savingThrowBonus = collectModifiers(modifiers, [subtype, 'saving-throws'], 'bonus');
+    const savingThrowBonus = collectMaxModifier(modifiers, [subtype, 'saving-throws'], 'bonus');
     const proficiencyValue = applyProficiency(level, proficiencyBonus, roundUp);
 
     return {
@@ -345,7 +345,7 @@ function buildInitiative(context, rawCharacter) {
   const proficiencyBonus = getProficiencyBonus(totalLevel);
 
   const dexModifier = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
-  const { level, roundUp } = determineProficiencyLevel(modifiers, ['initiative', 'dexterity-ability-checks', 'ability-checks']);
+  const { level, roundUp } = determineProficiencyLevel(modifiers, 'initiative');
   const bonus = collectModifiers(modifiers, ['initiative', 'dexterity-ability-checks', 'ability-checks'], 'bonus');
 
   const value = dexModifier + applyProficiency(level, proficiencyBonus, roundUp) + bonus;
@@ -653,18 +653,23 @@ function buildProficiencies(context) {
   profs.forEach((prof) => {
     const subtype = (prof.subType || '').toLowerCase();
     const friendly = prof.friendlySubtypeName || prof.subType || 'Unknown';
+    const profType = (prof.type || '').toLowerCase();
 
     if (prof.isGranted === false) return;
 
-    if (prof.type === 'language') {
+    if (profType === 'language') {
       buckets.languages.push(friendly);
       return;
     }
-    if (prof.type === 'resistance' || prof.type === 'immunity' || prof.type === 'vulnerability') {
+    if (['resistance', 'immunity', 'vulnerability', 'advantage', 'disadvantage'].includes(profType)) {
       buckets.defenses.push({ name: friendly, type: prof.type });
       return;
     }
-    if (prof.type !== 'proficiency') {
+    if (profType === 'bonus' && subtype.includes('saving-throws')) {
+      buckets.defenses.push({ name: friendly, type: prof.type, value: prof.fixedValue ?? prof.value ?? null });
+      return;
+    }
+    if (!profType.includes('proficiency')) {
       buckets.other.push(friendly);
       return;
     }
@@ -689,7 +694,14 @@ function buildProficiencies(context) {
       buckets.senses.push(friendly);
       return;
     }
-    if (subtype.includes('tools') || subtype.includes('kit')) {
+    if (
+      subtype.includes('tool') ||
+      subtype.includes('kit') ||
+      subtype.includes('suppl') ||
+      subtype.includes('instrument') ||
+      subtype.includes('gaming-set') ||
+      subtype.includes('vehicle')
+    ) {
       buckets.tools.push(friendly);
       return;
     }
@@ -986,7 +998,7 @@ function buildSpells(context, rawCharacter) {
   return levels.map((level) => grouped[level].sort((a, b) => a.name.localeCompare(b.name)));
 }
 
-function buildTraits(context) {
+function buildTraits(context, rawCharacter) {
   const traits = context.traits || {};
   return {
     age: context.age ?? null,
@@ -1001,6 +1013,7 @@ function buildTraits(context) {
     skin: context.skin || '',
     height: context.height || '',
     weight: context.weight ?? null,
+    size: determineSize(rawCharacter),
   };
 }
 
@@ -1088,6 +1101,37 @@ function determineFightingStyle(feats) {
   return match || null;
 }
 
+function determineSize(rawCharacter) {
+  if (!rawCharacter) return null;
+  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const sizeModifier = Array.isArray(modifiers)
+    ? modifiers.find((modifier) => (modifier.type || '').toLowerCase() === 'size' && modifier.subType)
+    : null;
+
+  const candidates = [
+    sizeModifier?.subType,
+    sizeModifier?.fixedValue ?? sizeModifier?.value,
+    rawCharacter.race?.sizeId,
+    rawCharacter.race?.weightSpeeds?.sizeId,
+    rawCharacter.race?.weightSpeeds?.size,
+    rawCharacter.traits?.size,
+  ].filter(Boolean);
+
+  const match = candidates
+    .map((entry) => (typeof entry === 'string' ? entry.toLowerCase() : entry))
+    .map((candidate) =>
+      SIZES.find(
+        (size) =>
+          size.id === candidate ||
+          size.value === candidate ||
+          (typeof candidate === 'string' && size.name.toLowerCase() === candidate)
+      )
+    )
+    .find(Boolean);
+
+  return match?.name || null;
+}
+
 function isWeaponProficient(definition, modifiers) {
   if (!definition) return false;
   const proficiencies = Array.isArray(modifiers)
@@ -1151,6 +1195,19 @@ function collectModifiers(modifiers, subtype, type) {
       (!type || modifier.type === type) && normalized.includes((modifier.subType || '').toLowerCase())
     )
     .reduce((total, modifier) => total + (modifier.fixedValue ?? modifier.value ?? 0), 0);
+}
+
+function collectMaxModifier(modifiers, subtype, type) {
+  if (!Array.isArray(modifiers)) return 0;
+  const subtypes = Array.isArray(subtype) ? subtype.filter(Boolean) : [subtype];
+  const normalized = subtypes.map((entry) => (entry || '').toLowerCase()).filter(Boolean);
+  if (!normalized.length) return 0;
+
+  return modifiers
+    .filter(
+      (modifier) => (!type || modifier.type === type) && normalized.includes((modifier.subType || '').toLowerCase())
+    )
+    .reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
 }
 
 function determineProficiencyLevel(modifiers, subtype) {
