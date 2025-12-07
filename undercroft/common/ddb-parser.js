@@ -1074,7 +1074,7 @@ function calculateAbilityScores(context, modifiers) {
   return ABILITIES.reduce((scores, ability) => {
     const base = overrideStats[ability.name] ?? baseStats[ability.name] ?? 10;
     const bonus = (bonusStats[ability.name] || 0) + collectModifiers(modifiers, `${ability.name}-score`, 'bonus');
-    const overrideFromModifier = collectModifiers(modifiers, `${ability.name}-score`, 'set');
+    const overrideFromModifier = collectModifiers(modifiers, `${ability.name}-score`, ['set', 'set-base']);
     const finalScore = overrideFromModifier || base + bonus;
     scores[ability.name] = finalScore;
     return scores;
@@ -1224,7 +1224,7 @@ function getActiveModifiers(rawCharacter, options = {}) {
   const modifiers = rawCharacter.modifiers || {};
   const inventory = Array.isArray(rawCharacter.inventory) ? rawCharacter.inventory : [];
   const activeComponentIds = new Set();
-  const includeUngrantedProficiencies = Boolean(options.includeUngrantedProficiencies);
+  const respectIsGranted = Boolean(options.respectIsGranted);
 
   inventory.forEach((item) => {
     const defId = item.definition?.id;
@@ -1243,8 +1243,8 @@ function getActiveModifiers(rawCharacter, options = {}) {
   return Object.entries(modifiers).reduce((all, [group, entries]) => {
     if (!Array.isArray(entries)) return all;
     entries.forEach((modifier) => {
-      if (modifier.isGranted === false && !(includeUngrantedProficiencies && modifier.type === 'proficiency')) return;
       if (group === 'item' && !activeComponentIds.has(modifier.componentId)) return;
+      if (respectIsGranted && modifier.isGranted === false) return;
       all.push(modifier);
     });
     return all;
@@ -1257,9 +1257,15 @@ function collectModifiers(modifiers, subtype, type) {
   const normalized = subtypes.map((entry) => (entry || '').toLowerCase()).filter(Boolean);
   if (!normalized.length) return 0;
 
+  const types = Array.isArray(type)
+    ? type.map((entry) => (entry || '').toLowerCase()).filter(Boolean)
+    : type
+    ? [(type || '').toLowerCase()]
+    : [];
+
   return modifiers
     .filter((modifier) => {
-      if (type && modifier.type !== type) return false;
+      if (types.length && !types.includes((modifier.type || '').toLowerCase())) return false;
       const modSubtype = (modifier.subType || '').toLowerCase();
       const cleanedSubtype = modSubtype.startsWith('skill-') ? modSubtype.slice(6) : modSubtype;
       return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
@@ -1273,9 +1279,15 @@ function collectMaxModifier(modifiers, subtype, type) {
   const normalized = subtypes.map((entry) => (entry || '').toLowerCase()).filter(Boolean);
   if (!normalized.length) return 0;
 
+  const types = Array.isArray(type)
+    ? type.map((entry) => (entry || '').toLowerCase()).filter(Boolean)
+    : type
+    ? [(type || '').toLowerCase()]
+    : [];
+
   return modifiers
     .filter((modifier) => {
-      if (type && modifier.type !== type) return false;
+      if (types.length && !types.includes((modifier.type || '').toLowerCase())) return false;
       const modSubtype = (modifier.subType || '').toLowerCase();
       const cleanedSubtype = modSubtype.startsWith('skill-') ? modSubtype.slice(6) : modSubtype;
       return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
