@@ -346,7 +346,7 @@ function buildInitiative(context, rawCharacter) {
 
   const dexModifier = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
   const { level, roundUp } = determineProficiencyLevel(modifiers, 'initiative');
-  const bonus = collectModifiers(modifiers, ['initiative', 'dexterity-ability-checks', 'ability-checks'], 'bonus');
+  const bonus = collectModifiers(modifiers, ['initiative', 'dexterity-ability-checks'], 'bonus');
 
   const value = dexModifier + applyProficiency(level, proficiencyBonus, roundUp) + bonus;
   const advantage = modifiers.some((modifier) => modifier.subType === 'initiative' && modifier.type === 'advantage');
@@ -364,8 +364,12 @@ function buildSkills(context, rawCharacter) {
   return SKILLS.map((skill) => {
     const linkedAbility = ABILITIES[skill.stat];
     const abilityModifier = Math.floor(((abilityScores[linkedAbility.name] || 10) - 10) / 2);
-    const { level, roundUp } = determineProficiencyLevel(modifiers, [skill.name, `${linkedAbility.name}-ability-checks`, 'ability-checks']);
-    const skillBonus = collectModifiers(modifiers, [skill.name, `${linkedAbility.name}-ability-checks`, 'ability-checks'], 'bonus');
+    const { level, roundUp } = determineProficiencyLevel(modifiers, [skill.name, `skill-${skill.name}`, `${linkedAbility.name}-ability-checks`, 'ability-checks']);
+    const skillBonus = collectModifiers(
+      modifiers,
+      [skill.name, `skill-${skill.name}`, `${linkedAbility.name}-ability-checks`, 'ability-checks'],
+      'bonus'
+    );
 
     return {
       ...skill,
@@ -666,6 +670,7 @@ function buildProficiencies(context, rawCharacter) {
 
   profs.forEach((prof) => {
     const subtype = (prof.subType || '').toLowerCase();
+    const normalizedSubtype = subtype.startsWith('skill-') ? subtype.replace(/^skill-/, '') : subtype;
     const friendly = prof.friendlySubtypeName || prof.subType || 'Unknown';
     const profType = (prof.type || '').toLowerCase();
     const condition = prof.restriction ? prof.restriction : null;
@@ -697,15 +702,15 @@ function buildProficiencies(context, rawCharacter) {
       buckets.saves.push(friendly);
       return;
     }
-    if (SKILLS.some((skill) => skill.name === subtype)) {
+    if (SKILLS.some((skill) => skill.name === normalizedSubtype)) {
       buckets.skills.push(friendly);
       return;
     }
-    if (ABILITIES.some((ability) => ability.name === subtype)) {
+    if (ABILITIES.some((ability) => ability.name === normalizedSubtype)) {
       buckets.scores.push(friendly);
       return;
     }
-    if (SENSES.some((sense) => sense.name === subtype)) {
+    if (SENSES.some((sense) => sense.name === normalizedSubtype)) {
       buckets.senses.push(friendly);
       return;
     }
@@ -1246,9 +1251,12 @@ function collectModifiers(modifiers, subtype, type) {
   if (!normalized.length) return 0;
 
   return modifiers
-    .filter((modifier) =>
-      (!type || modifier.type === type) && normalized.includes((modifier.subType || '').toLowerCase())
-    )
+    .filter((modifier) => {
+      if (type && modifier.type !== type) return false;
+      const modSubtype = (modifier.subType || '').toLowerCase();
+      const cleanedSubtype = modSubtype.startsWith('skill-') ? modSubtype.slice(6) : modSubtype;
+      return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
+    })
     .reduce((total, modifier) => total + (modifier.fixedValue ?? modifier.value ?? 0), 0);
 }
 
@@ -1259,9 +1267,12 @@ function collectMaxModifier(modifiers, subtype, type) {
   if (!normalized.length) return 0;
 
   return modifiers
-    .filter(
-      (modifier) => (!type || modifier.type === type) && normalized.includes((modifier.subType || '').toLowerCase())
-    )
+    .filter((modifier) => {
+      if (type && modifier.type !== type) return false;
+      const modSubtype = (modifier.subType || '').toLowerCase();
+      const cleanedSubtype = modSubtype.startsWith('skill-') ? modSubtype.slice(6) : modSubtype;
+      return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
+    })
     .reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
 }
 
@@ -1273,7 +1284,11 @@ function determineProficiencyLevel(modifiers, subtype) {
   let roundUp = false;
 
   modifiers
-    .filter((modifier) => normalized.includes((modifier.subType || '').toLowerCase()))
+    .filter((modifier) => {
+      const modSubtype = (modifier.subType || '').toLowerCase();
+      const cleanedSubtype = modSubtype.startsWith('skill-') ? modSubtype.slice(6) : modSubtype;
+      return normalized.includes(modSubtype) || normalized.includes(cleanedSubtype);
+    })
     .forEach((modifier) => {
       if (modifier.type === 'proficiency') level = Math.max(level, modifier.value ?? 1);
       if (modifier.type === 'expertise') level = Math.max(level, modifier.value ?? 2);
