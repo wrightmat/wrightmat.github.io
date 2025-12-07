@@ -932,7 +932,6 @@ function buildLimitedUses(context) {
   if (Array.isArray(context.spellSlots)) {
     context.spellSlots.forEach((slot) => {
       const level = slot.level || 0;
-      if (pactLevel != null && Number(level) === pactLevel) return;
       const available = slot.available ?? 0;
       const used = slot.used ?? 0;
       const total = available + used;
@@ -1317,10 +1316,10 @@ function getActiveModifiers(rawCharacter, options = {}) {
     const requiresAttunement = Boolean(item.definition?.canAttune);
     const attuned = !requiresAttunement || item.isAttuned;
     const equippable = Boolean(item.definition?.canEquip);
-    const equipped = equippable ? item.equipped : false;
-    const usable = equippable ? equipped : requiresAttunement ? attuned : false;
+    const equipped = equippable ? item.equipped : true;
+    const usable = equipped && attuned;
 
-    if (attuned && usable) {
+    if (usable) {
       activeComponentIds.add(defId);
     }
   });
@@ -1390,7 +1389,12 @@ function collectGeneralSavingThrowBonus(modifiers) {
     .filter((modifier) => {
       const subtype = (modifier.subType || '').toLowerCase();
       const friendlySubtype = (modifier.friendlySubtypeName || '').toLowerCase();
-      const matchesSaving = subtype.includes('saving') || friendlySubtype.includes('saving throw');
+      const restriction = (modifier.restriction || '').toLowerCase();
+      const matchesSaving =
+        subtype === 'saving-throws' ||
+        subtype.includes('saving') ||
+        friendlySubtype.includes('saving throw') ||
+        restriction.includes('saving throw');
       if (!matchesSaving) return false;
 
       const abilityFriendly = abilityNames.some((name) => friendlySubtype.includes(name));
