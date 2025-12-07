@@ -308,7 +308,7 @@ function buildIdentity(context, rawCharacter) {
 }
 
 function buildAbilities(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   return ABILITIES.map((ability) => {
     const score = abilityScores[ability.name] ?? 10;
@@ -318,7 +318,7 @@ function buildAbilities(context, rawCharacter) {
 }
 
 function buildSavingThrows(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
@@ -339,7 +339,7 @@ function buildSavingThrows(context, rawCharacter) {
 }
 
 function buildInitiative(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
@@ -356,7 +356,7 @@ function buildInitiative(context, rawCharacter) {
 }
 
 function buildSkills(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
@@ -377,7 +377,7 @@ function buildSkills(context, rawCharacter) {
 }
 
 function buildSenses(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const allowed = new Set(SENSES.map((sense) => sense.name));
   const knownSenses = [];
 
@@ -509,8 +509,8 @@ function buildNotes(context) {
   };
 }
 
-function buildSpeeds(context) {
-  const modifiers = flattenModifiers(context.modifiers);
+function buildSpeeds(context, rawCharacter) {
+  const modifiers = getActiveModifiers(rawCharacter);
   const baseSpeeds = context.race?.weightSpeeds?.normal || {};
 
   const generalBonus = collectModifiers(modifiers, 'speed', 'bonus');
@@ -533,7 +533,7 @@ function buildSpeeds(context) {
 }
 
 function buildArmorClass(context, rawCharacter) {
-  const modifiers = flattenModifiers(context.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const dexMod = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
   const baseBonus = collectModifiers(modifiers, 'armor-class', 'bonus');
@@ -567,7 +567,7 @@ function buildArmorClass(context, rawCharacter) {
 }
 
 function buildHitPoints(context, rawCharacter) {
-  const modifiers = flattenModifiers(context.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const conMod = Math.floor(((abilityScores.constitution || 10) - 10) / 2);
   const totalLevel = getTotalLevel(context.classes);
@@ -635,8 +635,8 @@ function buildFeats(context) {
   }));
 }
 
-function buildProficiencies(context) {
-  const profs = flattenModifiers(context.modifiers);
+function buildProficiencies(context, rawCharacter) {
+  const profs = getActiveModifiers(rawCharacter);
   const buckets = {
     armor: [],
     defenses: [],
@@ -650,10 +650,25 @@ function buildProficiencies(context) {
     other: [],
   };
 
+  const defenseMap = new Map();
+  const addDefense = (entry) => {
+    const key = `${(entry.type || '').toLowerCase()}|${(entry.name || '').toLowerCase()}|${(entry.condition || '').toLowerCase()}`;
+    const existing = defenseMap.get(key);
+    if (!existing) {
+      defenseMap.set(key, entry);
+      buckets.defenses.push(entry);
+      return;
+    }
+    if (entry.value != null && (!existing.value || entry.value > existing.value)) {
+      existing.value = entry.value;
+    }
+  };
+
   profs.forEach((prof) => {
     const subtype = (prof.subType || '').toLowerCase();
     const friendly = prof.friendlySubtypeName || prof.subType || 'Unknown';
     const profType = (prof.type || '').toLowerCase();
+    const condition = prof.restriction ? prof.restriction : null;
 
     if (prof.isGranted === false) return;
 
@@ -662,11 +677,11 @@ function buildProficiencies(context) {
       return;
     }
     if (['resistance', 'immunity', 'vulnerability', 'advantage', 'disadvantage'].includes(profType)) {
-      buckets.defenses.push({ name: friendly, type: prof.type });
+      addDefense({ name: friendly, type: prof.type, condition });
       return;
     }
     if (profType === 'bonus' && subtype.includes('saving-throws')) {
-      buckets.defenses.push({ name: friendly, type: prof.type, value: prof.fixedValue ?? prof.value ?? null });
+      addDefense({ name: friendly, type: prof.type, value: prof.fixedValue ?? prof.value ?? null, condition });
       return;
     }
     if (!profType.includes('proficiency')) {
@@ -713,11 +728,21 @@ function buildProficiencies(context) {
     buckets.other.push(friendly);
   });
 
+  buckets.languages = Array.from(new Set(buckets.languages));
+  buckets.armor = Array.from(new Set(buckets.armor));
+  buckets.saves = Array.from(new Set(buckets.saves));
+  buckets.scores = Array.from(new Set(buckets.scores));
+  buckets.senses = Array.from(new Set(buckets.senses));
+  buckets.skills = Array.from(new Set(buckets.skills));
+  buckets.tools = Array.from(new Set(buckets.tools));
+  buckets.weapons = Array.from(new Set(buckets.weapons));
+  buckets.other = Array.from(new Set(buckets.other));
+
   return buckets;
 }
 
 function buildAttacks(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const dexMod = Math.floor(((abilityScores.dexterity || 10) - 10) / 2);
   const strMod = Math.floor(((abilityScores.strength || 10) - 10) / 2);
@@ -788,7 +813,7 @@ function buildAttacks(context, rawCharacter) {
       longRange: action.longRange || null,
       attackBonus: action.fixedToHit ?? action.value ?? 0,
       damage: formatActionDamage(action.dice),
-      damageType: DAMAGES[action.damageTypeId || 0] || null,
+        damageType: DAMAGES[action.damageTypeId || 0] || null,
       description: action.description || action.snippet || '',
       notes: '',
       equipped: false,
@@ -815,8 +840,8 @@ function buildAttacks(context, rawCharacter) {
   return attacks.reverse();
 }
 
-function buildAttacking(context) {
-  const modifiers = flattenModifiers(context.modifiers);
+function buildAttacking(context, rawCharacter) {
+  const modifiers = getActiveModifiers(rawCharacter);
   const extraAttacks = collectMaxSet(modifiers, 'extra-attacks');
   const fightingStyle = determineFightingStyle(context.feats);
 
@@ -904,10 +929,10 @@ function buildLimitedUses(context) {
   return pools;
 }
 
-function buildSpellcasting(context) {
+function buildSpellcasting(context, rawCharacter) {
   const classes = Array.isArray(context.classes) ? context.classes : [];
   const ability = determineSpellcastingAbility(classes);
-  const modifiers = flattenModifiers(context.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(context, modifiers);
   const modScore = ability ? abilityScores[ability.name] ?? 10 : 10;
   const abilityMod = Math.floor((modScore - 10) / 2);
@@ -923,7 +948,7 @@ function buildSpellcasting(context) {
 }
 
 function buildSpells(context, rawCharacter) {
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const abilityScores = calculateAbilityScores(rawCharacter, modifiers);
   const totalLevel = getTotalLevel(rawCharacter.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
@@ -1103,7 +1128,7 @@ function determineFightingStyle(feats) {
 
 function determineSize(rawCharacter) {
   if (!rawCharacter) return null;
-  const modifiers = flattenModifiers(rawCharacter.modifiers);
+  const modifiers = getActiveModifiers(rawCharacter);
   const sizeModifier = Array.isArray(modifiers)
     ? modifiers.find((modifier) => (modifier.type || '').toLowerCase() === 'size' && modifier.subType)
     : null;
@@ -1180,6 +1205,36 @@ function flattenModifiers(modifierGroups) {
   if (!modifierGroups || typeof modifierGroups !== 'object') return [];
   return Object.values(modifierGroups).reduce((all, group) => {
     if (Array.isArray(group)) all.push(...group);
+    return all;
+  }, []);
+}
+
+function getActiveModifiers(rawCharacter) {
+  if (!rawCharacter || typeof rawCharacter !== 'object') return [];
+  const modifiers = rawCharacter.modifiers || {};
+  const inventory = Array.isArray(rawCharacter.inventory) ? rawCharacter.inventory : [];
+  const activeComponentIds = new Set();
+
+  inventory.forEach((item) => {
+    const defId = item.definition?.id;
+    if (!defId) return;
+    const requiresAttunement = Boolean(item.definition?.canAttune);
+    const attuned = !requiresAttunement || item.isAttuned;
+    const equippable = Boolean(item.definition?.canEquip);
+    const equipped = equippable ? item.equipped : false;
+
+    if (attuned && equipped) {
+      activeComponentIds.add(defId);
+    }
+  });
+
+  return Object.entries(modifiers).reduce((all, [group, entries]) => {
+    if (!Array.isArray(entries)) return all;
+    entries.forEach((modifier) => {
+      if (modifier.isGranted === false) return;
+      if (group === 'item' && !activeComponentIds.has(modifier.componentId)) return;
+      all.push(modifier);
+    });
     return all;
   }, []);
 }
