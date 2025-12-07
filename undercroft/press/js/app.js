@@ -6,6 +6,7 @@ import {
   getSupportedSources,
   getTemplateById,
   getTemplates,
+  loadTemplates,
 } from "./templates.js";
 import { buildSourceSummary, getSourceById, getSources } from "./sources.js";
 
@@ -47,6 +48,7 @@ function populateSources() {
 }
 
 function populateTemplates() {
+  templateSelect.innerHTML = "";
   const templates = getTemplates();
   templates.forEach((template) => {
     const option = document.createElement("option");
@@ -54,6 +56,35 @@ function populateTemplates() {
     option.textContent = template.name;
     templateSelect.appendChild(option);
   });
+  if (templates[0]) {
+    templateSelect.value = templates[0].id;
+  }
+}
+
+function populateFormats(template) {
+  formatSelect.innerHTML = "";
+  if (!template) return;
+  template.formats?.forEach((format) => {
+    const option = document.createElement("option");
+    option.value = format.id;
+    option.textContent = format.label;
+    formatSelect.appendChild(option);
+  });
+  const firstFormat = template.formats?.[0];
+  formatSelect.value = firstFormat?.id ?? "";
+  populateOrientations(firstFormat);
+}
+
+function populateOrientations(format) {
+  orientationSelect.innerHTML = "";
+  const orientations = format?.orientations ?? ["portrait"];
+  orientations.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+    orientationSelect.appendChild(option);
+  });
+  orientationSelect.value = format?.defaultOrientation ?? orientations[0];
 }
 
 function populateFormats(template) {
@@ -96,9 +127,9 @@ function getSelectionContext() {
   const source = getActiveSource();
   const format = getFormatById(template, formatSelect.value);
   const orientation = orientationSelect.value || format?.defaultOrientation;
-  const size = getPageSize(template, format?.id, orientation);
-  const value = sourceValues[source.id];
-  const summary = buildSourceSummary(source, value);
+  const size = template && format ? getPageSize(template, format?.id, orientation) : null;
+  const value = sourceValues[source?.id];
+  const summary = source ? buildSourceSummary(source, value) : "";
 
   return {
     template,
@@ -233,6 +264,7 @@ function updateSelectionBadges(context) {
 function renderPreview() {
   const context = getSelectionContext();
   const { template, source, format, size, orientation, sourceValue, sourceSummary: summary } = context;
+  if (!template || !size) return;
   updateTemplateSummary({ template, size, orientation, sourceSummary: summary });
   updateCompatibility(template, format);
   const side = currentSide;
@@ -346,10 +378,21 @@ function wireEvents() {
   printButton.addEventListener("click", () => window.print());
 }
 
-initShell();
-populateSources();
-populateTemplates();
-populateFormats(getActiveTemplate());
-updateTemplateSummary(getSelectionContext());
-renderPreview();
-wireEvents();
+async function initPress() {
+  initShell();
+  try {
+    await loadTemplates();
+  } catch (error) {
+    console.error("Unable to load templates", error);
+    return;
+  }
+
+  populateSources();
+  populateTemplates();
+  populateFormats(getActiveTemplate());
+  updateTemplateSummary(getSelectionContext());
+  renderPreview();
+  wireEvents();
+}
+
+initPress();
