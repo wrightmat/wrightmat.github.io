@@ -322,7 +322,7 @@ function buildSavingThrows(context, rawCharacter) {
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
-  const generalSaveBonus = collectGeneralSavingThrowBonus(modifiers);
+  const generalSaveBonus = Math.max(collectGeneralSavingThrowBonus(modifiers), collectItemSavingThrowBonus(rawCharacter));
 
   return ABILITIES.map((ability) => {
     const subtype = SAVING_THROW_SUBTYPES[ability.name];
@@ -1468,6 +1468,31 @@ function collectGeneralSavingThrowBonus(modifiers) {
   const generalMax = generalBonuses.reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
   const explicitMax = collectMaxModifier(modifiers, 'saving-throws', 'bonus');
   return Math.max(generalMax, explicitMax);
+}
+
+function collectItemSavingThrowBonus(rawCharacter) {
+  if (!rawCharacter || !Array.isArray(rawCharacter.inventory)) return 0;
+
+  return rawCharacter.inventory.reduce((max, item) => {
+    const definition = item?.definition || {};
+    const requiresAttunement = Boolean(definition.canAttune);
+    const attuned = !requiresAttunement || item.isAttuned;
+    const equippable = Boolean(definition.canEquip);
+    const equipped = equippable ? item.equipped : true;
+    if (!attuned || !equipped) return max;
+
+    const granted = Array.isArray(definition.grantedModifiers) ? definition.grantedModifiers : [];
+    const bonus = granted
+      .filter((modifier) => {
+        if (!modifier || (modifier.type || '').toLowerCase() !== 'bonus') return false;
+        const subtype = (modifier.subType || '').toLowerCase();
+        const friendly = (modifier.friendlySubtypeName || '').toLowerCase();
+        return subtype === 'saving-throws' || subtype.includes('saving-throws') || friendly.includes('saving throw');
+      })
+      .reduce((current, modifier) => Math.max(current, modifier.fixedValue ?? modifier.value ?? 0), 0);
+
+    return Math.max(max, bonus);
+  }, 0);
 }
 
 function determineProficiencyLevel(modifiers, subtype) {
