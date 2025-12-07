@@ -989,9 +989,9 @@ function buildLimitedUses(context) {
             : null),
       }))
       .filter((entry) => entry.level != null)
-      .sort((a, b) => a.level - b.level);
+      .sort((a, b) => b.level - a.level);
 
-    const highest = spellSlotPools.pop();
+    const highest = spellSlotPools[0];
     if (highest) {
       const total = hasPactMagicData
         ? pactTotal || pactAvailable + pactUsed
@@ -999,7 +999,7 @@ function buildLimitedUses(context) {
       const used = hasPactMagicData ? pactUsed : highest.pool.used ?? 0;
       const available = hasPactMagicData ? pactAvailable : Math.max((total || 0) - (used || 0), 0);
 
-      const updated = {
+      pools[highest.index] = {
         ...highest.pool,
         name: 'Pact Magic',
         level: pactLevel ?? highest.level ?? highest.pool.level ?? null,
@@ -1008,16 +1008,6 @@ function buildLimitedUses(context) {
         available: available ?? 0,
         reset: 'Short Rest',
       };
-      pools[highest.index] = updated;
-    } else if (hasPactMagicData) {
-      pools.push({
-        name: 'Pact Magic',
-        level: pactLevel,
-        total: pactTotal || pactAvailable + pactUsed,
-        used: pactUsed,
-        available: pactAvailable,
-        reset: 'Short Rest',
-      });
     }
   }
   return pools;
@@ -1384,24 +1374,28 @@ function collectGeneralSavingThrowBonus(modifiers) {
   const abilitySubtypes = new Set(Object.values(SAVING_THROW_SUBTYPES));
   const abilityNames = ABILITIES.map((ability) => ability.friendlyName.toLowerCase());
   const shortNames = ABILITIES.map((ability) => ability.shortName.toLowerCase());
-  return modifiers
-    .filter((modifier) => (modifier.type || '').toLowerCase() === 'bonus')
-    .filter((modifier) => {
-      const subtype = (modifier.subType || '').toLowerCase();
-      const friendlySubtype = (modifier.friendlySubtypeName || '').toLowerCase();
-      const restriction = (modifier.restriction || '').toLowerCase();
-      const matchesSaving =
-        subtype === 'saving-throws' ||
-        subtype.includes('saving') ||
-        friendlySubtype.includes('saving throw') ||
-        restriction.includes('saving throw');
-      if (!matchesSaving) return false;
+  const generalBonuses = modifiers.filter((modifier) => {
+    if ((modifier.type || '').toLowerCase() !== 'bonus') return false;
 
-      const abilityFriendly = abilityNames.some((name) => friendlySubtype.includes(name));
-      const abilityShort = shortNames.some((short) => friendlySubtype.includes(short));
-      return !abilitySubtypes.has(subtype) && !abilityFriendly && !abilityShort;
-    })
-    .reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
+    const subtype = (modifier.subType || '').toLowerCase();
+    const friendlySubtype = (modifier.friendlySubtypeName || '').toLowerCase();
+    const restriction = (modifier.restriction || '').toLowerCase();
+    const matchesSaving =
+      subtype === 'saving-throws' ||
+      subtype.includes('saving-throws') ||
+      friendlySubtype.includes('saving throw') ||
+      restriction.includes('saving throw');
+    if (!matchesSaving) return false;
+
+    const abilityFriendly = abilityNames.some((name) => friendlySubtype.includes(name));
+    const abilityShort = shortNames.some((short) => friendlySubtype.includes(short));
+    const isAbilitySpecific = abilitySubtypes.has(subtype) || abilityFriendly || abilityShort;
+    return !isAbilitySpecific;
+  });
+
+  const generalMax = generalBonuses.reduce((max, modifier) => Math.max(max, modifier.fixedValue ?? modifier.value ?? 0), 0);
+  const explicitMax = collectMaxModifier(modifiers, 'saving-throws', 'bonus');
+  return Math.max(generalMax, explicitMax);
 }
 
 function determineProficiencyLevel(modifiers, subtype) {
