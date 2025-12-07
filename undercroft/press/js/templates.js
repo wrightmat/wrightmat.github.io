@@ -196,3 +196,16 @@ export function getPageSize(template, formatId, orientation) {
 export function getSupportedSources(template) {
   return template?.supportedSources ?? ["ddb", "srd", "json", "manual"];
 }
+
+export function getFormatById(template, formatId) {
+  return template.formats?.find((format) => format.id === formatId) ?? template.formats?.[0];
+}
+
+export function getPageSize(template, formatId, orientation) {
+  const format = getFormatById(template, formatId) ?? template.formats?.[0];
+  return resolvePageSize(format, orientation);
+}
+
+export function getSupportedSources(template) {
+  return template.supportedSources ?? ["ddb", "srd", "json", "manual"];
+}

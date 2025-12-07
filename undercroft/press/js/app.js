@@ -87,6 +87,31 @@ function populateOrientations(format) {
   orientationSelect.value = format?.defaultOrientation ?? orientations[0];
 }
 
+function populateFormats(template) {
+  formatSelect.innerHTML = "";
+  template.formats?.forEach((format) => {
+    const option = document.createElement("option");
+    option.value = format.id;
+    option.textContent = format.label;
+    formatSelect.appendChild(option);
+  });
+  const firstFormat = template.formats?.[0];
+  formatSelect.value = firstFormat?.id ?? "";
+  populateOrientations(firstFormat);
+}
+
+function populateOrientations(format) {
+  orientationSelect.innerHTML = "";
+  const orientations = format?.orientations ?? ["portrait"];
+  orientations.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+    orientationSelect.appendChild(option);
+  });
+  orientationSelect.value = format?.defaultOrientation ?? orientations[0];
+}
+
 function getActiveTemplate() {
   const selected = templateSelect.value;
   return getTemplateById(selected);
