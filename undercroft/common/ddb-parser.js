@@ -1326,6 +1326,8 @@ function getActiveModifiers(rawCharacter, options = {}) {
   const activeComponentIds = new Set();
   const respectIsGranted = Boolean(options.respectIsGranted);
   const grantedComponentIds = new Set();
+  const activeGranted = [];
+  const seenGrantedIds = new Set();
 
   inventory.forEach((item) => {
     const defId = item.definition?.id;
@@ -1347,10 +1349,22 @@ function getActiveModifiers(rawCharacter, options = {}) {
       if (item.id) {
         activeComponentIds.add(item.id);
       }
+
+      grantedMods.forEach((mod) => {
+        if (!mod || (respectIsGranted && mod.isGranted === false)) return;
+        const componentId = mod.componentId ?? defId ?? item.id;
+        const id = mod.id ?? componentId;
+        if (id && seenGrantedIds.has(id)) return;
+        if (id) seenGrantedIds.add(id);
+        activeGranted.push({
+          ...mod,
+          componentId,
+        });
+      });
     }
   });
 
-  return Object.entries(modifiers).reduce((all, [group, entries]) => {
+  const collected = Object.entries(modifiers).reduce((all, [group, entries]) => {
     if (!Array.isArray(entries)) return all;
     entries.forEach((modifier) => {
       if (group === 'item') {
@@ -1363,6 +1377,24 @@ function getActiveModifiers(rawCharacter, options = {}) {
     });
     return all;
   }, []);
+
+  if (!activeGranted.length) return collected;
+
+  const seen = new Set();
+  activeGranted.forEach((mod) => {
+    const key = mod.id || `${mod.type}-${mod.subType}-${mod.componentId || ''}`;
+    seen.add(key);
+  });
+
+  collected.forEach((mod) => {
+    const key = mod.id || `${mod.type}-${mod.subType}-${mod.componentId || ''}`;
+    if (!seen.has(key)) {
+      activeGranted.push(mod);
+      seen.add(key);
+    }
+  });
+
+  return activeGranted;
 }
 
 function collectModifiers(modifiers, subtype, type) {
