@@ -1,0 +1,75 @@
+{
+  "id": "notecard",
+  "title": "Notecard (5 × 7)",
+  "description": "Single oversized notecard aligned to the center of the letter page.",
+  "type": "card",
+  "formats": [
+    { "id": "letter", "label": "US Letter", "sizeId": "letter", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" }
+  ],
+  "supportedSources": ["ddb", "srd", "json", "manual"],
+  "card": { "width": 5, "height": 7, "gutter": 0, "safeInset": 0.2, "columns": 1, "rows": 1 },
+  "pages": {
+    "front": {
+      "repeat": "@cards.front",
+      "layout": {
+        "type": "stack",
+        "gap": 5,
+        "children": [
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "text", "text": "@type", "className": "card-meta" } },
+              { "node": { "type": "field", "component": "text", "text": "@label", "className": "card-meta text-end" } }
+            ]
+          },
+          { "type": "field", "component": "heading", "text": "@title", "className": "card-title" },
+          { "type": "field", "component": "text", "text": "@body", "className": "card-body-text" },
+          { "type": "field", "component": "text", "text": "@footer", "className": "card-footer" }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@cards.back",
+      "layout": {
+        "type": "stack",
+        "gap": 5,
+        "children": [
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "text", "text": "@type", "className": "card-meta" } },
+              { "node": { "type": "field", "component": "text", "text": "@label", "className": "card-meta text-end" } }
+            ]
+          },
+          { "type": "field", "component": "heading", "text": "@title", "className": "card-title" },
+          { "type": "field", "component": "text", "text": "@body", "className": "card-body-text" },
+          { "type": "field", "component": "text", "text": "@footer", "className": "card-footer" }
+        ]
+      }
+    }
+  },
+  "sampleData": {
+    "cards": {
+      "front": [
+        {
+          "title": "Story Prompt",
+          "type": "Memo",
+          "label": "Front",
+          "body": "Use this 5 × 7 space to capture session notes or NPC spotlights before printing.",
+          "footer": "Room for sketching, lists, and quick reminders."
+        }
+      ],
+      "back": [
+        {
+          "title": "Reverse Notes",
+          "type": "Memo",
+          "label": "Back",
+          "body": "Back face for handwriting or a lined overlay after trimming to 5 × 7 inches.",
+          "footer": "Keep margins tight for accurate cuts."
+        }
+      ]
+    }
+  }
+}

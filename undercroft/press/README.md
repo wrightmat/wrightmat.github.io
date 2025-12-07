@@ -15,6 +15,9 @@ printed output for cards and sheets.
 - Live overlay toggles for trim lines and safe areas to measure alignment before
   production. Preview labels include the selected source and format for quick
   verification.
+- Templates live as JSON in the `templates/` directory using the Workbench-style
+  component layout schema and are hydrated into the preview at runtime with
+  bundled sample data for each side.
 
 ## Usage
 1. Open `index.html` in a browser (served relative to this folder).
