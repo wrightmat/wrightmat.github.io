@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Undercroft Press</title>
+    <script>
+      (function () {
+        const storageKey = "undercroft.workbench.theme";
+        const THEMES = ["light", "system", "dark"];
+        const prefersDark = () =>
+          typeof window !== "undefined" &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolveTheme = (preference) => {
+          if (preference === "dark") return "dark";
+          if (preference === "light") return "light";
+          return prefersDark() ? "dark" : "light";
+        };
+        const apply = (value) => {
+          const preference = THEMES.includes(value) ? value : "system";
+          const resolved = resolveTheme(preference);
+          const root = document.documentElement;
+          const body = document.body;
+          if (root) {
+            root.dataset.themePreference = preference;
+            root.dataset.theme = resolved;
+            root.dataset.bsTheme = resolved;
+            root.style.colorScheme = resolved;
+          }
+          if (body) {
+            body.dataset.themePreference = preference;
+            body.dataset.theme = resolved;
+            body.dataset.bsTheme = resolved;
+            body.style.colorScheme = resolved;
+          }
+          return preference;
+        };
+        try {
+          const stored = localStorage.getItem(storageKey);
+          apply(stored);
+        } catch (error) {
+          apply("system");
+          console.warn("Unable to read theme preference", error);
+        }
+      })();
+    </script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="../workbench/css/styles.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="bg-body text-body">
+    <div class="d-flex flex-column min-vh-100 no-print">
+      <header class="border-bottom bg-body-tertiary">
+        <div class="container-xl d-flex align-items-center gap-3 py-3">
+          <div class="d-flex align-items-center gap-3">
+            <button
+              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+              type="button"
+              data-pane-toggle="left"
+              aria-label="Toggle navigation pane"
+            >
+              <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle navigation pane</span>
+            </button>
+            <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+              <span class="badge text-bg-dark text-uppercase">Press</span>
+              <a href="index.html" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Press</a>
+            </h1>
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+            <div class="btn-group" role="group" aria-label="Theme toggle">
+              <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
+                <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
+                <span class="visually-hidden">Light theme</span>
+              </button>
+              <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
+              <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
+                <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
+                <span class="visually-hidden">Dark theme</span>
+              </button>
+            </div>
+            <div data-auth-control class="d-flex">
+              <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+            </div>
+            <button
+              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+              type="button"
+              data-pane-toggle="right"
+              aria-label="Toggle details pane"
+            >
+              <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle details pane</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="d-flex flex-grow-1 overflow-hidden">
+        <aside
+          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
+          data-pane="left"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="collapsed"
+        >
+          <div class="card border-0 shadow-theme">
+            <div class="card-body d-flex flex-column gap-4">
+              <div>
+                <h2 class="h6 text-uppercase fw-semibold text-body-secondary">Epic 1: Print Fidelity</h2>
+                <p class="mb-2">
+                  Select a format to preview a print-accurate surface. The preview and printed page share the same dimensions and padding for alignment testing.
+                </p>
+                <div class="bg-body-tertiary rounded-3 p-3 small">
+                  <p class="fw-semibold mb-2">Current assumptions</p>
+                  <ul class="mb-0 ps-3 list-unstyled d-flex flex-column gap-2">
+                    <li class="d-flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>US Letter base pages (8.5in × 11in)</span>
+                    </li>
+                    <li class="d-flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>0.25in outer margins to avoid printer clipping</span>
+                    </li>
+                    <li class="d-flex gap-2">
+                      <span aria-hidden="true">•</span>
+                      <span>Consistent gutters for double-sided alignment</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-3">
+                <div>
+                  <label class="form-label fw-semibold" for="templateSelect">Template</label>
+                  <select class="form-select" id="templateSelect"></select>
+                  <div class="small text-body-secondary mt-2" id="templateSummary"></div>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="overlayToggle" checked />
+                  <label class="form-check-label" for="overlayToggle">Show trim lines and safe areas</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="backToggle" />
+                  <label class="form-check-label" for="backToggle">Preview back side</label>
+                </div>
+              </div>
+              <div class="bg-body-tertiary rounded-3 p-3">
+                <h3 class="h6 mb-2 text-uppercase fw-semibold text-body-secondary">Print checklist</h3>
+                <ol class="mb-0 ps-3 small d-flex flex-column gap-2">
+                  <li>Set scaling to 100% / Actual Size.</li>
+                  <li>Use system print dialog for accurate margins.</li>
+                  <li>Enable double-sided printing; flip on long edge.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="flex-grow-1 overflow-auto bg-body-secondary py-4">
+          <section class="container-xl d-flex flex-column gap-4">
+            <div class="card shadow-theme">
+              <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between">
+                <div>
+                  <h2 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Live Preview</h2>
+                  <div class="small text-body-secondary" id="sideLabel">Front side</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn btn-outline-secondary btn-sm" id="swapSide">Swap Side</button>
+                  <button class="btn btn-primary btn-sm" id="printButton">Print Both Sides</button>
+                </div>
+              </div>
+              <div class="card-body bg-body-secondary">
+                <div class="preview-stage" id="previewStage" aria-live="polite"></div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <aside
+          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg"
+          data-pane="right"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="collapsed"
+        >
+          <div class="card border-0 shadow-theme">
+            <div class="card-body d-flex flex-column gap-3">
+              <div>
+                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-2">Alignment checklist</h2>
+                <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+                  <li class="d-flex gap-2 align-items-start">
+                    <span class="badge text-bg-primary">1</span>
+                    <span>Measure outer margins: 0.25in on each edge.</span>
+                  </li>
+                  <li class="d-flex gap-2 align-items-start">
+                    <span class="badge text-bg-primary">2</span>
+                    <span>Verify cut lines pass through both sides.</span>
+                  </li>
+                  <li class="d-flex gap-2 align-items-start">
+                    <span class="badge text-bg-primary">3</span>
+                    <span>Ensure safe areas stay within the dashed inset.</span>
+                  </li>
+                  <li class="d-flex gap-2 align-items-start">
+                    <span class="badge text-bg-primary">4</span>
+                    <span>Print a test sheet before bulk jobs.</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="bg-body-tertiary rounded-3 p-3 small">
+                <p class="fw-semibold mb-2">What this build covers</p>
+                <ul class="mb-0 ps-3 d-flex flex-column gap-2">
+                  <li>Standard poker card grid with paired backs.</li>
+                  <li>Letter-sized character sheet with a structured back.</li>
+                  <li>Screen preview matches print dimensions.</li>
+                </ul>
+              </div>
+              <div class="mt-auto small text-body-secondary">
+                Undercroft Press is evolving from Codex Scriptorium. These foundations focus on fidelity first; sources and palettes will follow in later epics.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="d-none" id="printStack" aria-hidden="true"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
