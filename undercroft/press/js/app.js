@@ -5,12 +5,11 @@ import { getTemplateById, getTemplates } from "./templates.js";
 const templateSelect = document.getElementById("templateSelect");
 const templateSummary = document.getElementById("templateSummary");
 const overlayToggle = document.getElementById("overlayToggle");
-const backToggle = document.getElementById("backToggle");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
-const sideLabel = document.getElementById("sideLabel");
 const swapSideButton = document.getElementById("swapSide");
 const printButton = document.getElementById("printButton");
+let currentSide = "front";
 
 function initShell() {
   initThemeControls(document);
@@ -53,11 +52,18 @@ function applyOverlays(page) {
   page.append(trim, safe);
 }
 
+function updateSideButton() {
+  const viewingFront = currentSide === "front";
+  const currentLabel = viewingFront ? "Front" : "Back";
+  const nextLabel = viewingFront ? "Back" : "Front";
+  swapSideButton.textContent = `Showing ${currentLabel} (switch to ${nextLabel})`;
+  swapSideButton.setAttribute("aria-pressed", viewingFront ? "false" : "true");
+}
+
 function renderPreview() {
   const template = getActiveTemplate();
   updateSummary(template);
-  const side = backToggle.checked ? "back" : "front";
-  sideLabel.textContent = `${side.charAt(0).toUpperCase()}${side.slice(1)} side`;
+  const side = currentSide;
 
   previewStage.innerHTML = "";
   const page = template.createPage(side);
@@ -65,6 +71,7 @@ function renderPreview() {
   previewStage.appendChild(page);
 
   buildPrintStack(template);
+  updateSideButton();
 }
 
 function buildPrintStack(template) {
@@ -77,14 +84,16 @@ function buildPrintStack(template) {
 }
 
 function toggleSide() {
-  backToggle.checked = !backToggle.checked;
+  currentSide = currentSide === "front" ? "back" : "front";
   renderPreview();
 }
 
 function wireEvents() {
-  templateSelect.addEventListener("change", renderPreview);
+  templateSelect.addEventListener("change", () => {
+    currentSide = "front";
+    renderPreview();
+  });
   overlayToggle.addEventListener("change", renderPreview);
-  backToggle.addEventListener("change", renderPreview);
   swapSideButton.addEventListener("click", toggleSide);
   printButton.addEventListener("click", () => window.print());
 }
