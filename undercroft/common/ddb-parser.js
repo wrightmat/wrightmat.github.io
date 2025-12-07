@@ -322,13 +322,16 @@ function buildSavingThrows(context, rawCharacter) {
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
-  const globalSaveBonus = collectModifiers(modifiers, ['saving-throws', 'all-saving-throws'], 'bonus');
+  const generalSaveBonus = Math.max(
+    collectMaxModifier(modifiers, 'saving-throws', 'bonus'),
+    collectMaxModifier(modifiers, 'all-saving-throws', 'bonus'),
+  );
 
   return ABILITIES.map((ability) => {
     const subtype = SAVING_THROW_SUBTYPES[ability.name];
     const abilityModifier = Math.floor(((abilityScores[ability.name] || 10) - 10) / 2);
     const { level, roundUp } = determineProficiencyLevel(modifiers, [subtype, 'saving-throws']);
-    const savingThrowBonus = collectModifiers(modifiers, [subtype, 'saving-throws'], 'bonus') + globalSaveBonus;
+    const savingThrowBonus = collectModifiers(modifiers, subtype, 'bonus') + generalSaveBonus;
     const proficiencyValue = applyProficiency(level, proficiencyBonus, roundUp);
 
     return {
@@ -887,6 +890,13 @@ function buildFeatures(context) {
 
 function buildLimitedUses(context) {
   const pools = [];
+  const pactLevelRaw =
+    context.pactMagic?.level ??
+    context.pactMagic?.spellSlotLevel ??
+    context.pactMagic?.slotLevel ??
+    context.pactMagic?.pactLevel ??
+    null;
+  const pactLevel = pactLevelRaw != null && !Number.isNaN(Number(pactLevelRaw)) ? Number(pactLevelRaw) : null;
   ['actions', 'features', 'feats'].forEach((key) => {
     const entries = context[key];
     if (Array.isArray(entries)) {
@@ -906,6 +916,7 @@ function buildLimitedUses(context) {
   if (Array.isArray(context.spellSlots)) {
     context.spellSlots.forEach((slot) => {
       const level = slot.level || 0;
+      if (pactLevel != null && Number(level) === pactLevel) return;
       const available = slot.available ?? 0;
       const used = slot.used ?? 0;
       const total = available + used;
@@ -919,12 +930,6 @@ function buildLimitedUses(context) {
     });
   }
   if (context.pactMagic && typeof context.pactMagic === 'object') {
-    const pactLevel =
-      context.pactMagic.level ||
-      context.pactMagic.spellSlotLevel ||
-      context.pactMagic.slotLevel ||
-      context.pactMagic.pactLevel ||
-      null;
     const pactTotal =
       context.pactMagic.totalSlots ??
       context.pactMagic.slots ??
