@@ -1,3 +1,30 @@
+const pageSizes = {
+  letter: {
+    id: "letter",
+    label: "US Letter",
+    width: 8.5,
+    height: 11,
+    margin: 0.25,
+    orientations: ["portrait", "landscape"],
+  },
+  a4: {
+    id: "a4",
+    label: "A4",
+    width: 8.27,
+    height: 11.69,
+    margin: 0.25,
+    orientations: ["portrait", "landscape"],
+  },
+  a6: {
+    id: "a6",
+    label: "A6",
+    width: 4.1,
+    height: 5.8,
+    margin: 0.2,
+    orientations: ["portrait"],
+  },
+};
+
 const frontFaces = [
   {
     title: "Ithril Scout",
@@ -91,6 +118,28 @@ const notecardBack = [
   },
 ];
 
+function resolvePageSize(format, orientation) {
+  const fallback = pageSizes.letter;
+  const base = format.size ?? pageSizes[format.sizeId] ?? fallback;
+  const desiredOrientation = orientation ?? format.defaultOrientation ?? "portrait";
+  const portrait = {
+    width: base.width,
+    height: base.height,
+    margin: base.margin,
+    label: format.label ?? base.label,
+    orientation: "portrait",
+  };
+  if (desiredOrientation === "landscape") {
+    return {
+      ...portrait,
+      width: portrait.height,
+      height: portrait.width,
+      orientation: "landscape",
+    };
+  }
+  return portrait;
+}
+
 function createCardTemplate(config) {
   const cardDefaults = { gutter: 0, safeInset: 0, columns: 1, rows: 1 };
   const cardSettings = { ...cardDefaults, ...config.card };
@@ -100,16 +149,20 @@ function createCardTemplate(config) {
     name: config.name,
     description: config.description,
     type: "card",
-    size: config.size,
+    formats: config.formats ?? [{ id: "letter", label: "US Letter", sizeId: "letter", orientations: ["portrait"] }],
+    supportedSources: config.supportedSources ?? ["ddb", "srd", "json", "manual"],
     card: cardSettings,
     sides: config.sides ?? ["front", "back"],
-    createPage(side) {
+    createPage(side, { size, format, source } = {}) {
+      const activeFormat = format ?? this.formats[0];
+      const resolvedSize = size ?? resolvePageSize(activeFormat);
       const page = document.createElement("div");
       page.className = `print-page side-${side}`;
-      page.style.width = `${this.size.width}in`;
-      page.style.height = `${this.size.height}in`;
-      page.style.padding = `${this.size.margin}in`;
-      page.dataset.label = `${this.name} — ${side}`;
+      page.style.width = `${resolvedSize.width}in`;
+      page.style.height = `${resolvedSize.height}in`;
+      page.style.padding = `${resolvedSize.margin}in`;
+      const sourceLabel = source?.name ?? "Local";
+      page.dataset.label = `${this.name} — ${resolvedSize.label} ${resolvedSize.orientation} — ${sourceLabel} — ${side}`;
 
       const inner = document.createElement("div");
       inner.className = "page-inner";
@@ -312,9 +365,11 @@ const templateLibrary = [
   createCardTemplate({
     id: "card-grid",
     name: "Poker Card Grid (3 × 3)",
-    description:
-      "Print-ready 3 × 3 grid of poker-sized cards with paired fronts and backs.",
-    size: { width: 8.5, height: 11, margin: 0.25 },
+    description: "Print-ready 3 × 3 grid of poker-sized cards with paired fronts and backs.",
+    formats: [
+      { id: "letter", label: "US Letter", sizeId: "letter", orientations: ["portrait", "landscape"], defaultOrientation: "portrait" },
+      { id: "a4", label: "A4", sizeId: "a4", orientations: ["portrait", "landscape"], defaultOrientation: "portrait" },
+    ],
     card: { width: 2.5, height: 3.5, gutter: 0, safeInset: 0.125, columns: 3, rows: 3 },
     faces: { front: frontFaces, back: backFaces },
   }),
@@ -322,7 +377,10 @@ const templateLibrary = [
     id: "tarot-grid",
     name: "Tarot Card Grid (2 × 2)",
     description: "Centered 2 × 2 layout for tarot-sized cards with duplex-ready backs.",
-    size: { width: 8.5, height: 11, margin: 0.25 },
+    formats: [
+      { id: "letter", label: "US Letter", sizeId: "letter", orientations: ["portrait", "landscape"], defaultOrientation: "portrait" },
+      { id: "a4", label: "A4", sizeId: "a4", orientations: ["portrait", "landscape"], defaultOrientation: "portrait" },
+    ],
     card: { width: 2.75, height: 4.75, gutter: 0, safeInset: 0.125, columns: 2, rows: 2 },
     faces: { front: frontFaces, back: backFaces },
   }),
@@ -330,25 +388,32 @@ const templateLibrary = [
     id: "notecard",
     name: "Notecard (5 × 7)",
     description: "Single oversized notecard aligned to the center of the letter page.",
-    size: { width: 8.5, height: 11, margin: 0.25 },
+    formats: [
+      { id: "letter", label: "US Letter", sizeId: "letter", orientations: ["portrait", "landscape"], defaultOrientation: "portrait" },
+    ],
     card: { width: 5, height: 7, gutter: 0, safeInset: 0.2, columns: 1, rows: 1 },
     faces: { front: notecardFront, back: notecardBack },
   }),
   {
     id: "letter-sheet",
     name: "Letter Character Spread",
-    description:
-      "Full-page character layout with matching notes back for double-sided runs.",
+    description: "Full-page character layout with matching notes back for double-sided runs.",
     type: "sheet",
-    size: { width: 8.5, height: 11, margin: 0.5 },
+    formats: [
+      { id: "letter", label: "US Letter", sizeId: "letter", orientations: ["portrait", "landscape"], defaultOrientation: "portrait" },
+    ],
+    supportedSources: ["ddb", "srd", "json", "manual"],
     sides: ["front", "back"],
-    createPage(side) {
+    createPage(side, { size, format, source } = {}) {
+      const activeFormat = format ?? this.formats[0];
+      const resolvedSize = size ?? resolvePageSize(activeFormat);
       const page = document.createElement("div");
       page.className = `print-page side-${side}`;
-      page.style.width = `${this.size.width}in`;
-      page.style.height = `${this.size.height}in`;
-      page.style.padding = `${this.size.margin}in`;
-      page.dataset.label = `${this.name} — ${side}`;
+      page.style.width = `${resolvedSize.width}in`;
+      page.style.height = `${resolvedSize.height}in`;
+      page.style.padding = `${resolvedSize.margin}in`;
+      const sourceLabel = source?.name ?? "Local";
+      page.dataset.label = `${this.name} — ${resolvedSize.label} ${resolvedSize.orientation} — ${sourceLabel} — ${side}`;
 
       const inner = document.createElement("div");
       inner.className = "page-inner";
@@ -376,15 +441,21 @@ const templateLibrary = [
     name: "A6 Sheet",
     description: "Standalone A6 preview sized for inserts and small handouts.",
     type: "sheet",
-    size: { width: 4.1, height: 5.8, margin: 0.2 },
+    formats: [
+      { id: "a6", label: "A6", sizeId: "a6", orientations: ["portrait"], defaultOrientation: "portrait" },
+    ],
+    supportedSources: ["json", "manual"],
     sides: ["front", "back"],
-    createPage(side) {
+    createPage(side, { size, format, source } = {}) {
+      const activeFormat = format ?? this.formats[0];
+      const resolvedSize = size ?? resolvePageSize(activeFormat);
       const page = document.createElement("div");
       page.className = `print-page side-${side}`;
-      page.style.width = `${this.size.width}in`;
-      page.style.height = `${this.size.height}in`;
-      page.style.padding = `${this.size.margin}in`;
-      page.dataset.label = `${this.name} — ${side}`;
+      page.style.width = `${resolvedSize.width}in`;
+      page.style.height = `${resolvedSize.height}in`;
+      page.style.padding = `${resolvedSize.margin}in`;
+      const sourceLabel = source?.name ?? "Local";
+      page.dataset.label = `${this.name} — ${resolvedSize.label} ${resolvedSize.orientation} — ${sourceLabel} — ${side}`;
 
       const inner = document.createElement("div");
       inner.className = "page-inner";
@@ -427,4 +498,17 @@ export function getTemplates() {
 
 export function getTemplateById(id) {
   return templateLibrary.find((template) => template.id === id) ?? templateLibrary[0];
+}
+
+export function getFormatById(template, formatId) {
+  return template.formats?.find((format) => format.id === formatId) ?? template.formats?.[0];
+}
+
+export function getPageSize(template, formatId, orientation) {
+  const format = getFormatById(template, formatId) ?? template.formats?.[0];
+  return resolvePageSize(format, orientation);
+}
+
+export function getSupportedSources(template) {
+  return template.supportedSources ?? ["ddb", "srd", "json", "manual"];
 }
