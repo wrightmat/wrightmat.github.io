@@ -675,7 +675,7 @@ function buildProficiencies(context, rawCharacter) {
     const profType = (prof.type || '').toLowerCase();
     const condition = prof.restriction ? prof.restriction : null;
 
-    if (prof.isGranted === false) return;
+    if (prof.isGranted === false && profType !== 'proficiency') return;
 
     if (profType === 'language') {
       buckets.languages.push(friendly);
