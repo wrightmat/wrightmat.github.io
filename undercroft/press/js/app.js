@@ -43,13 +43,52 @@ function updateSummary(template) {
   `;
 }
 
-function applyOverlays(page) {
+function applyOverlays(page, template, { forPrint = false } = {}) {
   if (!overlayToggle.checked) return;
-  const trim = document.createElement("div");
-  trim.className = "page-overlay trim-lines";
-  const safe = document.createElement("div");
-  safe.className = "page-overlay safe-area";
-  page.append(trim, safe);
+
+  if (template.type === "card") {
+    const guides = document.createElement("div");
+    guides.className = "page-overlay trim-lines card-guides";
+
+    const { size, card } = template;
+    const gridWidth = card.width * 3 + card.gutter * 2;
+    const gridHeight = card.height * 3 + card.gutter * 2;
+    const horizontalInset = size.margin + (size.width - size.margin * 2 - gridWidth) / 2;
+    const verticalInset = size.margin;
+
+    const addGuide = (orientation, position, length, start) => {
+      const guide = document.createElement("div");
+      guide.className = `guide-line guide-${orientation}`;
+      if (orientation === "vertical") {
+        guide.style.left = `${position}in`;
+        guide.style.top = `${start}in`;
+        guide.style.height = `${length}in`;
+      } else {
+        guide.style.top = `${position}in`;
+        guide.style.left = `${start}in`;
+        guide.style.width = `${length}in`;
+      }
+      guides.appendChild(guide);
+    };
+
+    [0, 1, 2, 3].forEach((index) => {
+      const x = horizontalInset + index * (card.width + card.gutter);
+      addGuide("vertical", x, gridHeight, verticalInset);
+    });
+
+    [0, 1, 2, 3].forEach((index) => {
+      const y = verticalInset + index * (card.height + card.gutter);
+      addGuide("horizontal", y, gridWidth, horizontalInset);
+    });
+
+    page.appendChild(guides);
+  }
+
+  if (!forPrint) {
+    const safe = document.createElement("div");
+    safe.className = "page-overlay safe-area";
+    page.appendChild(safe);
+  }
 }
 
 function updateSideButton() {
@@ -67,7 +106,7 @@ function renderPreview() {
 
   previewStage.innerHTML = "";
   const page = template.createPage(side);
-  applyOverlays(page);
+  applyOverlays(page, template, { forPrint: false });
   previewStage.appendChild(page);
 
   buildPrintStack(template);
@@ -78,7 +117,7 @@ function buildPrintStack(template) {
   printStack.innerHTML = "";
   template.sides.forEach((side) => {
     const page = template.createPage(side);
-    applyOverlays(page);
+    applyOverlays(page, template, { forPrint: true });
     printStack.appendChild(page);
   });
 }

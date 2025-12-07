@@ -19,11 +19,18 @@ const templateLibrary = [
       const inner = document.createElement("div");
       inner.className = "page-inner";
       inner.style.gap = "0";
+      inner.style.alignItems = "center";
+      inner.style.justifyContent = "center";
       const grid = document.createElement("div");
       grid.className = "card-grid";
       grid.style.gridTemplateColumns = `repeat(3, ${this.card.width}in)`;
       grid.style.gridAutoRows = `${this.card.height}in`;
       grid.style.gap = `${this.card.gutter}in`;
+      const gridWidth = this.card.width * 3 + this.card.gutter * 2;
+      const gridHeight = this.card.height * 3 + this.card.gutter * 2;
+      grid.style.width = `${gridWidth}in`;
+      grid.style.height = `${gridHeight}in`;
+      grid.style.margin = "0 auto";
 
       const sampleCards = side === "front" ? frontFaces : backFaces;
       sampleCards.forEach((card) => {
