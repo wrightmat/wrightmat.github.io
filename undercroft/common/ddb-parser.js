@@ -1325,6 +1325,7 @@ function getActiveModifiers(rawCharacter, options = {}) {
   const inventory = Array.isArray(rawCharacter.inventory) ? rawCharacter.inventory : [];
   const activeComponentIds = new Set();
   const respectIsGranted = Boolean(options.respectIsGranted);
+  const grantedComponentIds = new Set();
 
   inventory.forEach((item) => {
     const defId = item.definition?.id;
@@ -1334,6 +1335,11 @@ function getActiveModifiers(rawCharacter, options = {}) {
     const equippable = Boolean(item.definition?.canEquip);
     const equipped = equippable ? item.equipped : true;
     const usable = equipped && attuned;
+
+    const grantedMods = Array.isArray(item.definition?.grantedModifiers) ? item.definition.grantedModifiers : [];
+    grantedMods.forEach((mod) => {
+      if (mod?.componentId != null) grantedComponentIds.add(mod.componentId);
+    });
 
     if (usable) {
       activeComponentIds.add(defId);
@@ -1347,7 +1353,8 @@ function getActiveModifiers(rawCharacter, options = {}) {
     if (!Array.isArray(entries)) return all;
     entries.forEach((modifier) => {
       if (group === 'item') {
-        if (modifier.componentId && !activeComponentIds.has(modifier.componentId)) return;
+        if (modifier.componentId && !activeComponentIds.has(modifier.componentId) && !grantedComponentIds.has(modifier.componentId))
+          return;
         if (!modifier.componentId && !activeComponentIds.size) return;
       }
       if (respectIsGranted && modifier.isGranted === false) return;
