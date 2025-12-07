@@ -981,34 +981,33 @@ function buildLimitedUses(context) {
   });
 
   if (hasPactMagicFeature) {
-    const spellSlotPools = pools
-      .map((pool, index) => ({
-        pool,
-        index,
-        level:
-          pool.level ?? (typeof pool.name === 'string' && pool.name.match(/Level\s+(\d+)/i)
+    const highest = pools.reduce(
+      (best, pool, index) => {
+        const explicitLevel = pool.level ?? null;
+        const parsedLevel =
+          explicitLevel ??
+          (typeof pool.name === 'string' && pool.name.match(/Level\s+(\d+)/i)
             ? Number(pool.name.match(/Level\s+(\d+)/i)[1])
-            : null),
-      }))
-      .filter(
-        (entry) =>
-          entry.level != null &&
-          ((entry.pool.total ?? 0) > 0 || (entry.pool.available ?? 0) > 0 || (entry.pool.used ?? 0) > 0)
-      )
-      .sort((a, b) => b.level - a.level);
+            : null);
+        if (parsedLevel == null) return best;
+        if (best.index === -1 || parsedLevel > best.level) return { index, level: parsedLevel };
+        return best;
+      },
+      { index: -1, level: null }
+    );
 
-    const highest = spellSlotPools[0];
-    if (highest) {
+    if (highest.index !== -1) {
+      const current = pools[highest.index];
       const total = hasPactMagicData
         ? pactTotal || pactAvailable + pactUsed
-        : highest.pool.total ?? highest.pool.available + (highest.pool.used ?? 0);
-      const used = hasPactMagicData ? pactUsed : highest.pool.used ?? 0;
+        : current.total ?? current.available + (current.used ?? 0);
+      const used = hasPactMagicData ? pactUsed : current.used ?? 0;
       const available = hasPactMagicData ? pactAvailable : Math.max((total || 0) - (used || 0), 0);
 
       pools[highest.index] = {
-        ...highest.pool,
+        ...current,
         name: 'Pact Magic',
-        level: pactLevel ?? highest.level ?? highest.pool.level ?? null,
+        level: pactLevel ?? highest.level ?? current.level ?? null,
         total: total ?? 0,
         used: used ?? 0,
         available: available ?? 0,
@@ -1023,6 +1022,18 @@ function buildLimitedUses(context) {
         available: pactAvailable,
         reset: 'Short Rest',
       });
+    }
+
+    const seenPact = new Set();
+    for (let i = pools.length - 1; i >= 0; i -= 1) {
+      const pool = pools[i];
+      if ((pool.name || '').toLowerCase() !== 'pact magic') continue;
+      const key = pool.level != null ? `${pool.name}-${pool.level}` : pool.name;
+      if (seenPact.has(key)) {
+        pools.splice(i, 1);
+      } else {
+        seenPact.add(key);
+      }
     }
   }
   return pools;
@@ -1326,6 +1337,9 @@ function getActiveModifiers(rawCharacter, options = {}) {
 
     if (usable) {
       activeComponentIds.add(defId);
+      if (item.id) {
+        activeComponentIds.add(item.id);
+      }
     }
   });
 
