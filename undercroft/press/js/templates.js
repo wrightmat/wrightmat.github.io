@@ -6,7 +6,7 @@ const templateLibrary = [
       "Print-ready 3 × 3 grid of poker-sized cards with paired fronts and backs.",
     type: "card",
     size: { width: 8.5, height: 11, margin: 0.25 },
-    card: { width: 2.5, height: 3.5, gutter: 0.25, safeInset: 0.125 },
+    card: { width: 2.5, height: 3.5, gutter: 0, safeInset: 0.125 },
     sides: ["front", "back"],
     createPage(side) {
       const page = document.createElement("div");
@@ -18,6 +18,7 @@ const templateLibrary = [
 
       const inner = document.createElement("div");
       inner.className = "page-inner";
+      inner.style.gap = "0";
       const grid = document.createElement("div");
       grid.className = "card-grid";
       grid.style.gridTemplateColumns = `repeat(3, ${this.card.width}in)`;
@@ -28,7 +29,7 @@ const templateLibrary = [
       sampleCards.forEach((card) => {
         const cardEl = document.createElement("article");
         cardEl.className = "card-tile";
-        cardEl.style.padding = `${this.card.safeInset + 0.125}in`;
+        cardEl.style.padding = `${this.card.safeInset}in`;
 
         const meta = document.createElement("div");
         meta.className = "card-meta d-flex justify-content-between align-items-center";
