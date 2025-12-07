@@ -1233,8 +1233,9 @@ function getActiveModifiers(rawCharacter, options = {}) {
     const attuned = !requiresAttunement || item.isAttuned;
     const equippable = Boolean(item.definition?.canEquip);
     const equipped = equippable ? item.equipped : false;
+    const usable = equippable ? equipped : requiresAttunement ? attuned : false;
 
-    if (attuned && equipped) {
+    if (attuned && usable) {
       activeComponentIds.add(defId);
     }
   });
