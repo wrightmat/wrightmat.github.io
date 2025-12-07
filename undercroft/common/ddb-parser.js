@@ -1339,6 +1339,7 @@ function getActiveModifiers(rawCharacter, options = {}) {
     const grantedMods = Array.isArray(item.definition?.grantedModifiers) ? item.definition.grantedModifiers : [];
     grantedMods.forEach((mod) => {
       if (mod?.componentId != null) grantedComponentIds.add(mod.componentId);
+      if (mod?.id != null) grantedComponentIds.add(mod.id);
     });
 
     if (usable) {
