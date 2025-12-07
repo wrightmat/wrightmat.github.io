@@ -192,7 +192,7 @@
 
 @media print {
   @page {
-    size: 8.5in 11in;
+    size: auto;
     margin: 0;
   }
 
