@@ -15,6 +15,7 @@
   box-shadow: 0 0.5rem 1rem rgba(33, 37, 41, 0.15);
   border: 1px solid rgba(33, 37, 41, 0.08);
   position: relative;
+  isolation: isolate;
 }
 
 .print-page::after {
@@ -34,12 +35,16 @@
   flex-direction: column;
   gap: 0.4rem;
   position: relative;
+  z-index: 1;
 }
 
 .page-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: multiply;
+  opacity: 0.85;
 }
 
 .page-overlay.trim-lines {
@@ -175,5 +180,12 @@
     border: none;
     margin: 0 auto;
     page-break-after: always;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-page::after {
+    content: none !important;
+    display: none !important;
   }
 }

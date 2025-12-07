@@ -16,10 +16,10 @@ printed output for cards and sheets.
 1. Open `index.html` in a browser (served relative to this folder).
 2. Expand the left pane to pick a template and see the matching page size and
    supported sides.
-3. Toggle "Preview back side" to check duplex alignment; use the overlay toggle
-   to show trim and safe areas in both preview and print outputs.
-4. Press **Print Both Sides** and choose 100% scaling / Actual Size. Enable
-   double-sided printing and flip on the long edge for portrait layouts.
+3. Use the overlay toggle to show trim and safe areas in both preview and print
+   outputs, and use the preview side button to flip between front and back.
+4. Press **Print** and choose 100% scaling / Actual Size. Enable double-sided
+   printing and flip on the long edge for portrait layouts.
 
 Future epics will introduce multi-source content loading, template catalogs, and
 component-level editing consistent with the Undercroft Workbench shell.
