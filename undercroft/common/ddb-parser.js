@@ -248,7 +248,7 @@ const RULES = [
   { section: 'proficiencies', from: ['modifiers'], handler: buildProficiencies },
   { section: 'attacking', from: ['modifiers', 'feats'], handler: buildAttacking },
   { section: 'attacks', from: ['actions', 'inventory', 'modifiers', 'classes', 'stats', 'bonusStats', 'overrideStats', 'spells'], handler: buildAttacks },
-  { section: 'limitedUses', from: ['actions', 'features', 'feats', 'spellSlots', 'classes'], handler: buildLimitedUses },
+  { section: 'limitedUses', from: ['actions', 'features', 'feats', 'spellSlots', 'classes', 'pactMagic'], handler: buildLimitedUses },
   {
     section: 'spellCasting',
     from: ['classes', 'spells', 'pactMagic', 'spellSlots', 'stats', 'bonusStats', 'overrideStats', 'modifiers'],
@@ -322,12 +322,13 @@ function buildSavingThrows(context, rawCharacter) {
   const abilityScores = calculateAbilityScores(context, modifiers);
   const totalLevel = getTotalLevel(context.classes);
   const proficiencyBonus = getProficiencyBonus(totalLevel);
+  const globalSaveBonus = collectModifiers(modifiers, ['saving-throws', 'all-saving-throws'], 'bonus');
 
   return ABILITIES.map((ability) => {
     const subtype = SAVING_THROW_SUBTYPES[ability.name];
     const abilityModifier = Math.floor(((abilityScores[ability.name] || 10) - 10) / 2);
     const { level, roundUp } = determineProficiencyLevel(modifiers, [subtype, 'saving-throws']);
-    const savingThrowBonus = collectMaxModifier(modifiers, [subtype, 'saving-throws'], 'bonus');
+    const savingThrowBonus = collectModifiers(modifiers, [subtype, 'saving-throws'], 'bonus') + globalSaveBonus;
     const proficiencyValue = applyProficiency(level, proficiencyBonus, roundUp);
 
     return {
@@ -675,7 +676,7 @@ function buildProficiencies(context, rawCharacter) {
     const profType = (prof.type || '').toLowerCase();
     const condition = prof.restriction ? prof.restriction : null;
 
-    if (prof.isGranted === false && profType !== 'proficiency') return;
+    if (prof.isGranted === false && !['proficiency', 'language'].includes(profType)) return;
 
     if (profType === 'language') {
       buckets.languages.push(friendly);
@@ -917,8 +918,57 @@ function buildLimitedUses(context) {
       });
     });
   }
+  if (context.pactMagic && typeof context.pactMagic === 'object') {
+    const pactLevel =
+      context.pactMagic.level ||
+      context.pactMagic.spellSlotLevel ||
+      context.pactMagic.slotLevel ||
+      context.pactMagic.pactLevel ||
+      null;
+    const pactTotal =
+      context.pactMagic.totalSlots ??
+      context.pactMagic.slots ??
+      context.pactMagic.maxSlots ??
+      context.pactMagic.total ??
+      context.pactMagic.pactSlots ??
+      0;
+    const pactUsed =
+      context.pactMagic.usedSlots ??
+      context.pactMagic.slotsUsed ??
+      context.pactMagic.used ??
+      context.pactMagic.expendedSlots ??
+      0;
+    const pactAvailable =
+      context.pactMagic.availableSlots ??
+      context.pactMagic.slotsAvailable ??
+      context.pactMagic.available ??
+      Math.max(pactTotal - pactUsed, 0);
+
+    if (pactTotal || pactUsed || pactAvailable) {
+      const pactPool = {
+        name: 'Pact Magic',
+        level: pactLevel,
+        total: pactTotal || pactAvailable + pactUsed,
+        available: pactAvailable,
+        used: pactUsed,
+        reset: 'Short Rest',
+      };
+
+      const replaceIndex =
+        pactLevel != null ? pools.findIndex((pool) => pool.name === `Level ${pactLevel} Spell Slots`) : -1;
+      if (replaceIndex >= 0) {
+        pools[replaceIndex] = pactPool;
+      } else {
+        pools.push(pactPool);
+      }
+    }
+  }
+  const reservedPactLevels = new Set(
+    pools.filter((pool) => pool.name === 'Pact Magic' && pool.level != null).map((pool) => pool.level)
+  );
   const derivedSlots = deriveSpellSlots(context.classes || []);
   derivedSlots.forEach((slot) => {
+    if (reservedPactLevels.has(slot.level)) return;
     const existing = pools.find((pool) => pool.name === `Level ${slot.level} Spell Slots`);
     if (existing) {
       if (!existing.total) {
