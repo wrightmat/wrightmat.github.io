@@ -11,6 +11,12 @@
   color-scheme: light;
 }
 
+html[data-theme="dark"] .preview-stage,
+body[data-theme="dark"] .preview-stage {
+  background: #2f3339;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .print-page {
   background: #fff;
   color: #212529;

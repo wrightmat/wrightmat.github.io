@@ -12,10 +12,10 @@ import {
   createCollapseToggleButton,
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
-import { createJsonPreviewRenderer } from "../lib/json-preview.js";
+import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
-import { expandPane } from "../lib/panes.js";
-import { refreshTooltips } from "../lib/tooltips.js";
+import { expandPane } from "../../../common/js/lib/panes.js";
+import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
 import {
   listBuiltinSystems,
@@ -39,7 +39,7 @@ import {
   parseBindingPathSegments,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
-import { initHelpSystem } from "../lib/help.js";
+import { initHelpSystem } from "../../../common/js/lib/help.js";
 
 (async () => {
   const { status, undoStack, undo, redo } = initAppShell({
