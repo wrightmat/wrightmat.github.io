@@ -19,7 +19,6 @@ const sourceSelect = document.getElementById("sourceSelect");
 const sourceSummary = document.getElementById("sourceSummary");
 const sourceInputContainer = document.getElementById("sourceInputContainer");
 const selectionSummary = document.getElementById("selectionSummary");
-const ddbHelp = document.getElementById("ddbHelp");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
 const swapSideButton = document.getElementById("swapSide");
@@ -301,14 +300,24 @@ function renderSourceInput(source) {
   const inputSpec = source.input;
   if (!inputSpec) return;
 
-  if (ddbHelp) {
-    ddbHelp.classList.toggle("d-none", source?.id !== "ddb");
-  }
+  const labelRow = document.createElement("div");
+  labelRow.className = "d-flex justify-content-between align-items-center gap-2 flex-wrap";
 
   const label = document.createElement("label");
   label.className = "form-label fw-semibold mb-0";
   label.setAttribute("for", `${source.id}-input`);
   label.textContent = inputSpec.label;
+  labelRow.appendChild(label);
+
+  if (source.id === "ddb") {
+    const ddbHelp = document.createElement("span");
+    ddbHelp.className = "align-middle";
+    ddbHelp.dataset.helpTopic = "press.source.ddb";
+    ddbHelp.dataset.helpInsert = "replace";
+    ddbHelp.dataset.helpPlacement = "left";
+    labelRow.appendChild(ddbHelp);
+    initHelpSystem({ root: labelRow });
+  }
 
   let input;
   if (inputSpec.type === "textarea") {
@@ -351,7 +360,7 @@ function renderSourceInput(source) {
       })
     : null;
 
-  sourceInputContainer.append(label, input);
+  sourceInputContainer.append(labelRow, input);
   if (helper) {
     sourceInputContainer.append(helper);
   }
