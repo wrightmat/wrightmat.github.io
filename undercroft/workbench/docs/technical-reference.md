@@ -12,7 +12,7 @@ All pages share a structural shell initialised through `initAppShell`, which wir
 
 ### Theme management
 
-Theme controls rely on `initThemeControls`, which reads and persists preferences under `undercroft.workbench.theme`, applies CSS custom properties on both `<html>` and `<body>`, and keeps buttons in sync with `prefers-color-scheme` changes.【F:undercroft/workbench/js/lib/theme.js†L1-L76】 Every HTML page includes the same bootstrapping script to apply the stored theme before paint, guaranteeing flicker-free transitions.【F:undercroft/workbench/index.html†L4-L42】【F:undercroft/workbench/docs/index.html†L4-L42】
+Theme controls rely on `initThemeControls`, which reads and persists preferences under `undercroft.workbench.theme`, applies CSS custom properties on both `<html>` and `<body>`, and keeps buttons in sync with `prefers-color-scheme` changes.【F:undercroft/common/js/lib/theme.js†L1-L107】 Every HTML page includes the same bootstrapping script to apply the stored theme before paint, guaranteeing flicker-free transitions.【F:undercroft/workbench/index.html†L4-L42】【F:undercroft/workbench/docs/index.html†L4-L42】
 
 ### Data management & offline cache
 
@@ -24,7 +24,7 @@ Tier gating is handled by `initTierVisibility` and `initTierGate`, which read th
 
 ### Contextual help system
 
-Help topics live in `data/help-topics.json` and are loaded once via `loadHelpTopics`, which caches the parsed catalog and normalises metadata, titles, and category groupings.【F:undercroft/workbench/data/help-topics.json†L1-L108】【F:undercroft/workbench/js/lib/help.js†L1-L64】 `initHelpSystem` scans for elements tagged with `data-help-topic`, injects a tooltip-enabled “?” button that links back to the documentation page, and refreshes Bootstrap tooltips after attachment.【F:undercroft/workbench/js/lib/help.js†L66-L136】 Icons can be positioned using `data-help-insert` and customised with optional attributes, keeping help affordances declarative in markup.【F:undercroft/workbench/js/lib/help.js†L97-L132】
+Help topics live in `../common/data/help-topics.json` and are loaded once via `loadHelpTopics`, which caches the parsed catalog and normalises metadata, titles, and category groupings.【F:undercroft/common/data/help-topics.json†L1-L229】【F:undercroft/common/js/lib/help.js†L1-L73】 `initHelpSystem` scans for elements tagged with `data-help-topic`, injects a tooltip-enabled “?” button that links back to the documentation page, and refreshes Bootstrap tooltips after attachment.【F:undercroft/common/js/lib/help.js†L122-L154】 Icons can be positioned using `data-help-insert` and customised with optional attributes, keeping help affordances declarative in markup.【F:undercroft/common/js/lib/help.js†L97-L151】
 
 ### Documentation site
 
@@ -80,7 +80,7 @@ The character page initialises the app shell, loads DataManager session state, a
 
 ### Import/export & JSON previews
 
-All editors expose import/export buttons bound to shared helpers. `json-preview.js` renders JSON snapshots into the right pane, while toolbar buttons call into DataManager save operations or download raw payloads using the shared downloader utilities.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】【F:undercroft/workbench/system.html†L170-L237】 Character, template, and system toolbars provide consistent undo/redo and clear actions, leveraging the same command wiring through the app shell.【F:undercroft/workbench/template.html†L160-L208】【F:undercroft/workbench/character.html†L18-L103】
+All editors expose import/export buttons bound to shared helpers. `json-preview.js` renders JSON snapshots into the right pane, while toolbar buttons call into DataManager save operations or download raw payloads using the shared downloader utilities.【F:undercroft/common/js/lib/json-preview.js†L1-L72】【F:undercroft/workbench/system.html†L170-L237】 Character, template, and system toolbars provide consistent undo/redo and clear actions, leveraging the same command wiring through the app shell.【F:undercroft/workbench/template.html†L160-L208】【F:undercroft/workbench/character.html†L18-L103】
 
 ### Importer pipeline roadmap
 
@@ -115,14 +115,14 @@ Complex inventories (e.g., an equipment table with name, quantity, weight, notes
    - Extend formula evaluation to expose helper functions for aggregations (e.g., `=sum(@inventory[].quantity)`), enabling summary fields like total weight. This requires the formula engine to understand list iteration and provide guards against undefined rows.
 
 4. **Round out supporting workflows.**
-   - Update import/export, JSON previews, and validation to include the new `item` metadata so inventories survive round-trips without manual editing.【F:undercroft/workbench/js/lib/json-preview.js†L1-L115】
+   - Update import/export, JSON previews, and validation to include the new `item` metadata so inventories survive round-trips without manual editing.【F:undercroft/common/js/lib/json-preview.js†L1-L72】
    - Add documentation snippets and starter content (e.g., an SRD-friendly backpack list) so creators can copy a working pattern into their systems and templates.
 
 Phasing the work this way lets us unlock author-friendly inventory tables without regressing simpler lists: the schema gains the expressiveness first, the template editor consumes that structure next, and finally the character UI delivers a polished editing experience.
 
 ### Collaboration
 
-Share management flows on the client call `list_shareable_users`, `create_share_link`, and `share_with_user` endpoints while enforcing tier checks via `ensure_share_permission` on the server.【F:server/app.py†L219-L338】 Group game logs persist via `group_log` handlers and surface in the character sheet’s collaboration pane, which polls for new entries and merges them with local drafts.【F:server/app.py†L339-L424】【F:undercroft/workbench/js/pages/character.js†L630-L1104】 Shared help topics now explain these flows directly in the UI via tooltips anchored to game log headers and character selectors.【F:undercroft/workbench/character.html†L40-L119】【F:undercroft/workbench/js/lib/help.js†L97-L136】
+Share management flows on the client call `list_shareable_users`, `create_share_link`, and `share_with_user` endpoints while enforcing tier checks via `ensure_share_permission` on the server.【F:server/app.py†L219-L338】 Group game logs persist via `group_log` handlers and surface in the character sheet’s collaboration pane, which polls for new entries and merges them with local drafts.【F:server/app.py†L339-L424】【F:undercroft/workbench/js/pages/character.js†L630-L1104】 Shared help topics now explain these flows directly in the UI via tooltips anchored to game log headers and character selectors.【F:undercroft/workbench/character.html†L40-L119】【F:undercroft/common/js/lib/help.js†L97-L154】
 
 ---
 
