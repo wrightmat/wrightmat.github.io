@@ -7,41 +7,40 @@ const sources = [
       type: "text",
       label: "D&D Beyond URL or ID",
       placeholder: "https://www.dndbeyond.com/monsters/12345",
-      helper: "",
       helpTopic: "press.source.ddb",
     },
   },
   {
     id: "srd",
     name: "5e API (SRD)",
-    description: "Point at an SRD endpoint to fill the preview with system reference content.",
+    description: "",
     input: {
       type: "text",
       label: "5e API endpoint or slug",
       placeholder: "/api/spells/acid-arrow",
-      helper: "Use published SRD endpoints for fast pulls without authentication.",
+      helpTopic: "press.source.srd",
     },
   },
   {
     id: "json",
     name: "JSON Upload",
-    description: "Upload a JSON file and map it to the selected template and size.",
+    description: "",
     input: {
       type: "file",
       label: "Upload JSON",
-      helper: "Files are read locally for previews; they do not leave your device.",
       accept: ".json",
+      helpTopic: "press.source.json",
     },
   },
   {
     id: "manual",
     name: "Manual Entry",
-    description: "Type custom copy for quick, one-off print jobs or note cards.",
+    description: "",
     input: {
       type: "textarea",
       label: "Notes or copy",
       placeholder: "Describe what you plan to print.",
-      helper: "Ideal for ad-hoc notes or quick tests before wiring a source integration.",
+      helpTopic: "press.source.manual",
       rows: 3,
     },
   },
@@ -56,9 +55,7 @@ export function getSourceById(id) {
 }
 
 export function buildSourceSummary(source, value) {
-  if (!value) {
-    return source.description;
-  }
+  if (!value) return "";
   if (source.id === "json" && typeof value === "object") {
     return `Attached file: ${value.name ?? "JSON"}`;
   }
