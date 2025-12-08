@@ -5,7 +5,6 @@ import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import {
   getFormatById,
   getPageSize,
-  getSupportedSources,
   getTemplateById,
   getTemplates,
   loadTemplates,
@@ -15,13 +14,11 @@ import { buildSourceSummary, getSourceById, getSources } from "./sources.js";
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
 const orientationSelect = document.getElementById("orientationSelect");
-const templateSummary = document.getElementById("templateSummary");
 const sourceSelect = document.getElementById("sourceSelect");
 const sourceSummary = document.getElementById("sourceSummary");
 const sourceInputContainer = document.getElementById("sourceInputContainer");
 const selectionSummary = document.getElementById("selectionSummary");
-const compatibilityList = document.getElementById("compatibilityList");
-const formatList = document.getElementById("formatList");
+const ddbHelp = document.getElementById("ddbHelp");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
 const swapSideButton = document.getElementById("swapSide");
@@ -177,46 +174,6 @@ const renderJsonPreview = createJsonPreviewRenderer({
   },
 });
 
-function measurementCopy(size) {
-  return `${size.width}in × ${size.height}in page`;
-}
-
-function updateTemplateSummary(context) {
-  const { template, size, orientation, sourceSummary: summary } = context;
-  const sides = template.sides.join(" / ");
-  templateSummary.innerHTML = `
-    <div class="fw-semibold">${template.description}</div>
-    <div class="text-body-secondary">${measurementCopy(size)} (${orientation})</div>
-    <div class="text-body-secondary">Sides: ${sides}</div>
-    <div class="text-body-secondary">Source: ${summary}</div>
-  `;
-}
-
-function updateCompatibility(template, format) {
-  if (compatibilityList) {
-    compatibilityList.innerHTML = "";
-    const supported = getSupportedSources(template);
-    supported.forEach((source) => {
-      const li = document.createElement("li");
-      li.textContent = source === "srd" ? "5e API (SRD)" : source.toUpperCase();
-      compatibilityList.appendChild(li);
-    });
-  }
-
-  if (formatList) {
-    formatList.innerHTML = "";
-    template.formats?.forEach((entry) => {
-      const li = document.createElement("li");
-      const orientations = entry.orientations?.join(" / ") ?? "Portrait";
-      li.textContent = `${entry.label} — ${orientations}`;
-      if (format && entry.id === format.id) {
-        li.className = "fw-semibold";
-      }
-      formatList.appendChild(li);
-    });
-  }
-}
-
 function applyOverlays(page, template, size, { forPrint = false } = {}) {
   if (template.type === "card") {
     const guides = document.createElement("div");
@@ -301,8 +258,6 @@ function renderPreview() {
   const context = getSelectionContext();
   const { template, source, format, size, orientation, sourceValue, sourceSummary: summary } = context;
   if (!template || !size) return;
-  updateTemplateSummary({ template, size, orientation, sourceSummary: summary });
-  updateCompatibility(template, format);
   const side = currentSide;
 
   previewStage.innerHTML = "";
@@ -345,6 +300,10 @@ function renderSourceInput(source) {
   const inputSpec = source.input;
   if (!inputSpec) return;
 
+  if (ddbHelp) {
+    ddbHelp.classList.toggle("d-none", source?.id !== "ddb");
+  }
+
   const label = document.createElement("label");
   label.className = "form-label fw-semibold mb-0";
   label.setAttribute("for", `${source.id}-input`);
@@ -383,11 +342,33 @@ function renderSourceInput(source) {
     renderPreview();
   });
 
-  const helper = document.createElement("div");
-  helper.className = "small text-body-secondary";
-  helper.textContent = inputSpec.helper ?? "";
+  const helperText = inputSpec.helper ?? "";
+  const helper = helperText
+    ? Object.assign(document.createElement("div"), {
+        className: "small text-body-secondary",
+        textContent: helperText,
+      })
+    : null;
 
-  sourceInputContainer.append(label, input, helper);
+  sourceInputContainer.append(label, input);
+  if (helper) {
+    sourceInputContainer.append(helper);
+  }
+}
+
+function initCollapsibles() {
+  bindCollapsible(selectionToggle, selectionPanel, {
+    collapsed: false,
+    expandLabel: "Expand selections",
+    collapseLabel: "Collapse selections",
+    labelElement: selectionToggleLabel,
+  });
+  bindCollapsible(jsonToggle, jsonPanel, {
+    collapsed: true,
+    expandLabel: "Expand JSON preview",
+    collapseLabel: "Collapse JSON preview",
+    labelElement: jsonToggleLabel,
+  });
 }
 
 function initCollapsibles() {
@@ -446,7 +427,6 @@ async function initPress() {
   populateSources();
   populateTemplates();
   renderFormatOptions(getActiveTemplate());
-  updateTemplateSummary(getSelectionContext());
   renderPreview();
   wireEvents();
 }
