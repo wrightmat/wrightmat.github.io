@@ -8,11 +8,11 @@ import {
   createCollapseToggleButton,
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
-import { createJsonPreviewRenderer } from "../lib/json-preview.js";
-import { refreshTooltips } from "../lib/tooltips.js";
+import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
+import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
-import { expandPane } from "../lib/panes.js";
-import { initHelpSystem } from "../lib/help.js";
+import { expandPane } from "../../../common/js/lib/panes.js";
+import { initHelpSystem } from "../../../common/js/lib/help.js";
 import {
   listBuiltinTemplates,
   listBuiltinCharacters,
