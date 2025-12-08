@@ -1,0 +1,118 @@
+{
+  "id": "tarot-grid",
+  "title": "Tarot Card Grid (2 × 2)",
+  "description": "Centered 2 × 2 layout for tarot-sized cards with duplex-ready backs.",
+  "type": "card",
+  "formats": [
+    { "id": "letter", "label": "US Letter", "sizeId": "letter", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" },
+    { "id": "a4", "label": "A4", "sizeId": "a4", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" }
+  ],
+  "supportedSources": ["ddb", "srd", "json", "manual"],
+  "card": { "width": 2.75, "height": 4.75, "gutter": 0, "safeInset": 0.125, "columns": 2, "rows": 2 },
+  "pages": {
+    "front": {
+      "repeat": "@cards.front",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "text", "text": "@type", "className": "card-meta" } },
+              { "node": { "type": "field", "component": "text", "text": "@label", "className": "card-meta text-end" } }
+            ]
+          },
+          { "type": "field", "component": "heading", "text": "@title", "className": "card-title" },
+          { "type": "field", "component": "text", "text": "@body", "className": "card-body-text" },
+          { "type": "field", "component": "text", "text": "@footer", "className": "card-footer" }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@cards.back",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "text", "text": "@type", "className": "card-meta" } },
+              { "node": { "type": "field", "component": "text", "text": "@label", "className": "card-meta text-end" } }
+            ]
+          },
+          { "type": "field", "component": "heading", "text": "@title", "className": "card-title" },
+          { "type": "field", "component": "text", "text": "@body", "className": "card-body-text" },
+          { "type": "field", "component": "text", "text": "@footer", "className": "card-footer" }
+        ]
+      }
+    }
+  },
+  "sampleData": {
+    "cards": {
+      "front": [
+        {
+          "title": "Waystone Guide",
+          "type": "Major",
+          "label": "Front",
+          "body": "Points to safe passage across forgotten roads and planar slipways.",
+          "footer": "Always upright | Weighted to center"
+        },
+        {
+          "title": "Forge Spark",
+          "type": "Minor",
+          "label": "Front",
+          "body": "Ignites new ideas and tempers them; perfect for creative deck tests.",
+          "footer": "Print on heavier stock for best feel"
+        },
+        {
+          "title": "Ink Weaver",
+          "type": "Court",
+          "label": "Front",
+          "body": "Spins narrative threads that bind disparate encounters together.",
+          "footer": "Duplex sample aligned to tarot safe zone"
+        },
+        {
+          "title": "Calibration",
+          "type": "Arcana",
+          "label": "Front",
+          "body": "Use as a control card when verifying margins on experimental layouts.",
+          "footer": "Trust this for measuring front/back drift"
+        }
+      ],
+      "back": [
+        {
+          "title": "Constellation Backer",
+          "type": "Backer",
+          "label": "Back",
+          "body": "Star map motif to check radial alignment on long-edge flips.",
+          "footer": "Safe for toner and inkjet"
+        },
+        {
+          "title": "Glyph Spiral",
+          "type": "Backer",
+          "label": "Back",
+          "body": "Spiraling glyphs keep eye toward center while trimming.",
+          "footer": "Keep spiral inside dashed overlay"
+        },
+        {
+          "title": "Horizon Fade",
+          "type": "Backer",
+          "label": "Back",
+          "body": "Soft fade to measure how gradients survive duplex passes.",
+          "footer": "Match against Forge Spark front"
+        },
+        {
+          "title": "Neutral Crest",
+          "type": "Backer",
+          "label": "Back",
+          "body": "Simple crest compatible with any tarot build pulled from Workbench.",
+          "footer": "Swap once live data is mapped"
+        }
+      ]
+    }
+  }
+}

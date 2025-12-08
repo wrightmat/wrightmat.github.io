@@ -111,37 +111,49 @@
           <div class="card border-0 shadow-theme">
             <div class="card-body d-flex flex-column gap-4">
               <div>
-                <h2 class="h6 text-uppercase fw-semibold text-body-secondary">Epic 1: Print Fidelity</h2>
+                <h2 class="h6 text-uppercase fw-semibold text-body-secondary">Epic 2: Sources, Templates, Sizes</h2>
                 <p class="mb-2">
-                  Select a format to preview a print-accurate surface. The preview and printed page share the same dimensions and padding for alignment testing.
+                  Choose a source, map it to a template, then lock in the size and orientation before printing. This keeps Press aligned with the Workbench three-step flow.
                 </p>
                 <div class="bg-body-tertiary rounded-3 p-3 small">
-                  <p class="fw-semibold mb-2">Current assumptions</p>
-                  <ul class="mb-0 ps-3 list-unstyled d-flex flex-column gap-2">
-                    <li class="d-flex gap-2">
-                      <span aria-hidden="true">•</span>
-                      <span>US Letter base pages (8.5in × 11in)</span>
-                    </li>
-                    <li class="d-flex gap-2">
-                      <span aria-hidden="true">•</span>
-                      <span>0.25in outer margins to avoid printer clipping</span>
-                    </li>
-                    <li class="d-flex gap-2">
-                      <span aria-hidden="true">•</span>
-                      <span>Consistent gutters for double-sided alignment</span>
-                    </li>
-                  </ul>
+                  <p class="fw-semibold mb-2">Decision path</p>
+                  <ol class="mb-0 ps-3 d-flex flex-column gap-2">
+                    <li>Select a Source and provide the required input.</li>
+                    <li>Pick a Template; supported sizes and orientations will adjust automatically.</li>
+                    <li>Toggle overlays to confirm trim and safe areas.</li>
+                  </ol>
                 </div>
               </div>
-              <div class="d-flex flex-column gap-3">
-                <div>
-                  <label class="form-label fw-semibold" for="templateSelect">Template</label>
-                  <select class="form-select" id="templateSelect"></select>
-                  <div class="small text-body-secondary mt-2" id="templateSummary"></div>
+              <div class="d-flex flex-column gap-4">
+                <div class="d-flex flex-column gap-2">
+                  <div class="d-flex justify-content-between align-items-center gap-2">
+                    <label class="form-label fw-semibold mb-0" for="sourceSelect">Source</label>
+                    <span class="badge text-bg-secondary">Local-first</span>
+                  </div>
+                  <select class="form-select" id="sourceSelect"></select>
+                  <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
+                  <div class="small text-body-secondary" id="sourceSummary"></div>
                 </div>
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="overlayToggle" checked />
-                  <label class="form-check-label" for="overlayToggle">Show trim lines and safe areas</label>
+                <div class="d-flex flex-column gap-3">
+                  <div>
+                    <label class="form-label fw-semibold" for="templateSelect">Template</label>
+                    <select class="form-select" id="templateSelect"></select>
+                    <div class="small text-body-secondary mt-2" id="templateSummary"></div>
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-12 col-lg-6">
+                      <label class="form-label fw-semibold" for="formatSelect">Size</label>
+                      <select class="form-select" id="formatSelect"></select>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                      <label class="form-label fw-semibold" for="orientationSelect">Orientation</label>
+                      <select class="form-select" id="orientationSelect"></select>
+                    </div>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="overlayToggle" checked />
+                    <label class="form-check-label" for="overlayToggle">Show trim lines and safe areas</label>
+                  </div>
                 </div>
               </div>
               <div class="bg-body-tertiary rounded-3 p-3">
@@ -160,7 +172,10 @@
           <section class="container-xl d-flex flex-column gap-4">
             <div class="card shadow-theme">
               <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between">
-                <h2 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Live Preview</h2>
+                <div class="d-flex flex-column gap-1">
+                  <h2 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Live Preview</h2>
+                  <div class="d-flex flex-wrap gap-2" id="selectionSummary"></div>
+                </div>
                 <div class="d-flex align-items-center gap-2">
                   <button class="btn btn-outline-secondary btn-sm" id="swapSide">Show Back Side</button>
                   <button class="btn btn-primary btn-sm" id="printButton">Print</button>
@@ -203,16 +218,31 @@
                   </li>
                 </ul>
               </div>
-              <div class="bg-body-tertiary rounded-3 p-3 small">
-                <p class="fw-semibold mb-2">What this build covers</p>
-                <ul class="mb-0 ps-3 d-flex flex-column gap-2">
-                  <li>Standard poker card grid with paired backs.</li>
-                  <li>Letter-sized character sheet with a structured back.</li>
-                  <li>Screen preview matches print dimensions.</li>
-                </ul>
+              <div class="bg-body-tertiary rounded-3 p-3 small d-flex flex-column gap-3">
+                <div>
+                  <p class="fw-semibold mb-2">Template compatibility</p>
+                  <div class="d-flex flex-column gap-2">
+                    <div>
+                      <div class="text-body-secondary">Sources</div>
+                      <ul class="mb-0 ps-3 d-flex flex-column gap-1" id="compatibilityList"></ul>
+                    </div>
+                    <div>
+                      <div class="text-body-secondary">Sizes & orientation</div>
+                      <ul class="mb-0 ps-3 d-flex flex-column gap-1" id="formatList"></ul>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p class="fw-semibold mb-2">What this build covers</p>
+                  <ul class="mb-0 ps-3 d-flex flex-column gap-2">
+                    <li>Source-aware selection path: Source → Template → Size → Orientation.</li>
+                    <li>Card grids, notecards, and sheets with duplex-ready overlays.</li>
+                    <li>Preview labels track the chosen source without affecting print.</li>
+                  </ul>
+                </div>
               </div>
               <div class="mt-auto small text-body-secondary">
-                Undercroft Press is evolving from Codex Scriptorium. These foundations focus on fidelity first; sources and palettes will follow in later epics.
+                Undercroft Press is evolving from Codex Scriptorium. Epic 2 folds in source inputs and flexible sizes while keeping the Workbench shell intact.
               </div>
             </div>
           </div>
