@@ -4,7 +4,9 @@ export function setCollapsibleState(toggle, panel, { collapsed, expandLabel, col
   const label = labelElement || toggle.querySelector("[data-toggle-label]");
   const isCollapsed = Boolean(collapsed);
   panel.hidden = isCollapsed;
+  panel.classList.toggle("d-none", isCollapsed);
   toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+  toggle.dataset.collapsed = isCollapsed ? "true" : "false";
   if (label) {
     label.textContent = isCollapsed ? expandLabel : collapseLabel;
   }
