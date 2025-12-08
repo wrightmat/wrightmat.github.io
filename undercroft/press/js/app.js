@@ -371,6 +371,21 @@ function initCollapsibles() {
   });
 }
 
+function initCollapsibles() {
+  bindCollapsible(selectionToggle, selectionPanel, {
+    collapsed: false,
+    expandLabel: "Expand selections",
+    collapseLabel: "Collapse selections",
+    labelElement: selectionToggleLabel,
+  });
+  bindCollapsible(jsonToggle, jsonPanel, {
+    collapsed: true,
+    expandLabel: "Expand JSON preview",
+    collapseLabel: "Collapse JSON preview",
+    labelElement: jsonToggleLabel,
+  });
+}
+
 function wireEvents() {
   templateSelect.addEventListener("change", () => {
     currentSide = "front";
