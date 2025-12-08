@@ -164,6 +164,7 @@
       "title": "D&D Beyond URLs & IDs",
       "summary": "Paste a D&D Beyond URL or ID; the value stays local while building your print job.",
       "details": [
+        "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
         "You can paste a full URL or the numeric/slug ID from D&D Beyond; Workbench reads it locally for layout mapping.",
         "Use share links when possible to avoid permissions issues while you preview cards or sheets.",
         "Hover or tap the (?) badge next to Source when D&D Beyond is selected to see these notes without extra inline copy."],
@@ -202,17 +203,6 @@
         "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."],
       "category": "Press",
       "href": "../press/index.html#press-printing"
-    },
-    {
-      "id": "press.json",
-      "title": "Press JSON Preview",
-      "summary": "A collapsible JSON Preview in the left pane shows the current source, template, size, and side selection.",
-      "details": [
-        "The preview stays collapsed by default; open it beneath the Palette placeholder to inspect the selection payload.",
-        "The byte badge updates after each change and mirrors the formatted JSON rendered by the shared utility.",
-        "Use the payload to debug custom templates or confirm source inputs before exporting."],
-      "category": "Press",
-      "href": "../press/index.html#press-json"
     }
   ]
 }

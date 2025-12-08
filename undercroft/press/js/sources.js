@@ -2,7 +2,7 @@ const sources = [
   {
     id: "ddb",
     name: "D&D Beyond",
-    description: "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
+    description: "Paste a D&D Beyond URL or ID to map it locally for preview and print.",
     input: {
       type: "text",
       label: "D&D Beyond URL or ID",

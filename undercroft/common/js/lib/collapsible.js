@@ -5,6 +5,8 @@ export function setCollapsibleState(toggle, panel, { collapsed, expandLabel, col
   const isCollapsed = Boolean(collapsed);
   panel.hidden = isCollapsed;
   panel.classList.toggle("d-none", isCollapsed);
+  panel.setAttribute("aria-hidden", isCollapsed ? "true" : "false");
+  panel.style.display = isCollapsed ? "none" : "";
   toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
   toggle.dataset.collapsed = isCollapsed ? "true" : "false";
   if (label) {
