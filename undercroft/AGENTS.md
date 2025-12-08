@@ -19,6 +19,7 @@
 
 ## Authoring Guidelines
 - Compose JavaScript as ES modules with explicit imports/exports. Share cross-editor utilities through `js/lib` (create the folder if needed).
+- When creating functions, ensure that names don't conflict (avoid 'function' has already been declared errors). If functions names are similar, then first ensure that no duplication of functionality is created - reuse functions when possible).
 - When updating HTML, ensure assets are referenced relative to this directory so the Python server can host them without extra configuration.
 - Keep documentation current. Any workflow or data shape changes must be reflected in the relevant Markdown files alongside code updates.
 - CSS additions must include a rationale in the PR summary when Bootstrap utilities are insufficient.
