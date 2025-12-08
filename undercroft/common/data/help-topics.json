@@ -1,8 +1,8 @@
 {
   "metadata": {
     "version": "1.0",
-    "lastUpdated": "2024-07-07",
-    "description": "Contextual help topics for the Undercroft Workbench tools."
+    "lastUpdated": "2024-11-05",
+    "description": "Contextual help topics for the Undercroft Workbench suite, Press, and future tools."
   },
   "topics": [
     {
@@ -136,6 +136,94 @@
         "Visual badges communicate when an action (like publishing a template) requires elevated privileges."],
       "category": "Collaboration",
       "href": "docs/index.html#accounts-roles"
+    },
+    {
+      "id": "press.flow",
+      "title": "Press Source → Template Flow",
+      "summary": "Press keeps the shared three-step flow: pick a source, map it to a template, then lock size and orientation.",
+      "details": [
+        "Selections now live at the top of the right pane so source, template, size, and orientation are visible while previewing.",
+        "Tooltips use the shared Workbench help system; click the (?) badges to open full docs without cluttering the canvas.",
+        "Overlays stay enabled by default so trim and safe areas stay visible in both preview and print stacks."],
+      "category": "Press",
+      "href": "../press/index.html#press-flow"
+    },
+    {
+      "id": "press.selection",
+      "title": "Selections Panel",
+      "summary": "Collapse or expand the selections card with the chevron toggle to reclaim space on smaller screens.",
+      "details": [
+        "The Source, URL/ID, Template, Size, and Orientation inputs share the right-pane card under a collapsible header.",
+        "Help badges next to the heading and Template label surface guidance without repeating copy in the layout.",
+        "Selections refresh the preview, compatibility list, and print stack immediately after each change."],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "press.templates",
+      "title": "Template & Size Pairing",
+      "summary": "Template choices drive supported sizes and orientations, which auto-refresh when the template changes.",
+      "details": [
+        "Template summaries list the measurement copy, orientation, and source context drawn from the active selection.",
+        "Format and orientation dropdowns stay grouped together to keep size decisions near the template picker.",
+        "Compatibility badges and the selection summary mirror the chosen template to keep the preview labels in sync."],
+      "category": "Press",
+      "href": "../press/index.html#press-templates"
+    },
+    {
+      "id": "press.compatibility",
+      "title": "Template Compatibility",
+      "summary": "Source and format lists update with each template to show what inputs and orientations are supported.",
+      "details": [
+        "The compatibility card mirrors the active template and highlights the currently selected format.",
+        "Sources appear using friendly labels (SRD, DDB, Local) and align with the Source picker above.",
+        "Use this list to validate that custom templates expose the right combinations before printing."],
+      "category": "Press",
+      "href": "../press/index.html#press-compatibility"
+    },
+    {
+      "id": "press.palette",
+      "title": "Press Palette Placeholder",
+      "summary": "A shared palette will land in the left pane so Workbench and Press reuse the same draggable assets.",
+      "details": [
+        "The left card reserves space for the future palette; the help badge links to the roadmap while we wire it up.",
+        "Until the palette arrives, make selections from the right-pane card to feed the preview and print stack.",
+        "Palette content will be shared via /common so other tools can reuse the same modules without duplication."],
+      "category": "Press",
+      "href": "../press/index.html#press-palette"
+    },
+    {
+      "id": "press.printing",
+      "title": "Alignment & Print Prep",
+      "summary": "Follow the four-step alignment checklist before printing cards, notecards, or sheets.",
+      "details": [
+        "Overlays stay visible in preview and print; measure the 0.25in margins and confirm cut lines align across sides.",
+        "Verify that dashed safe areas stay inside the inset guides and run a test sheet before bulk jobs.",
+        "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."],
+      "category": "Press",
+      "href": "../press/index.html#press-printing"
+    },
+    {
+      "id": "press.scope",
+      "title": "Current Build Scope",
+      "summary": "Tracks what the current Press build delivers while palette and future tooling ship next.",
+      "details": [
+        "Shared layout, theme controls, and help affordances are now sourced from /common for reuse across tools.",
+        "Selections, compatibility checks, overlays, and the print stack stay aligned so previews match print output.",
+        "A Palette placeholder keeps the left pane ready without duplicating Workbench code."],
+      "category": "Press",
+      "href": "../press/index.html#press-scope"
+    },
+    {
+      "id": "press.json",
+      "title": "Press JSON Preview",
+      "summary": "A collapsible JSON Preview shows the current source, template, size, and side selection.",
+      "details": [
+        "The preview stays collapsed by default; open it to inspect the selection payload used for previews and printing.",
+        "The byte badge updates after each change and mirrors the formatted JSON rendered by the shared utility.",
+        "Use the payload to debug custom templates or confirm source inputs before exporting."],
+      "category": "Press",
+      "href": "../press/index.html#press-json"
     }
   ]
 }

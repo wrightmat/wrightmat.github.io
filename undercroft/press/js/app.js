@@ -1,5 +1,7 @@
-import { initPaneToggles } from "../../workbench/js/lib/panes.js";
-import { initThemeControls } from "../../workbench/js/lib/theme.js";
+import { initPaneToggles } from "../../common/js/lib/panes.js";
+import { initThemeControls } from "../../common/js/lib/theme.js";
+import { initHelpSystem } from "../../common/js/lib/help.js";
+import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import {
   getFormatById,
   getPageSize,
@@ -17,7 +19,6 @@ const templateSummary = document.getElementById("templateSummary");
 const sourceSelect = document.getElementById("sourceSelect");
 const sourceSummary = document.getElementById("sourceSummary");
 const sourceInputContainer = document.getElementById("sourceInputContainer");
-const overlayToggle = document.getElementById("overlayToggle");
 const selectionSummary = document.getElementById("selectionSummary");
 const compatibilityList = document.getElementById("compatibilityList");
 const formatList = document.getElementById("formatList");
@@ -25,13 +26,45 @@ const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
 const swapSideButton = document.getElementById("swapSide");
 const printButton = document.getElementById("printButton");
+const selectionToggle = document.querySelector("[data-selection-toggle]");
+const selectionToggleLabel = selectionToggle?.querySelector("[data-toggle-label]");
+const selectionPanel = document.querySelector("[data-selection-panel]");
+const jsonToggle = document.querySelector("[data-json-toggle]");
+const jsonToggleLabel = document.querySelector("[data-json-toggle-label]");
+const jsonPanel = document.querySelector("[data-json-panel]");
+const jsonPreview = document.querySelector("[data-json-preview]");
+const jsonBytes = document.querySelector("[data-json-bytes]");
 
 const sourceValues = {};
 let currentSide = "front";
 
+function setCollapsibleState(toggle, panel, { collapsed, expandLabel, collapseLabel, labelElement } = {}) {
+  if (!toggle || !panel) return;
+  const icon = toggle.querySelector(".iconify");
+  const label = labelElement || toggle.querySelector("[data-toggle-label]");
+  const isCollapsed = Boolean(collapsed);
+  panel.hidden = isCollapsed;
+  toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+  if (label) {
+    label.textContent = isCollapsed ? expandLabel : collapseLabel;
+  }
+  if (icon) {
+    icon.dataset.icon = isCollapsed ? "tabler:chevron-right" : "tabler:chevron-down";
+  }
+}
+
+function bindCollapsible(toggle, panel, { collapsed = false, expandLabel, collapseLabel, labelElement } = {}) {
+  if (!toggle || !panel) return () => {};
+  const apply = (next) => setCollapsibleState(toggle, panel, { collapsed: next, expandLabel, collapseLabel, labelElement });
+  apply(collapsed);
+  toggle.addEventListener("click", () => apply(!panel.hidden));
+  return apply;
+}
+
 function initShell() {
   initThemeControls(document);
   initPaneToggles(document);
+  initHelpSystem({ root: document });
 }
 
 function populateSources() {
@@ -43,8 +76,10 @@ function populateSources() {
     sourceSelect.appendChild(option);
   });
   const active = getActiveSource();
-  renderSourceInput(active);
-  updateSourceSummary();
+  if (active) {
+    renderSourceInput(active);
+    updateSourceSummary();
+  }
 }
 
 function populateTemplates() {
@@ -117,6 +152,31 @@ function getSelectionContext() {
   };
 }
 
+const renderJsonPreview = createJsonPreviewRenderer({
+  resolvePreviewElement: () => jsonPreview,
+  resolveBytesElement: () => jsonBytes,
+  serialize: () => {
+    const context = getSelectionContext();
+    return {
+      source: {
+        id: context.source?.id ?? null,
+        summary: context.sourceSummary,
+        value: context.sourceValue,
+      },
+      template: {
+        id: context.template?.id ?? null,
+        format: context.format?.id ?? null,
+        orientation: context.orientation,
+        size: context.size,
+      },
+      view: {
+        side: currentSide,
+        overlays: true,
+      },
+    };
+  },
+});
+
 function measurementCopy(size) {
   return `${size.width}in × ${size.height}in page`;
 }
@@ -158,8 +218,6 @@ function updateCompatibility(template, format) {
 }
 
 function applyOverlays(page, template, size, { forPrint = false } = {}) {
-  if (!overlayToggle.checked) return;
-
   if (template.type === "card") {
     const guides = document.createElement("div");
     guides.className = "page-overlay trim-lines card-guides";
@@ -221,6 +279,9 @@ function updateSideButton() {
 
 function updateSelectionBadges(context) {
   selectionSummary.innerHTML = "";
+  if (!context.source || !context.template || !context.size) {
+    return;
+  }
   const badges = [
     { label: "Source", value: context.source.name },
     { label: "Template", value: context.template.name },
@@ -252,6 +313,7 @@ function renderPreview() {
   buildPrintStack(template, { size, format, source: { ...source, value: sourceValue, summary } });
   updateSideButton();
   updateSelectionBadges(context);
+  renderJsonPreview();
 }
 
 function buildPrintStack(template, { size, format, source }) {
@@ -270,6 +332,10 @@ function toggleSide() {
 
 function updateSourceSummary() {
   const source = getActiveSource();
+  if (!source) {
+    sourceSummary.textContent = "";
+    return;
+  }
   const value = sourceValues[source.id];
   sourceSummary.textContent = buildSourceSummary(source, value);
 }
@@ -324,6 +390,21 @@ function renderSourceInput(source) {
   sourceInputContainer.append(label, input, helper);
 }
 
+function initCollapsibles() {
+  bindCollapsible(selectionToggle, selectionPanel, {
+    collapsed: false,
+    expandLabel: "Expand selections",
+    collapseLabel: "Collapse selections",
+    labelElement: selectionToggleLabel,
+  });
+  bindCollapsible(jsonToggle, jsonPanel, {
+    collapsed: true,
+    expandLabel: "Expand JSON preview",
+    collapseLabel: "Collapse JSON preview",
+    labelElement: jsonToggleLabel,
+  });
+}
+
 function wireEvents() {
   templateSelect.addEventListener("change", () => {
     currentSide = "front";
@@ -348,13 +429,13 @@ function wireEvents() {
     updateSourceSummary();
     renderPreview();
   });
-  overlayToggle.addEventListener("change", renderPreview);
   swapSideButton.addEventListener("click", toggleSide);
   printButton.addEventListener("click", () => window.print());
 }
 
 async function initPress() {
   initShell();
+  initCollapsibles();
   try {
     await loadTemplates();
   } catch (error) {

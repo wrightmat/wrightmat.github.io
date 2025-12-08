@@ -1,6 +1,6 @@
 import { refreshTooltips } from "./tooltips.js";
 
-const DEFAULT_TOPICS_URL = "data/help-topics.json";
+const DEFAULT_TOPICS_URL = "../common/data/help-topics.json";
 
 let cachedTopicsPromise = null;
 let cachedTopicsUrl = "";
