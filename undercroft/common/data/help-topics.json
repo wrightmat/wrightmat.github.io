@@ -172,6 +172,42 @@
       "href": "../press/index.html#press-selection"
     },
     {
+      "id": "press.source.srd",
+      "title": "5e SRD Endpoints",
+      "summary": "Use SRD API slugs to prefill previews from the open 5e reference without auth.",
+      "details": [
+        "Paste a slug such as `/api/spells/acid-arrow` or `/api/monsters/aboleth` to pull SRD data.",
+        "Requests stay client-side; nothing is sent to the server beyond the SRD fetch.",
+        "Pair SRD payloads with templates and sizes in the selections card to see print-ready previews."
+      ],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "press.source.json",
+      "title": "Local JSON Uploads",
+      "summary": "Load a JSON file directly from your device; it remains local for preview and print.",
+      "details": [
+        "Choose a `.json` file; the contents are read in the browser and not uploaded anywhere.",
+        "After selecting a template, map fields as needed so the preview reflects your layout.",
+        "Re-upload to refresh changes; the selections card updates the JSON preview when expanded."
+      ],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "press.source.manual",
+      "title": "Manual Entry Notes",
+      "summary": "Type quick copy for ad-hoc cards or tests without connecting to an external source.",
+      "details": [
+        "Use this field for one-off notes, reminders, or draft text before wiring a source integration.",
+        "Content is stored in-page only; refresh clears it unless you save elsewhere.",
+        "Pair manual notes with any template, size, and orientation to see how they will print."
+      ],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
       "id": "press.templates",
       "title": "Template & Size Pairing",
       "summary": "Template choices drive supported sizes and orientations, which auto-refresh when the template changes.",
@@ -179,6 +215,30 @@
         "Format and orientation dropdowns sit on their own rows so each choice stays visible while you scroll other inputs.",
         "Selection badges above the preview mirror your active template, size, orientation, and side for quick checks.",
         "Changing templates resets the size and orientation dropdowns before rebuilding the preview and print stack."],
+      "category": "Press",
+      "href": "../press/index.html#press-templates"
+    },
+    {
+      "id": "press.size",
+      "title": "Selecting Print Size",
+      "summary": "Size options come from the chosen template; pick the paper size that matches your stock.",
+      "details": [
+        "Templates surface only supported sizes; switching templates refreshes this list automatically.",
+        "Use the badges above the preview to confirm the active size before printing.",
+        "Card templates factor in gutters and margins when calculating the printable grid for each size."
+      ],
+      "category": "Press",
+      "href": "../press/index.html#press-templates"
+    },
+    {
+      "id": "press.orientation",
+      "title": "Choosing Orientation",
+      "summary": "Orientation defaults to the template recommendation but can be changed per format.",
+      "details": [
+        "Orientation options depend on the selected size; some formats may offer only portrait or landscape.",
+        "Switching orientation rebuilds the preview and print stack to fit the new layout.",
+        "Trim and safe overlays adjust automatically so you can validate margins before printing."
+      ],
       "category": "Press",
       "href": "../press/index.html#press-templates"
     },

@@ -309,13 +309,13 @@ function renderSourceInput(source) {
   label.textContent = inputSpec.label;
   labelRow.appendChild(label);
 
-  if (source.id === "ddb") {
-    const ddbHelp = document.createElement("span");
-    ddbHelp.className = "align-middle";
-    ddbHelp.dataset.helpTopic = "press.source.ddb";
-    ddbHelp.dataset.helpInsert = "replace";
-    ddbHelp.dataset.helpPlacement = "left";
-    labelRow.appendChild(ddbHelp);
+  if (inputSpec.helpTopic) {
+    const sourceHelp = document.createElement("span");
+    sourceHelp.className = "align-middle";
+    sourceHelp.dataset.helpTopic = inputSpec.helpTopic;
+    sourceHelp.dataset.helpInsert = "replace";
+    sourceHelp.dataset.helpPlacement = "left";
+    labelRow.appendChild(sourceHelp);
     initHelpSystem({ root: labelRow });
   }
 
@@ -352,18 +352,7 @@ function renderSourceInput(source) {
     renderPreview();
   });
 
-  const helperText = inputSpec.helper ?? "";
-  const helper = helperText
-    ? Object.assign(document.createElement("div"), {
-        className: "small text-body-secondary",
-        textContent: helperText,
-      })
-    : null;
-
   sourceInputContainer.append(labelRow, input);
-  if (helper) {
-    sourceInputContainer.append(helper);
-  }
 }
 
 function initPressCollapsibles() {
