@@ -13,7 +13,7 @@ export function setCollapsibleState(toggle, panel, { collapsed, expandLabel, col
   }
 }
 
-export function bindCollapsible(toggle, panel, { collapsed = false, expandLabel, collapseLabel, labelElement } = {}) {
+export function bindCollapsibleToggle(toggle, panel, { collapsed = false, expandLabel, collapseLabel, labelElement } = {}) {
   if (!toggle || !panel) return () => {};
   const apply = (next) => setCollapsibleState(toggle, panel, { collapsed: next, expandLabel, collapseLabel, labelElement });
   apply(collapsed);
