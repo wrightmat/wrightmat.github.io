@@ -8,12 +8,12 @@ import {
   setupDropzones,
 } from "../lib/editor-canvas.js";
 import { createCanvasCardElement, createStandardCardChrome } from "../lib/canvas-card.js";
-import { createJsonPreviewRenderer } from "../lib/json-preview.js";
+import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
-import { expandPane } from "../lib/panes.js";
-import { refreshTooltips } from "../lib/tooltips.js";
+import { expandPane } from "../../../common/js/lib/panes.js";
+import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
 import { resolveApiBase } from "../lib/api.js";
-import { initHelpSystem } from "../lib/help.js";
+import { initHelpSystem } from "../../../common/js/lib/help.js";
 import {
   listBuiltinSystems,
   markBuiltinMissing,

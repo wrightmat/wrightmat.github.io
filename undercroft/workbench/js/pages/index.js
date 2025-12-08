@@ -3,7 +3,7 @@ import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
 import { initTierVisibility } from "../lib/access.js";
-import { initHelpSystem } from "../lib/help.js";
+import { initHelpSystem } from "../../../common/js/lib/help.js";
 
 const { status } = initAppShell({ namespace: "index" });
 const dataManager = new DataManager({ baseUrl: resolveApiBase() });
