@@ -61,7 +61,7 @@ function populateTemplates() {
   }
 }
 
-function populateFormats(template) {
+function renderFormatOptions(template) {
   formatSelect.innerHTML = "";
   if (!template) return;
   template.formats?.forEach((format) => {
@@ -72,35 +72,10 @@ function populateFormats(template) {
   });
   const firstFormat = template.formats?.[0];
   formatSelect.value = firstFormat?.id ?? "";
-  populateOrientations(firstFormat);
+  renderOrientationOptions(firstFormat);
 }
 
-function populateOrientations(format) {
-  orientationSelect.innerHTML = "";
-  const orientations = format?.orientations ?? ["portrait"];
-  orientations.forEach((value) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = value.charAt(0).toUpperCase() + value.slice(1);
-    orientationSelect.appendChild(option);
-  });
-  orientationSelect.value = format?.defaultOrientation ?? orientations[0];
-}
-
-function populateFormats(template) {
-  formatSelect.innerHTML = "";
-  template.formats?.forEach((format) => {
-    const option = document.createElement("option");
-    option.value = format.id;
-    option.textContent = format.label;
-    formatSelect.appendChild(option);
-  });
-  const firstFormat = template.formats?.[0];
-  formatSelect.value = firstFormat?.id ?? "";
-  populateOrientations(firstFormat);
-}
-
-function populateOrientations(format) {
+function renderOrientationOptions(format) {
   orientationSelect.innerHTML = "";
   const orientations = format?.orientations ?? ["portrait"];
   orientations.forEach((value) => {
@@ -353,14 +328,14 @@ function wireEvents() {
   templateSelect.addEventListener("change", () => {
     currentSide = "front";
     const template = getActiveTemplate();
-    populateFormats(template);
+    renderFormatOptions(template);
     renderPreview();
   });
   formatSelect.addEventListener("change", () => {
     currentSide = "front";
     const template = getActiveTemplate();
     const format = getFormatById(template, formatSelect.value);
-    populateOrientations(format);
+    renderOrientationOptions(format);
     renderPreview();
   });
   orientationSelect.addEventListener("change", () => {
@@ -389,7 +364,7 @@ async function initPress() {
 
   populateSources();
   populateTemplates();
-  populateFormats(getActiveTemplate());
+  renderFormatOptions(getActiveTemplate());
   updateTemplateSummary(getSelectionContext());
   renderPreview();
   wireEvents();
