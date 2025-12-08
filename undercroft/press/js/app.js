@@ -1,4 +1,4 @@
-import { bindCollapsible } from "../../common/js/lib/collapsible.js";
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initPaneToggles } from "../../common/js/lib/panes.js";
 import { initThemeControls } from "../../common/js/lib/theme.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
@@ -358,13 +358,13 @@ function renderSourceInput(source) {
 }
 
 function initPressCollapsibles() {
-  bindCollapsible(selectionToggle, selectionPanel, {
+  bindCollapsibleToggle(selectionToggle, selectionPanel, {
     collapsed: false,
     expandLabel: "Expand selections",
     collapseLabel: "Collapse selections",
     labelElement: selectionToggleLabel,
   });
-  bindCollapsible(jsonToggle, jsonPanel, {
+  bindCollapsibleToggle(jsonToggle, jsonPanel, {
     collapsed: true,
     expandLabel: "Expand JSON preview",
     collapseLabel: "Collapse JSON preview",
