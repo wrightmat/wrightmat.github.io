@@ -1,3 +1,4 @@
+import { bindCollapsible } from "../../common/js/lib/collapsible.js";
 import { initPaneToggles } from "../../common/js/lib/panes.js";
 import { initThemeControls } from "../../common/js/lib/theme.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
@@ -356,22 +357,7 @@ function renderSourceInput(source) {
   }
 }
 
-function initCollapsibles() {
-  bindCollapsible(selectionToggle, selectionPanel, {
-    collapsed: false,
-    expandLabel: "Expand selections",
-    collapseLabel: "Collapse selections",
-    labelElement: selectionToggleLabel,
-  });
-  bindCollapsible(jsonToggle, jsonPanel, {
-    collapsed: true,
-    expandLabel: "Expand JSON preview",
-    collapseLabel: "Collapse JSON preview",
-    labelElement: jsonToggleLabel,
-  });
-}
-
-function initCollapsibles() {
+function initPressCollapsibles() {
   bindCollapsible(selectionToggle, selectionPanel, {
     collapsed: false,
     expandLabel: "Expand selections",
@@ -416,7 +402,7 @@ function wireEvents() {
 
 async function initPress() {
   initShell();
-  initCollapsibles();
+  initPressCollapsibles();
   try {
     await loadTemplates();
   } catch (error) {
