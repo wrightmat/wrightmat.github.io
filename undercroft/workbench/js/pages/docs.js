@@ -1,5 +1,5 @@
-import { initThemeControls } from "../lib/theme.js";
-import { loadHelpTopics } from "../lib/help.js";
+import { initThemeControls } from "../../../common/js/lib/theme.js";
+import { loadHelpTopics } from "../../../common/js/lib/help.js";
 
 function slugify(value) {
   return String(value || "")
@@ -170,7 +170,7 @@ function groupTopicsByCategory(topics) {
   const contentRoot = document.querySelector("[data-docs-root]");
   const metaRoot = document.querySelector("[data-docs-metadata]");
   try {
-    const { topics, raw } = await loadHelpTopics("../data/help-topics.json");
+    const { topics, raw } = await loadHelpTopics("../../common/data/help-topics.json");
     if (!topics.length) {
       if (contentRoot) {
         contentRoot.innerHTML = "";
