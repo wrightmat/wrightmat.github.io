@@ -155,7 +155,18 @@
       "details": [
         "The Source, URL/ID, Template, Size, and Orientation inputs share the right-pane card under a collapsible header.",
         "Help badges next to the heading and Template label surface guidance without repeating copy in the layout.",
-        "Selections refresh the preview, compatibility list, and print stack immediately after each change."],
+        "Selections refresh the preview, JSON payload, and print stack immediately after each change."],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "press.source.ddb",
+      "title": "D&D Beyond URLs & IDs",
+      "summary": "Paste a D&D Beyond URL or ID; the value stays local while building your print job.",
+      "details": [
+        "You can paste a full URL or the numeric/slug ID from D&D Beyond; Workbench reads it locally for layout mapping.",
+        "Use share links when possible to avoid permissions issues while you preview cards or sheets.",
+        "Hover or tap the (?) badge next to Source when D&D Beyond is selected to see these notes without extra inline copy."],
       "category": "Press",
       "href": "../press/index.html#press-selection"
     },
@@ -164,22 +175,11 @@
       "title": "Template & Size Pairing",
       "summary": "Template choices drive supported sizes and orientations, which auto-refresh when the template changes.",
       "details": [
-        "Template summaries list the measurement copy, orientation, and source context drawn from the active selection.",
-        "Format and orientation dropdowns stay grouped together to keep size decisions near the template picker.",
-        "Compatibility badges and the selection summary mirror the chosen template to keep the preview labels in sync."],
+        "Format and orientation dropdowns sit on their own rows so each choice stays visible while you scroll other inputs.",
+        "Selection badges above the preview mirror your active template, size, orientation, and side for quick checks.",
+        "Changing templates resets the size and orientation dropdowns before rebuilding the preview and print stack."],
       "category": "Press",
       "href": "../press/index.html#press-templates"
-    },
-    {
-      "id": "press.compatibility",
-      "title": "Template Compatibility",
-      "summary": "Source and format lists update with each template to show what inputs and orientations are supported.",
-      "details": [
-        "The compatibility card mirrors the active template and highlights the currently selected format.",
-        "Sources appear using friendly labels (SRD, DDB, Local) and align with the Source picker above.",
-        "Use this list to validate that custom templates expose the right combinations before printing."],
-      "category": "Press",
-      "href": "../press/index.html#press-compatibility"
     },
     {
       "id": "press.palette",
@@ -204,22 +204,11 @@
       "href": "../press/index.html#press-printing"
     },
     {
-      "id": "press.scope",
-      "title": "Current Build Scope",
-      "summary": "Tracks what the current Press build delivers while palette and future tooling ship next.",
-      "details": [
-        "Shared layout, theme controls, and help affordances are now sourced from /common for reuse across tools.",
-        "Selections, compatibility checks, overlays, and the print stack stay aligned so previews match print output.",
-        "A Palette placeholder keeps the left pane ready without duplicating Workbench code."],
-      "category": "Press",
-      "href": "../press/index.html#press-scope"
-    },
-    {
       "id": "press.json",
       "title": "Press JSON Preview",
-      "summary": "A collapsible JSON Preview shows the current source, template, size, and side selection.",
+      "summary": "A collapsible JSON Preview in the left pane shows the current source, template, size, and side selection.",
       "details": [
-        "The preview stays collapsed by default; open it to inspect the selection payload used for previews and printing.",
+        "The preview stays collapsed by default; open it beneath the Palette placeholder to inspect the selection payload.",
         "The byte badge updates after each change and mirrors the formatted JSON rendered by the shared utility.",
         "Use the payload to debug custom templates or confirm source inputs before exporting."],
       "category": "Press",
