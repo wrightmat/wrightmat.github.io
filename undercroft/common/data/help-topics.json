@@ -1,8 +1,8 @@
 {
   "metadata": {
     "version": "1.0",
-    "lastUpdated": "2024-07-07",
-    "description": "Contextual help topics for the Undercroft Workbench tools."
+    "lastUpdated": "2024-11-05",
+    "description": "Contextual help topics for the Undercroft Workbench suite, Press, and future tools."
   },
   "topics": [
     {
@@ -136,6 +136,73 @@
         "Visual badges communicate when an action (like publishing a template) requires elevated privileges."],
       "category": "Collaboration",
       "href": "docs/index.html#accounts-roles"
+    },
+    {
+      "id": "press.flow",
+      "title": "Press Source → Template Flow",
+      "summary": "Press keeps the shared three-step flow: pick a source, map it to a template, then lock size and orientation.",
+      "details": [
+        "Selections now live at the top of the right pane so source, template, size, and orientation are visible while previewing.",
+        "Tooltips use the shared Workbench help system; click the (?) badges to open full docs without cluttering the canvas.",
+        "Overlays stay enabled by default so trim and safe areas stay visible in both preview and print stacks."],
+      "category": "Press",
+      "href": "../press/index.html#press-flow"
+    },
+    {
+      "id": "press.selection",
+      "title": "Selections Panel",
+      "summary": "Collapse or expand the selections card with the chevron toggle to reclaim space on smaller screens.",
+      "details": [
+        "The Source, URL/ID, Template, Size, and Orientation inputs share the right-pane card under a collapsible header.",
+        "Help badges next to the heading and Template label surface guidance without repeating copy in the layout.",
+        "Selections refresh the preview, JSON payload, and print stack immediately after each change."],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "press.source.ddb",
+      "title": "D&D Beyond URLs & IDs",
+      "summary": "Paste a D&D Beyond URL or ID; the value stays local while building your print job.",
+      "details": [
+        "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
+        "You can paste a full URL or the numeric/slug ID from D&D Beyond; Workbench reads it locally for layout mapping.",
+        "Use share links when possible to avoid permissions issues while you preview cards or sheets.",
+        "Hover or tap the (?) badge next to Source when D&D Beyond is selected to see these notes without extra inline copy."],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "press.templates",
+      "title": "Template & Size Pairing",
+      "summary": "Template choices drive supported sizes and orientations, which auto-refresh when the template changes.",
+      "details": [
+        "Format and orientation dropdowns sit on their own rows so each choice stays visible while you scroll other inputs.",
+        "Selection badges above the preview mirror your active template, size, orientation, and side for quick checks.",
+        "Changing templates resets the size and orientation dropdowns before rebuilding the preview and print stack."],
+      "category": "Press",
+      "href": "../press/index.html#press-templates"
+    },
+    {
+      "id": "press.palette",
+      "title": "Press Palette Placeholder",
+      "summary": "A shared palette will land in the left pane so Workbench and Press reuse the same draggable assets.",
+      "details": [
+        "The left card reserves space for the future palette; the help badge links to the roadmap while we wire it up.",
+        "Until the palette arrives, make selections from the right-pane card to feed the preview and print stack.",
+        "Palette content will be shared via /common so other tools can reuse the same modules without duplication."],
+      "category": "Press",
+      "href": "../press/index.html#press-palette"
+    },
+    {
+      "id": "press.printing",
+      "title": "Alignment & Print Prep",
+      "summary": "Follow the four-step alignment checklist before printing cards, notecards, or sheets.",
+      "details": [
+        "Overlays stay visible in preview and print; measure the 0.25in margins and confirm cut lines align across sides.",
+        "Verify that dashed safe areas stay inside the inset guides and run a test sheet before bulk jobs.",
+        "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."],
+      "category": "Press",
+      "href": "../press/index.html#press-printing"
     }
   ]
 }

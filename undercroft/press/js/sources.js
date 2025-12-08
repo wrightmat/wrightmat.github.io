@@ -2,12 +2,13 @@ const sources = [
   {
     id: "ddb",
     name: "D&D Beyond",
-    description: "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
+    description: "",
     input: {
       type: "text",
       label: "D&D Beyond URL or ID",
       placeholder: "https://www.dndbeyond.com/monsters/12345",
-      helper: "Share links are resolved locally; nothing is uploaded to Undercroft.",
+      helper: "",
+      helpTopic: "press.source.ddb",
     },
   },
   {
