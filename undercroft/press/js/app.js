@@ -40,6 +40,7 @@ const inspectorTitle = document.querySelector("[data-inspector-title]");
 const textEditor = document.querySelector("[data-component-text]");
 const fontSizeInput = document.querySelector("[data-component-font-size]");
 const fontSizeValue = document.querySelector("[data-component-font-size-value]");
+const fontColorInput = document.querySelector("[data-component-font-color]");
 const visibilityToggle = document.querySelector("[data-component-visible]");
 const headingLevelSelect = document.querySelector("[data-heading-level]");
 
@@ -50,6 +51,7 @@ let nodeCounter = 0;
 let editablePages = { front: null, back: null };
 let paletteSortable = null;
 let layoutSortable = null;
+let canvasSortable = null;
 
 const paletteComponents = [
   {
@@ -460,6 +462,7 @@ function updateInspector() {
     if (textEditor) textEditor.value = "";
     if (fontSizeInput) fontSizeInput.value = 16;
     if (fontSizeValue) fontSizeValue.textContent = "16px";
+    if (fontColorInput) fontColorInput.value = "#212529";
     if (visibilityToggle) visibilityToggle.checked = true;
     if (headingLevelSelect) headingLevelSelect.value = "h3";
     return;
@@ -476,6 +479,10 @@ function updateInspector() {
     if (fontSizeValue) {
       fontSizeValue.textContent = `${size}px`;
     }
+  }
+
+  if (fontColorInput) {
+    fontColorInput.value = node?.style?.color ?? "#212529";
   }
 
   if (visibilityToggle) {
@@ -594,11 +601,13 @@ function updateSelectionBadges(context) {
 }
 
 function renderPreview() {
+  destroyCanvasDnd();
   const context = getSelectionContext();
   const { template, source, format, size, orientation, sourceValue, sourceSummary: summary } = context;
   if (!template || !size) return;
   const side = currentSide;
   const pageOverride = getEditablePage(side);
+  let layoutRoot = null;
 
   previewStage.innerHTML = "";
   const page = template.createPage(side, {
@@ -610,10 +619,18 @@ function renderPreview() {
       editable: true,
       selectedId: selectedNodeId,
       onSelect: (uid) => selectNode(uid, { fromPreview: true }),
+      onRootReady: (element) => {
+        if (element?.nodeType === Node.ELEMENT_NODE) {
+          element.dataset.layoutRoot = "true";
+          element.dataset.layoutSide = side;
+          layoutRoot = element;
+        }
+      },
     },
   });
   applyOverlays(page, template, size, { forPrint: false });
   previewStage.appendChild(page);
+  initCanvasDnd(layoutRoot);
 
   buildPrintStack(template, { size, format, source: { ...source, value: sourceValue, summary } });
   updateSideButton();
@@ -778,6 +795,48 @@ function initLayoutDnd() {
   });
 }
 
+function destroyCanvasDnd() {
+  if (canvasSortable?.destroy) {
+    canvasSortable.destroy();
+  }
+  canvasSortable = null;
+}
+
+function handleCanvasAdd(event) {
+  const type = event.item?.dataset?.componentType;
+  const newNode = createNodeFromPalette(type);
+  event.item?.remove();
+  if (!newNode) return;
+  const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
+  insertNodeAtRoot(currentSide, newNode, index);
+  renderLayoutList();
+  selectNode(newNode.uid);
+}
+
+function handleCanvasReorder(event) {
+  reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
+  renderLayoutList();
+  renderPreview();
+}
+
+function initCanvasDnd(rootElement) {
+  if (!rootElement) {
+    destroyCanvasDnd();
+    return;
+  }
+
+  destroyCanvasDnd();
+  canvasSortable = createSortable(rootElement, {
+    group: { name: "press-layout", pull: true, put: true },
+    animation: 150,
+    fallbackOnBody: true,
+    handle: null,
+    draggable: "[data-node-id], [data-component-type]",
+    onAdd: handleCanvasAdd,
+    onUpdate: handleCanvasReorder,
+  });
+}
+
 function initDragAndDrop() {
   initPaletteDnd();
   initLayoutDnd();
@@ -813,6 +872,18 @@ function bindInspectorControls() {
       if (fontSizeValue) {
         fontSizeValue.textContent = `${size}px`;
       }
+      renderPreview();
+    });
+  }
+
+  if (fontColorInput) {
+    fontColorInput.addEventListener("input", () => {
+      const color = fontColorInput.value || "#212529";
+      updateSelectedNode((node) => {
+        const styles = { ...(node.style ?? {}) };
+        styles.color = color;
+        node.style = styles;
+      });
       renderPreview();
     });
   }

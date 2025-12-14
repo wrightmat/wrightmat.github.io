@@ -244,14 +244,36 @@
     },
     {
       "id": "press.palette",
-      "title": "Press Palette Placeholder",
-      "summary": "A shared palette will land in the left pane so Workbench and Press reuse the same draggable assets.",
+      "title": "Press Palette",
+      "summary": "Drag components from the left pane into the preview canvas or layout outline to build each side.",
       "details": [
-        "The left card reserves space for the future palette; the help badge links to the roadmap while we wire it up.",
-        "Until the palette arrives, make selections from the right-pane card to feed the preview and print stack.",
-        "Palette content will be shared via /common so other tools can reuse the same modules without duplication."],
+        "Drop palette items directly onto the live preview; the layout outline updates in sync and selects the new component.",
+        "Double-click a palette row to append it to the end of the current side when you do not want to drag.",
+        "Palette clones share a Sortable group with the layout so you can reorder items either in the outline or on the page."],
       "category": "Press",
       "href": "../press/index.html#press-palette"
+    },
+    {
+      "id": "press.layout",
+      "title": "Layout Canvas & Outline",
+      "summary": "Use the right-pane outline or the on-page drag handles to change the order of components for the current side.",
+      "details": [
+        "Drop palette items into the preview page to add them where you want; the outline mirrors the order automatically.",
+        "Reorder items in the layout list or directly on the canvas—both paths update the live preview and print stack.",
+        "Each side keeps its own layout; switch sides with the toggle above the preview to edit front and back separately."],
+      "category": "Press",
+      "href": "../press/index.html#press-layout"
+    },
+    {
+      "id": "press.inspector",
+      "title": "Component Inspector",
+      "summary": "Select any component on the page or outline to edit its text, font size, color, visibility, and heading level.",
+      "details": [
+        "When a component is selected, the inspector enables inputs for text, sizing, color, visibility, and heading level.",
+        "List components treat each line in the text area as a separate list item so you can build bullet lists quickly.",
+        "Toggles and sliders update the preview immediately, keeping the print stack synchronized with your changes."],
+      "category": "Press",
+      "href": "../press/index.html#press-inspector"
     },
     {
       "id": "press.printing",
