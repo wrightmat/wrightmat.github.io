@@ -109,14 +109,15 @@
           data-pane-initial="collapsed"
         >
           <section class="d-flex flex-column gap-3">
-            <div class="bg-body-tertiary rounded-3 p-3 d-flex flex-column gap-2" id="press-palette">
+            <div class="bg-body-tertiary rounded-3 p-3 d-flex flex-column gap-3" id="press-palette">
               <div class="d-flex align-items-center justify-content-between">
                 <h3 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Palette</h3>
                 <span class="align-middle" data-help-topic="press.palette" data-help-insert="replace"></span>
               </div>
               <p class="mb-0 small text-body-secondary">
-                A shared palette will live here soon. Use the selections on the right while we wire up draggable assets for Press, Workbench, and future tools.
+                Drag components into the layout outline or double-click to append them. Use the right pane to adjust text, sizes, and visibility.
               </p>
+              <ul class="list-group list-group-flush border rounded-3 overflow-hidden" data-press-palette></ul>
             </div>
             <section class="bg-body-tertiary rounded-3 p-3 d-flex flex-column gap-3" data-json-section id="press-json">
               <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
@@ -222,6 +223,69 @@
                   </div>
                 </div>
               </section>
+              <section class="d-flex flex-column gap-3" id="press-layout">
+                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Layout</h2>
+                    <span class="align-middle" data-help-topic="press.layout" data-help-insert="replace" data-help-placement="left"></span>
+                  </div>
+                </div>
+                <p class="small text-body-secondary mb-0">
+                  Drop palette items onto the live preview or into this outline to add components, then drag to reorder them for the current side.
+                </p>
+                <div class="d-flex flex-column gap-2">
+                  <div class="alert alert-secondary mb-0 small" role="status" data-layout-empty>
+                    Drag components from the palette to start building this side. Reorder items to change how they appear on the page.
+                  </div>
+                  <ul class="list-group press-layout-list" data-layout-list></ul>
+                </div>
+              </section>
+              <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
+                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0" data-inspector-title>Component inspector</h2>
+                    <span class="align-middle" data-help-topic="press.inspector" data-help-insert="replace" data-help-placement="left"></span>
+                  </div>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                  <div class="form-floating">
+                    <textarea class="form-control" placeholder="Edit text" style="min-height: 96px" data-component-text></textarea>
+                    <label class="fw-semibold">Text or label</label>
+                  </div>
+                  <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <label class="fw-semibold" for="componentFontSize">Font size</label>
+                      <span class="badge text-bg-secondary" data-component-font-size-value>16px</span>
+                    </div>
+                    <input type="range" class="form-range" id="componentFontSize" min="12" max="28" step="1" value="16" data-component-font-size />
+                  </div>
+                  <div class="d-flex flex-column gap-2">
+                    <label class="fw-semibold" for="componentFontColor">Font color</label>
+                    <input
+                      type="color"
+                      class="form-control form-control-color"
+                      id="componentFontColor"
+                      value="#212529"
+                      title="Pick a text color"
+                      data-component-font-color
+                    />
+                  </div>
+                  <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="componentVisibility" data-component-visible />
+                      <label class="form-check-label" for="componentVisibility">Show in layout</label>
+                    </div>
+                    <div class="form-floating flex-grow-1" style="min-width: 160px">
+                      <select class="form-select" id="headingLevel" data-heading-level>
+                        <option value="h2">Heading 2</option>
+                        <option value="h3" selected>Heading 3</option>
+                        <option value="h4">Heading 4</option>
+                      </select>
+                      <label class="fw-semibold" for="headingLevel">Heading level</label>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </aside>
@@ -231,6 +295,7 @@
     <div class="d-none" id="printStack" aria-hidden="true"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
