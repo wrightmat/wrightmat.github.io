@@ -1,5 +1,9 @@
 const GAP_UNIT_REM = 0.25;
 
+function shouldHide(node) {
+  return Boolean(node?.hidden);
+}
+
 function resolveBinding(binding, context) {
   if (typeof binding !== "string" || !binding.startsWith("@")) {
     return binding;
@@ -25,6 +29,16 @@ function applyClassName(element, className) {
   }
 }
 
+function applyInlineStyles(element, styles = {}) {
+  if (!element || typeof styles !== "object") return;
+  if (typeof styles.fontSize === "number") {
+    element.style.fontSize = `${styles.fontSize}px`;
+  }
+  if (typeof styles.lineHeight === "number") {
+    element.style.lineHeight = `${styles.lineHeight}`;
+  }
+}
+
 function applyGap(element, gap) {
   if (typeof gap === "number") {
     element.style.gap = `${gap * GAP_UNIT_REM}rem`;
@@ -45,6 +59,7 @@ function renderField(node, context) {
   switch (node.component) {
     case "heading": {
       const el = createTextElement(node.level ?? "h3", value ?? node.label, node.className ?? "fw-semibold");
+      applyInlineStyles(el, node.style);
       return el;
     }
     case "text": {
@@ -52,10 +67,12 @@ function renderField(node, context) {
       if (node.muted) {
         applyClassName(el, "text-body-secondary");
       }
+      applyInlineStyles(el, node.style);
       return el;
     }
     case "badge": {
       const el = createTextElement("span", value ?? node.label ?? "Badge", node.className ?? "badge text-bg-primary");
+      applyInlineStyles(el, node.style);
       return el;
     }
     case "list": {
@@ -75,6 +92,8 @@ function renderField(node, context) {
       const labelValue = resolveBinding(node.label, context) ?? node.label ?? "";
       const label = createTextElement("p", labelValue, "card-meta mb-0");
       const val = createTextElement("p", value ?? "—", "mb-0 fw-semibold");
+      applyInlineStyles(label, node.style);
+      applyInlineStyles(val, node.style);
       wrapper.append(label, val);
       return wrapper;
     }
@@ -92,17 +111,17 @@ function renderField(node, context) {
   }
 }
 
-function renderStack(node, context) {
+function renderStack(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-flex flex-column");
   applyGap(container, node.gap ?? 4);
   asArray(node.children).forEach((child) => {
-    container.appendChild(renderNode(child, context));
+    container.appendChild(renderNode(child, context, options));
   });
   return container;
 }
 
-function renderRow(node, context) {
+function renderRow(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-grid");
   const columnCount = (node.columns && node.columns.length) || 1;
@@ -117,26 +136,42 @@ function renderRow(node, context) {
     if (column.span) {
       col.style.gridColumn = `span ${column.span}`;
     }
-    col.appendChild(renderNode(column.node, context));
+    col.appendChild(renderNode(column.node, context, options));
     container.appendChild(col);
   });
   return container;
 }
 
-export function renderNode(node, context = {}) {
-  if (!node) return document.createComment("empty");
+function attachEditorHooks(element, node, options) {
+  if (!element || !options?.editable || !node?.uid) return element;
+  element.dataset.nodeId = node.uid;
+  element.classList.add("press-component");
+  if (options.selectedId && options.selectedId === node.uid) {
+    element.classList.add("press-component--selected");
+  }
+  if (typeof options.onSelect === "function") {
+    element.addEventListener("click", (event) => {
+      event.stopPropagation();
+      options.onSelect(node.uid);
+    });
+  }
+  return element;
+}
+
+export function renderNode(node, context = {}, options = {}) {
+  if (!node || shouldHide(node)) return document.createComment("empty");
   switch (node.type) {
     case "stack":
-      return renderStack(node, context);
+      return attachEditorHooks(renderStack(node, context, options), node, options);
     case "row":
-      return renderRow(node, context);
+      return attachEditorHooks(renderRow(node, context, options), node, options);
     case "field":
-      return renderField(node, context);
+      return attachEditorHooks(renderField(node, context), node, options);
     default:
       return document.createComment(`unsupported node: ${node.type}`);
   }
 }
 
-export function renderLayout(layout, context = {}) {
-  return renderNode(layout, context);
+export function renderLayout(layout, context = {}, options = {}) {
+  return renderNode(layout, context, options);
 }
