@@ -230,6 +230,9 @@
                     <span class="align-middle" data-help-topic="press.layout" data-help-insert="replace" data-help-placement="left"></span>
                   </div>
                 </div>
+                <p class="small text-body-secondary mb-0">
+                  Drop palette items onto the live preview or into this outline to add components, then drag to reorder them for the current side.
+                </p>
                 <div class="d-flex flex-column gap-2">
                   <div class="alert alert-secondary mb-0 small" role="status" data-layout-empty>
                     Drag components from the palette to start building this side. Reorder items to change how they appear on the page.
@@ -237,7 +240,7 @@
                   <ul class="list-group press-layout-list" data-layout-list></ul>
                 </div>
               </section>
-              <section class="d-flex flex-column gap-3" data-component-inspector>
+              <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
                 <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                   <div class="d-flex align-items-center gap-2">
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0" data-inspector-title>Component inspector</h2>
@@ -255,6 +258,17 @@
                       <span class="badge text-bg-secondary" data-component-font-size-value>16px</span>
                     </div>
                     <input type="range" class="form-range" id="componentFontSize" min="12" max="28" step="1" value="16" data-component-font-size />
+                  </div>
+                  <div class="d-flex flex-column gap-2">
+                    <label class="fw-semibold" for="componentFontColor">Font color</label>
+                    <input
+                      type="color"
+                      class="form-control form-control-color"
+                      id="componentFontColor"
+                      value="#212529"
+                      title="Pick a text color"
+                      data-component-font-color
+                    />
                   </div>
                   <div class="d-flex flex-wrap gap-3 align-items-center">
                     <div class="form-check form-switch">

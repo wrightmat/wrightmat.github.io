@@ -37,6 +37,12 @@ function applyInlineStyles(element, styles = {}) {
   if (typeof styles.lineHeight === "number") {
     element.style.lineHeight = `${styles.lineHeight}`;
   }
+  if (styles.color) {
+    element.style.color = styles.color;
+  }
+  if (styles.backgroundColor) {
+    element.style.backgroundColor = styles.backgroundColor;
+  }
 }
 
 function applyGap(element, gap) {
@@ -173,5 +179,9 @@ export function renderNode(node, context = {}, options = {}) {
 }
 
 export function renderLayout(layout, context = {}, options = {}) {
-  return renderNode(layout, context, options);
+  const rendered = renderNode(layout, context, options);
+  if (typeof options?.onRootReady === "function") {
+    options.onRootReady(rendered);
+  }
+  return rendered;
 }

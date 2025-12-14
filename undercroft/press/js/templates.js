@@ -106,6 +106,7 @@ function renderCardGrid(template, side, context) {
   const { page, inner } = createPageWrapper(template, side, context);
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const data = getRepeatData(template, pageConfig);
+  const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
   const { width, height, gutter = 0, safeInset = 0, columns = 1, rows = 1 } = template.card ?? {};
   const grid = document.createElement("div");
   grid.className = "card-grid";
@@ -119,14 +120,15 @@ function renderCardGrid(template, side, context) {
   grid.style.margin = "0 auto";
 
   const cards = data.slice(0, columns * rows);
-  cards.forEach((card) => {
+  cards.forEach((card, index) => {
     const tile = document.createElement("article");
     tile.className = "card-tile";
     tile.style.padding = `${safeInset}in`;
     const layout = pageConfig.layout ?? null;
-    const content = layout
-      ? renderLayout(layout, card, context.renderOptions)
-      : document.createTextNode(card?.title ?? "Card");
+    const options = index === 0 && typeof onRootReady === "function"
+      ? { ...renderOptions, onRootReady }
+      : renderOptions;
+    const content = layout ? renderLayout(layout, card, options) : document.createTextNode(card?.title ?? "Card");
     tile.append(content);
     grid.appendChild(tile);
   });
