@@ -3,7 +3,7 @@ import { initPaneToggles } from "../../common/js/lib/panes.js";
 import { initThemeControls } from "../../common/js/lib/theme.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
-import { createSortable } from "../workbench/js/lib/dnd.js";
+import { createSortable } from "../../workbench/js/lib/dnd.js";
 import {
   getFormatById,
   getPageSize,
