@@ -104,8 +104,9 @@ function getRepeatData(template, pageConfig) {
 
 function renderCardGrid(template, side, context) {
   const { page, inner } = createPageWrapper(template, side, context);
-  const pageConfig = template.pages?.[side] ?? {};
+  const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const data = getRepeatData(template, pageConfig);
+  const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
   const { width, height, gutter = 0, safeInset = 0, columns = 1, rows = 1 } = template.card ?? {};
   const grid = document.createElement("div");
   grid.className = "card-grid";
@@ -119,12 +120,15 @@ function renderCardGrid(template, side, context) {
   grid.style.margin = "0 auto";
 
   const cards = data.slice(0, columns * rows);
-  cards.forEach((card) => {
+  cards.forEach((card, index) => {
     const tile = document.createElement("article");
     tile.className = "card-tile";
     tile.style.padding = `${safeInset}in`;
     const layout = pageConfig.layout ?? null;
-    const content = layout ? renderLayout(layout, card) : document.createTextNode(card?.title ?? "Card");
+    const options = index === 0 && typeof onRootReady === "function"
+      ? { ...renderOptions, onRootReady }
+      : renderOptions;
+    const content = layout ? renderLayout(layout, card, options) : document.createTextNode(card?.title ?? "Card");
     tile.append(content);
     grid.appendChild(tile);
   });
@@ -135,11 +139,11 @@ function renderCardGrid(template, side, context) {
 
 function renderSheet(template, side, context) {
   const { page, inner } = createPageWrapper(template, side, context);
-  const pageConfig = template.pages?.[side] ?? {};
+  const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const layout = pageConfig.layout ?? null;
   const data = resolveBinding(pageConfig.data ?? "@", template.sampleData ?? {}) ?? template.sampleData ?? {};
   if (layout) {
-    inner.appendChild(renderLayout(layout, data));
+    inner.appendChild(renderLayout(layout, data, context.renderOptions));
   }
   return page;
 }
@@ -156,11 +160,11 @@ function normalizeTemplate(raw) {
     sampleData: raw.sampleData ?? {},
   };
 
-  template.createPage = (side, { size, format, source } = {}) => {
+  template.createPage = (side, { size, format, source, page, renderOptions } = {}) => {
     if (template.type === "card") {
-      return renderCardGrid(template, side, { size, format, source });
+      return renderCardGrid(template, side, { size, format, source, page, renderOptions });
     }
-    return renderSheet(template, side, { size, format, source });
+    return renderSheet(template, side, { size, format, source, page, renderOptions });
   };
 
   return template;
