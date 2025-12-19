@@ -66,6 +66,22 @@ function applyGap(element, gap) {
   }
 }
 
+function resolveLayoutAlignment(node) {
+  const alignment = node?.align || "start";
+  if (alignment === "center") return "center";
+  if (alignment === "end") return "end";
+  if (alignment === "justify") return "stretch";
+  return "start";
+}
+
+function resolveStackAlignment(node) {
+  const alignment = node?.align || "start";
+  if (alignment === "center") return "center";
+  if (alignment === "end") return "flex-end";
+  if (alignment === "justify") return "flex-start";
+  return "flex-start";
+}
+
 function createTextElement(tag, text, className) {
   const el = document.createElement(tag);
   if (text !== undefined && text !== null) {
@@ -77,14 +93,27 @@ function createTextElement(tag, text, className) {
 
 function applyTextFormatting(element, node) {
   if (!element || !node) return;
-  const size =
-    typeof node?.style?.fontSize === "number"
-      ? node.style.fontSize
-      : TEXT_SIZE_MAP[node.textSize] ?? null;
+  const size = (() => {
+    if (typeof node?.style?.fontSize === "number") {
+      return node.style.fontSize;
+    }
+    if (node?.textSize) {
+      return TEXT_SIZE_MAP[node.textSize] ?? null;
+    }
+    if (node?.component === "heading") {
+      return TEXT_SIZE_MAP.lg;
+    }
+    if (node?.component === "text") {
+      return TEXT_SIZE_MAP.md;
+    }
+    return TEXT_SIZE_MAP.md;
+  })();
   if (size) {
     element.style.fontSize = `${size}px`;
   }
-  if (node.textStyles?.bold) {
+  const defaultBold = node?.component === "heading";
+  const isBold = typeof node?.textStyles?.bold === "boolean" ? node.textStyles.bold : defaultBold;
+  if (isBold) {
     element.style.fontWeight = "600";
   } else {
     element.style.removeProperty("font-weight");
@@ -191,6 +220,7 @@ function renderStack(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-flex flex-column");
   applyInlineStyles(container, node.style);
+  container.style.justifyContent = resolveStackAlignment(node);
   applyGap(container, node.gap ?? 4);
   asArray(node.children).forEach((child) => {
     container.appendChild(renderNode(child, context, options));
@@ -208,6 +238,7 @@ function renderRow(node, context, options) {
   } else if (!node.className) {
     container.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
   }
+  container.style.justifyItems = resolveLayoutAlignment(node);
   applyGap(container, node.gap ?? 4);
   (node.columns || []).forEach((column) => {
     const col = document.createElement("div");
@@ -252,6 +283,10 @@ export function renderNode(node, context = {}, options = {}) {
 
 export function renderLayout(layout, context = {}, options = {}) {
   const rendered = renderNode(layout, context, options);
+  if (layout?.type === "stack" && rendered?.style && layout?.align && layout.align !== "start") {
+    rendered.style.flex = "1 1 auto";
+    rendered.style.minHeight = "100%";
+  }
   if (typeof options?.onRootReady === "function") {
     options.onRootReady(rendered);
   }
