@@ -62,6 +62,7 @@ let pendingUndoSnapshot = null;
 let pendingUndoTarget = null;
 let status = null;
 let lastSavedLayout = null;
+let isSaving = false;
 
 const paletteComponents = [
   {
@@ -407,10 +408,13 @@ function updateSaveState() {
   if (!saveButton) return;
   const hasTemplate = Boolean(getActiveTemplate());
   const hasChanges = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
-  saveButton.disabled = !hasChanges;
-  saveButton.setAttribute("aria-disabled", hasChanges ? "false" : "true");
+  const enabled = hasChanges && !isSaving;
+  saveButton.disabled = !enabled;
+  saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
   if (!hasTemplate) {
     saveButton.title = "Select a template before saving.";
+  } else if (isSaving) {
+    saveButton.title = "Saving template...";
   } else if (!hasChanges) {
     saveButton.title = "No changes to save.";
   } else {
@@ -458,7 +462,38 @@ function buildTemplatePages() {
   return pages;
 }
 
-function handleSaveTemplate() {
+function serializeTemplate(template) {
+  if (!template || typeof template !== "object") return null;
+  const { createPage, ...rest } = template;
+  return cloneState({ ...rest, pages: buildTemplatePages() });
+}
+
+async function saveTemplateToServer(payload) {
+  const id = payload?.id;
+  if (!id) {
+    throw new Error("Missing template id");
+  }
+  const response = await fetch(`/press/templates/${encodeURIComponent(id)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    let message = `Unable to save template (${response.status})`;
+    try {
+      const data = await response.json();
+      if (data?.error) {
+        message = data.error;
+      }
+    } catch (error) {
+      console.warn("Unable to parse save response", error);
+    }
+    throw new Error(message);
+  }
+  return response.json();
+}
+
+async function handleSaveTemplate() {
   const template = getActiveTemplate();
   if (!template) {
     return;
@@ -474,10 +509,27 @@ function handleSaveTemplate() {
     }
     return;
   }
-  template.pages = buildTemplatePages();
-  markLayoutSaved();
-  if (status) {
-    status.show("Template layout saved", { type: "success", timeout: 2000 });
+  const payload = serializeTemplate(template);
+  if (!payload) {
+    return;
+  }
+  isSaving = true;
+  updateSaveState();
+  try {
+    await saveTemplateToServer(payload);
+    template.pages = payload.pages;
+    markLayoutSaved();
+    if (status) {
+      status.show("Template layout saved", { type: "success", timeout: 2000 });
+    }
+  } catch (error) {
+    console.error("Failed to save template", error);
+    if (status) {
+      status.show(error.message || "Unable to save template", { type: "error", timeout: 2500 });
+    }
+  } finally {
+    isSaving = false;
+    updateSaveState();
   }
 }
 
