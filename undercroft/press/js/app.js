@@ -66,6 +66,7 @@ let status = null;
 let lastSavedLayout = null;
 let isSaving = false;
 let isGenerating = false;
+let applySelectionCollapse = null;
 
 const paletteComponents = [
   {
@@ -1081,6 +1082,9 @@ async function handleGeneratePrint() {
     });
     updateSourceSummary();
     renderPreview();
+    if (applySelectionCollapse) {
+      applySelectionCollapse(true);
+    }
     if (status) {
       status.show("Source data loaded for printing.", { type: "success", timeout: 2000 });
     }
@@ -1099,7 +1103,7 @@ async function handleGeneratePrint() {
 }
 
 function initPressCollapsibles() {
-  bindCollapsibleToggle(selectionToggle, selectionPanel, {
+  applySelectionCollapse = bindCollapsibleToggle(selectionToggle, selectionPanel, {
     collapsed: false,
     expandLabel: "Expand selections",
     collapseLabel: "Collapse selections",
