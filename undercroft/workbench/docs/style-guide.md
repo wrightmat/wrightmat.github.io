@@ -2,6 +2,12 @@
 
 This document captures the shared layout and styling conventions introduced while building the System Editor. Use these patterns across other Workbench tools to keep the suite visually and structurally consistent.
 
+## Shared Suite Assets
+
+- **Common shell styles (`undercroft/common/css/shell.css`)** – Base UI shell, pane scaffolding, status toasts, hover elevation, and layout utilities shared between Workbench, Press, and future tools. Always include this stylesheet before tool-specific CSS.
+- **Sortable helpers (`undercroft/common/js/lib/dnd.js`)** – Shared SortableJS helper used by both Workbench and Press; import from this location so drag-and-drop behavior stays aligned across tools.
+- **JSON preview renderer (`undercroft/common/js/lib/json-preview.js`)** – Standard preview formatting + byte counter; pair with the shared JSON Preview pane markup so every tool renders the same output.
+
 ## Shell Layout
 
 - **App frame (`.workbench-app`)** – Apply to the `<body>` wrapper. It locks the workbench to the viewport height and disables overflow so only the main canvas scrolls.

@@ -26,11 +26,8 @@ const printButton = document.getElementById("printButton");
 const selectionToggle = document.querySelector("[data-selection-toggle]");
 const selectionToggleLabel = selectionToggle?.querySelector("[data-toggle-label]");
 const selectionPanel = document.querySelector("[data-selection-panel]");
-const jsonToggle = document.querySelector("[data-json-toggle]");
-const jsonToggleLabel = document.querySelector("[data-json-toggle-label]");
-const jsonPanel = document.querySelector("[data-json-panel]");
 const jsonPreview = document.querySelector("[data-json-preview]");
-const jsonBytes = document.querySelector("[data-json-bytes]");
+const jsonBytes = document.querySelector("[data-preview-bytes]");
 const undoButton = document.querySelector('[data-action="undo-layout"]');
 const redoButton = document.querySelector('[data-action="redo-layout"]');
 const saveButton = document.querySelector('[data-action="save-layout"]');
@@ -1090,12 +1087,6 @@ function initPressCollapsibles() {
     expandLabel: "Expand selections",
     collapseLabel: "Collapse selections",
     labelElement: selectionToggleLabel,
-  });
-  bindCollapsibleToggle(jsonToggle, jsonPanel, {
-    collapsed: true,
-    expandLabel: "Expand JSON preview",
-    collapseLabel: "Collapse JSON preview",
-    labelElement: jsonToggleLabel,
   });
 }
 
