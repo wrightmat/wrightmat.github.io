@@ -1506,6 +1506,20 @@ function bindInspectorControls() {
       });
     });
   }
+
+  if (deleteButton) {
+    deleteButton.addEventListener("click", () => {
+      recordUndoableChange(() => {
+        const layout = getLayoutForSide(currentSide);
+        if (!layout || !selectedNodeId) return;
+        removeNodeById(layout, selectedNodeId);
+        selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
+        renderLayoutList();
+        updateInspector();
+        renderPreview();
+      });
+    });
+  }
 }
 
 function wireEvents() {
