@@ -38,7 +38,7 @@ const layoutEmptyState = document.querySelector("[data-layout-empty]");
 const inspectorSection = document.querySelector("[data-component-inspector]");
 const inspectorTitle = document.querySelector("[data-inspector-title]");
 const typeSummary = document.querySelector("[data-component-type-summary]");
-const typeIcon = document.querySelector("[data-component-type-icon]");
+let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
@@ -786,6 +786,19 @@ function getPaletteEntryForNode(node) {
   return null;
 }
 
+function replaceTypeIcon(icon) {
+  if (!typeSummary) return;
+  const parent = typeSummary.querySelector("[data-component-type-icon]")?.parentElement;
+  if (!parent) return;
+  const fresh = document.createElement("span");
+  fresh.className = "iconify fs-4 text-primary";
+  fresh.setAttribute("data-component-type-icon", "");
+  fresh.setAttribute("data-icon", icon);
+  fresh.setAttribute("aria-hidden", "true");
+  parent.replaceChild(fresh, parent.querySelector("[data-component-type-icon]"));
+  typeIcon = fresh;
+}
+
 function mapFontSizeToToken(size) {
   if (typeof size !== "number") return "md";
   if (size <= 14) return "sm";
@@ -903,8 +916,7 @@ function updateInspector() {
     typeSummary.classList.toggle("opacity-50", !entry);
     if (entry) {
       if (typeIcon) {
-        typeIcon.setAttribute("data-icon", entry.icon);
-        typeIcon.innerHTML = "";
+        replaceTypeIcon(entry.icon);
       }
       if (typeLabel) {
         typeLabel.textContent = entry.label;
@@ -914,8 +926,7 @@ function updateInspector() {
       }
     } else {
       if (typeIcon) {
-        typeIcon.setAttribute("data-icon", "tabler:components");
-        typeIcon.innerHTML = "";
+        replaceTypeIcon("tabler:components");
       }
       if (typeLabel) {
         typeLabel.textContent = "Component";
