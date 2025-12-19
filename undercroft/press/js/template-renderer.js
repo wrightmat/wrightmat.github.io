@@ -283,6 +283,10 @@ export function renderNode(node, context = {}, options = {}) {
 
 export function renderLayout(layout, context = {}, options = {}) {
   const rendered = renderNode(layout, context, options);
+  if (layout?.type === "stack" && rendered?.style) {
+    rendered.style.flex = "1 1 auto";
+    rendered.style.minHeight = "100%";
+  }
   if (typeof options?.onRootReady === "function") {
     options.onRootReady(rendered);
   }

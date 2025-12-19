@@ -45,6 +45,7 @@ const textEditor = document.querySelector("[data-component-text]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
+const textDecorationGroup = document.querySelector("[data-inspector-text-decoration-group]");
 const alignmentTitle = document.querySelector("[data-alignment-title]");
 const alignmentLabels = {
   start: document.querySelector('[data-alignment-label="start"]'),
@@ -1015,6 +1016,9 @@ function updateInspector() {
     if (gapField) {
       gapField.hidden = true;
     }
+    if (textDecorationGroup) {
+      textDecorationGroup.hidden = false;
+    }
     if (alignmentTitle) {
       alignmentTitle.textContent = "Alignment";
     }
@@ -1051,6 +1055,9 @@ function updateInspector() {
   textGroups.forEach((group) => {
     group.hidden = isLayoutNode;
   });
+  if (textDecorationGroup) {
+    textDecorationGroup.hidden = isLayoutNode;
+  }
   if (gapField) {
     gapField.hidden = !isLayoutNode;
   }
@@ -1281,8 +1288,7 @@ function toggleSide() {
   const layout = getLayoutForSide(currentSide);
   const existing = findNodeById(layout, selectedNodeId);
   if (!existing) {
-    selectFirstNode();
-    return;
+    selectedNodeId = null;
   }
   renderLayoutList();
   updateInspector();
@@ -1688,7 +1694,10 @@ function wireEvents() {
     }
     pendingUndoSnapshot = null;
     pendingUndoTarget = null;
-    selectFirstNode();
+    selectedNodeId = null;
+    renderLayoutList();
+    updateInspector();
+    renderPreview();
     markLayoutSaved();
   });
   formatSelect.addEventListener("change", () => {
@@ -1732,7 +1741,9 @@ async function initPress() {
   initDragAndDrop();
   bindInspectorControls();
   renderLayoutList();
-  selectFirstNode();
+  selectedNodeId = null;
+  updateInspector();
+  renderPreview();
   markLayoutSaved();
   updateGenerateButtonState();
   wireEvents();
