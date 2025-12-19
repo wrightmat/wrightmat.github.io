@@ -1,4 +1,10 @@
 const GAP_UNIT_REM = 0.25;
+const TEXT_SIZE_MAP = {
+  sm: 14,
+  md: 16,
+  lg: 20,
+  xl: 24,
+};
 
 function shouldHide(node) {
   return Boolean(node?.hidden);
@@ -43,6 +49,15 @@ function applyInlineStyles(element, styles = {}) {
   if (styles.backgroundColor) {
     element.style.backgroundColor = styles.backgroundColor;
   }
+  if (styles.borderColor) {
+    element.style.borderColor = styles.borderColor;
+    element.style.borderStyle = "solid";
+    element.style.borderWidth = "1px";
+  } else {
+    element.style.removeProperty("border-color");
+    element.style.removeProperty("border-style");
+    element.style.removeProperty("border-width");
+  }
 }
 
 function applyGap(element, gap) {
@@ -60,12 +75,58 @@ function createTextElement(tag, text, className) {
   return el;
 }
 
+function applyTextFormatting(element, node) {
+  if (!element || !node) return;
+  const size =
+    typeof node?.style?.fontSize === "number"
+      ? node.style.fontSize
+      : TEXT_SIZE_MAP[node.textSize] ?? null;
+  if (size) {
+    element.style.fontSize = `${size}px`;
+  }
+  if (node.textStyles?.bold) {
+    element.style.fontWeight = "600";
+  } else {
+    element.style.removeProperty("font-weight");
+  }
+  if (node.textStyles?.italic) {
+    element.style.fontStyle = "italic";
+  } else {
+    element.style.removeProperty("font-style");
+  }
+  if (node.textStyles?.underline) {
+    element.style.textDecoration = "underline";
+  } else {
+    element.style.removeProperty("text-decoration");
+  }
+  const alignment = node.align || "start";
+  if (alignment === "center") {
+    element.style.textAlign = "center";
+  } else if (alignment === "end") {
+    element.style.textAlign = "right";
+  } else if (alignment === "justify") {
+    element.style.textAlign = "justify";
+  } else {
+    element.style.textAlign = "left";
+  }
+}
+
+function applyTextColor(element, styles = {}) {
+  if (!element || typeof styles !== "object") return;
+  if (styles.color) {
+    element.style.color = styles.color;
+  } else {
+    element.style.removeProperty("color");
+  }
+}
+
 function renderField(node, context) {
   const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
   switch (node.component) {
     case "heading": {
-      const el = createTextElement(node.level ?? "h3", value ?? node.label, node.className ?? "fw-semibold");
+      const el = createTextElement(node.level ?? "h2", value ?? node.label, node.className ?? "fw-semibold");
       applyInlineStyles(el, node.style);
+      applyTextFormatting(el, node);
       return el;
     }
     case "text": {
@@ -74,11 +135,13 @@ function renderField(node, context) {
         applyClassName(el, "text-body-secondary");
       }
       applyInlineStyles(el, node.style);
+      applyTextFormatting(el, node);
       return el;
     }
     case "badge": {
       const el = createTextElement("span", value ?? node.label ?? "Badge", node.className ?? "badge text-bg-primary");
       applyInlineStyles(el, node.style);
+      applyTextFormatting(el, node);
       return el;
     }
     case "list": {
@@ -90,6 +153,8 @@ function renderField(node, context) {
         li.textContent = item;
         el.appendChild(li);
       });
+      applyInlineStyles(el, node.style);
+      applyTextFormatting(el, node);
       return el;
     }
     case "stat": {
@@ -98,14 +163,18 @@ function renderField(node, context) {
       const labelValue = resolveBinding(node.label, context) ?? node.label ?? "";
       const label = createTextElement("p", labelValue, "card-meta mb-0");
       const val = createTextElement("p", value ?? "—", "mb-0 fw-semibold");
-      applyInlineStyles(label, node.style);
-      applyInlineStyles(val, node.style);
+      applyInlineStyles(wrapper, node.style);
+      applyTextColor(label, node.style);
+      applyTextColor(val, node.style);
+      applyTextFormatting(label, node);
+      applyTextFormatting(val, node);
       wrapper.append(label, val);
       return wrapper;
     }
     case "noteLines": {
       const el = document.createElement("div");
       applyClassName(el, node.className ?? "note-lines");
+      applyInlineStyles(el, node.style);
       return el;
     }
     default: {
@@ -120,6 +189,7 @@ function renderField(node, context) {
 function renderStack(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-flex flex-column");
+  applyInlineStyles(container, node.style);
   applyGap(container, node.gap ?? 4);
   asArray(node.children).forEach((child) => {
     container.appendChild(renderNode(child, context, options));
@@ -130,6 +200,7 @@ function renderStack(node, context, options) {
 function renderRow(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-grid");
+  applyInlineStyles(container, node.style);
   const columnCount = (node.columns && node.columns.length) || 1;
   if (node.templateColumns) {
     container.style.gridTemplateColumns = node.templateColumns;
