@@ -51,12 +51,8 @@ function applyInlineStyles(element, styles = {}) {
   }
   if (styles.borderColor) {
     element.style.borderColor = styles.borderColor;
-    if (!element.style.borderStyle) {
-      element.style.borderStyle = "solid";
-    }
-    if (!element.style.borderWidth) {
-      element.style.borderWidth = "1px";
-    }
+    element.style.borderStyle = "solid";
+    element.style.borderWidth = "1px";
   } else {
     element.style.removeProperty("border-color");
     element.style.removeProperty("border-style");
