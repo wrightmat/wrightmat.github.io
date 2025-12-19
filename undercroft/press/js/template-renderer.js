@@ -221,9 +221,14 @@ function renderStack(node, context, options) {
   applyClassName(container, node.className ?? "d-flex flex-column");
   applyInlineStyles(container, node.style);
   container.style.justifyContent = resolveStackAlignment(node);
+  const hasAlignment = typeof node?.align === "string" && node.align.trim() !== "";
   applyGap(container, node.gap ?? 4);
   asArray(node.children).forEach((child) => {
-    container.appendChild(renderNode(child, context, options));
+    const renderedChild = renderNode(child, context, options);
+    if (hasAlignment && renderedChild?.style) {
+      renderedChild.style.flex = "0 0 auto";
+    }
+    container.appendChild(renderedChild);
   });
   return container;
 }
@@ -283,9 +288,10 @@ export function renderNode(node, context = {}, options = {}) {
 
 export function renderLayout(layout, context = {}, options = {}) {
   const rendered = renderNode(layout, context, options);
-  if (layout?.type === "stack" && rendered?.style && layout?.align && layout.align !== "start") {
+  if (layout?.type === "stack" && rendered?.style) {
     rendered.style.flex = "1 1 auto";
     rendered.style.minHeight = "100%";
+    rendered.style.height = "100%";
   }
   if (typeof options?.onRootReady === "function") {
     options.onRootReady(rendered);

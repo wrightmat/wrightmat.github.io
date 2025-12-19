@@ -45,6 +45,7 @@ const textEditor = document.querySelector("[data-component-text]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
+const textSizeGroup = document.querySelector("[data-inspector-text-size-group]");
 const textDecorationGroup = document.querySelector("[data-inspector-text-decoration-group]");
 const alignmentTitle = document.querySelector("[data-alignment-title]");
 const alignmentLabels = {
@@ -1016,6 +1017,9 @@ function updateInspector() {
     if (gapField) {
       gapField.hidden = true;
     }
+    if (textSizeGroup) {
+      textSizeGroup.hidden = false;
+    }
     if (textDecorationGroup) {
       textDecorationGroup.hidden = false;
     }
@@ -1058,6 +1062,9 @@ function updateInspector() {
   textGroups.forEach((group) => {
     group.hidden = isLayoutNode;
   });
+  if (textSizeGroup) {
+    textSizeGroup.hidden = isLayoutNode;
+  }
   if (textDecorationGroup) {
     textDecorationGroup.hidden = isLayoutNode;
   }
