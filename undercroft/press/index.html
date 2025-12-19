@@ -349,7 +349,7 @@
                     />
                     <label class="fw-semibold" for="componentGap">Gap</label>
                   </div>
-                  <div class="d-flex flex-column gap-2" data-inspector-text-group data-inspector-text-size-group>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
                     <label class="fw-semibold text-body-secondary">Text size</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Font size">
                       <input
@@ -390,7 +390,27 @@
                       <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
                     </div>
                   </div>
-                  <div class="d-flex flex-column gap-2" data-inspector-text-group data-inspector-text-decoration-group>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
+                    <label class="fw-semibold text-body-secondary">Text decoration</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Text decoration">
+                      <input type="checkbox" class="btn-check" id="componentTextBold" data-component-text-style="bold" />
+                      <label class="btn btn-outline-secondary" for="componentTextBold">
+                        <span class="iconify" data-icon="tabler:bold" aria-hidden="true"></span>
+                        <span class="template-radio-label">Bold</span>
+                      </label>
+                      <input type="checkbox" class="btn-check" id="componentTextItalic" data-component-text-style="italic" />
+                      <label class="btn btn-outline-secondary" for="componentTextItalic">
+                        <span class="iconify" data-icon="tabler:italic" aria-hidden="true"></span>
+                        <span class="template-radio-label">Italic</span>
+                      </label>
+                      <input type="checkbox" class="btn-check" id="componentTextUnderline" data-component-text-style="underline" />
+                      <label class="btn btn-outline-secondary" for="componentTextUnderline">
+                        <span class="iconify" data-icon="tabler:underline" aria-hidden="true"></span>
+                        <span class="template-radio-label">Underline</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
                     <div class="fw-semibold text-body-secondary">Colors</div>
                     <div class="template-color-grid">
                       <div class="template-color-control">
@@ -456,26 +476,6 @@
                           </button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
-                    <label class="fw-semibold text-body-secondary">Text decoration</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Text decoration">
-                      <input type="checkbox" class="btn-check" id="componentTextBold" data-component-text-style="bold" />
-                      <label class="btn btn-outline-secondary" for="componentTextBold">
-                        <span class="iconify" data-icon="tabler:bold" aria-hidden="true"></span>
-                        <span class="template-radio-label">Bold</span>
-                      </label>
-                      <input type="checkbox" class="btn-check" id="componentTextItalic" data-component-text-style="italic" />
-                      <label class="btn btn-outline-secondary" for="componentTextItalic">
-                        <span class="iconify" data-icon="tabler:italic" aria-hidden="true"></span>
-                        <span class="template-radio-label">Italic</span>
-                      </label>
-                      <input type="checkbox" class="btn-check" id="componentTextUnderline" data-component-text-style="underline" />
-                      <label class="btn btn-outline-secondary" for="componentTextUnderline">
-                        <span class="iconify" data-icon="tabler:underline" aria-hidden="true"></span>
-                        <span class="template-radio-label">Underline</span>
-                      </label>
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2">

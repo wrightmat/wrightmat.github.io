@@ -45,8 +45,6 @@ const textEditor = document.querySelector("[data-component-text]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
-const textSizeGroup = document.querySelector("[data-inspector-text-size-group]");
-const textDecorationGroup = document.querySelector("[data-inspector-text-decoration-group]");
 const alignmentTitle = document.querySelector("[data-alignment-title]");
 const alignmentLabels = {
   start: document.querySelector('[data-alignment-label="start"]'),
@@ -164,6 +162,7 @@ const paletteComponents = [
     node: {
       type: "stack",
       gap: 4,
+      align: "justify",
       children: [
         {
           type: "field",
@@ -1017,12 +1016,6 @@ function updateInspector() {
     if (gapField) {
       gapField.hidden = true;
     }
-    if (textSizeGroup) {
-      textSizeGroup.hidden = false;
-    }
-    if (textDecorationGroup) {
-      textDecorationGroup.hidden = false;
-    }
     textStyleToggles.forEach((input) => {
       input.disabled = false;
     });
@@ -1062,12 +1055,6 @@ function updateInspector() {
   textGroups.forEach((group) => {
     group.hidden = isLayoutNode;
   });
-  if (textSizeGroup) {
-    textSizeGroup.hidden = isLayoutNode;
-  }
-  if (textDecorationGroup) {
-    textDecorationGroup.hidden = isLayoutNode;
-  }
   textStyleToggles.forEach((input) => {
     input.disabled = isLayoutNode;
   });
@@ -1093,10 +1080,10 @@ function updateInspector() {
     if (alignmentLabels.start) alignmentLabels.start.textContent = "Top";
     if (alignmentLabels.center) alignmentLabels.center.textContent = "Middle";
     if (alignmentLabels.end) alignmentLabels.end.textContent = "Bottom";
-    if (alignmentLabels.justify) alignmentLabels.justify.textContent = "Justify";
+    if (alignmentLabels.justify) alignmentLabels.justify.textContent = "Justified";
     alignInputs.forEach((input) => {
-      const shouldHide = input.value === "justify";
-      input.disabled = shouldHide;
+      const shouldHide = false;
+      input.disabled = false;
       const label = document.querySelector(`label[for="${input.id}"]`);
       if (label) {
         label.classList.toggle("d-none", shouldHide);
@@ -1145,7 +1132,7 @@ function updateInspector() {
     input.checked = Boolean(resolveTextStyles(node)[styleKey]);
   });
 
-  const alignment = node?.align || "start";
+  const alignment = node?.align || (isStackNode ? "justify" : "start");
   alignInputs.forEach((input) => {
     input.checked = input.value === alignment;
   });
