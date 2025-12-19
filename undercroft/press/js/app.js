@@ -42,6 +42,9 @@ let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
+const gapInput = document.querySelector("[data-component-gap]");
+const gapField = document.querySelector("[data-inspector-gap-field]");
+const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
 const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
 const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
@@ -142,6 +145,33 @@ const paletteComponents = [
       label: "Label",
       text: "Value",
       className: "panel-box",
+    },
+  },
+  {
+    id: "stack",
+    label: "Stack",
+    description: "Vertical layout groups",
+    icon: "tabler:layout-list",
+    node: {
+      type: "stack",
+      gap: 4,
+      children: [
+        {
+          type: "field",
+          component: "heading",
+          text: "Stack heading",
+          textSize: "md",
+          textStyles: { bold: true },
+          className: "card-title",
+        },
+        {
+          type: "field",
+          component: "text",
+          text: "Stack body text",
+          textSize: "md",
+          className: "mb-0",
+        },
+      ],
     },
   },
   {
@@ -766,6 +796,7 @@ function createNodeFromPalette(type) {
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
+  if (node.type === "stack") return "Stack";
   if (node.component === "heading") return node.text || "Heading";
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
   if (node.component === "badge") return node.text || node.label || "Badge";
@@ -777,6 +808,9 @@ function describeNode(node) {
 
 function getPaletteEntryForNode(node) {
   if (!node) return null;
+  if (node.type === "stack") {
+    return paletteComponents.find((item) => item.id === "stack") ?? null;
+  }
   if (node.type === "row") {
     return paletteComponents.find((item) => item.id === "row") ?? null;
   }
@@ -942,6 +976,13 @@ function updateInspector() {
 
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
+    if (gapInput) gapInput.value = "";
+    textGroups.forEach((group) => {
+      group.hidden = false;
+    });
+    if (gapField) {
+      gapField.hidden = true;
+    }
     textSizeInputs.forEach((input) => {
       input.checked = input.value === "md";
     });
@@ -957,6 +998,19 @@ function updateInspector() {
     });
     if (visibilityToggle) visibilityToggle.checked = true;
     return;
+  }
+
+  const isLayoutNode = node?.type === "row" || node?.type === "stack";
+  textGroups.forEach((group) => {
+    group.hidden = isLayoutNode;
+  });
+  if (gapField) {
+    gapField.hidden = !isLayoutNode;
+  }
+
+  if (gapInput) {
+    const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
+    gapInput.value = isLayoutNode ? String(gapValue) : "";
   }
 
   if (textEditor) {
@@ -1386,6 +1440,22 @@ function bindInspectorControls() {
       });
       renderPreview();
       renderLayoutList();
+      updateSaveState();
+    });
+  }
+
+  if (gapInput) {
+    gapInput.addEventListener("focus", () => beginPendingUndo(gapInput));
+    gapInput.addEventListener("blur", () => commitPendingUndo(gapInput));
+    gapInput.addEventListener("change", () => commitPendingUndo(gapInput));
+    gapInput.addEventListener("input", () => {
+      const parsed = Number(gapInput.value);
+      const next = Number.isFinite(parsed) ? Math.max(0, Math.min(parsed, 12)) : 0;
+      updateSelectedNode((node) => {
+        if (node.type !== "row" && node.type !== "stack") return;
+        node.gap = next;
+      });
+      renderPreview();
       updateSaveState();
     });
   }
