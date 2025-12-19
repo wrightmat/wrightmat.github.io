@@ -5,7 +5,7 @@ const sources = [
     description: "",
     input: {
       type: "text",
-      label: "D&D Beyond URL or ID",
+      label: "URL or ID",
       placeholder: "https://www.dndbeyond.com/monsters/12345",
       helpTopic: "press.source.ddb",
     },
@@ -66,6 +66,6 @@ export function buildSourceSummary(source, value, payload = null) {
     const clipped = value.length > 80 ? `${value.slice(0, 80)}…` : value;
     return payload?.data ? `${clipped} (ready)` : clipped;
   }
-  const summary = `${source.name} input: ${value}`;
+  const summary = `${value}`;
   return payload?.data ? `${summary} (ready)` : summary;
 }
