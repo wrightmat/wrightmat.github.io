@@ -33,6 +33,7 @@ const jsonPreview = document.querySelector("[data-json-preview]");
 const jsonBytes = document.querySelector("[data-json-bytes]");
 const undoButton = document.querySelector('[data-action="undo-layout"]');
 const redoButton = document.querySelector('[data-action="redo-layout"]');
+const saveButton = document.querySelector('[data-action="save-layout"]');
 const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
@@ -59,6 +60,8 @@ let performRedo = null;
 let isApplyingHistory = false;
 let pendingUndoSnapshot = null;
 let pendingUndoTarget = null;
+let status = null;
+let lastSavedLayout = null;
 
 const paletteComponents = [
   {
@@ -146,7 +149,7 @@ function bindCollapsible(toggle, panel, { collapsed = false, expandLabel, collap
 }
 
 function initShell() {
-  const { undoStack: stack, undo, redo } = initAppShell({
+  const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
     namespace: "press-layout",
     storagePrefix: "undercroft.press.undo",
     onUndo: (entry) => {
@@ -156,6 +159,7 @@ function initShell() {
       isApplyingHistory = true;
       try {
         applySnapshot(entry.before);
+        updateSaveState();
       } finally {
         isApplyingHistory = false;
       }
@@ -168,12 +172,14 @@ function initShell() {
       isApplyingHistory = true;
       try {
         applySnapshot(entry.after);
+        updateSaveState();
       } finally {
         isApplyingHistory = false;
       }
       return null;
     },
   });
+  status = shellStatus;
   undoStack = stack;
   performUndo = undo;
   performRedo = redo;
@@ -190,6 +196,10 @@ function initShell() {
         performRedo();
       }
     });
+  }
+  if (saveButton) {
+    saveButton.addEventListener("click", handleSaveTemplate);
+    updateSaveState();
   }
   initHelpSystem({ root: document });
 }
@@ -321,6 +331,10 @@ function createSnapshot() {
   };
 }
 
+function createLayoutSnapshot() {
+  return cloneState(editablePages);
+}
+
 function applySnapshot(snapshot) {
   if (!snapshot) return;
   const next = cloneState(snapshot);
@@ -361,12 +375,14 @@ function recordUndoableChange(action) {
   }
   if (!undoStack) {
     action();
+    updateSaveState();
     return;
   }
   const before = createSnapshot();
   action();
   const after = createSnapshot();
   pushUndoEntry(before, after);
+  updateSaveState();
 }
 
 function beginPendingUndo(target) {
@@ -384,6 +400,85 @@ function commitPendingUndo(target) {
   if (!before) return;
   const after = createSnapshot();
   pushUndoEntry(before, after);
+  updateSaveState();
+}
+
+function updateSaveState() {
+  if (!saveButton) return;
+  const hasTemplate = Boolean(getActiveTemplate());
+  const hasChanges = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
+  saveButton.disabled = !hasChanges;
+  saveButton.setAttribute("aria-disabled", hasChanges ? "false" : "true");
+  if (!hasTemplate) {
+    saveButton.title = "Select a template before saving.";
+  } else if (!hasChanges) {
+    saveButton.title = "No changes to save.";
+  } else {
+    saveButton.removeAttribute("title");
+  }
+}
+
+function markLayoutSaved() {
+  lastSavedLayout = createLayoutSnapshot();
+  updateSaveState();
+}
+
+function stripNodeIds(node) {
+  if (!node || typeof node !== "object") return node;
+  if (Array.isArray(node)) {
+    return node.map((child) => stripNodeIds(child));
+  }
+  const next = { ...node };
+  delete next.uid;
+  if (Array.isArray(next.children)) {
+    next.children = next.children.map((child) => stripNodeIds(child));
+  }
+  if (Array.isArray(next.columns)) {
+    next.columns = next.columns.map((column) => ({
+      ...column,
+      node: stripNodeIds(column.node),
+    }));
+  }
+  return next;
+}
+
+function buildTemplatePages() {
+  const pages = {};
+  Object.entries(editablePages ?? {}).forEach(([side, page]) => {
+    if (!page || typeof page !== "object") {
+      pages[side] = page;
+      return;
+    }
+    const { layout, ...rest } = page;
+    pages[side] = {
+      ...rest,
+      layout: layout ? stripNodeIds(layout) : layout,
+    };
+  });
+  return pages;
+}
+
+function handleSaveTemplate() {
+  const template = getActiveTemplate();
+  if (!template) {
+    return;
+  }
+  const hasChanges = !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
+  if (!hasChanges) {
+    return;
+  }
+  const confirmed = window.confirm("Save layout changes to this template?");
+  if (!confirmed) {
+    if (status) {
+      status.show("Save cancelled", { type: "info", timeout: 1500 });
+    }
+    return;
+  }
+  template.pages = buildTemplatePages();
+  markLayoutSaved();
+  if (status) {
+    status.show("Template layout saved", { type: "success", timeout: 2000 });
+  }
 }
 
 function nextNodeId() {
@@ -1011,6 +1106,7 @@ function bindInspectorControls() {
       });
       renderPreview();
       renderLayoutList();
+      updateSaveState();
     });
   }
 
@@ -1029,6 +1125,7 @@ function bindInspectorControls() {
         fontSizeValue.textContent = `${size}px`;
       }
       renderPreview();
+      updateSaveState();
     });
   }
 
@@ -1044,6 +1141,7 @@ function bindInspectorControls() {
         node.style = styles;
       });
       renderPreview();
+      updateSaveState();
     });
   }
 
@@ -1086,6 +1184,7 @@ function wireEvents() {
     pendingUndoSnapshot = null;
     pendingUndoTarget = null;
     selectFirstNode();
+    markLayoutSaved();
   });
   formatSelect.addEventListener("change", () => {
     currentSide = "front";
@@ -1125,6 +1224,7 @@ async function initPress() {
   bindInspectorControls();
   renderLayoutList();
   selectFirstNode();
+  markLayoutSaved();
   wireEvents();
 }
 
