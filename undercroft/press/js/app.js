@@ -1019,6 +1019,9 @@ function updateInspector() {
     if (textDecorationGroup) {
       textDecorationGroup.hidden = false;
     }
+    textStyleToggles.forEach((input) => {
+      input.disabled = false;
+    });
     if (alignmentTitle) {
       alignmentTitle.textContent = "Alignment";
     }
@@ -1058,6 +1061,9 @@ function updateInspector() {
   if (textDecorationGroup) {
     textDecorationGroup.hidden = isLayoutNode;
   }
+  textStyleToggles.forEach((input) => {
+    input.disabled = isLayoutNode;
+  });
   if (gapField) {
     gapField.hidden = !isLayoutNode;
   }
