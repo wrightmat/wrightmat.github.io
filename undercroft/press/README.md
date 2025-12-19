@@ -26,16 +26,16 @@ printed output for cards and sheets.
 
 ## Usage
 1. Open `index.html` in a browser (served relative to this folder).
-2. Expand the left pane to pick a template and see the matching page size and
-   supported sides.
-3. Select a Source, enter the URL/ID/JSON file as needed, then press
-   **Generate Print** to load live data into the selected template.
+2. Use the Selections card above the preview to pick a Source, Template, Size,
+   and Orientation.
+3. Enter the URL/ID/JSON file as needed, then press **Generate Print** to load
+   live data into the selected template.
 4. Use the overlay toggle to show trim and safe areas in both preview and print
    outputs, and use the preview side button to flip between front and back.
 5. The preview canvas stays in a light, print-accurate palette regardless of
    the surrounding theme toggles.
-6. Press **Print** and choose 100% scaling / Actual Size. Enable double-sided
-   printing and flip on the long edge for portrait layouts.
+6. Press **Print** from the left toolbar and choose 100% scaling / Actual Size.
+   Enable double-sided printing and flip on the long edge for portrait layouts.
 
 Future epics will refine the template catalog, palette constraints, and UX
 polish needed for full Scriptorium parity.
