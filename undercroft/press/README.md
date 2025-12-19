@@ -5,7 +5,7 @@ shared Workbench shell (theme controls, collapsible panes, and header actions)
 and focuses on print fidelity first, ensuring the on-screen preview matches
 printed output for cards and sheets.
 
-## Current State (Epic 2)
+## Current State (Epic 3)
 - Source-first workflow that mirrors Undercroft Workbench: pick a Source,
   then a Template, then the Size and Orientation it supports.
 - D&D Beyond, 5e API (SRD), JSON upload, and manual entry inputs are captured in
@@ -18,6 +18,10 @@ printed output for cards and sheets.
 - Templates live as JSON in the `templates/` directory using the Workbench-style
   component layout schema and are hydrated into the preview at runtime with
   bundled sample data for each side.
+- Drag-and-drop component editing for each side of a template, including a
+  palette, sortable layout outline, and component inspector for text, font
+  sizing, visibility, and heading level tweaks. Layout edits flow to the live
+  preview and print stack in real time.
 
 ## Usage
 1. Open `index.html` in a browser (served relative to this folder).
