@@ -54,13 +54,18 @@ export function getSourceById(id) {
   return sources.find((source) => source.id === id) ?? sources[0];
 }
 
-export function buildSourceSummary(source, value) {
-  if (!value) return "";
+export function buildSourceSummary(source, value, payload = null) {
+  if (!value) {
+    return payload?.data ? `${source.name} data ready` : "";
+  }
   if (source.id === "json" && typeof value === "object") {
-    return `Attached file: ${value.name ?? "JSON"}`;
+    const base = `Attached file: ${value.name ?? "JSON"}`;
+    return payload?.data ? `${base} (ready)` : base;
   }
   if (source.id === "manual") {
-    return value.length > 80 ? `${value.slice(0, 80)}…` : value;
+    const clipped = value.length > 80 ? `${value.slice(0, 80)}…` : value;
+    return payload?.data ? `${clipped} (ready)` : clipped;
   }
-  return `${source.name} input: ${value}`;
+  const summary = `${source.name} input: ${value}`;
+  return payload?.data ? `${summary} (ready)` : summary;
 }
