@@ -130,7 +130,8 @@ function renderField(node, context) {
       return el;
     }
     case "text": {
-      const el = createTextElement("p", value ?? "", node.className ?? "mb-0");
+      const tag = node.textStyle ?? "p";
+      const el = createTextElement(tag, value ?? "", node.className ?? "mb-0");
       if (node.muted) {
         applyClassName(el, "text-body-secondary");
       }
