@@ -1,4 +1,4 @@
-import { createSortable } from "./dnd.js";
+import { createSortable } from "../../../common/js/lib/dnd.js";
 
 export function createCanvasPlaceholder(text, { variant = "default", classes = [] } = {}) {
   const placeholder = document.createElement("div");
