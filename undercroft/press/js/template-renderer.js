@@ -78,7 +78,7 @@ function resolveStackAlignment(node) {
   const alignment = node?.align || "start";
   if (alignment === "center") return "center";
   if (alignment === "end") return "flex-end";
-  if (alignment === "justify") return "space-between";
+  if (alignment === "justify") return "flex-start";
   return "flex-start";
 }
 
@@ -283,7 +283,7 @@ export function renderNode(node, context = {}, options = {}) {
 
 export function renderLayout(layout, context = {}, options = {}) {
   const rendered = renderNode(layout, context, options);
-  if (layout?.type === "stack" && rendered?.style) {
+  if (layout?.type === "stack" && rendered?.style && layout?.align && layout.align !== "start") {
     rendered.style.flex = "1 1 auto";
     rendered.style.minHeight = "100%";
   }
