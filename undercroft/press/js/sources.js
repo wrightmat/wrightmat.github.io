@@ -5,7 +5,7 @@ const sources = [
     description: "",
     input: {
       type: "text",
-      label: "D&D Beyond URL or ID",
+      label: "URL or ID",
       placeholder: "https://www.dndbeyond.com/monsters/12345",
       helpTopic: "press.source.ddb",
     },
@@ -52,20 +52,4 @@ export function getSources() {
 
 export function getSourceById(id) {
   return sources.find((source) => source.id === id) ?? sources[0];
-}
-
-export function buildSourceSummary(source, value, payload = null) {
-  if (!value) {
-    return payload?.data ? `${source.name} data ready` : "";
-  }
-  if (source.id === "json" && typeof value === "object") {
-    const base = `Attached file: ${value.name ?? "JSON"}`;
-    return payload?.data ? `${base} (ready)` : base;
-  }
-  if (source.id === "manual") {
-    const clipped = value.length > 80 ? `${value.slice(0, 80)}…` : value;
-    return payload?.data ? `${clipped} (ready)` : clipped;
-  }
-  const summary = `${source.name} input: ${value}`;
-  return payload?.data ? `${summary} (ready)` : summary;
 }
