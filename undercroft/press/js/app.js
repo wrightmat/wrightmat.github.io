@@ -45,6 +45,13 @@ const textEditor = document.querySelector("[data-component-text]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
+const alignmentTitle = document.querySelector("[data-alignment-title]");
+const alignmentLabels = {
+  start: document.querySelector('[data-alignment-label="start"]'),
+  center: document.querySelector('[data-alignment-label="center"]'),
+  end: document.querySelector('[data-alignment-label="end"]'),
+  justify: document.querySelector('[data-alignment-label="justify"]'),
+};
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
 const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
 const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
@@ -841,11 +848,36 @@ function mapFontSizeToToken(size) {
   return "md";
 }
 
+function getDefaultTextSize(node) {
+  if (node?.component === "heading") return "lg";
+  if (node?.component === "text") return "md";
+  return "md";
+}
+
 function resolveTextSize(node) {
   if (!node) return "md";
   if (node.textSize) return node.textSize;
   const fallback = node.style?.fontSize;
-  return mapFontSizeToToken(fallback);
+  if (typeof fallback === "number") {
+    return mapFontSizeToToken(fallback);
+  }
+  return getDefaultTextSize(node);
+}
+
+function resolveTextStyles(node) {
+  const defaults = {
+    bold: node?.component === "heading",
+    italic: false,
+    underline: false,
+  };
+  if (!node?.textStyles) {
+    return defaults;
+  }
+  return {
+    bold: typeof node.textStyles.bold === "boolean" ? node.textStyles.bold : defaults.bold,
+    italic: Boolean(node.textStyles.italic),
+    underline: Boolean(node.textStyles.underline),
+  };
 }
 
 function renderPalette() {
@@ -983,6 +1015,20 @@ function updateInspector() {
     if (gapField) {
       gapField.hidden = true;
     }
+    if (alignmentTitle) {
+      alignmentTitle.textContent = "Alignment";
+    }
+    if (alignmentLabels.start) alignmentLabels.start.textContent = "Left";
+    if (alignmentLabels.center) alignmentLabels.center.textContent = "Center";
+    if (alignmentLabels.end) alignmentLabels.end.textContent = "Right";
+    if (alignmentLabels.justify) alignmentLabels.justify.textContent = "Justify";
+    alignInputs.forEach((input) => {
+      input.disabled = false;
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if (label) {
+        label.classList.remove("d-none");
+      }
+    });
     textSizeInputs.forEach((input) => {
       input.checked = input.value === "md";
     });
@@ -1001,6 +1047,7 @@ function updateInspector() {
   }
 
   const isLayoutNode = node?.type === "row" || node?.type === "stack";
+  const isStackNode = node?.type === "stack";
   textGroups.forEach((group) => {
     group.hidden = isLayoutNode;
   });
@@ -1011,6 +1058,44 @@ function updateInspector() {
   if (gapInput) {
     const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
     gapInput.value = isLayoutNode ? String(gapValue) : "";
+  }
+
+  if (alignmentTitle) {
+    if (isStackNode) {
+      alignmentTitle.textContent = "Vertical alignment";
+    } else if (isLayoutNode) {
+      alignmentTitle.textContent = "Horizontal alignment";
+    } else {
+      alignmentTitle.textContent = "Alignment";
+    }
+  }
+  if (isStackNode) {
+    if (alignmentLabels.start) alignmentLabels.start.textContent = "Top";
+    if (alignmentLabels.center) alignmentLabels.center.textContent = "Middle";
+    if (alignmentLabels.end) alignmentLabels.end.textContent = "Bottom";
+    if (alignmentLabels.justify) alignmentLabels.justify.textContent = "Justify";
+    alignInputs.forEach((input) => {
+      const shouldHide = input.value === "justify";
+      input.disabled = shouldHide;
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if (label) {
+        label.classList.toggle("d-none", shouldHide);
+      }
+    });
+  } else {
+    if (alignmentLabels.start) alignmentLabels.start.textContent = "Left";
+    if (alignmentLabels.center) alignmentLabels.center.textContent = "Center";
+    if (alignmentLabels.end) alignmentLabels.end.textContent = "Right";
+    if (alignmentLabels.justify) {
+      alignmentLabels.justify.textContent = isLayoutNode ? "Stretch" : "Justify";
+    }
+    alignInputs.forEach((input) => {
+      input.disabled = false;
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if (label) {
+        label.classList.remove("d-none");
+      }
+    });
   }
 
   if (textEditor) {
@@ -1037,7 +1122,7 @@ function updateInspector() {
 
   textStyleToggles.forEach((input) => {
     const styleKey = input.dataset.componentTextStyle;
-    input.checked = Boolean(node?.textStyles?.[styleKey]);
+    input.checked = Boolean(resolveTextStyles(node)[styleKey]);
   });
 
   const alignment = node?.align || "start";
