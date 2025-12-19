@@ -42,6 +42,18 @@ let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
+const gapInput = document.querySelector("[data-component-gap]");
+const gapField = document.querySelector("[data-inspector-gap-field]");
+const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
+const textSizeGroup = document.querySelector("[data-inspector-text-size-group]");
+const textDecorationGroup = document.querySelector("[data-inspector-text-decoration-group]");
+const alignmentTitle = document.querySelector("[data-alignment-title]");
+const alignmentLabels = {
+  start: document.querySelector('[data-alignment-label="start"]'),
+  center: document.querySelector('[data-alignment-label="center"]'),
+  end: document.querySelector('[data-alignment-label="end"]'),
+  justify: document.querySelector('[data-alignment-label="justify"]'),
+};
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
 const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
 const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
@@ -142,6 +154,33 @@ const paletteComponents = [
       label: "Label",
       text: "Value",
       className: "panel-box",
+    },
+  },
+  {
+    id: "stack",
+    label: "Stack",
+    description: "Vertical layout groups",
+    icon: "tabler:layout-list",
+    node: {
+      type: "stack",
+      gap: 4,
+      children: [
+        {
+          type: "field",
+          component: "heading",
+          text: "Stack heading",
+          textSize: "md",
+          textStyles: { bold: true },
+          className: "card-title",
+        },
+        {
+          type: "field",
+          component: "text",
+          text: "Stack body text",
+          textSize: "md",
+          className: "mb-0",
+        },
+      ],
     },
   },
   {
@@ -766,6 +805,7 @@ function createNodeFromPalette(type) {
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
+  if (node.type === "stack") return "Stack";
   if (node.component === "heading") return node.text || "Heading";
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
   if (node.component === "badge") return node.text || node.label || "Badge";
@@ -777,6 +817,9 @@ function describeNode(node) {
 
 function getPaletteEntryForNode(node) {
   if (!node) return null;
+  if (node.type === "stack") {
+    return paletteComponents.find((item) => item.id === "stack") ?? null;
+  }
   if (node.type === "row") {
     return paletteComponents.find((item) => item.id === "row") ?? null;
   }
@@ -807,11 +850,36 @@ function mapFontSizeToToken(size) {
   return "md";
 }
 
+function getDefaultTextSize(node) {
+  if (node?.component === "heading") return "lg";
+  if (node?.component === "text") return "md";
+  return "md";
+}
+
 function resolveTextSize(node) {
   if (!node) return "md";
   if (node.textSize) return node.textSize;
   const fallback = node.style?.fontSize;
-  return mapFontSizeToToken(fallback);
+  if (typeof fallback === "number") {
+    return mapFontSizeToToken(fallback);
+  }
+  return getDefaultTextSize(node);
+}
+
+function resolveTextStyles(node) {
+  const defaults = {
+    bold: node?.component === "heading",
+    italic: false,
+    underline: false,
+  };
+  if (!node?.textStyles) {
+    return defaults;
+  }
+  return {
+    bold: typeof node.textStyles.bold === "boolean" ? node.textStyles.bold : defaults.bold,
+    italic: Boolean(node.textStyles.italic),
+    underline: Boolean(node.textStyles.underline),
+  };
 }
 
 function renderPalette() {
@@ -942,6 +1010,36 @@ function updateInspector() {
 
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
+    if (gapInput) gapInput.value = "";
+    textGroups.forEach((group) => {
+      group.hidden = false;
+    });
+    if (gapField) {
+      gapField.hidden = true;
+    }
+    if (textSizeGroup) {
+      textSizeGroup.hidden = false;
+    }
+    if (textDecorationGroup) {
+      textDecorationGroup.hidden = false;
+    }
+    textStyleToggles.forEach((input) => {
+      input.disabled = false;
+    });
+    if (alignmentTitle) {
+      alignmentTitle.textContent = "Alignment";
+    }
+    if (alignmentLabels.start) alignmentLabels.start.textContent = "Left";
+    if (alignmentLabels.center) alignmentLabels.center.textContent = "Center";
+    if (alignmentLabels.end) alignmentLabels.end.textContent = "Right";
+    if (alignmentLabels.justify) alignmentLabels.justify.textContent = "Justify";
+    alignInputs.forEach((input) => {
+      input.disabled = false;
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if (label) {
+        label.classList.remove("d-none");
+      }
+    });
     textSizeInputs.forEach((input) => {
       input.checked = input.value === "md";
     });
@@ -957,6 +1055,67 @@ function updateInspector() {
     });
     if (visibilityToggle) visibilityToggle.checked = true;
     return;
+  }
+
+  const isLayoutNode = node?.type === "row" || node?.type === "stack";
+  const isStackNode = node?.type === "stack";
+  textGroups.forEach((group) => {
+    group.hidden = isLayoutNode;
+  });
+  if (textSizeGroup) {
+    textSizeGroup.hidden = isLayoutNode;
+  }
+  if (textDecorationGroup) {
+    textDecorationGroup.hidden = isLayoutNode;
+  }
+  textStyleToggles.forEach((input) => {
+    input.disabled = isLayoutNode;
+  });
+  if (gapField) {
+    gapField.hidden = !isLayoutNode;
+  }
+
+  if (gapInput) {
+    const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
+    gapInput.value = isLayoutNode ? String(gapValue) : "";
+  }
+
+  if (alignmentTitle) {
+    if (isStackNode) {
+      alignmentTitle.textContent = "Vertical alignment";
+    } else if (isLayoutNode) {
+      alignmentTitle.textContent = "Horizontal alignment";
+    } else {
+      alignmentTitle.textContent = "Alignment";
+    }
+  }
+  if (isStackNode) {
+    if (alignmentLabels.start) alignmentLabels.start.textContent = "Top";
+    if (alignmentLabels.center) alignmentLabels.center.textContent = "Middle";
+    if (alignmentLabels.end) alignmentLabels.end.textContent = "Bottom";
+    if (alignmentLabels.justify) alignmentLabels.justify.textContent = "Justify";
+    alignInputs.forEach((input) => {
+      const shouldHide = input.value === "justify";
+      input.disabled = shouldHide;
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if (label) {
+        label.classList.toggle("d-none", shouldHide);
+      }
+    });
+  } else {
+    if (alignmentLabels.start) alignmentLabels.start.textContent = "Left";
+    if (alignmentLabels.center) alignmentLabels.center.textContent = "Center";
+    if (alignmentLabels.end) alignmentLabels.end.textContent = "Right";
+    if (alignmentLabels.justify) {
+      alignmentLabels.justify.textContent = isLayoutNode ? "Stretch" : "Justify";
+    }
+    alignInputs.forEach((input) => {
+      input.disabled = false;
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if (label) {
+        label.classList.remove("d-none");
+      }
+    });
   }
 
   if (textEditor) {
@@ -983,7 +1142,7 @@ function updateInspector() {
 
   textStyleToggles.forEach((input) => {
     const styleKey = input.dataset.componentTextStyle;
-    input.checked = Boolean(node?.textStyles?.[styleKey]);
+    input.checked = Boolean(resolveTextStyles(node)[styleKey]);
   });
 
   const alignment = node?.align || "start";
@@ -1142,8 +1301,7 @@ function toggleSide() {
   const layout = getLayoutForSide(currentSide);
   const existing = findNodeById(layout, selectedNodeId);
   if (!existing) {
-    selectFirstNode();
-    return;
+    selectedNodeId = null;
   }
   renderLayoutList();
   updateInspector();
@@ -1390,6 +1548,22 @@ function bindInspectorControls() {
     });
   }
 
+  if (gapInput) {
+    gapInput.addEventListener("focus", () => beginPendingUndo(gapInput));
+    gapInput.addEventListener("blur", () => commitPendingUndo(gapInput));
+    gapInput.addEventListener("change", () => commitPendingUndo(gapInput));
+    gapInput.addEventListener("input", () => {
+      const parsed = Number(gapInput.value);
+      const next = Number.isFinite(parsed) ? Math.max(0, Math.min(parsed, 12)) : 0;
+      updateSelectedNode((node) => {
+        if (node.type !== "row" && node.type !== "stack") return;
+        node.gap = next;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
   if (textSizeInputs.length) {
     textSizeInputs.forEach((input) => {
       input.addEventListener("change", () => {
@@ -1533,7 +1707,10 @@ function wireEvents() {
     }
     pendingUndoSnapshot = null;
     pendingUndoTarget = null;
-    selectFirstNode();
+    selectedNodeId = null;
+    renderLayoutList();
+    updateInspector();
+    renderPreview();
     markLayoutSaved();
   });
   formatSelect.addEventListener("change", () => {
@@ -1577,7 +1754,9 @@ async function initPress() {
   initDragAndDrop();
   bindInspectorControls();
   renderLayoutList();
-  selectFirstNode();
+  selectedNodeId = null;
+  updateInspector();
+  renderPreview();
   markLayoutSaved();
   updateGenerateButtonState();
   wireEvents();
