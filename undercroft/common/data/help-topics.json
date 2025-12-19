@@ -155,7 +155,7 @@
       "details": [
         "The Source, URL/ID, Template, Size, and Orientation inputs share the right-pane card under a collapsible header.",
         "Help badges next to the heading and Template label surface guidance without repeating copy in the layout.",
-        "Selections refresh the preview, JSON payload, and print stack immediately after each change."],
+        "After entering a source value, click Generate Print to pull live data into the preview and print stack."],
       "category": "Press",
       "href": "../press/index.html#press-selection"
     },
@@ -167,7 +167,7 @@
         "Use an official or homebrew URL/ID; content stays in the browser for layout mapping.",
         "You can paste a full URL or the numeric/slug ID from D&D Beyond; Workbench reads it locally for layout mapping.",
         "Use share links when possible to avoid permissions issues while you preview cards or sheets.",
-        "Hover or tap the (?) badge next to Source when D&D Beyond is selected to see these notes without extra inline copy."],
+        "Click Generate Print to run the Undercroft D&D Beyond parser and load the character into the selected template."],
       "category": "Press",
       "href": "../press/index.html#press-selection"
     },
@@ -178,7 +178,8 @@
       "details": [
         "Paste a slug such as `/api/spells/acid-arrow` or `/api/monsters/aboleth` to pull SRD data.",
         "Requests stay client-side; nothing is sent to the server beyond the SRD fetch.",
-        "Pair SRD payloads with templates and sizes in the selections card to see print-ready previews."
+        "Pair SRD payloads with templates and sizes in the selections card to see print-ready previews.",
+        "Use Generate Print to refresh the preview with the latest SRD payload."
       ],
       "category": "Press",
       "href": "../press/index.html#press-selection"
@@ -190,7 +191,7 @@
       "details": [
         "Choose a `.json` file; the contents are read in the browser and not uploaded anywhere.",
         "After selecting a template, map fields as needed so the preview reflects your layout.",
-        "Re-upload to refresh changes; the selections card updates the JSON preview when expanded."
+        "Re-upload to refresh changes; use Generate Print to reload the preview and print stack with new data."
       ],
       "category": "Press",
       "href": "../press/index.html#press-selection"
