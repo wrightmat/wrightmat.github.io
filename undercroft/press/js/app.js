@@ -2,7 +2,7 @@ import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
-import { createSortable } from "../../workbench/js/lib/dnd.js";
+import { createSortable } from "../../common/js/lib/dnd.js";
 import {
   getFormatById,
   getPageSize,
