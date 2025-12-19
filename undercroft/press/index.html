@@ -302,52 +302,225 @@
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
+          <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2 mb-0">
+            <span>Component Properties</span>
+            <span class="align-middle" data-help-topic="press.inspector" data-help-insert="replace" data-help-placement="left"></span>
+          </h2>
           <div class="card border-0 shadow-theme">
             <div class="card-body d-flex flex-column gap-4">
               <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
                 <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                   <div class="d-flex align-items-center gap-2">
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0" data-inspector-title>Component inspector</h2>
-                    <span class="align-middle" data-help-topic="press.inspector" data-help-insert="replace" data-help-placement="left"></span>
                   </div>
                 </div>
                 <div class="d-flex flex-column gap-3">
+                  <div
+                    class="border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 p-3"
+                    data-component-type-summary
+                  >
+                    <span class="iconify fs-4 text-primary" data-component-type-icon aria-hidden="true"></span>
+                    <div class="d-flex flex-column">
+                      <div class="fw-semibold" data-component-type-label>Component</div>
+                      <div class="text-body-secondary extra-small text-truncate" data-component-type-description>
+                        Select a component to view details.
+                      </div>
+                    </div>
+                  </div>
                   <div class="form-floating">
                     <textarea class="form-control" placeholder="Edit text" style="min-height: 96px" data-component-text></textarea>
-                    <label class="fw-semibold">Text or label</label>
+                    <label class="fw-semibold">Binding / Text</label>
                   </div>
                   <div class="d-flex flex-column gap-2">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <label class="fw-semibold" for="componentFontSize">Font size</label>
-                      <span class="badge text-bg-secondary" data-component-font-size-value>16px</span>
+                    <label class="fw-semibold text-body-secondary">Text size</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Font size">
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextSize"
+                        id="componentTextSizeSm"
+                        value="sm"
+                        data-component-text-size
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextSizeSm">Sm</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextSize"
+                        id="componentTextSizeMd"
+                        value="md"
+                        data-component-text-size
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextSizeMd">Md</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextSize"
+                        id="componentTextSizeLg"
+                        value="lg"
+                        data-component-text-size
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextSizeLg">Lg</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextSize"
+                        id="componentTextSizeXl"
+                        value="xl"
+                        data-component-text-size
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
                     </div>
-                    <input type="range" class="form-range" id="componentFontSize" min="12" max="28" step="1" value="16" data-component-font-size />
                   </div>
                   <div class="d-flex flex-column gap-2">
-                    <label class="fw-semibold" for="componentFontColor">Font color</label>
-                    <input
-                      type="color"
-                      class="form-control form-control-color"
-                      id="componentFontColor"
-                      value="#212529"
-                      title="Pick a text color"
-                      data-component-font-color
-                    />
+                    <div class="fw-semibold text-body-secondary">Colors</div>
+                    <div class="template-color-grid">
+                      <div class="template-color-control">
+                        <label class="form-label small text-body-secondary mb-0" for="componentColorForeground">Foreground</label>
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="color"
+                            class="form-control form-control-color"
+                            id="componentColorForeground"
+                            value="#212529"
+                            title="Pick a foreground color"
+                            data-component-color="foreground"
+                          />
+                          <button
+                            class="btn btn-outline-secondary btn-sm"
+                            type="button"
+                            data-component-color-clear="foreground"
+                            aria-label="Reset foreground color"
+                          >
+                            <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="template-color-control">
+                        <label class="form-label small text-body-secondary mb-0" for="componentColorBackground">Background</label>
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="color"
+                            class="form-control form-control-color"
+                            id="componentColorBackground"
+                            value="#ffffff"
+                            title="Pick a background color"
+                            data-component-color="background"
+                          />
+                          <button
+                            class="btn btn-outline-secondary btn-sm"
+                            type="button"
+                            data-component-color-clear="background"
+                            aria-label="Reset background color"
+                          >
+                            <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="template-color-control">
+                        <label class="form-label small text-body-secondary mb-0" for="componentColorBorder">Border</label>
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="color"
+                            class="form-control form-control-color"
+                            id="componentColorBorder"
+                            value="#dee2e6"
+                            title="Pick a border color"
+                            data-component-color="border"
+                          />
+                          <button
+                            class="btn btn-outline-secondary btn-sm"
+                            type="button"
+                            data-component-color-clear="border"
+                            aria-label="Reset border color"
+                          >
+                            <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2">
+                    <label class="fw-semibold text-body-secondary">Text decoration</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Text decoration">
+                      <input type="checkbox" class="btn-check" id="componentTextBold" data-component-text-style="bold" />
+                      <label class="btn btn-outline-secondary" for="componentTextBold">
+                        <span class="iconify" data-icon="tabler:bold" aria-hidden="true"></span>
+                        <span class="template-radio-label">Bold</span>
+                      </label>
+                      <input type="checkbox" class="btn-check" id="componentTextItalic" data-component-text-style="italic" />
+                      <label class="btn btn-outline-secondary" for="componentTextItalic">
+                        <span class="iconify" data-icon="tabler:italic" aria-hidden="true"></span>
+                        <span class="template-radio-label">Italic</span>
+                      </label>
+                      <input type="checkbox" class="btn-check" id="componentTextUnderline" data-component-text-style="underline" />
+                      <label class="btn btn-outline-secondary" for="componentTextUnderline">
+                        <span class="iconify" data-icon="tabler:underline" aria-hidden="true"></span>
+                        <span class="template-radio-label">Underline</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2">
+                    <label class="fw-semibold text-body-secondary">Alignment</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Text alignment">
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentAlignment"
+                        id="componentAlignStart"
+                        value="start"
+                        data-component-align
+                      />
+                      <label class="btn btn-outline-secondary" for="componentAlignStart">
+                        <span class="iconify" data-icon="tabler:align-left" aria-hidden="true"></span>
+                        <span class="template-radio-label">Left</span>
+                      </label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentAlignment"
+                        id="componentAlignCenter"
+                        value="center"
+                        data-component-align
+                      />
+                      <label class="btn btn-outline-secondary" for="componentAlignCenter">
+                        <span class="iconify" data-icon="tabler:align-center" aria-hidden="true"></span>
+                        <span class="template-radio-label">Center</span>
+                      </label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentAlignment"
+                        id="componentAlignEnd"
+                        value="end"
+                        data-component-align
+                      />
+                      <label class="btn btn-outline-secondary" for="componentAlignEnd">
+                        <span class="iconify" data-icon="tabler:align-right" aria-hidden="true"></span>
+                        <span class="template-radio-label">Right</span>
+                      </label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentAlignment"
+                        id="componentAlignJustify"
+                        value="justify"
+                        data-component-align
+                      />
+                      <label class="btn btn-outline-secondary" for="componentAlignJustify">
+                        <span class="iconify" data-icon="tabler:align-justified" aria-hidden="true"></span>
+                        <span class="template-radio-label">Justify</span>
+                      </label>
+                    </div>
                   </div>
                   <div class="d-flex flex-wrap gap-3 align-items-center">
                     <div class="form-check form-switch">
                       <input class="form-check-input" type="checkbox" role="switch" id="componentVisibility" data-component-visible />
                       <label class="form-check-label" for="componentVisibility">Show in layout</label>
                     </div>
-                    <div class="form-floating flex-grow-1" style="min-width: 160px">
-                      <select class="form-select" id="headingLevel" data-heading-level>
-                        <option value="h2">Heading 2</option>
-                        <option value="h3" selected>Heading 3</option>
-                        <option value="h4">Heading 4</option>
-                      </select>
-                      <label class="fw-semibold" for="headingLevel">Heading level</label>
-                    </div>
+                    <div class="form-text text-body-secondary">Sizing adjusts the selected component text.</div>
                   </div>
+                  <button class="btn btn-outline-danger w-100" type="button" data-component-delete>Delete Component</button>
                 </div>
               </section>
             </div>

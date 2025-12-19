@@ -66,6 +66,7 @@ body[data-theme="dark"] .preview-stage {
   outline: 2px solid rgba(13, 110, 253, 0.85);
   box-shadow: 0 0 0 6px rgba(13, 110, 253, 0.1);
   border-radius: 0.25rem;
+  background-color: rgba(13, 110, 253, 0.04);
 }
 
 .press-palette-item {
@@ -74,6 +75,60 @@ body[data-theme="dark"] .preview-stage {
 
 .press-palette-item:active {
   cursor: grabbing;
+}
+
+.template-color-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.template-color-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.template-color-control .form-label {
+  font-size: 0.7rem;
+}
+
+.template-color-control .form-control-color {
+  padding: 0.15rem;
+  width: 2.75rem;
+  height: 1.85rem;
+}
+
+.template-color-control .btn {
+  padding: 0.2rem 0.45rem;
+}
+
+.template-radio-group {
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.template-radio-group .btn {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.5rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
+  min-width: 2.75rem;
+}
+
+.template-radio-group .btn .iconify {
+  font-size: 1.1rem;
+}
+
+.template-radio-group .btn .template-radio-label {
+  display: block;
+  font-size: 0.65rem;
 }
 
 .page-inner {
@@ -207,6 +262,7 @@ body[data-theme="dark"] .preview-stage {
 
 .note-lines {
   flex-grow: 1;
+  min-height: 6rem;
   background-image: repeating-linear-gradient(
     to bottom,
     transparent,
