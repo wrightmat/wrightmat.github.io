@@ -1,4 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
+import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { DataManager } from "../lib/data-manager.js";
 import { resolveApiBase } from "../lib/api.js";
 import { initAuthControls } from "../lib/auth-ui.js";
