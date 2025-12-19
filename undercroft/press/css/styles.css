@@ -51,10 +51,15 @@ body[data-theme="dark"] .preview-stage {
 .press-component {
   position: relative;
   transition: outline 120ms ease, box-shadow 120ms ease;
+  cursor: grab;
 }
 
 .press-component:hover {
   outline: 1px dashed rgba(13, 110, 253, 0.75);
+}
+
+.press-component:active {
+  cursor: grabbing;
 }
 
 .press-component--selected {
@@ -63,11 +68,11 @@ body[data-theme="dark"] .preview-stage {
   border-radius: 0.25rem;
 }
 
-.press-layout-list .list-group-item {
+.press-palette-item {
   cursor: grab;
 }
 
-.press-layout-list .list-group-item.active {
+.press-palette-item:active {
   cursor: grabbing;
 }
 

@@ -57,6 +57,8 @@ const paletteComponents = [
   {
     id: "heading",
     label: "Heading",
+    description: "Section headers and callouts",
+    icon: "tabler:text-size",
     node: {
       type: "field",
       component: "heading",
@@ -67,6 +69,8 @@ const paletteComponents = [
   {
     id: "text",
     label: "Body Copy",
+    description: "Paragraphs, summaries, or captions",
+    icon: "tabler:align-left",
     node: {
       type: "field",
       component: "text",
@@ -77,6 +81,8 @@ const paletteComponents = [
   {
     id: "badge",
     label: "Badge",
+    description: "Small highlights or tags",
+    icon: "tabler:badge",
     node: {
       type: "field",
       component: "badge",
@@ -87,6 +93,8 @@ const paletteComponents = [
   {
     id: "list",
     label: "List",
+    description: "Bulleted stacks of notes",
+    icon: "tabler:list-details",
     node: {
       type: "field",
       component: "list",
@@ -97,6 +105,8 @@ const paletteComponents = [
   {
     id: "notes",
     label: "Note Lines",
+    description: "Ruled space for handwriting",
+    icon: "tabler:notes",
     node: {
       type: "field",
       component: "noteLines",
@@ -369,25 +379,27 @@ function renderPalette() {
   paletteList.innerHTML = "";
   const fragment = document.createDocumentFragment();
   paletteComponents.forEach((item) => {
-    const li = document.createElement("li");
-    li.className = "list-group-item d-flex align-items-center justify-content-between gap-2";
-    li.dataset.componentType = item.id;
-    li.dataset.sortableId = item.id;
-    li.innerHTML = `
+    const entry = document.createElement("div");
+    entry.className =
+      "press-palette-item workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift";
+    entry.dataset.componentType = item.id;
+    entry.dataset.sortableId = item.id;
+    entry.dataset.sortableHandle = "true";
+    entry.innerHTML = `
+      <span class="iconify fs-4 text-primary" data-icon="${item.icon}" aria-hidden="true"></span>
       <div class="d-flex flex-column">
-        <span class="fw-semibold">${item.label}</span>
-        <small class="text-body-secondary">Drag to the layout or double-click</small>
+        <div class="fw-semibold">${item.label}</div>
+        <div class="text-body-secondary extra-small text-truncate">${item.description}</div>
       </div>
-      <span class="iconify text-body-secondary" data-icon="tabler:grip-vertical" aria-hidden="true"></span>
     `;
-    li.addEventListener("dblclick", () => {
+    entry.addEventListener("dblclick", () => {
       const newNode = createNodeFromPalette(item.id);
       insertNodeAtRoot(currentSide, newNode, getRootChildren(currentSide).length);
       renderLayoutList();
       selectNode(newNode.uid);
       renderPreview();
     });
-    fragment.appendChild(li);
+    fragment.appendChild(entry);
   });
   paletteList.appendChild(fragment);
 }
