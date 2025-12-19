@@ -11,6 +11,7 @@ import {
   loadTemplates,
 } from "./templates.js";
 import { buildSourceSummary, getSourceById, getSources } from "./sources.js";
+import { loadSourceData } from "./source-data.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -22,6 +23,7 @@ const selectionSummary = document.getElementById("selectionSummary");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
 const swapSideButton = document.getElementById("swapSide");
+const generateButton = document.getElementById("generateButton");
 const printButton = document.getElementById("printButton");
 const selectionToggle = document.querySelector("[data-selection-toggle]");
 const selectionToggleLabel = selectionToggle?.querySelector("[data-toggle-label]");
@@ -47,6 +49,7 @@ const visibilityToggle = document.querySelector("[data-component-visible]");
 const headingLevelSelect = document.querySelector("[data-heading-level]");
 
 const sourceValues = {};
+const sourcePayloads = {};
 let currentSide = "front";
 let selectedNodeId = null;
 let nodeCounter = 0;
@@ -63,6 +66,7 @@ let pendingUndoTarget = null;
 let status = null;
 let lastSavedLayout = null;
 let isSaving = false;
+let isGenerating = false;
 
 const paletteComponents = [
   {
@@ -217,6 +221,7 @@ function populateSources() {
   if (active) {
     renderSourceInput(active);
     updateSourceSummary();
+    updateGenerateButtonState();
   }
 }
 
@@ -271,6 +276,38 @@ function getActiveSource() {
   return getSourceById(selected);
 }
 
+function getSourcePayload(source, value) {
+  if (!source) return null;
+  const payload = sourcePayloads[source.id];
+  if (!payload) return null;
+  if (payload.value !== value) return null;
+  return payload;
+}
+
+function setSourcePayload(source, payload) {
+  if (!source) return;
+  if (payload) {
+    sourcePayloads[source.id] = payload;
+  } else {
+    delete sourcePayloads[source.id];
+  }
+}
+
+function clearSourcePayload(source) {
+  if (!source) return;
+  delete sourcePayloads[source.id];
+}
+
+function updateGenerateButtonState() {
+  if (!generateButton) return;
+  const source = getActiveSource();
+  const value = source ? sourceValues[source.id] : null;
+  const requiresInput = source?.input?.type !== "textarea";
+  const hasValue = source?.id === "manual" ? true : Boolean(value);
+  generateButton.disabled = Boolean(isGenerating || (requiresInput && !hasValue));
+  generateButton.setAttribute("aria-disabled", generateButton.disabled ? "true" : "false");
+}
+
 function getSelectionContext() {
   const template = getActiveTemplate();
   const source = getActiveSource();
@@ -278,7 +315,8 @@ function getSelectionContext() {
   const orientation = orientationSelect.value || format?.defaultOrientation;
   const size = template && format ? getPageSize(template, format?.id, orientation) : null;
   const value = sourceValues[source?.id];
-  const summary = source ? buildSourceSummary(source, value) : "";
+  const payload = getSourcePayload(source, value);
+  const summary = source ? buildSourceSummary(source, value, payload) : "";
 
   return {
     template,
@@ -288,6 +326,8 @@ function getSelectionContext() {
     size,
     sourceValue: value,
     sourceSummary: summary,
+    sourcePayload: payload,
+    sourceData: payload?.data ?? null,
   };
 }
 
@@ -301,6 +341,7 @@ const renderJsonPreview = createJsonPreviewRenderer({
         id: context.source?.id ?? null,
         summary: context.sourceSummary,
         value: context.sourceValue,
+        data: context.sourceData ?? null,
       },
       template: {
         id: context.template?.id ?? null,
@@ -894,17 +935,19 @@ function updateSelectionBadges(context) {
 function renderPreview() {
   destroyCanvasDnd();
   const context = getSelectionContext();
-  const { template, source, format, size, orientation, sourceValue, sourceSummary: summary } = context;
+  const { template, source, format, size, orientation, sourceValue, sourceSummary: summary, sourceData } = context;
   if (!template || !size) return;
   const side = currentSide;
   const pageOverride = getEditablePage(side);
   let layoutRoot = null;
 
   previewStage.innerHTML = "";
+  const sourceContext = { ...source, value: sourceValue, summary, data: sourceData };
   const page = template.createPage(side, {
     size,
     format,
-    source: { ...source, value: sourceValue, summary },
+    source: sourceContext,
+    data: sourceData,
     page: pageOverride,
     renderOptions: {
       editable: true,
@@ -923,19 +966,20 @@ function renderPreview() {
   previewStage.appendChild(page);
   initCanvasDnd(layoutRoot);
 
-  buildPrintStack(template, { size, format, source: { ...source, value: sourceValue, summary } });
+  buildPrintStack(template, { size, format, data: sourceData, source: sourceContext });
   updateSideButton();
   updateSelectionBadges(context);
   renderJsonPreview();
 }
 
-function buildPrintStack(template, { size, format, source }) {
+function buildPrintStack(template, { size, format, data, source }) {
   printStack.innerHTML = "";
   template.sides.forEach((side) => {
     const page = template.createPage(side, {
       size,
       format,
       source,
+      data,
       page: getEditablePage(side),
     });
     applyOverlays(page, template, size, { forPrint: true });
@@ -963,7 +1007,8 @@ function updateSourceSummary() {
     return;
   }
   const value = sourceValues[source.id];
-  sourceSummary.textContent = buildSourceSummary(source, value);
+  const payload = getSourcePayload(source, value);
+  sourceSummary.textContent = buildSourceSummary(source, value, payload);
 }
 
 function renderSourceInput(source) {
@@ -1019,11 +1064,60 @@ function renderSourceInput(source) {
     } else {
       sourceValues[source.id] = event.target.value;
     }
+    clearSourcePayload(source);
     updateSourceSummary();
+    updateGenerateButtonState();
     renderPreview();
   });
 
   sourceInputContainer.append(labelRow, input);
+}
+
+async function handleGeneratePrint() {
+  const context = getSelectionContext();
+  const { source, sourceValue } = context;
+  if (!source) {
+    if (status) {
+      status.show("Select a source before generating.", { type: "warning", timeout: 2000 });
+    }
+    return;
+  }
+  const requiresInput = source?.input?.type !== "textarea";
+  if (requiresInput && !sourceValue) {
+    if (status) {
+      status.show("Enter a source value before generating.", { type: "warning", timeout: 2000 });
+    }
+    return;
+  }
+  isGenerating = true;
+  if (generateButton) {
+    generateButton.textContent = "Generating...";
+  }
+  updateGenerateButtonState();
+  try {
+    const data = await loadSourceData(source, sourceValue);
+    setSourcePayload(source, {
+      value: sourceValue,
+      data,
+      fetchedAt: new Date().toISOString(),
+    });
+    updateSourceSummary();
+    renderPreview();
+    if (status) {
+      status.show("Source data loaded for printing.", { type: "success", timeout: 2000 });
+    }
+  } catch (error) {
+    console.error("Unable to generate print data", error);
+    if (status) {
+      status.show(error.message || "Unable to load source data.", { type: "error", timeout: 4000 });
+    }
+  } finally {
+    isGenerating = false;
+    if (generateButton) {
+      generateButton.textContent = "Generate Print";
+    }
+    updateGenerateButtonState();
+  }
 }
 
 function initPressCollapsibles() {
@@ -1251,11 +1345,16 @@ function wireEvents() {
   });
   sourceSelect.addEventListener("change", () => {
     const source = getActiveSource();
+    clearSourcePayload(source);
     renderSourceInput(source);
     updateSourceSummary();
+    updateGenerateButtonState();
     renderPreview();
   });
   swapSideButton.addEventListener("click", toggleSide);
+  if (generateButton) {
+    generateButton.addEventListener("click", handleGeneratePrint);
+  }
   printButton.addEventListener("click", () => window.print());
 }
 
@@ -1277,6 +1376,7 @@ async function initPress() {
   renderLayoutList();
   selectFirstNode();
   markLayoutSaved();
+  updateGenerateButtonState();
   wireEvents();
 }
 

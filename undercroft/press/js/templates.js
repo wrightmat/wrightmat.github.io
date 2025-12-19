@@ -50,6 +50,13 @@ function resolveBinding(binding, context) {
   }, context);
 }
 
+function resolveTemplateData(template, data) {
+  if (data && typeof data === "object") {
+    return data;
+  }
+  return template.sampleData ?? {};
+}
+
 function resolvePageSize(format, orientation) {
   const fallback = pageSizes.letter;
   const base = format?.size ?? pageSizes[format?.sizeId] ?? fallback;
@@ -87,17 +94,17 @@ function createPageWrapper(template, side, { size, format, source }) {
   return { page, inner, resolvedSize };
 }
 
-function getRepeatData(template, pageConfig) {
+function getRepeatData(template, pageConfig, data) {
   if (!pageConfig) return [];
   if (pageConfig.repeat) {
-    const bound = resolveBinding(pageConfig.repeat, template.sampleData ?? {});
+    const bound = resolveBinding(pageConfig.repeat, data);
     if (Array.isArray(bound)) return bound;
   }
-  if (Array.isArray(template.sampleData)) {
-    return template.sampleData;
+  if (Array.isArray(data)) {
+    return data;
   }
-  if (Array.isArray(template.sampleData?.cards)) {
-    return template.sampleData.cards;
+  if (Array.isArray(data?.cards)) {
+    return data.cards;
   }
   return [];
 }
@@ -105,7 +112,8 @@ function getRepeatData(template, pageConfig) {
 function renderCardGrid(template, side, context) {
   const { page, inner } = createPageWrapper(template, side, context);
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
-  const data = getRepeatData(template, pageConfig);
+  const templateData = resolveTemplateData(template, context.data);
+  const data = getRepeatData(template, pageConfig, templateData);
   const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
   const { width, height, gutter = 0, safeInset = 0, columns = 1, rows = 1 } = template.card ?? {};
   const grid = document.createElement("div");
@@ -141,7 +149,8 @@ function renderSheet(template, side, context) {
   const { page, inner } = createPageWrapper(template, side, context);
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const layout = pageConfig.layout ?? null;
-  const data = resolveBinding(pageConfig.data ?? "@", template.sampleData ?? {}) ?? template.sampleData ?? {};
+  const templateData = resolveTemplateData(template, context.data);
+  const data = resolveBinding(pageConfig.data ?? "@", templateData) ?? templateData ?? {};
   if (layout) {
     inner.appendChild(renderLayout(layout, data, context.renderOptions));
   }
@@ -160,11 +169,11 @@ function normalizeTemplate(raw) {
     sampleData: raw.sampleData ?? {},
   };
 
-  template.createPage = (side, { size, format, source, page, renderOptions } = {}) => {
+  template.createPage = (side, { size, format, source, data, page, renderOptions } = {}) => {
     if (template.type === "card") {
-      return renderCardGrid(template, side, { size, format, source, page, renderOptions });
+      return renderCardGrid(template, side, { size, format, source, data, page, renderOptions });
     }
-    return renderSheet(template, side, { size, format, source, page, renderOptions });
+    return renderSheet(template, side, { size, format, source, data, page, renderOptions });
   };
 
   return template;
