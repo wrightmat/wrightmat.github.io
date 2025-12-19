@@ -173,7 +173,7 @@
                     <span class="visually-hidden">Save</span>
                   </button>
                   <button
-                    class="btn btn-primary p-2"
+                    class="btn btn-outline-secondary p-2"
                     type="button"
                     id="printButton"
                     data-bs-toggle="tooltip"
@@ -241,37 +241,44 @@
                       <span class="visually-hidden" data-toggle-label>Collapse selections</span>
                     </button>
                   </div>
-                  <div class="d-flex flex-column gap-4" data-selection-panel>
-                    <div class="d-flex flex-column gap-2">
-                      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                  <div class="d-flex flex-column gap-3" data-selection-panel>
+                    <div class="row g-3 align-items-start">
+                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
                         <label class="form-label fw-semibold mb-0" for="sourceSelect">Source</label>
+                        <select class="form-select" id="sourceSelect"></select>
                       </div>
-                      <select class="form-select" id="sourceSelect"></select>
-                      <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
-                      <div class="small text-body-secondary" id="sourceSummary"></div>
+                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
+                        <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
+                      </div>
+                      <div class="col-12">
+                        <div class="small text-body-secondary" id="sourceSummary"></div>
+                      </div>
                     </div>
-                    <div class="d-flex flex-column gap-3" id="press-templates">
-                      <div class="d-flex align-items-center justify-content-between gap-2">
-                        <label class="form-label fw-semibold mb-0" for="templateSelect">Template</label>
-                        <span class="align-middle" data-help-topic="press.templates" data-help-insert="replace" data-help-placement="left"></span>
-                      </div>
-                      <select class="form-select" id="templateSelect"></select>
-                      <div class="d-flex flex-column gap-3">
-                        <div class="d-flex flex-column gap-2">
-                          <div class="d-flex align-items-center justify-content-between gap-2">
-                            <label class="form-label fw-semibold mb-0" for="formatSelect">Size</label>
-                            <span class="align-middle" data-help-topic="press.size" data-help-insert="replace" data-help-placement="left"></span>
-                          </div>
-                          <select class="form-select" id="formatSelect"></select>
+                    <div class="row g-3 align-items-start" id="press-templates">
+                      <div class="col-12 col-lg-4 d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <label class="form-label fw-semibold mb-0" for="templateSelect">Template</label>
+                          <span class="align-middle" data-help-topic="press.templates" data-help-insert="replace" data-help-placement="left"></span>
                         </div>
-                        <div class="d-flex flex-column gap-2">
-                          <div class="d-flex align-items-center justify-content-between gap-2">
-                            <label class="form-label fw-semibold mb-0" for="orientationSelect">Orientation</label>
-                            <span class="align-middle" data-help-topic="press.orientation" data-help-insert="replace" data-help-placement="left"></span>
-                          </div>
-                          <select class="form-select" id="orientationSelect"></select>
-                        </div>
+                        <select class="form-select" id="templateSelect"></select>
                       </div>
+                      <div class="col-12 col-lg-4 d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <label class="form-label fw-semibold mb-0" for="formatSelect">Size</label>
+                          <span class="align-middle" data-help-topic="press.size" data-help-insert="replace" data-help-placement="left"></span>
+                        </div>
+                        <select class="form-select" id="formatSelect"></select>
+                      </div>
+                      <div class="col-12 col-lg-4 d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <label class="form-label fw-semibold mb-0" for="orientationSelect">Orientation</label>
+                          <span class="align-middle" data-help-topic="press.orientation" data-help-insert="replace" data-help-placement="left"></span>
+                        </div>
+                        <select class="form-select" id="orientationSelect"></select>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                      <button class="btn btn-outline-primary" id="generateButton">Generate Print</button>
                     </div>
                   </div>
                 </section>
@@ -284,7 +291,6 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   <button class="btn btn-outline-secondary btn-sm" id="swapSide">Show Back Side</button>
-                  <button class="btn btn-outline-primary btn-sm" id="generateButton">Generate Print</button>
                 </div>
               </div>
               <div class="card-body bg-body-secondary">
