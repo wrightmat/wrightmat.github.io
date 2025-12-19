@@ -903,7 +903,7 @@ function updateInspector() {
     typeSummary.classList.toggle("opacity-50", !entry);
     if (entry) {
       if (typeIcon) {
-        typeIcon.dataset.icon = entry.icon;
+        typeIcon.setAttribute("data-icon", entry.icon);
       }
       if (typeLabel) {
         typeLabel.textContent = entry.label;
@@ -913,7 +913,7 @@ function updateInspector() {
       }
     } else {
       if (typeIcon) {
-        typeIcon.dataset.icon = "tabler:components";
+        typeIcon.setAttribute("data-icon", "tabler:components");
       }
       if (typeLabel) {
         typeLabel.textContent = "Component";
@@ -921,6 +921,9 @@ function updateInspector() {
       if (typeDescription) {
         typeDescription.textContent = "Select a component to view details.";
       }
+    }
+    if (window.Iconify && typeof window.Iconify.scan === "function") {
+      window.Iconify.scan(typeSummary);
     }
   }
 
@@ -1489,20 +1492,6 @@ function bindInspectorControls() {
         });
         renderPreview();
         renderLayoutList();
-      });
-    });
-  }
-
-  if (deleteButton) {
-    deleteButton.addEventListener("click", () => {
-      recordUndoableChange(() => {
-        const layout = getLayoutForSide(currentSide);
-        if (!layout || !selectedNodeId) return;
-        removeNodeById(layout, selectedNodeId);
-        selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
-        renderLayoutList();
-        updateInspector();
-        renderPreview();
       });
     });
   }

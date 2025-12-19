@@ -194,6 +194,7 @@ function renderField(node, context) {
 function renderStack(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-flex flex-column");
+  applyInlineStyles(container, node.style);
   applyGap(container, node.gap ?? 4);
   asArray(node.children).forEach((child) => {
     container.appendChild(renderNode(child, context, options));
@@ -204,6 +205,7 @@ function renderStack(node, context, options) {
 function renderRow(node, context, options) {
   const container = document.createElement("div");
   applyClassName(container, node.className ?? "d-grid");
+  applyInlineStyles(container, node.style);
   const columnCount = (node.columns && node.columns.length) || 1;
   if (node.templateColumns) {
     container.style.gridTemplateColumns = node.templateColumns;
