@@ -5,7 +5,7 @@ const sources = [
     description: "",
     input: {
       type: "text",
-      label: "D&D Beyond URL or ID",
+      label: "URL or ID",
       placeholder: "https://www.dndbeyond.com/monsters/12345",
       helpTopic: "press.source.ddb",
     },

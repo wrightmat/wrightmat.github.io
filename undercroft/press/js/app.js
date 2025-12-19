@@ -19,7 +19,6 @@ const orientationSelect = document.getElementById("orientationSelect");
 const sourceSelect = document.getElementById("sourceSelect");
 const sourceSummary = document.getElementById("sourceSummary");
 const sourceInputContainer = document.getElementById("sourceInputContainer");
-const selectionSummary = document.getElementById("selectionSummary");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
 const swapSideButton = document.getElementById("swapSide");
@@ -67,6 +66,7 @@ let status = null;
 let lastSavedLayout = null;
 let isSaving = false;
 let isGenerating = false;
+let applySelectionCollapse = null;
 
 const paletteComponents = [
   {
@@ -912,26 +912,6 @@ function updateSideButton() {
   swapSideButton.setAttribute("aria-pressed", viewingFront ? "false" : "true");
 }
 
-function updateSelectionBadges(context) {
-  selectionSummary.innerHTML = "";
-  if (!context.source || !context.template || !context.size) {
-    return;
-  }
-  const badges = [
-    { label: "Source", value: context.source.name },
-    { label: "Template", value: context.template.name },
-    { label: "Size", value: `${context.size.label} (${context.orientation})` },
-    { label: "Side", value: currentSide === "front" ? "Front" : "Back" },
-  ];
-
-  badges.forEach((item) => {
-    const badge = document.createElement("span");
-    badge.className = "badge text-bg-secondary";
-    badge.textContent = `${item.label}: ${item.value}`;
-    selectionSummary.appendChild(badge);
-  });
-}
-
 function renderPreview() {
   destroyCanvasDnd();
   const context = getSelectionContext();
@@ -968,7 +948,6 @@ function renderPreview() {
 
   buildPrintStack(template, { size, format, data: sourceData, source: sourceContext });
   updateSideButton();
-  updateSelectionBadges(context);
   renderJsonPreview();
 }
 
@@ -1103,6 +1082,9 @@ async function handleGeneratePrint() {
     });
     updateSourceSummary();
     renderPreview();
+    if (applySelectionCollapse) {
+      applySelectionCollapse(true);
+    }
     if (status) {
       status.show("Source data loaded for printing.", { type: "success", timeout: 2000 });
     }
@@ -1121,7 +1103,7 @@ async function handleGeneratePrint() {
 }
 
 function initPressCollapsibles() {
-  bindCollapsibleToggle(selectionToggle, selectionPanel, {
+  applySelectionCollapse = bindCollapsibleToggle(selectionToggle, selectionPanel, {
     collapsed: false,
     expandLabel: "Expand selections",
     collapseLabel: "Collapse selections",
