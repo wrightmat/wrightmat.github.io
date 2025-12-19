@@ -51,6 +51,16 @@ function applyInlineStyles(element, styles = {}) {
   }
   if (styles.borderColor) {
     element.style.borderColor = styles.borderColor;
+    if (!element.style.borderStyle) {
+      element.style.borderStyle = "solid";
+    }
+    if (!element.style.borderWidth) {
+      element.style.borderWidth = "1px";
+    }
+  } else {
+    element.style.removeProperty("border-color");
+    element.style.removeProperty("border-style");
+    element.style.removeProperty("border-width");
   }
 }
 
@@ -118,7 +128,7 @@ function renderField(node, context) {
   const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
   switch (node.component) {
     case "heading": {
-      const el = createTextElement(node.textStyle ?? node.level ?? "h2", value ?? node.label, node.className ?? "fw-semibold");
+      const el = createTextElement(node.level ?? "h2", value ?? node.label, node.className ?? "fw-semibold");
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
       return el;
@@ -169,6 +179,7 @@ function renderField(node, context) {
     case "noteLines": {
       const el = document.createElement("div");
       applyClassName(el, node.className ?? "note-lines");
+      applyInlineStyles(el, node.style);
       return el;
     }
     default: {

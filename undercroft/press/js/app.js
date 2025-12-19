@@ -48,7 +48,6 @@ const colorClearButtons = Array.from(document.querySelectorAll("[data-component-
 const textStyleToggles = Array.from(document.querySelectorAll("[data-component-text-style]"));
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
-const textStyleSelect = document.querySelector("[data-text-style]");
 const deleteButton = document.querySelector("[data-component-delete]");
 const rightPane = document.querySelector('[data-pane="right"]');
 const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
@@ -90,20 +89,21 @@ const paletteComponents = [
       type: "field",
       component: "heading",
       text: "New Heading",
-      textStyle: "h2",
+      textSize: "lg",
+      textStyles: { bold: true },
       className: "card-title",
     },
   },
   {
     id: "text",
-    label: "Body Copy",
+    label: "Text",
     description: "Paragraphs, summaries, or captions",
     icon: "tabler:align-left",
     node: {
       type: "field",
       component: "text",
       text: "Editable body text for this card or sheet.",
-      textStyle: "p",
+      textSize: "md",
       className: "card-body-text",
     },
   },
@@ -133,14 +133,14 @@ const paletteComponents = [
   },
   {
     id: "stat",
-    label: "Stat",
+    label: "Block",
     description: "Label + value blocks",
     icon: "tabler:graph",
     node: {
       type: "field",
       component: "stat",
-      label: "Stat",
-      text: "0",
+      label: "Label",
+      text: "Value",
       className: "panel-box",
     },
   },
@@ -158,7 +158,7 @@ const paletteComponents = [
             type: "field",
             component: "text",
             text: "Column text",
-            textStyle: "p",
+            textSize: "md",
             className: "mb-0",
           },
         },
@@ -167,7 +167,7 @@ const paletteComponents = [
             type: "field",
             component: "text",
             text: "Column text",
-            textStyle: "p",
+            textSize: "md",
             className: "mb-0",
           },
         },
@@ -771,7 +771,7 @@ function describeNode(node) {
   if (node.component === "badge") return node.text || node.label || "Badge";
   if (node.component === "list") return "List";
   if (node.component === "noteLines") return "Notes";
-  if (node.component === "stat") return node.label || "Stat";
+  if (node.component === "stat") return node.label || "Block";
   return node.component || node.type || "Component";
 }
 
@@ -799,19 +799,6 @@ function resolveTextSize(node) {
   if (node.textSize) return node.textSize;
   const fallback = node.style?.fontSize;
   return mapFontSizeToToken(fallback);
-}
-
-function supportsTextStyleSelection(node) {
-  return node?.component === "heading" || node?.component === "text";
-}
-
-function resolveTextStyle(node) {
-  if (!node) return "p";
-  if (node.textStyle) return node.textStyle;
-  if (node.component === "heading") {
-    return node.level ?? "h2";
-  }
-  return "p";
 }
 
 function renderPalette() {
@@ -953,10 +940,6 @@ function updateInspector() {
       input.checked = input.value === "start";
     });
     if (visibilityToggle) visibilityToggle.checked = true;
-    if (textStyleSelect) {
-      textStyleSelect.value = "p";
-      textStyleSelect.disabled = true;
-    }
     return;
   }
 
@@ -974,11 +957,11 @@ function updateInspector() {
     const key = input.dataset.componentColor;
     const styles = node?.style ?? {};
     if (key === "foreground") {
-      input.value = styles.color ?? COLOR_DEFAULTS.foreground;
+      input.value = styles.color || COLOR_DEFAULTS.foreground;
     } else if (key === "background") {
-      input.value = styles.backgroundColor ?? COLOR_DEFAULTS.background;
+      input.value = styles.backgroundColor || COLOR_DEFAULTS.background;
     } else if (key === "border") {
-      input.value = styles.borderColor ?? COLOR_DEFAULTS.border;
+      input.value = styles.borderColor || COLOR_DEFAULTS.border;
     }
   });
 
@@ -996,10 +979,6 @@ function updateInspector() {
     visibilityToggle.checked = !node.hidden;
   }
 
-  if (textStyleSelect) {
-    textStyleSelect.value = resolveTextStyle(node);
-    textStyleSelect.disabled = !supportsTextStyleSelection(node);
-  }
 }
 
 function selectFirstNode() {
@@ -1514,20 +1493,16 @@ function bindInspectorControls() {
     });
   }
 
-  if (textStyleSelect) {
-    textStyleSelect.addEventListener("change", () => {
+  if (deleteButton) {
+    deleteButton.addEventListener("click", () => {
       recordUndoableChange(() => {
-        updateSelectedNode((node) => {
-          if (!supportsTextStyleSelection(node)) {
-            return;
-          }
-          node.textStyle = textStyleSelect.value;
-          if (node.component === "heading") {
-            node.level = textStyleSelect.value;
-          }
-        });
-        renderPreview();
+        const layout = getLayoutForSide(currentSide);
+        if (!layout || !selectedNodeId) return;
+        removeNodeById(layout, selectedNodeId);
+        selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
         renderLayoutList();
+        updateInspector();
+        renderPreview();
       });
     });
   }
