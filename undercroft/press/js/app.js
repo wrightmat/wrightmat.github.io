@@ -1,6 +1,5 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
-import { initPaneToggles } from "../../common/js/lib/panes.js";
-import { initThemeControls } from "../../common/js/lib/theme.js";
+import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { createSortable } from "../../workbench/js/lib/dnd.js";
@@ -32,6 +31,8 @@ const jsonToggleLabel = document.querySelector("[data-json-toggle-label]");
 const jsonPanel = document.querySelector("[data-json-panel]");
 const jsonPreview = document.querySelector("[data-json-preview]");
 const jsonBytes = document.querySelector("[data-json-bytes]");
+const undoButton = document.querySelector('[data-action="undo-layout"]');
+const redoButton = document.querySelector('[data-action="redo-layout"]');
 const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
@@ -52,6 +53,12 @@ let editablePages = { front: null, back: null };
 let paletteSortable = null;
 let layoutSortable = null;
 let canvasSortable = null;
+let undoStack = null;
+let performUndo = null;
+let performRedo = null;
+let isApplyingHistory = false;
+let pendingUndoSnapshot = null;
+let pendingUndoTarget = null;
 
 const paletteComponents = [
   {
@@ -139,8 +146,51 @@ function bindCollapsible(toggle, panel, { collapsed = false, expandLabel, collap
 }
 
 function initShell() {
-  initThemeControls(document);
-  initPaneToggles(document);
+  const { undoStack: stack, undo, redo } = initAppShell({
+    namespace: "press-layout",
+    storagePrefix: "undercroft.press.undo",
+    onUndo: (entry) => {
+      if (!entry?.before) {
+        return { applied: false };
+      }
+      isApplyingHistory = true;
+      try {
+        applySnapshot(entry.before);
+      } finally {
+        isApplyingHistory = false;
+      }
+      return null;
+    },
+    onRedo: (entry) => {
+      if (!entry?.after) {
+        return { applied: false };
+      }
+      isApplyingHistory = true;
+      try {
+        applySnapshot(entry.after);
+      } finally {
+        isApplyingHistory = false;
+      }
+      return null;
+    },
+  });
+  undoStack = stack;
+  performUndo = undo;
+  performRedo = redo;
+  if (undoButton) {
+    undoButton.addEventListener("click", () => {
+      if (performUndo) {
+        performUndo();
+      }
+    });
+  }
+  if (redoButton) {
+    redoButton.addEventListener("click", () => {
+      if (performRedo) {
+        performRedo();
+      }
+    });
+  }
   initHelpSystem({ root: document });
 }
 
@@ -254,6 +304,87 @@ const renderJsonPreview = createJsonPreviewRenderer({
     };
   },
 });
+
+function cloneState(value) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value));
+}
+
+function createSnapshot() {
+  return {
+    pages: cloneState(editablePages),
+    currentSide,
+    selectedNodeId,
+    nodeCounter,
+  };
+}
+
+function applySnapshot(snapshot) {
+  if (!snapshot) return;
+  const next = cloneState(snapshot);
+  editablePages = next.pages ?? { front: null, back: null };
+  currentSide = next.currentSide ?? "front";
+  selectedNodeId = next.selectedNodeId ?? null;
+  nodeCounter = typeof next.nodeCounter === "number" ? next.nodeCounter : 0;
+  renderLayoutList();
+  updateInspector();
+  renderPreview();
+}
+
+function snapshotsEqual(first, second) {
+  try {
+    return JSON.stringify(first) === JSON.stringify(second);
+  } catch (error) {
+    console.warn("Unable to compare undo snapshots", error);
+    return false;
+  }
+}
+
+function pushUndoEntry(before, after) {
+  if (!undoStack) return;
+  if (snapshotsEqual(before, after)) return;
+  undoStack.push({
+    type: "layout",
+    before,
+    after,
+  });
+}
+
+function recordUndoableChange(action) {
+  if (isApplyingHistory || typeof action !== "function") {
+    if (typeof action === "function") {
+      action();
+    }
+    return;
+  }
+  if (!undoStack) {
+    action();
+    return;
+  }
+  const before = createSnapshot();
+  action();
+  const after = createSnapshot();
+  pushUndoEntry(before, after);
+}
+
+function beginPendingUndo(target) {
+  if (!undoStack || isApplyingHistory) return;
+  pendingUndoSnapshot = createSnapshot();
+  pendingUndoTarget = target ?? null;
+}
+
+function commitPendingUndo(target) {
+  if (!undoStack || isApplyingHistory) return;
+  if (pendingUndoTarget && target && pendingUndoTarget !== target) return;
+  const before = pendingUndoSnapshot;
+  pendingUndoSnapshot = null;
+  pendingUndoTarget = null;
+  if (!before) return;
+  const after = createSnapshot();
+  pushUndoEntry(before, after);
+}
 
 function nextNodeId() {
   nodeCounter += 1;
@@ -394,10 +525,11 @@ function renderPalette() {
     `;
     entry.addEventListener("dblclick", () => {
       const newNode = createNodeFromPalette(item.id);
-      insertNodeAtRoot(currentSide, newNode, getRootChildren(currentSide).length);
-      renderLayoutList();
-      selectNode(newNode.uid);
-      renderPreview();
+      if (!newNode) return;
+      recordUndoableChange(() => {
+        insertNodeAtRoot(currentSide, newNode, getRootChildren(currentSide).length);
+        selectNode(newNode.uid);
+      });
     });
     fragment.appendChild(entry);
   });
@@ -781,16 +913,19 @@ function handleLayoutAdd(event) {
   const newNode = createNodeFromPalette(type);
   event.item?.remove();
   if (!newNode) return;
-  const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
-  insertNodeAtRoot(currentSide, newNode, index);
-  renderLayoutList();
-  selectNode(newNode.uid);
+  recordUndoableChange(() => {
+    const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
+    insertNodeAtRoot(currentSide, newNode, index);
+    selectNode(newNode.uid);
+  });
 }
 
 function handleLayoutReorder(event) {
-  reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
-  renderLayoutList();
-  renderPreview();
+  recordUndoableChange(() => {
+    reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
+    renderLayoutList();
+    renderPreview();
+  });
 }
 
 function initLayoutDnd() {
@@ -819,16 +954,19 @@ function handleCanvasAdd(event) {
   const newNode = createNodeFromPalette(type);
   event.item?.remove();
   if (!newNode) return;
-  const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
-  insertNodeAtRoot(currentSide, newNode, index);
-  renderLayoutList();
-  selectNode(newNode.uid);
+  recordUndoableChange(() => {
+    const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
+    insertNodeAtRoot(currentSide, newNode, index);
+    selectNode(newNode.uid);
+  });
 }
 
 function handleCanvasReorder(event) {
-  reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
-  renderLayoutList();
-  renderPreview();
+  recordUndoableChange(() => {
+    reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
+    renderLayoutList();
+    renderPreview();
+  });
 }
 
 function initCanvasDnd(rootElement) {
@@ -856,6 +994,9 @@ function initDragAndDrop() {
 
 function bindInspectorControls() {
   if (textEditor) {
+    textEditor.addEventListener("focus", () => beginPendingUndo(textEditor));
+    textEditor.addEventListener("blur", () => commitPendingUndo(textEditor));
+    textEditor.addEventListener("change", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("input", () => {
       updateSelectedNode((node) => {
         if (node.component === "list") {
@@ -874,6 +1015,9 @@ function bindInspectorControls() {
   }
 
   if (fontSizeInput) {
+    fontSizeInput.addEventListener("focus", () => beginPendingUndo(fontSizeInput));
+    fontSizeInput.addEventListener("blur", () => commitPendingUndo(fontSizeInput));
+    fontSizeInput.addEventListener("change", () => commitPendingUndo(fontSizeInput));
     fontSizeInput.addEventListener("input", () => {
       const size = Number(fontSizeInput.value) || 16;
       updateSelectedNode((node) => {
@@ -889,6 +1033,9 @@ function bindInspectorControls() {
   }
 
   if (fontColorInput) {
+    fontColorInput.addEventListener("focus", () => beginPendingUndo(fontColorInput));
+    fontColorInput.addEventListener("blur", () => commitPendingUndo(fontColorInput));
+    fontColorInput.addEventListener("change", () => commitPendingUndo(fontColorInput));
     fontColorInput.addEventListener("input", () => {
       const color = fontColorInput.value || "#212529";
       updateSelectedNode((node) => {
@@ -902,23 +1049,27 @@ function bindInspectorControls() {
 
   if (visibilityToggle) {
     visibilityToggle.addEventListener("change", () => {
-      updateSelectedNode((node) => {
-        node.hidden = !visibilityToggle.checked;
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          node.hidden = !visibilityToggle.checked;
+        });
+        renderPreview();
+        renderLayoutList();
       });
-      renderPreview();
-      renderLayoutList();
     });
   }
 
   if (headingLevelSelect) {
     headingLevelSelect.addEventListener("change", () => {
-      updateSelectedNode((node) => {
-        if (node.component === "heading") {
-          node.level = headingLevelSelect.value;
-        }
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component === "heading") {
+            node.level = headingLevelSelect.value;
+          }
+        });
+        renderPreview();
+        renderLayoutList();
       });
-      renderPreview();
-      renderLayoutList();
     });
   }
 }
@@ -929,6 +1080,11 @@ function wireEvents() {
     const template = getActiveTemplate();
     hydrateEditablePages(template);
     renderFormatOptions(template);
+    if (undoStack) {
+      undoStack.clear();
+    }
+    pendingUndoSnapshot = null;
+    pendingUndoTarget = null;
     selectFirstNode();
   });
   formatSelect.addEventListener("change", () => {
