@@ -1,5 +1,5 @@
-import { initThemeControls } from "../../../common/js/lib/theme.js";
-import { initPaneToggles } from "../../../common/js/lib/panes.js";
+import { initThemeControls } from "./theme.js";
+import { initPaneToggles } from "./panes.js";
 import { StatusManager } from "./status.js";
 import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
@@ -29,6 +29,7 @@ function showFeedback(status, feedback, fallbackMessage) {
 export function initAppShell({
   root = document,
   namespace = "default",
+  storagePrefix = "undercroft.workbench.undo",
   onUndo = null,
   onRedo = null,
   undoLimit,
@@ -43,7 +44,7 @@ export function initAppShell({
   initPaneToggles(root);
 
   const undoStack = new UndoRedoStack({
-    storageKey: `undercroft.workbench.undo.${namespace}`,
+    storageKey: `${storagePrefix}.${namespace}`,
     limit: typeof undoLimit === "number" ? undoLimit : undefined,
   });
   const keyboard = new KeyboardShortcuts();
