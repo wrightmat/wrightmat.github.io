@@ -1,4 +1,4 @@
-import { initAppShell } from "../lib/app-shell.js";
+import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
 import { DataManager } from "../lib/data-manager.js";
 import { initAuthControls } from "../lib/auth-ui.js";
