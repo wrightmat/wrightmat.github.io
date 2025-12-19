@@ -44,7 +44,9 @@ const typeDescription = document.querySelector("[data-component-type-description
 const textEditor = document.querySelector("[data-component-text]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
-const textGroups = Array.from(document.querySelectorAll("[data-inspector-text-group]"));
+const textFieldGroup = document.querySelector("[data-inspector-text-field]");
+const textSettingGroups = Array.from(document.querySelectorAll("[data-inspector-text-settings]"));
+const colorGroup = document.querySelector("[data-inspector-color-group]");
 const alignmentTitle = document.querySelector("[data-alignment-title]");
 const alignmentLabels = {
   start: document.querySelector('[data-alignment-label="start"]'),
@@ -1010,9 +1012,11 @@ function updateInspector() {
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
     if (gapInput) gapInput.value = "";
-    textGroups.forEach((group) => {
+    if (textFieldGroup) textFieldGroup.hidden = false;
+    textSettingGroups.forEach((group) => {
       group.hidden = false;
     });
+    if (colorGroup) colorGroup.hidden = false;
     if (gapField) {
       gapField.hidden = true;
     }
@@ -1052,9 +1056,15 @@ function updateInspector() {
 
   const isLayoutNode = node?.type === "row" || node?.type === "stack";
   const isStackNode = node?.type === "stack";
-  textGroups.forEach((group) => {
+  if (textFieldGroup) {
+    textFieldGroup.hidden = isLayoutNode;
+  }
+  textSettingGroups.forEach((group) => {
     group.hidden = isLayoutNode;
   });
+  if (colorGroup) {
+    colorGroup.hidden = false;
+  }
   textStyleToggles.forEach((input) => {
     input.disabled = isLayoutNode;
   });
