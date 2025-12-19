@@ -109,15 +109,79 @@
           data-pane-initial="collapsed"
         >
           <section class="d-flex flex-column gap-3">
-            <div class="bg-body-tertiary rounded-3 p-3 d-flex flex-column gap-3" id="press-palette">
-              <div class="d-flex align-items-center justify-content-between">
-                <h3 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Palette</h3>
-                <span class="align-middle" data-help-topic="press.palette" data-help-insert="replace"></span>
+            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Press actions">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="undo-layout"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Undo"
+                  aria-label="Undo"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:arrow-back-up" aria-hidden="true"></span>
+                  <span class="visually-hidden">Undo</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="redo-layout"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Redo"
+                  aria-label="Redo"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:arrow-forward-up" aria-hidden="true"></span>
+                  <span class="visually-hidden">Redo</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="import-layout"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Import"
+                  aria-label="Import"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:upload" aria-hidden="true"></span>
+                  <span class="visually-hidden">Import</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="export-layout"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Export"
+                  aria-label="Export"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
+                  <span class="visually-hidden">Export</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="save-layout"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
+                </button>
               </div>
-              <p class="mb-0 small text-body-secondary">
-                Drag components into the layout outline or double-click to append them. Use the right pane to adjust text, sizes, and visibility.
-              </p>
-              <ul class="list-group list-group-flush border rounded-3 overflow-hidden" data-press-palette></ul>
+            </div>
+            <div class="bg-body-tertiary rounded-3 p-3 d-flex flex-column gap-3" id="press-palette">
+              <div class="d-flex justify-content-between align-items-center">
+                <h3 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary d-flex align-items-center gap-2">
+                  <span>Palette</span>
+                  <span class="align-middle" data-help-topic="press.palette" data-help-insert="replace"></span>
+                </h3>
+                <span class="fs-6 text-body-secondary">Drag into canvas</span>
+              </div>
+              <div class="d-grid gap-2" data-press-palette></div>
             </div>
             <section class="bg-body-tertiary rounded-3 p-3 d-flex flex-column gap-3" data-json-section id="press-json">
               <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
@@ -221,23 +285,6 @@
                       </div>
                     </div>
                   </div>
-                </div>
-              </section>
-              <section class="d-flex flex-column gap-3" id="press-layout">
-                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                  <div class="d-flex align-items-center gap-2">
-                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Layout</h2>
-                    <span class="align-middle" data-help-topic="press.layout" data-help-insert="replace" data-help-placement="left"></span>
-                  </div>
-                </div>
-                <p class="small text-body-secondary mb-0">
-                  Drop palette items onto the live preview or into this outline to add components, then drag to reorder them for the current side.
-                </p>
-                <div class="d-flex flex-column gap-2">
-                  <div class="alert alert-secondary mb-0 small" role="status" data-layout-empty>
-                    Drag components from the palette to start building this side. Reorder items to change how they appear on the page.
-                  </div>
-                  <ul class="list-group press-layout-list" data-layout-list></ul>
                 </div>
               </section>
               <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
