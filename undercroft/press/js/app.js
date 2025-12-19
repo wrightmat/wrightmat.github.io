@@ -3,6 +3,7 @@ import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
+import { expandPane } from "../../common/js/lib/panes.js";
 import {
   getFormatById,
   getPageSize,
@@ -36,12 +37,21 @@ const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
 const inspectorSection = document.querySelector("[data-component-inspector]");
 const inspectorTitle = document.querySelector("[data-inspector-title]");
+const typeSummary = document.querySelector("[data-component-type-summary]");
+const typeIcon = document.querySelector("[data-component-type-icon]");
+const typeLabel = document.querySelector("[data-component-type-label]");
+const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
-const fontSizeInput = document.querySelector("[data-component-font-size]");
-const fontSizeValue = document.querySelector("[data-component-font-size-value]");
-const fontColorInput = document.querySelector("[data-component-font-color]");
+const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
+const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
+const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
+const textStyleToggles = Array.from(document.querySelectorAll("[data-component-text-style]"));
+const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
-const headingLevelSelect = document.querySelector("[data-heading-level]");
+const textStyleSelect = document.querySelector("[data-text-style]");
+const deleteButton = document.querySelector("[data-component-delete]");
+const rightPane = document.querySelector('[data-pane="right"]');
+const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
 
 const sourceValues = {};
 const sourcePayloads = {};
@@ -64,6 +74,12 @@ let isSaving = false;
 let isGenerating = false;
 let applySelectionCollapse = null;
 
+const COLOR_DEFAULTS = {
+  foreground: "#212529",
+  background: "#ffffff",
+  border: "#dee2e6",
+};
+
 const paletteComponents = [
   {
     id: "heading",
@@ -74,6 +90,7 @@ const paletteComponents = [
       type: "field",
       component: "heading",
       text: "New Heading",
+      textStyle: "h2",
       className: "card-title",
     },
   },
@@ -86,6 +103,7 @@ const paletteComponents = [
       type: "field",
       component: "text",
       text: "Editable body text for this card or sheet.",
+      textStyle: "p",
       className: "card-body-text",
     },
   },
@@ -114,7 +132,50 @@ const paletteComponents = [
     },
   },
   {
-    id: "notes",
+    id: "stat",
+    label: "Stat",
+    description: "Label + value blocks",
+    icon: "tabler:graph",
+    node: {
+      type: "field",
+      component: "stat",
+      label: "Stat",
+      text: "0",
+      className: "panel-box",
+    },
+  },
+  {
+    id: "row",
+    label: "Row",
+    description: "Side-by-side layout columns",
+    icon: "tabler:columns",
+    node: {
+      type: "row",
+      gap: 4,
+      columns: [
+        {
+          node: {
+            type: "field",
+            component: "text",
+            text: "Column text",
+            textStyle: "p",
+            className: "mb-0",
+          },
+        },
+        {
+          node: {
+            type: "field",
+            component: "text",
+            text: "Column text",
+            textStyle: "p",
+            className: "mb-0",
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: "noteLines",
     label: "Note Lines",
     description: "Ruled space for handwriting",
     icon: "tabler:notes",
@@ -628,6 +689,33 @@ function findNodeById(node, uid) {
   return null;
 }
 
+function removeNodeById(node, uid) {
+  if (!node || !uid) return null;
+  if (Array.isArray(node.children)) {
+    const index = node.children.findIndex((child) => child.uid === uid);
+    if (index >= 0) {
+      const [removed] = node.children.splice(index, 1);
+      return removed;
+    }
+    for (const child of node.children) {
+      const removed = removeNodeById(child, uid);
+      if (removed) return removed;
+    }
+  }
+  if (Array.isArray(node.columns)) {
+    for (const column of node.columns) {
+      if (column?.node?.uid === uid) {
+        const removed = column.node;
+        column.node = null;
+        return removed;
+      }
+      const removed = removeNodeById(column.node, uid);
+      if (removed) return removed;
+    }
+  }
+  return null;
+}
+
 function getRootChildren(side) {
   const layout = getLayoutForSide(side);
   if (layout?.type === "stack" && Array.isArray(layout.children)) {
@@ -677,12 +765,53 @@ function createNodeFromPalette(type) {
 
 function describeNode(node) {
   if (!node) return "Component";
+  if (node.type === "row") return "Row";
   if (node.component === "heading") return node.text || "Heading";
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
   if (node.component === "badge") return node.text || node.label || "Badge";
   if (node.component === "list") return "List";
   if (node.component === "noteLines") return "Notes";
+  if (node.component === "stat") return node.label || "Stat";
   return node.component || node.type || "Component";
+}
+
+function getPaletteEntryForNode(node) {
+  if (!node) return null;
+  if (node.type === "row") {
+    return paletteComponents.find((item) => item.id === "row") ?? null;
+  }
+  if (node.component) {
+    return paletteComponents.find((item) => item.id === node.component) ?? null;
+  }
+  return null;
+}
+
+function mapFontSizeToToken(size) {
+  if (typeof size !== "number") return "md";
+  if (size <= 14) return "sm";
+  if (size >= 22) return "xl";
+  if (size >= 19) return "lg";
+  return "md";
+}
+
+function resolveTextSize(node) {
+  if (!node) return "md";
+  if (node.textSize) return node.textSize;
+  const fallback = node.style?.fontSize;
+  return mapFontSizeToToken(fallback);
+}
+
+function supportsTextStyleSelection(node) {
+  return node?.component === "heading" || node?.component === "text";
+}
+
+function resolveTextStyle(node) {
+  if (!node) return "p";
+  if (node.textStyle) return node.textStyle;
+  if (node.component === "heading") {
+    return node.level ?? "h2";
+  }
+  return "p";
 }
 
 function renderPalette() {
@@ -782,40 +911,94 @@ function updateInspector() {
 
   inspectorTitle.textContent = hasSelection ? describeNode(node) : "Select a component";
 
+  if (typeSummary) {
+    const entry = getPaletteEntryForNode(node);
+    typeSummary.classList.toggle("opacity-50", !entry);
+    if (entry) {
+      if (typeIcon) {
+        typeIcon.dataset.icon = entry.icon;
+      }
+      if (typeLabel) {
+        typeLabel.textContent = entry.label;
+      }
+      if (typeDescription) {
+        typeDescription.textContent = entry.description;
+      }
+    } else {
+      if (typeIcon) {
+        typeIcon.dataset.icon = "tabler:components";
+      }
+      if (typeLabel) {
+        typeLabel.textContent = "Component";
+      }
+      if (typeDescription) {
+        typeDescription.textContent = "Select a component to view details.";
+      }
+    }
+  }
+
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
-    if (fontSizeInput) fontSizeInput.value = 16;
-    if (fontSizeValue) fontSizeValue.textContent = "16px";
-    if (fontColorInput) fontColorInput.value = "#212529";
+    textSizeInputs.forEach((input) => {
+      input.checked = input.value === "md";
+    });
+    colorInputs.forEach((input) => {
+      const key = input.dataset.componentColor;
+      input.value = COLOR_DEFAULTS[key] || "#000000";
+    });
+    textStyleToggles.forEach((input) => {
+      input.checked = false;
+    });
+    alignInputs.forEach((input) => {
+      input.checked = input.value === "start";
+    });
     if (visibilityToggle) visibilityToggle.checked = true;
-    if (headingLevelSelect) headingLevelSelect.value = "h3";
+    if (textStyleSelect) {
+      textStyleSelect.value = "p";
+      textStyleSelect.disabled = true;
+    }
     return;
   }
 
   if (textEditor) {
     textEditor.value = getNodeText(node);
-    textEditor.placeholder = node.component === "list" ? "One entry per line" : "Text or label";
+    textEditor.placeholder = node.component === "list" ? "One entry per line" : "Binding / Text";
   }
 
-  if (fontSizeInput) {
-    const size = typeof node?.style?.fontSize === "number" ? node.style.fontSize : 16;
-    fontSizeInput.value = size;
-    if (fontSizeValue) {
-      fontSizeValue.textContent = `${size}px`;
+  const textSize = resolveTextSize(node);
+  textSizeInputs.forEach((input) => {
+    input.checked = input.value === textSize;
+  });
+
+  colorInputs.forEach((input) => {
+    const key = input.dataset.componentColor;
+    const styles = node?.style ?? {};
+    if (key === "foreground") {
+      input.value = styles.color ?? COLOR_DEFAULTS.foreground;
+    } else if (key === "background") {
+      input.value = styles.backgroundColor ?? COLOR_DEFAULTS.background;
+    } else if (key === "border") {
+      input.value = styles.borderColor ?? COLOR_DEFAULTS.border;
     }
-  }
+  });
 
-  if (fontColorInput) {
-    fontColorInput.value = node?.style?.color ?? "#212529";
-  }
+  textStyleToggles.forEach((input) => {
+    const styleKey = input.dataset.componentTextStyle;
+    input.checked = Boolean(node?.textStyles?.[styleKey]);
+  });
+
+  const alignment = node?.align || "start";
+  alignInputs.forEach((input) => {
+    input.checked = input.value === alignment;
+  });
 
   if (visibilityToggle) {
     visibilityToggle.checked = !node.hidden;
   }
 
-  if (headingLevelSelect) {
-    headingLevelSelect.value = node.component === "heading" ? node.level ?? "h3" : "h3";
-    headingLevelSelect.disabled = node.component !== "heading";
+  if (textStyleSelect) {
+    textStyleSelect.value = resolveTextStyle(node);
+    textStyleSelect.disabled = !supportsTextStyleSelection(node);
   }
 }
 
@@ -831,6 +1014,9 @@ function selectNode(uid, { fromPreview = false } = {}) {
   selectedNodeId = uid;
   renderLayoutList();
   updateInspector();
+  if (fromPreview) {
+    expandPane(rightPane, rightPaneToggle);
+  }
   if (!fromPreview) {
     renderPreview();
   }
@@ -1211,38 +1397,108 @@ function bindInspectorControls() {
     });
   }
 
-  if (fontSizeInput) {
-    fontSizeInput.addEventListener("focus", () => beginPendingUndo(fontSizeInput));
-    fontSizeInput.addEventListener("blur", () => commitPendingUndo(fontSizeInput));
-    fontSizeInput.addEventListener("change", () => commitPendingUndo(fontSizeInput));
-    fontSizeInput.addEventListener("input", () => {
-      const size = Number(fontSizeInput.value) || 16;
-      updateSelectedNode((node) => {
-        const styles = { ...(node.style ?? {}) };
-        styles.fontSize = size;
-        node.style = styles;
+  if (textSizeInputs.length) {
+    textSizeInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        recordUndoableChange(() => {
+          updateSelectedNode((node) => {
+            node.textSize = input.value;
+            if (node.style?.fontSize) {
+              const styles = { ...(node.style ?? {}) };
+              delete styles.fontSize;
+              if (Object.keys(styles).length) {
+                node.style = styles;
+              } else {
+                delete node.style;
+              }
+            }
+          });
+          renderPreview();
+        });
       });
-      if (fontSizeValue) {
-        fontSizeValue.textContent = `${size}px`;
-      }
-      renderPreview();
-      updateSaveState();
     });
   }
 
-  if (fontColorInput) {
-    fontColorInput.addEventListener("focus", () => beginPendingUndo(fontColorInput));
-    fontColorInput.addEventListener("blur", () => commitPendingUndo(fontColorInput));
-    fontColorInput.addEventListener("change", () => commitPendingUndo(fontColorInput));
-    fontColorInput.addEventListener("input", () => {
-      const color = fontColorInput.value || "#212529";
-      updateSelectedNode((node) => {
-        const styles = { ...(node.style ?? {}) };
-        styles.color = color;
-        node.style = styles;
+  if (colorInputs.length) {
+    colorInputs.forEach((input) => {
+      input.addEventListener("focus", () => beginPendingUndo(input));
+      input.addEventListener("blur", () => commitPendingUndo(input));
+      input.addEventListener("change", () => commitPendingUndo(input));
+      input.addEventListener("input", () => {
+        const key = input.dataset.componentColor;
+        const value = input.value;
+        updateSelectedNode((node) => {
+          const styles = { ...(node.style ?? {}) };
+          if (key === "foreground") {
+            styles.color = value;
+          } else if (key === "background") {
+            styles.backgroundColor = value;
+          } else if (key === "border") {
+            styles.borderColor = value;
+          }
+          node.style = styles;
+        });
+        renderPreview();
+        updateSaveState();
       });
-      renderPreview();
-      updateSaveState();
+    });
+  }
+
+  if (colorClearButtons.length) {
+    colorClearButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.componentColorClear;
+        recordUndoableChange(() => {
+          updateSelectedNode((node) => {
+            const styles = { ...(node.style ?? {}) };
+            if (key === "foreground") {
+              delete styles.color;
+            } else if (key === "background") {
+              delete styles.backgroundColor;
+            } else if (key === "border") {
+              delete styles.borderColor;
+            }
+            if (Object.keys(styles).length) {
+              node.style = styles;
+            } else {
+              delete node.style;
+            }
+          });
+          const input = colorInputs.find((entry) => entry.dataset.componentColor === key);
+          if (input) {
+            input.value = COLOR_DEFAULTS[key] || "#000000";
+          }
+          renderPreview();
+          updateSaveState();
+        });
+      });
+    });
+  }
+
+  if (textStyleToggles.length) {
+    textStyleToggles.forEach((input) => {
+      input.addEventListener("change", () => {
+        recordUndoableChange(() => {
+          updateSelectedNode((node) => {
+            node.textStyles = { ...(node.textStyles ?? {}) };
+            node.textStyles[input.dataset.componentTextStyle] = input.checked;
+          });
+          renderPreview();
+        });
+      });
+    });
+  }
+
+  if (alignInputs.length) {
+    alignInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        recordUndoableChange(() => {
+          updateSelectedNode((node) => {
+            node.align = input.value;
+          });
+          renderPreview();
+        });
+      });
     });
   }
 
@@ -1258,16 +1514,34 @@ function bindInspectorControls() {
     });
   }
 
-  if (headingLevelSelect) {
-    headingLevelSelect.addEventListener("change", () => {
+  if (textStyleSelect) {
+    textStyleSelect.addEventListener("change", () => {
       recordUndoableChange(() => {
         updateSelectedNode((node) => {
+          if (!supportsTextStyleSelection(node)) {
+            return;
+          }
+          node.textStyle = textStyleSelect.value;
           if (node.component === "heading") {
-            node.level = headingLevelSelect.value;
+            node.level = textStyleSelect.value;
           }
         });
         renderPreview();
         renderLayoutList();
+      });
+    });
+  }
+
+  if (deleteButton) {
+    deleteButton.addEventListener("click", () => {
+      recordUndoableChange(() => {
+        const layout = getLayoutForSide(currentSide);
+        if (!layout || !selectedNodeId) return;
+        removeNodeById(layout, selectedNodeId);
+        selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
+        renderLayoutList();
+        updateInspector();
+        renderPreview();
       });
     });
   }
