@@ -10,14 +10,13 @@ import {
   getTemplates,
   loadTemplates,
 } from "./templates.js";
-import { buildSourceSummary, getSourceById, getSources } from "./sources.js";
+import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData } from "./source-data.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
 const orientationSelect = document.getElementById("orientationSelect");
 const sourceSelect = document.getElementById("sourceSelect");
-const sourceSummary = document.getElementById("sourceSummary");
 const sourceInputContainer = document.getElementById("sourceInputContainer");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
@@ -220,7 +219,6 @@ function populateSources() {
   const active = getActiveSource();
   if (active) {
     renderSourceInput(active);
-    updateSourceSummary();
     updateGenerateButtonState();
   }
 }
@@ -316,7 +314,6 @@ function getSelectionContext() {
   const size = template && format ? getPageSize(template, format?.id, orientation) : null;
   const value = sourceValues[source?.id];
   const payload = getSourcePayload(source, value);
-  const summary = source ? buildSourceSummary(source, value, payload) : "";
 
   return {
     template,
@@ -325,7 +322,6 @@ function getSelectionContext() {
     orientation,
     size,
     sourceValue: value,
-    sourceSummary: summary,
     sourcePayload: payload,
     sourceData: payload?.data ?? null,
   };
@@ -339,7 +335,6 @@ const renderJsonPreview = createJsonPreviewRenderer({
     return {
       source: {
         id: context.source?.id ?? null,
-        summary: context.sourceSummary,
         value: context.sourceValue,
         data: context.sourceData ?? null,
       },
@@ -915,14 +910,14 @@ function updateSideButton() {
 function renderPreview() {
   destroyCanvasDnd();
   const context = getSelectionContext();
-  const { template, source, format, size, orientation, sourceValue, sourceSummary: summary, sourceData } = context;
+  const { template, source, format, size, orientation, sourceValue, sourceData } = context;
   if (!template || !size) return;
   const side = currentSide;
   const pageOverride = getEditablePage(side);
   let layoutRoot = null;
 
   previewStage.innerHTML = "";
-  const sourceContext = { ...source, value: sourceValue, summary, data: sourceData };
+  const sourceContext = { ...source, value: sourceValue, data: sourceData };
   const page = template.createPage(side, {
     size,
     format,
@@ -979,17 +974,6 @@ function toggleSide() {
   renderPreview();
 }
 
-function updateSourceSummary() {
-  const source = getActiveSource();
-  if (!source) {
-    sourceSummary.textContent = "";
-    return;
-  }
-  const value = sourceValues[source.id];
-  const payload = getSourcePayload(source, value);
-  sourceSummary.textContent = buildSourceSummary(source, value, payload);
-}
-
 function renderSourceInput(source) {
   sourceInputContainer.innerHTML = "";
   const inputSpec = source.input;
@@ -1044,7 +1028,6 @@ function renderSourceInput(source) {
       sourceValues[source.id] = event.target.value;
     }
     clearSourcePayload(source);
-    updateSourceSummary();
     updateGenerateButtonState();
     renderPreview();
   });
@@ -1080,7 +1063,6 @@ async function handleGeneratePrint() {
       data,
       fetchedAt: new Date().toISOString(),
     });
-    updateSourceSummary();
     renderPreview();
     if (applySelectionCollapse) {
       applySelectionCollapse(true);
@@ -1329,7 +1311,6 @@ function wireEvents() {
     const source = getActiveSource();
     clearSourcePayload(source);
     renderSourceInput(source);
-    updateSourceSummary();
     updateGenerateButtonState();
     renderPreview();
   });
