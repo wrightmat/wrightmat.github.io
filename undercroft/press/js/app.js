@@ -904,6 +904,7 @@ function updateInspector() {
     if (entry) {
       if (typeIcon) {
         typeIcon.setAttribute("data-icon", entry.icon);
+        typeIcon.innerHTML = "";
       }
       if (typeLabel) {
         typeLabel.textContent = entry.label;
@@ -914,6 +915,7 @@ function updateInspector() {
     } else {
       if (typeIcon) {
         typeIcon.setAttribute("data-icon", "tabler:components");
+        typeIcon.innerHTML = "";
       }
       if (typeLabel) {
         typeLabel.textContent = "Component";
@@ -999,9 +1001,7 @@ function selectNode(uid, { fromPreview = false } = {}) {
   if (fromPreview) {
     expandPane(rightPane, rightPaneToggle);
   }
-  if (!fromPreview) {
-    renderPreview();
-  }
+  renderPreview();
 }
 
 function updateSelectedNode(updater) {
