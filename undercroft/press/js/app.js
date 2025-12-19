@@ -1,6 +1,5 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
-import { initPaneToggles } from "../../common/js/lib/panes.js";
-import { initThemeControls } from "../../common/js/lib/theme.js";
+import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { createSortable } from "../../workbench/js/lib/dnd.js";
@@ -32,6 +31,9 @@ const jsonToggleLabel = document.querySelector("[data-json-toggle-label]");
 const jsonPanel = document.querySelector("[data-json-panel]");
 const jsonPreview = document.querySelector("[data-json-preview]");
 const jsonBytes = document.querySelector("[data-json-bytes]");
+const undoButton = document.querySelector('[data-action="undo-layout"]');
+const redoButton = document.querySelector('[data-action="redo-layout"]');
+const saveButton = document.querySelector('[data-action="save-layout"]');
 const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
@@ -52,6 +54,15 @@ let editablePages = { front: null, back: null };
 let paletteSortable = null;
 let layoutSortable = null;
 let canvasSortable = null;
+let undoStack = null;
+let performUndo = null;
+let performRedo = null;
+let isApplyingHistory = false;
+let pendingUndoSnapshot = null;
+let pendingUndoTarget = null;
+let status = null;
+let lastSavedLayout = null;
+let isSaving = false;
 
 const paletteComponents = [
   {
@@ -139,8 +150,58 @@ function bindCollapsible(toggle, panel, { collapsed = false, expandLabel, collap
 }
 
 function initShell() {
-  initThemeControls(document);
-  initPaneToggles(document);
+  const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
+    namespace: "press-layout",
+    storagePrefix: "undercroft.press.undo",
+    onUndo: (entry) => {
+      if (!entry?.before) {
+        return { applied: false };
+      }
+      isApplyingHistory = true;
+      try {
+        applySnapshot(entry.before);
+        updateSaveState();
+      } finally {
+        isApplyingHistory = false;
+      }
+      return null;
+    },
+    onRedo: (entry) => {
+      if (!entry?.after) {
+        return { applied: false };
+      }
+      isApplyingHistory = true;
+      try {
+        applySnapshot(entry.after);
+        updateSaveState();
+      } finally {
+        isApplyingHistory = false;
+      }
+      return null;
+    },
+  });
+  status = shellStatus;
+  undoStack = stack;
+  performUndo = undo;
+  performRedo = redo;
+  if (undoButton) {
+    undoButton.addEventListener("click", () => {
+      if (performUndo) {
+        performUndo();
+      }
+    });
+  }
+  if (redoButton) {
+    redoButton.addEventListener("click", () => {
+      if (performRedo) {
+        performRedo();
+      }
+    });
+  }
+  if (saveButton) {
+    saveButton.addEventListener("click", handleSaveTemplate);
+    updateSaveState();
+  }
   initHelpSystem({ root: document });
 }
 
@@ -254,6 +315,223 @@ const renderJsonPreview = createJsonPreviewRenderer({
     };
   },
 });
+
+function cloneState(value) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value));
+}
+
+function createSnapshot() {
+  return {
+    pages: cloneState(editablePages),
+    currentSide,
+    selectedNodeId,
+    nodeCounter,
+  };
+}
+
+function createLayoutSnapshot() {
+  return cloneState(editablePages);
+}
+
+function applySnapshot(snapshot) {
+  if (!snapshot) return;
+  const next = cloneState(snapshot);
+  editablePages = next.pages ?? { front: null, back: null };
+  currentSide = next.currentSide ?? "front";
+  selectedNodeId = next.selectedNodeId ?? null;
+  nodeCounter = typeof next.nodeCounter === "number" ? next.nodeCounter : 0;
+  renderLayoutList();
+  updateInspector();
+  renderPreview();
+}
+
+function snapshotsEqual(first, second) {
+  try {
+    return JSON.stringify(first) === JSON.stringify(second);
+  } catch (error) {
+    console.warn("Unable to compare undo snapshots", error);
+    return false;
+  }
+}
+
+function pushUndoEntry(before, after) {
+  if (!undoStack) return;
+  if (snapshotsEqual(before, after)) return;
+  undoStack.push({
+    type: "layout",
+    before,
+    after,
+  });
+}
+
+function recordUndoableChange(action) {
+  if (isApplyingHistory || typeof action !== "function") {
+    if (typeof action === "function") {
+      action();
+    }
+    return;
+  }
+  if (!undoStack) {
+    action();
+    updateSaveState();
+    return;
+  }
+  const before = createSnapshot();
+  action();
+  const after = createSnapshot();
+  pushUndoEntry(before, after);
+  updateSaveState();
+}
+
+function beginPendingUndo(target) {
+  if (!undoStack || isApplyingHistory) return;
+  pendingUndoSnapshot = createSnapshot();
+  pendingUndoTarget = target ?? null;
+}
+
+function commitPendingUndo(target) {
+  if (!undoStack || isApplyingHistory) return;
+  if (pendingUndoTarget && target && pendingUndoTarget !== target) return;
+  const before = pendingUndoSnapshot;
+  pendingUndoSnapshot = null;
+  pendingUndoTarget = null;
+  if (!before) return;
+  const after = createSnapshot();
+  pushUndoEntry(before, after);
+  updateSaveState();
+}
+
+function updateSaveState() {
+  if (!saveButton) return;
+  const hasTemplate = Boolean(getActiveTemplate());
+  const hasChanges = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
+  const enabled = hasChanges && !isSaving;
+  saveButton.disabled = !enabled;
+  saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
+  if (!hasTemplate) {
+    saveButton.title = "Select a template before saving.";
+  } else if (isSaving) {
+    saveButton.title = "Saving template...";
+  } else if (!hasChanges) {
+    saveButton.title = "No changes to save.";
+  } else {
+    saveButton.removeAttribute("title");
+  }
+}
+
+function markLayoutSaved() {
+  lastSavedLayout = createLayoutSnapshot();
+  updateSaveState();
+}
+
+function stripNodeIds(node) {
+  if (!node || typeof node !== "object") return node;
+  if (Array.isArray(node)) {
+    return node.map((child) => stripNodeIds(child));
+  }
+  const next = { ...node };
+  delete next.uid;
+  if (Array.isArray(next.children)) {
+    next.children = next.children.map((child) => stripNodeIds(child));
+  }
+  if (Array.isArray(next.columns)) {
+    next.columns = next.columns.map((column) => ({
+      ...column,
+      node: stripNodeIds(column.node),
+    }));
+  }
+  return next;
+}
+
+function buildTemplatePages() {
+  const pages = {};
+  Object.entries(editablePages ?? {}).forEach(([side, page]) => {
+    if (!page || typeof page !== "object") {
+      pages[side] = page;
+      return;
+    }
+    const { layout, ...rest } = page;
+    pages[side] = {
+      ...rest,
+      layout: layout ? stripNodeIds(layout) : layout,
+    };
+  });
+  return pages;
+}
+
+function serializeTemplate(template) {
+  if (!template || typeof template !== "object") return null;
+  const { createPage, ...rest } = template;
+  return cloneState({ ...rest, pages: buildTemplatePages() });
+}
+
+async function saveTemplateToServer(payload) {
+  const id = payload?.id;
+  if (!id) {
+    throw new Error("Missing template id");
+  }
+  const response = await fetch(`/press/templates/${encodeURIComponent(id)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    let message = `Unable to save template (${response.status})`;
+    try {
+      const data = await response.json();
+      if (data?.error) {
+        message = data.error;
+      }
+    } catch (error) {
+      console.warn("Unable to parse save response", error);
+    }
+    throw new Error(message);
+  }
+  return response.json();
+}
+
+async function handleSaveTemplate() {
+  const template = getActiveTemplate();
+  if (!template) {
+    return;
+  }
+  const hasChanges = !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
+  if (!hasChanges) {
+    return;
+  }
+  const confirmed = window.confirm("Save layout changes to this template?");
+  if (!confirmed) {
+    if (status) {
+      status.show("Save cancelled", { type: "info", timeout: 1500 });
+    }
+    return;
+  }
+  const payload = serializeTemplate(template);
+  if (!payload) {
+    return;
+  }
+  isSaving = true;
+  updateSaveState();
+  try {
+    await saveTemplateToServer(payload);
+    template.pages = payload.pages;
+    markLayoutSaved();
+    if (status) {
+      status.show("Template layout saved", { type: "success", timeout: 2000 });
+    }
+  } catch (error) {
+    console.error("Failed to save template", error);
+    if (status) {
+      status.show(error.message || "Unable to save template", { type: "error", timeout: 2500 });
+    }
+  } finally {
+    isSaving = false;
+    updateSaveState();
+  }
+}
 
 function nextNodeId() {
   nodeCounter += 1;
@@ -394,10 +672,11 @@ function renderPalette() {
     `;
     entry.addEventListener("dblclick", () => {
       const newNode = createNodeFromPalette(item.id);
-      insertNodeAtRoot(currentSide, newNode, getRootChildren(currentSide).length);
-      renderLayoutList();
-      selectNode(newNode.uid);
-      renderPreview();
+      if (!newNode) return;
+      recordUndoableChange(() => {
+        insertNodeAtRoot(currentSide, newNode, getRootChildren(currentSide).length);
+        selectNode(newNode.uid);
+      });
     });
     fragment.appendChild(entry);
   });
@@ -781,16 +1060,19 @@ function handleLayoutAdd(event) {
   const newNode = createNodeFromPalette(type);
   event.item?.remove();
   if (!newNode) return;
-  const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
-  insertNodeAtRoot(currentSide, newNode, index);
-  renderLayoutList();
-  selectNode(newNode.uid);
+  recordUndoableChange(() => {
+    const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
+    insertNodeAtRoot(currentSide, newNode, index);
+    selectNode(newNode.uid);
+  });
 }
 
 function handleLayoutReorder(event) {
-  reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
-  renderLayoutList();
-  renderPreview();
+  recordUndoableChange(() => {
+    reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
+    renderLayoutList();
+    renderPreview();
+  });
 }
 
 function initLayoutDnd() {
@@ -819,16 +1101,19 @@ function handleCanvasAdd(event) {
   const newNode = createNodeFromPalette(type);
   event.item?.remove();
   if (!newNode) return;
-  const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
-  insertNodeAtRoot(currentSide, newNode, index);
-  renderLayoutList();
-  selectNode(newNode.uid);
+  recordUndoableChange(() => {
+    const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
+    insertNodeAtRoot(currentSide, newNode, index);
+    selectNode(newNode.uid);
+  });
 }
 
 function handleCanvasReorder(event) {
-  reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
-  renderLayoutList();
-  renderPreview();
+  recordUndoableChange(() => {
+    reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
+    renderLayoutList();
+    renderPreview();
+  });
 }
 
 function initCanvasDnd(rootElement) {
@@ -856,6 +1141,9 @@ function initDragAndDrop() {
 
 function bindInspectorControls() {
   if (textEditor) {
+    textEditor.addEventListener("focus", () => beginPendingUndo(textEditor));
+    textEditor.addEventListener("blur", () => commitPendingUndo(textEditor));
+    textEditor.addEventListener("change", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("input", () => {
       updateSelectedNode((node) => {
         if (node.component === "list") {
@@ -870,10 +1158,14 @@ function bindInspectorControls() {
       });
       renderPreview();
       renderLayoutList();
+      updateSaveState();
     });
   }
 
   if (fontSizeInput) {
+    fontSizeInput.addEventListener("focus", () => beginPendingUndo(fontSizeInput));
+    fontSizeInput.addEventListener("blur", () => commitPendingUndo(fontSizeInput));
+    fontSizeInput.addEventListener("change", () => commitPendingUndo(fontSizeInput));
     fontSizeInput.addEventListener("input", () => {
       const size = Number(fontSizeInput.value) || 16;
       updateSelectedNode((node) => {
@@ -885,10 +1177,14 @@ function bindInspectorControls() {
         fontSizeValue.textContent = `${size}px`;
       }
       renderPreview();
+      updateSaveState();
     });
   }
 
   if (fontColorInput) {
+    fontColorInput.addEventListener("focus", () => beginPendingUndo(fontColorInput));
+    fontColorInput.addEventListener("blur", () => commitPendingUndo(fontColorInput));
+    fontColorInput.addEventListener("change", () => commitPendingUndo(fontColorInput));
     fontColorInput.addEventListener("input", () => {
       const color = fontColorInput.value || "#212529";
       updateSelectedNode((node) => {
@@ -897,28 +1193,33 @@ function bindInspectorControls() {
         node.style = styles;
       });
       renderPreview();
+      updateSaveState();
     });
   }
 
   if (visibilityToggle) {
     visibilityToggle.addEventListener("change", () => {
-      updateSelectedNode((node) => {
-        node.hidden = !visibilityToggle.checked;
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          node.hidden = !visibilityToggle.checked;
+        });
+        renderPreview();
+        renderLayoutList();
       });
-      renderPreview();
-      renderLayoutList();
     });
   }
 
   if (headingLevelSelect) {
     headingLevelSelect.addEventListener("change", () => {
-      updateSelectedNode((node) => {
-        if (node.component === "heading") {
-          node.level = headingLevelSelect.value;
-        }
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component === "heading") {
+            node.level = headingLevelSelect.value;
+          }
+        });
+        renderPreview();
+        renderLayoutList();
       });
-      renderPreview();
-      renderLayoutList();
     });
   }
 }
@@ -929,7 +1230,13 @@ function wireEvents() {
     const template = getActiveTemplate();
     hydrateEditablePages(template);
     renderFormatOptions(template);
+    if (undoStack) {
+      undoStack.clear();
+    }
+    pendingUndoSnapshot = null;
+    pendingUndoTarget = null;
     selectFirstNode();
+    markLayoutSaved();
   });
   formatSelect.addEventListener("change", () => {
     currentSide = "front";
@@ -969,6 +1276,7 @@ async function initPress() {
   bindInspectorControls();
   renderLayoutList();
   selectFirstNode();
+  markLayoutSaved();
   wireEvents();
 }
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import http.server
+import json
 import logging
 import threading
 from http import HTTPStatus
@@ -193,6 +194,13 @@ def register_routes():
             raise AuthError("Invalid content type")
         return mapping[content_type]
 
+    def resolve_press_template_path(state: ServerState, template_id: str) -> Path:
+        base_dir = state.root_dir / "undercroft" / "press" / "templates"
+        candidate = (base_dir / f"{template_id}.json").resolve()
+        if not str(candidate).startswith(str(base_dir.resolve())):
+            raise AuthError("Invalid template path")
+        return candidate
+
     # GET /healthz
     def handle_healthz(request: Request) -> Response:
         return json_response({"ok": True})
@@ -234,6 +242,25 @@ def register_routes():
         return json_response(catalog)
 
     router.add("GET", r"^/content/builtins$", handle_content_builtins)
+
+    # POST /press/templates/{id}
+    def handle_press_template_save(request: Request) -> Response:
+        params = getattr(request, "params")
+        template_id = params["id"]
+        payload = require_json(request)
+        template = payload.get("template", payload)
+        if not template or not isinstance(template, dict):
+            return json_response({"error": "Invalid template payload"}, status=HTTPStatus.BAD_REQUEST)
+        if template.get("id") != template_id:
+            return json_response({"error": "Template id mismatch"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_press_template_path(request.state, template_id)
+        if not path.exists():
+            return json_response({"error": "Template file not found"}, status=HTTPStatus.NOT_FOUND)
+        serialized = json.dumps(template, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
+
+    router.add("POST", r"^/press/templates/(?P<id>[^/]+)$", handle_press_template_save)
 
     # GET /content/owned
     def handle_owned_content(request: Request) -> Response:
