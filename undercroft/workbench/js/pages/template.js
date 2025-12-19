@@ -4055,7 +4055,7 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       { value: "italic", icon: "tabler:italic" },
       { value: "underline", icon: "tabler:underline" },
     ];
-    return createInspectorToggleGroup(component, "Text style", options, component.textStyles || {}, (key, checked) => {
+    return createInspectorToggleGroup(component, "Text decoration", options, component.textStyles || {}, (key, checked) => {
       updateComponent(component.uid, (draft) => {
         draft.textStyles = { ...(draft.textStyles || {}) };
         draft.textStyles[key] = checked;
