@@ -332,11 +332,24 @@
                       </div>
                     </div>
                   </div>
-                  <div class="form-floating">
+                  <div class="form-floating" data-inspector-text-group data-inspector-text-field>
                     <textarea class="form-control" placeholder="Edit text" style="min-height: 96px" data-component-text></textarea>
                     <label class="fw-semibold">Binding / Text</label>
                   </div>
-                  <div class="d-flex flex-column gap-2">
+                  <div class="form-floating" data-inspector-gap-field hidden>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="componentGap"
+                      min="0"
+                      max="12"
+                      step="1"
+                      placeholder="4"
+                      data-component-gap
+                    />
+                    <label class="fw-semibold" for="componentGap">Gap</label>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group data-inspector-text-decoration-group>
                     <label class="fw-semibold text-body-secondary">Text size</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Font size">
                       <input
@@ -377,7 +390,7 @@
                       <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
                     </div>
                   </div>
-                  <div class="d-flex flex-column gap-2">
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
                     <div class="fw-semibold text-body-secondary">Colors</div>
                     <div class="template-color-grid">
                       <div class="template-color-control">
@@ -445,7 +458,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="d-flex flex-column gap-2">
+                  <div class="d-flex flex-column gap-2" data-inspector-text-group>
                     <label class="fw-semibold text-body-secondary">Text decoration</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Text decoration">
                       <input type="checkbox" class="btn-check" id="componentTextBold" data-component-text-style="bold" />
@@ -466,7 +479,7 @@
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2">
-                    <label class="fw-semibold text-body-secondary">Alignment</label>
+                    <label class="fw-semibold text-body-secondary" data-alignment-title>Alignment</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Text alignment">
                       <input
                         type="radio"
@@ -478,7 +491,7 @@
                       />
                       <label class="btn btn-outline-secondary" for="componentAlignStart">
                         <span class="iconify" data-icon="tabler:align-left" aria-hidden="true"></span>
-                        <span class="template-radio-label">Left</span>
+                        <span class="template-radio-label" data-alignment-label="start">Left</span>
                       </label>
                       <input
                         type="radio"
@@ -490,7 +503,7 @@
                       />
                       <label class="btn btn-outline-secondary" for="componentAlignCenter">
                         <span class="iconify" data-icon="tabler:align-center" aria-hidden="true"></span>
-                        <span class="template-radio-label">Center</span>
+                        <span class="template-radio-label" data-alignment-label="center">Center</span>
                       </label>
                       <input
                         type="radio"
@@ -502,7 +515,7 @@
                       />
                       <label class="btn btn-outline-secondary" for="componentAlignEnd">
                         <span class="iconify" data-icon="tabler:align-right" aria-hidden="true"></span>
-                        <span class="template-radio-label">Right</span>
+                        <span class="template-radio-label" data-alignment-label="end">Right</span>
                       </label>
                       <input
                         type="radio"
@@ -514,7 +527,7 @@
                       />
                       <label class="btn btn-outline-secondary" for="componentAlignJustify">
                         <span class="iconify" data-icon="tabler:align-justified" aria-hidden="true"></span>
-                        <span class="template-radio-label">Justify</span>
+                        <span class="template-radio-label" data-alignment-label="justify">Justify</span>
                       </label>
                     </div>
                   </div>
