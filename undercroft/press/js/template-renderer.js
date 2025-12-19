@@ -75,10 +75,10 @@ function resolveLayoutAlignment(node) {
 }
 
 function resolveStackAlignment(node) {
-  const alignment = node?.align || "start";
+  const alignment = node?.align || "justify";
   if (alignment === "center") return "center";
   if (alignment === "end") return "flex-end";
-  if (alignment === "justify") return "flex-start";
+  if (alignment === "justify") return "space-between";
   return "flex-start";
 }
 
