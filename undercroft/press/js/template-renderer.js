@@ -185,7 +185,6 @@ function createCurvedTextElement(node, text, className) {
   applyTextTransform(wrapper, node);
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 120 100");
   svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
   svg.classList.add("press-curved-text__svg");
 
@@ -195,10 +194,14 @@ function createCurvedTextElement(node, text, className) {
   const pathId = `curve-${node.uid ?? Math.random().toString(36).slice(2)}`;
   const rawCurve = Number.isFinite(node.textCurve) ? node.textCurve : 12;
   const curveAmount = Math.max(0, Math.min(rawCurve, 18));
+  const fontSize = resolveTextSizePx(node) ?? TEXT_SIZE_MAP.md;
+  const lineHeight = Math.max(18, fontSize * 1.1);
+  const svgHeight = Math.max(42, fontSize * 2.4);
+  svg.setAttribute("viewBox", `0 0 120 ${svgHeight}`);
   const startX = 10;
   const endX = 110;
   const centerX = 60;
-  const baselineY = curveDirection === "down" ? 42 : 58;
+  const baselineY = curveDirection === "down" ? svgHeight * 0.42 : svgHeight * 0.58;
   const controlY = curveDirection === "down" ? baselineY + curveAmount : baselineY - curveAmount;
   path.setAttribute("id", pathId);
   path.setAttribute("fill", "none");
@@ -221,9 +224,6 @@ function createCurvedTextElement(node, text, className) {
     textPath.setAttribute("startOffset", "0%");
   }
 
-  const fontSize = resolveTextSizePx(node) ?? TEXT_SIZE_MAP.md;
-  const lineHeight = Math.max(18, fontSize * 1.1);
-  const svgHeight = Math.max(42, fontSize * 2.4);
   wrapper.style.minHeight = `${lineHeight}px`;
   wrapper.style.height = `${lineHeight}px`;
   svg.style.height = `${svgHeight}px`;
