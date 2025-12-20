@@ -302,7 +302,7 @@
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <section class="pane-card d-flex flex-column gap-3" data-template-properties>
+          <section class="d-flex flex-column gap-4" data-template-properties>
             <div class="d-flex align-items-center justify-content-between">
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
               <button
@@ -315,8 +315,8 @@
                 <span class="visually-hidden" data-template-toggle-label>Expand template properties</span>
               </button>
             </div>
-            <div class="d-flex flex-column gap-3" data-template-panel data-template-inspector>
-              <div class="row g-2">
+            <div class="d-flex flex-column gap-4" data-template-panel data-template-inspector>
+              <div class="row g-3">
                 <div class="col-12">
                   <label class="form-label small text-body-secondary fw-semibold" for="templateId">ID</label>
                   <input class="form-control form-control-sm" id="templateId" data-template-id />
@@ -338,32 +338,102 @@
                 </div>
               </div>
               <div class="d-flex flex-column gap-2">
-                <label class="form-label small text-body-secondary fw-semibold" for="templateFormats">Formats (JSON)</label>
-                <textarea
-                  class="form-control form-control-sm font-monospace"
-                  id="templateFormats"
-                  rows="4"
-                  data-template-formats
-                ></textarea>
+                <label class="form-label small text-body-secondary fw-semibold" for="templateFormats">Formats</label>
+                <div class="border rounded-3 bg-body p-3 d-flex flex-column gap-2" id="templateFormats" data-template-formats></div>
               </div>
               <div class="d-flex flex-column gap-2">
-                <label class="form-label small text-body-secondary fw-semibold" for="templateSources">
-                  Supported sources (comma-separated)
-                </label>
-                <input class="form-control form-control-sm" id="templateSources" data-template-sources />
-              </div>
-              <div class="d-flex flex-column gap-2" data-template-card-group hidden>
-                <label class="form-label small text-body-secondary fw-semibold" for="templateCard">Card (JSON)</label>
-                <textarea
-                  class="form-control form-control-sm font-monospace"
-                  id="templateCard"
-                  rows="3"
-                  data-template-card
-                ></textarea>
+                <label class="form-label small text-body-secondary fw-semibold" for="templateSources">Supported sources</label>
+                <div class="border rounded-3 bg-body p-3 d-flex flex-column gap-2" id="templateSources" data-template-sources></div>
               </div>
             </div>
           </section>
-          <section class="pane-card d-flex flex-column gap-3" data-component-properties>
+          <hr class="border-body-tertiary opacity-50 my-2" />
+          <section class="d-flex flex-column gap-4" data-template-card-group hidden>
+            <div class="d-flex align-items-center justify-content-between">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Card Properties</h2>
+              <button
+                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                type="button"
+                data-card-toggle
+                aria-expanded="false"
+              >
+                <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                <span class="visually-hidden" data-card-toggle-label>Expand card properties</span>
+              </button>
+            </div>
+            <div class="d-flex flex-column gap-4" data-card-panel>
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateCardWidth">Card width (in)</label>
+                  <input
+                    class="form-control form-control-sm"
+                    id="templateCardWidth"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    data-template-card-width
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateCardHeight">Card height (in)</label>
+                  <input
+                    class="form-control form-control-sm"
+                    id="templateCardHeight"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    data-template-card-height
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateCardGutter">Gutter (in)</label>
+                  <input
+                    class="form-control form-control-sm"
+                    id="templateCardGutter"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    data-template-card-gutter
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateCardSafeInset">Safe inset (in)</label>
+                  <input
+                    class="form-control form-control-sm"
+                    id="templateCardSafeInset"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    data-template-card-safe-inset
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateCardColumns">Columns</label>
+                  <input
+                    class="form-control form-control-sm"
+                    id="templateCardColumns"
+                    type="number"
+                    min="1"
+                    step="1"
+                    data-template-card-columns
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateCardRows">Rows</label>
+                  <input
+                    class="form-control form-control-sm"
+                    id="templateCardRows"
+                    type="number"
+                    min="1"
+                    step="1"
+                    data-template-card-rows
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+          <hr class="border-body-tertiary opacity-50 my-2" />
+          <section class="d-flex flex-column gap-4" data-component-properties>
             <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Properties</h2>
