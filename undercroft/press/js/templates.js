@@ -204,7 +204,13 @@ function renderChipGrid(template, side, context) {
   const gridHeight = diameter * rows + gutter * (rows - 1);
   grid.style.width = `${gridWidth}in`;
   grid.style.height = `${gridHeight}in`;
-  grid.style.margin = "0 auto";
+  const availableWidth = context.size ? context.size.width - context.size.margin * 2 : gridWidth;
+  const availableHeight = context.size ? context.size.height - context.size.margin * 2 : gridHeight;
+  const horizontalOffset = Math.max(0, (availableWidth - gridWidth) / 2);
+  const verticalOffset = Math.max(0, (availableHeight - gridHeight) / 2);
+  grid.style.marginLeft = `${horizontalOffset}in`;
+  grid.style.marginTop = `${verticalOffset}in`;
+  grid.style.alignSelf = "flex-start";
 
   const chips = data.slice(0, columns * rows);
   chips.forEach((chip, index) => {

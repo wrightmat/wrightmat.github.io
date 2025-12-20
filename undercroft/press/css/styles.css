@@ -257,7 +257,7 @@ body[data-theme="dark"] .preview-stage {
 
 .chip-image {
   align-self: center;
-  width: 58%;
+  width: 36%;
   aspect-ratio: 1 / 1;
   border-radius: 999px;
 }
@@ -266,6 +266,13 @@ body[data-theme="dark"] .preview-stage {
   min-height: 0;
   padding: 0;
   background: transparent;
+}
+
+.chip-meta {
+  font-size: 0.55rem;
+  line-height: 1.1;
+  color: #495057;
+  margin: 0;
 }
 
 .press-image {
