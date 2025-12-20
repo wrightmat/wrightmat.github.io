@@ -112,25 +112,14 @@ function resolveTextTransform(node) {
   return {
     orientation: node?.textOrientation ?? "horizontal",
     rotation: Number.isFinite(node?.textAngle) ? node.textAngle : 0,
-    skewX: Number.isFinite(node?.textSkewX) ? node.textSkewX : 0,
-    skewY: Number.isFinite(node?.textSkewY) ? node.textSkewY : 0,
   };
 }
 
-function applyTextTransform(element, node, { allowWritingMode = true } = {}) {
+function applyTextTransform(element, node) {
   if (!element || !node) return;
-  const { orientation, rotation, skewX, skewY } = resolveTextTransform(node);
-  if (allowWritingMode && orientation === "vertical") {
-    element.style.writingMode = "vertical-rl";
-    element.style.textOrientation = "mixed";
-  } else {
-    element.style.removeProperty("writing-mode");
-    element.style.removeProperty("text-orientation");
-  }
+  const { rotation } = resolveTextTransform(node);
   const transforms = [];
   if (rotation) transforms.push(`rotate(${rotation}deg)`);
-  if (skewX) transforms.push(`skewX(${skewX}deg)`);
-  if (skewY) transforms.push(`skewY(${skewY}deg)`);
   if (transforms.length) {
     element.style.transform = transforms.join(" ");
     element.style.transformOrigin = "center";
@@ -193,7 +182,7 @@ function createCurvedTextElement(node, text, className) {
   wrapper.classList.add("press-curved-text");
   applyClassName(wrapper, className);
   applyInlineStyles(wrapper, node.style);
-  applyTextTransform(wrapper, node, { allowWritingMode: false });
+  applyTextTransform(wrapper, node);
 
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 100 40");
@@ -203,9 +192,13 @@ function createCurvedTextElement(node, text, className) {
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
   const curveDirection = node.textOrientation === "curve-down" ? "down" : "up";
   const pathId = `curve-${node.uid ?? Math.random().toString(36).slice(2)}`;
+  const rawCurve = Number.isFinite(node.textCurve) ? node.textCurve : 12;
+  const curveAmount = Math.max(0, Math.min(rawCurve, 18));
+  const centerY = 20;
+  const controlY = curveDirection === "down" ? centerY + curveAmount : centerY - curveAmount;
   path.setAttribute("id", pathId);
   path.setAttribute("fill", "none");
-  path.setAttribute("d", curveDirection === "down" ? "M5,10 Q50,35 95,10" : "M5,30 Q50,5 95,30");
+  path.setAttribute("d", `M5,${centerY} Q50,${controlY} 95,${centerY}`);
 
   const textEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
   const textPath = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
