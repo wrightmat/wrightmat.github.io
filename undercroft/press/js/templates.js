@@ -167,7 +167,7 @@ function renderCardGrid(template, side, context) {
   const gridHeight = height * rows + gutter * (rows - 1);
   grid.style.width = `${gridWidth}in`;
   grid.style.height = `${gridHeight}in`;
-  grid.style.margin = "0 auto";
+  grid.style.margin = "auto";
 
   const cards = data.slice(0, columns * rows);
   cards.forEach((card, index) => {
@@ -180,6 +180,48 @@ function renderCardGrid(template, side, context) {
       : renderOptions;
     const content = layout ? renderLayout(layout, card, options) : document.createTextNode(card?.title ?? "Card");
     tile.append(content);
+    grid.appendChild(tile);
+  });
+
+  inner.appendChild(grid);
+  return page;
+}
+
+function renderChipGrid(template, side, context) {
+  const { page, inner } = createPageWrapper(template, side, context);
+  const pageConfig = context.page ?? template.pages?.[side] ?? {};
+  const templateData = resolveTemplateData(template, context.data);
+  const data = getRepeatData(template, pageConfig, templateData);
+  const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
+  const { width = 1, height = 1, gutter = 0, safeInset = 0, columns = 1, rows = 1 } = template.card ?? {};
+  const diameter = width || height || 1;
+  const grid = document.createElement("div");
+  grid.className = "chip-grid";
+  grid.style.gridTemplateColumns = `repeat(${columns}, ${diameter}in)`;
+  grid.style.gridAutoRows = `${diameter}in`;
+  grid.style.gap = `${gutter}in`;
+  const gridWidth = diameter * columns + gutter * (columns - 1);
+  const gridHeight = diameter * rows + gutter * (rows - 1);
+  grid.style.width = `${gridWidth}in`;
+  grid.style.height = `${gridHeight}in`;
+  grid.style.margin = "0 auto";
+
+  const chips = data.slice(0, columns * rows);
+  chips.forEach((chip, index) => {
+    const tile = document.createElement("article");
+    tile.className = "chip-tile";
+    const circle = document.createElement("div");
+    circle.className = "chip-circle";
+    circle.style.width = `${diameter}in`;
+    circle.style.height = `${diameter}in`;
+    circle.style.padding = `${safeInset}in`;
+    const layout = pageConfig.layout ?? null;
+    const options = index === 0 && typeof onRootReady === "function"
+      ? { ...renderOptions, onRootReady }
+      : renderOptions;
+    const content = layout ? renderLayout(layout, chip, options) : document.createTextNode(chip?.title ?? "Chip");
+    circle.append(content);
+    tile.appendChild(circle);
     grid.appendChild(tile);
   });
 
@@ -214,6 +256,9 @@ function normalizeTemplate(raw) {
   template.createPage = (side, { size, format, source, data, page, renderOptions } = {}) => {
     if (template.type === "card") {
       return renderCardGrid(template, side, { size, format, source, data, page, renderOptions });
+    }
+    if (template.type === "chip") {
+      return renderChipGrid(template, side, { size, format, source, data, page, renderOptions });
     }
     return renderSheet(template, side, { size, format, source, data, page, renderOptions });
   };
