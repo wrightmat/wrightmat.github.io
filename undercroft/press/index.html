@@ -485,7 +485,7 @@
                     </div>
                   </div>
                   <div class="form-floating" data-inspector-text-field>
-                    <textarea class="form-control" placeholder="Edit text" style="min-height: 96px" data-component-text></textarea>
+                    <textarea class="form-control" placeholder="Edit text" style="min-height: 72px" data-component-text></textarea>
                     <label class="fw-semibold">Binding / Text</label>
                   </div>
                   <div class="form-floating" data-inspector-image-field hidden>
@@ -578,10 +578,10 @@
                       />
                       <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
                     </div>
-                    <div>
-                      <label class="form-label small text-body-secondary mb-1" for="componentTextSizeCustom">Font size (pt)</label>
+                    <div class="d-flex align-items-center gap-2">
+                      <label class="form-label small text-body-secondary mb-0" for="componentTextSizeCustom">Font size (pt)</label>
                       <input
-                        class="form-control form-control-sm"
+                        class="form-control form-control-sm press-inline-input"
                         id="componentTextSizeCustom"
                         type="number"
                         step="0.5"
@@ -592,7 +592,11 @@
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
                     <label class="fw-semibold text-body-secondary">Text orientation</label>
-                    <div class="btn-group template-radio-group" role="group" aria-label="Text orientation">
+                    <div
+                      class="btn-group template-radio-group template-radio-group--nowrap press-text-orientation-group"
+                      role="group"
+                      aria-label="Text orientation"
+                    >
                       <input
                         type="radio"
                         class="btn-check"
@@ -639,29 +643,25 @@
                       />
                       <label class="btn btn-outline-secondary" for="componentTextOrientationCurveDown">Curved down</label>
                     </div>
-                    <div class="row g-2">
-                      <div class="col-6">
-                        <label class="form-label small text-body-secondary mb-1" for="componentTextAngle">Angle</label>
-                        <input
-                          class="form-control form-control-sm"
-                          id="componentTextAngle"
-                          type="number"
-                          step="1"
-                          placeholder="0"
-                          data-component-text-angle
-                        />
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small text-body-secondary mb-1" for="componentTextCurve">Curve amount</label>
-                        <input
-                          class="form-control form-control-sm"
-                          id="componentTextCurve"
-                          type="number"
-                          step="1"
-                          placeholder="12"
-                          data-component-text-curve
-                        />
-                      </div>
+                    <div class="d-flex align-items-center gap-2 flex-nowrap press-text-transform-row">
+                      <label class="form-label small text-body-secondary mb-0" for="componentTextAngle">Angle</label>
+                      <input
+                        class="form-control form-control-sm press-inline-input"
+                        id="componentTextAngle"
+                        type="number"
+                        step="1"
+                        placeholder="0"
+                        data-component-text-angle
+                      />
+                      <label class="form-label small text-body-secondary mb-0" for="componentTextCurve">Curve</label>
+                      <input
+                        class="form-control form-control-sm press-inline-input"
+                        id="componentTextCurve"
+                        type="number"
+                        step="1"
+                        placeholder="0"
+                        data-component-text-curve
+                      />
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
