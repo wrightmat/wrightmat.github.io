@@ -207,6 +207,25 @@ function renderField(node, context) {
       applyInlineStyles(el, node.style);
       return el;
     }
+    case "image": {
+      const src = resolveBinding(node.url ?? node.src ?? node.text ?? node.value ?? node.bind, context);
+      const el = document.createElement("div");
+      applyClassName(el, node.className ?? "press-image");
+      applyInlineStyles(el, node.style);
+      if (src) {
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = node.alt ?? "";
+        img.className = "press-image__img";
+        el.appendChild(img);
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "press-image__placeholder";
+        placeholder.textContent = node.label ?? "Image";
+        el.appendChild(placeholder);
+      }
+      return el;
+    }
     default: {
       const el = document.createElement("div");
       el.className = "border border-dashed rounded-3 p-3 fs-6 text-body-secondary";
