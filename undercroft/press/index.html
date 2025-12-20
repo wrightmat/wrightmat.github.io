@@ -541,6 +541,15 @@
                         type="radio"
                         class="btn-check"
                         name="componentTextSize"
+                        id="componentTextSizeXs"
+                        value="xs"
+                        data-component-text-size
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextSizeXs">XS</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextSize"
                         id="componentTextSizeSm"
                         value="sm"
                         data-component-text-size
@@ -573,6 +582,52 @@
                         data-component-text-size
                       />
                       <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-settings>
+                    <label class="fw-semibold text-body-secondary" for="componentTextOrientation">Text orientation</label>
+                    <select class="form-select form-select-sm" id="componentTextOrientation" data-component-text-orientation>
+                      <option value="horizontal">Horizontal</option>
+                      <option value="vertical">Vertical</option>
+                      <option value="diagonal">Diagonal</option>
+                      <option value="curve-up">Curved upward</option>
+                      <option value="curve-down">Curved downward</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    <div class="row g-2">
+                      <div class="col-4">
+                        <label class="form-label small text-body-secondary mb-1" for="componentTextAngle">Angle</label>
+                        <input
+                          class="form-control form-control-sm"
+                          id="componentTextAngle"
+                          type="number"
+                          step="1"
+                          placeholder="0"
+                          data-component-text-angle
+                        />
+                      </div>
+                      <div class="col-4">
+                        <label class="form-label small text-body-secondary mb-1" for="componentTextSkewX">Skew X</label>
+                        <input
+                          class="form-control form-control-sm"
+                          id="componentTextSkewX"
+                          type="number"
+                          step="1"
+                          placeholder="0"
+                          data-component-text-skew-x
+                        />
+                      </div>
+                      <div class="col-4">
+                        <label class="form-label small text-body-secondary mb-1" for="componentTextSkewY">Skew Y</label>
+                        <input
+                          class="form-control form-control-sm"
+                          id="componentTextSkewY"
+                          type="number"
+                          step="1"
+                          placeholder="0"
+                          data-component-text-skew-y
+                        />
+                      </div>
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>

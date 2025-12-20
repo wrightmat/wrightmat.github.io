@@ -85,6 +85,10 @@ const alignmentLabels = {
   justify: document.querySelector('[data-alignment-label="justify"]'),
 };
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
+const textOrientationSelect = document.querySelector("[data-component-text-orientation]");
+const textAngleInput = document.querySelector("[data-component-text-angle]");
+const textSkewXInput = document.querySelector("[data-component-text-skew-x]");
+const textSkewYInput = document.querySelector("[data-component-text-skew-y]");
 const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
 const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
 const textStyleToggles = Array.from(document.querySelectorAll("[data-component-text-style]"));
@@ -1170,6 +1174,7 @@ function replaceTypeIcon(icon) {
 
 function mapFontSizeToToken(size) {
   if (typeof size !== "number") return "md";
+  if (size <= 12) return "xs";
   if (size <= 14) return "sm";
   if (size >= 22) return "xl";
   if (size >= 19) return "lg";
@@ -1205,6 +1210,15 @@ function resolveTextStyles(node) {
     bold: typeof node.textStyles.bold === "boolean" ? node.textStyles.bold : defaults.bold,
     italic: Boolean(node.textStyles.italic),
     underline: Boolean(node.textStyles.underline),
+  };
+}
+
+function resolveTextTransform(node) {
+  return {
+    orientation: node?.textOrientation ?? "horizontal",
+    angle: Number.isFinite(node?.textAngle) ? node.textAngle : 0,
+    skewX: Number.isFinite(node?.textSkewX) ? node.textSkewX : 0,
+    skewY: Number.isFinite(node?.textSkewY) ? node.textSkewY : 0,
   };
 }
 
@@ -1375,6 +1389,10 @@ function updateInspector() {
     textSizeInputs.forEach((input) => {
       input.checked = input.value === "md";
     });
+    if (textOrientationSelect) textOrientationSelect.value = "horizontal";
+    if (textAngleInput) textAngleInput.value = "0";
+    if (textSkewXInput) textSkewXInput.value = "0";
+    if (textSkewYInput) textSkewYInput.value = "0";
     colorInputs.forEach((input) => {
       const key = input.dataset.componentColor;
       input.value = COLOR_DEFAULTS[key] || "#000000";
@@ -1466,6 +1484,14 @@ function updateInspector() {
   textSizeInputs.forEach((input) => {
     input.checked = input.value === textSize;
   });
+
+  const textTransform = resolveTextTransform(node);
+  if (textOrientationSelect) {
+    textOrientationSelect.value = textTransform.orientation;
+  }
+  if (textAngleInput) textAngleInput.value = String(textTransform.angle ?? 0);
+  if (textSkewXInput) textSkewXInput.value = String(textTransform.skewX ?? 0);
+  if (textSkewYInput) textSkewYInput.value = String(textTransform.skewY ?? 0);
 
   colorInputs.forEach((input) => {
     const key = input.dataset.componentColor;
@@ -2003,6 +2029,49 @@ function bindInspectorControls() {
       });
     });
   }
+
+  if (textOrientationSelect) {
+    textOrientationSelect.addEventListener("change", () => {
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          node.textOrientation = textOrientationSelect.value;
+          if (node.textOrientation === "diagonal" && !Number.isFinite(node.textAngle)) {
+            node.textAngle = 45;
+          }
+        });
+        if (textAngleInput && textOrientationSelect.value === "diagonal") {
+          textAngleInput.value = "45";
+        }
+        renderPreview();
+      });
+    });
+  }
+
+  const textTransformInputs = [
+    { input: textAngleInput, key: "textAngle" },
+    { input: textSkewXInput, key: "textSkewX" },
+    { input: textSkewYInput, key: "textSkewY" },
+  ];
+
+  textTransformInputs.forEach(({ input, key }) => {
+    if (!input) return;
+    input.addEventListener("focus", () => beginPendingUndo(input));
+    input.addEventListener("blur", () => commitPendingUndo(input));
+    input.addEventListener("change", () => commitPendingUndo(input));
+    input.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        const raw = input.value;
+        const parsed = raw === "" ? null : parseFloat(raw);
+        if (!Number.isNaN(parsed) && parsed !== null) {
+          node[key] = parsed;
+        } else if (raw === "") {
+          delete node[key];
+        }
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  });
 
   if (colorInputs.length) {
     colorInputs.forEach((input) => {
