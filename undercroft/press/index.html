@@ -497,6 +497,30 @@
                     <input class="form-control" placeholder="Image URL" type="text" data-component-image-url />
                     <label class="fw-semibold">Image URL</label>
                   </div>
+                  <div class="row g-2" data-inspector-image-field hidden>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageWidth">Image width (in)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageWidth"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-component-image-width
+                      />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageHeight">Image height (in)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageHeight"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-component-image-height
+                      />
+                    </div>
+                  </div>
                   <div class="form-floating" data-inspector-gap-field hidden>
                     <input
                       type="number"

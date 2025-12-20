@@ -19,7 +19,7 @@
         "className": "d-flex flex-column align-items-center text-center",
         "children": [
           { "type": "field", "component": "text", "text": "@label", "textSize": "sm", "className": "chip-meta mb-0" },
-          { "type": "field", "component": "image", "url": "@image", "className": "press-image chip-image" },
+          { "type": "field", "component": "image", "url": "@image", "width": 0.5, "height": 0.5, "className": "press-image chip-image" },
           { "type": "field", "component": "text", "text": "@subtitle", "textSize": "sm", "className": "chip-meta mb-0" }
         ]
       }
