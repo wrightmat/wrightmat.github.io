@@ -41,8 +41,8 @@ const templateIdInput = document.querySelector("[data-template-id]");
 const templateNameInput = document.querySelector("[data-template-name]");
 const templateDescriptionInput = document.querySelector("[data-template-description]");
 const templateTypeSelect = document.querySelector("[data-template-type]");
-const templateFormatsGroup = document.querySelector("[data-template-formats]");
-const templateSourcesGroup = document.querySelector("[data-template-sources]");
+const templateFormatsSelect = document.querySelector("[data-template-formats]");
+const templateSourcesSelect = document.querySelector("[data-template-sources]");
 const templateCardGroup = document.querySelector("[data-template-card-group]");
 const templateCardWidthInput = document.querySelector("[data-template-card-width]");
 const templateCardHeightInput = document.querySelector("[data-template-card-height]");
@@ -257,8 +257,6 @@ const paletteComponents = [
 
 const standardFormats = getStandardFormats();
 const standardFormatMap = new Map(standardFormats.map((format) => [format.id, format]));
-let templateFormatInputs = [];
-let templateSourceInputs = [];
 
 function initShell() {
   const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
@@ -347,46 +345,24 @@ function populateTemplates() {
 }
 
 function renderTemplateFormatOptions() {
-  if (!templateFormatsGroup) return;
-  templateFormatsGroup.innerHTML = "";
-  templateFormatInputs = standardFormats.map((format) => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-check";
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.type = "checkbox";
-    input.id = `template-format-${format.id}`;
-    input.value = format.id;
-    input.dataset.templateFormatOption = format.id;
-    const label = document.createElement("label");
-    label.className = "form-check-label";
-    label.setAttribute("for", input.id);
-    label.textContent = format.label;
-    wrapper.append(input, label);
-    templateFormatsGroup.appendChild(wrapper);
-    return input;
+  if (!templateFormatsSelect) return;
+  templateFormatsSelect.innerHTML = "";
+  standardFormats.forEach((format) => {
+    const option = document.createElement("option");
+    option.value = format.id;
+    option.textContent = format.label;
+    templateFormatsSelect.appendChild(option);
   });
 }
 
 function renderTemplateSourceOptions() {
-  if (!templateSourcesGroup) return;
-  templateSourcesGroup.innerHTML = "";
-  templateSourceInputs = getSources().map((source) => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "form-check";
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.type = "checkbox";
-    input.id = `template-source-${source.id}`;
-    input.value = source.id;
-    input.dataset.templateSourceOption = source.id;
-    const label = document.createElement("label");
-    label.className = "form-check-label";
-    label.setAttribute("for", input.id);
-    label.textContent = source.name;
-    wrapper.append(input, label);
-    templateSourcesGroup.appendChild(wrapper);
-    return input;
+  if (!templateSourcesSelect) return;
+  templateSourcesSelect.innerHTML = "";
+  getSources().forEach((source) => {
+    const option = document.createElement("option");
+    option.value = source.id;
+    option.textContent = source.name;
+    templateSourcesSelect.appendChild(option);
   });
 }
 
@@ -790,18 +766,18 @@ function updateTemplateSelectOption(template, previousId) {
 }
 
 function setTemplateFormatSelections(template) {
-  if (!templateFormatsGroup) return;
+  if (!templateFormatsSelect) return;
   const selected = new Set((template.formats ?? []).map((format) => format.id ?? format.sizeId));
-  templateFormatInputs.forEach((input) => {
-    input.checked = selected.has(input.value);
+  Array.from(templateFormatsSelect.options).forEach((option) => {
+    option.selected = selected.has(option.value);
   });
 }
 
 function setTemplateSourceSelections(template) {
-  if (!templateSourcesGroup) return;
+  if (!templateSourcesSelect) return;
   const selected = new Set(template.supportedSources ?? []);
-  templateSourceInputs.forEach((input) => {
-    input.checked = selected.has(input.value);
+  Array.from(templateSourcesSelect.options).forEach((option) => {
+    option.selected = selected.has(option.value);
   });
 }
 
@@ -932,32 +908,27 @@ function bindTemplateInspectorControls() {
     });
   }
 
-  if (templateFormatInputs.length) {
-    templateFormatInputs.forEach((input) => {
-      input.addEventListener("change", () => {
-        const template = getActiveTemplate();
-        if (!template) return;
-        const selected = templateFormatInputs
-          .filter((item) => item.checked)
-          .map((item) => standardFormatMap.get(item.value))
-          .filter(Boolean)
-          .map((format) => ({ ...format }));
-        template.formats = selected;
-        renderFormatOptions(template);
-        renderPreview();
-        updateSaveState();
-      });
+  if (templateFormatsSelect) {
+    templateFormatsSelect.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      const selected = Array.from(templateFormatsSelect.selectedOptions)
+        .map((option) => standardFormatMap.get(option.value))
+        .filter(Boolean)
+        .map((format) => ({ ...format }));
+      template.formats = selected;
+      renderFormatOptions(template);
+      renderPreview();
+      updateSaveState();
     });
   }
 
-  if (templateSourceInputs.length) {
-    templateSourceInputs.forEach((input) => {
-      input.addEventListener("change", () => {
-        const template = getActiveTemplate();
-        if (!template) return;
-        template.supportedSources = templateSourceInputs.filter((item) => item.checked).map((item) => item.value);
-        updateSaveState();
-      });
+  if (templateSourcesSelect) {
+    templateSourcesSelect.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      template.supportedSources = Array.from(templateSourcesSelect.selectedOptions).map((option) => option.value);
+      updateSaveState();
     });
   }
 
