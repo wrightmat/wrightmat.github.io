@@ -1001,7 +1001,7 @@ function bindTemplateInspectorControls() {
       if (!template) return;
       await saveTemplateChanges({ template, confirm: true });
     });
-  }
+  });
 }
 
 function getEditablePage(side) {
