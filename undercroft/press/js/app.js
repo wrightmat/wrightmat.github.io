@@ -35,6 +35,21 @@ const saveButton = document.querySelector('[data-action="save-layout"]');
 const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
+const templateInspector = document.querySelector("[data-template-inspector]");
+const templateIdInput = document.querySelector("[data-template-id]");
+const templateNameInput = document.querySelector("[data-template-name]");
+const templateDescriptionInput = document.querySelector("[data-template-description]");
+const templateTypeSelect = document.querySelector("[data-template-type]");
+const templateFormatsInput = document.querySelector("[data-template-formats]");
+const templateSourcesInput = document.querySelector("[data-template-sources]");
+const templateCardGroup = document.querySelector("[data-template-card-group]");
+const templateCardInput = document.querySelector("[data-template-card]");
+const templateToggle = document.querySelector("[data-template-toggle]");
+const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
+const templatePanel = document.querySelector("[data-template-panel]");
+const componentToggle = document.querySelector("[data-component-toggle]");
+const componentToggleLabel = componentToggle?.querySelector("[data-component-toggle-label]");
+const componentPanel = document.querySelector("[data-component-panel]");
 const inspectorSection = document.querySelector("[data-component-inspector]");
 const inspectorTitle = document.querySelector("[data-inspector-title]");
 const typeSummary = document.querySelector("[data-component-type-summary]");
@@ -84,6 +99,9 @@ let lastSavedLayout = null;
 let isSaving = false;
 let isGenerating = false;
 let applySelectionCollapse = null;
+let applyTemplateCollapse = null;
+let applyComponentCollapse = null;
+let activeTemplateId = null;
 
 const COLOR_DEFAULTS = {
   foreground: "#212529",
@@ -226,29 +244,6 @@ const paletteComponents = [
     },
   },
 ];
-
-function setCollapsibleState(toggle, panel, { collapsed, expandLabel, collapseLabel, labelElement } = {}) {
-  if (!toggle || !panel) return;
-  const icon = toggle.querySelector(".iconify");
-  const label = labelElement || toggle.querySelector("[data-toggle-label]");
-  const isCollapsed = Boolean(collapsed);
-  panel.hidden = isCollapsed;
-  toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
-  if (label) {
-    label.textContent = isCollapsed ? expandLabel : collapseLabel;
-  }
-  if (icon) {
-    icon.dataset.icon = isCollapsed ? "tabler:chevron-right" : "tabler:chevron-down";
-  }
-}
-
-function bindCollapsible(toggle, panel, { collapsed = false, expandLabel, collapseLabel, labelElement } = {}) {
-  if (!toggle || !panel) return () => {};
-  const apply = (next) => setCollapsibleState(toggle, panel, { collapsed: next, expandLabel, collapseLabel, labelElement });
-  apply(collapsed);
-  toggle.addEventListener("click", () => apply(!panel.hidden));
-  return apply;
-}
 
 function initShell() {
   const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
@@ -466,8 +461,24 @@ function createSnapshot() {
   };
 }
 
-function createLayoutSnapshot() {
-  return cloneState(editablePages);
+function getTemplateProperties(template) {
+  if (!template) return null;
+  return {
+    id: template.id ?? "",
+    name: template.name ?? "",
+    description: template.description ?? "",
+    type: template.type ?? "",
+    formats: cloneState(template.formats ?? []),
+    supportedSources: cloneState(template.supportedSources ?? []),
+    card: template.card ? cloneState(template.card) : null,
+  };
+}
+
+function createLayoutSnapshot(template = getActiveTemplate()) {
+  return {
+    pages: cloneState(editablePages),
+    template: getTemplateProperties(template),
+  };
 }
 
 function applySnapshot(snapshot) {
@@ -556,8 +567,8 @@ function updateSaveState() {
   }
 }
 
-function markLayoutSaved() {
-  lastSavedLayout = createLayoutSnapshot();
+function markLayoutSaved(snapshot) {
+  lastSavedLayout = snapshot ?? createLayoutSnapshot();
   updateSaveState();
 }
 
@@ -628,39 +639,46 @@ async function saveTemplateToServer(payload) {
 }
 
 async function handleSaveTemplate() {
-  const template = getActiveTemplate();
+  return saveTemplateChanges({ confirm: true });
+}
+
+async function saveTemplateChanges({ template = getActiveTemplate(), confirm = true } = {}) {
   if (!template) {
-    return;
+    return false;
   }
-  const hasChanges = !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
+  const hasChanges = !snapshotsEqual(lastSavedLayout, createLayoutSnapshot(template));
   if (!hasChanges) {
-    return;
+    return false;
   }
-  const confirmed = window.confirm("Save layout changes to this template?");
-  if (!confirmed) {
-    if (status) {
-      status.show("Save cancelled", { type: "info", timeout: 1500 });
+  if (confirm) {
+    const confirmed = window.confirm("Save template changes?");
+    if (!confirmed) {
+      if (status) {
+        status.show("Save cancelled", { type: "info", timeout: 1500 });
+      }
+      return false;
     }
-    return;
   }
   const payload = serializeTemplate(template);
   if (!payload) {
-    return;
+    return false;
   }
   isSaving = true;
   updateSaveState();
   try {
     await saveTemplateToServer(payload);
     template.pages = payload.pages;
-    markLayoutSaved();
+    markLayoutSaved(createLayoutSnapshot(template));
     if (status) {
-      status.show("Template layout saved", { type: "success", timeout: 2000 });
+      status.show("Template saved", { type: "success", timeout: 2000 });
     }
+    return true;
   } catch (error) {
     console.error("Failed to save template", error);
     if (status) {
       status.show(error.message || "Unable to save template", { type: "error", timeout: 2500 });
     }
+    return false;
   } finally {
     isSaving = false;
     updateSaveState();
@@ -700,6 +718,189 @@ function hydrateEditablePages(template) {
   });
   editablePages = bySide;
   selectedNodeId = null;
+}
+
+function updateTemplateSelectOption(template, previousId) {
+  if (!templateSelect || !template) return;
+  const options = Array.from(templateSelect.options);
+  const option = options.find((entry) => entry.value === previousId) || options.find((entry) => entry.value === template.id);
+  if (!option) return;
+  option.value = template.id;
+  option.textContent = template.name ?? option.textContent;
+  templateSelect.value = template.id;
+}
+
+function setTemplateInputInvalid(input, isInvalid) {
+  if (!input) return;
+  input.classList.toggle("is-invalid", isInvalid);
+}
+
+function updateTemplateInspector(template) {
+  if (!templateInspector) return;
+  const hasTemplate = Boolean(template);
+  templateInspector.classList.toggle("opacity-50", !hasTemplate);
+  templateInspector.querySelectorAll("input, select, textarea, button").forEach((el) => {
+    el.disabled = !hasTemplate;
+  });
+  if (!hasTemplate) return;
+
+  if (templateIdInput) {
+    templateIdInput.value = template.id ?? "";
+  }
+  if (templateNameInput) {
+    templateNameInput.value = template.name ?? "";
+  }
+  if (templateDescriptionInput) {
+    templateDescriptionInput.value = template.description ?? "";
+  }
+  if (templateTypeSelect) {
+    templateTypeSelect.value = template.type ?? "sheet";
+  }
+  if (templateFormatsInput) {
+    templateFormatsInput.value = JSON.stringify(template.formats ?? [], null, 2);
+    setTemplateInputInvalid(templateFormatsInput, false);
+  }
+  if (templateSourcesInput) {
+    templateSourcesInput.value = (template.supportedSources ?? []).join(", ");
+  }
+  const isCard = template.type === "card" || Boolean(template.card);
+  if (templateCardGroup) {
+    templateCardGroup.hidden = !isCard;
+    templateCardGroup.classList.toggle("d-none", !isCard);
+  }
+  if (templateCardInput) {
+    templateCardInput.value = JSON.stringify(template.card ?? {}, null, 2);
+    setTemplateInputInvalid(templateCardInput, false);
+  }
+}
+
+function bindTemplateInspectorControls() {
+  if (templateIdInput) {
+    templateIdInput.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      const nextId = templateIdInput.value.trim();
+      if (!nextId) {
+        templateIdInput.value = template.id ?? "";
+        return;
+      }
+      const previousId = template.id;
+      template.id = nextId;
+      updateTemplateSelectOption(template, previousId);
+      activeTemplateId = template.id;
+      updateSaveState();
+      renderJsonPreview();
+    });
+  }
+
+  if (templateNameInput) {
+    templateNameInput.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      const nextName = templateNameInput.value.trim();
+      template.name = nextName;
+      template.title = nextName;
+      updateTemplateSelectOption(template, template.id);
+      updateSaveState();
+      renderPreview();
+    });
+  }
+
+  if (templateDescriptionInput) {
+    templateDescriptionInput.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      template.description = templateDescriptionInput.value.trim();
+      updateSaveState();
+    });
+  }
+
+  if (templateTypeSelect) {
+    templateTypeSelect.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      template.type = templateTypeSelect.value;
+      if (template.type === "card" && !template.card) {
+        template.card = {
+          width: 2.5,
+          height: 3.5,
+          gutter: 0,
+          safeInset: 0.125,
+          columns: 3,
+          rows: 3,
+        };
+      }
+      if (template.type !== "card") {
+        delete template.card;
+      }
+      updateTemplateInspector(template);
+      updateSaveState();
+      renderPreview();
+    });
+  }
+
+  if (templateFormatsInput) {
+    templateFormatsInput.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      try {
+        const parsed = templateFormatsInput.value.trim() ? JSON.parse(templateFormatsInput.value) : [];
+        if (!Array.isArray(parsed)) {
+          throw new Error("Formats must be an array.");
+        }
+        template.formats = parsed;
+        setTemplateInputInvalid(templateFormatsInput, false);
+        renderFormatOptions(template);
+        renderPreview();
+        updateSaveState();
+      } catch (error) {
+        console.warn("Unable to parse template formats", error);
+        setTemplateInputInvalid(templateFormatsInput, true);
+        if (status) {
+          status.show("Formats must be valid JSON array entries.", { type: "error", timeout: 2500 });
+        }
+      }
+    });
+  }
+
+  if (templateSourcesInput) {
+    templateSourcesInput.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      const sources = templateSourcesInput.value
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+      template.supportedSources = sources;
+      updateSaveState();
+    });
+  }
+
+  if (templateCardInput) {
+    templateCardInput.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      if (!template.card) {
+        template.card = {};
+      }
+      try {
+        const parsed = templateCardInput.value.trim() ? JSON.parse(templateCardInput.value) : {};
+        if (parsed && typeof parsed !== "object") {
+          throw new Error("Card must be an object.");
+        }
+        template.card = parsed;
+        setTemplateInputInvalid(templateCardInput, false);
+        updateSaveState();
+        renderPreview();
+      } catch (error) {
+        console.warn("Unable to parse card settings", error);
+        setTemplateInputInvalid(templateCardInput, true);
+        if (status) {
+          status.show("Card settings must be valid JSON.", { type: "error", timeout: 2500 });
+        }
+      }
+    });
+  }
 }
 
 function getEditablePage(side) {
@@ -1164,9 +1365,7 @@ function selectNode(uid, { fromPreview = false } = {}) {
   selectedNodeId = uid;
   renderLayoutList();
   updateInspector();
-  if (fromPreview) {
-    expandPane(rightPane, rightPaneToggle);
-  }
+  setInspectorMode("component");
   renderPreview();
 }
 
@@ -1421,6 +1620,32 @@ function initPressCollapsibles() {
     collapseLabel: "Collapse selections",
     labelElement: selectionToggleLabel,
   });
+  applyTemplateCollapse = bindCollapsibleToggle(templateToggle, templatePanel, {
+    collapsed: false,
+    expandLabel: "Expand template properties",
+    collapseLabel: "Collapse template properties",
+    labelElement: templateToggleLabel,
+  });
+  applyComponentCollapse = bindCollapsibleToggle(componentToggle, componentPanel, {
+    collapsed: true,
+    expandLabel: "Expand component properties",
+    collapseLabel: "Collapse component properties",
+    labelElement: componentToggleLabel,
+  });
+}
+
+function setInspectorMode(mode) {
+  if (rightPane && rightPaneToggle) {
+    expandPane(rightPane, rightPaneToggle);
+  }
+  if (mode === "template") {
+    if (applyTemplateCollapse) applyTemplateCollapse(false);
+    if (applyComponentCollapse) applyComponentCollapse(true);
+  }
+  if (mode === "component") {
+    if (applyTemplateCollapse) applyTemplateCollapse(true);
+    if (applyComponentCollapse) applyComponentCollapse(false);
+  }
 }
 
 function initPaletteDnd() {
@@ -1693,11 +1918,30 @@ function bindInspectorControls() {
 }
 
 function wireEvents() {
-  templateSelect.addEventListener("change", () => {
+  templateSelect.addEventListener("change", async () => {
+    const nextTemplateId = templateSelect.value;
+    const previousTemplateId = activeTemplateId;
+    const previousTemplate = previousTemplateId ? getTemplateById(previousTemplateId) : null;
+    if (previousTemplate) {
+      const hasChanges = !snapshotsEqual(lastSavedLayout, createLayoutSnapshot(previousTemplate));
+      if (hasChanges) {
+        const confirmed = window.confirm("Save changes to the current template before switching?");
+        if (confirmed) {
+          templateSelect.value = previousTemplateId;
+          const saved = await saveTemplateChanges({ template: previousTemplate, confirm: false });
+          if (!saved) {
+            templateSelect.value = previousTemplateId;
+            return;
+          }
+          templateSelect.value = nextTemplateId;
+        }
+      }
+    }
     currentSide = "front";
     const template = getActiveTemplate();
     hydrateEditablePages(template);
     renderFormatOptions(template);
+    updateTemplateInspector(template);
     if (undoStack) {
       undoStack.clear();
     }
@@ -1708,6 +1952,8 @@ function wireEvents() {
     updateInspector();
     renderPreview();
     markLayoutSaved();
+    activeTemplateId = template?.id ?? null;
+    setInspectorMode("template");
   });
   formatSelect.addEventListener("change", () => {
     currentSide = "front";
@@ -1747,6 +1993,8 @@ async function initPress() {
   populateSources();
   populateTemplates();
   renderFormatOptions(getActiveTemplate());
+  updateTemplateInspector(getActiveTemplate());
+  bindTemplateInspectorControls();
   initDragAndDrop();
   bindInspectorControls();
   renderLayoutList();
@@ -1756,6 +2004,8 @@ async function initPress() {
   markLayoutSaved();
   updateGenerateButtonState();
   wireEvents();
+  activeTemplateId = getActiveTemplate()?.id ?? null;
+  setInspectorMode("template");
 }
 
 initPress();

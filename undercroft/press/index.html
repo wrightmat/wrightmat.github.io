@@ -296,18 +296,90 @@
         </main>
 
         <aside
-          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg"
+          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg workbench-pane"
           data-pane="right"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2 mb-0">
-            <span>Component Properties</span>
-            <span class="align-middle" data-help-topic="press.inspector" data-help-insert="replace" data-help-placement="left"></span>
-          </h2>
-          <div class="card border-0 shadow-theme">
-            <div class="card-body d-flex flex-column gap-4">
+          <section class="pane-card d-flex flex-column gap-3" data-template-properties>
+            <div class="d-flex align-items-center justify-content-between">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
+              <button
+                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                type="button"
+                data-template-toggle
+                aria-expanded="false"
+              >
+                <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                <span class="visually-hidden" data-template-toggle-label>Expand template properties</span>
+              </button>
+            </div>
+            <div class="d-flex flex-column gap-3" data-template-panel data-template-inspector>
+              <div class="row g-2">
+                <div class="col-12">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateId">ID</label>
+                  <input class="form-control form-control-sm" id="templateId" data-template-id />
+                </div>
+                <div class="col-12">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateName">Name</label>
+                  <input class="form-control form-control-sm" id="templateName" data-template-name />
+                </div>
+                <div class="col-12">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateDescription">Description</label>
+                  <textarea class="form-control form-control-sm" id="templateDescription" rows="2" data-template-description></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small text-body-secondary fw-semibold" for="templateType">Type</label>
+                  <select class="form-select form-select-sm" id="templateType" data-template-type>
+                    <option value="sheet">Sheet</option>
+                    <option value="card">Card</option>
+                  </select>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-2">
+                <label class="form-label small text-body-secondary fw-semibold" for="templateFormats">Formats (JSON)</label>
+                <textarea
+                  class="form-control form-control-sm font-monospace"
+                  id="templateFormats"
+                  rows="4"
+                  data-template-formats
+                ></textarea>
+              </div>
+              <div class="d-flex flex-column gap-2">
+                <label class="form-label small text-body-secondary fw-semibold" for="templateSources">
+                  Supported sources (comma-separated)
+                </label>
+                <input class="form-control form-control-sm" id="templateSources" data-template-sources />
+              </div>
+              <div class="d-flex flex-column gap-2" data-template-card-group hidden>
+                <label class="form-label small text-body-secondary fw-semibold" for="templateCard">Card (JSON)</label>
+                <textarea
+                  class="form-control form-control-sm font-monospace"
+                  id="templateCard"
+                  rows="3"
+                  data-template-card
+                ></textarea>
+              </div>
+            </div>
+          </section>
+          <section class="pane-card d-flex flex-column gap-3" data-component-properties>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Component Properties</h2>
+                <span class="align-middle" data-help-topic="press.inspector" data-help-insert="replace" data-help-placement="left"></span>
+              </div>
+              <button
+                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                type="button"
+                data-component-toggle
+                aria-expanded="false"
+              >
+                <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                <span class="visually-hidden" data-component-toggle-label>Expand component properties</span>
+              </button>
+            </div>
+            <div class="d-flex flex-column gap-3" data-component-panel>
               <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
                 <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                   <div class="d-flex align-items-center gap-2">
@@ -541,7 +613,7 @@
                 </div>
               </section>
             </div>
-          </div>
+          </section>
         </aside>
       </div>
     </div>
