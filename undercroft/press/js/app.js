@@ -1220,10 +1220,12 @@ function resolveTextStyles(node) {
 }
 
 function resolveTextTransform(node) {
+  const orientation = node?.textOrientation ?? "horizontal";
+  const defaultCurve = orientation === "curve-up" || orientation === "curve-down" ? 12 : 0;
   return {
-    orientation: node?.textOrientation ?? "horizontal",
+    orientation,
     angle: Number.isFinite(node?.textAngle) ? node.textAngle : 0,
-    curve: Number.isFinite(node?.textCurve) ? node.textCurve : 12,
+    curve: Number.isFinite(node?.textCurve) ? node.textCurve : defaultCurve,
     isCustom: Boolean(node?.textOrientationCustom),
   };
 }
@@ -1408,7 +1410,7 @@ function updateInspector() {
       input.checked = input.value === "horizontal";
     });
     if (textAngleInput) textAngleInput.value = "0";
-    if (textCurveInput) textCurveInput.value = "12";
+    if (textCurveInput) textCurveInput.value = "0";
     colorInputs.forEach((input) => {
       const key = input.dataset.componentColor;
       input.value = COLOR_DEFAULTS[key] || "#000000";
@@ -1521,7 +1523,7 @@ function updateInspector() {
     input.checked = !textTransformState.isCustom && input.value === textTransformState.orientation;
   });
   if (textAngleInput) textAngleInput.value = String(resolvedAngle);
-  if (textCurveInput) textCurveInput.value = String(textTransformState.curve ?? 12);
+  if (textCurveInput) textCurveInput.value = String(textTransformState.curve ?? 0);
 
   colorInputs.forEach((input) => {
     const key = input.dataset.componentColor;
@@ -2114,17 +2116,14 @@ function bindInspectorControls() {
             } else {
               node.textAngle = 0;
             }
-            if (node.textOrientation === "curve-up" || node.textOrientation === "curve-down") {
-              if (!Number.isFinite(node.textCurve)) {
-                node.textCurve = 12;
-              }
-            }
+            const isCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
+            node.textCurve = isCurved ? 12 : 0;
           });
           if (textAngleInput) {
             textAngleInput.value = input.value === "vertical" ? "90" : input.value === "diagonal" ? "45" : "0";
           }
           if (textCurveInput) {
-            textCurveInput.value = "12";
+            textCurveInput.value = input.value === "curve-up" || input.value === "curve-down" ? "12" : "0";
           }
           renderPreview();
         });
