@@ -1,0 +1,92 @@
+{
+  "id": "chip-grid",
+  "title": "Chip Grid (1 in circles)",
+  "description": "Print-ready grid of 1-inch circular chips with adjustable spacing and safe inset.",
+  "type": "chip",
+  "formats": [
+    { "id": "letter", "label": "US Letter", "sizeId": "letter", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" },
+    { "id": "a4", "label": "A4", "sizeId": "a4", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" }
+  ],
+  "supportedSources": ["ddb", "srd", "json", "manual"],
+  "card": { "width": 1, "height": 1, "gutter": 0.1, "safeInset": 0.05, "columns": 7, "rows": 9 },
+  "pages": {
+    "front": {
+      "repeat": "@chips",
+      "layout": {
+        "type": "stack",
+        "gap": 1,
+        "align": "center",
+        "className": "d-flex flex-column align-items-center text-center",
+        "children": [
+          { "type": "field", "component": "text", "text": "@label", "textSize": "sm", "className": "card-meta" },
+          { "type": "field", "component": "image", "url": "@image", "className": "press-image chip-image" },
+          { "type": "field", "component": "text", "text": "@subtitle", "textSize": "sm", "className": "card-meta" }
+        ]
+      }
+    }
+  },
+  "sampleData": {
+    "chips": [
+      {
+        "label": "Explorer",
+        "subtitle": "Press Crew",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e0f2fe' stroke='%230d6efd' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Archivist",
+        "subtitle": "Lore",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fef3c7' stroke='%23f59e0b' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Forge",
+        "subtitle": "Workshop",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fee2e2' stroke='%23ef4444' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Grove",
+        "subtitle": "Warden",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23dcfce7' stroke='%2316a34a' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Seer",
+        "subtitle": "Vision",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ede9fe' stroke='%237c3aed' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Cavern",
+        "subtitle": "Guide",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23f5f5f4' stroke='%238b5e34' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Tactician",
+        "subtitle": "Frontline",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23cffafe' stroke='%2306b6d4' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Quartermaster",
+        "subtitle": "Logistics",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fef2f2' stroke='%239f1239' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Messenger",
+        "subtitle": "Courier",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ecfccb' stroke='%2384cc16' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Scribe",
+        "subtitle": "Layouts",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e2e8f0' stroke='%23334155' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Archivist",
+        "subtitle": "Index",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fae8ff' stroke='%23a855f7' stroke-width='4'/></svg>"
+      },
+      {
+        "label": "Sentinel",
+        "subtitle": "Watch",
+        "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ffedd5' stroke='%23ea580c' stroke-width='4'/></svg>"
+      }
+    ]
+  }
+}
