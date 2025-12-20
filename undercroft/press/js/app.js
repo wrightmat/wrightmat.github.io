@@ -7,6 +7,7 @@ import { expandPane } from "../../common/js/lib/panes.js";
 import {
   getFormatById,
   getPageSize,
+  getStandardFormats,
   getTemplateById,
   getTemplates,
   loadTemplates,
@@ -40,13 +41,21 @@ const templateIdInput = document.querySelector("[data-template-id]");
 const templateNameInput = document.querySelector("[data-template-name]");
 const templateDescriptionInput = document.querySelector("[data-template-description]");
 const templateTypeSelect = document.querySelector("[data-template-type]");
-const templateFormatsInput = document.querySelector("[data-template-formats]");
-const templateSourcesInput = document.querySelector("[data-template-sources]");
+const templateFormatsGroup = document.querySelector("[data-template-formats]");
+const templateSourcesGroup = document.querySelector("[data-template-sources]");
 const templateCardGroup = document.querySelector("[data-template-card-group]");
-const templateCardInput = document.querySelector("[data-template-card]");
+const templateCardWidthInput = document.querySelector("[data-template-card-width]");
+const templateCardHeightInput = document.querySelector("[data-template-card-height]");
+const templateCardGutterInput = document.querySelector("[data-template-card-gutter]");
+const templateCardSafeInsetInput = document.querySelector("[data-template-card-safe-inset]");
+const templateCardColumnsInput = document.querySelector("[data-template-card-columns]");
+const templateCardRowsInput = document.querySelector("[data-template-card-rows]");
 const templateToggle = document.querySelector("[data-template-toggle]");
 const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
 const templatePanel = document.querySelector("[data-template-panel]");
+const cardToggle = document.querySelector("[data-card-toggle]");
+const cardToggleLabel = cardToggle?.querySelector("[data-card-toggle-label]");
+const cardPanel = document.querySelector("[data-card-panel]");
 const componentToggle = document.querySelector("[data-component-toggle]");
 const componentToggleLabel = componentToggle?.querySelector("[data-component-toggle-label]");
 const componentPanel = document.querySelector("[data-component-panel]");
@@ -100,6 +109,7 @@ let isSaving = false;
 let isGenerating = false;
 let applySelectionCollapse = null;
 let applyTemplateCollapse = null;
+let applyCardCollapse = null;
 let applyComponentCollapse = null;
 let activeTemplateId = null;
 
@@ -245,6 +255,11 @@ const paletteComponents = [
   },
 ];
 
+const standardFormats = getStandardFormats();
+const standardFormatMap = new Map(standardFormats.map((format) => [format.id, format]));
+let templateFormatInputs = [];
+let templateSourceInputs = [];
+
 function initShell() {
   const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
     namespace: "press-layout",
@@ -329,6 +344,50 @@ function populateTemplates() {
     templateSelect.value = templates[0].id;
     hydrateEditablePages(templates[0]);
   }
+}
+
+function renderTemplateFormatOptions() {
+  if (!templateFormatsGroup) return;
+  templateFormatsGroup.innerHTML = "";
+  templateFormatInputs = standardFormats.map((format) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check";
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = `template-format-${format.id}`;
+    input.value = format.id;
+    input.dataset.templateFormatOption = format.id;
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", input.id);
+    label.textContent = format.label;
+    wrapper.append(input, label);
+    templateFormatsGroup.appendChild(wrapper);
+    return input;
+  });
+}
+
+function renderTemplateSourceOptions() {
+  if (!templateSourcesGroup) return;
+  templateSourcesGroup.innerHTML = "";
+  templateSourceInputs = getSources().map((source) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check";
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = `template-source-${source.id}`;
+    input.value = source.id;
+    input.dataset.templateSourceOption = source.id;
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", input.id);
+    label.textContent = source.name;
+    wrapper.append(input, label);
+    templateSourcesGroup.appendChild(wrapper);
+    return input;
+  });
 }
 
 function renderFormatOptions(template) {
@@ -730,9 +789,34 @@ function updateTemplateSelectOption(template, previousId) {
   templateSelect.value = template.id;
 }
 
-function setTemplateInputInvalid(input, isInvalid) {
-  if (!input) return;
-  input.classList.toggle("is-invalid", isInvalid);
+function setTemplateFormatSelections(template) {
+  if (!templateFormatsGroup) return;
+  const selected = new Set((template.formats ?? []).map((format) => format.id ?? format.sizeId));
+  templateFormatInputs.forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
+}
+
+function setTemplateSourceSelections(template) {
+  if (!templateSourcesGroup) return;
+  const selected = new Set(template.supportedSources ?? []);
+  templateSourceInputs.forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
+}
+
+function setCardInputsDisabled(isDisabled) {
+  [
+    templateCardWidthInput,
+    templateCardHeightInput,
+    templateCardGutterInput,
+    templateCardSafeInsetInput,
+    templateCardColumnsInput,
+    templateCardRowsInput,
+  ].forEach((input) => {
+    if (!input) return;
+    input.disabled = isDisabled;
+  });
 }
 
 function updateTemplateInspector(template) {
@@ -742,6 +826,7 @@ function updateTemplateInspector(template) {
   templateInspector.querySelectorAll("input, select, textarea, button").forEach((el) => {
     el.disabled = !hasTemplate;
   });
+  setCardInputsDisabled(!hasTemplate);
   if (!hasTemplate) return;
 
   if (templateIdInput) {
@@ -756,21 +841,29 @@ function updateTemplateInspector(template) {
   if (templateTypeSelect) {
     templateTypeSelect.value = template.type ?? "sheet";
   }
-  if (templateFormatsInput) {
-    templateFormatsInput.value = JSON.stringify(template.formats ?? [], null, 2);
-    setTemplateInputInvalid(templateFormatsInput, false);
-  }
-  if (templateSourcesInput) {
-    templateSourcesInput.value = (template.supportedSources ?? []).join(", ");
-  }
+  setTemplateFormatSelections(template);
+  setTemplateSourceSelections(template);
   const isCard = template.type === "card" || Boolean(template.card);
   if (templateCardGroup) {
     templateCardGroup.hidden = !isCard;
     templateCardGroup.classList.toggle("d-none", !isCard);
   }
-  if (templateCardInput) {
-    templateCardInput.value = JSON.stringify(template.card ?? {}, null, 2);
-    setTemplateInputInvalid(templateCardInput, false);
+  setCardInputsDisabled(!isCard);
+  if (isCard) {
+    const card = template.card ?? {};
+    if (templateCardWidthInput) templateCardWidthInput.value = card.width ?? "";
+    if (templateCardHeightInput) templateCardHeightInput.value = card.height ?? "";
+    if (templateCardGutterInput) templateCardGutterInput.value = card.gutter ?? "";
+    if (templateCardSafeInsetInput) templateCardSafeInsetInput.value = card.safeInset ?? "";
+    if (templateCardColumnsInput) templateCardColumnsInput.value = card.columns ?? "";
+    if (templateCardRowsInput) templateCardRowsInput.value = card.rows ?? "";
+  } else {
+    if (templateCardWidthInput) templateCardWidthInput.value = "";
+    if (templateCardHeightInput) templateCardHeightInput.value = "";
+    if (templateCardGutterInput) templateCardGutterInput.value = "";
+    if (templateCardSafeInsetInput) templateCardSafeInsetInput.value = "";
+    if (templateCardColumnsInput) templateCardColumnsInput.value = "";
+    if (templateCardRowsInput) templateCardRowsInput.value = "";
   }
 }
 
@@ -839,68 +932,63 @@ function bindTemplateInspectorControls() {
     });
   }
 
-  if (templateFormatsInput) {
-    templateFormatsInput.addEventListener("change", () => {
-      const template = getActiveTemplate();
-      if (!template) return;
-      try {
-        const parsed = templateFormatsInput.value.trim() ? JSON.parse(templateFormatsInput.value) : [];
-        if (!Array.isArray(parsed)) {
-          throw new Error("Formats must be an array.");
-        }
-        template.formats = parsed;
-        setTemplateInputInvalid(templateFormatsInput, false);
+  if (templateFormatInputs.length) {
+    templateFormatInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        const template = getActiveTemplate();
+        if (!template) return;
+        const selected = templateFormatInputs
+          .filter((item) => item.checked)
+          .map((item) => standardFormatMap.get(item.value))
+          .filter(Boolean)
+          .map((format) => ({ ...format }));
+        template.formats = selected;
         renderFormatOptions(template);
         renderPreview();
         updateSaveState();
-      } catch (error) {
-        console.warn("Unable to parse template formats", error);
-        setTemplateInputInvalid(templateFormatsInput, true);
-        if (status) {
-          status.show("Formats must be valid JSON array entries.", { type: "error", timeout: 2500 });
-        }
-      }
+      });
     });
   }
 
-  if (templateSourcesInput) {
-    templateSourcesInput.addEventListener("change", () => {
-      const template = getActiveTemplate();
-      if (!template) return;
-      const sources = templateSourcesInput.value
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-      template.supportedSources = sources;
-      updateSaveState();
+  if (templateSourceInputs.length) {
+    templateSourceInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        const template = getActiveTemplate();
+        if (!template) return;
+        template.supportedSources = templateSourceInputs.filter((item) => item.checked).map((item) => item.value);
+        updateSaveState();
+      });
     });
   }
 
-  if (templateCardInput) {
-    templateCardInput.addEventListener("change", () => {
+  const cardInputs = [
+    { input: templateCardWidthInput, key: "width", parse: parseFloat },
+    { input: templateCardHeightInput, key: "height", parse: parseFloat },
+    { input: templateCardGutterInput, key: "gutter", parse: parseFloat },
+    { input: templateCardSafeInsetInput, key: "safeInset", parse: parseFloat },
+    { input: templateCardColumnsInput, key: "columns", parse: (value) => parseInt(value, 10) },
+    { input: templateCardRowsInput, key: "rows", parse: (value) => parseInt(value, 10) },
+  ];
+
+  cardInputs.forEach(({ input, key, parse }) => {
+    if (!input) return;
+    input.addEventListener("change", () => {
       const template = getActiveTemplate();
       if (!template) return;
       if (!template.card) {
         template.card = {};
       }
-      try {
-        const parsed = templateCardInput.value.trim() ? JSON.parse(templateCardInput.value) : {};
-        if (parsed && typeof parsed !== "object") {
-          throw new Error("Card must be an object.");
-        }
-        template.card = parsed;
-        setTemplateInputInvalid(templateCardInput, false);
-        updateSaveState();
-        renderPreview();
-      } catch (error) {
-        console.warn("Unable to parse card settings", error);
-        setTemplateInputInvalid(templateCardInput, true);
-        if (status) {
-          status.show("Card settings must be valid JSON.", { type: "error", timeout: 2500 });
-        }
+      const raw = input.value;
+      const parsed = raw === "" ? null : parse(raw);
+      if (!Number.isNaN(parsed) && parsed !== null) {
+        template.card[key] = parsed;
+      } else if (raw === "") {
+        delete template.card[key];
       }
+      updateSaveState();
+      renderPreview();
     });
-  }
+  });
 }
 
 function getEditablePage(side) {
@@ -1626,6 +1714,12 @@ function initPressCollapsibles() {
     collapseLabel: "Collapse template properties",
     labelElement: templateToggleLabel,
   });
+  applyCardCollapse = bindCollapsibleToggle(cardToggle, cardPanel, {
+    collapsed: false,
+    expandLabel: "Expand card properties",
+    collapseLabel: "Collapse card properties",
+    labelElement: cardToggleLabel,
+  });
   applyComponentCollapse = bindCollapsibleToggle(componentToggle, componentPanel, {
     collapsed: true,
     expandLabel: "Expand component properties",
@@ -1640,10 +1734,12 @@ function setInspectorMode(mode) {
   }
   if (mode === "template") {
     if (applyTemplateCollapse) applyTemplateCollapse(false);
+    if (applyCardCollapse) applyCardCollapse(false);
     if (applyComponentCollapse) applyComponentCollapse(true);
   }
   if (mode === "component") {
     if (applyTemplateCollapse) applyTemplateCollapse(true);
+    if (applyCardCollapse) applyCardCollapse(true);
     if (applyComponentCollapse) applyComponentCollapse(false);
   }
 }
@@ -1991,7 +2087,9 @@ async function initPress() {
   }
 
   populateSources();
+  renderTemplateSourceOptions();
   populateTemplates();
+  renderTemplateFormatOptions();
   renderFormatOptions(getActiveTemplate());
   updateTemplateInspector(getActiveTemplate());
   bindTemplateInspectorControls();
