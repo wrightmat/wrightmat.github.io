@@ -262,6 +262,12 @@ body[data-theme="dark"] .preview-stage {
   border-radius: 999px;
 }
 
+.press-image.chip-image {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+
 .press-image {
   display: flex;
   align-items: center;

@@ -167,7 +167,7 @@ function renderCardGrid(template, side, context) {
   const gridHeight = height * rows + gutter * (rows - 1);
   grid.style.width = `${gridWidth}in`;
   grid.style.height = `${gridHeight}in`;
-  grid.style.margin = "0 auto";
+  grid.style.margin = "auto";
 
   const cards = data.slice(0, columns * rows);
   cards.forEach((card, index) => {
