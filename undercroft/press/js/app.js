@@ -1009,14 +1009,19 @@ function updateInspector() {
     }
   }
 
+  const setGroupVisibility = (group, isVisible) => {
+    if (!group) return;
+    group.hidden = !isVisible;
+    group.classList.toggle("d-none", !isVisible);
+    group.style.display = isVisible ? "" : "none";
+  };
+
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
     if (gapInput) gapInput.value = "";
-    if (textFieldGroup) textFieldGroup.hidden = false;
-    textSettingGroups.forEach((group) => {
-      group.hidden = false;
-    });
-    if (colorGroup) colorGroup.hidden = false;
+    setGroupVisibility(textFieldGroup, true);
+    textSettingGroups.forEach((group) => setGroupVisibility(group, true));
+    setGroupVisibility(colorGroup, true);
     if (gapField) {
       gapField.hidden = true;
     }
@@ -1056,15 +1061,9 @@ function updateInspector() {
 
   const isLayoutNode = node?.type === "row" || node?.type === "stack";
   const isStackNode = node?.type === "stack";
-  if (textFieldGroup) {
-    textFieldGroup.hidden = isLayoutNode;
-  }
-  textSettingGroups.forEach((group) => {
-    group.hidden = isLayoutNode;
-  });
-  if (colorGroup) {
-    colorGroup.hidden = false;
-  }
+  setGroupVisibility(textFieldGroup, !isLayoutNode);
+  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode));
+  setGroupVisibility(colorGroup, true);
   textStyleToggles.forEach((input) => {
     input.disabled = isLayoutNode;
   });
