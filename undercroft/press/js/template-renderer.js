@@ -193,13 +193,14 @@ function createCurvedTextElement(node, text, className) {
   wrapper.classList.add(`press-curved-text--${curveDirection}`);
   const pathId = `curve-${node.uid ?? Math.random().toString(36).slice(2)}`;
   const rawCurve = Number.isFinite(node.textCurve) ? node.textCurve : 12;
-  const curveAmount = Math.max(0, Math.min(rawCurve, 18));
+  const curveAmount = Math.max(0, Math.min(rawCurve * 1.6, 40));
   const fontSize = resolveTextSizePx(node) ?? TEXT_SIZE_MAP.md;
+  const curvedFontScale = 1.12;
   const lineHeight = Math.max(18, fontSize * 1.1);
   const svgHeight = Math.max(42, fontSize * 2.4);
   svg.setAttribute("viewBox", `0 0 120 ${svgHeight}`);
-  const startX = 10;
-  const endX = 110;
+  const startX = 6;
+  const endX = 114;
   const centerX = 60;
   const baselineY = curveDirection === "down" ? svgHeight * 0.42 : svgHeight * 0.58;
   const controlY = curveDirection === "down" ? baselineY + curveAmount : baselineY - curveAmount;
@@ -230,6 +231,7 @@ function createCurvedTextElement(node, text, className) {
   svg.style.width = "120%";
 
   applyTextFormatting(textEl, node);
+  textEl.style.fontSize = `${fontSize * curvedFontScale}px`;
   applySvgTextColor(textEl, node.style ?? {}, { muted: node.muted });
   textEl.appendChild(textPath);
 
