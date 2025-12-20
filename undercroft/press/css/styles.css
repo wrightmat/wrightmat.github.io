@@ -300,6 +300,20 @@ body[data-theme="dark"] .preview-stage {
   padding: 0.5rem;
 }
 
+.press-curved-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.press-curved-text__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
 .sheet-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
