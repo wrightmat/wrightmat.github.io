@@ -53,6 +53,7 @@ const templateCardRowsInput = document.querySelector("[data-template-card-rows]"
 const templateToggle = document.querySelector("[data-template-toggle]");
 const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
 const templatePanel = document.querySelector("[data-template-panel]");
+const templateSaveButton = document.querySelector("[data-template-save]");
 const cardToggle = document.querySelector("[data-card-toggle]");
 const cardToggleLabel = cardToggle?.querySelector("[data-card-toggle-label]");
 const cardPanel = document.querySelector("[data-card-panel]");
@@ -315,13 +316,7 @@ function initShell() {
 }
 
 function populateSources() {
-  const sources = getSources();
-  sources.forEach((source) => {
-    const option = document.createElement("option");
-    option.value = source.id;
-    option.textContent = source.name;
-    sourceSelect.appendChild(option);
-  });
+  renderSourceOptions(getActiveTemplate());
   const active = getActiveSource();
   if (active) {
     renderSourceInput(active);
@@ -390,6 +385,23 @@ function renderOrientationOptions(format) {
     orientationSelect.appendChild(option);
   });
   orientationSelect.value = format?.defaultOrientation ?? orientations[0];
+}
+
+function renderSourceOptions(template) {
+  if (!sourceSelect) return;
+  const previous = sourceSelect.value;
+  const sources = getSources();
+  const supportedIds = template?.supportedSources?.length ? new Set(template.supportedSources) : null;
+  const available = supportedIds ? sources.filter((source) => supportedIds.has(source.id)) : sources;
+  sourceSelect.innerHTML = "";
+  available.forEach((source) => {
+    const option = document.createElement("option");
+    option.value = source.id;
+    option.textContent = source.name;
+    sourceSelect.appendChild(option);
+  });
+  const nextValue = available.find((source) => source.id === previous)?.id ?? available[0]?.id ?? "";
+  sourceSelect.value = nextValue;
 }
 
 function getActiveTemplate() {
@@ -585,20 +597,33 @@ function commitPendingUndo(target) {
 }
 
 function updateSaveState() {
-  if (!saveButton) return;
   const hasTemplate = Boolean(getActiveTemplate());
   const hasChanges = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
   const enabled = hasChanges && !isSaving;
-  saveButton.disabled = !enabled;
-  saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
-  if (!hasTemplate) {
-    saveButton.title = "Select a template before saving.";
-  } else if (isSaving) {
-    saveButton.title = "Saving template...";
-  } else if (!hasChanges) {
-    saveButton.title = "No changes to save.";
-  } else {
-    saveButton.removeAttribute("title");
+  if (saveButton) {
+    saveButton.disabled = !enabled;
+    saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
+    if (!hasTemplate) {
+      saveButton.title = "Select a template before saving.";
+    } else if (isSaving) {
+      saveButton.title = "Saving template...";
+    } else if (!hasChanges) {
+      saveButton.title = "No changes to save.";
+    } else {
+      saveButton.removeAttribute("title");
+    }
+  }
+  if (templateSaveButton) {
+    templateSaveButton.disabled = !enabled;
+    if (!hasTemplate) {
+      templateSaveButton.title = "Select a template before saving.";
+    } else if (isSaving) {
+      templateSaveButton.title = "Saving template...";
+    } else if (!hasChanges) {
+      templateSaveButton.title = "No changes to save.";
+    } else {
+      templateSaveButton.removeAttribute("title");
+    }
   }
 }
 
@@ -824,6 +849,9 @@ function updateTemplateInspector(template) {
     templateCardGroup.hidden = !isCard;
     templateCardGroup.classList.toggle("d-none", !isCard);
   }
+  if (templateSaveButton) {
+    templateSaveButton.disabled = !hasTemplate;
+  }
   setCardInputsDisabled(!isCard);
   if (isCard) {
     const card = template.card ?? {};
@@ -903,6 +931,7 @@ function bindTemplateInspectorControls() {
         delete template.card;
       }
       updateTemplateInspector(template);
+      renderSourceOptions(template);
       updateSaveState();
       renderPreview();
     });
@@ -918,6 +947,7 @@ function bindTemplateInspectorControls() {
         .map((format) => ({ ...format }));
       template.formats = selected;
       renderFormatOptions(template);
+      renderSourceOptions(template);
       renderPreview();
       updateSaveState();
     });
@@ -928,6 +958,10 @@ function bindTemplateInspectorControls() {
       const template = getActiveTemplate();
       if (!template) return;
       template.supportedSources = Array.from(templateSourcesSelect.selectedOptions).map((option) => option.value);
+      renderSourceOptions(template);
+      renderSourceInput(getActiveSource());
+      updateGenerateButtonState();
+      renderPreview();
       updateSaveState();
     });
   }
@@ -958,6 +992,14 @@ function bindTemplateInspectorControls() {
       }
       updateSaveState();
       renderPreview();
+    });
+  });
+
+  if (templateSaveButton) {
+    templateSaveButton.addEventListener("click", async () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      await saveTemplateChanges({ template, confirm: true });
     });
   });
 }
@@ -2008,6 +2050,7 @@ function wireEvents() {
     const template = getActiveTemplate();
     hydrateEditablePages(template);
     renderFormatOptions(template);
+    renderSourceOptions(template);
     updateTemplateInspector(template);
     if (undoStack) {
       undoStack.clear();
@@ -2062,6 +2105,7 @@ async function initPress() {
   populateTemplates();
   renderTemplateFormatOptions();
   renderFormatOptions(getActiveTemplate());
+  renderSourceOptions(getActiveTemplate());
   updateTemplateInspector(getActiveTemplate());
   bindTemplateInspectorControls();
   initDragAndDrop();
