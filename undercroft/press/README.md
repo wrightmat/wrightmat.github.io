@@ -11,8 +11,9 @@ printed output for cards and sheets.
 - D&D Beyond, 5e API (SRD), JSON upload, and manual entry inputs are parsed into
   live source payloads when Generate Print is used, replacing placeholder data
   inside the preview and print stack.
-- Poker card (3 × 3) and tarot (2 × 2) grids, 5 × 7 notecard, letter sheet, and
-  A6 sheet templates with selectable size/orientation where applicable.
+- Poker card (3 × 3), chip (1-inch circle), and tarot (2 × 2) grids, 5 × 7
+  notecard, letter sheet, and A6 sheet templates with selectable
+  size/orientation where applicable.
 - Live overlay toggles for trim lines and safe areas to measure alignment before
   production. Preview labels include the selected source and format for quick
   verification.
@@ -20,9 +21,9 @@ printed output for cards and sheets.
   component layout schema and are hydrated into the preview at runtime with
   source data payloads (falling back to bundled sample data when needed).
 - Drag-and-drop component editing for each side of a template, including a
-  palette, sortable layout outline, and component inspector for text, font
-  sizing, visibility, and heading level tweaks. Layout edits flow to the live
-  preview and print stack in real time.
+  palette, sortable layout outline, and component inspector for text, image
+  URLs, font sizing, visibility, and heading level tweaks. Layout edits flow to
+  the live preview and print stack in real time.
 
 ## Usage
 1. Open `index.html` in a browser (served relative to this folder).
