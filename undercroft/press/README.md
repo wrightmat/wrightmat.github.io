@@ -22,8 +22,9 @@ printed output for cards and sheets.
   source data payloads (falling back to bundled sample data when needed).
 - Drag-and-drop component editing for each side of a template, including a
   palette, sortable layout outline, and component inspector for text, image
-  URLs, font sizing, visibility, and heading level tweaks. Layout edits flow to
-  the live preview and print stack in real time.
+  URLs, font sizing (XS–XL plus custom points), orientation (vertical, diagonal,
+  curved) with curve depth controls, visibility, and heading level tweaks.
+  Layout edits flow to the live preview and print stack in real time.
 
 ## Usage
 1. Open `index.html` in a browser (served relative to this folder).

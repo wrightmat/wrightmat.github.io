@@ -61,7 +61,6 @@ const componentToggle = document.querySelector("[data-component-toggle]");
 const componentToggleLabel = componentToggle?.querySelector("[data-component-toggle-label]");
 const componentPanel = document.querySelector("[data-component-panel]");
 const inspectorSection = document.querySelector("[data-component-inspector]");
-const inspectorTitle = document.querySelector("[data-inspector-title]");
 const typeSummary = document.querySelector("[data-component-type-summary]");
 let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
@@ -85,6 +84,10 @@ const alignmentLabels = {
   justify: document.querySelector('[data-alignment-label="justify"]'),
 };
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
+const textSizeCustomInput = document.querySelector("[data-component-text-size-custom]");
+const textOrientationInputs = Array.from(document.querySelectorAll("[data-component-text-orientation]"));
+const textAngleInput = document.querySelector("[data-component-text-angle]");
+const textCurveInput = document.querySelector("[data-component-text-curve]");
 const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
 const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
 const textStyleToggles = Array.from(document.querySelectorAll("[data-component-text-style]"));
@@ -123,6 +126,13 @@ const COLOR_DEFAULTS = {
   foreground: "#212529",
   background: "#ffffff",
   border: "#dee2e6",
+};
+const TEXT_SIZE_PX = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 20,
+  xl: 24,
 };
 
 const paletteComponents = [
@@ -1170,6 +1180,7 @@ function replaceTypeIcon(icon) {
 
 function mapFontSizeToToken(size) {
   if (typeof size !== "number") return "md";
+  if (size <= 12) return "xs";
   if (size <= 14) return "sm";
   if (size >= 22) return "xl";
   if (size >= 19) return "lg";
@@ -1184,7 +1195,7 @@ function getDefaultTextSize(node) {
 
 function resolveTextSize(node) {
   if (!node) return "md";
-  if (node.textSize) return node.textSize;
+  if (node.textSize && !node.textSizeCustom) return node.textSize;
   const fallback = node.style?.fontSize;
   if (typeof fallback === "number") {
     return mapFontSizeToToken(fallback);
@@ -1206,6 +1217,25 @@ function resolveTextStyles(node) {
     italic: Boolean(node.textStyles.italic),
     underline: Boolean(node.textStyles.underline),
   };
+}
+
+function resolveTextTransform(node) {
+  return {
+    orientation: node?.textOrientation ?? "horizontal",
+    angle: Number.isFinite(node?.textAngle) ? node.textAngle : 0,
+    curve: Number.isFinite(node?.textCurve) ? node.textCurve : 12,
+    isCustom: Boolean(node?.textOrientationCustom),
+  };
+}
+
+function pxToPt(value) {
+  if (!Number.isFinite(value)) return "";
+  return (value * 0.75).toFixed(1).replace(/\.0$/, "");
+}
+
+function ptToPx(value) {
+  if (!Number.isFinite(value)) return null;
+  return value * (4 / 3);
 }
 
 function renderPalette() {
@@ -1303,8 +1333,6 @@ function updateInspector() {
     el.disabled = !hasSelection;
   });
 
-  inspectorTitle.textContent = hasSelection ? describeNode(node) : "Select a component";
-
   if (typeSummary) {
     const entry = getPaletteEntryForNode(node);
     typeSummary.classList.toggle("opacity-50", !entry);
@@ -1375,6 +1403,12 @@ function updateInspector() {
     textSizeInputs.forEach((input) => {
       input.checked = input.value === "md";
     });
+    if (textSizeCustomInput) textSizeCustomInput.value = pxToPt(TEXT_SIZE_PX.md);
+    textOrientationInputs.forEach((input) => {
+      input.checked = input.value === "horizontal";
+    });
+    if (textAngleInput) textAngleInput.value = "0";
+    if (textCurveInput) textCurveInput.value = "12";
     colorInputs.forEach((input) => {
       const key = input.dataset.componentColor;
       input.value = COLOR_DEFAULTS[key] || "#000000";
@@ -1463,9 +1497,31 @@ function updateInspector() {
   }
 
   const textSize = resolveTextSize(node);
+  const hasCustomSize =
+    (node?.textSizeCustom && Number.isFinite(node?.style?.fontSize)) ||
+    (Number.isFinite(node?.style?.fontSize) && !node?.textSize);
   textSizeInputs.forEach((input) => {
-    input.checked = input.value === textSize;
+    input.checked = !hasCustomSize && input.value === textSize;
   });
+  if (textSizeCustomInput) {
+    const fontSizePx = Number.isFinite(node?.style?.fontSize) ? node.style.fontSize : TEXT_SIZE_PX[textSize] ?? TEXT_SIZE_PX.md;
+    textSizeCustomInput.value = pxToPt(fontSizePx);
+  }
+
+  const textTransformState = resolveTextTransform(node);
+  const resolvedAngle =
+    Number.isFinite(node?.textAngle)
+      ? node.textAngle
+      : textTransformState.orientation === "vertical"
+        ? 90
+        : textTransformState.orientation === "diagonal"
+          ? 45
+          : 0;
+  textOrientationInputs.forEach((input) => {
+    input.checked = !textTransformState.isCustom && input.value === textTransformState.orientation;
+  });
+  if (textAngleInput) textAngleInput.value = String(resolvedAngle);
+  if (textCurveInput) textCurveInput.value = String(textTransformState.curve ?? 12);
 
   colorInputs.forEach((input) => {
     const key = input.dataset.componentColor;
@@ -1988,6 +2044,7 @@ function bindInspectorControls() {
         recordUndoableChange(() => {
           updateSelectedNode((node) => {
             node.textSize = input.value;
+            node.textSizeCustom = false;
             if (node.style?.fontSize) {
               const styles = { ...(node.style ?? {}) };
               delete styles.fontSize;
@@ -1998,11 +2055,111 @@ function bindInspectorControls() {
               }
             }
           });
+          if (textSizeCustomInput) {
+            textSizeCustomInput.value = pxToPt(TEXT_SIZE_PX[input.value] ?? TEXT_SIZE_PX.md);
+          }
           renderPreview();
         });
       });
     });
   }
+
+  if (textSizeCustomInput) {
+    textSizeCustomInput.addEventListener("focus", () => beginPendingUndo(textSizeCustomInput));
+    textSizeCustomInput.addEventListener("blur", () => commitPendingUndo(textSizeCustomInput));
+    textSizeCustomInput.addEventListener("change", () => commitPendingUndo(textSizeCustomInput));
+    textSizeCustomInput.addEventListener("input", () => {
+      const rawValue = textSizeCustomInput.value;
+      updateSelectedNode((node) => {
+        const parsed = rawValue === "" ? null : parseFloat(rawValue);
+        if (!Number.isNaN(parsed) && parsed !== null) {
+          node.style = { ...(node.style ?? {}), fontSize: ptToPx(parsed) };
+          node.textSizeCustom = true;
+        } else if (rawValue === "") {
+          if (node.style?.fontSize) {
+            const styles = { ...(node.style ?? {}) };
+            delete styles.fontSize;
+            if (Object.keys(styles).length) {
+              node.style = styles;
+            } else {
+              delete node.style;
+            }
+          }
+          node.textSizeCustom = false;
+        }
+      });
+      if (rawValue === "") {
+        updateInspector();
+      } else {
+        textSizeInputs.forEach((input) => {
+          input.checked = false;
+        });
+      }
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (textOrientationInputs.length) {
+    textOrientationInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        recordUndoableChange(() => {
+          updateSelectedNode((node) => {
+            node.textOrientation = input.value;
+            node.textOrientationCustom = false;
+            if (node.textOrientation === "vertical") {
+              node.textAngle = 90;
+            } else if (node.textOrientation === "diagonal") {
+              node.textAngle = 45;
+            } else {
+              node.textAngle = 0;
+            }
+            if (node.textOrientation === "curve-up" || node.textOrientation === "curve-down") {
+              if (!Number.isFinite(node.textCurve)) {
+                node.textCurve = 12;
+              }
+            }
+          });
+          if (textAngleInput) {
+            textAngleInput.value = input.value === "vertical" ? "90" : input.value === "diagonal" ? "45" : "0";
+          }
+          if (textCurveInput) {
+            textCurveInput.value = "12";
+          }
+          renderPreview();
+        });
+      });
+    });
+  }
+
+  const textTransformInputs = [
+    { input: textAngleInput, key: "textAngle" },
+    { input: textCurveInput, key: "textCurve" },
+  ];
+
+  textTransformInputs.forEach(({ input, key }) => {
+    if (!input) return;
+    input.addEventListener("focus", () => beginPendingUndo(input));
+    input.addEventListener("blur", () => commitPendingUndo(input));
+    input.addEventListener("change", () => commitPendingUndo(input));
+    input.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        const raw = input.value;
+        const parsed = raw === "" ? null : parseFloat(raw);
+        if (!Number.isNaN(parsed) && parsed !== null) {
+          node[key] = parsed;
+        } else if (raw === "") {
+          delete node[key];
+        }
+        node.textOrientationCustom = true;
+      });
+      textOrientationInputs.forEach((entry) => {
+        entry.checked = false;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  });
 
   if (colorInputs.length) {
     colorInputs.forEach((input) => {

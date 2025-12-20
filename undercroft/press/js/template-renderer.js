@@ -1,5 +1,6 @@
 const GAP_UNIT_REM = 0.25;
 const TEXT_SIZE_MAP = {
+  xs: 12,
   sm: 14,
   md: 16,
   lg: 20,
@@ -33,6 +34,22 @@ function applyClassName(element, className) {
   if (className) {
     element.className = [element.className, className].filter(Boolean).join(" ");
   }
+}
+
+function resolveTextSizePx(node) {
+  if (typeof node?.style?.fontSize === "number") {
+    return node.style.fontSize;
+  }
+  if (node?.textSize) {
+    return TEXT_SIZE_MAP[node.textSize] ?? null;
+  }
+  if (node?.component === "heading") {
+    return TEXT_SIZE_MAP.lg;
+  }
+  if (node?.component === "text") {
+    return TEXT_SIZE_MAP.md;
+  }
+  return TEXT_SIZE_MAP.md;
 }
 
 function applyInlineStyles(element, styles = {}) {
@@ -91,23 +108,30 @@ function createTextElement(tag, text, className) {
   return el;
 }
 
+function resolveTextTransform(node) {
+  return {
+    orientation: node?.textOrientation ?? "horizontal",
+    rotation: Number.isFinite(node?.textAngle) ? node.textAngle : 0,
+  };
+}
+
+function applyTextTransform(element, node) {
+  if (!element || !node) return;
+  const { rotation } = resolveTextTransform(node);
+  const transforms = [];
+  if (rotation) transforms.push(`rotate(${rotation}deg)`);
+  if (transforms.length) {
+    element.style.transform = transforms.join(" ");
+    element.style.transformOrigin = "center";
+  } else {
+    element.style.removeProperty("transform");
+    element.style.removeProperty("transform-origin");
+  }
+}
+
 function applyTextFormatting(element, node) {
   if (!element || !node) return;
-  const size = (() => {
-    if (typeof node?.style?.fontSize === "number") {
-      return node.style.fontSize;
-    }
-    if (node?.textSize) {
-      return TEXT_SIZE_MAP[node.textSize] ?? null;
-    }
-    if (node?.component === "heading") {
-      return TEXT_SIZE_MAP.lg;
-    }
-    if (node?.component === "text") {
-      return TEXT_SIZE_MAP.md;
-    }
-    return TEXT_SIZE_MAP.md;
-  })();
+  const size = resolveTextSizePx(node);
   if (size) {
     element.style.fontSize = `${size}px`;
   }
@@ -140,6 +164,71 @@ function applyTextFormatting(element, node) {
   }
 }
 
+function applySvgTextColor(element, styles = {}, { muted = false } = {}) {
+  if (!element) return;
+  if (styles.color) {
+    element.setAttribute("fill", styles.color);
+    return;
+  }
+  if (muted) {
+    element.setAttribute("fill", "var(--bs-secondary-color)");
+    return;
+  }
+  element.removeAttribute("fill");
+}
+
+function createCurvedTextElement(node, text, className) {
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("press-curved-text");
+  applyClassName(wrapper, className);
+  applyInlineStyles(wrapper, node.style);
+  applyTextTransform(wrapper, node);
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 100 40");
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svg.classList.add("press-curved-text__svg");
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const curveDirection = node.textOrientation === "curve-down" ? "down" : "up";
+  const pathId = `curve-${node.uid ?? Math.random().toString(36).slice(2)}`;
+  const rawCurve = Number.isFinite(node.textCurve) ? node.textCurve : 12;
+  const curveAmount = Math.max(0, Math.min(rawCurve, 18));
+  const centerY = 20;
+  const controlY = curveDirection === "down" ? centerY + curveAmount : centerY - curveAmount;
+  path.setAttribute("id", pathId);
+  path.setAttribute("fill", "none");
+  path.setAttribute("d", `M5,${centerY} Q50,${controlY} 95,${centerY}`);
+
+  const textEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  const textPath = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
+  textPath.setAttribute("href", `#${pathId}`);
+  textPath.textContent = text ?? "";
+
+  const alignment = node.align || "start";
+  if (alignment === "center") {
+    textEl.setAttribute("text-anchor", "middle");
+    textPath.setAttribute("startOffset", "50%");
+  } else if (alignment === "end") {
+    textEl.setAttribute("text-anchor", "end");
+    textPath.setAttribute("startOffset", "100%");
+  } else {
+    textEl.setAttribute("text-anchor", "start");
+    textPath.setAttribute("startOffset", "0%");
+  }
+
+  const fontSize = resolveTextSizePx(node) ?? TEXT_SIZE_MAP.md;
+  wrapper.style.minHeight = `${Math.max(32, fontSize * 2)}px`;
+
+  applyTextFormatting(textEl, node);
+  applySvgTextColor(textEl, node.style ?? {}, { muted: node.muted });
+  textEl.appendChild(textPath);
+
+  svg.append(path, textEl);
+  wrapper.appendChild(svg);
+  return wrapper;
+}
+
 function applyTextColor(element, styles = {}) {
   if (!element || typeof styles !== "object") return;
   if (styles.color) {
@@ -153,25 +242,40 @@ function renderField(node, context) {
   const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
   switch (node.component) {
     case "heading": {
+      const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
+      if (useCurved) {
+        return createCurvedTextElement(node, value ?? node.label, node.className ?? "fw-semibold");
+      }
       const el = createTextElement(node.level ?? "h2", value ?? node.label, node.className ?? "fw-semibold");
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
+      applyTextTransform(el, node);
       return el;
     }
     case "text": {
       const tag = node.textStyle ?? "p";
+      const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
+      if (useCurved) {
+        return createCurvedTextElement(node, value ?? "", node.className ?? "mb-0");
+      }
       const el = createTextElement(tag, value ?? "", node.className ?? "mb-0");
       if (node.muted) {
         applyClassName(el, "text-body-secondary");
       }
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
+      applyTextTransform(el, node);
       return el;
     }
     case "badge": {
+      const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
+      if (useCurved) {
+        return createCurvedTextElement(node, value ?? node.label ?? "Badge", node.className ?? "badge text-bg-primary");
+      }
       const el = createTextElement("span", value ?? node.label ?? "Badge", node.className ?? "badge text-bg-primary");
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
+      applyTextTransform(el, node);
       return el;
     }
     case "list": {
@@ -185,6 +289,7 @@ function renderField(node, context) {
       });
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
+      applyTextTransform(el, node);
       return el;
     }
     case "stat": {
@@ -198,6 +303,7 @@ function renderField(node, context) {
       applyTextColor(val, node.style);
       applyTextFormatting(label, node);
       applyTextFormatting(val, node);
+      applyTextTransform(wrapper, node);
       wrapper.append(label, val);
       return wrapper;
     }
