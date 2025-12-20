@@ -109,6 +109,15 @@ body[data-theme="dark"] .preview-stage {
   gap: 0.25rem;
 }
 
+.template-radio-group--nowrap {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.template-radio-group--nowrap .btn {
+  white-space: nowrap;
+}
+
 .template-radio-group .btn {
   font-size: 0.7rem;
   padding: 0.3rem 0.5rem;
@@ -121,6 +130,14 @@ body[data-theme="dark"] .preview-stage {
   text-align: center;
   white-space: normal;
   min-width: 2.75rem;
+}
+
+.press-text-orientation-group .btn {
+  min-width: 2.4rem;
+}
+
+.press-inline-input {
+  width: 5.25rem;
 }
 
 .template-radio-group .btn .iconify {
