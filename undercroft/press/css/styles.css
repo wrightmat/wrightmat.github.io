@@ -137,7 +137,11 @@ body[data-theme="dark"] .preview-stage {
 }
 
 .press-inline-input {
-  width: 5.25rem;
+  width: 4.5rem;
+}
+
+.press-text-transform-row {
+  overflow-x: auto;
 }
 
 .template-radio-group .btn .iconify {
@@ -322,6 +326,16 @@ body[data-theme="dark"] .preview-stage {
   align-items: center;
   justify-content: center;
   width: 100%;
+  position: relative;
+  overflow: visible;
+}
+
+.press-curved-text--up {
+  align-items: flex-start;
+}
+
+.press-curved-text--down {
+  align-items: flex-end;
 }
 
 .press-curved-text__svg {
@@ -329,6 +343,17 @@ body[data-theme="dark"] .preview-stage {
   width: 100%;
   height: 100%;
   overflow: visible;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.press-curved-text--up .press-curved-text__svg {
+  top: 0;
+}
+
+.press-curved-text--down .press-curved-text__svg {
+  bottom: 0;
 }
 
 .sheet-grid {
