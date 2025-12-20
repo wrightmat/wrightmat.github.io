@@ -1508,28 +1508,20 @@ function updateInspector() {
     textSizeCustomInput.value = pxToPt(fontSizePx);
   }
 
-  const textTransform = resolveTextTransform(node);
+  const textTransformState = resolveTextTransform(node);
   const resolvedAngle =
     Number.isFinite(node?.textAngle)
       ? node.textAngle
-      : textTransform.orientation === "vertical"
+      : textTransformState.orientation === "vertical"
         ? 90
-        : textTransform.orientation === "diagonal"
+        : textTransformState.orientation === "diagonal"
           ? 45
           : 0;
   textOrientationInputs.forEach((input) => {
-    input.checked = !textTransform.isCustom && input.value === textTransform.orientation;
+    input.checked = !textTransformState.isCustom && input.value === textTransformState.orientation;
   });
   if (textAngleInput) textAngleInput.value = String(resolvedAngle);
-  if (textCurveInput) textCurveInput.value = String(textTransform.curve ?? 12);
-
-  const textTransform = resolveTextTransform(node);
-  if (textOrientationSelect) {
-    textOrientationSelect.value = textTransform.orientation;
-  }
-  if (textAngleInput) textAngleInput.value = String(textTransform.angle ?? 0);
-  if (textSkewXInput) textSkewXInput.value = String(textTransform.skewX ?? 0);
-  if (textSkewYInput) textSkewYInput.value = String(textTransform.skewY ?? 0);
+  if (textCurveInput) textCurveInput.value = String(textTransformState.curve ?? 12);
 
   colorInputs.forEach((input) => {
     const key = input.dataset.componentColor;
