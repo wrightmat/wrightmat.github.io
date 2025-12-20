@@ -1,6 +1,7 @@
 {
   "templates": [
     "./card-grid.json",
+    "./chip-grid.json",
     "./tarot-grid.json",
     "./notecard.json",
     "./letter-sheet.json",
