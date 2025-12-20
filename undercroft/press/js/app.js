@@ -1523,6 +1523,14 @@ function updateInspector() {
   if (textAngleInput) textAngleInput.value = String(resolvedAngle);
   if (textCurveInput) textCurveInput.value = String(textTransform.curve ?? 12);
 
+  const textTransform = resolveTextTransform(node);
+  if (textOrientationSelect) {
+    textOrientationSelect.value = textTransform.orientation;
+  }
+  if (textAngleInput) textAngleInput.value = String(textTransform.angle ?? 0);
+  if (textSkewXInput) textSkewXInput.value = String(textTransform.skewX ?? 0);
+  if (textSkewYInput) textSkewYInput.value = String(textTransform.skewY ?? 0);
+
   colorInputs.forEach((input) => {
     const key = input.dataset.componentColor;
     const styles = node?.style ?? {};
