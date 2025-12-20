@@ -996,12 +996,8 @@ function bindTemplateInspectorControls() {
   });
 
   if (templateSaveButton) {
-    templateSaveButton.addEventListener("click", async () => {
-      const template = getActiveTemplate();
-      if (!template) return;
-      await saveTemplateChanges({ template, confirm: true });
-    });
-  });
+    templateSaveButton.addEventListener("click", handleSaveTemplate);
+  }
 }
 
 function getEditablePage(side) {
