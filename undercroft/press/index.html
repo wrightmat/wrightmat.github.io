@@ -466,11 +466,6 @@
             </div>
             <div class="d-flex flex-column gap-3" data-component-panel>
               <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
-                <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                  <div class="d-flex align-items-center gap-2">
-                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0" data-inspector-title>Component inspector</h2>
-                  </div>
-                </div>
                 <div class="d-flex flex-column gap-3">
                   <div
                     class="border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 p-3"
@@ -582,6 +577,91 @@
                         data-component-text-size
                       />
                       <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
+                    </div>
+                    <div>
+                      <label class="form-label small text-body-secondary mb-1" for="componentTextSizeCustom">Font size (pt)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentTextSizeCustom"
+                        type="number"
+                        step="0.5"
+                        placeholder="12"
+                        data-component-text-size-custom
+                      />
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-settings>
+                    <label class="fw-semibold text-body-secondary">Text orientation</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Text orientation">
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextOrientation"
+                        id="componentTextOrientationHorizontal"
+                        value="horizontal"
+                        data-component-text-orientation
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationHorizontal">Horizontal</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextOrientation"
+                        id="componentTextOrientationVertical"
+                        value="vertical"
+                        data-component-text-orientation
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationVertical">Vertical</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextOrientation"
+                        id="componentTextOrientationDiagonal"
+                        value="diagonal"
+                        data-component-text-orientation
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationDiagonal">Diagonal</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextOrientation"
+                        id="componentTextOrientationCurveUp"
+                        value="curve-up"
+                        data-component-text-orientation
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveUp">Curved up</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextOrientation"
+                        id="componentTextOrientationCurveDown"
+                        value="curve-down"
+                        data-component-text-orientation
+                      />
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveDown">Curved down</label>
+                    </div>
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <label class="form-label small text-body-secondary mb-1" for="componentTextAngle">Angle</label>
+                        <input
+                          class="form-control form-control-sm"
+                          id="componentTextAngle"
+                          type="number"
+                          step="1"
+                          placeholder="0"
+                          data-component-text-angle
+                        />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small text-body-secondary mb-1" for="componentTextCurve">Curve amount</label>
+                        <input
+                          class="form-control form-control-sm"
+                          id="componentTextCurve"
+                          type="number"
+                          step="1"
+                          placeholder="12"
+                          data-component-text-curve
+                        />
+                      </div>
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
