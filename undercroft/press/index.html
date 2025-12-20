@@ -337,6 +337,7 @@
                   <select class="form-select form-select-sm" id="templateType" data-template-type>
                     <option value="sheet">Sheet</option>
                     <option value="card">Card</option>
+                    <option value="chip">Chip</option>
                   </select>
                 </div>
               </div>
@@ -362,7 +363,7 @@
               </div>
               <section class="border rounded-3 bg-body p-3 d-flex flex-column gap-3" data-template-card-group hidden>
                 <div class="d-flex align-items-center justify-content-between">
-                  <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Card Properties</h3>
+                  <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Grid Properties</h3>
                   <button
                     class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
                     type="button"
@@ -370,13 +371,13 @@
                     aria-expanded="false"
                   >
                     <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                    <span class="visually-hidden" data-card-toggle-label>Expand card properties</span>
+                    <span class="visually-hidden" data-card-toggle-label>Expand grid properties</span>
                   </button>
                 </div>
                 <div class="d-flex flex-column gap-3" data-card-panel>
                   <div class="row g-3">
                     <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardWidth">Card width (in)</label>
+                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardWidth">Cell width (in)</label>
                       <input
                         class="form-control form-control-sm"
                         id="templateCardWidth"
@@ -387,7 +388,7 @@
                       />
                     </div>
                     <div class="col-6">
-                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardHeight">Card height (in)</label>
+                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardHeight">Cell height (in)</label>
                       <input
                         class="form-control form-control-sm"
                         id="templateCardHeight"
@@ -491,6 +492,34 @@
                   <div class="form-floating" data-inspector-text-field>
                     <textarea class="form-control" placeholder="Edit text" style="min-height: 96px" data-component-text></textarea>
                     <label class="fw-semibold">Binding / Text</label>
+                  </div>
+                  <div class="form-floating" data-inspector-image-field hidden>
+                    <input class="form-control" placeholder="Image URL" type="text" data-component-image-url />
+                    <label class="fw-semibold">Image URL</label>
+                  </div>
+                  <div class="row g-2" data-inspector-image-field hidden>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageWidth">Image width (in)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageWidth"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-component-image-width
+                      />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageHeight">Image height (in)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageHeight"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-component-image-height
+                      />
+                    </div>
                   </div>
                   <div class="form-floating" data-inspector-gap-field hidden>
                     <input
@@ -634,7 +663,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="d-flex flex-column gap-2">
+                  <div class="d-flex flex-column gap-2" data-inspector-alignment>
                     <label class="fw-semibold text-body-secondary" data-alignment-title>Alignment</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Text alignment">
                       <input

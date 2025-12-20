@@ -67,11 +67,16 @@ let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
+const imageFieldGroups = Array.from(document.querySelectorAll("[data-inspector-image-field]"));
+const imageUrlInput = document.querySelector("[data-component-image-url]");
+const imageWidthInput = document.querySelector("[data-component-image-width]");
+const imageHeightInput = document.querySelector("[data-component-image-height]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
 const textSettingGroups = Array.from(document.querySelectorAll("[data-inspector-text-settings]"));
 const colorGroup = document.querySelector("[data-inspector-color-group]");
+const alignmentGroup = document.querySelector("[data-inspector-alignment]");
 const alignmentTitle = document.querySelector("[data-alignment-title]");
 const alignmentLabels = {
   start: document.querySelector('[data-alignment-label="start"]'),
@@ -158,6 +163,18 @@ const paletteComponents = [
       component: "badge",
       text: "Badge",
       className: "badge text-bg-primary",
+    },
+  },
+  {
+    id: "image",
+    label: "Image",
+    description: "Artwork or icon with URL binding",
+    icon: "tabler:photo",
+    node: {
+      type: "field",
+      component: "image",
+      url: "",
+      className: "press-image",
     },
   },
   {
@@ -844,16 +861,16 @@ function updateTemplateInspector(template) {
   }
   setTemplateFormatSelections(template);
   setTemplateSourceSelections(template);
-  const isCard = template.type === "card" || Boolean(template.card);
+  const isGrid = template.type === "card" || template.type === "chip" || Boolean(template.card);
   if (templateCardGroup) {
-    templateCardGroup.hidden = !isCard;
-    templateCardGroup.classList.toggle("d-none", !isCard);
+    templateCardGroup.hidden = !isGrid;
+    templateCardGroup.classList.toggle("d-none", !isGrid);
   }
   if (templateSaveButton) {
     templateSaveButton.disabled = !hasTemplate;
   }
-  setCardInputsDisabled(!isCard);
-  if (isCard) {
+  setCardInputsDisabled(!isGrid);
+  if (isGrid) {
     const card = template.card ?? {};
     if (templateCardWidthInput) templateCardWidthInput.value = card.width ?? "";
     if (templateCardHeightInput) templateCardHeightInput.value = card.height ?? "";
@@ -917,17 +934,26 @@ function bindTemplateInspectorControls() {
       const template = getActiveTemplate();
       if (!template) return;
       template.type = templateTypeSelect.value;
-      if (template.type === "card" && !template.card) {
-        template.card = {
-          width: 2.5,
-          height: 3.5,
-          gutter: 0,
-          safeInset: 0.125,
-          columns: 3,
-          rows: 3,
-        };
+      if ((template.type === "card" || template.type === "chip") && !template.card) {
+        template.card = template.type === "chip"
+          ? {
+              width: 1,
+              height: 1,
+              gutter: 0.1,
+              safeInset: 0.05,
+              columns: 7,
+              rows: 9,
+            }
+          : {
+              width: 2.5,
+              height: 3.5,
+              gutter: 0,
+              safeInset: 0.125,
+              columns: 3,
+              rows: 3,
+            };
       }
-      if (template.type !== "card") {
+      if (template.type !== "card" && template.type !== "chip") {
         delete template.card;
       }
       updateTemplateInspector(template);
@@ -1108,6 +1134,7 @@ function describeNode(node) {
   if (node.component === "heading") return node.text || "Heading";
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
   if (node.component === "badge") return node.text || node.label || "Badge";
+  if (node.component === "image") return node.url || "Image";
   if (node.component === "list") return "List";
   if (node.component === "noteLines") return "Notes";
   if (node.component === "stat") return node.label || "Block";
@@ -1316,10 +1343,15 @@ function updateInspector() {
 
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
+    if (imageUrlInput) imageUrlInput.value = "";
+    if (imageWidthInput) imageWidthInput.value = "";
+    if (imageHeightInput) imageHeightInput.value = "";
     if (gapInput) gapInput.value = "";
     setGroupVisibility(textFieldGroup, true);
+    imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     textSettingGroups.forEach((group) => setGroupVisibility(group, true));
     setGroupVisibility(colorGroup, true);
+    setGroupVisibility(alignmentGroup, true);
     if (gapField) {
       gapField.hidden = true;
     }
@@ -1359,11 +1391,14 @@ function updateInspector() {
 
   const isLayoutNode = node?.type === "row" || node?.type === "stack";
   const isStackNode = node?.type === "stack";
-  setGroupVisibility(textFieldGroup, !isLayoutNode);
-  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode));
+  const isImageNode = node?.component === "image";
+  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode);
+  imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
+  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode));
   setGroupVisibility(colorGroup, true);
+  setGroupVisibility(alignmentGroup, !isImageNode);
   textStyleToggles.forEach((input) => {
-    input.disabled = isLayoutNode;
+    input.disabled = isLayoutNode || isImageNode;
   });
   if (gapField) {
     gapField.hidden = !isLayoutNode;
@@ -1413,8 +1448,18 @@ function updateInspector() {
   }
 
   if (textEditor) {
-    textEditor.value = getNodeText(node);
+    textEditor.value = isImageNode ? "" : getNodeText(node);
     textEditor.placeholder = node.component === "list" ? "One entry per line" : "Binding / Text";
+  }
+
+  if (imageUrlInput) {
+    imageUrlInput.value = isImageNode ? node.url ?? "" : "";
+  }
+  if (imageWidthInput) {
+    imageWidthInput.value = isImageNode && node.width !== undefined ? String(node.width) : "";
+  }
+  if (imageHeightInput) {
+    imageHeightInput.value = isImageNode && node.height !== undefined ? String(node.height) : "";
   }
 
   const textSize = resolveTextSize(node);
@@ -1475,15 +1520,17 @@ function updateSelectedNode(updater) {
 }
 
 function applyOverlays(page, template, size, { forPrint = false } = {}) {
-  if (template.type === "card") {
+  if (template.type === "card" || template.type === "chip") {
     const guides = document.createElement("div");
     guides.className = "page-overlay trim-lines card-guides";
 
     const { card } = template;
     const columns = card.columns ?? 3;
     const rows = card.rows ?? 3;
-    const gridWidth = card.width * columns + card.gutter * (columns - 1);
-    const gridHeight = card.height * rows + card.gutter * (rows - 1);
+    const cellWidth = card.width ?? 2.5;
+    const cellHeight = template.type === "chip" ? cellWidth : card.height ?? 3.5;
+    const gridWidth = cellWidth * columns + card.gutter * (columns - 1);
+    const gridHeight = cellHeight * rows + card.gutter * (rows - 1);
     const availableWidth = size.width - size.margin * 2;
     const availableHeight = size.height - size.margin * 2;
     const horizontalInset = size.margin + Math.max(0, (availableWidth - gridWidth) / 2);
@@ -1505,12 +1552,12 @@ function applyOverlays(page, template, size, { forPrint = false } = {}) {
     };
 
     Array.from({ length: columns + 1 }).forEach((_, index) => {
-      const x = horizontalInset + index * (template.card.width + template.card.gutter);
+      const x = horizontalInset + index * (cellWidth + template.card.gutter);
       addGuide("vertical", x, gridHeight, verticalInset);
     });
 
     Array.from({ length: rows + 1 }).forEach((_, index) => {
-      const y = verticalInset + index * (template.card.height + template.card.gutter);
+      const y = verticalInset + index * (cellHeight + template.card.gutter);
       addGuide("horizontal", y, gridWidth, horizontalInset);
     });
 
@@ -1858,6 +1905,9 @@ function bindInspectorControls() {
     textEditor.addEventListener("change", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("input", () => {
       updateSelectedNode((node) => {
+        if (node.component === "image") {
+          return;
+        }
         if (node.component === "list") {
           node.items = textEditor.value
             .split("\n")
@@ -1873,6 +1923,48 @@ function bindInspectorControls() {
       updateSaveState();
     });
   }
+
+  if (imageUrlInput) {
+    imageUrlInput.addEventListener("focus", () => beginPendingUndo(imageUrlInput));
+    imageUrlInput.addEventListener("blur", () => commitPendingUndo(imageUrlInput));
+    imageUrlInput.addEventListener("change", () => commitPendingUndo(imageUrlInput));
+    imageUrlInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "image") return;
+        node.url = imageUrlInput.value;
+      });
+      renderPreview();
+      renderLayoutList();
+      updateSaveState();
+    });
+  }
+
+  const imageSizeInputs = [
+    { input: imageWidthInput, key: "width" },
+    { input: imageHeightInput, key: "height" },
+  ];
+
+  imageSizeInputs.forEach(({ input, key }) => {
+    if (!input) return;
+    input.addEventListener("focus", () => beginPendingUndo(input));
+    input.addEventListener("blur", () => commitPendingUndo(input));
+    input.addEventListener("change", () => commitPendingUndo(input));
+    input.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "image") return;
+        const raw = input.value;
+        const parsed = raw === "" ? null : parseFloat(raw);
+        if (!Number.isNaN(parsed) && parsed !== null) {
+          node[key] = parsed;
+        } else if (raw === "") {
+          delete node[key];
+        }
+      });
+      renderPreview();
+      renderLayoutList();
+      updateSaveState();
+    });
+  });
 
   if (gapInput) {
     gapInput.addEventListener("focus", () => beginPendingUndo(gapInput));
