@@ -67,8 +67,10 @@ let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
-const imageUrlField = document.querySelector("[data-inspector-image-field]");
+const imageFieldGroups = Array.from(document.querySelectorAll("[data-inspector-image-field]"));
 const imageUrlInput = document.querySelector("[data-component-image-url]");
+const imageWidthInput = document.querySelector("[data-component-image-width]");
+const imageHeightInput = document.querySelector("[data-component-image-height]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
@@ -1342,9 +1344,11 @@ function updateInspector() {
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
     if (imageUrlInput) imageUrlInput.value = "";
+    if (imageWidthInput) imageWidthInput.value = "";
+    if (imageHeightInput) imageHeightInput.value = "";
     if (gapInput) gapInput.value = "";
     setGroupVisibility(textFieldGroup, true);
-    setGroupVisibility(imageUrlField, false);
+    imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     textSettingGroups.forEach((group) => setGroupVisibility(group, true));
     setGroupVisibility(colorGroup, true);
     setGroupVisibility(alignmentGroup, true);
@@ -1389,7 +1393,7 @@ function updateInspector() {
   const isStackNode = node?.type === "stack";
   const isImageNode = node?.component === "image";
   setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode);
-  setGroupVisibility(imageUrlField, isImageNode);
+  imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
   textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode));
   setGroupVisibility(colorGroup, true);
   setGroupVisibility(alignmentGroup, !isImageNode);
@@ -1450,6 +1454,12 @@ function updateInspector() {
 
   if (imageUrlInput) {
     imageUrlInput.value = isImageNode ? node.url ?? "" : "";
+  }
+  if (imageWidthInput) {
+    imageWidthInput.value = isImageNode && node.width !== undefined ? String(node.width) : "";
+  }
+  if (imageHeightInput) {
+    imageHeightInput.value = isImageNode && node.height !== undefined ? String(node.height) : "";
   }
 
   const textSize = resolveTextSize(node);
@@ -1928,6 +1938,33 @@ function bindInspectorControls() {
       updateSaveState();
     });
   }
+
+  const imageSizeInputs = [
+    { input: imageWidthInput, key: "width" },
+    { input: imageHeightInput, key: "height" },
+  ];
+
+  imageSizeInputs.forEach(({ input, key }) => {
+    if (!input) return;
+    input.addEventListener("focus", () => beginPendingUndo(input));
+    input.addEventListener("blur", () => commitPendingUndo(input));
+    input.addEventListener("change", () => commitPendingUndo(input));
+    input.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "image") return;
+        const raw = input.value;
+        const parsed = raw === "" ? null : parseFloat(raw);
+        if (!Number.isNaN(parsed) && parsed !== null) {
+          node[key] = parsed;
+        } else if (raw === "") {
+          delete node[key];
+        }
+      });
+      renderPreview();
+      renderLayoutList();
+      updateSaveState();
+    });
+  });
 
   if (gapInput) {
     gapInput.addEventListener("focus", () => beginPendingUndo(gapInput));

@@ -212,11 +212,23 @@ function renderField(node, context) {
       const el = document.createElement("div");
       applyClassName(el, node.className ?? "press-image");
       applyInlineStyles(el, node.style);
+      if (typeof node.width === "number") {
+        el.style.width = `${node.width}in`;
+      }
+      if (typeof node.height === "number") {
+        el.style.height = `${node.height}in`;
+      }
       if (src) {
         const img = document.createElement("img");
         img.src = src;
         img.alt = node.alt ?? "";
         img.className = "press-image__img";
+        if (typeof node.width === "number") {
+          img.style.width = "100%";
+        }
+        if (typeof node.height === "number") {
+          img.style.height = "100%";
+        }
         el.appendChild(img);
       } else {
         const placeholder = document.createElement("div");

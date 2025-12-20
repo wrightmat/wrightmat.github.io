@@ -257,8 +257,8 @@ body[data-theme="dark"] .preview-stage {
 
 .chip-image {
   align-self: center;
-  width: 36%;
-  aspect-ratio: 1 / 1;
+  width: 0.5in;
+  height: 0.5in;
   border-radius: 999px;
 }
 
