@@ -1,31 +1,73 @@
 import { renderLayout } from "./template-renderer.js";
 
-const pageSizes = {
-  letter: {
-    id: "letter",
-    label: "US Letter",
-    width: 8.5,
-    height: 11,
-    margin: 0.25,
-    orientations: ["portrait", "landscape"],
-  },
-  a4: {
-    id: "a4",
-    label: "A4",
-    width: 8.27,
-    height: 11.69,
-    margin: 0.25,
-    orientations: ["portrait", "landscape"],
-  },
-  a6: {
-    id: "a6",
-    label: "A6",
-    width: 4.1,
-    height: 5.8,
-    margin: 0.2,
-    orientations: ["portrait"],
-  },
-};
+const MILLIMETERS_PER_INCH = 25.4;
+const pageSizes = {};
+const pageSizeOrder = [];
+
+function registerPageSize({ id, label, width, height, margin = 0.25, orientations = ["portrait", "landscape"] }) {
+  pageSizes[id] = {
+    id,
+    label,
+    width,
+    height,
+    margin,
+    orientations,
+  };
+  pageSizeOrder.push(id);
+}
+
+function registerIsoSize({ id, label, widthMm, heightMm, margin }) {
+  registerPageSize({
+    id,
+    label,
+    width: widthMm / MILLIMETERS_PER_INCH,
+    height: heightMm / MILLIMETERS_PER_INCH,
+    margin,
+  });
+}
+
+registerPageSize({
+  id: "letter",
+  label: "Letter",
+  width: 8.5,
+  height: 11,
+  margin: 0.25,
+});
+registerPageSize({
+  id: "legal",
+  label: "Legal",
+  width: 8.5,
+  height: 14,
+  margin: 0.25,
+});
+
+[
+  { id: "a0", label: "A0", widthMm: 841, heightMm: 1189 },
+  { id: "a1", label: "A1", widthMm: 594, heightMm: 841 },
+  { id: "a2", label: "A2", widthMm: 420, heightMm: 594 },
+  { id: "a3", label: "A3", widthMm: 297, heightMm: 420 },
+  { id: "a4", label: "A4", widthMm: 210, heightMm: 297 },
+  { id: "a5", label: "A5", widthMm: 148, heightMm: 210 },
+  { id: "a6", label: "A6", widthMm: 105, heightMm: 148, margin: 0.2 },
+  { id: "a7", label: "A7", widthMm: 74, heightMm: 105, margin: 0.2 },
+  { id: "a8", label: "A8", widthMm: 52, heightMm: 74, margin: 0.2 },
+  { id: "a9", label: "A9", widthMm: 37, heightMm: 52, margin: 0.2 },
+  { id: "a10", label: "A10", widthMm: 26, heightMm: 37, margin: 0.2 },
+].forEach((size) => registerIsoSize(size));
+
+[
+  { id: "b0", label: "B0", widthMm: 1000, heightMm: 1414 },
+  { id: "b1", label: "B1", widthMm: 707, heightMm: 1000 },
+  { id: "b2", label: "B2", widthMm: 500, heightMm: 707 },
+  { id: "b3", label: "B3", widthMm: 353, heightMm: 500 },
+  { id: "b4", label: "B4", widthMm: 250, heightMm: 353 },
+  { id: "b5", label: "B5", widthMm: 176, heightMm: 250 },
+  { id: "b6", label: "B6", widthMm: 125, heightMm: 176 },
+  { id: "b7", label: "B7", widthMm: 88, heightMm: 125, margin: 0.2 },
+  { id: "b8", label: "B8", widthMm: 62, heightMm: 88, margin: 0.2 },
+  { id: "b9", label: "B9", widthMm: 44, heightMm: 62, margin: 0.2 },
+  { id: "b10", label: "B10", widthMm: 31, heightMm: 44, margin: 0.2 },
+].forEach((size) => registerIsoSize(size));
 
 let templates = [];
 
@@ -204,6 +246,19 @@ export function getFormatById(template, formatId) {
 export function getPageSize(template, formatId, orientation) {
   const format = getFormatById(template, formatId) ?? template?.formats?.[0];
   return resolvePageSize(format, orientation);
+}
+
+export function getStandardFormats() {
+  return pageSizeOrder.map((id) => {
+    const size = pageSizes[id];
+    return {
+      id: size.id,
+      label: size.label,
+      sizeId: size.id,
+      orientations: size.orientations,
+      defaultOrientation: size.orientations?.[0] ?? "portrait",
+    };
+  });
 }
 
 export function getSupportedSources(template) {
