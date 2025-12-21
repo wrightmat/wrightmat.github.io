@@ -72,6 +72,7 @@ const elements = {
   selectionTitle: document.querySelector("[data-selection-title]"),
   selectionType: document.querySelector("[data-selection-type]"),
   selectionDetails: document.querySelector("[data-selection-details]"),
+  selectionEditor: document.querySelector("[data-selection-editor]"),
   zoomIn: document.querySelector("[data-zoom-in]"),
   zoomOut: document.querySelector("[data-zoom-out]"),
   zoomReset: document.querySelector("[data-zoom-reset]"),
@@ -92,6 +93,38 @@ const renderJson = createJsonPreviewRenderer({
   resolveBytesElement: () => elements.jsonSize,
   serialize: () => state.map,
 });
+
+const LAYER_SETTINGS_SCHEMA = {
+  vector: [
+    { key: "strokeColor", label: "Stroke color", type: "color" },
+    { key: "fillColor", label: "Fill color", type: "color" },
+    { key: "strokeWidth", label: "Stroke width", type: "number", min: 1, step: 1 },
+  ],
+  grid: [
+    {
+      key: "gridType",
+      label: "Grid type",
+      type: "select",
+      options: [
+        { value: "square", label: "Square" },
+        { value: "hex", label: "Hex" },
+      ],
+    },
+    { key: "cellSize", label: "Cell size", type: "number", min: 5, step: 5 },
+    { key: "lineColor", label: "Line color", type: "color" },
+    { key: "lineOpacity", label: "Line opacity", type: "range", min: 0, max: 1, step: 0.05 },
+  ],
+  raster: [
+    { key: "src", label: "Image URL", type: "text" },
+    { key: "width", label: "Width", type: "number", min: 50, step: 10 },
+    { key: "height", label: "Height", type: "number", min: 50, step: 10 },
+  ],
+  marker: [
+    { key: "icon", label: "Icon", type: "text" },
+    { key: "size", label: "Size", type: "number", min: 8, step: 1 },
+    { key: "color", label: "Color", type: "color" },
+  ],
+};
 
 bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
   collapsed: false,
@@ -226,6 +259,7 @@ function renderSelection() {
       elements.selectionTitle.textContent = layer.name;
       elements.selectionType.textContent = layer.type;
       elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"} · Opacity: ${layer.opacity} · Elements: ${layer.elements.length}`;
+      renderLayerSelectionEditor(layer);
       return;
     }
   }
@@ -236,6 +270,7 @@ function renderSelection() {
       elements.selectionTitle.textContent = group.name;
       elements.selectionType.textContent = "Group";
       elements.selectionDetails.textContent = `Members: ${group.elementIds.length}`;
+      renderGroupSelectionEditor(group);
       return;
     }
   }
@@ -243,6 +278,255 @@ function renderSelection() {
   elements.selectionTitle.textContent = "No selection";
   elements.selectionType.textContent = "None";
   elements.selectionDetails.textContent = "Select a layer or group to inspect it.";
+  clearSelectionEditor();
+}
+
+function clearSelectionEditor() {
+  if (elements.selectionEditor) {
+    elements.selectionEditor.innerHTML = "";
+  }
+}
+
+function createSelectionSectionTitle(text) {
+  const title = document.createElement("div");
+  title.className = "text-uppercase small fw-semibold text-body-secondary";
+  title.textContent = text;
+  return title;
+}
+
+function createFieldWrapper(labelText, input) {
+  const wrapper = document.createElement("label");
+  wrapper.className = "d-flex flex-column gap-1 small";
+  const label = document.createElement("span");
+  label.className = "text-body-secondary";
+  label.textContent = labelText;
+  wrapper.appendChild(label);
+  wrapper.appendChild(input);
+  return wrapper;
+}
+
+function applyLayerChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderLayers();
+  renderSelection();
+  renderJson();
+}
+
+function applyLayerSettingsChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderSelection();
+  renderJson();
+}
+
+function renderLayerSelectionEditor(layer) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  container.innerHTML = "";
+
+  container.appendChild(createSelectionSectionTitle("Layer Properties"));
+
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "form-control form-control-sm";
+  nameInput.value = layer.name;
+  nameInput.addEventListener("change", () => {
+    const value = nameInput.value.trim();
+    if (!value) {
+      nameInput.value = layer.name;
+      return;
+    }
+    applyLayerChange("layer name", () => {
+      layer.name = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Name", nameInput));
+
+  const visibilityWrapper = document.createElement("div");
+  visibilityWrapper.className = "form-check";
+  const visibilityInput = document.createElement("input");
+  visibilityInput.className = "form-check-input";
+  visibilityInput.type = "checkbox";
+  visibilityInput.id = `layer-visible-${layer.id}`;
+  visibilityInput.checked = layer.visible;
+  visibilityInput.addEventListener("change", () => {
+    applyLayerChange("layer visibility", () => {
+      layer.visible = visibilityInput.checked;
+    });
+  });
+  const visibilityLabel = document.createElement("label");
+  visibilityLabel.className = "form-check-label small";
+  visibilityLabel.setAttribute("for", visibilityInput.id);
+  visibilityLabel.textContent = "Visible";
+  visibilityWrapper.appendChild(visibilityInput);
+  visibilityWrapper.appendChild(visibilityLabel);
+  container.appendChild(visibilityWrapper);
+
+  const opacityInput = document.createElement("input");
+  opacityInput.type = "range";
+  opacityInput.className = "form-range";
+  opacityInput.min = "0";
+  opacityInput.max = "1";
+  opacityInput.step = "0.05";
+  opacityInput.value = layer.opacity;
+  opacityInput.addEventListener("change", () => {
+    const value = Number(opacityInput.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer opacity", () => {
+      layer.opacity = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Opacity", opacityInput));
+
+  const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
+  if (settingsSchema.length) {
+    container.appendChild(createSelectionSectionTitle("Layer Settings"));
+    settingsSchema.forEach((field) => {
+      const input = document.createElement(field.type === "select" ? "select" : "input");
+      if (field.type !== "select") {
+        input.type = field.type;
+      }
+      input.className = field.type === "select" ? "form-select form-select-sm" : "form-control form-control-sm";
+      if (field.type === "range") {
+        input.className = "form-range";
+      }
+      if (field.min !== undefined) {
+        input.min = String(field.min);
+      }
+      if (field.max !== undefined) {
+        input.max = String(field.max);
+      }
+      if (field.step !== undefined) {
+        input.step = String(field.step);
+      }
+      if (field.type === "select") {
+        (field.options || []).forEach((option) => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option.value;
+          optionElement.textContent = option.label;
+          input.appendChild(optionElement);
+        });
+      }
+      const currentValue = layer.settings?.[field.key];
+      if (currentValue !== undefined) {
+        input.value = String(currentValue);
+      }
+      input.addEventListener("change", () => {
+        let nextValue = input.value;
+        if (field.type === "number" || field.type === "range") {
+          const numeric = Number(nextValue);
+          if (!Number.isFinite(numeric)) {
+            return;
+          }
+          nextValue = numeric;
+        }
+        applyLayerSettingsChange(`layer ${field.key}`, () => {
+          layer.settings = layer.settings || {};
+          layer.settings[field.key] = nextValue;
+        });
+      });
+      container.appendChild(createFieldWrapper(field.label, input));
+    });
+  }
+
+  container.appendChild(createSelectionSectionTitle("Custom Properties"));
+  const propertiesWrapper = document.createElement("div");
+  propertiesWrapper.className = "d-flex flex-column gap-2";
+  const entries = Object.entries(layer.properties || {});
+
+  if (entries.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No custom properties yet.";
+    propertiesWrapper.appendChild(empty);
+  } else {
+    entries.forEach(([key, value]) => {
+      propertiesWrapper.appendChild(createPropertyRow(layer, key, value));
+    });
+  }
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn btn-outline-secondary btn-sm";
+  addButton.textContent = "Add property";
+  addButton.addEventListener("click", () => {
+    const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
+    if (emptyState) {
+      emptyState.remove();
+    }
+    propertiesWrapper.appendChild(createPropertyRow(layer, "", ""));
+  });
+
+  container.appendChild(propertiesWrapper);
+  container.appendChild(addButton);
+}
+
+function createPropertyRow(layer, key, value) {
+  const row = document.createElement("div");
+  row.className = "d-flex gap-2 align-items-center";
+
+  const keyInput = document.createElement("input");
+  keyInput.type = "text";
+  keyInput.className = "form-control form-control-sm";
+  keyInput.placeholder = "Key";
+  keyInput.value = key;
+
+  const valueInput = document.createElement("input");
+  valueInput.type = "text";
+  valueInput.className = "form-control form-control-sm";
+  valueInput.placeholder = "Value";
+  valueInput.value = value;
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "btn btn-outline-danger btn-sm";
+  removeButton.textContent = "Remove";
+
+  let currentKey = key;
+
+  const updateProperty = () => {
+    const nextKey = keyInput.value.trim();
+    const nextValue = valueInput.value.trim();
+    applyLayerSettingsChange("layer property", () => {
+      layer.properties = layer.properties || {};
+      if (currentKey && currentKey !== nextKey) {
+        delete layer.properties[currentKey];
+      }
+      if (nextKey) {
+        layer.properties[nextKey] = nextValue;
+        currentKey = nextKey;
+      }
+    });
+  };
+
+  keyInput.addEventListener("change", updateProperty);
+  valueInput.addEventListener("change", updateProperty);
+  removeButton.addEventListener("click", () => {
+    applyLayerSettingsChange("remove layer property", () => {
+      if (currentKey && layer.properties) {
+        delete layer.properties[currentKey];
+      }
+    });
+    renderSelection();
+  });
+
+  row.appendChild(keyInput);
+  row.appendChild(valueInput);
+  row.appendChild(removeButton);
+  return row;
+}
+
+function renderGroupSelectionEditor() {
+  clearSelectionEditor();
 }
 
 function renderView() {
