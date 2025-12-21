@@ -13,6 +13,7 @@ class TileBaseMap {
     this.onViewChange = onViewChange;
     this.view = view;
     this.map = null;
+    this.overlayHost = null;
   }
 
   mount() {
@@ -40,6 +41,13 @@ class TileBaseMap {
       .addTo(this.map);
 
     this.setView(this.view);
+
+    const overlayPane = this.map.getPanes()?.overlayPane;
+    if (overlayPane) {
+      this.overlayHost = document.createElement("div");
+      this.overlayHost.className = "orrery-layer-overlay-host";
+      overlayPane.appendChild(this.overlayHost);
+    }
 
     this.map.on("moveend", () => this.emitChange());
     this.map.on("zoomend", () => this.emitChange());
@@ -89,10 +97,18 @@ class TileBaseMap {
     };
   }
 
+  getOverlayHost() {
+    return this.overlayHost;
+  }
+
   destroy() {
     if (this.map) {
       this.map.remove();
       this.map = null;
+    }
+    if (this.overlayHost) {
+      this.overlayHost.remove();
+      this.overlayHost = null;
     }
     clearContainer(this.container);
   }
@@ -107,6 +123,7 @@ class ImageBaseMap {
     this.stage = null;
     this.content = null;
     this.panZoom = null;
+    this.overlayHost = null;
   }
 
   mount() {
@@ -126,6 +143,9 @@ class ImageBaseMap {
     image.addEventListener("dragstart", (event) => event.preventDefault());
 
     this.content.appendChild(image);
+    this.overlayHost = document.createElement("div");
+    this.overlayHost.className = "orrery-layer-overlay-host";
+    this.content.appendChild(this.overlayHost);
     this.stage.appendChild(this.content);
     this.container.appendChild(this.stage);
 
@@ -183,9 +203,17 @@ class ImageBaseMap {
     };
   }
 
+  getOverlayHost() {
+    return this.overlayHost;
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
+    if (this.overlayHost) {
+      this.overlayHost.remove();
+      this.overlayHost = null;
+    }
     clearContainer(this.container);
   }
 }
@@ -199,6 +227,7 @@ class CanvasBaseMap {
     this.stage = null;
     this.content = null;
     this.panZoom = null;
+    this.overlayHost = null;
   }
 
   mount() {
@@ -215,6 +244,9 @@ class CanvasBaseMap {
     surface.style.backgroundColor = this.settings.background;
 
     this.content.appendChild(surface);
+    this.overlayHost = document.createElement("div");
+    this.overlayHost.className = "orrery-layer-overlay-host";
+    this.content.appendChild(this.overlayHost);
     this.stage.appendChild(this.content);
     this.container.appendChild(this.stage);
 
@@ -273,9 +305,17 @@ class CanvasBaseMap {
     };
   }
 
+  getOverlayHost() {
+    return this.overlayHost;
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
+    if (this.overlayHost) {
+      this.overlayHost.remove();
+      this.overlayHost = null;
+    }
     clearContainer(this.container);
   }
 }
@@ -335,5 +375,9 @@ export class BaseMapManager {
 
   getView() {
     return this.current?.getView();
+  }
+
+  getOverlayContainer() {
+    return this.current?.getOverlayHost?.() || null;
   }
 }
