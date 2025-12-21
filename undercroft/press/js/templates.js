@@ -272,6 +272,10 @@ function normalizeTemplate(raw) {
   return template;
 }
 
+export function createTemplate(definition) {
+  return normalizeTemplate(definition);
+}
+
 export async function loadTemplates() {
   if (templates.length) return templates;
   const manifestUrl = new URL("../templates/index.json", import.meta.url);
