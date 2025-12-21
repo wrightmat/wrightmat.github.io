@@ -255,6 +255,7 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
   };
 
   let lastSavedTemplateSignature = null;
+  let templateIdAuto = false;
 
   markTemplateClean();
 
@@ -337,6 +338,9 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
     jsonPreview: document.querySelector("[data-json-preview]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
+    templateProperties: document.querySelector("[data-template-properties]"),
+    templatePropertiesCollapse: document.getElementById("template-properties-collapse"),
+    templateDeleteButton: null,
   });
 
   const insertComponentAtCanvasRoot = createRootInsertionHandler({
@@ -812,6 +816,37 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     });
   }
 
+  function isEditableTarget(target) {
+    if (!target || !(target instanceof HTMLElement)) {
+      return false;
+    }
+    if (target.isContentEditable) {
+      return true;
+    }
+    const tagName = target.tagName;
+    if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
+      return true;
+    }
+    return false;
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Delete") {
+      return;
+    }
+    if (event.defaultPrevented) {
+      return;
+    }
+    const active = document.activeElement;
+    if (isEditableTarget(active)) {
+      return;
+    }
+    if (!state.selectedId) {
+      return;
+    }
+    removeComponent(state.selectedId);
+  });
+
   if (elements.saveButton) {
     elements.saveButton.addEventListener("click", async () => {
       if (!state.template) {
@@ -938,46 +973,50 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     });
   }
 
+  async function handleDeleteTemplateRequest() {
+    if (!state.template?.id) {
+      status.show("Select a template before deleting.", { type: "warning", timeout: 2000 });
+      return;
+    }
+    if (state.template.origin === "builtin") {
+      status.show("Built-in templates cannot be deleted.", { type: "info", timeout: 2200 });
+      return;
+    }
+    if (state.template.origin === "draft") {
+      status.show("Save the template before deleting it.", { type: "info", timeout: 2200 });
+      return;
+    }
+    const label = state.template.title || state.template.id;
+    const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+    const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
+    try {
+      await dataManager.delete("templates", state.template.id, { mode: wantsRemote ? "remote" : "auto" });
+      removeTemplateRecord(state.template.id);
+      state.template = null;
+      state.components = [];
+      state.selectedId = null;
+      containerActiveTabs.clear();
+      componentCollapsedState.clear();
+      componentCounter = 0;
+      markTemplateClean();
+      ensureTemplateSelectValue();
+      renderCanvas();
+      renderInspector();
+      syncTemplateActions();
+      status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+    } catch (error) {
+      console.error("Failed to delete template", error);
+      const message = error?.message || "Unable to delete template";
+      status.show(message, { type: "error", timeout: 3000 });
+    }
+  }
+
   if (elements.deleteTemplateButton) {
-    elements.deleteTemplateButton.addEventListener("click", async () => {
-      if (!state.template?.id) {
-        status.show("Select a template before deleting.", { type: "warning", timeout: 2000 });
-        return;
-      }
-      if (state.template.origin === "builtin") {
-        status.show("Built-in templates cannot be deleted.", { type: "info", timeout: 2200 });
-        return;
-      }
-      if (state.template.origin === "draft") {
-        status.show("Save the template before deleting it.", { type: "info", timeout: 2200 });
-        return;
-      }
-      const label = state.template.title || state.template.id;
-      const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
-      if (!confirmed) {
-        return;
-      }
-      const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
-      try {
-        await dataManager.delete("templates", state.template.id, { mode: wantsRemote ? "remote" : "auto" });
-        removeTemplateRecord(state.template.id);
-        state.template = null;
-        state.components = [];
-        state.selectedId = null;
-        containerActiveTabs.clear();
-        componentCollapsedState.clear();
-        componentCounter = 0;
-        markTemplateClean();
-        ensureTemplateSelectValue();
-        renderCanvas();
-        renderInspector();
-        syncTemplateActions();
-        status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
-      } catch (error) {
-        console.error("Failed to delete template", error);
-        const message = error?.message || "Unable to delete template";
-        status.show(message, { type: "error", timeout: 3000 });
-      }
+    elements.deleteTemplateButton.addEventListener("click", () => {
+      handleDeleteTemplateRequest();
     });
   }
 
@@ -986,30 +1025,7 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       if (!elements.newTemplateButton.contains(event.target)) {
         return;
       }
-      if (!elements.newTemplateForm) {
-        status.show("New template dialog is unavailable right now.", { type: "warning", timeout: 2200 });
-        return;
-      }
-      prepareNewTemplateForm({ mode: "new" });
-      if (newTemplateModalInstance) {
-        newTemplateModalInstance.show();
-        return;
-      }
-      const id = window.prompt("Enter a template ID", state.template?.id || "");
-      if (!id) {
-        return;
-      }
-      const title = window.prompt("Enter a template title", state.template?.title || "");
-      if (!title) {
-        return;
-      }
-      const version = window.prompt("Enter a version", state.template?.version || "0.1") || "0.1";
-      const schema = window.prompt("Enter the system ID for this template", state.template?.schema || "");
-      if (!schema) {
-        status.show("Templates must reference a system.", { type: "warning", timeout: 2400 });
-        return;
-      }
-      startNewTemplate({ id: id.trim(), title: title.trim(), version: version.trim(), schema: schema.trim(), origin: "draft" });
+      startBlankTemplateDraft();
     });
   }
 
@@ -1047,6 +1063,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
         title: titleInput.trim(),
         version: (versionInput || "0.1").trim() || "0.1",
         schema: schema.trim(),
+        description: baseTemplate.description || "",
+        type: baseTemplate.type || "sheet",
         origin: "draft",
         components,
         markClean: false,
@@ -1082,6 +1100,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
         title,
         version,
         schema,
+        description: "",
+        type: "sheet",
         origin: "draft",
         components,
         markClean: !isDuplicate,
@@ -1145,6 +1165,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       title: state.template?.title || "",
       version: state.template?.version || "0.1",
       schema: state.template?.schema || "",
+      description: state.template?.description || "",
+      type: state.template?.type || "sheet",
       components: state.components.map(serializeComponentForPreview),
     };
   }
@@ -1468,6 +1490,64 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     renderCanvas();
   }
 
+  function resolveDefaultTemplateSchema() {
+    if (state.template?.schema) {
+      return state.template.schema;
+    }
+    const systemEntries = Array.from(systemCatalog.values());
+    const firstSystem = systemEntries.find((entry) => entry?.id);
+    return firstSystem?.id || "";
+  }
+
+  function deriveTemplateIdFromTitle(title, { excludeId = "" } = {}) {
+    const base = (title || "template").toLowerCase();
+    const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "template";
+    const prefix = `tpl.${slug}`;
+    let candidate = prefix;
+    let counter = 2;
+    while (templateCatalog.has(candidate) && candidate !== excludeId) {
+      candidate = `${prefix}-${counter}`;
+      counter += 1;
+    }
+    return candidate;
+  }
+
+  function syncTemplateRecord({ previousId = "" } = {}) {
+    if (!state.template?.id) {
+      return;
+    }
+    if (previousId && previousId !== state.template.id) {
+      removeTemplateRecord(previousId);
+    }
+    registerTemplateRecord(
+      {
+        id: state.template.id,
+        title: state.template.title || state.template.id,
+        schema: state.template.schema || "",
+        source: state.template.origin || "",
+        ownership: state.template.ownership || state.template.origin || "",
+        permissions: state.template.permissions || "edit",
+      },
+      { syncOption: true }
+    );
+    ensureTemplateSelectValue();
+    updateTemplateMeta();
+  }
+
+  function expandTemplatePropertiesSection() {
+    if (!elements.templatePropertiesCollapse) {
+      return;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
+      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.templatePropertiesCollapse, {
+        toggle: false,
+      });
+      instance.show();
+      return;
+    }
+    elements.templatePropertiesCollapse.classList.add("show");
+  }
+
   function prepareNewTemplateForm({ mode = "new", seedTemplate = null } = {}) {
     if (!elements.newTemplateForm) {
       return;
@@ -1674,33 +1754,49 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
 
     updateTemplateMeta();
 
-    if (!elements.deleteTemplateButton) {
-      return;
+    if (elements.deleteTemplateButton) {
+      applyDeleteTemplateButtonState(elements.deleteTemplateButton);
     }
+    if (elements.templateDeleteButton) {
+      applyDeleteTemplateButtonState(elements.templateDeleteButton);
+    }
+  }
+
+  function resolveDeleteTemplateState() {
     const metadata = getTemplateMetadata(state.template?.id);
     const canWrite = dataManager.hasWriteAccess("templates");
     const canEditRecord = templateAllowsEdits(metadata);
     const hasIdentifier = Boolean(state.template?.id);
     const showDelete = hasIdentifier && canEditRecord && canWrite;
-    elements.deleteTemplateButton.classList.toggle("d-none", !showDelete);
-    if (!showDelete) {
-      elements.deleteTemplateButton.disabled = true;
-      elements.deleteTemplateButton.setAttribute("aria-disabled", "true");
-      elements.deleteTemplateButton.removeAttribute("title");
-      return;
-    }
     const origin = state.template?.origin || "";
     const isBuiltin = origin === "builtin";
     const isDraft = origin === "draft";
-    const deletable = !isBuiltin && !isDraft;
-    elements.deleteTemplateButton.disabled = !deletable;
-    elements.deleteTemplateButton.setAttribute("aria-disabled", deletable ? "false" : "true");
+    const deletable = showDelete && !isBuiltin && !isDraft;
+    let title = "";
     if (isBuiltin) {
-      elements.deleteTemplateButton.title = "Built-in templates cannot be deleted.";
+      title = "Built-in templates cannot be deleted.";
     } else if (isDraft) {
-      elements.deleteTemplateButton.title = "Save the template before deleting it.";
+      title = "Save the template before deleting it.";
+    }
+    return {
+      showDelete,
+      deletable,
+      title,
+    };
+  }
+
+  function applyDeleteTemplateButtonState(button) {
+    if (!button) {
+      return;
+    }
+    const { showDelete, deletable, title } = resolveDeleteTemplateState();
+    button.classList.toggle("d-none", !showDelete);
+    button.disabled = !deletable;
+    button.setAttribute("aria-disabled", deletable ? "false" : "true");
+    if (title) {
+      button.title = title;
     } else {
-      elements.deleteTemplateButton.removeAttribute("title");
+      button.removeAttribute("title");
     }
   }
 
@@ -3540,12 +3636,15 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       shareToken = "",
     } = {}
   ) {
+    templateIdAuto = false;
     const effectiveShareToken = typeof shareToken === "string" && shareToken ? shareToken : data.shareToken || "";
     const template = createBlankTemplate({
       id: data.id || "",
       title: data.title || "",
       version: data.version || data.metadata?.version || "0.1",
       schema: data.schema || data.system || "",
+      description: data.description || "",
+      type: data.type || "",
       origin,
       shareToken: effectiveShareToken,
     });
@@ -3584,11 +3683,47 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     }
   }
 
+  function startBlankTemplateDraft() {
+    const title = "New Template";
+    const schema = resolveDefaultTemplateSchema();
+    const id = deriveTemplateIdFromTitle(title);
+    const version = "0.1";
+    const description = "";
+    const type = "sheet";
+    registerTemplateRecord(
+      {
+        id,
+        title,
+        schema,
+        source: "draft",
+        ownership: "draft",
+        permissions: "edit",
+      },
+      { syncOption: true }
+    );
+    applyTemplateData(
+      { id, title, version, schema, description, type, components: [] },
+      {
+        origin: "draft",
+        emitStatus: true,
+        statusMessage: `Started ${title}`,
+        markClean: false,
+      }
+    );
+    templateIdAuto = true;
+    templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
+    renderTemplateProperties();
+    expandInspectorPane();
+    expandTemplatePropertiesSection();
+  }
+
   function startNewTemplate({
     id = "",
     title = "",
     version = "0.1",
     schema = "",
+    description = "",
+    type = "sheet",
     origin = "draft",
     components = [],
     markClean = true,
@@ -3614,7 +3749,15 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       { syncOption: true }
     );
     applyTemplateData(
-      { id: trimmedId, title: trimmedTitle, version, schema: trimmedSchema, components: componentClones },
+      {
+        id: trimmedId,
+        title: trimmedTitle,
+        version,
+        schema: trimmedSchema,
+        description,
+        type,
+        components: componentClones,
+      },
       {
         origin,
         emitStatus: true,
@@ -3625,7 +3768,148 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     templateCreationContext = { mode: "new", duplicateComponents: null, sourceTitle: "" };
   }
 
+  function createTemplateField({ labelText, control, id }) {
+    const wrapper = document.createElement("div");
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.textContent = labelText;
+    const fieldId = id || toId(["template", labelText]);
+    if (fieldId) {
+      control.id = fieldId;
+      control.dataset.templateField = fieldId;
+      label.setAttribute("for", fieldId);
+    }
+    wrapper.appendChild(label);
+    wrapper.appendChild(control);
+    return wrapper;
+  }
+
+  function renderTemplateProperties() {
+    if (!elements.templateProperties) {
+      return;
+    }
+    const focusSnapshot = captureTemplatePropertiesFocus();
+    elements.templateProperties.innerHTML = "";
+    elements.templateDeleteButton = null;
+    if (!state.template) {
+      const placeholder = document.createElement("p");
+      placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
+      placeholder.textContent = "Select or create a template to edit its properties.";
+      elements.templateProperties.appendChild(placeholder);
+      return;
+    }
+
+    const metadata = getTemplateMetadata(state.template.id);
+    const canEdit = templateAllowsEdits(metadata);
+    const form = document.createElement("form");
+    form.className = "d-flex flex-column gap-3";
+    form.addEventListener("submit", (event) => event.preventDefault());
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "form-control";
+    nameInput.placeholder = "Template name";
+    nameInput.value = state.template.title || "";
+    nameInput.disabled = !canEdit;
+
+    const idInput = document.createElement("input");
+    idInput.type = "text";
+    idInput.className = "form-control";
+    idInput.value = state.template.id || "";
+    idInput.readOnly = true;
+    idInput.disabled = !canEdit;
+
+    nameInput.addEventListener("input", (event) => {
+      const nextTitle = event.target.value || "";
+      const previousId = state.template?.id || "";
+      state.template.title = nextTitle.trim();
+      if (templateIdAuto) {
+        const nextId = deriveTemplateIdFromTitle(state.template.title || "template", { excludeId: previousId });
+        state.template.id = nextId;
+        idInput.value = nextId;
+      }
+      syncTemplateRecord({ previousId });
+      syncTemplateActions();
+    });
+
+    form.appendChild(createTemplateField({ labelText: "Name", control: nameInput, id: "template-title" }));
+    form.appendChild(createTemplateField({ labelText: "ID", control: idInput, id: "template-id" }));
+
+    const descriptionInput = document.createElement("textarea");
+    descriptionInput.className = "form-control";
+    descriptionInput.rows = 3;
+    descriptionInput.placeholder = "Add a short description";
+    descriptionInput.value = state.template.description || "";
+    descriptionInput.disabled = !canEdit;
+    descriptionInput.addEventListener("input", (event) => {
+      state.template.description = event.target.value || "";
+      syncTemplateActions();
+    });
+    form.appendChild(createTemplateField({ labelText: "Description", control: descriptionInput, id: "template-description" }));
+
+    const typeSelect = document.createElement("select");
+    typeSelect.className = "form-select";
+    typeSelect.disabled = !canEdit;
+    const typeOptions = [
+      { value: "sheet", label: "Sheet" },
+      { value: "reference", label: "Reference" },
+    ];
+    typeOptions.forEach((option) => {
+      const opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      typeSelect.appendChild(opt);
+    });
+    const currentTypeRaw = state.template.type || "sheet";
+    const currentType = currentTypeRaw.toLowerCase();
+    if (!typeOptions.some((option) => option.value === currentType)) {
+      const opt = document.createElement("option");
+      opt.value = currentType;
+      opt.textContent = currentTypeRaw;
+      typeSelect.appendChild(opt);
+    }
+    typeSelect.value = typeOptions.find((option) => option.value === currentType)?.value || currentType || "sheet";
+    typeSelect.addEventListener("change", (event) => {
+      state.template.type = event.target.value;
+      syncTemplateActions();
+    });
+    form.appendChild(createTemplateField({ labelText: "Type", control: typeSelect, id: "template-type" }));
+
+    const systemSelect = document.createElement("select");
+    systemSelect.className = "form-select";
+    systemSelect.disabled = !canEdit;
+    const systemOptions = Array.from(systemCatalog.values())
+      .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
+      .filter((option) => option.value)
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    populateSelect(systemSelect, systemOptions, { placeholder: "Select system" });
+    systemSelect.value = state.template.schema || "";
+    systemSelect.addEventListener("change", (event) => {
+      const nextSchema = (event.target.value || "").trim();
+      state.template.schema = nextSchema;
+      syncTemplateRecord({ previousId: state.template.id });
+      updateSystemContext(nextSchema).catch(() => {});
+      syncTemplateActions();
+    });
+    form.appendChild(createTemplateField({ labelText: "System", control: systemSelect, id: "template-system" }));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "btn btn-outline-danger w-100";
+    deleteButton.textContent = "Delete Template";
+    deleteButton.addEventListener("click", () => {
+      handleDeleteTemplateRequest();
+    });
+    applyDeleteTemplateButtonState(deleteButton);
+
+    elements.templateProperties.appendChild(form);
+    elements.templateProperties.appendChild(deleteButton);
+    elements.templateDeleteButton = deleteButton;
+    restoreTemplatePropertiesFocus(focusSnapshot);
+  }
+
   function renderInspector() {
+    renderTemplateProperties();
     if (!elements.inspector) return;
     const focusSnapshot = captureInspectorFocus();
     elements.inspector.innerHTML = "";
@@ -3902,15 +4186,15 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     return controls;
   }
 
-  function captureInspectorFocus() {
-    if (!elements.inspector) {
+  function captureFocusSnapshot(container, dataAttribute) {
+    if (!container) {
       return null;
     }
     const active = document.activeElement;
-    if (!active || !elements.inspector.contains(active)) {
+    if (!active || !container.contains(active)) {
       return null;
     }
-    const id = active.id || active.getAttribute("data-inspector-field");
+    const id = active.id || active.getAttribute(dataAttribute);
     if (!id) {
       return null;
     }
@@ -3922,8 +4206,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     return snapshot;
   }
 
-  function restoreInspectorFocus(snapshot) {
-    if (!snapshot || !snapshot.id || !elements.inspector) {
+  function restoreFocusSnapshot(container, snapshot, dataAttribute) {
+    if (!snapshot || !snapshot.id || !container) {
       return;
     }
     const escaped = escapeCss(snapshot.id);
@@ -3931,8 +4215,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       return;
     }
     const target =
-      elements.inspector.querySelector(`#${escaped}`) ||
-      elements.inspector.querySelector(`[data-inspector-field="${escaped}"]`);
+      container.querySelector(`#${escaped}`) ||
+      container.querySelector(`[${dataAttribute}="${escaped}"]`);
     if (!target || typeof target.focus !== "function") {
       return;
     }
@@ -3948,6 +4232,22 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     } catch (error) {
       // ignore focus restoration errors
     }
+  }
+
+  function captureInspectorFocus() {
+    return captureFocusSnapshot(elements.inspector, "data-inspector-field");
+  }
+
+  function restoreInspectorFocus(snapshot) {
+    restoreFocusSnapshot(elements.inspector, snapshot, "data-inspector-field");
+  }
+
+  function captureTemplatePropertiesFocus() {
+    return captureFocusSnapshot(elements.templateProperties, "data-template-field");
+  }
+
+  function restoreTemplatePropertiesFocus(snapshot) {
+    restoreFocusSnapshot(elements.templateProperties, snapshot, "data-template-field");
   }
 
   function createSection(title, controls = []) {
@@ -4975,6 +5275,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     title = "",
     version = "0.1",
     schema = "",
+    description = "",
+    type = "sheet",
     origin = "draft",
     shareToken = "",
   } = {}) {
@@ -4983,6 +5285,8 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       title: title || "",
       version: version || "0.1",
       schema: schema || "",
+      description: description || "",
+      type: type || "sheet",
       origin,
       shareToken: shareToken || "",
       ownership: origin || "",
