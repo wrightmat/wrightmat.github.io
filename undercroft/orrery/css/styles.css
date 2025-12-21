@@ -12,6 +12,74 @@
   overflow: hidden;
 }
 
+.orrery-layer-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.orrery-layer-preview {
+  position: absolute;
+  width: 14rem;
+  height: 12rem;
+  border-radius: var(--bs-border-radius-lg);
+  border: 1px solid var(--bs-border-color);
+  background: color-mix(in srgb, var(--bs-body-bg) 92%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+
+.orrery-layer-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  text-align: center;
+}
+
+.orrery-layer-grid {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--bs-border-radius);
+  border: 1px dashed var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+}
+
+.orrery-layer-raster {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--bs-border-radius);
+  border: 1px dashed var(--bs-border-color);
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.orrery-layer-raster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.orrery-layer-marker {
+  border-radius: 999px;
+  border: 2px solid var(--bs-body-bg);
+  box-shadow: 0 0 0 1px var(--bs-border-color);
+}
+
+.orrery-layer-vector {
+  width: 100%;
+  height: 100%;
+}
+
 .orrery-map-stage {
   position: absolute;
   inset: 0;

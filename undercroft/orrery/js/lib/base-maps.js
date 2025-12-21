@@ -212,7 +212,7 @@ class CanvasBaseMap {
     surface.className = "orrery-canvas-surface";
     surface.style.width = `${this.settings.width}px`;
     surface.style.height = `${this.settings.height}px`;
-    this.applyGrid(surface, this.settings);
+    surface.style.backgroundColor = this.settings.background;
 
     this.content.appendChild(surface);
     this.stage.appendChild(this.content);
@@ -224,18 +224,6 @@ class CanvasBaseMap {
       view: this.view,
       onChange: (view) => this.emitChange(view),
     });
-  }
-
-  applyGrid(surface, settings) {
-    surface.style.backgroundColor = settings.background;
-    if (!settings.grid?.enabled) {
-      surface.style.backgroundImage = "none";
-      return;
-    }
-    const size = settings.grid?.size || 100;
-    const color = settings.grid?.color || "rgba(0, 0, 0, 0.1)";
-    surface.style.backgroundImage = `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`;
-    surface.style.backgroundSize = `${size}px ${size}px`;
   }
 
   emitChange(view) {
@@ -260,7 +248,7 @@ class CanvasBaseMap {
     }
     surface.style.width = `${settings.width}px`;
     surface.style.height = `${settings.height}px`;
-    this.applyGrid(surface, settings);
+    surface.style.backgroundColor = settings.background;
   }
 
   setView(view) {
