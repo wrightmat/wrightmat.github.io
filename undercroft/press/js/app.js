@@ -5,6 +5,7 @@ import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import {
+  createTemplate,
   getFormatById,
   getPageSize,
   getStandardFormats,
@@ -28,6 +29,7 @@ const printButton = document.getElementById("printButton");
 const selectionToggle = document.querySelector("[data-selection-toggle]");
 const selectionToggleLabel = selectionToggle?.querySelector("[data-toggle-label]");
 const selectionPanel = document.querySelector("[data-selection-panel]");
+const newTemplateButton = document.querySelector('[data-action="new-template"]');
 const jsonPreview = document.querySelector("[data-json-preview]");
 const jsonBytes = document.querySelector("[data-preview-bytes]");
 const undoButton = document.querySelector('[data-action="undo-layout"]');
@@ -54,6 +56,7 @@ const templateToggle = document.querySelector("[data-template-toggle]");
 const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
 const templatePanel = document.querySelector("[data-template-panel]");
 const templateSaveButton = document.querySelector("[data-template-save]");
+const templateDeleteButton = document.querySelector("[data-template-delete]");
 const cardToggle = document.querySelector("[data-card-toggle]");
 const cardToggleLabel = cardToggle?.querySelector("[data-card-toggle-label]");
 const cardPanel = document.querySelector("[data-card-panel]");
@@ -121,6 +124,7 @@ let applyTemplateCollapse = null;
 let applyCardCollapse = null;
 let applyComponentCollapse = null;
 let activeTemplateId = null;
+let templateIdAuto = false;
 
 const COLOR_DEFAULTS = {
   foreground: "#212529",
@@ -364,6 +368,71 @@ function populateTemplates() {
     templateSelect.value = templates[0].id;
     hydrateEditablePages(templates[0]);
   }
+}
+
+function deriveTemplateId(name, { excludeId = "" } = {}) {
+  const base = (name || "template").toLowerCase();
+  const slug = base.replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "template";
+  const prefix = slug;
+  const templates = getTemplates();
+  let candidate = prefix;
+  let counter = 2;
+  while (templates.some((template) => template.id === candidate && template.id !== excludeId)) {
+    candidate = `${prefix}-${counter}`;
+    counter += 1;
+  }
+  return candidate;
+}
+
+function createEmptyLayout() {
+  return {
+    type: "stack",
+    gap: 4,
+    children: [],
+  };
+}
+
+function appendTemplateOption(template) {
+  if (!templateSelect || !template) return;
+  const option = document.createElement("option");
+  option.value = template.id;
+  option.textContent = template.name ?? template.id;
+  templateSelect.appendChild(option);
+  templateSelect.value = template.id;
+}
+
+function clearTemplateSelection() {
+  activeTemplateId = null;
+  templateSelect.value = "";
+  editablePages = { front: null, back: null };
+  selectedNodeId = null;
+  updateTemplateInspector(null);
+  renderLayoutList();
+  previewStage.innerHTML = "";
+  printStack.innerHTML = "";
+  renderJsonPreview();
+}
+
+function createBlankTemplate() {
+  const name = "New Template";
+  const id = deriveTemplateId(name);
+  const baseFormat = standardFormats[0];
+  const formats = baseFormat ? [{ ...baseFormat }] : [];
+  return createTemplate({
+    id,
+    title: name,
+    name,
+    description: "",
+    type: "sheet",
+    formats,
+    supportedSources: ["ddb", "srd", "json", "manual"],
+    sides: ["front", "back"],
+    pages: {
+      front: { data: "@", layout: createEmptyLayout() },
+      back: { data: "@", layout: createEmptyLayout() },
+    },
+    sampleData: {},
+  });
 }
 
 function renderTemplateFormatOptions() {
@@ -817,6 +886,80 @@ function updateTemplateSelectOption(template, previousId) {
   templateSelect.value = template.id;
 }
 
+function startNewTemplate() {
+  const template = createBlankTemplate();
+  getTemplates().push(template);
+  appendTemplateOption(template);
+  activeTemplateId = template.id;
+  templateIdAuto = true;
+  currentSide = "front";
+  hydrateEditablePages(template);
+  renderFormatOptions(template);
+  renderSourceOptions(template);
+  updateTemplateInspector(template);
+  if (undoStack) {
+    undoStack.clear();
+  }
+  pendingUndoSnapshot = null;
+  pendingUndoTarget = null;
+  selectedNodeId = null;
+  renderLayoutList();
+  renderPreview();
+  updateGenerateButtonState();
+  setInspectorMode("template");
+  updateSaveState();
+}
+
+function removeTemplateOption(id) {
+  if (!templateSelect || !id) return;
+  const option = Array.from(templateSelect.options).find((entry) => entry.value === id);
+  if (option) {
+    option.remove();
+  }
+}
+
+function deleteActiveTemplate() {
+  const template = getActiveTemplate();
+  if (!template) return;
+  const confirmed = window.confirm(`Delete ${template.name || template.id}? This action cannot be undone.`);
+  if (!confirmed) {
+    return;
+  }
+  const templates = getTemplates();
+  const index = templates.findIndex((entry) => entry.id === template.id);
+  if (index >= 0) {
+    templates.splice(index, 1);
+  }
+  removeTemplateOption(template.id);
+  templateIdAuto = false;
+  if (templates.length) {
+    templateSelect.value = templates[0].id;
+    activeTemplateId = templates[0].id;
+    currentSide = "front";
+    hydrateEditablePages(templates[0]);
+    renderFormatOptions(templates[0]);
+    renderSourceOptions(templates[0]);
+    updateTemplateInspector(templates[0]);
+    if (undoStack) {
+      undoStack.clear();
+    }
+    pendingUndoSnapshot = null;
+    pendingUndoTarget = null;
+    selectedNodeId = null;
+    renderLayoutList();
+    updateInspector();
+    renderPreview();
+    markLayoutSaved();
+    setInspectorMode("template");
+    updateSaveState();
+    return;
+  }
+  clearTemplateSelection();
+  updateGenerateButtonState();
+  setInspectorMode("template");
+  updateSaveState();
+}
+
 function setTemplateFormatSelections(template) {
   if (!templateFormatsSelect) return;
   const selected = new Set((template.formats ?? []).map((format) => format.id ?? format.sizeId));
@@ -912,6 +1055,7 @@ function bindTemplateInspectorControls() {
       template.id = nextId;
       updateTemplateSelectOption(template, previousId);
       activeTemplateId = template.id;
+      templateIdAuto = false;
       updateSaveState();
       renderJsonPreview();
     });
@@ -922,9 +1066,17 @@ function bindTemplateInspectorControls() {
       const template = getActiveTemplate();
       if (!template) return;
       const nextName = templateNameInput.value.trim();
+      const previousId = template.id;
       template.name = nextName;
       template.title = nextName;
-      updateTemplateSelectOption(template, template.id);
+      if (templateIdAuto) {
+        template.id = deriveTemplateId(nextName, { excludeId: previousId });
+        if (templateIdInput) {
+          templateIdInput.value = template.id;
+        }
+      }
+      updateTemplateSelectOption(template, previousId);
+      activeTemplateId = template.id;
       updateSaveState();
       renderPreview();
     });
@@ -1088,6 +1240,18 @@ function removeNodeById(node, uid) {
     }
   }
   return null;
+}
+
+function removeSelectedNode() {
+  recordUndoableChange(() => {
+    const layout = getLayoutForSide(currentSide);
+    if (!layout || !selectedNodeId) return;
+    removeNodeById(layout, selectedNodeId);
+    selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
+    renderLayoutList();
+    updateInspector();
+    renderPreview();
+  });
 }
 
 function getRootChildren(side) {
@@ -2257,21 +2421,46 @@ function bindInspectorControls() {
 
   if (deleteButton) {
     deleteButton.addEventListener("click", () => {
-      recordUndoableChange(() => {
-        const layout = getLayoutForSide(currentSide);
-        if (!layout || !selectedNodeId) return;
-        removeNodeById(layout, selectedNodeId);
-        selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
-        renderLayoutList();
-        updateInspector();
-        renderPreview();
-      });
+      removeSelectedNode();
     });
   }
 }
 
 function wireEvents() {
+  if (newTemplateButton) {
+    newTemplateButton.addEventListener("click", () => {
+      startNewTemplate();
+    });
+  }
+  if (templateDeleteButton) {
+    templateDeleteButton.addEventListener("click", () => {
+      deleteActiveTemplate();
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Delete") {
+      return;
+    }
+    if (event.defaultPrevented) {
+      return;
+    }
+    const active = document.activeElement;
+    if (
+      active &&
+      active instanceof HTMLElement &&
+      (active.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName))
+    ) {
+      return;
+    }
+    if (!selectedNodeId) {
+      return;
+    }
+    removeSelectedNode();
+  });
+
   templateSelect.addEventListener("change", async () => {
+    templateIdAuto = false;
     const nextTemplateId = templateSelect.value;
     const previousTemplateId = activeTemplateId;
     const previousTemplate = previousTemplateId ? getTemplateById(previousTemplateId) : null;
