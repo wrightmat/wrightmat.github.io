@@ -313,6 +313,9 @@ function createGridLayerElement(layer) {
   const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
   grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
   grid.style.backgroundSize = `${size}px ${size}px`;
+  const offsetX = layer.position?.x || 0;
+  const offsetY = layer.position?.y || 0;
+  grid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
   return grid;
 }
 
@@ -359,6 +362,91 @@ function createVectorLayerElement(layer) {
   return svg;
 }
 
+function createLayerWrapper(layer, isSelected) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "orrery-layer-item";
+  if (isSelected) {
+    wrapper.classList.add("is-selected");
+  }
+  const offsetX = layer.position?.x || 0;
+  const offsetY = layer.position?.y || 0;
+  wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  wrapper.dataset.layerId = layer.id;
+  return wrapper;
+}
+
+function createLayerHandle() {
+  const handle = document.createElement("div");
+  handle.className = "orrery-layer-handle";
+  handle.title = "Drag layer";
+  return handle;
+}
+
+let activeLayerDrag = null;
+
+function bindLayerDrag(handle, layer) {
+  if (!handle || !layer) {
+    return;
+  }
+  handle.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    handle.setPointerCapture(event.pointerId);
+    activeLayerDrag = {
+      id: layer.id,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: layer.position?.x || 0,
+      originY: layer.position?.y || 0,
+    };
+    handle.classList.add("is-dragging");
+    if (baseMapManager.current?.map?.dragging) {
+      baseMapManager.current.map.dragging.disable();
+    }
+  });
+
+  handle.addEventListener("pointermove", (event) => {
+    if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
+      return;
+    }
+    const deltaX = event.clientX - activeLayerDrag.startX;
+    const deltaY = event.clientY - activeLayerDrag.startY;
+    layer.position = {
+      x: activeLayerDrag.originX + deltaX,
+      y: activeLayerDrag.originY + deltaY,
+    };
+    renderLayerOverlays();
+    renderSelection();
+  });
+
+  const stopDrag = (event) => {
+    if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
+      return;
+    }
+    handle.releasePointerCapture(event.pointerId);
+    handle.classList.remove("is-dragging");
+    const finalX = layer.position?.x || 0;
+    const finalY = layer.position?.y || 0;
+    recordHistory("move layer", () => {
+      layer.position = { x: finalX, y: finalY };
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderSelection();
+    renderJson();
+    activeLayerDrag = null;
+    if (baseMapManager.current?.map?.dragging) {
+      baseMapManager.current.map.dragging.enable();
+    }
+  };
+
+  handle.addEventListener("pointerup", stopDrag);
+  handle.addEventListener("pointercancel", stopDrag);
+}
+
 function renderLayerOverlays() {
   const overlay = baseMapManager.getOverlayContainer();
   if (!overlay) {
@@ -369,6 +457,8 @@ function renderLayerOverlays() {
     if (!layer.visible) {
       return;
     }
+    const isSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
+    const wrapper = createLayerWrapper(layer, isSelected);
     let element = null;
     if (layer.type === "grid") {
       element = createGridLayerElement(layer);
@@ -381,7 +471,13 @@ function renderLayerOverlays() {
     }
     if (element) {
       element.style.opacity = String(layer.opacity ?? 1);
-      overlay.appendChild(element);
+      wrapper.appendChild(element);
+      if (isSelected) {
+        const handle = createLayerHandle();
+        wrapper.appendChild(handle);
+        bindLayerDrag(handle, layer);
+      }
+      overlay.appendChild(wrapper);
     }
   });
 }
@@ -449,6 +545,42 @@ function renderLayerSelectionEditor(layer) {
     });
   });
   container.appendChild(createFieldWrapper("Name", nameInput));
+
+  const positionGrid = document.createElement("div");
+  positionGrid.className = "d-grid gap-2";
+  positionGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+
+  const positionX = document.createElement("input");
+  positionX.type = "number";
+  positionX.className = "form-control form-control-sm";
+  positionX.value = layer.position?.x ?? 0;
+  positionX.addEventListener("change", () => {
+    const value = Number(positionX.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer position x", () => {
+      layer.position = { ...(layer.position || { x: 0, y: 0 }), x: value };
+    });
+  });
+
+  const positionY = document.createElement("input");
+  positionY.type = "number";
+  positionY.className = "form-control form-control-sm";
+  positionY.value = layer.position?.y ?? 0;
+  positionY.addEventListener("change", () => {
+    const value = Number(positionY.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer position y", () => {
+      layer.position = { ...(layer.position || { x: 0, y: 0 }), y: value };
+    });
+  });
+
+  positionGrid.appendChild(createFieldWrapper("Position X", positionX));
+  positionGrid.appendChild(createFieldWrapper("Position Y", positionY));
+  container.appendChild(positionGrid);
 
   const visibilityWrapper = document.createElement("div");
   visibilityWrapper.className = "form-check";

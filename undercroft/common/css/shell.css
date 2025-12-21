@@ -140,7 +140,16 @@ body[data-theme="dark"] .hover-lift:hover {
 .workbench-header {
   position: sticky;
   top: 0;
-  z-index: 1030;
+  z-index: 1200;
+}
+
+.undercroft-auth-menu {
+  position: relative;
+  z-index: 1300;
+}
+
+.undercroft-auth-menu .dropdown-menu {
+  z-index: 1310;
 }
 
 .undercroft-auth-menu {

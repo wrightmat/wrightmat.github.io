@@ -86,6 +86,7 @@ export function createLayer({ type = "vector", name } = {}) {
     name: name || `${safeType.charAt(0).toUpperCase()}${safeType.slice(1)} Layer`,
     visible: true,
     opacity: 1,
+    position: { x: 0, y: 0 },
     elements: [],
     settings: createLayerSettings(safeType),
     properties: {},
