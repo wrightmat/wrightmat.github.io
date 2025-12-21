@@ -62,17 +62,5 @@
         ]
       }
     }
-  },
-  "sampleData": {
-    "front": {
-      "title": "A6 Insert",
-      "subtitle": "Use for quick handouts or folded slips aligned to A6 stock.",
-      "body": "Sized to true A6 dimensions so printed results match the preview."
-    },
-    "back": {
-      "title": "A6 Reverse",
-      "subtitle": "Back face for writing space or duplex alignment tests.",
-      "body": "Keep notes or decorative art here; measurements mirror the front."
-    }
   }
 }
