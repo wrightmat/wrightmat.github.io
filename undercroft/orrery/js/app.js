@@ -1,5 +1,7 @@
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
+import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import {
   createGroup,
   createLayer,
@@ -11,13 +13,29 @@ import { BaseMapManager } from "./lib/base-maps.js";
 
 const state = {
   map: createMapModel(),
-  selection: { kind: "baseMap", id: null },
+  selection: { kind: null, id: null },
 };
 
-const { status } = initAppShell({
+const { status, undoStack, undo, redo } = initAppShell({
   namespace: "orrery",
   storagePrefix: "undercroft.orrery.undo",
+  onUndo: (entry) => {
+    if (!entry) {
+      return null;
+    }
+    applyMapSnapshot(entry.before);
+    return { message: entry.label ? `Undid ${entry.label}` : "Undid last action" };
+  },
+  onRedo: (entry) => {
+    if (!entry) {
+      return null;
+    }
+    applyMapSnapshot(entry.after);
+    return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
+  },
 });
+
+initAuthControls({ status });
 
 const mapContainer = document.querySelector("#orrery-map");
 const baseMapManager = new BaseMapManager({
@@ -39,10 +57,15 @@ const elements = {
   canvasBackground: document.querySelector("[data-base-map-canvas-background]"),
   canvasGrid: document.querySelector("[data-base-map-canvas-grid]"),
   canvasGridSize: document.querySelector("[data-base-map-canvas-grid-size]"),
-  layerTypeSelect: document.querySelector("[data-layer-type-select]"),
-  layerAdd: document.querySelector("[data-layer-add]"),
+  baseMapToggle: document.querySelector("[data-base-map-toggle]"),
+  baseMapPanel: document.querySelector("[data-base-map-panel]"),
+  selectionToggle: document.querySelector("[data-selection-toggle]"),
+  selectionPanel: document.querySelector("[data-selection-panel]"),
+  undoButton: document.querySelector('[data-action="undo-layout"]'),
+  redoButton: document.querySelector('[data-action="redo-layout"]'),
+  layerButtons: Array.from(document.querySelectorAll("[data-add-layer]")),
+  groupAdd: document.querySelector("[data-add-group]"),
   layerList: document.querySelector("[data-layer-list]"),
-  groupAdd: document.querySelector("[data-group-add]"),
   groupList: document.querySelector("[data-group-list]"),
   selectionTitle: document.querySelector("[data-selection-title]"),
   selectionType: document.querySelector("[data-selection-type]"),
@@ -50,6 +73,8 @@ const elements = {
   zoomIn: document.querySelector("[data-zoom-in]"),
   zoomOut: document.querySelector("[data-zoom-out]"),
   zoomReset: document.querySelector("[data-zoom-reset]"),
+  viewToggle: document.querySelector("[data-view-toggle]"),
+  viewDetails: document.querySelector("[data-view-details]"),
   viewMode: document.querySelector("[data-view-mode]"),
   viewZoom: document.querySelector("[data-view-zoom]"),
   viewCenter: document.querySelector("[data-view-center]"),
@@ -64,9 +89,43 @@ const renderJson = createJsonPreviewRenderer({
   serialize: () => state.map,
 });
 
+bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
+  collapsed: false,
+  expandLabel: "Expand base map",
+  collapseLabel: "Collapse base map",
+});
+
+const setSelectionCollapsed = bindCollapsibleToggle(elements.selectionToggle, elements.selectionPanel, {
+  collapsed: true,
+  expandLabel: "Expand selection",
+  collapseLabel: "Collapse selection",
+});
+
+function applyMapSnapshot(snapshot) {
+  if (!snapshot) {
+    return;
+  }
+  state.map = JSON.parse(snapshot);
+  state.selection = { kind: null, id: null };
+  baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
+  renderAll();
+  setSelectionCollapsed(true);
+}
+
+function recordHistory(label, applyChange) {
+  const before = JSON.stringify(state.map);
+  applyChange();
+  const after = JSON.stringify(state.map);
+  if (before !== after) {
+    undoStack.push({ label, before, after });
+  }
+}
+
 function setSelection(kind, id = null) {
   state.selection = { kind, id };
   renderSelection();
+  const shouldExpand = kind === "layer" || kind === "group";
+  setSelectionCollapsed(!shouldExpand);
 }
 
 function renderBaseMapSettings() {
@@ -111,8 +170,10 @@ function renderLayers() {
     visibilityToggle.className = "form-check-input";
     visibilityToggle.checked = layer.visible;
     visibilityToggle.addEventListener("change", () => {
-      layer.visible = visibilityToggle.checked;
-      updateMapTimestamp(state.map);
+      recordHistory("layer visibility", () => {
+        layer.visible = visibilityToggle.checked;
+        updateMapTimestamp(state.map);
+      });
       renderSelection();
       renderJson();
     });
@@ -134,8 +195,8 @@ function renderGroups() {
   elements.groupList.innerHTML = "";
   if (state.map.groups.length === 0) {
     const empty = document.createElement("div");
-    empty.className = "text-body-secondary small";
-    empty.textContent = "No groups yet. Create a region to collect elements.";
+    empty.className = "list-group-item text-body-secondary small";
+    empty.textContent = "No groups yet.";
     elements.groupList.appendChild(empty);
     return;
   }
@@ -175,9 +236,9 @@ function renderSelection() {
     }
   }
 
-  elements.selectionTitle.textContent = "Base Map";
-  elements.selectionType.textContent = "Base";
-  elements.selectionDetails.textContent = `Type: ${map.baseMap.type}`;
+  elements.selectionTitle.textContent = "No selection";
+  elements.selectionType.textContent = "None";
+  elements.selectionDetails.textContent = "Select a layer or group to inspect it.";
 }
 
 function renderView() {
@@ -200,17 +261,21 @@ function renderAll() {
 function setupBaseMapEvents() {
   elements.baseMapRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
-      updateBaseMapType(state.map, radio.value);
+      recordHistory(`base map to ${radio.value}`, () => {
+        updateBaseMapType(state.map, radio.value);
+      });
       baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
-      setSelection("baseMap");
+      setSelection(null);
       renderAll();
       status.show(`Switched to ${radio.value} base map`, { type: "info", timeout: 1500 });
     });
   });
 
   elements.imageSrc.addEventListener("change", () => {
-    state.map.baseMap.settings.image.src = elements.imageSrc.value.trim();
-    updateMapTimestamp(state.map);
+    recordHistory("image source", () => {
+      state.map.baseMap.settings.image.src = elements.imageSrc.value.trim();
+      updateMapTimestamp(state.map);
+    });
     if (state.map.baseMap.type === "image") {
       baseMapManager.updateSettings(state.map.baseMap.settings.image);
     }
@@ -223,8 +288,10 @@ function setupBaseMapEvents() {
       if (!Number.isFinite(value) || value <= 0) {
         return;
       }
-      state.map.baseMap.settings.image[key] = value;
-      updateMapTimestamp(state.map);
+      recordHistory(`image ${key}`, () => {
+        state.map.baseMap.settings.image[key] = value;
+        updateMapTimestamp(state.map);
+      });
       if (state.map.baseMap.type === "image") {
         baseMapManager.updateSettings(state.map.baseMap.settings.image);
       }
@@ -236,8 +303,10 @@ function setupBaseMapEvents() {
   updateImageDimension("height", elements.imageHeight);
 
   elements.canvasBackground.addEventListener("change", () => {
-    state.map.baseMap.settings.canvas.background = elements.canvasBackground.value;
-    updateMapTimestamp(state.map);
+    recordHistory("canvas background", () => {
+      state.map.baseMap.settings.canvas.background = elements.canvasBackground.value;
+      updateMapTimestamp(state.map);
+    });
     if (state.map.baseMap.type === "canvas") {
       baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
     }
@@ -245,8 +314,10 @@ function setupBaseMapEvents() {
   });
 
   elements.canvasGrid.addEventListener("change", () => {
-    state.map.baseMap.settings.canvas.grid.enabled = elements.canvasGrid.checked;
-    updateMapTimestamp(state.map);
+    recordHistory("canvas grid", () => {
+      state.map.baseMap.settings.canvas.grid.enabled = elements.canvasGrid.checked;
+      updateMapTimestamp(state.map);
+    });
     if (state.map.baseMap.type === "canvas") {
       baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
     }
@@ -258,8 +329,10 @@ function setupBaseMapEvents() {
     if (!Number.isFinite(value) || value <= 0) {
       return;
     }
-    state.map.baseMap.settings.canvas.grid.size = value;
-    updateMapTimestamp(state.map);
+    recordHistory("canvas grid size", () => {
+      state.map.baseMap.settings.canvas.grid.size = value;
+      updateMapTimestamp(state.map);
+    });
     if (state.map.baseMap.type === "canvas") {
       baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
     }
@@ -268,28 +341,40 @@ function setupBaseMapEvents() {
 }
 
 function setupLayerEvents() {
-  elements.layerAdd.addEventListener("click", () => {
-    const type = elements.layerTypeSelect.value;
-    const layer = createLayer({ type });
-    state.map.layers.push(layer);
-    updateMapTimestamp(state.map);
-    renderLayers();
-    renderJson();
-    setSelection("layer", layer.id);
-    status.show("Layer added", { type: "success", timeout: 1200 });
+  elements.layerButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const type = button.dataset.addLayer;
+      let layer = null;
+      recordHistory(`add ${type} layer`, () => {
+        layer = createLayer({ type });
+        state.map.layers.push(layer);
+        updateMapTimestamp(state.map);
+      });
+      renderLayers();
+      renderJson();
+      if (layer) {
+        setSelection("layer", layer.id);
+      }
+      status.show("Layer added", { type: "success", timeout: 1200 });
+    });
   });
 }
 
 function setupGroupEvents() {
   elements.groupAdd.addEventListener("click", () => {
-    const group = createGroup({
-      name: `Group ${state.map.groups.length + 1}`,
+    let group = null;
+    recordHistory("add group", () => {
+      group = createGroup({
+        name: `Group ${state.map.groups.length + 1}`,
+      });
+      state.map.groups.push(group);
+      updateMapTimestamp(state.map);
     });
-    state.map.groups.push(group);
-    updateMapTimestamp(state.map);
     renderGroups();
     renderJson();
-    setSelection("group", group.id);
+    if (group) {
+      setSelection("group", group.id);
+    }
     status.show("Group created", { type: "success", timeout: 1200 });
   });
 }
@@ -304,9 +389,35 @@ function setupViewEvents() {
   });
 }
 
+function setupActionEvents() {
+  if (elements.undoButton) {
+    elements.undoButton.addEventListener("click", () => undo());
+  }
+  if (elements.redoButton) {
+    elements.redoButton.addEventListener("click", () => redo());
+  }
+}
+
+function setupViewPanelToggle() {
+  if (!elements.viewToggle || !elements.viewDetails) {
+    return;
+  }
+  elements.viewToggle.addEventListener("click", () => {
+    const isExpanded = !elements.viewDetails.classList.contains("d-none");
+    elements.viewDetails.classList.toggle("d-none", isExpanded);
+    elements.viewToggle.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+    const icon = elements.viewToggle.querySelector(".iconify");
+    if (icon) {
+      icon.dataset.icon = isExpanded ? "tabler:chevron-left" : "tabler:chevron-down";
+    }
+  });
+}
+
 baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
 setupBaseMapEvents();
 setupLayerEvents();
 setupGroupEvents();
 setupViewEvents();
+setupActionEvents();
+setupViewPanelToggle();
 renderAll();

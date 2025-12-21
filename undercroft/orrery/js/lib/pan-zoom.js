@@ -20,8 +20,13 @@ export class PanZoomController {
       },
     };
     this.isPanning = false;
+    this.isPinching = false;
     this.startPoint = null;
     this.startPan = null;
+    this.pinchStartDistance = 0;
+    this.pinchStartZoom = 1;
+    this.pinchStartCenter = null;
+    this.activePointers = new Map();
     this.applyTransform();
     this.bindEvents();
   }
@@ -40,19 +45,33 @@ export class PanZoomController {
     };
 
     this.handlePointerDown = (event) => {
-      if (event.button !== 0) {
+      if (event.pointerType === "mouse" && event.button !== 0) {
         return;
       }
-      this.isPanning = true;
-      this.startPoint = { x: event.clientX, y: event.clientY };
-      this.startPan = { ...this.view.pan };
-      this.container.classList.add("is-panning");
+      this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (this.container.setPointerCapture) {
         this.container.setPointerCapture(event.pointerId);
+      }
+      if (this.activePointers.size === 1) {
+        this.isPanning = true;
+        this.isPinching = false;
+        this.startPoint = { x: event.clientX, y: event.clientY };
+        this.startPan = { ...this.view.pan };
+        this.container.classList.add("is-panning");
+      } else if (this.activePointers.size === 2) {
+        this.beginPinch();
       }
     };
 
     this.handlePointerMove = (event) => {
+      if (!this.activePointers.has(event.pointerId)) {
+        return;
+      }
+      this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (this.isPinching && this.activePointers.size >= 2) {
+        this.updatePinch();
+        return;
+      }
       if (!this.isPanning || !this.startPoint || !this.startPan) {
         return;
       }
@@ -66,19 +85,80 @@ export class PanZoomController {
       this.emitChange();
     };
 
-    this.handlePointerUp = () => {
-      if (!this.isPanning) {
+    this.handlePointerUp = (event) => {
+      if (event && this.activePointers.has(event.pointerId)) {
+        this.activePointers.delete(event.pointerId);
+      }
+      if (this.activePointers.size < 2) {
+        this.isPinching = false;
+      }
+      if (this.activePointers.size === 1) {
+        const remaining = Array.from(this.activePointers.values())[0];
+        this.isPanning = true;
+        this.startPoint = { ...remaining };
+        this.startPan = { ...this.view.pan };
+        this.container.classList.add("is-panning");
         return;
       }
-      this.isPanning = false;
-      this.container.classList.remove("is-panning");
+      if (this.activePointers.size === 0) {
+        this.isPanning = false;
+        this.container.classList.remove("is-panning");
+      }
     };
 
     this.container.addEventListener("wheel", this.handleWheel, { passive: false });
     this.container.addEventListener("pointerdown", this.handlePointerDown);
     this.container.addEventListener("pointermove", this.handlePointerMove);
     this.container.addEventListener("pointerup", this.handlePointerUp);
+    this.container.addEventListener("pointercancel", this.handlePointerUp);
     this.container.addEventListener("pointerleave", this.handlePointerUp);
+  }
+
+  beginPinch() {
+    const points = Array.from(this.activePointers.values());
+    if (points.length < 2) {
+      return;
+    }
+    this.isPinching = true;
+    this.isPanning = false;
+    this.container.classList.remove("is-panning");
+    this.pinchStartDistance = this.distance(points[0], points[1]);
+    this.pinchStartZoom = this.view.zoom;
+    this.pinchStartCenter = this.midpoint(points[0], points[1]);
+    this.startPan = { ...this.view.pan };
+  }
+
+  updatePinch() {
+    const points = Array.from(this.activePointers.values());
+    if (points.length < 2) {
+      return;
+    }
+    const distance = this.distance(points[0], points[1]);
+    const center = this.midpoint(points[0], points[1]);
+    const ratio = distance / (this.pinchStartDistance || distance);
+    const nextZoom = clamp(this.pinchStartZoom * ratio, this.minZoom, this.maxZoom);
+    const deltaX = center.x - (this.pinchStartCenter?.x ?? center.x);
+    const deltaY = center.y - (this.pinchStartCenter?.y ?? center.y);
+    this.view.zoom = nextZoom;
+    this.view.pan = {
+      x: (this.startPan?.x ?? 0) + deltaX,
+      y: (this.startPan?.y ?? 0) + deltaY,
+    };
+    this.applyTransform();
+    this.emitChange();
+  }
+
+  distance(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.hypot(dx, dy);
+  }
+
+  midpoint(a, b) {
+    return {
+      x: (a.x + b.x) / 2,
+      y: (a.y + b.y) / 2,
+    };
   }
 
   emitChange() {
@@ -144,6 +224,7 @@ export class PanZoomController {
     this.container.removeEventListener("pointerdown", this.handlePointerDown);
     this.container.removeEventListener("pointermove", this.handlePointerMove);
     this.container.removeEventListener("pointerup", this.handlePointerUp);
+    this.container.removeEventListener("pointercancel", this.handlePointerUp);
     this.container.removeEventListener("pointerleave", this.handlePointerUp);
   }
 }
