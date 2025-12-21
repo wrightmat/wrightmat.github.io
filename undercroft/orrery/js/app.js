@@ -2,6 +2,7 @@ import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
+import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import {
   createGroup,
   createLayer,
@@ -49,6 +50,7 @@ const baseMapManager = new BaseMapManager({
 });
 
 const elements = {
+  mapMain: document.querySelector("[data-map-main]"),
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
   imageSrc: document.querySelector("[data-base-map-image-src]"),
@@ -75,6 +77,8 @@ const elements = {
   zoomReset: document.querySelector("[data-zoom-reset]"),
   viewToggle: document.querySelector("[data-view-toggle]"),
   viewDetails: document.querySelector("[data-view-details]"),
+  viewPanel: document.querySelector("[data-view-panel]"),
+  viewHandle: document.querySelector("[data-view-handle]"),
   viewMode: document.querySelector("[data-view-mode]"),
   viewZoom: document.querySelector("[data-view-zoom]"),
   viewCenter: document.querySelector("[data-view-center]"),
@@ -413,6 +417,64 @@ function setupViewPanelToggle() {
   });
 }
 
+function setupViewPanelDrag() {
+  const panel = elements.viewPanel;
+  const handle = elements.viewHandle;
+  const container = elements.mapMain;
+  if (!panel || !handle || !container) {
+    return;
+  }
+
+  let startX = 0;
+  let startY = 0;
+  let originLeft = 0;
+  let originTop = 0;
+  let dragging = false;
+
+  const onMove = (event) => {
+    if (!dragging) {
+      return;
+    }
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    const containerRect = container.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const nextLeft = originLeft + deltaX;
+    const nextTop = originTop + deltaY;
+    const maxLeft = containerRect.width - panelRect.width;
+    const maxTop = containerRect.height - panelRect.height;
+    const clampedLeft = Math.min(Math.max(nextLeft, 0), Math.max(maxLeft, 0));
+    const clampedTop = Math.min(Math.max(nextTop, 0), Math.max(maxTop, 0));
+    panel.style.left = `${clampedLeft}px`;
+    panel.style.top = `${clampedTop}px`;
+    panel.style.right = "auto";
+  };
+
+  const onEnd = () => {
+    if (!dragging) {
+      return;
+    }
+    dragging = false;
+    panel.classList.remove("is-dragging");
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onEnd);
+  };
+
+  handle.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    const panelRect = panel.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    dragging = true;
+    startX = event.clientX;
+    startY = event.clientY;
+    originLeft = panelRect.left - containerRect.left;
+    originTop = panelRect.top - containerRect.top;
+    panel.classList.add("is-dragging");
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
+  });
+}
+
 baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
 setupBaseMapEvents();
 setupLayerEvents();
@@ -420,4 +482,6 @@ setupGroupEvents();
 setupViewEvents();
 setupActionEvents();
 setupViewPanelToggle();
+setupViewPanelDrag();
 renderAll();
+refreshTooltips();

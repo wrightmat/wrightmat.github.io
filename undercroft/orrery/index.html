@@ -187,11 +187,56 @@
             <section class="d-flex flex-column gap-3">
               <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Add Layers</h2>
               <div class="btn-group w-100" role="group" aria-label="Add layer">
-                <button class="btn btn-outline-primary" type="button" data-add-layer="vector">Vector</button>
-                <button class="btn btn-outline-primary" type="button" data-add-layer="grid">Grid</button>
-                <button class="btn btn-outline-primary" type="button" data-add-layer="raster">Raster</button>
-                <button class="btn btn-outline-primary" type="button" data-add-layer="marker">Marker</button>
-                <button class="btn btn-outline-secondary" type="button" data-add-group>Group</button>
+                <button
+                  class="btn btn-outline-primary"
+                  type="button"
+                  data-add-layer="vector"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Add vector layer"
+                >
+                  <span class="iconify" data-icon="tabler:vector" aria-hidden="true"></span>
+                  <span class="visually-hidden">Add vector layer</span>
+                </button>
+                <button
+                  class="btn btn-outline-primary"
+                  type="button"
+                  data-add-layer="grid"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Add grid layer"
+                >
+                  <span class="iconify" data-icon="tabler:grid-dots" aria-hidden="true"></span>
+                  <span class="visually-hidden">Add grid layer</span>
+                </button>
+                <button
+                  class="btn btn-outline-primary"
+                  type="button"
+                  data-add-layer="raster"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Add raster layer"
+                >
+                  <span class="iconify" data-icon="tabler:photo" aria-hidden="true"></span>
+                  <span class="visually-hidden">Add raster layer</span>
+                </button>
+                <button
+                  class="btn btn-outline-primary"
+                  type="button"
+                  data-add-layer="marker"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Add marker layer"
+                >
+                  <span class="iconify" data-icon="tabler:map-pin" aria-hidden="true"></span>
+                  <span class="visually-hidden">Add marker layer</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  data-add-group
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Add group"
+                >
+                  <span class="iconify" data-icon="tabler:folder" aria-hidden="true"></span>
+                  <span class="visually-hidden">Add group</span>
+                </button>
               </div>
             </section>
 
@@ -226,7 +271,47 @@
           </div>
         </aside>
 
-        <main class="flex-grow-1 position-relative workbench-main"></main>
+        <main class="flex-grow-1 position-relative workbench-main" data-map-main>
+          <div class="orrery-floating-panel shadow-theme" data-view-panel>
+            <div class="d-flex align-items-center gap-2 orrery-view-handle" data-view-handle>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Map zoom controls">
+                <button class="btn btn-outline-secondary" type="button" data-zoom-out>
+                  <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
+                  <span class="visually-hidden">Zoom out</span>
+                </button>
+                <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
+                <button class="btn btn-outline-secondary" type="button" data-zoom-in>
+                  <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
+                  <span class="visually-hidden">Zoom in</span>
+                </button>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm" type="button" data-view-toggle aria-expanded="false">
+                <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
+                <span class="visually-hidden">Expand view details</span>
+              </button>
+            </div>
+            <div class="orrery-view-details mt-2 d-none" data-view-details>
+              <dl class="mb-0 small">
+                <div class="d-flex justify-content-between">
+                  <dt>Mode</dt>
+                  <dd class="mb-0" data-view-mode></dd>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <dt>Zoom</dt>
+                  <dd class="mb-0" data-view-zoom></dd>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <dt>Center</dt>
+                  <dd class="mb-0" data-view-center></dd>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <dt>Pan</dt>
+                  <dd class="mb-0" data-view-pan></dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </main>
 
         <aside
           class="border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
@@ -287,11 +372,14 @@
                 </div>
 
                 <div class="d-flex flex-column gap-2" data-base-map-settings="tile">
-                  <div class="small text-body-secondary">Provider</div>
-                  <div class="d-flex flex-column gap-1">
-                    <span class="fw-semibold">OpenStreetMap Standard</span>
-                    <span class="text-body-secondary">https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</span>
-                  </div>
+                  <label class="form-label mb-0" for="base-map-tile-provider">Tile Provider</label>
+                  <input
+                    class="form-control form-control-sm orrery-provider-input"
+                    type="text"
+                    id="base-map-tile-provider"
+                    value="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    readonly
+                  />
                 </div>
 
                 <div class="d-flex flex-column gap-2" data-base-map-settings="image">
@@ -370,46 +458,6 @@
             </section>
           </div>
         </aside>
-      </div>
-    </div>
-
-    <div class="orrery-floating-panel shadow-theme" data-view-panel>
-      <div class="d-flex align-items-center gap-2">
-        <div class="btn-group btn-group-sm" role="group" aria-label="Map zoom controls">
-          <button class="btn btn-outline-secondary" type="button" data-zoom-out>
-            <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
-            <span class="visually-hidden">Zoom out</span>
-          </button>
-          <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
-          <button class="btn btn-outline-secondary" type="button" data-zoom-in>
-            <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
-            <span class="visually-hidden">Zoom in</span>
-          </button>
-        </div>
-        <button class="btn btn-outline-secondary btn-sm" type="button" data-view-toggle aria-expanded="false">
-          <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
-          <span class="visually-hidden">Expand view details</span>
-        </button>
-      </div>
-      <div class="orrery-view-details mt-2 d-none" data-view-details>
-        <dl class="mb-0 small">
-          <div class="d-flex justify-content-between">
-            <dt>Mode</dt>
-            <dd class="mb-0" data-view-mode></dd>
-          </div>
-          <div class="d-flex justify-content-between">
-            <dt>Zoom</dt>
-            <dd class="mb-0" data-view-zoom></dd>
-          </div>
-          <div class="d-flex justify-content-between">
-            <dt>Center</dt>
-            <dd class="mb-0" data-view-center></dd>
-          </div>
-          <div class="d-flex justify-content-between">
-            <dt>Pan</dt>
-            <dd class="mb-0" data-view-pan></dd>
-          </div>
-        </dl>
       </div>
     </div>
 
