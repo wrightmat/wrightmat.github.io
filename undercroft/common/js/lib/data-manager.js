@@ -1,4 +1,5 @@
-const DEFAULT_STORAGE_PREFIX = "undercroft.workbench";
+const DEFAULT_STORAGE_PREFIX = "undercroft";
+const DEFAULT_SESSION_KEY = "undercroft.session";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
 const ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"];
@@ -130,6 +131,7 @@ export class DataManager {
     storage = "localStorage" in GLOBAL_SCOPE ? GLOBAL_SCOPE.localStorage : null,
     fetchImpl = typeof GLOBAL_SCOPE.fetch === "function" ? GLOBAL_SCOPE.fetch.bind(GLOBAL_SCOPE) : null,
     storagePrefix = DEFAULT_STORAGE_PREFIX,
+    sessionStorageKey = DEFAULT_SESSION_KEY,
   } = {}) {
     this.baseUrl = normalizeBaseUrl(baseUrl);
     this.storage = storage;
@@ -138,7 +140,11 @@ export class DataManager {
     this._listCache = new Map();
     this._ownedCache = new Map();
     this._groupCache = null;
-    this._sessionKey = `${this.storagePrefix}:session`;
+    this._sessionKey = sessionStorageKey || DEFAULT_SESSION_KEY;
+    this._legacySessionKey =
+      this._sessionKey && `${this.storagePrefix}:session` !== this._sessionKey
+        ? `${this.storagePrefix}:session`
+        : null;
     this._bucketPrefix = `${this.storagePrefix}:bucket:`;
     this._legacyBucketPrefix = `${this.storagePrefix}:bucket`;
     this._session = this._loadSession();
@@ -175,9 +181,24 @@ export class DataManager {
 
   _loadSession() {
     try {
-      const stored = this._requireStorage().getItem(this._sessionKey);
+      const storage = this._requireStorage();
+      const stored = storage.getItem(this._sessionKey);
       const parsed = safeJsonParse(stored, null);
-      return sanitizeSession(parsed);
+      const sanitized = sanitizeSession(parsed);
+      if (sanitized) {
+        return sanitized;
+      }
+      if (this._legacySessionKey) {
+        const legacyStored = storage.getItem(this._legacySessionKey);
+        const legacyParsed = safeJsonParse(legacyStored, null);
+        const legacySanitized = sanitizeSession(legacyParsed);
+        if (legacySanitized) {
+          storage.setItem(this._sessionKey, JSON.stringify(legacySanitized));
+          storage.removeItem(this._legacySessionKey);
+          return legacySanitized;
+        }
+      }
+      return null;
     } catch (error) {
       console.warn("DataManager: Unable to load session", error);
       return null;
