@@ -169,7 +169,7 @@ export class PanZoomController {
 
   applyTransform() {
     const { zoom, pan } = this.view;
-    this.content.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+    this.content.style.transform = `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
   }
 
   getView() {

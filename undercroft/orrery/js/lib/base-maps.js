@@ -122,6 +122,8 @@ class ImageBaseMap {
     image.src = this.settings.src;
     image.width = this.settings.width;
     image.height = this.settings.height;
+    image.draggable = false;
+    image.addEventListener("dragstart", (event) => event.preventDefault());
 
     this.content.appendChild(image);
     this.stage.appendChild(this.content);
