@@ -217,7 +217,7 @@ export function initAuthControls({
     if (!container) return;
     container.innerHTML = "";
     const dropdown = document.createElement("div");
-    dropdown.className = "dropdown";
+    dropdown.className = "dropdown undercroft-auth-menu";
     dropdown.innerHTML = `
       <button
         class="btn btn-outline-secondary dropdown-toggle"
@@ -228,7 +228,7 @@ export function initAuthControls({
       >
         ${user.username}
       </button>
-      <ul class="dropdown-menu dropdown-menu-end">
+      <ul class="dropdown-menu dropdown-menu-end undercroft-auth-dropdown">
         <li><span class="dropdown-item-text text-body-secondary">Tier: ${formatTierLabel(user.tier)}</span></li>
         ${resolvedSettingsHref ? `<li><a class="dropdown-item" href="${resolvedSettingsHref}" data-auth-settings>Account settings</a></li>` : ""}
         ${

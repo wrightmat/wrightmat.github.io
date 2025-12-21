@@ -57,11 +57,6 @@ export function createBaseMapSettings() {
       width: 1600,
       height: 1000,
       background: "#f8f9fa",
-      grid: {
-        enabled: true,
-        size: 100,
-        color: "rgba(0, 0, 0, 0.1)",
-      },
     },
   };
 }
@@ -118,7 +113,7 @@ export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" }
       properties: {},
     },
     view: getDefaultView(type),
-    layers: [createLayer({ type: "vector", name: "Primary Vector Layer" })],
+    layers: [createLayer({ type: "grid", name: "Primary Grid Layer" })],
     groups: [],
     properties: {},
     createdAt: new Date().toISOString(),
