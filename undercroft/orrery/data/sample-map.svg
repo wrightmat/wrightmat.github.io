@@ -1,0 +1,18 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#f8f9fa" />
+  <rect x="80" y="80" width="1040" height="640" rx="24" fill="#e9ecef" stroke="#ced4da" stroke-width="4" />
+  <path d="M220 280 L420 200 L520 320 L360 420 Z" fill="#cfe2ff" stroke="#6ea8fe" stroke-width="4" />
+  <path d="M700 180 L900 240 L860 460 L640 420 Z" fill="#d1e7dd" stroke="#75b798" stroke-width="4" />
+  <path d="M480 520 L620 520 L680 660 L420 680 Z" fill="#fff3cd" stroke="#ffda6a" stroke-width="4" />
+  <line x1="120" y1="200" x2="1080" y2="200" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <line x1="120" y1="400" x2="1080" y2="400" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <line x1="120" y1="600" x2="1080" y2="600" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <line x1="240" y1="120" x2="240" y2="720" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <line x1="480" y1="120" x2="480" y2="720" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <line x1="720" y1="120" x2="720" y2="720" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <line x1="960" y1="120" x2="960" y2="720" stroke="#adb5bd" stroke-width="2" stroke-dasharray="8 6" />
+  <text x="120" y="60" fill="#495057" font-family="Arial, sans-serif" font-size="28" font-weight="bold">Sample Image Base Map</text>
+  <text x="220" y="260" fill="#495057" font-family="Arial, sans-serif" font-size="18">Highlands</text>
+  <text x="700" y="170" fill="#495057" font-family="Arial, sans-serif" font-size="18">Riverlands</text>
+  <text x="500" y="500" fill="#495057" font-family="Arial, sans-serif" font-size="18">Coastal Flats</text>
+</svg>
