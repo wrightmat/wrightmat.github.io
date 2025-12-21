@@ -591,6 +591,15 @@ const renderJsonPreview = createJsonPreviewRenderer({
   },
 });
 
+function removeDuplicateSampleDataSections() {
+  const sections = document.querySelectorAll("[data-sample-data-section]");
+  sections.forEach((section, index) => {
+    if (index > 0) {
+      section.remove();
+    }
+  });
+}
+
 function updateSampleDataFeedback(result) {
   if (!sampleDataInput) return;
   if (result?.valid) {
@@ -2567,6 +2576,7 @@ function wireEvents() {
 async function initPress() {
   initShell();
   initPressCollapsibles();
+  removeDuplicateSampleDataSections();
   await initSampleDataEditor();
   try {
     await loadTemplates();
