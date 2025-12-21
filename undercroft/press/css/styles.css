@@ -183,6 +183,10 @@ body[data-theme="dark"] .preview-stage {
   opacity: 0.85;
 }
 
+.press-sample-data-input {
+  font-size: 0.65rem;
+}
+
 .card-guides {
   mix-blend-mode: multiply;
 }
