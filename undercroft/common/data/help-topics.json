@@ -255,6 +255,17 @@
       "href": "../press/index.html#press-palette"
     },
     {
+      "id": "press.sample-data",
+      "title": "Global Sample Data",
+      "summary": "Edit the shared JSON used for previews when no source data is loaded.",
+      "details": [
+        "Changes are saved automatically to local storage.",
+        "Valid JSON updates the preview immediately; invalid JSON is highlighted until corrected.",
+        "Use this for placeholder content across all templates."],
+      "category": "Press",
+      "href": "../press/index.html#press-sample-data"
+    },
+    {
       "id": "press.layout",
       "title": "Layout Canvas & Outline",
       "summary": "Use the right-pane outline or the on-page drag handles to change the order of components for the current side.",
