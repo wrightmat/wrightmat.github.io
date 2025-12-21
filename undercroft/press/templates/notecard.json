@@ -49,27 +49,5 @@
         ]
       }
     }
-  },
-  "sampleData": {
-    "cards": {
-      "front": [
-        {
-          "title": "Story Prompt",
-          "type": "Memo",
-          "label": "Front",
-          "body": "Use this 5 × 7 space to capture session notes or NPC spotlights before printing.",
-          "footer": "Room for sketching, lists, and quick reminders."
-        }
-      ],
-      "back": [
-        {
-          "title": "Reverse Notes",
-          "type": "Memo",
-          "label": "Back",
-          "body": "Back face for handwriting or a lined overlay after trimming to 5 × 7 inches.",
-          "footer": "Keep margins tight for accurate cuts."
-        }
-      ]
-    }
   }
 }
