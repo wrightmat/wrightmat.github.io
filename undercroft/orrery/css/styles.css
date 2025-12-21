@@ -12,6 +12,48 @@
   overflow: hidden;
 }
 
+.orrery-layer-overlay-host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.orrery-layer-grid-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.orrery-layer-raster-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orrery-layer-raster-overlay img {
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+}
+
+.orrery-layer-marker-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  border: 2px solid var(--bs-body-bg);
+  box-shadow: 0 0 0 1px var(--bs-border-color);
+}
+
+.orrery-layer-vector-overlay {
+  position: absolute;
+  inset: 0;
+}
+
 .orrery-map-stage {
   position: absolute;
   inset: 0;
