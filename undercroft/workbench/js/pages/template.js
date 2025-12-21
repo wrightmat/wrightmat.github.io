@@ -340,6 +340,7 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
     templateProperties: document.querySelector("[data-template-properties]"),
     templatePropertiesCollapse: document.getElementById("template-properties-collapse"),
+    componentPropertiesCollapse: document.getElementById("component-properties-collapse"),
     templateDeleteButton: null,
   });
 
@@ -1546,6 +1547,48 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
       return;
     }
     elements.templatePropertiesCollapse.classList.add("show");
+  }
+
+  function collapseTemplatePropertiesSection() {
+    if (!elements.templatePropertiesCollapse) {
+      return;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
+      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.templatePropertiesCollapse, {
+        toggle: false,
+      });
+      instance.hide();
+      return;
+    }
+    elements.templatePropertiesCollapse.classList.remove("show");
+  }
+
+  function expandComponentPropertiesSection() {
+    if (!elements.componentPropertiesCollapse) {
+      return;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
+      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.componentPropertiesCollapse, {
+        toggle: false,
+      });
+      instance.show();
+      return;
+    }
+    elements.componentPropertiesCollapse.classList.add("show");
+  }
+
+  function collapseComponentPropertiesSection() {
+    if (!elements.componentPropertiesCollapse) {
+      return;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
+      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.componentPropertiesCollapse, {
+        toggle: false,
+      });
+      instance.hide();
+      return;
+    }
+    elements.componentPropertiesCollapse.classList.remove("show");
   }
 
   function prepareNewTemplateForm({ mode = "new", seedTemplate = null } = {}) {
@@ -3916,12 +3959,16 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     const selection = findComponent(state.selectedId);
     const component = selection?.component;
     if (!component) {
+      expandTemplatePropertiesSection();
+      collapseComponentPropertiesSection();
       const placeholder = document.createElement("p");
       placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
       placeholder.textContent = "Select a component on the canvas to edit its settings.";
       elements.inspector.appendChild(placeholder);
       return;
     }
+    collapseTemplatePropertiesSection();
+    expandComponentPropertiesSection();
     const definition = COMPONENT_DEFINITIONS[component.type] || {};
     if (component.type === "container") {
       ensureContainerZones(component);
