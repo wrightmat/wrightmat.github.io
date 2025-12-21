@@ -13,6 +13,7 @@ class TileBaseMap {
     this.onViewChange = onViewChange;
     this.view = view;
     this.map = null;
+    this.overlayHost = null;
   }
 
   mount() {
@@ -40,6 +41,13 @@ class TileBaseMap {
       .addTo(this.map);
 
     this.setView(this.view);
+
+    const overlayPane = this.map.getPanes()?.overlayPane;
+    if (overlayPane) {
+      this.overlayHost = document.createElement("div");
+      this.overlayHost.className = "orrery-layer-overlay-host";
+      overlayPane.appendChild(this.overlayHost);
+    }
 
     this.map.on("moveend", () => this.emitChange());
     this.map.on("zoomend", () => this.emitChange());
@@ -89,10 +97,18 @@ class TileBaseMap {
     };
   }
 
+  getOverlayHost() {
+    return this.overlayHost;
+  }
+
   destroy() {
     if (this.map) {
       this.map.remove();
       this.map = null;
+    }
+    if (this.overlayHost) {
+      this.overlayHost.remove();
+      this.overlayHost = null;
     }
     clearContainer(this.container);
   }
@@ -107,6 +123,7 @@ class ImageBaseMap {
     this.stage = null;
     this.content = null;
     this.panZoom = null;
+    this.overlayHost = null;
   }
 
   mount() {
@@ -126,6 +143,9 @@ class ImageBaseMap {
     image.addEventListener("dragstart", (event) => event.preventDefault());
 
     this.content.appendChild(image);
+    this.overlayHost = document.createElement("div");
+    this.overlayHost.className = "orrery-layer-overlay-host";
+    this.content.appendChild(this.overlayHost);
     this.stage.appendChild(this.content);
     this.container.appendChild(this.stage);
 
@@ -183,9 +203,17 @@ class ImageBaseMap {
     };
   }
 
+  getOverlayHost() {
+    return this.overlayHost;
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
+    if (this.overlayHost) {
+      this.overlayHost.remove();
+      this.overlayHost = null;
+    }
     clearContainer(this.container);
   }
 }
@@ -199,6 +227,7 @@ class CanvasBaseMap {
     this.stage = null;
     this.content = null;
     this.panZoom = null;
+    this.overlayHost = null;
   }
 
   mount() {
@@ -212,9 +241,12 @@ class CanvasBaseMap {
     surface.className = "orrery-canvas-surface";
     surface.style.width = `${this.settings.width}px`;
     surface.style.height = `${this.settings.height}px`;
-    this.applyGrid(surface, this.settings);
+    surface.style.backgroundColor = this.settings.background;
 
     this.content.appendChild(surface);
+    this.overlayHost = document.createElement("div");
+    this.overlayHost.className = "orrery-layer-overlay-host";
+    this.content.appendChild(this.overlayHost);
     this.stage.appendChild(this.content);
     this.container.appendChild(this.stage);
 
@@ -224,18 +256,6 @@ class CanvasBaseMap {
       view: this.view,
       onChange: (view) => this.emitChange(view),
     });
-  }
-
-  applyGrid(surface, settings) {
-    surface.style.backgroundColor = settings.background;
-    if (!settings.grid?.enabled) {
-      surface.style.backgroundImage = "none";
-      return;
-    }
-    const size = settings.grid?.size || 100;
-    const color = settings.grid?.color || "rgba(0, 0, 0, 0.1)";
-    surface.style.backgroundImage = `linear-gradient(${color} 1px, transparent 1px), linear-gradient(90deg, ${color} 1px, transparent 1px)`;
-    surface.style.backgroundSize = `${size}px ${size}px`;
   }
 
   emitChange(view) {
@@ -260,7 +280,7 @@ class CanvasBaseMap {
     }
     surface.style.width = `${settings.width}px`;
     surface.style.height = `${settings.height}px`;
-    this.applyGrid(surface, settings);
+    surface.style.backgroundColor = settings.background;
   }
 
   setView(view) {
@@ -285,9 +305,17 @@ class CanvasBaseMap {
     };
   }
 
+  getOverlayHost() {
+    return this.overlayHost;
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
+    if (this.overlayHost) {
+      this.overlayHost.remove();
+      this.overlayHost = null;
+    }
     clearContainer(this.container);
   }
 }
@@ -347,5 +375,9 @@ export class BaseMapManager {
 
   getView() {
     return this.current?.getView();
+  }
+
+  getOverlayContainer() {
+    return this.current?.getOverlayHost?.() || null;
   }
 }
