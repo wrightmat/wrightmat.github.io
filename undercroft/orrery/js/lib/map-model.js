@@ -8,6 +8,37 @@ const randomId = () => {
 export const BASE_MAP_TYPES = ["tile", "image", "canvas"];
 export const LAYER_TYPES = ["vector", "grid", "raster", "marker"];
 
+export function createLayerSettings(type) {
+  switch (type) {
+    case "grid":
+      return {
+        gridType: "square",
+        cellSize: 50,
+        lineColor: "#0f172a",
+        lineOpacity: 0.25,
+      };
+    case "raster":
+      return {
+        src: "",
+        width: 800,
+        height: 600,
+      };
+    case "marker":
+      return {
+        icon: "pin",
+        size: 24,
+        color: "#0ea5e9",
+      };
+    case "vector":
+    default:
+      return {
+        strokeColor: "#0f172a",
+        fillColor: "#93c5fd",
+        strokeWidth: 2,
+      };
+  }
+}
+
 export function createBaseMapSettings() {
   return {
     tile: {
@@ -26,11 +57,6 @@ export function createBaseMapSettings() {
       width: 1600,
       height: 1000,
       background: "#f8f9fa",
-      grid: {
-        enabled: true,
-        size: 100,
-        color: "rgba(0, 0, 0, 0.1)",
-      },
     },
   };
 }
@@ -61,6 +87,7 @@ export function createLayer({ type = "vector", name } = {}) {
     visible: true,
     opacity: 1,
     elements: [],
+    settings: createLayerSettings(safeType),
     properties: {},
   };
 }
@@ -86,7 +113,7 @@ export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" }
       properties: {},
     },
     view: getDefaultView(type),
-    layers: [createLayer({ type: "vector", name: "Primary Vector Layer" })],
+    layers: [createLayer({ type: "grid", name: "Primary Grid Layer" })],
     groups: [],
     properties: {},
     createdAt: new Date().toISOString(),
