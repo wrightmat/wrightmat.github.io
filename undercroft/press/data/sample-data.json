@@ -1,0 +1,248 @@
+{
+  "front": {
+    "title": "Adventurer Overview",
+    "badge": "Frontline",
+    "subtitle": "Built to mirror the Scriptorium starter sheet.",
+    "stats": [
+      {
+        "label": "Name",
+        "value": "Lira Quill"
+      },
+      {
+        "label": "Class",
+        "value": "Lorebinder"
+      },
+      {
+        "label": "Level",
+        "value": "5"
+      },
+      {
+        "label": "Background",
+        "value": "Expedition Scribe"
+      },
+      {
+        "label": "Player",
+        "value": "Demo"
+      },
+      {
+        "label": "Campaign",
+        "value": "Undercroft Trials"
+      }
+    ],
+    "highlights": [
+      "Reaction: Counter-script once per short rest",
+      "Exploration: Cartographic sense grants advantage on mapping checks",
+      "Social: Scribe’s seal offers advantage with archivists"
+    ],
+    "inventory": [
+      "Pack | 60 lb",
+      "Spellbook | 12 spells",
+      "Focus | Arcane quill",
+      "Notes | 6 pages"
+    ],
+    "footer": "Flip on long edge to align the notes back page."
+  },
+  "back": {
+    "title": "Encounters & Notes",
+    "badge": "Notebook",
+    "subtitle": "Ruled back page for encounters, factions, and reminders.",
+    "allies": "Trismegistus press crew, Riverwatch scouts, friendly printer techs.",
+    "risks": "Moisture warp, long-edge flip errors, expired toner streaks.",
+    "reminders": "Lock scaling to 100%, orient pages consistently, let ink dry before stacking.",
+    "footer": "Use the trim lines to confirm front/back alignment."
+  },
+  "cards": {
+    "front": [
+      {
+        "title": "Ithril Scout",
+        "type": "Companion",
+        "label": "Front",
+        "body": "Skilled pathfinder adept at sniffing out danger before it reaches the party.",
+        "footer": "Keen Hearing and Smell | Advantage on Perception checks based on scent"
+      },
+      {
+        "title": "Fane Scholar",
+        "type": "Retainer",
+        "label": "Front",
+        "body": "Keeps meticulous notes and provides lore snippets drawn from ancient catacombs.",
+        "footer": "Arcana +5 | Translate runes and sigils during downtime"
+      },
+      {
+        "title": "Runeseal",
+        "type": "Spell",
+        "label": "Front",
+        "body": "Anchor an unstable portal until end of turn; spell ends if you move or take damage.",
+        "footer": "1 action | Concentration | Glyphs light faintly when active"
+      },
+      {
+        "title": "Copperback",
+        "type": "Creature",
+        "label": "Front",
+        "body": "Armoured tortoise used to haul gear across shifting dunes.",
+        "footer": "AC 15 | Speed 25 ft | Carrying capacity 420 lb"
+      },
+      {
+        "title": "Spell Tag",
+        "type": "Tool",
+        "label": "Front",
+        "body": "Thin copper tag that stores a minor cantrip for one later cast.",
+        "footer": "Single use | Imbue during a short rest"
+      },
+      {
+        "title": "Press Master",
+        "type": "Role",
+        "label": "Front",
+        "body": "Verifies that the preview matches printed output before production runs.",
+        "footer": "Checklist ready | Calipers set | Front alignment locked"
+      },
+      {
+        "title": "Courier Raven",
+        "type": "Creature",
+        "label": "Front",
+        "body": "Takes short messages between nearby settlements without attracting attention.",
+        "footer": "Speed 60 ft (fly) | Advantage on perception while airborne"
+      },
+      {
+        "title": "Wardstone",
+        "type": "Item",
+        "label": "Front",
+        "body": "Small stone etched with protective runes; glows when aberrations draw near.",
+        "footer": "Attune | 10 charges | Spend 1 to gain +1 AC for one round"
+      },
+      {
+        "title": "Field Rations",
+        "type": "Gear",
+        "label": "Front",
+        "body": "Sealed packets that stay fresh for weeks; printed expiration helps alignment tests.",
+        "footer": "Feeds one creature for a day | Waterproof packaging"
+      }
+    ],
+    "back": [
+      {
+        "title": "Alignment Grid",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Light grid with center weight to ensure long-edge flips line up across the whole page.",
+        "footer": "Verify every trim line crosses this grid."
+      },
+      {
+        "title": "Rune Motif",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Repeating rune to keep the reverse side consistent on all nine cards.",
+        "footer": "Line art scaled to poker safe area."
+      },
+      {
+        "title": "Cut Proof",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Use this side to test duplex cuts before committing to thicker stock.",
+        "footer": "Match dashed guides from the overlay."
+      },
+      {
+        "title": "Pocket Notes",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Space for handwriting on the reverse while keeping the front intact.",
+        "footer": "Works with 0.125 in safe inset."
+      },
+      {
+        "title": "Tone Check",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Muted wash that will not bleed through standard cardstock.",
+        "footer": "Use to calibrate printer density."
+      },
+      {
+        "title": "Promo Face",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Include a generic crest for printing starter packs and samples.",
+        "footer": "Safe for public distribution."
+      },
+      {
+        "title": "QR Anchor",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Placeholder for scannable codes once source data is wired in.",
+        "footer": "Keep codes inside the dashed safe zone."
+      },
+      {
+        "title": "Notebook Back",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Subtle dots keep handwriting aligned without overpowering the face art.",
+        "footer": "Confirm opacity before bulk runs."
+      },
+      {
+        "title": "Logo Plate",
+        "type": "Backer",
+        "label": "Back",
+        "body": "Centered Undercroft mark to match the Workbench visual language.",
+        "footer": "Pairs with front sample set."
+      }
+    ]
+  },
+  "chips": [
+    {
+      "label": "Explorer",
+      "subtitle": "Press Crew",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e0f2fe' stroke='%230d6efd' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Archivist",
+      "subtitle": "Lore",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fef3c7' stroke='%23f59e0b' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Forge",
+      "subtitle": "Workshop",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fee2e2' stroke='%23ef4444' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Grove",
+      "subtitle": "Warden",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23dcfce7' stroke='%2316a34a' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Seer",
+      "subtitle": "Vision",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ede9fe' stroke='%237c3aed' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Cavern",
+      "subtitle": "Guide",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23f5f5f4' stroke='%238b5e34' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Tactician",
+      "subtitle": "Frontline",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23cffafe' stroke='%2306b6d4' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Quartermaster",
+      "subtitle": "Logistics",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fef2f2' stroke='%239f1239' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Messenger",
+      "subtitle": "Courier",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ecfccb' stroke='%2384cc16' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Scribe",
+      "subtitle": "Layouts",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e2e8f0' stroke='%23334155' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Archivist",
+      "subtitle": "Index",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fae8ff' stroke='%23a855f7' stroke-width='4'/></svg>"
+    },
+    {
+      "label": "Sentinel",
+      "subtitle": "Watch",
+      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ffedd5' stroke='%23ea580c' stroke-width='4'/></svg>"
+    }
+  ]
+}
