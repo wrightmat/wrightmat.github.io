@@ -1,4 +1,5 @@
 import { renderLayout } from "./template-renderer.js";
+import { getSampleData } from "./sample-data.js";
 
 const MILLIMETERS_PER_INCH = 25.4;
 const pageSizes = {};
@@ -96,7 +97,7 @@ function resolveTemplateData(template, data) {
   if (data && typeof data === "object") {
     return data;
   }
-  return template.sampleData ?? {};
+  return getSampleData();
 }
 
 function resolvePageSize(format, orientation) {
@@ -256,7 +257,6 @@ function normalizeTemplate(raw) {
     sides: raw.sides ?? Object.keys(raw.pages ?? { front: {}, back: {} }),
     formats: raw.formats ?? [],
     supportedSources: raw.supportedSources ?? ["ddb", "srd", "json", "manual"],
-    sampleData: raw.sampleData ?? {},
   };
 
   template.createPage = (side, { size, format, source, data, page, renderOptions } = {}) => {
