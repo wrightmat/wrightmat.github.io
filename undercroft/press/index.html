@@ -243,6 +243,32 @@
                   </div>
                 </div>
               </section>
+              <section class="pane-card" data-sample-data-section id="press-sample-data">
+                <button
+                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#press-sample-data-editor"
+                  aria-expanded="false"
+                  aria-controls="press-sample-data-editor"
+                >
+                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2">
+                    <span>Sample Data</span>
+                    <span class="align-middle" data-help-topic="press.sample-data" data-help-insert="replace"></span>
+                  </span>
+                </button>
+                <div class="collapse" id="press-sample-data-editor">
+                  <div class="bg-body p-2 mt-2">
+                    <textarea
+                      class="form-control form-control-sm font-monospace small press-sample-data-input"
+                      id="press-sample-data-input"
+                      rows="10"
+                      data-sample-data-input
+                    ></textarea>
+                    <div class="invalid-feedback d-block mt-2 d-none" data-sample-data-error></div>
+                  </div>
+                </div>
+              </section>
             </section>
           </div>
         </aside>
