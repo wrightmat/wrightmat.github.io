@@ -1,12 +1,12 @@
 import { initAppShell } from "../../../common/js/lib/app-shell.js";
-import { DataManager } from "../lib/data-manager.js";
-import { resolveApiBase } from "../lib/api.js";
-import { initAuthControls } from "../lib/auth-ui.js";
+import { DataManager } from "../../../common/js/lib/data-manager.js";
+import { resolveApiBase } from "../../../common/js/lib/api.js";
+import { initAuthControls } from "../../../common/js/lib/auth-ui.js";
 import { initTierVisibility } from "../lib/access.js";
 import { initHelpSystem } from "../../../common/js/lib/help.js";
 
 const { status } = initAppShell({ namespace: "index" });
-const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
 const auth = initAuthControls({ root: document, status, dataManager });
 initTierVisibility({ root: document, dataManager, status, auth });
 initHelpSystem({ root: document });

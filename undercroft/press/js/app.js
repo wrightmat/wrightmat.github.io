@@ -1,5 +1,8 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { DataManager } from "../../common/js/lib/data-manager.js";
+import { resolveApiBase } from "../../common/js/lib/api.js";
+import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
@@ -2575,6 +2578,8 @@ function wireEvents() {
 
 async function initPress() {
   initShell();
+  const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.press" });
+  initAuthControls({ root: document, status, dataManager, settingsHref: "../workbench/admin.html" });
   initPressCollapsibles();
   removeDuplicateSampleDataSections();
   await initSampleDataEditor();

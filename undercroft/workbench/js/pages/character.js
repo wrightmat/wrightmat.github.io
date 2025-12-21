@@ -1,7 +1,7 @@
 import { initAppShell } from "../../../common/js/lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
+import { DataManager } from "../../../common/js/lib/data-manager.js";
+import { initAuthControls } from "../../../common/js/lib/auth-ui.js";
 import { createCanvasPlaceholder } from "../lib/editor-canvas.js";
 import {
   createCanvasCardElement,
@@ -10,7 +10,7 @@ import {
 } from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
+import { resolveApiBase } from "../../../common/js/lib/api.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import { initHelpSystem } from "../../../common/js/lib/help.js";
 import {
@@ -39,7 +39,7 @@ import {
     onUndo: handleUndoEntry,
     onRedo: handleRedoEntry,
   });
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
   initAuthControls({ root: document, status, dataManager });
   initHelpSystem({ root: document });
 
@@ -4284,7 +4284,7 @@ import {
     }
   }
 
-  window.addEventListener("workbench:auth-changed", () => {
+  window.addEventListener("undercroft:auth-changed", () => {
     if (dataManager.isAuthenticated()) {
       refreshRemoteCharacters({ force: true });
       if (pendingSharedRecord) {
