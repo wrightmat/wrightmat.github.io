@@ -32,12 +32,15 @@
   top: 50%;
   transform-origin: center;
   will-change: transform;
+  user-select: none;
 }
 
 .orrery-map-image {
   display: block;
   max-width: none;
   max-height: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .orrery-canvas-surface {
