@@ -145,11 +145,11 @@ body[data-theme="dark"] .hover-lift:hover {
 
 .undercroft-auth-menu {
   position: relative;
-  z-index: 1100;
+  z-index: 1200;
 }
 
 .undercroft-auth-menu .dropdown-menu {
-  z-index: 1105;
+  z-index: 1210;
 }
 
 .workbench-shell {

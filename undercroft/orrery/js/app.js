@@ -284,16 +284,6 @@ function clearSelectionEditor() {
   }
 }
 
-function ensureLayerOverlay() {
-  let overlay = mapContainer.querySelector(".orrery-layer-overlay");
-  if (!overlay) {
-    overlay = document.createElement("div");
-    overlay.className = "orrery-layer-overlay";
-    mapContainer.appendChild(overlay);
-  }
-  return overlay;
-}
-
 function toRgba(color, opacity) {
   if (typeof color !== "string" || color.trim() === "") {
     return `rgba(15, 23, 42, ${opacity})`;
@@ -315,75 +305,84 @@ function toRgba(color, opacity) {
   return trimmed;
 }
 
-function createLayerPreview(layer, index) {
+function createGridLayerElement(layer) {
+  const grid = document.createElement("div");
+  grid.className = "orrery-layer-grid-overlay";
+  const size = layer.settings?.cellSize || 50;
+  const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
+  const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
+  grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
+  grid.style.backgroundSize = `${size}px ${size}px`;
+  return grid;
+}
+
+function createRasterLayerElement(layer) {
   const wrapper = document.createElement("div");
-  wrapper.className = "orrery-layer-preview shadow-theme";
-  const offset = Math.min(index * 8, 40);
-  wrapper.style.left = `${20 + offset}%`;
-  wrapper.style.top = `${20 + offset}%`;
-  wrapper.style.opacity = String(layer.opacity ?? 1);
-
-  const label = document.createElement("div");
-  label.className = "orrery-layer-label";
-  label.textContent = layer.name;
-  wrapper.appendChild(label);
-
-  if (layer.type === "grid") {
-    const grid = document.createElement("div");
-    grid.className = "orrery-layer-grid";
-    const size = layer.settings?.cellSize || 50;
-    const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
-    const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
-    grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
-    grid.style.backgroundSize = `${size}px ${size}px`;
-    wrapper.appendChild(grid);
-  } else if (layer.type === "raster") {
-    const frame = document.createElement("div");
-    frame.className = "orrery-layer-raster";
-    const src = layer.settings?.src || "";
-    if (src) {
-      const image = document.createElement("img");
-      image.src = src;
-      image.alt = layer.name;
-      frame.appendChild(image);
-    } else {
-      frame.textContent = "Raster Layer";
-    }
-    wrapper.appendChild(frame);
-  } else if (layer.type === "marker") {
-    const marker = document.createElement("div");
-    marker.className = "orrery-layer-marker";
-    const size = layer.settings?.size || 24;
-    marker.style.width = `${size}px`;
-    marker.style.height = `${size}px`;
-    marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
-    wrapper.appendChild(marker);
-  } else {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 120 120");
-    svg.classList.add("orrery-layer-vector");
-    const stroke = layer.settings?.strokeColor || "#0f172a";
-    const fill = layer.settings?.fillColor || "#93c5fd";
-    const width = layer.settings?.strokeWidth || 2;
-    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-    poly.setAttribute("points", "20,90 60,20 100,90");
-    poly.setAttribute("fill", fill);
-    poly.setAttribute("stroke", stroke);
-    poly.setAttribute("stroke-width", width);
-    svg.appendChild(poly);
-    wrapper.appendChild(svg);
+  wrapper.className = "orrery-layer-raster-overlay";
+  const src = layer.settings?.src || "";
+  const image = document.createElement("img");
+  image.src = src || "data/sample-map.svg";
+  image.alt = layer.name;
+  if (layer.settings?.width) {
+    image.width = layer.settings.width;
   }
+  if (layer.settings?.height) {
+    image.height = layer.settings.height;
+  }
+  wrapper.appendChild(image);
   return wrapper;
 }
 
+function createMarkerLayerElement(layer) {
+  const marker = document.createElement("div");
+  marker.className = "orrery-layer-marker-overlay";
+  const size = layer.settings?.size || 24;
+  marker.style.width = `${size}px`;
+  marker.style.height = `${size}px`;
+  marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
+  return marker;
+}
+
+function createVectorLayerElement(layer) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 200 200");
+  svg.classList.add("orrery-layer-vector-overlay");
+  const stroke = layer.settings?.strokeColor || "#0f172a";
+  const fill = layer.settings?.fillColor || "#93c5fd";
+  const width = layer.settings?.strokeWidth || 2;
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", "40,160 100,40 160,160");
+  poly.setAttribute("fill", fill);
+  poly.setAttribute("stroke", stroke);
+  poly.setAttribute("stroke-width", width);
+  svg.appendChild(poly);
+  return svg;
+}
+
 function renderLayerOverlays() {
-  const overlay = ensureLayerOverlay();
+  const overlay = baseMapManager.getOverlayContainer();
+  if (!overlay) {
+    return;
+  }
   overlay.innerHTML = "";
-  state.map.layers.forEach((layer, index) => {
+  state.map.layers.forEach((layer) => {
     if (!layer.visible) {
       return;
     }
-    overlay.appendChild(createLayerPreview(layer, index));
+    let element = null;
+    if (layer.type === "grid") {
+      element = createGridLayerElement(layer);
+    } else if (layer.type === "raster") {
+      element = createRasterLayerElement(layer);
+    } else if (layer.type === "marker") {
+      element = createMarkerLayerElement(layer);
+    } else {
+      element = createVectorLayerElement(layer);
+    }
+    if (element) {
+      element.style.opacity = String(layer.opacity ?? 1);
+      overlay.appendChild(element);
+    }
   });
 }
 
