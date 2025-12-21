@@ -187,6 +187,10 @@ body[data-theme="dark"] .preview-stage {
   font-size: 0.65rem;
 }
 
+.press-json-preview {
+  font-size: 0.65rem;
+}
+
 .card-guides {
   mix-blend-mode: multiply;
 }
