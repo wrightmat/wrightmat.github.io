@@ -153,41 +153,5 @@
         ]
       }
     }
-  },
-  "sampleData": {
-    "front": {
-      "title": "Adventurer Overview",
-      "badge": "Frontline",
-      "subtitle": "Built to mirror the Scriptorium starter sheet.",
-      "stats": [
-        { "label": "Name", "value": "Lira Quill" },
-        { "label": "Class", "value": "Lorebinder" },
-        { "label": "Level", "value": "5" },
-        { "label": "Background", "value": "Expedition Scribe" },
-        { "label": "Player", "value": "Demo" },
-        { "label": "Campaign", "value": "Undercroft Trials" }
-      ],
-      "highlights": [
-        "Reaction: Counter-script once per short rest",
-        "Exploration: Cartographic sense grants advantage on mapping checks",
-        "Social: Scribe’s seal offers advantage with archivists"
-      ],
-      "inventory": [
-        "Pack | 60 lb",
-        "Spellbook | 12 spells",
-        "Focus | Arcane quill",
-        "Notes | 6 pages"
-      ],
-      "footer": "Flip on long edge to align the notes back page."
-    },
-    "back": {
-      "title": "Encounters & Notes",
-      "badge": "Notebook",
-      "subtitle": "Ruled back page for encounters, factions, and reminders.",
-      "allies": "Trismegistus press crew, Riverwatch scouts, friendly printer techs.",
-      "risks": "Moisture warp, long-edge flip errors, expired toner streaks.",
-      "reminders": "Lock scaling to 100%, orient pages consistently, let ink dry before stacking.",
-      "footer": "Use the trim lines to confirm front/back alignment."
-    }
   }
 }

@@ -119,6 +119,10 @@
   transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
+.workbench-json-preview {
+  font-size: 0.65rem;
+}
+
 .template-linear-track__segment.is-active {
   background-color: var(--bs-primary);
 }
