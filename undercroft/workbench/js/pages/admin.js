@@ -1,11 +1,11 @@
 import { initAppShell } from "../../../common/js/lib/app-shell.js";
-import { DataManager } from "../lib/data-manager.js";
-import { resolveApiBase } from "../lib/api.js";
-import { initAuthControls } from "../lib/auth-ui.js";
+import { DataManager } from "../../../common/js/lib/data-manager.js";
+import { resolveApiBase } from "../../../common/js/lib/api.js";
+import { initAuthControls } from "../../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../../common/js/lib/help.js";
 
 const { status } = initAppShell({ namespace: "admin" });
-const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
 const auth = initAuthControls({ root: document, status, dataManager });
 initHelpSystem({ root: document });
 
@@ -384,7 +384,7 @@ function renderUsers(users) {
             if (auth && typeof auth.refreshDisplay === "function") {
               auth.refreshDisplay();
             }
-            window.dispatchEvent(new CustomEvent("workbench:auth-changed", { detail: { session: null } }));
+            window.dispatchEvent(new CustomEvent("undercroft:auth-changed", { detail: { session: null } }));
           } else {
             row.remove();
             loadUsers({ showSpinner: false });
@@ -2165,7 +2165,7 @@ function handleAuthChanged() {
   }
 }
 
-window.addEventListener("workbench:auth-changed", () => {
+window.addEventListener("undercroft:auth-changed", () => {
   handleAuthChanged();
 });
 

@@ -1,7 +1,7 @@
 import { initAppShell } from "../../../common/js/lib/app-shell.js";
 import { populateSelect } from "../lib/dropdown.js";
-import { DataManager } from "../lib/data-manager.js";
-import { initAuthControls } from "../lib/auth-ui.js";
+import { DataManager } from "../../../common/js/lib/data-manager.js";
+import { initAuthControls } from "../../../common/js/lib/auth-ui.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -16,7 +16,7 @@ import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.j
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
-import { resolveApiBase } from "../lib/api.js";
+import { resolveApiBase } from "../../../common/js/lib/api.js";
 import {
   listBuiltinSystems,
   listBuiltinTemplates,
@@ -48,7 +48,7 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     onRedo: handleRedoEntry,
   });
 
-  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
   initHelpSystem({ root: document });
@@ -5485,7 +5485,7 @@ import { initHelpSystem } from "../../../common/js/lib/help.js";
     }
   }
 
-  window.addEventListener("workbench:auth-changed", () => {
+  window.addEventListener("undercroft:auth-changed", () => {
     if (dataManager.isAuthenticated()) {
       loadTemplateRecords();
       if (pendingSharedTemplate) {
