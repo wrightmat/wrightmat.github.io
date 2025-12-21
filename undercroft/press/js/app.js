@@ -15,6 +15,7 @@ import {
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData } from "./source-data.js";
+import { loadSampleData, setSampleDataText, getSampleDataText, subscribeSampleData } from "./sample-data.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -38,6 +39,8 @@ const saveButton = document.querySelector('[data-action="save-layout"]');
 const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
+const sampleDataInput = document.querySelector("[data-sample-data-input]");
+const sampleDataError = document.querySelector("[data-sample-data-error]");
 const templateInspector = document.querySelector("[data-template-inspector]");
 const templateIdInput = document.querySelector("[data-template-id]");
 const templateNameInput = document.querySelector("[data-template-name]");
@@ -125,6 +128,7 @@ let applyCardCollapse = null;
 let applyComponentCollapse = null;
 let activeTemplateId = null;
 let templateIdAuto = false;
+let sampleDataSaveTimer = null;
 
 const COLOR_DEFAULTS = {
   foreground: "#212529",
@@ -431,7 +435,6 @@ function createBlankTemplate() {
       front: { data: "@", layout: createEmptyLayout() },
       back: { data: "@", layout: createEmptyLayout() },
     },
-    sampleData: {},
   });
 }
 
@@ -587,6 +590,53 @@ const renderJsonPreview = createJsonPreviewRenderer({
     };
   },
 });
+
+function removeDuplicateSampleDataSections() {
+  const sections = document.querySelectorAll("[data-sample-data-section]");
+  sections.forEach((section, index) => {
+    if (index > 0) {
+      section.remove();
+    }
+  });
+}
+
+function updateSampleDataFeedback(result) {
+  if (!sampleDataInput) return;
+  if (result?.valid) {
+    sampleDataInput.classList.remove("is-invalid");
+    if (sampleDataError) {
+      sampleDataError.classList.add("d-none");
+      sampleDataError.textContent = "";
+    }
+    return;
+  }
+  sampleDataInput.classList.add("is-invalid");
+  if (sampleDataError) {
+    const message = result?.error?.message ? `Invalid JSON: ${result.error.message}` : "Invalid JSON.";
+    sampleDataError.textContent = message;
+    sampleDataError.classList.remove("d-none");
+  }
+}
+
+async function initSampleDataEditor() {
+  const { text } = await loadSampleData();
+  if (!sampleDataInput) return;
+  sampleDataInput.value = text ?? getSampleDataText() ?? "";
+  updateSampleDataFeedback({ valid: true });
+  sampleDataInput.addEventListener("input", () => {
+    const nextValue = sampleDataInput.value;
+    if (sampleDataSaveTimer) {
+      window.clearTimeout(sampleDataSaveTimer);
+    }
+    sampleDataSaveTimer = window.setTimeout(() => {
+      const result = setSampleDataText(nextValue);
+      updateSampleDataFeedback(result);
+    }, 400);
+  });
+  subscribeSampleData(() => {
+    renderPreview();
+  });
+}
 
 function cloneState(value) {
   if (typeof structuredClone === "function") {
@@ -2526,6 +2576,8 @@ function wireEvents() {
 async function initPress() {
   initShell();
   initPressCollapsibles();
+  removeDuplicateSampleDataSections();
+  await initSampleDataEditor();
   try {
     await loadTemplates();
   } catch (error) {
