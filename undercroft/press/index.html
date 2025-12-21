@@ -213,31 +213,28 @@
                   </div>
                 </div>
               </section>
-              <section class="pane-card" data-sample-data-section id="press-sample-data">
+              <section data-sample-data-section id="press-sample-data">
                 <button
-                  class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center"
+                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0"
                   type="button"
                   data-bs-toggle="collapse"
                   data-bs-target="#press-sample-data-editor"
                   aria-expanded="false"
                   aria-controls="press-sample-data-editor"
                 >
-                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">Sample Data</span>
+                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2">
+                    <span>Sample Data</span>
+                    <span class="align-middle" data-help-topic="press.sample-data" data-help-insert="replace"></span>
+                  </span>
                 </button>
                 <div class="collapse" id="press-sample-data-editor">
-                  <div class="border rounded-3 bg-body p-3 mt-3">
-                    <label class="form-label text-body-secondary small" for="press-sample-data-input">
-                      Global sample data (JSON)
-                    </label>
+                  <div class="bg-body p-2 mt-2">
                     <textarea
-                      class="form-control font-monospace small"
+                      class="form-control form-control-sm font-monospace small"
                       id="press-sample-data-input"
                       rows="10"
                       data-sample-data-input
                     ></textarea>
-                    <div class="form-text mt-2">
-                      Changes save automatically and update the preview when valid JSON is entered.
-                    </div>
                     <div class="invalid-feedback d-block mt-2 d-none" data-sample-data-error></div>
                   </div>
                 </div>
