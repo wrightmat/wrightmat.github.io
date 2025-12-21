@@ -62,7 +62,7 @@ export function initTierGate({
     if (auth && typeof auth.showLogin === "function") {
       auth.showLogin();
     } else {
-      window.dispatchEvent(new CustomEvent("workbench:open-login"));
+      window.dispatchEvent(new CustomEvent("undercroft:open-login"));
     }
   };
 
@@ -113,7 +113,7 @@ export function initTierGate({
     allowed = nextAllowed;
   };
 
-  window.addEventListener("workbench:auth-changed", handleAuthChanged);
+  window.addEventListener("undercroft:auth-changed", handleAuthChanged);
 
   return {
     allowed,
@@ -122,7 +122,7 @@ export function initTierGate({
       return allowed;
     },
     dispose: () => {
-      window.removeEventListener("workbench:auth-changed", handleAuthChanged);
+      window.removeEventListener("undercroft:auth-changed", handleAuthChanged);
     },
   };
 }
@@ -244,13 +244,13 @@ export function initTierVisibility({
     }
   };
 
-  window.addEventListener("workbench:auth-changed", handleAuthChanged);
+  window.addEventListener("undercroft:auth-changed", handleAuthChanged);
   root.addEventListener("click", handleClick, CAPTURE_CLICK);
 
   return {
     refresh: applyAll,
     dispose: () => {
-      window.removeEventListener("workbench:auth-changed", handleAuthChanged);
+      window.removeEventListener("undercroft:auth-changed", handleAuthChanged);
       root.removeEventListener("click", handleClick, CAPTURE_CLICK);
     },
   };

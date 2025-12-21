@@ -1,7 +1,9 @@
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 
-const MODAL_ID = "workbench-auth-modal";
+const MODAL_ID = "undercroft-auth-modal";
+const AUTH_CHANGED_EVENT = "undercroft:auth-changed";
+const OPEN_LOGIN_EVENT = "undercroft:open-login";
 const VIEW_TITLES = {
   login: "Sign in",
   register: "Create account",
@@ -121,7 +123,13 @@ function formatTierLabel(tier) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export function initAuthControls({ root = document, status = null, dataManager = null } = {}) {
+export function initAuthControls({
+  root = document,
+  status = null,
+  dataManager = null,
+  settingsHref = "admin.html",
+  adminHref = null,
+} = {}) {
   const manager = dataManager || new DataManager({ baseUrl: resolveApiBase() });
   const container = root.querySelector("[data-auth-control]");
   const modalElement = ensureModal();
@@ -143,6 +151,12 @@ export function initAuthControls({ root = document, status = null, dataManager =
   const state = {
     pendingVerification: null,
   };
+  const resolvedSettingsHref = settingsHref ? String(settingsHref) : "";
+  const resolvedAdminHref = adminHref
+    ? String(adminHref)
+    : resolvedSettingsHref
+      ? `${resolvedSettingsHref}#users`
+      : "";
 
   function showView(name) {
     views.forEach((view) => {
@@ -173,7 +187,7 @@ export function initAuthControls({ root = document, status = null, dataManager =
 
   function notifyAuthChange() {
     const detail = { session: manager.session || null };
-    window.dispatchEvent(new CustomEvent("workbench:auth-changed", { detail }));
+    window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT, { detail }));
   }
 
   function handleSession(result, message) {
@@ -216,8 +230,12 @@ export function initAuthControls({ root = document, status = null, dataManager =
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><span class="dropdown-item-text text-body-secondary">Tier: ${formatTierLabel(user.tier)}</span></li>
-        <li><a class="dropdown-item" href="admin.html" data-auth-settings>Account settings</a></li>
-        ${user.tier === "admin" ? '<li><a class="dropdown-item" href="admin.html#users" data-auth-admin>Admin controls</a></li>' : ""}
+        ${resolvedSettingsHref ? `<li><a class="dropdown-item" href="${resolvedSettingsHref}" data-auth-settings>Account settings</a></li>` : ""}
+        ${
+          user.tier === "admin" && resolvedAdminHref
+            ? `<li><a class="dropdown-item" href="${resolvedAdminHref}" data-auth-admin>Admin controls</a></li>`
+            : ""
+        }
         <li><hr class="dropdown-divider" /></li>
         <li><button class="dropdown-item" type="button" data-auth-logout>Log out</button></li>
       </ul>
@@ -371,6 +389,10 @@ export function initAuthControls({ root = document, status = null, dataManager =
     } else if (target === "login") {
       showView("login");
     }
+  });
+
+  window.addEventListener(OPEN_LOGIN_EVENT, () => {
+    openModal("login");
   });
 
   return {
