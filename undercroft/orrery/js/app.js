@@ -57,8 +57,6 @@ const elements = {
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
   canvasBackground: document.querySelector("[data-base-map-canvas-background]"),
-  canvasGrid: document.querySelector("[data-base-map-canvas-grid]"),
-  canvasGridSize: document.querySelector("[data-base-map-canvas-grid-size]"),
   baseMapToggle: document.querySelector("[data-base-map-toggle]"),
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
   selectionToggle: document.querySelector("[data-selection-toggle]"),
@@ -183,8 +181,6 @@ function renderBaseMapSettings() {
 
   const canvasSettings = baseMap.settings.canvas;
   elements.canvasBackground.value = canvasSettings.background;
-  elements.canvasGrid.checked = canvasSettings.grid.enabled;
-  elements.canvasGridSize.value = canvasSettings.grid.size;
 }
 
 function renderLayers() {
@@ -212,6 +208,7 @@ function renderLayers() {
         updateMapTimestamp(state.map);
       });
       renderSelection();
+      renderLayerOverlays();
       renderJson();
     });
 
@@ -287,6 +284,109 @@ function clearSelectionEditor() {
   }
 }
 
+function ensureLayerOverlay() {
+  let overlay = mapContainer.querySelector(".orrery-layer-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "orrery-layer-overlay";
+    mapContainer.appendChild(overlay);
+  }
+  return overlay;
+}
+
+function toRgba(color, opacity) {
+  if (typeof color !== "string" || color.trim() === "") {
+    return `rgba(15, 23, 42, ${opacity})`;
+  }
+  const trimmed = color.trim();
+  if (trimmed.startsWith("rgba") || trimmed.startsWith("rgb")) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("#")) {
+    const hex = trimmed.slice(1);
+    const normalized = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+    if (normalized.length === 6) {
+      const r = parseInt(normalized.slice(0, 2), 16);
+      const g = parseInt(normalized.slice(2, 4), 16);
+      const b = parseInt(normalized.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+  }
+  return trimmed;
+}
+
+function createLayerPreview(layer, index) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "orrery-layer-preview shadow-theme";
+  const offset = Math.min(index * 8, 40);
+  wrapper.style.left = `${20 + offset}%`;
+  wrapper.style.top = `${20 + offset}%`;
+  wrapper.style.opacity = String(layer.opacity ?? 1);
+
+  const label = document.createElement("div");
+  label.className = "orrery-layer-label";
+  label.textContent = layer.name;
+  wrapper.appendChild(label);
+
+  if (layer.type === "grid") {
+    const grid = document.createElement("div");
+    grid.className = "orrery-layer-grid";
+    const size = layer.settings?.cellSize || 50;
+    const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
+    const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
+    grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
+    grid.style.backgroundSize = `${size}px ${size}px`;
+    wrapper.appendChild(grid);
+  } else if (layer.type === "raster") {
+    const frame = document.createElement("div");
+    frame.className = "orrery-layer-raster";
+    const src = layer.settings?.src || "";
+    if (src) {
+      const image = document.createElement("img");
+      image.src = src;
+      image.alt = layer.name;
+      frame.appendChild(image);
+    } else {
+      frame.textContent = "Raster Layer";
+    }
+    wrapper.appendChild(frame);
+  } else if (layer.type === "marker") {
+    const marker = document.createElement("div");
+    marker.className = "orrery-layer-marker";
+    const size = layer.settings?.size || 24;
+    marker.style.width = `${size}px`;
+    marker.style.height = `${size}px`;
+    marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
+    wrapper.appendChild(marker);
+  } else {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 120 120");
+    svg.classList.add("orrery-layer-vector");
+    const stroke = layer.settings?.strokeColor || "#0f172a";
+    const fill = layer.settings?.fillColor || "#93c5fd";
+    const width = layer.settings?.strokeWidth || 2;
+    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    poly.setAttribute("points", "20,90 60,20 100,90");
+    poly.setAttribute("fill", fill);
+    poly.setAttribute("stroke", stroke);
+    poly.setAttribute("stroke-width", width);
+    svg.appendChild(poly);
+    wrapper.appendChild(svg);
+  }
+  return wrapper;
+}
+
+function renderLayerOverlays() {
+  const overlay = ensureLayerOverlay();
+  overlay.innerHTML = "";
+  state.map.layers.forEach((layer, index) => {
+    if (!layer.visible) {
+      return;
+    }
+    overlay.appendChild(createLayerPreview(layer, index));
+  });
+}
+
 function createSelectionSectionTitle(text) {
   const title = document.createElement("div");
   title.className = "text-uppercase small fw-semibold text-body-secondary";
@@ -312,6 +412,7 @@ function applyLayerChange(label, apply) {
   });
   renderLayers();
   renderSelection();
+  renderLayerOverlays();
   renderJson();
 }
 
@@ -321,6 +422,7 @@ function applyLayerSettingsChange(label, apply) {
     updateMapTimestamp(state.map);
   });
   renderSelection();
+  renderLayerOverlays();
   renderJson();
 }
 
@@ -542,6 +644,7 @@ function renderAll() {
   renderLayers();
   renderGroups();
   renderSelection();
+  renderLayerOverlays();
   renderView();
   renderJson();
 }
@@ -600,32 +703,6 @@ function setupBaseMapEvents() {
     }
     renderJson();
   });
-
-  elements.canvasGrid.addEventListener("change", () => {
-    recordHistory("canvas grid", () => {
-      state.map.baseMap.settings.canvas.grid.enabled = elements.canvasGrid.checked;
-      updateMapTimestamp(state.map);
-    });
-    if (state.map.baseMap.type === "canvas") {
-      baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
-    }
-    renderJson();
-  });
-
-  elements.canvasGridSize.addEventListener("change", () => {
-    const value = Number(elements.canvasGridSize.value);
-    if (!Number.isFinite(value) || value <= 0) {
-      return;
-    }
-    recordHistory("canvas grid size", () => {
-      state.map.baseMap.settings.canvas.grid.size = value;
-      updateMapTimestamp(state.map);
-    });
-    if (state.map.baseMap.type === "canvas") {
-      baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
-    }
-    renderJson();
-  });
 }
 
 function setupLayerEvents() {
@@ -639,6 +716,7 @@ function setupLayerEvents() {
         updateMapTimestamp(state.map);
       });
       renderLayers();
+      renderLayerOverlays();
       renderJson();
       if (layer) {
         setSelection("layer", layer.id);
@@ -659,6 +737,7 @@ function setupGroupEvents() {
       updateMapTimestamp(state.map);
     });
     renderGroups();
+    renderLayerOverlays();
     renderJson();
     if (group) {
       setSelection("group", group.id);
