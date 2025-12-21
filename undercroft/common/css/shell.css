@@ -152,6 +152,15 @@ body[data-theme="dark"] .hover-lift:hover {
   z-index: 1310;
 }
 
+.undercroft-auth-menu {
+  position: relative;
+  z-index: 1200;
+}
+
+.undercroft-auth-menu .dropdown-menu {
+  z-index: 1210;
+}
+
 .workbench-shell {
   flex: 1 1 auto;
   overflow: hidden;
