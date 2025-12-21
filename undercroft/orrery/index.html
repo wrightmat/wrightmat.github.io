@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Undercroft Orrery</title>
+    <script>
+      (function () {
+        const storageKey = "undercroft.workbench.theme";
+        const THEMES = ["light", "system", "dark"];
+        const prefersDark = () =>
+          typeof window !== "undefined" &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolveTheme = (preference) => {
+          if (preference === "dark") return "dark";
+          if (preference === "light") return "light";
+          return prefersDark() ? "dark" : "light";
+        };
+        const apply = (value) => {
+          const preference = THEMES.includes(value) ? value : "system";
+          const resolved = resolveTheme(preference);
+          const root = document.documentElement;
+          const body = document.body;
+          if (root) {
+            root.dataset.themePreference = preference;
+            root.dataset.theme = resolved;
+            root.dataset.bsTheme = resolved;
+            root.style.colorScheme = resolved;
+          }
+          if (body) {
+            body.dataset.themePreference = preference;
+            body.dataset.theme = resolved;
+            body.dataset.bsTheme = resolved;
+            body.style.colorScheme = resolved;
+          }
+          return preference;
+        };
+        try {
+          const stored = localStorage.getItem(storageKey);
+          apply(stored);
+        } catch (error) {
+          apply("system");
+          console.warn("Unable to read theme preference", error);
+        }
+      })();
+    </script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="../common/css/shell.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="bg-body text-body">
+    <div id="orrery-map" class="orrery-map" role="img" aria-label="Orrery map viewport"></div>
+
+    <div class="d-flex flex-column min-vh-100 workbench-app orrery-shell">
+      <header class="workbench-header border-bottom bg-body-tertiary">
+        <div class="container-xl d-flex align-items-center gap-3 py-3">
+          <div class="d-flex align-items-center gap-3">
+            <button
+              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+              type="button"
+              data-pane-toggle="left"
+              aria-label="Toggle palette pane"
+            >
+              <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle palette pane</span>
+            </button>
+            <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+              <a href="index.html" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Orrery</a>
+            </h1>
+          </div>
+          <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+            <div class="btn-group" role="group" aria-label="Theme toggle">
+              <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
+                <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
+                <span class="visually-hidden">Light theme</span>
+              </button>
+              <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
+              <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
+                <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
+                <span class="visually-hidden">Dark theme</span>
+              </button>
+            </div>
+            <div data-auth-control class="d-flex">
+              <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+            </div>
+            <button
+              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+              type="button"
+              data-pane-toggle="right"
+              aria-label="Toggle details pane"
+            >
+              <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle details pane</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="d-flex flex-grow-1 workbench-shell">
+        <aside
+          class="border-end border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
+          data-pane="left"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="expanded"
+        >
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-3">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Base Map</h2>
+              <div class="d-flex flex-column gap-3" data-base-map-panel>
+                <div class="btn-group" role="group" aria-label="Base map type">
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="base-map-type"
+                    id="base-map-tile"
+                    value="tile"
+                    data-base-map-option
+                    autocomplete="off"
+                    checked
+                  />
+                  <label class="btn btn-outline-secondary" for="base-map-tile">Tile</label>
+
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="base-map-type"
+                    id="base-map-image"
+                    value="image"
+                    data-base-map-option
+                    autocomplete="off"
+                  />
+                  <label class="btn btn-outline-secondary" for="base-map-image">Image</label>
+
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="base-map-type"
+                    id="base-map-canvas"
+                    value="canvas"
+                    data-base-map-option
+                    autocomplete="off"
+                  />
+                  <label class="btn btn-outline-secondary" for="base-map-canvas">Canvas</label>
+                </div>
+
+                <div class="d-flex flex-column gap-2" data-base-map-settings="tile">
+                  <div class="small text-body-secondary">Provider</div>
+                  <div class="d-flex flex-column gap-1">
+                    <span class="fw-semibold">OpenStreetMap Standard</span>
+                    <span class="text-body-secondary">https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</span>
+                  </div>
+                </div>
+
+                <div class="d-flex flex-column gap-2" data-base-map-settings="image">
+                  <label class="form-label mb-0" for="base-map-image-src">Image URL</label>
+                  <input class="form-control" type="text" id="base-map-image-src" data-base-map-image-src />
+                  <div class="d-flex gap-2">
+                    <input
+                      class="form-control"
+                      type="number"
+                      min="200"
+                      step="50"
+                      id="base-map-image-width"
+                      data-base-map-image-width
+                      placeholder="Width"
+                    />
+                    <input
+                      class="form-control"
+                      type="number"
+                      min="200"
+                      step="50"
+                      id="base-map-image-height"
+                      data-base-map-image-height
+                      placeholder="Height"
+                    />
+                  </div>
+                </div>
+
+                <div class="d-flex flex-column gap-2" data-base-map-settings="canvas">
+                  <label class="form-label mb-0" for="base-map-canvas-background">Canvas Background</label>
+                  <input class="form-control form-control-color" type="color" id="base-map-canvas-background" data-base-map-canvas-background />
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="base-map-canvas-grid" data-base-map-canvas-grid />
+                    <label class="form-check-label" for="base-map-canvas-grid">Show grid</label>
+                  </div>
+                  <label class="form-label mb-0" for="base-map-canvas-grid-size">Grid size</label>
+                  <input
+                    class="form-control"
+                    type="number"
+                    min="25"
+                    step="5"
+                    id="base-map-canvas-grid-size"
+                    data-base-map-canvas-grid-size
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Layers</h2>
+              <div class="d-flex gap-2">
+                <select class="form-select" data-layer-type-select>
+                  <option value="vector">Vector</option>
+                  <option value="grid">Grid</option>
+                  <option value="raster">Raster</option>
+                  <option value="marker">Marker</option>
+                </select>
+                <button class="btn btn-primary" type="button" data-layer-add>Add Layer</button>
+              </div>
+              <div class="list-group" data-layer-list></div>
+            </section>
+          </div>
+        </aside>
+
+        <main class="flex-grow-1 position-relative workbench-main">
+          <div class="orrery-map-overlay d-none d-lg-flex" aria-hidden="true">
+            <div class="badge text-bg-dark text-uppercase">Orrery Core Model</div>
+          </div>
+        </main>
+
+        <aside
+          class="border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
+          data-pane="right"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="expanded"
+        >
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-3">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Selection</h2>
+              <div class="pane-card">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <div class="small text-body-secondary">Active</div>
+                    <div class="h6 mb-0" data-selection-title>Base Map</div>
+                  </div>
+                  <span class="badge text-bg-secondary text-uppercase" data-selection-type>Base</span>
+                </div>
+                <div class="small text-body-secondary" data-selection-details></div>
+              </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">View Controls</h2>
+              <div class="pane-card d-flex flex-column gap-3">
+                <div class="btn-group" role="group" aria-label="Map zoom controls">
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-out>
+                    <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
+                    <span class="visually-hidden">Zoom out</span>
+                  </button>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-in>
+                    <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
+                    <span class="visually-hidden">Zoom in</span>
+                  </button>
+                </div>
+                <dl class="mb-0 small">
+                  <div class="d-flex justify-content-between">
+                    <dt>Mode</dt>
+                    <dd class="mb-0" data-view-mode></dd>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <dt>Zoom</dt>
+                    <dd class="mb-0" data-view-zoom></dd>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <dt>Center</dt>
+                    <dd class="mb-0" data-view-center></dd>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <dt>Pan</dt>
+                    <dd class="mb-0" data-view-pan></dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Groups</h2>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary w-100" type="button" data-group-add>New Group</button>
+              </div>
+              <div class="list-group" data-group-list></div>
+            </section>
+
+            <section class="d-flex flex-column gap-3">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Map Data</h2>
+              <div class="pane-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-body-secondary">JSON Preview</span>
+                  <span class="badge text-bg-secondary" data-json-size>0 B</span>
+                </div>
+                <pre class="mb-0 small text-body-secondary orrery-json-preview" data-json-preview></pre>
+              </div>
+            </section>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="status-root" data-status-root></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
