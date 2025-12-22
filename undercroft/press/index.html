@@ -57,70 +57,29 @@
   <body class="bg-body text-body">
     <div class="d-flex flex-column min-vh-100 no-print">
       <header class="workbench-header border-bottom bg-body-tertiary">
-        <div class="container-xl d-flex align-items-center gap-3 py-3">
+        <div class="container-xl d-flex align-items-center gap-3 py-3 workbench-header-content">
           <div class="d-flex align-items-center gap-3">
             <nav class="undercroft-tool-panel" aria-label="Undercroft tools">
               <a class="undercroft-tool-button tool-workbench" href="../workbench/index.html" aria-label="Workbench home">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <rect class="undercroft-tool-icon__glyph" x="12" y="12" width="16" height="16" rx="2"></rect>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">W</text>
-                </svg>
+                <span class="undercroft-tool-letter">W</span>
               </a>
               <a class="undercroft-tool-button tool-system" href="../workbench/system.html" aria-label="System Editor">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <polygon
-                    class="undercroft-tool-icon__glyph"
-                    points="52,10 60,18 60,30 52,38 44,30 44,18"
-                  ></polygon>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">S</text>
-                </svg>
+                <span class="undercroft-tool-letter">S</span>
               </a>
               <a class="undercroft-tool-button tool-template" href="../workbench/template.html" aria-label="Template Builder">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <polygon class="undercroft-tool-icon__glyph" points="48,12 60,32 36,32"></polygon>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">T</text>
-                </svg>
+                <span class="undercroft-tool-letter">T</span>
               </a>
               <a class="undercroft-tool-button tool-character" href="../workbench/character.html" aria-label="Character Sheet">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <circle class="undercroft-tool-icon__glyph" cx="52" cy="20" r="8"></circle>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">C</text>
-                </svg>
+                <span class="undercroft-tool-letter">C</span>
               </a>
               <a class="undercroft-tool-button tool-admin" href="../workbench/admin.html" aria-label="Admin Console">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <path class="undercroft-tool-icon__glyph" d="M52 12l10 4v10c0 8-6 14-10 18-4-4-10-10-10-18V16z"></path>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">A</text>
-                </svg>
+                <span class="undercroft-tool-letter">A</span>
               </a>
               <a class="undercroft-tool-button tool-orrery" href="../orrery/index.html" aria-label="Orrery">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <path
-                    class="undercroft-tool-icon__glyph"
-                    d="M52 12l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z"
-                  ></path>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">O</text>
-                </svg>
+                <span class="undercroft-tool-letter">O</span>
               </a>
               <span class="undercroft-tool-button tool-press is-active" aria-current="page" aria-label="Press">
-                <svg class="undercroft-tool-icon" viewBox="0 0 64 64" aria-hidden="true">
-                  <circle class="undercroft-tool-icon__rim" cx="32" cy="32" r="30"></circle>
-                  <path class="undercroft-tool-icon__base" d="M18 42c4 7 12 11 20 11s16-4 20-11"></path>
-                  <polygon class="undercroft-tool-icon__glyph" points="52,10 62,20 52,30 42,20"></polygon>
-                  <text class="undercroft-tool-icon__letter" x="32" y="34">P</text>
-                </svg>
+                <span class="undercroft-tool-letter">P</span>
               </span>
             </nav>
             <button
