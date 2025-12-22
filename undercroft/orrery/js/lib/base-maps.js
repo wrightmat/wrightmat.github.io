@@ -45,6 +45,11 @@ class TileBaseMap {
     const overlayPane = this.map.createPane("orreryOverlay");
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
+      overlayPane.style.width = "100%";
+      overlayPane.style.height = "100%";
+      overlayPane.style.left = "0";
+      overlayPane.style.top = "0";
+      overlayPane.style.pointerEvents = "none";
       this.overlayHost = document.createElement("div");
       this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
       this.overlayHost.style.width = "100%";
