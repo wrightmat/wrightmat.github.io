@@ -281,6 +281,10 @@ function renderSelection() {
 function clearSelectionEditor() {
   if (elements.selectionEditor) {
     elements.selectionEditor.innerHTML = "";
+    const placeholder = document.createElement("p");
+    placeholder.className = "text-body-secondary small mb-0";
+    placeholder.textContent = "Select a layer to edit its properties.";
+    elements.selectionEditor.appendChild(placeholder);
   }
 }
 
@@ -484,7 +488,7 @@ function renderLayerOverlays() {
 
 function createSelectionSectionTitle(text) {
   const title = document.createElement("div");
-  title.className = "text-uppercase small fw-semibold text-body-secondary";
+  title.className = "text-uppercase fs-6 fw-semibold text-body-secondary";
   title.textContent = text;
   return title;
 }
