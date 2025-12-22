@@ -60,36 +60,14 @@
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
-  <body class="bg-body text-body">
+  <body class="bg-body text-body" data-undercroft-tool="orrery">
     <div id="orrery-map" class="orrery-map" role="img" aria-label="Orrery map viewport"></div>
 
     <div class="d-flex flex-column min-vh-100 workbench-app orrery-shell">
       <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="container-xl d-flex align-items-center gap-3 py-3 workbench-header-content">
           <div class="d-flex align-items-center gap-3">
-            <nav class="undercroft-tool-panel" aria-label="Undercroft tools">
-              <a class="undercroft-tool-button tool-workbench" href="../workbench/index.html" aria-label="Workbench home">
-                <span class="undercroft-tool-letter">W</span>
-              </a>
-              <a class="undercroft-tool-button tool-system" href="../workbench/system.html" aria-label="System Editor">
-                <span class="undercroft-tool-letter">S</span>
-              </a>
-              <a class="undercroft-tool-button tool-template" href="../workbench/template.html" aria-label="Template Builder">
-                <span class="undercroft-tool-letter">T</span>
-              </a>
-              <a class="undercroft-tool-button tool-character" href="../workbench/character.html" aria-label="Character Sheet">
-                <span class="undercroft-tool-letter">C</span>
-              </a>
-              <a class="undercroft-tool-button tool-admin" href="../workbench/admin.html" aria-label="Admin Console">
-                <span class="undercroft-tool-letter">A</span>
-              </a>
-              <span class="undercroft-tool-button tool-orrery is-active" aria-current="page" aria-label="Orrery">
-                <span class="undercroft-tool-letter">O</span>
-              </span>
-              <a class="undercroft-tool-button tool-press" href="../press/index.html" aria-label="Press">
-                <span class="undercroft-tool-letter">P</span>
-              </a>
-            </nav>
+            <nav class="undercroft-tool-panel" data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
             <button
               class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
               type="button"
