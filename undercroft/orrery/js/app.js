@@ -256,7 +256,7 @@ function renderSelection() {
       elements.selectionTitle.textContent = layer.name;
       elements.selectionType.textContent = layer.type;
       if (elements.selectionDetails) {
-        elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"} · Opacity: ${layer.opacity} · Elements: ${layer.elements.length}`;
+        elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"}`;
       }
       renderLayerSelectionEditor(layer);
       return;
