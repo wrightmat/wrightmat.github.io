@@ -4,6 +4,89 @@ import { StatusManager } from "./status.js";
 import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
 
+const TOOL_DEFINITIONS = [
+  { id: "workbench", label: "Workbench home", letter: "W" },
+  { id: "system", label: "System Editor", letter: "S" },
+  { id: "template", label: "Template Builder", letter: "T" },
+  { id: "character", label: "Character Sheet", letter: "C" },
+  { id: "admin", label: "Admin Console", letter: "A" },
+  { id: "orrery", label: "Orrery", letter: "O" },
+  { id: "press", label: "Press", letter: "P" },
+];
+
+function resolveToolContextPath() {
+  if (typeof window === "undefined") {
+    return "workbench";
+  }
+  const segments = window.location.pathname.split("/").filter(Boolean);
+  if (segments.length < 2) {
+    return "workbench";
+  }
+  return segments[segments.length - 2];
+}
+
+function resolveToolHref(toolId, currentSection) {
+  const workbenchPages = {
+    workbench: "index.html",
+    system: "system.html",
+    template: "template.html",
+    character: "character.html",
+    admin: "admin.html",
+  };
+
+  if (workbenchPages[toolId]) {
+    const prefix = currentSection === "workbench" ? "" : "../workbench/";
+    return `${prefix}${workbenchPages[toolId]}`;
+  }
+
+  if (toolId === "orrery") {
+    return currentSection === "orrery" ? "index.html" : "../orrery/index.html";
+  }
+
+  if (toolId === "press") {
+    return currentSection === "press" ? "index.html" : "../press/index.html";
+  }
+
+  return "#";
+}
+
+function initToolNavigation(root = document) {
+  const toolNavs = Array.from(root.querySelectorAll("[data-undercroft-tool-nav]"));
+  if (!toolNavs.length) {
+    return;
+  }
+  const activeTool = root.body?.dataset?.undercroftTool;
+  if (!activeTool) {
+    return;
+  }
+  const currentSection = resolveToolContextPath();
+  const orderedTools = TOOL_DEFINITIONS.filter((tool) => tool.id !== activeTool);
+  const activeDefinition = TOOL_DEFINITIONS.find((tool) => tool.id === activeTool);
+  if (activeDefinition) {
+    orderedTools.unshift(activeDefinition);
+  }
+
+  toolNavs.forEach((nav) => {
+    nav.innerHTML = "";
+    orderedTools.forEach((tool, index) => {
+      const isActive = tool.id === activeTool && index === 0;
+      const element = isActive ? document.createElement("span") : document.createElement("a");
+      element.className = `undercroft-tool-button tool-${tool.id}${isActive ? " is-active" : ""}`;
+      if (isActive) {
+        element.setAttribute("aria-current", "page");
+      } else {
+        element.setAttribute("href", resolveToolHref(tool.id, currentSection));
+      }
+      element.setAttribute("aria-label", tool.label);
+      const letter = document.createElement("span");
+      letter.className = "undercroft-tool-letter";
+      letter.textContent = tool.letter;
+      element.appendChild(letter);
+      nav.appendChild(element);
+    });
+  });
+}
+
 function showFeedback(status, feedback, fallbackMessage) {
   if (!status || typeof status.show !== "function") {
     return;
@@ -42,6 +125,7 @@ export function initAppShell({
 
   initThemeControls(root);
   initPaneToggles(root);
+  initToolNavigation(root);
 
   const undoStack = new UndoRedoStack({
     storageKey: `${storagePrefix}.${namespace}`,
