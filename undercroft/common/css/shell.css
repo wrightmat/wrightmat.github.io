@@ -143,23 +143,32 @@ body[data-theme="dark"] .hover-lift:hover {
   z-index: 1200;
 }
 
+.workbench-header-content {
+  padding-left: calc(3rem + 1.5rem);
+}
+
 .undercroft-tool-panel {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .undercroft-tool-button {
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 3rem;
+  height: 3rem;
   display: grid;
   place-items: center;
-  border-radius: 1.25rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--bs-border-color);
   background-color: var(--bs-body-bg);
   text-decoration: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  font-weight: 700;
 }
 
 .undercroft-tool-button:hover {
@@ -212,32 +221,12 @@ body[data-theme="dark"] .hover-lift:hover {
   --undercroft-tool-accent: var(--bs-danger);
 }
 
-.undercroft-tool-icon {
-  width: 4rem;
-  height: 4rem;
-}
-
-.undercroft-tool-icon__rim,
-.undercroft-tool-icon__base {
-  stroke: var(--bs-body-color);
-  stroke-width: 2.5;
-  fill: none;
-  opacity: 0.85;
-}
-
-.undercroft-tool-icon__glyph {
-  stroke: var(--undercroft-tool-accent, var(--bs-body-color));
-  stroke-width: 2.5;
-  fill: none;
-}
-
-.undercroft-tool-icon__letter {
-  fill: var(--undercroft-tool-accent, var(--bs-body-color));
-  font-size: 26px;
-  font-weight: 700;
+.undercroft-tool-letter {
+  display: block;
+  color: var(--undercroft-tool-accent, var(--bs-body-color));
+  font-size: 1.25rem;
   font-family: "Segoe UI", "Inter", system-ui, sans-serif;
-  dominant-baseline: middle;
-  text-anchor: middle;
+  line-height: 1;
 }
 
 .undercroft-auth-menu {
