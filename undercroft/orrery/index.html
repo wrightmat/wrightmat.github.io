@@ -415,19 +415,6 @@
                     id="base-map-canvas-background"
                     data-base-map-canvas-background
                   />
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="base-map-canvas-grid" data-base-map-canvas-grid />
-                    <label class="form-check-label" for="base-map-canvas-grid">Show grid</label>
-                  </div>
-                  <label class="form-label mb-0" for="base-map-canvas-grid-size">Grid size</label>
-                  <input
-                    class="form-control"
-                    type="number"
-                    min="25"
-                    step="5"
-                    id="base-map-canvas-grid-size"
-                    data-base-map-canvas-grid-size
-                  />
                 </div>
               </div>
             </section>
@@ -453,8 +440,8 @@
                   </div>
                   <span class="badge text-bg-secondary text-uppercase" data-selection-type>None</span>
                 </div>
-                <div class="small text-body-secondary" data-selection-details>Select a layer or group to inspect it.</div>
               </div>
+              <div class="d-flex flex-column gap-3" data-selection-editor></div>
             </section>
           </div>
         </aside>
