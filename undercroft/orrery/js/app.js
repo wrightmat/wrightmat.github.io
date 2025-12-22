@@ -332,10 +332,18 @@ function buildHexGridBackground(size, lineColor) {
     ]
       .map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`)
       .join(" ");
+  const hexes = [
+    [side, hexHeight / 2],
+    [side, hexHeight * 1.5],
+    [side * 2.5, 0],
+    [side * 2.5, hexHeight],
+  ];
+  const polygons = hexes
+    .map(([centerX, centerY]) => `<polygon points="${hexPoints(centerX, centerY)}" fill="none" stroke="${lineColor}" stroke-width="1" />`)
+    .join("");
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${tileWidth}" height="${tileHeight}" viewBox="0 0 ${tileWidth} ${tileHeight}">
-      <polygon points="${hexPoints(side, hexHeight / 2)}" fill="none" stroke="${lineColor}" stroke-width="1" />
-      <polygon points="${hexPoints(side * 2.5, hexHeight * 1.5)}" fill="none" stroke="${lineColor}" stroke-width="1" />
+      ${polygons}
     </svg>
   `;
   const encoded = encodeURIComponent(svg.trim());
@@ -349,6 +357,13 @@ function buildHexGridBackground(size, lineColor) {
 function createGridLayerElement(layer) {
   const grid = document.createElement("div");
   grid.className = "orrery-layer-grid-overlay";
+  const gridScale = 3;
+  grid.style.width = `${gridScale * 100}%`;
+  grid.style.height = `${gridScale * 100}%`;
+  grid.style.left = `-${((gridScale - 1) / 2) * 100}%`;
+  grid.style.top = `-${((gridScale - 1) / 2) * 100}%`;
+  grid.style.right = "auto";
+  grid.style.bottom = "auto";
   const size = layer.settings?.cellSize || 50;
   const gridType = layer.settings?.gridType || "square";
   const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
