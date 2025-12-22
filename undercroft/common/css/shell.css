@@ -143,6 +143,92 @@ body[data-theme="dark"] .hover-lift:hover {
   z-index: 1200;
 }
 
+.workbench-header-content {
+  padding-left: calc(3rem + 1.5rem);
+}
+
+.undercroft-tool-panel {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.undercroft-tool-button {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  background-color: var(--bs-body-bg);
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  font-weight: 700;
+}
+
+.undercroft-tool-button:hover {
+  border-color: var(--bs-primary);
+  box-shadow: 0 8px 24px rgba(var(--bs-primary-rgb), 0.18);
+  transform: translateY(-1px);
+}
+
+.undercroft-tool-button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.undercroft-tool-button.is-active {
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+  box-shadow: inset 0 0 0 2px rgba(var(--bs-primary-rgb), 0.2);
+  cursor: default;
+}
+
+.undercroft-tool-button.is-active:hover {
+  transform: none;
+}
+
+.undercroft-tool-button.tool-workbench {
+  --undercroft-tool-accent: var(--bs-indigo);
+}
+
+.undercroft-tool-button.tool-system {
+  --undercroft-tool-accent: var(--bs-primary);
+}
+
+.undercroft-tool-button.tool-template {
+  --undercroft-tool-accent: var(--bs-teal);
+}
+
+.undercroft-tool-button.tool-character {
+  --undercroft-tool-accent: var(--bs-success);
+}
+
+.undercroft-tool-button.tool-admin {
+  --undercroft-tool-accent: var(--bs-warning);
+}
+
+.undercroft-tool-button.tool-orrery {
+  --undercroft-tool-accent: var(--bs-info);
+}
+
+.undercroft-tool-button.tool-press {
+  --undercroft-tool-accent: var(--bs-danger);
+}
+
+.undercroft-tool-letter {
+  display: block;
+  color: var(--undercroft-tool-accent, var(--bs-body-color));
+  font-size: 1.25rem;
+  font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+  line-height: 1;
+}
+
 .undercroft-auth-menu {
   position: relative;
   z-index: 1300;
