@@ -42,7 +42,7 @@ class TileBaseMap {
 
     this.setView(this.view);
 
-    const overlayPane = this.map.getPanes()?.overlayPane;
+    const overlayPane = this.map.createPane("orreryOverlay");
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
       overlayPane.style.pointerEvents = "none";
