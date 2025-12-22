@@ -45,16 +45,21 @@ class TileBaseMap {
     const overlayPane = this.map.createPane("orreryOverlay");
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
-      overlayPane.style.width = "100%";
-      overlayPane.style.height = "100%";
-      overlayPane.style.left = "0";
-      overlayPane.style.top = "0";
       overlayPane.style.pointerEvents = "none";
-      this.overlayHost = document.createElement("div");
-      this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
+      const domUtil = leaflet?.DomUtil;
+      if (domUtil) {
+        this.overlayHost = domUtil.create(
+          "div",
+          "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host",
+          overlayPane
+        );
+      } else {
+        this.overlayHost = document.createElement("div");
+        this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
+        overlayPane.appendChild(this.overlayHost);
+      }
       this.overlayHost.style.width = "100%";
       this.overlayHost.style.height = "100%";
-      overlayPane.appendChild(this.overlayHost);
     }
 
     this.map.on("moveend", () => this.emitChange());
