@@ -44,11 +44,22 @@ class TileBaseMap {
 
     const overlayPane = this.map.getPanes()?.overlayPane;
     if (overlayPane) {
-      this.overlayHost = document.createElement("div");
-      this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
+      overlayPane.style.zIndex = "650";
+      overlayPane.style.pointerEvents = "none";
+      const domUtil = leaflet?.DomUtil;
+      if (domUtil) {
+        this.overlayHost = domUtil.create(
+          "div",
+          "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host",
+          overlayPane
+        );
+      } else {
+        this.overlayHost = document.createElement("div");
+        this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
+        overlayPane.appendChild(this.overlayHost);
+      }
       this.overlayHost.style.width = "100%";
       this.overlayHost.style.height = "100%";
-      overlayPane.appendChild(this.overlayHost);
     }
 
     this.map.on("moveend", () => this.emitChange());
@@ -101,6 +112,17 @@ class TileBaseMap {
 
   getOverlayHost() {
     return this.overlayHost;
+  }
+
+  setInteractionEnabled(enabled) {
+    if (!this.map?.dragging) {
+      return;
+    }
+    if (enabled) {
+      this.map.dragging.enable();
+    } else {
+      this.map.dragging.disable();
+    }
   }
 
   destroy() {
@@ -209,6 +231,10 @@ class ImageBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    this.panZoom?.setEnabled?.(enabled);
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
@@ -311,6 +337,10 @@ class CanvasBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    this.panZoom?.setEnabled?.(enabled);
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
@@ -381,5 +411,9 @@ export class BaseMapManager {
 
   getOverlayContainer() {
     return this.current?.getOverlayHost?.() || null;
+  }
+
+  setInteractionEnabled(enabled) {
+    this.current?.setInteractionEnabled?.(enabled);
   }
 }
