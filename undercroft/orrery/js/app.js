@@ -256,7 +256,7 @@ function renderSelection() {
       elements.selectionTitle.textContent = layer.name;
       elements.selectionType.textContent = layer.type;
       if (elements.selectionDetails) {
-        elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"} · Opacity: ${layer.opacity} · Elements: ${layer.elements.length}`;
+        elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"}`;
       }
       renderLayerSelectionEditor(layer);
       return;
@@ -315,14 +315,51 @@ function toRgba(color, opacity) {
   return trimmed;
 }
 
+function buildHexGridBackground(size, lineColor) {
+  const side = Math.max(size / 2, 1);
+  const hexHeight = Math.sqrt(3) * side;
+  const tileWidth = side * 3;
+  const tileHeight = hexHeight * 2;
+  const hexPoints = (centerX, centerY) =>
+    [
+      [centerX - side, centerY],
+      [centerX - side / 2, centerY - hexHeight / 2],
+      [centerX + side / 2, centerY - hexHeight / 2],
+      [centerX + side, centerY],
+      [centerX + side / 2, centerY + hexHeight / 2],
+      [centerX - side / 2, centerY + hexHeight / 2],
+    ]
+      .map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`)
+      .join(" ");
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${tileWidth}" height="${tileHeight}" viewBox="0 0 ${tileWidth} ${tileHeight}">
+      <polygon points="${hexPoints(side, hexHeight / 2)}" fill="none" stroke="${lineColor}" stroke-width="1" />
+      <polygon points="${hexPoints(side * 2.5, hexHeight * 1.5)}" fill="none" stroke="${lineColor}" stroke-width="1" />
+    </svg>
+  `;
+  const encoded = encodeURIComponent(svg.trim());
+  return {
+    image: `url("data:image/svg+xml,${encoded}")`,
+    width: tileWidth,
+    height: tileHeight,
+  };
+}
+
 function createGridLayerElement(layer) {
   const grid = document.createElement("div");
   grid.className = "orrery-layer-grid-overlay";
   const size = layer.settings?.cellSize || 50;
+  const gridType = layer.settings?.gridType || "square";
   const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
   const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
-  grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
-  grid.style.backgroundSize = `${size}px ${size}px`;
+  if (gridType === "hex") {
+    const hexBackground = buildHexGridBackground(size, lineColor);
+    grid.style.backgroundImage = hexBackground.image;
+    grid.style.backgroundSize = `${hexBackground.width}px ${hexBackground.height}px`;
+  } else {
+    grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
+    grid.style.backgroundSize = `${size}px ${size}px`;
+  }
   const offsetX = layer.position?.x || 0;
   const offsetY = layer.position?.y || 0;
   grid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
@@ -385,40 +422,36 @@ function createLayerWrapper(layer, isSelected) {
   return wrapper;
 }
 
-function createLayerHandle() {
-  const handle = document.createElement("div");
-  handle.className = "orrery-layer-handle";
-  handle.title = "Drag layer";
-  return handle;
-}
-
 let activeLayerDrag = null;
 
-function bindLayerDrag(handle, layer) {
-  if (!handle || !layer) {
+function bindLayerDrag(target, layer, element) {
+  if (!target || !layer) {
     return;
   }
-  handle.addEventListener("pointerdown", (event) => {
+  target.addEventListener("pointerdown", (event) => {
     if (event.button !== 0) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
-    handle.setPointerCapture(event.pointerId);
+    target.setPointerCapture(event.pointerId);
     activeLayerDrag = {
       id: layer.id,
       startX: event.clientX,
       startY: event.clientY,
       originX: layer.position?.x || 0,
       originY: layer.position?.y || 0,
+      target,
+      element,
+      before: JSON.stringify(state.map),
     };
-    handle.classList.add("is-dragging");
+    target.classList.add("is-dragging");
     if (baseMapManager.current?.map?.dragging) {
       baseMapManager.current.map.dragging.disable();
     }
   });
 
-  handle.addEventListener("pointermove", (event) => {
+  target.addEventListener("pointermove", (event) => {
     if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
       return;
     }
@@ -428,22 +461,25 @@ function bindLayerDrag(handle, layer) {
       x: activeLayerDrag.originX + deltaX,
       y: activeLayerDrag.originY + deltaY,
     };
-    renderLayerOverlays();
-    renderSelection();
+    if (activeLayerDrag.target) {
+      activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
+    }
+    if (activeLayerDrag.element?.classList.contains("orrery-layer-grid-overlay")) {
+      activeLayerDrag.element.style.backgroundPosition = `${layer.position.x}px ${layer.position.y}px`;
+    }
   });
 
   const stopDrag = (event) => {
     if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
       return;
     }
-    handle.releasePointerCapture(event.pointerId);
-    handle.classList.remove("is-dragging");
-    const finalX = layer.position?.x || 0;
-    const finalY = layer.position?.y || 0;
-    recordHistory("move layer", () => {
-      layer.position = { x: finalX, y: finalY };
-      updateMapTimestamp(state.map);
-    });
+    target.releasePointerCapture(event.pointerId);
+    target.classList.remove("is-dragging");
+    updateMapTimestamp(state.map);
+    const after = JSON.stringify(state.map);
+    if (activeLayerDrag.before && activeLayerDrag.before !== after) {
+      undoStack.push({ label: "move layer", before: activeLayerDrag.before, after });
+    }
     renderLayerOverlays();
     renderSelection();
     renderJson();
@@ -453,8 +489,8 @@ function bindLayerDrag(handle, layer) {
     }
   };
 
-  handle.addEventListener("pointerup", stopDrag);
-  handle.addEventListener("pointercancel", stopDrag);
+  target.addEventListener("pointerup", stopDrag);
+  target.addEventListener("pointercancel", stopDrag);
 }
 
 function renderLayerOverlays() {
@@ -482,10 +518,9 @@ function renderLayerOverlays() {
     if (element) {
       element.style.opacity = String(layer.opacity ?? 1);
       wrapper.appendChild(element);
-      if (isSelected) {
-        const handle = createLayerHandle();
-        wrapper.appendChild(handle);
-        bindLayerDrag(handle, layer);
+      if (isSelected && layer.visible) {
+        wrapper.classList.add("is-draggable");
+        bindLayerDrag(wrapper, layer, element);
       }
       overlay.appendChild(wrapper);
     }
@@ -711,6 +746,26 @@ function renderLayerSelectionEditor(layer) {
 
   container.appendChild(propertiesWrapper);
   container.appendChild(addButton);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "btn btn-danger btn-sm mt-3";
+  deleteButton.textContent = "Delete layer";
+  deleteButton.addEventListener("click", () => {
+    const index = state.map.layers.findIndex((entry) => entry.id === layer.id);
+    if (index === -1) {
+      return;
+    }
+    recordHistory("delete layer", () => {
+      state.map.layers.splice(index, 1);
+      updateMapTimestamp(state.map);
+    });
+    setSelection(null);
+    renderLayers();
+    renderLayerOverlays();
+    renderJson();
+  });
+  container.appendChild(deleteButton);
 }
 
 function createPropertyRow(layer, key, value) {
