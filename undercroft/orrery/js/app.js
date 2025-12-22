@@ -57,8 +57,6 @@ const elements = {
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
   canvasBackground: document.querySelector("[data-base-map-canvas-background]"),
-  canvasGrid: document.querySelector("[data-base-map-canvas-grid]"),
-  canvasGridSize: document.querySelector("[data-base-map-canvas-grid-size]"),
   baseMapToggle: document.querySelector("[data-base-map-toggle]"),
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
   selectionToggle: document.querySelector("[data-selection-toggle]"),
@@ -72,6 +70,7 @@ const elements = {
   selectionTitle: document.querySelector("[data-selection-title]"),
   selectionType: document.querySelector("[data-selection-type]"),
   selectionDetails: document.querySelector("[data-selection-details]"),
+  selectionEditor: document.querySelector("[data-selection-editor]"),
   zoomIn: document.querySelector("[data-zoom-in]"),
   zoomOut: document.querySelector("[data-zoom-out]"),
   zoomReset: document.querySelector("[data-zoom-reset]"),
@@ -92,6 +91,38 @@ const renderJson = createJsonPreviewRenderer({
   resolveBytesElement: () => elements.jsonSize,
   serialize: () => state.map,
 });
+
+const LAYER_SETTINGS_SCHEMA = {
+  vector: [
+    { key: "strokeColor", label: "Stroke color", type: "color" },
+    { key: "fillColor", label: "Fill color", type: "color" },
+    { key: "strokeWidth", label: "Stroke width", type: "number", min: 1, step: 1 },
+  ],
+  grid: [
+    {
+      key: "gridType",
+      label: "Grid type",
+      type: "select",
+      options: [
+        { value: "square", label: "Square" },
+        { value: "hex", label: "Hex" },
+      ],
+    },
+    { key: "cellSize", label: "Cell size", type: "number", min: 5, step: 5 },
+    { key: "lineColor", label: "Line color", type: "color" },
+    { key: "lineOpacity", label: "Line opacity", type: "range", min: 0, max: 1, step: 0.05 },
+  ],
+  raster: [
+    { key: "src", label: "Image URL", type: "text" },
+    { key: "width", label: "Width", type: "number", min: 50, step: 10 },
+    { key: "height", label: "Height", type: "number", min: 50, step: 10 },
+  ],
+  marker: [
+    { key: "icon", label: "Icon", type: "text" },
+    { key: "size", label: "Size", type: "number", min: 8, step: 1 },
+    { key: "color", label: "Color", type: "color" },
+  ],
+};
 
 bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
   collapsed: false,
@@ -150,8 +181,6 @@ function renderBaseMapSettings() {
 
   const canvasSettings = baseMap.settings.canvas;
   elements.canvasBackground.value = canvasSettings.background;
-  elements.canvasGrid.checked = canvasSettings.grid.enabled;
-  elements.canvasGridSize.value = canvasSettings.grid.size;
 }
 
 function renderLayers() {
@@ -179,6 +208,7 @@ function renderLayers() {
         updateMapTimestamp(state.map);
       });
       renderSelection();
+      renderLayerOverlays();
       renderJson();
     });
 
@@ -226,6 +256,7 @@ function renderSelection() {
       elements.selectionTitle.textContent = layer.name;
       elements.selectionType.textContent = layer.type;
       elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"} · Opacity: ${layer.opacity} · Elements: ${layer.elements.length}`;
+      renderLayerSelectionEditor(layer);
       return;
     }
   }
@@ -236,6 +267,7 @@ function renderSelection() {
       elements.selectionTitle.textContent = group.name;
       elements.selectionType.textContent = "Group";
       elements.selectionDetails.textContent = `Members: ${group.elementIds.length}`;
+      renderGroupSelectionEditor(group);
       return;
     }
   }
@@ -243,6 +275,495 @@ function renderSelection() {
   elements.selectionTitle.textContent = "No selection";
   elements.selectionType.textContent = "None";
   elements.selectionDetails.textContent = "Select a layer or group to inspect it.";
+  clearSelectionEditor();
+}
+
+function clearSelectionEditor() {
+  if (elements.selectionEditor) {
+    elements.selectionEditor.innerHTML = "";
+    const placeholder = document.createElement("p");
+    placeholder.className = "text-body-secondary small mb-0";
+    placeholder.textContent = "Select a layer to edit its properties.";
+    elements.selectionEditor.appendChild(placeholder);
+  }
+}
+
+function toRgba(color, opacity) {
+  if (typeof color !== "string" || color.trim() === "") {
+    return `rgba(15, 23, 42, ${opacity})`;
+  }
+  const trimmed = color.trim();
+  if (trimmed.startsWith("rgba") || trimmed.startsWith("rgb")) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("#")) {
+    const hex = trimmed.slice(1);
+    const normalized = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+    if (normalized.length === 6) {
+      const r = parseInt(normalized.slice(0, 2), 16);
+      const g = parseInt(normalized.slice(2, 4), 16);
+      const b = parseInt(normalized.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+  }
+  return trimmed;
+}
+
+function createGridLayerElement(layer) {
+  const grid = document.createElement("div");
+  grid.className = "orrery-layer-grid-overlay";
+  const size = layer.settings?.cellSize || 50;
+  const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
+  const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
+  grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
+  grid.style.backgroundSize = `${size}px ${size}px`;
+  const offsetX = layer.position?.x || 0;
+  const offsetY = layer.position?.y || 0;
+  grid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+  return grid;
+}
+
+function createRasterLayerElement(layer) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "orrery-layer-raster-overlay";
+  const src = layer.settings?.src || "";
+  const image = document.createElement("img");
+  image.src = src || "data/sample-map.svg";
+  image.alt = layer.name;
+  if (layer.settings?.width) {
+    image.width = layer.settings.width;
+  }
+  if (layer.settings?.height) {
+    image.height = layer.settings.height;
+  }
+  wrapper.appendChild(image);
+  return wrapper;
+}
+
+function createMarkerLayerElement(layer) {
+  const marker = document.createElement("div");
+  marker.className = "orrery-layer-marker-overlay";
+  const size = layer.settings?.size || 24;
+  marker.style.width = `${size}px`;
+  marker.style.height = `${size}px`;
+  marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
+  return marker;
+}
+
+function createVectorLayerElement(layer) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 200 200");
+  svg.classList.add("orrery-layer-vector-overlay");
+  const stroke = layer.settings?.strokeColor || "#0f172a";
+  const fill = layer.settings?.fillColor || "#93c5fd";
+  const width = layer.settings?.strokeWidth || 2;
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", "40,160 100,40 160,160");
+  poly.setAttribute("fill", fill);
+  poly.setAttribute("stroke", stroke);
+  poly.setAttribute("stroke-width", width);
+  svg.appendChild(poly);
+  return svg;
+}
+
+function createLayerWrapper(layer, isSelected) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "orrery-layer-item";
+  if (isSelected) {
+    wrapper.classList.add("is-selected");
+  }
+  const offsetX = layer.position?.x || 0;
+  const offsetY = layer.position?.y || 0;
+  wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  wrapper.dataset.layerId = layer.id;
+  return wrapper;
+}
+
+function createLayerHandle() {
+  const handle = document.createElement("div");
+  handle.className = "orrery-layer-handle";
+  handle.title = "Drag layer";
+  return handle;
+}
+
+let activeLayerDrag = null;
+
+function bindLayerDrag(handle, layer) {
+  if (!handle || !layer) {
+    return;
+  }
+  handle.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    handle.setPointerCapture(event.pointerId);
+    activeLayerDrag = {
+      id: layer.id,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: layer.position?.x || 0,
+      originY: layer.position?.y || 0,
+    };
+    handle.classList.add("is-dragging");
+    if (baseMapManager.current?.map?.dragging) {
+      baseMapManager.current.map.dragging.disable();
+    }
+  });
+
+  handle.addEventListener("pointermove", (event) => {
+    if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
+      return;
+    }
+    const deltaX = event.clientX - activeLayerDrag.startX;
+    const deltaY = event.clientY - activeLayerDrag.startY;
+    layer.position = {
+      x: activeLayerDrag.originX + deltaX,
+      y: activeLayerDrag.originY + deltaY,
+    };
+    renderLayerOverlays();
+    renderSelection();
+  });
+
+  const stopDrag = (event) => {
+    if (!activeLayerDrag || activeLayerDrag.id !== layer.id) {
+      return;
+    }
+    handle.releasePointerCapture(event.pointerId);
+    handle.classList.remove("is-dragging");
+    const finalX = layer.position?.x || 0;
+    const finalY = layer.position?.y || 0;
+    recordHistory("move layer", () => {
+      layer.position = { x: finalX, y: finalY };
+      updateMapTimestamp(state.map);
+    });
+    renderLayerOverlays();
+    renderSelection();
+    renderJson();
+    activeLayerDrag = null;
+    if (baseMapManager.current?.map?.dragging) {
+      baseMapManager.current.map.dragging.enable();
+    }
+  };
+
+  handle.addEventListener("pointerup", stopDrag);
+  handle.addEventListener("pointercancel", stopDrag);
+}
+
+function renderLayerOverlays() {
+  const overlay = baseMapManager.getOverlayContainer();
+  if (!overlay) {
+    return;
+  }
+  overlay.innerHTML = "";
+  state.map.layers.forEach((layer) => {
+    if (!layer.visible) {
+      return;
+    }
+    const isSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
+    const wrapper = createLayerWrapper(layer, isSelected);
+    let element = null;
+    if (layer.type === "grid") {
+      element = createGridLayerElement(layer);
+    } else if (layer.type === "raster") {
+      element = createRasterLayerElement(layer);
+    } else if (layer.type === "marker") {
+      element = createMarkerLayerElement(layer);
+    } else {
+      element = createVectorLayerElement(layer);
+    }
+    if (element) {
+      element.style.opacity = String(layer.opacity ?? 1);
+      wrapper.appendChild(element);
+      if (isSelected) {
+        const handle = createLayerHandle();
+        wrapper.appendChild(handle);
+        bindLayerDrag(handle, layer);
+      }
+      overlay.appendChild(wrapper);
+    }
+  });
+}
+
+function createSelectionSectionTitle(text) {
+  const title = document.createElement("div");
+  title.className = "text-uppercase fs-6 fw-semibold text-body-secondary";
+  title.textContent = text;
+  return title;
+}
+
+function createFieldWrapper(labelText, input) {
+  const wrapper = document.createElement("label");
+  wrapper.className = "d-flex flex-column gap-1 small";
+  const label = document.createElement("span");
+  label.className = "text-body-secondary";
+  label.textContent = labelText;
+  wrapper.appendChild(label);
+  wrapper.appendChild(input);
+  return wrapper;
+}
+
+function applyLayerChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderLayers();
+  renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+function applyLayerSettingsChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+function renderLayerSelectionEditor(layer) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  container.innerHTML = "";
+
+  container.appendChild(createSelectionSectionTitle("Layer Properties"));
+
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "form-control form-control-sm";
+  nameInput.value = layer.name;
+  nameInput.addEventListener("change", () => {
+    const value = nameInput.value.trim();
+    if (!value) {
+      nameInput.value = layer.name;
+      return;
+    }
+    applyLayerChange("layer name", () => {
+      layer.name = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Name", nameInput));
+
+  const positionGrid = document.createElement("div");
+  positionGrid.className = "d-grid gap-2";
+  positionGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+
+  const positionX = document.createElement("input");
+  positionX.type = "number";
+  positionX.className = "form-control form-control-sm";
+  positionX.value = layer.position?.x ?? 0;
+  positionX.addEventListener("change", () => {
+    const value = Number(positionX.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer position x", () => {
+      layer.position = { ...(layer.position || { x: 0, y: 0 }), x: value };
+    });
+  });
+
+  const positionY = document.createElement("input");
+  positionY.type = "number";
+  positionY.className = "form-control form-control-sm";
+  positionY.value = layer.position?.y ?? 0;
+  positionY.addEventListener("change", () => {
+    const value = Number(positionY.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer position y", () => {
+      layer.position = { ...(layer.position || { x: 0, y: 0 }), y: value };
+    });
+  });
+
+  positionGrid.appendChild(createFieldWrapper("Position X", positionX));
+  positionGrid.appendChild(createFieldWrapper("Position Y", positionY));
+  container.appendChild(positionGrid);
+
+  const visibilityWrapper = document.createElement("div");
+  visibilityWrapper.className = "form-check";
+  const visibilityInput = document.createElement("input");
+  visibilityInput.className = "form-check-input";
+  visibilityInput.type = "checkbox";
+  visibilityInput.id = `layer-visible-${layer.id}`;
+  visibilityInput.checked = layer.visible;
+  visibilityInput.addEventListener("change", () => {
+    applyLayerChange("layer visibility", () => {
+      layer.visible = visibilityInput.checked;
+    });
+  });
+  const visibilityLabel = document.createElement("label");
+  visibilityLabel.className = "form-check-label small";
+  visibilityLabel.setAttribute("for", visibilityInput.id);
+  visibilityLabel.textContent = "Visible";
+  visibilityWrapper.appendChild(visibilityInput);
+  visibilityWrapper.appendChild(visibilityLabel);
+  container.appendChild(visibilityWrapper);
+
+  const opacityInput = document.createElement("input");
+  opacityInput.type = "range";
+  opacityInput.className = "form-range";
+  opacityInput.min = "0";
+  opacityInput.max = "1";
+  opacityInput.step = "0.05";
+  opacityInput.value = layer.opacity;
+  opacityInput.addEventListener("change", () => {
+    const value = Number(opacityInput.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyLayerChange("layer opacity", () => {
+      layer.opacity = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Opacity", opacityInput));
+
+  const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
+  if (settingsSchema.length) {
+    container.appendChild(createSelectionSectionTitle("Layer Settings"));
+    settingsSchema.forEach((field) => {
+      const input = document.createElement(field.type === "select" ? "select" : "input");
+      if (field.type !== "select") {
+        input.type = field.type;
+      }
+      input.className = field.type === "select" ? "form-select form-select-sm" : "form-control form-control-sm";
+      if (field.type === "range") {
+        input.className = "form-range";
+      }
+      if (field.min !== undefined) {
+        input.min = String(field.min);
+      }
+      if (field.max !== undefined) {
+        input.max = String(field.max);
+      }
+      if (field.step !== undefined) {
+        input.step = String(field.step);
+      }
+      if (field.type === "select") {
+        (field.options || []).forEach((option) => {
+          const optionElement = document.createElement("option");
+          optionElement.value = option.value;
+          optionElement.textContent = option.label;
+          input.appendChild(optionElement);
+        });
+      }
+      const currentValue = layer.settings?.[field.key];
+      if (currentValue !== undefined) {
+        input.value = String(currentValue);
+      }
+      input.addEventListener("change", () => {
+        let nextValue = input.value;
+        if (field.type === "number" || field.type === "range") {
+          const numeric = Number(nextValue);
+          if (!Number.isFinite(numeric)) {
+            return;
+          }
+          nextValue = numeric;
+        }
+        applyLayerSettingsChange(`layer ${field.key}`, () => {
+          layer.settings = layer.settings || {};
+          layer.settings[field.key] = nextValue;
+        });
+      });
+      container.appendChild(createFieldWrapper(field.label, input));
+    });
+  }
+
+  container.appendChild(createSelectionSectionTitle("Custom Properties"));
+  const propertiesWrapper = document.createElement("div");
+  propertiesWrapper.className = "d-flex flex-column gap-2";
+  const entries = Object.entries(layer.properties || {});
+
+  if (entries.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No custom properties yet.";
+    propertiesWrapper.appendChild(empty);
+  } else {
+    entries.forEach(([key, value]) => {
+      propertiesWrapper.appendChild(createPropertyRow(layer, key, value));
+    });
+  }
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn btn-outline-secondary btn-sm";
+  addButton.textContent = "Add property";
+  addButton.addEventListener("click", () => {
+    const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
+    if (emptyState) {
+      emptyState.remove();
+    }
+    propertiesWrapper.appendChild(createPropertyRow(layer, "", ""));
+  });
+
+  container.appendChild(propertiesWrapper);
+  container.appendChild(addButton);
+}
+
+function createPropertyRow(layer, key, value) {
+  const row = document.createElement("div");
+  row.className = "d-flex gap-2 align-items-center";
+
+  const keyInput = document.createElement("input");
+  keyInput.type = "text";
+  keyInput.className = "form-control form-control-sm";
+  keyInput.placeholder = "Key";
+  keyInput.value = key;
+
+  const valueInput = document.createElement("input");
+  valueInput.type = "text";
+  valueInput.className = "form-control form-control-sm";
+  valueInput.placeholder = "Value";
+  valueInput.value = value;
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "btn btn-outline-danger btn-sm";
+  removeButton.textContent = "Remove";
+
+  let currentKey = key;
+
+  const updateProperty = () => {
+    const nextKey = keyInput.value.trim();
+    const nextValue = valueInput.value.trim();
+    applyLayerSettingsChange("layer property", () => {
+      layer.properties = layer.properties || {};
+      if (currentKey && currentKey !== nextKey) {
+        delete layer.properties[currentKey];
+      }
+      if (nextKey) {
+        layer.properties[nextKey] = nextValue;
+        currentKey = nextKey;
+      }
+    });
+  };
+
+  keyInput.addEventListener("change", updateProperty);
+  valueInput.addEventListener("change", updateProperty);
+  removeButton.addEventListener("click", () => {
+    applyLayerSettingsChange("remove layer property", () => {
+      if (currentKey && layer.properties) {
+        delete layer.properties[currentKey];
+      }
+    });
+    renderSelection();
+  });
+
+  row.appendChild(keyInput);
+  row.appendChild(valueInput);
+  row.appendChild(removeButton);
+  return row;
+}
+
+function renderGroupSelectionEditor() {
+  clearSelectionEditor();
 }
 
 function renderView() {
@@ -258,6 +779,7 @@ function renderAll() {
   renderLayers();
   renderGroups();
   renderSelection();
+  renderLayerOverlays();
   renderView();
   renderJson();
 }
@@ -316,32 +838,6 @@ function setupBaseMapEvents() {
     }
     renderJson();
   });
-
-  elements.canvasGrid.addEventListener("change", () => {
-    recordHistory("canvas grid", () => {
-      state.map.baseMap.settings.canvas.grid.enabled = elements.canvasGrid.checked;
-      updateMapTimestamp(state.map);
-    });
-    if (state.map.baseMap.type === "canvas") {
-      baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
-    }
-    renderJson();
-  });
-
-  elements.canvasGridSize.addEventListener("change", () => {
-    const value = Number(elements.canvasGridSize.value);
-    if (!Number.isFinite(value) || value <= 0) {
-      return;
-    }
-    recordHistory("canvas grid size", () => {
-      state.map.baseMap.settings.canvas.grid.size = value;
-      updateMapTimestamp(state.map);
-    });
-    if (state.map.baseMap.type === "canvas") {
-      baseMapManager.updateSettings(state.map.baseMap.settings.canvas);
-    }
-    renderJson();
-  });
 }
 
 function setupLayerEvents() {
@@ -355,6 +851,7 @@ function setupLayerEvents() {
         updateMapTimestamp(state.map);
       });
       renderLayers();
+      renderLayerOverlays();
       renderJson();
       if (layer) {
         setSelection("layer", layer.id);
@@ -375,6 +872,7 @@ function setupGroupEvents() {
       updateMapTimestamp(state.map);
     });
     renderGroups();
+    renderLayerOverlays();
     renderJson();
     if (group) {
       setSelection("group", group.id);
