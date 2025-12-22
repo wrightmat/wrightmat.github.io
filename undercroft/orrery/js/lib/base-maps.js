@@ -42,8 +42,14 @@ class TileBaseMap {
 
     this.setView(this.view);
 
-    const overlayPane = this.map.getPanes()?.overlayPane;
+    const overlayPane = this.map.createPane("orreryOverlay");
     if (overlayPane) {
+      overlayPane.style.zIndex = "650";
+      overlayPane.style.width = "100%";
+      overlayPane.style.height = "100%";
+      overlayPane.style.left = "0";
+      overlayPane.style.top = "0";
+      overlayPane.style.pointerEvents = "none";
       this.overlayHost = document.createElement("div");
       this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
       this.overlayHost.style.width = "100%";
@@ -101,6 +107,17 @@ class TileBaseMap {
 
   getOverlayHost() {
     return this.overlayHost;
+  }
+
+  setInteractionEnabled(enabled) {
+    if (!this.map?.dragging) {
+      return;
+    }
+    if (enabled) {
+      this.map.dragging.enable();
+    } else {
+      this.map.dragging.disable();
+    }
   }
 
   destroy() {
@@ -209,6 +226,10 @@ class ImageBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    this.panZoom?.setEnabled?.(enabled);
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
@@ -311,6 +332,10 @@ class CanvasBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    this.panZoom?.setEnabled?.(enabled);
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
@@ -381,5 +406,9 @@ export class BaseMapManager {
 
   getOverlayContainer() {
     return this.current?.getOverlayHost?.() || null;
+  }
+
+  setInteractionEnabled(enabled) {
+    this.current?.setInteractionEnabled?.(enabled);
   }
 }
