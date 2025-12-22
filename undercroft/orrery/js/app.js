@@ -255,7 +255,9 @@ function renderSelection() {
     if (layer) {
       elements.selectionTitle.textContent = layer.name;
       elements.selectionType.textContent = layer.type;
-      elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"} · Opacity: ${layer.opacity} · Elements: ${layer.elements.length}`;
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `Visible: ${layer.visible ? "Yes" : "No"} · Opacity: ${layer.opacity} · Elements: ${layer.elements.length}`;
+      }
       renderLayerSelectionEditor(layer);
       return;
     }
@@ -266,7 +268,9 @@ function renderSelection() {
     if (group) {
       elements.selectionTitle.textContent = group.name;
       elements.selectionType.textContent = "Group";
-      elements.selectionDetails.textContent = `Members: ${group.elementIds.length}`;
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `Members: ${group.elementIds.length}`;
+      }
       renderGroupSelectionEditor(group);
       return;
     }
@@ -274,7 +278,9 @@ function renderSelection() {
 
   elements.selectionTitle.textContent = "No selection";
   elements.selectionType.textContent = "None";
-  elements.selectionDetails.textContent = "Select a layer or group to inspect it.";
+  if (elements.selectionDetails) {
+    elements.selectionDetails.textContent = "Select a layer or group to inspect it.";
+  }
   clearSelectionEditor();
 }
 
