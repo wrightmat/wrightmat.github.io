@@ -103,6 +103,17 @@ class TileBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    if (!this.map?.dragging) {
+      return;
+    }
+    if (enabled) {
+      this.map.dragging.enable();
+    } else {
+      this.map.dragging.disable();
+    }
+  }
+
   destroy() {
     if (this.map) {
       this.map.remove();
@@ -209,6 +220,10 @@ class ImageBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    this.panZoom?.setEnabled?.(enabled);
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
@@ -311,6 +326,10 @@ class CanvasBaseMap {
     return this.overlayHost;
   }
 
+  setInteractionEnabled(enabled) {
+    this.panZoom?.setEnabled?.(enabled);
+  }
+
   destroy() {
     this.panZoom?.destroy();
     this.panZoom = null;
@@ -381,5 +400,9 @@ export class BaseMapManager {
 
   getOverlayContainer() {
     return this.current?.getOverlayHost?.() || null;
+  }
+
+  setInteractionEnabled(enabled) {
+    this.current?.setInteractionEnabled?.(enabled);
   }
 }
