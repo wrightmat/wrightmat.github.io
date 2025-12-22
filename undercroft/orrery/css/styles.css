@@ -24,10 +24,15 @@
   position: absolute;
   inset: 0;
   transform: translate(0, 0);
+  pointer-events: none;
 }
 
 .orrery-layer-item.is-selected {
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.orrery-layer-item.is-draggable {
+  cursor: move;
 }
 
 .orrery-layer-handle {
