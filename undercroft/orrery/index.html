@@ -432,14 +432,18 @@
                   <span class="visually-hidden" data-selection-toggle-label>Expand selection</span>
                 </button>
               </div>
-              <div class="pane-card" data-selection-panel>
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <div>
-                    <div class="small text-body-secondary">Active</div>
-                    <div class="h6 mb-0" data-selection-title>No selection</div>
+              <div class="d-flex flex-column gap-3" data-selection-panel>
+                <div class="pane-card">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <div class="small text-body-secondary">Active</div>
+                      <div class="h6 mb-0" data-selection-title>No selection</div>
+                    </div>
+                    <span class="badge text-bg-secondary text-uppercase" data-selection-type>None</span>
                   </div>
-                  <span class="badge text-bg-secondary text-uppercase" data-selection-type>None</span>
+                  <div class="small text-body-secondary" data-selection-details>Select a layer or group to inspect it.</div>
                 </div>
+                <div class="d-flex flex-column gap-3" data-selection-editor></div>
               </div>
               <div class="d-flex flex-column gap-3" data-selection-editor></div>
             </section>
