@@ -159,6 +159,7 @@ function recordHistory(label, applyChange) {
 function setSelection(kind, id = null) {
   state.selection = { kind, id };
   renderSelection();
+  renderLayerOverlays();
   const shouldExpand = kind === "layer" || kind === "group";
   setSelectionCollapsed(!shouldExpand);
 }
@@ -446,9 +447,7 @@ function bindLayerDrag(target, layer, element) {
       before: JSON.stringify(state.map),
     };
     target.classList.add("is-dragging");
-    if (baseMapManager.current?.map?.dragging) {
-      baseMapManager.current.map.dragging.disable();
-    }
+    baseMapManager.setInteractionEnabled(false);
   });
 
   target.addEventListener("pointermove", (event) => {
@@ -484,9 +483,7 @@ function bindLayerDrag(target, layer, element) {
     renderSelection();
     renderJson();
     activeLayerDrag = null;
-    if (baseMapManager.current?.map?.dragging) {
-      baseMapManager.current.map.dragging.enable();
-    }
+    baseMapManager.setInteractionEnabled(true);
   };
 
   target.addEventListener("pointerup", stopDrag);

@@ -27,12 +27,16 @@ export class PanZoomController {
     this.pinchStartZoom = 1;
     this.pinchStartCenter = null;
     this.activePointers = new Map();
+    this.enabled = true;
     this.applyTransform();
     this.bindEvents();
   }
 
   bindEvents() {
     this.handleWheel = (event) => {
+      if (!this.enabled) {
+        return;
+      }
       event.preventDefault();
       const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
       const nextZoom = clamp(this.view.zoom * zoomFactor, this.minZoom, this.maxZoom);
@@ -45,6 +49,9 @@ export class PanZoomController {
     };
 
     this.handlePointerDown = (event) => {
+      if (!this.enabled) {
+        return;
+      }
       if (event.pointerType === "mouse" && event.button !== 0) {
         return;
       }
@@ -64,6 +71,9 @@ export class PanZoomController {
     };
 
     this.handlePointerMove = (event) => {
+      if (!this.enabled) {
+        return;
+      }
       if (!this.activePointers.has(event.pointerId)) {
         return;
       }
@@ -86,6 +96,9 @@ export class PanZoomController {
     };
 
     this.handlePointerUp = (event) => {
+      if (!this.enabled) {
+        return;
+      }
       if (event && this.activePointers.has(event.pointerId)) {
         this.activePointers.delete(event.pointerId);
       }
@@ -170,6 +183,18 @@ export class PanZoomController {
   applyTransform() {
     const { zoom, pan } = this.view;
     this.content.style.transform = `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+  }
+
+  setEnabled(enabled) {
+    this.enabled = Boolean(enabled);
+    if (!this.enabled) {
+      this.activePointers.clear();
+      this.isPanning = false;
+      this.isPinching = false;
+      this.startPoint = null;
+      this.startPan = null;
+      this.container.classList.remove("is-panning");
+    }
   }
 
   getView() {
