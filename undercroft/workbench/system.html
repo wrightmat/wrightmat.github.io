@@ -57,49 +57,53 @@
   <body class="bg-body text-body" data-undercroft-tool="workbench">
     <div class="workbench-app d-flex flex-column" data-tier-content>
       <header class="workbench-header border-bottom bg-body-tertiary">
-        <nav class="undercroft-tool-panel" data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-        <div class="container-xl d-flex align-items-center gap-3 py-3">
-          <div class="d-flex align-items-center gap-3">
+        <div class="workbench-header-grid px-3 py-3">
+          <div class="d-flex align-items-center">
             <nav class="undercroft-tool-panel" data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
-            <button
-              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-              type="button"
-              data-pane-toggle="left"
-              aria-label="Toggle tools pane"
-            >
-              <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-              <span class="visually-hidden">Toggle tools pane</span>
-            </button>
-            <h1 class="h5 mb-0 d-flex align-items-center gap-2">
-              <a href="index.html" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Workbench</a>
-              <span class="text-body-secondary fw-normal">— System Editor</span>
-            </h1>
           </div>
-          <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
-            <div class="btn-group" role="group" aria-label="Theme toggle">
-              <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
-                <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
-                <span class="visually-hidden">Light theme</span>
+          <div class="d-flex align-items-center gap-3 w-100">
+            <div class="d-flex align-items-center gap-3">
+              <button
+                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                type="button"
+                data-pane-toggle="left"
+                aria-label="Toggle tools pane"
+              >
+                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+                <span class="visually-hidden">Toggle tools pane</span>
               </button>
-              <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
-              <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
-                <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
-                <span class="visually-hidden">Dark theme</span>
+              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+                <a href="index.html" class="fw-semibold text-decoration-none link-body-emphasis">Undercroft Workbench</a>
+                <span class="text-body-secondary fw-normal">— System Editor</span>
+              </h1>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+              <div class="btn-group" role="group" aria-label="Theme toggle">
+                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
+                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
+                  <span class="visually-hidden">Light theme</span>
+                </button>
+                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
+                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
+                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Dark theme</span>
+                </button>
+              </div>
+              <div data-auth-control class="d-flex">
+                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+              </div>
+              <button
+                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                type="button"
+                data-pane-toggle="right"
+                aria-label="Toggle inspector pane"
+              >
+                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+                <span class="visually-hidden">Toggle inspector pane</span>
               </button>
             </div>
-            <div data-auth-control class="d-flex">
-              <button class="btn btn-outline-secondary" type="button">Login / Register</button>
-            </div>
-            <button
-              class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-              type="button"
-              data-pane-toggle="right"
-              aria-label="Toggle inspector pane"
-            >
-              <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-              <span class="visually-hidden">Toggle inspector pane</span>
-            </button>
           </div>
+          <div></div>
         </div>
       </header>
       <div class="workbench-shell d-flex">
