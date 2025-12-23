@@ -55,6 +55,8 @@ function initToolNavigation(root = document) {
   if (!toolNavs.length) {
     return;
   }
+  const [primaryNav, ...extraNavs] = toolNavs;
+  extraNavs.forEach((nav) => nav.remove());
   const activeTool = root.body?.dataset?.undercroftTool;
   if (!activeTool) {
     return;
@@ -66,24 +68,22 @@ function initToolNavigation(root = document) {
     orderedTools.unshift(activeDefinition);
   }
 
-  toolNavs.forEach((nav) => {
-    nav.innerHTML = "";
-    orderedTools.forEach((tool, index) => {
-      const isActive = tool.id === activeTool && index === 0;
-      const element = isActive ? document.createElement("span") : document.createElement("a");
-      element.className = `undercroft-tool-button tool-${tool.id}${isActive ? " is-active" : ""}`;
-      if (isActive) {
-        element.setAttribute("aria-current", "page");
-      } else {
-        element.setAttribute("href", resolveToolHref(tool.id, currentSection));
-      }
-      element.setAttribute("aria-label", tool.label);
-      const letter = document.createElement("span");
-      letter.className = "undercroft-tool-letter";
-      letter.textContent = tool.letter;
-      element.appendChild(letter);
-      nav.appendChild(element);
-    });
+  primaryNav.innerHTML = "";
+  orderedTools.forEach((tool, index) => {
+    const isActive = tool.id === activeTool && index === 0;
+    const element = isActive ? document.createElement("span") : document.createElement("a");
+    element.className = `undercroft-tool-button tool-${tool.id}${isActive ? " is-active" : ""}`;
+    if (isActive) {
+      element.setAttribute("aria-current", "page");
+    } else {
+      element.setAttribute("href", resolveToolHref(tool.id, currentSection));
+    }
+    element.setAttribute("aria-label", tool.label);
+    const letter = document.createElement("span");
+    letter.className = "undercroft-tool-letter";
+    letter.textContent = tool.letter;
+    element.appendChild(letter);
+    primaryNav.appendChild(element);
   });
 }
 
