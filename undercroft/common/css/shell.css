@@ -150,6 +150,8 @@ body[data-theme="dark"] .hover-lift:hover {
   flex: 1 1 auto;
   min-width: 0;
   margin-left: 0;
+  margin-right: 0;
+  max-width: none;
 }
 
 .undercroft-tool-panel {
