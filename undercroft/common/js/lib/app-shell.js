@@ -5,16 +5,50 @@ import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
 import { refreshTooltips } from "./tooltips.js";
 
-var TOOL_DEFINITIONS = globalThis.__undercroftToolDefinitions || [
-  { id: "workbench", label: "Workbench home", letter: "W", summary: "Launchpad for Undercroft tools and recent work." },
-  { id: "system", label: "System Editor", letter: "S", summary: "Define rules, fields, and validations for systems." },
-  { id: "template", label: "Template Builder", letter: "T", summary: "Design layout templates for character sheets." },
-  { id: "character", label: "Character Sheet", letter: "C", summary: "Play and track characters with live sheets." },
-  { id: "admin", label: "Admin Console", letter: "A", summary: "Manage users, permissions, and shared content." },
-  { id: "orrery", label: "Orrery", letter: "O", summary: "Build and manage map layers and markers." },
-  { id: "press", label: "Press", letter: "P", summary: "Assemble printable layouts and export PDFs." },
+const TOOL_DEFINITIONS = [
+  {
+    id: "workbench",
+    label: "Workbench",
+    letter: "W",
+    summary: "Character Sheet, Template, and System Editor.",
+  },
+  {
+    id: "press",
+    label: "Press",
+    letter: "P",
+    summary: "Printing utility for sheets, cards, and booklets.",
+  },
+  {
+    id: "orrery",
+    label: "Orrery",
+    letter: "O",
+    summary: "Map creator and viewer.",
+  },
+  {
+    id: "forge",
+    label: "Forge",
+    letter: "F",
+    summary: "NPC creator (not yet built).",
+  },
+  {
+    id: "crucible",
+    label: "Crucible",
+    letter: "C",
+    summary: "Monster and adversary creator (not yet built).",
+  },
+  {
+    id: "vault",
+    label: "Vault",
+    letter: "V",
+    summary: "Item and spell creator (not yet built).",
+  },
+  {
+    id: "sanctum",
+    label: "Sanctum",
+    letter: "S",
+    summary: "Dungeon and location creator (not yet built).",
+  },
 ];
-globalThis.__undercroftToolDefinitions = TOOL_DEFINITIONS;
 
 function resolveToolContextPath() {
   if (typeof window === "undefined") {
@@ -36,9 +70,9 @@ function resolveToolHref(toolId, currentSection) {
     admin: "admin.html",
   };
 
-  if (workbenchPages[toolId]) {
+  if (toolId === "workbench") {
     const prefix = currentSection === "workbench" ? "" : "../workbench/";
-    return `${prefix}${workbenchPages[toolId]}`;
+    return `${prefix}${workbenchPages.workbench}`;
   }
 
   if (toolId === "orrery") {
