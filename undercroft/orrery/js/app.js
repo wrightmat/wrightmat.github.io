@@ -890,6 +890,10 @@ function setupBaseMapEvents() {
         state.map.baseMap.settings.tile.urlTemplate = value;
         updateMapTimestamp(state.map);
       });
+      if (Number.isFinite(state.map.baseMap.settings.tile.initialZoom)) {
+        state.map.view.zoom = state.map.baseMap.settings.tile.initialZoom;
+        baseMapManager.setDefaultView(state.map.view);
+      }
       if (state.map.baseMap.type === "tile") {
         baseMapManager.updateSettings(state.map.baseMap.settings.tile);
       }
@@ -904,13 +908,21 @@ function setupBaseMapEvents() {
       }
       const urlTemplate = selection.dataset.tileUrl;
       const maxZoom = Number(selection.dataset.tileMaxZoom);
+      const initialZoom = Number(selection.dataset.tileInitialZoom);
       recordHistory("tile quick pick", () => {
         state.map.baseMap.settings.tile.urlTemplate = urlTemplate;
         if (Number.isFinite(maxZoom)) {
           state.map.baseMap.settings.tile.maxZoom = maxZoom;
         }
+        if (Number.isFinite(initialZoom)) {
+          state.map.baseMap.settings.tile.initialZoom = initialZoom;
+        }
         updateMapTimestamp(state.map);
       });
+      if (Number.isFinite(initialZoom)) {
+        state.map.view.zoom = initialZoom;
+        baseMapManager.setDefaultView(state.map.view);
+      }
       if (elements.tileProvider) {
         elements.tileProvider.value = urlTemplate;
       }
