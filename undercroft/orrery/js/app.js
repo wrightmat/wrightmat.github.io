@@ -52,6 +52,7 @@ const baseMapManager = new BaseMapManager({
     state.map.view = { ...state.map.view, ...view };
     updateMapTimestamp(state.map);
     renderView();
+    renderLayerOverlays();
     renderJson();
   },
 });
@@ -372,8 +373,38 @@ function updateOverlayInteractivity() {
   }
 }
 
+function getBaseZoom() {
+  return baseMapManager.getDefaultView?.()?.zoom ?? 1;
+}
+
+function getGridZoomScale() {
+  const baseZoom = getBaseZoom();
+  const viewZoom = Number.isFinite(state.map.view?.zoom) ? state.map.view.zoom : baseZoom;
+  if (state.map.baseMap.type === "tile") {
+    return Math.pow(2, viewZoom - baseZoom);
+  }
+  return baseZoom ? viewZoom / baseZoom : 1;
+}
+
+function getGridLayoutScale() {
+  return state.map.baseMap.type === "tile" ? getGridZoomScale() : 1;
+}
+
+function getGridHitTestScale() {
+  return state.map.baseMap.type === "tile" ? 1 : getGridZoomScale();
+}
+
+function getGridOffset(layer) {
+  const offsetScale = getGridLayoutScale();
+  return {
+    x: (layer.position?.x || 0) * offsetScale,
+    y: (layer.position?.y || 0) * offsetScale,
+  };
+}
+
 function getGridCellSize(layer) {
-  return layer.settings?.cellSize || 50;
+  const baseSize = layer.settings?.cellSize || 50;
+  return baseSize * getGridLayoutScale();
 }
 
 function getGridType(layer) {
@@ -451,19 +482,21 @@ function axialRound(q, r) {
 }
 
 function getGridCoordFromPoint(layer, point) {
+  const hitScale = getGridHitTestScale();
+  const scaledPoint = hitScale ? { x: point.x / hitScale, y: point.y / hitScale } : point;
   const cellSize = getGridCellSize(layer);
   const gridType = getGridType(layer);
   if (gridType === "hex") {
     const { size, offsetX, offsetY } = getHexMetrics(cellSize);
-    const x = point.x - offsetX;
-    const y = point.y - offsetY;
+    const x = scaledPoint.x - offsetX;
+    const y = scaledPoint.y - offsetY;
     const q = (2 / 3) * (x / size);
     const r = ((-1 / 3) * x + (Math.sqrt(3) / 3) * y) / size;
     return axialRound(q, r);
   }
   return {
-    col: Math.floor(point.x / cellSize),
-    row: Math.floor(point.y / cellSize),
+    col: Math.floor(scaledPoint.x / cellSize),
+    row: Math.floor(scaledPoint.y / cellSize),
   };
 }
 
@@ -548,9 +581,10 @@ function createGridLayerElement(layer, selectionState) {
       event.stopPropagation();
       baseMapManager.setInteractionEnabled(false);
       const rect = grid.getBoundingClientRect();
+      const offset = getGridOffset(layer);
       const point = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: event.clientX - rect.left - offset.x,
+        y: event.clientY - rect.top - offset.y,
       };
       const coord = getGridCoordFromPoint(layer, point);
       const entry = createGridCellSelectionEntry(layer, coord);
@@ -589,7 +623,7 @@ function createGridLayerElement(layer, selectionState) {
   grid.style.top = `-${((gridScale - 1) / 2) * 100}%`;
   grid.style.right = "auto";
   grid.style.bottom = "auto";
-  const size = layer.settings?.cellSize || 50;
+  const size = getGridCellSize(layer);
   const gridType = layer.settings?.gridType || "square";
   const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
   const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
@@ -601,9 +635,8 @@ function createGridLayerElement(layer, selectionState) {
     grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
     grid.style.backgroundSize = `${size}px ${size}px`;
   }
-  const offsetX = layer.position?.x || 0;
-  const offsetY = layer.position?.y || 0;
-  grid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+  const offset = getGridOffset(layer);
+  grid.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
   if (selectionState?.selectedCells?.length) {
     grid.appendChild(createGridSelectionOverlay(layer, selectionState.selectedCells));
   }
@@ -631,6 +664,7 @@ function createGridSelectionOverlay(layer, selectedCells) {
   const overlay = document.createElement("div");
   overlay.className = "orrery-layer-grid-selection";
   const gridType = getGridType(layer);
+  const offset = getGridOffset(layer);
   selectedCells.forEach((cell) => {
     const rect = getGridCellPixelRect(layer, cell.coord);
     const highlight = document.createElement("div");
@@ -638,8 +672,8 @@ function createGridSelectionOverlay(layer, selectedCells) {
     if (gridType === "hex") {
       highlight.classList.add("is-hex");
     }
-    highlight.style.left = `${rect.x}px`;
-    highlight.style.top = `${rect.y}px`;
+    highlight.style.left = `${rect.x + offset.x}px`;
+    highlight.style.top = `${rect.y + offset.y}px`;
     highlight.style.width = `${rect.width}px`;
     highlight.style.height = `${rect.height}px`;
     overlay.appendChild(highlight);
@@ -727,7 +761,8 @@ function bindLayerDrag(target, layer, element) {
       activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
     }
     if (activeLayerDrag.element?.classList.contains("orrery-layer-grid-overlay")) {
-      activeLayerDrag.element.style.backgroundPosition = `${layer.position.x}px ${layer.position.y}px`;
+      const offset = getGridOffset(layer);
+      activeLayerDrag.element.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
     }
   });
 
