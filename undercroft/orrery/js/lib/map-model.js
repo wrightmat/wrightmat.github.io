@@ -47,6 +47,7 @@ export function createBaseMapSettings() {
       attribution: "© OpenStreetMap contributors",
       minZoom: 1,
       maxZoom: 19,
+      initialZoom: 2,
     },
     image: {
       src: "data/sample-map.svg",
