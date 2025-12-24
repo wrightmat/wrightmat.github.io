@@ -67,8 +67,11 @@ Groups are used to represent concepts such as biomes, political regions, faction
 - Provide creation, deletion, ordering, and visibility controls for layers, along with editing tools appropriate to each type (drawing vectors, painting grid cells, placing rasters, managing markers).
 - Ensure that layers can define their own property schemas and that elements within layers can store and override properties as needed.
 
-### Epic 3 — Grouping and Regions
-- Introduce groups as a first-class organizational feature. Enable users to create groups, assign and remove elements across layers, and define group-level properties.
+### Epic 3 — Grids and Groups
+- Make grid lays fully interactive, allowing the user to select cell(s) and assign properties.
+  - Cell-level interaction: click selection of individual cells, including multi-select
+  - Cell property editing: per-cell key/value properties editable via inspector; bulk edit across selection; copy/paste properties between cells.
+- Introduce groups as a first-class organizational feature. Enable users to create groups, assign and remove elements (grid cells, markers, etc) across layers, and define group-level properties.
 - Support clear inspection and selection workflows, including visual highlighting of group members on the map.
 - Ensure consistent property precedence rules so group-level data cleanly overrides layer-level defaults without ambiguity.
 
