@@ -3,6 +3,129 @@ import { initPaneToggles } from "./panes.js";
 import { StatusManager } from "./status.js";
 import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
+import { refreshTooltips } from "./tooltips.js";
+
+const TOOL_DEFINITIONS = [
+  {
+    id: "workbench",
+    label: "Workbench",
+    letter: "W",
+    summary: "Character Sheet, Template, and System Editor.",
+  },
+  {
+    id: "press",
+    label: "Press",
+    letter: "P",
+    summary: "Printing utility for sheets, cards, and booklets.",
+  },
+  {
+    id: "orrery",
+    label: "Orrery",
+    letter: "O",
+    summary: "Map creator and viewer.",
+  },
+  {
+    id: "forge",
+    label: "Forge",
+    letter: "F",
+    summary: "NPC creator (not yet built).",
+  },
+  {
+    id: "crucible",
+    label: "Crucible",
+    letter: "C",
+    summary: "Monster and adversary creator (not yet built).",
+  },
+  {
+    id: "vault",
+    label: "Vault",
+    letter: "V",
+    summary: "Item and spell creator (not yet built).",
+  },
+  {
+    id: "sanctum",
+    label: "Sanctum",
+    letter: "S",
+    summary: "Dungeon and location creator (not yet built).",
+  },
+];
+
+function resolveToolContextPath() {
+  if (typeof window === "undefined") {
+    return "workbench";
+  }
+  const segments = window.location.pathname.split("/").filter(Boolean);
+  if (segments.length < 2) {
+    return "workbench";
+  }
+  return segments[segments.length - 2];
+}
+
+function resolveToolHref(toolId, currentSection) {
+  const workbenchPages = {
+    workbench: "index.html",
+    system: "system.html",
+    template: "template.html",
+    character: "character.html",
+    admin: "admin.html",
+  };
+
+  if (toolId === "workbench") {
+    const prefix = currentSection === "workbench" ? "" : "../workbench/";
+    return `${prefix}${workbenchPages.workbench}`;
+  }
+
+  if (toolId === "orrery") {
+    return currentSection === "orrery" ? "index.html" : "../orrery/index.html";
+  }
+
+  if (toolId === "press") {
+    return currentSection === "press" ? "index.html" : "../press/index.html";
+  }
+
+  return "#";
+}
+
+function initToolNavigation(root = document) {
+  const toolNavs = Array.from(root.querySelectorAll("[data-undercroft-tool-nav]"));
+  if (!toolNavs.length) {
+    return;
+  }
+  const [primaryNav, ...extraNavs] = toolNavs;
+  extraNavs.forEach((nav) => nav.remove());
+  const activeTool = root.body?.dataset?.undercroftTool;
+  if (!activeTool) {
+    return;
+  }
+  const currentSection = resolveToolContextPath();
+  const orderedTools = TOOL_DEFINITIONS.filter((tool) => tool.id !== activeTool);
+  const activeDefinition = TOOL_DEFINITIONS.find((tool) => tool.id === activeTool);
+  if (activeDefinition) {
+    orderedTools.unshift(activeDefinition);
+  }
+
+  primaryNav.innerHTML = "";
+  orderedTools.forEach((tool, index) => {
+    const isActive = tool.id === activeTool && index === 0;
+    const element = isActive ? document.createElement("span") : document.createElement("a");
+    element.className = `undercroft-tool-button tool-${tool.id}${isActive ? " is-active" : ""}`;
+    if (isActive) {
+      element.setAttribute("aria-current", "page");
+    } else {
+      element.setAttribute("href", resolveToolHref(tool.id, currentSection));
+    }
+    element.setAttribute("aria-label", tool.label);
+    element.dataset.bsToggle = "tooltip";
+    element.dataset.bsPlacement = "bottom";
+    element.dataset.bsTitle = `${tool.label} — ${tool.summary}`;
+    const letter = document.createElement("span");
+    letter.className = "undercroft-tool-letter";
+    letter.textContent = tool.letter;
+    element.appendChild(letter);
+    primaryNav.appendChild(element);
+  });
+  refreshTooltips(root);
+}
 
 function showFeedback(status, feedback, fallbackMessage) {
   if (!status || typeof status.show !== "function") {
@@ -42,6 +165,7 @@ export function initAppShell({
 
   initThemeControls(root);
   initPaneToggles(root);
+  initToolNavigation(root);
 
   const undoStack = new UndoRedoStack({
     storageKey: `${storagePrefix}.${namespace}`,

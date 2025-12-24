@@ -141,6 +141,111 @@ body[data-theme="dark"] .hover-lift:hover {
   position: sticky;
   top: 0;
   z-index: 1200;
+  --undercroft-pane-left-width: 18rem;
+  --undercroft-pane-right-width: 20rem;
+}
+
+.workbench-header-grid {
+  display: grid;
+  grid-template-columns: var(--undercroft-pane-left-width) minmax(0, 1fr) var(--undercroft-pane-right-width);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.undercroft-tool-panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: nowrap;
+  border-radius: var(--bs-border-radius);
+  border: 1px solid var(--bs-border-color);
+  overflow: hidden;
+  background-color: var(--bs-body-bg);
+  padding: 0;
+  flex-shrink: 0;
+  margin-right: 0.75rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.undercroft-tool-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0;
+  border: 0;
+  border-left: 1px solid var(--bs-border-color);
+  background-color: transparent;
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  font-weight: 700;
+}
+
+.undercroft-tool-button:first-child {
+  border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.undercroft-tool-button.is-active {
+  height: 2.75rem;
+}
+
+.undercroft-tool-button:hover {
+  border-color: var(--bs-primary);
+  background-color: var(--bs-tertiary-bg);
+}
+
+.undercroft-tool-button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.undercroft-tool-button.is-active {
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+  cursor: default;
+}
+
+.undercroft-tool-button.tool-workbench {
+  --undercroft-tool-accent: var(--bs-indigo);
+}
+
+.undercroft-tool-button.tool-press {
+  --undercroft-tool-accent: var(--bs-danger);
+}
+
+.undercroft-tool-button.tool-orrery {
+  --undercroft-tool-accent: var(--bs-info);
+}
+
+.undercroft-tool-button.tool-forge {
+  --undercroft-tool-accent: var(--bs-warning);
+}
+
+.undercroft-tool-button.tool-crucible {
+  --undercroft-tool-accent: var(--bs-primary);
+}
+
+.undercroft-tool-button.tool-vault {
+  --undercroft-tool-accent: var(--bs-teal);
+}
+
+.undercroft-tool-button.tool-sanctum {
+  --undercroft-tool-accent: var(--bs-success);
+}
+
+.undercroft-tool-letter {
+  display: block;
+  color: var(--undercroft-tool-accent, var(--bs-body-color));
+  font-size: 1.2rem;
+  font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+  line-height: 1;
+}
+
+.tooltip {
+  z-index: 1400;
 }
 
 .undercroft-auth-menu {
