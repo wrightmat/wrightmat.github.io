@@ -499,6 +499,10 @@ export class BaseMapManager {
     return this.current?.getOverlayHost?.() || null;
   }
 
+  getDefaultView() {
+    return this.defaultView;
+  }
+
   setInteractionEnabled(enabled) {
     this.current?.setInteractionEnabled?.(enabled);
   }
