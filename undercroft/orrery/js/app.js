@@ -54,6 +54,7 @@ const elements = {
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
   tileProvider: document.querySelector("#base-map-tile-provider"),
+  tileQuickPick: document.querySelector("[data-base-map-tile-quick-pick]"),
   imageSrc: document.querySelector("[data-base-map-image-src]"),
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
@@ -186,6 +187,9 @@ function renderBaseMapSettings() {
 
   if (elements.tileProvider) {
     elements.tileProvider.value = baseMap.settings.tile.urlTemplate;
+  }
+  if (elements.tileQuickPick) {
+    elements.tileQuickPick.value = "";
   }
 }
 
@@ -886,6 +890,30 @@ function setupBaseMapEvents() {
         state.map.baseMap.settings.tile.urlTemplate = value;
         updateMapTimestamp(state.map);
       });
+      if (state.map.baseMap.type === "tile") {
+        baseMapManager.updateSettings(state.map.baseMap.settings.tile);
+      }
+      renderJson();
+    });
+  }
+  if (elements.tileQuickPick) {
+    elements.tileQuickPick.addEventListener("change", () => {
+      const selection = elements.tileQuickPick.selectedOptions[0];
+      if (!selection || !selection.dataset.tileUrl) {
+        return;
+      }
+      const urlTemplate = selection.dataset.tileUrl;
+      const maxZoom = Number(selection.dataset.tileMaxZoom);
+      recordHistory("tile quick pick", () => {
+        state.map.baseMap.settings.tile.urlTemplate = urlTemplate;
+        if (Number.isFinite(maxZoom)) {
+          state.map.baseMap.settings.tile.maxZoom = maxZoom;
+        }
+        updateMapTimestamp(state.map);
+      });
+      if (elements.tileProvider) {
+        elements.tileProvider.value = urlTemplate;
+      }
       if (state.map.baseMap.type === "tile") {
         baseMapManager.updateSettings(state.map.baseMap.settings.tile);
       }

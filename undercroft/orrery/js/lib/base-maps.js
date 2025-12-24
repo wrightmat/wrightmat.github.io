@@ -75,12 +75,6 @@ class TileBaseMap {
         }
         overlayPane.style.width = `${targetSize.x}px`;
         overlayPane.style.height = `${targetSize.y}px`;
-        console.info("[Orrery] Tile overlay pane size", {
-          pane: overlayPane.getBoundingClientRect(),
-          host: this.overlayHost.getBoundingClientRect(),
-          map: this.container?.getBoundingClientRect?.(),
-          size: targetSize,
-        });
       };
       this.overlaySizer();
       this.overlayResizeHandler = (event) => this.overlaySizer?.(event?.newSize);
@@ -94,14 +88,7 @@ class TileBaseMap {
       this.overlayHost.style.width = "100%";
       this.overlayHost.style.height = "100%";
       this.container.appendChild(this.overlayHost);
-      console.warn("[Orrery] Falling back to container overlay host; Leaflet pane missing.", {
-        map: this.container?.getBoundingClientRect?.(),
-      });
     }
-    console.info("[Orrery] Tile map overlay host ready", {
-      host: this.overlayHost?.getBoundingClientRect?.(),
-      children: this.overlayHost?.children?.length ?? 0,
-    });
     this.map?.invalidateSize?.();
 
     this.map.on("moveend", () => this.emitChange());
@@ -144,6 +131,21 @@ class TileBaseMap {
     }
     if (settings.attribution !== undefined) {
       this.tileLayer.options.attribution = settings.attribution;
+    }
+    if (this.map) {
+      if (Number.isFinite(settings.minZoom)) {
+        this.map.setMinZoom(settings.minZoom);
+      }
+      if (Number.isFinite(settings.maxZoom)) {
+        this.map.setMaxZoom(settings.maxZoom);
+      }
+      const currentZoom = this.map.getZoom();
+      if (Number.isFinite(settings.maxZoom) && currentZoom > settings.maxZoom) {
+        this.map.setZoom(settings.maxZoom);
+      }
+      if (Number.isFinite(settings.minZoom) && currentZoom < settings.minZoom) {
+        this.map.setZoom(settings.minZoom);
+      }
     }
   }
 
