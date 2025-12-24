@@ -14,6 +14,8 @@ class TileBaseMap {
     this.view = view;
     this.map = null;
     this.overlayHost = null;
+    this.overlaySizer = null;
+    this.overlayResizeHandler = null;
   }
 
   mount() {
@@ -46,8 +48,9 @@ class TileBaseMap {
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
       overlayPane.style.pointerEvents = "none";
-      overlayPane.style.width = "100%";
-      overlayPane.style.height = "100%";
+      overlayPane.style.position = "absolute";
+      overlayPane.style.left = "0";
+      overlayPane.style.top = "0";
       const domUtil = leaflet?.DomUtil;
       if (domUtil) {
         this.overlayHost = domUtil.create(
@@ -64,17 +67,31 @@ class TileBaseMap {
       this.overlayHost.style.inset = "0";
       this.overlayHost.style.width = "100%";
       this.overlayHost.style.height = "100%";
-      console.info("[Orrery] Tile overlay pane size", {
-        pane: overlayPane.getBoundingClientRect(),
-        host: this.overlayHost.getBoundingClientRect(),
-        map: this.container?.getBoundingClientRect?.(),
-      });
+      this.overlaySizer = (size) => {
+        const targetSize = size || this.map?.getSize?.();
+        if (!targetSize) {
+          return;
+        }
+        overlayPane.style.width = `${targetSize.x}px`;
+        overlayPane.style.height = `${targetSize.y}px`;
+        console.info("[Orrery] Tile overlay pane size", {
+          pane: overlayPane.getBoundingClientRect(),
+          host: this.overlayHost.getBoundingClientRect(),
+          map: this.container?.getBoundingClientRect?.(),
+          size: targetSize,
+        });
+      };
+      this.overlaySizer();
+      this.overlayResizeHandler = (event) => this.overlaySizer?.(event?.newSize);
+      this.map?.on?.("resize", this.overlayResizeHandler);
     }
     if (!this.overlayHost) {
       this.overlayHost = document.createElement("div");
       this.overlayHost.className = "orrery-layer-overlay-host";
       this.overlayHost.style.position = "absolute";
       this.overlayHost.style.inset = "0";
+      this.overlayHost.style.width = "100%";
+      this.overlayHost.style.height = "100%";
       this.container.appendChild(this.overlayHost);
       console.warn("[Orrery] Falling back to container overlay host; Leaflet pane missing.", {
         map: this.container?.getBoundingClientRect?.(),
@@ -151,6 +168,9 @@ class TileBaseMap {
 
   destroy() {
     if (this.map) {
+      if (this.overlayResizeHandler) {
+        this.map.off?.("resize", this.overlayResizeHandler);
+      }
       this.map.remove();
       this.map = null;
     }
