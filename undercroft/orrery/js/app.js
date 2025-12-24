@@ -866,15 +866,15 @@ function renderAll() {
   renderJson();
 }
 
-function resetTileView(zoom) {
-  if (!Number.isFinite(zoom)) {
-    return;
-  }
-  state.map.view.zoom = zoom;
-  state.map.view.center = { lat: 0, lng: 0 };
-  state.map.view.pan = { x: 0, y: 0 };
-  baseMapManager.setDefaultView(state.map.view);
-  baseMapManager.reset();
+function centerTileView(zoom) {
+  const nextZoom = Number.isFinite(zoom) ? zoom : state.map.view.zoom;
+  state.map.view = {
+    ...state.map.view,
+    zoom: nextZoom,
+    center: { lat: 0, lng: 0 },
+    pan: { x: 0, y: 0 },
+  };
+  baseMapManager.setView(state.map.view);
 }
 
 function setupBaseMapEvents() {
@@ -901,13 +901,14 @@ function setupBaseMapEvents() {
         state.map.baseMap.settings.tile.urlTemplate = value;
         updateMapTimestamp(state.map);
       });
-      resetTileView(state.map.baseMap.settings.tile.initialZoom);
       if (state.map.baseMap.type === "tile") {
         baseMapManager.updateSettings(state.map.baseMap.settings.tile);
+        centerTileView(state.map.baseMap.settings.tile.initialZoom);
       }
       renderJson();
     });
   }
+
   if (elements.tileQuickPick) {
     elements.tileQuickPick.addEventListener("change", () => {
       const selection = elements.tileQuickPick.selectedOptions[0];
@@ -927,12 +928,12 @@ function setupBaseMapEvents() {
         }
         updateMapTimestamp(state.map);
       });
-      resetTileView(state.map.baseMap.settings.tile.initialZoom);
       if (elements.tileProvider) {
         elements.tileProvider.value = urlTemplate;
       }
       if (state.map.baseMap.type === "tile") {
         baseMapManager.updateSettings(state.map.baseMap.settings.tile);
+        centerTileView(state.map.baseMap.settings.tile.initialZoom);
       }
       renderJson();
     });
