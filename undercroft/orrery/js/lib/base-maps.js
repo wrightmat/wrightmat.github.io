@@ -42,7 +42,7 @@ class TileBaseMap {
 
     this.setView(this.view);
 
-    const overlayPane = this.map.createPane("orreryOverlay");
+    const overlayPane = this.map.getPane("overlayPane");
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
       overlayPane.style.pointerEvents = "none";
@@ -58,9 +58,31 @@ class TileBaseMap {
         this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
         overlayPane.appendChild(this.overlayHost);
       }
+      this.overlayHost.style.position = "absolute";
+      this.overlayHost.style.inset = "0";
       this.overlayHost.style.width = "100%";
       this.overlayHost.style.height = "100%";
+      console.info("[Orrery] Tile overlay pane size", {
+        pane: overlayPane.getBoundingClientRect(),
+        host: this.overlayHost.getBoundingClientRect(),
+        map: this.container?.getBoundingClientRect?.(),
+      });
     }
+    if (!this.overlayHost) {
+      this.overlayHost = document.createElement("div");
+      this.overlayHost.className = "orrery-layer-overlay-host";
+      this.overlayHost.style.position = "absolute";
+      this.overlayHost.style.inset = "0";
+      this.container.appendChild(this.overlayHost);
+      console.warn("[Orrery] Falling back to container overlay host; Leaflet pane missing.", {
+        map: this.container?.getBoundingClientRect?.(),
+      });
+    }
+    console.info("[Orrery] Tile map overlay host ready", {
+      host: this.overlayHost?.getBoundingClientRect?.(),
+      children: this.overlayHost?.children?.length ?? 0,
+    });
+    this.map?.invalidateSize?.();
 
     this.map.on("moveend", () => this.emitChange());
     this.map.on("zoomend", () => this.emitChange());
