@@ -94,6 +94,17 @@ export function createLayer({ type = "vector", name } = {}) {
   };
 }
 
+export function createGridCell({ key, coord, gridType = "square" } = {}) {
+  return {
+    id: randomId(),
+    kind: "cell",
+    key: key || randomId(),
+    gridType,
+    coord: coord || { col: 0, row: 0 },
+    properties: {},
+  };
+}
+
 export function createGroup({ name } = {}) {
   return {
     id: randomId(),
