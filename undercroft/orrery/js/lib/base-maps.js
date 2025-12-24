@@ -14,6 +14,9 @@ class TileBaseMap {
     this.view = view;
     this.map = null;
     this.overlayHost = null;
+    this.overlaySizer = null;
+    this.overlayResizeHandler = null;
+    this.tileLayer = null;
   }
 
   mount() {
@@ -32,20 +35,29 @@ class TileBaseMap {
       attributionControl: false,
       zoomSnap: 0.25,
     });
-    leaflet
+    this.tileLayer = leaflet
       .tileLayer(this.settings.urlTemplate, {
         maxZoom: this.settings.maxZoom,
         minZoom: this.settings.minZoom,
         attribution: this.settings.attribution,
       })
       .addTo(this.map);
+    if (Number.isFinite(this.settings.minZoom)) {
+      this.map.setMinZoom(this.settings.minZoom);
+    }
+    if (Number.isFinite(this.settings.maxZoom)) {
+      this.map.setMaxZoom(this.settings.maxZoom);
+    }
 
     this.setView(this.view);
 
-    const overlayPane = this.map.createPane("orreryOverlay");
+    const overlayPane = this.map.getPane("overlayPane");
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
       overlayPane.style.pointerEvents = "none";
+      overlayPane.style.position = "absolute";
+      overlayPane.style.left = "0";
+      overlayPane.style.top = "0";
       const domUtil = leaflet?.DomUtil;
       if (domUtil) {
         this.overlayHost = domUtil.create(
@@ -58,9 +70,33 @@ class TileBaseMap {
         this.overlayHost.className = "leaflet-layer leaflet-zoom-animated orrery-layer-overlay-host";
         overlayPane.appendChild(this.overlayHost);
       }
+      this.overlayHost.style.position = "absolute";
+      this.overlayHost.style.inset = "0";
       this.overlayHost.style.width = "100%";
       this.overlayHost.style.height = "100%";
+      this.overlaySizer = (size) => {
+        const targetSize = size || this.map?.getSize?.();
+        if (!targetSize) {
+          return;
+        }
+        overlayPane.style.width = `${targetSize.x}px`;
+        overlayPane.style.height = `${targetSize.y}px`;
+      };
+      this.overlaySizer();
+      this.overlayResizeHandler = (event) => this.overlaySizer?.(event?.newSize);
+      this.map?.on?.("resize", this.overlayResizeHandler);
     }
+
+    if (!this.overlayHost) {
+      this.overlayHost = document.createElement("div");
+      this.overlayHost.className = "orrery-layer-overlay-host";
+      this.overlayHost.style.position = "absolute";
+      this.overlayHost.style.inset = "0";
+      this.overlayHost.style.width = "100%";
+      this.overlayHost.style.height = "100%";
+      this.container.appendChild(this.overlayHost);
+    }
+    this.map?.invalidateSize?.();
 
     this.map.on("moveend", () => this.emitChange());
     this.map.on("zoomend", () => this.emitChange());
@@ -84,6 +120,39 @@ class TileBaseMap {
       return;
     }
     this.map.setView([view.center.lat, view.center.lng], view.zoom, { animate: false });
+  }
+
+  updateSettings(settings) {
+    if (!this.tileLayer || !settings) {
+      return;
+    }
+    this.settings = settings;
+    if (settings.urlTemplate) {
+      this.tileLayer.setUrl(settings.urlTemplate);
+    }
+    if (Number.isFinite(settings.minZoom)) {
+      this.tileLayer.options.minZoom = settings.minZoom;
+      this.map?.setMinZoom?.(settings.minZoom);
+    }
+    if (Number.isFinite(settings.maxZoom)) {
+      this.tileLayer.options.maxZoom = settings.maxZoom;
+      this.map?.setMaxZoom?.(settings.maxZoom);
+    }
+    if (settings.attribution !== undefined) {
+      this.tileLayer.options.attribution = settings.attribution;
+    }
+    if (this.map) {
+      const currentZoom = this.map.getZoom();
+      if (Number.isFinite(settings.maxZoom) && currentZoom > settings.maxZoom) {
+        this.map.setZoom(settings.maxZoom);
+      }
+      if (Number.isFinite(settings.minZoom) && currentZoom < settings.minZoom) {
+        this.map.setZoom(settings.minZoom);
+      }
+      if (Number.isFinite(settings.initialZoom)) {
+        this.map.setZoom(settings.initialZoom);
+      }
+    }
   }
 
   zoomBy(delta) {
@@ -127,6 +196,9 @@ class TileBaseMap {
 
   destroy() {
     if (this.map) {
+      if (this.overlayResizeHandler) {
+        this.map.off?.("resize", this.overlayResizeHandler);
+      }
       this.map.remove();
       this.map = null;
     }
@@ -403,6 +475,10 @@ export class BaseMapManager {
     if (this.defaultView) {
       this.current?.reset(this.defaultView);
     }
+  }
+
+  setView(view) {
+    this.current?.setView?.(view);
   }
 
   getView() {
