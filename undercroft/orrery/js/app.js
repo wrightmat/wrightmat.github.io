@@ -53,6 +53,7 @@ const elements = {
   mapMain: document.querySelector("[data-map-main]"),
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
+  tileProvider: document.querySelector("#base-map-tile-provider"),
   imageSrc: document.querySelector("[data-base-map-image-src]"),
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
@@ -182,6 +183,10 @@ function renderBaseMapSettings() {
 
   const canvasSettings = baseMap.settings.canvas;
   elements.canvasBackground.value = canvasSettings.background;
+
+  if (elements.tileProvider) {
+    elements.tileProvider.value = baseMap.settings.tile.urlTemplate;
+  }
 }
 
 function renderLayers() {
@@ -869,6 +874,24 @@ function setupBaseMapEvents() {
       status.show(`Switched to ${radio.value} base map`, { type: "info", timeout: 1500 });
     });
   });
+
+  if (elements.tileProvider) {
+    elements.tileProvider.addEventListener("change", () => {
+      const value = elements.tileProvider.value.trim();
+      if (!value) {
+        elements.tileProvider.value = state.map.baseMap.settings.tile.urlTemplate;
+        return;
+      }
+      recordHistory("tile provider", () => {
+        state.map.baseMap.settings.tile.urlTemplate = value;
+        updateMapTimestamp(state.map);
+      });
+      if (state.map.baseMap.type === "tile") {
+        baseMapManager.updateSettings(state.map.baseMap.settings.tile);
+      }
+      renderJson();
+    });
+  }
 
   elements.imageSrc.addEventListener("change", () => {
     recordHistory("image source", () => {

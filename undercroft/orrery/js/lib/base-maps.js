@@ -16,6 +16,7 @@ class TileBaseMap {
     this.overlayHost = null;
     this.overlaySizer = null;
     this.overlayResizeHandler = null;
+    this.tileLayer = null;
   }
 
   mount() {
@@ -34,7 +35,7 @@ class TileBaseMap {
       attributionControl: false,
       zoomSnap: 0.25,
     });
-    leaflet
+    this.tileLayer = leaflet
       .tileLayer(this.settings.urlTemplate, {
         maxZoom: this.settings.maxZoom,
         minZoom: this.settings.minZoom,
@@ -125,6 +126,25 @@ class TileBaseMap {
       return;
     }
     this.map.setView([view.center.lat, view.center.lng], view.zoom, { animate: false });
+  }
+
+  updateSettings(settings) {
+    if (!this.tileLayer || !settings) {
+      return;
+    }
+    this.settings = settings;
+    if (settings.urlTemplate) {
+      this.tileLayer.setUrl(settings.urlTemplate);
+    }
+    if (Number.isFinite(settings.minZoom)) {
+      this.tileLayer.options.minZoom = settings.minZoom;
+    }
+    if (Number.isFinite(settings.maxZoom)) {
+      this.tileLayer.options.maxZoom = settings.maxZoom;
+    }
+    if (settings.attribution !== undefined) {
+      this.tileLayer.options.attribution = settings.attribution;
+    }
   }
 
   zoomBy(delta) {
