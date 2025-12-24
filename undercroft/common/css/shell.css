@@ -188,6 +188,10 @@ body[data-theme="dark"] .hover-lift:hover {
   border-bottom-left-radius: 0;
 }
 
+.undercroft-tool-button.is-active {
+  height: 2.75rem;
+}
+
 .undercroft-tool-button:hover {
   border-color: var(--bs-primary);
   background-color: var(--bs-tertiary-bg);
