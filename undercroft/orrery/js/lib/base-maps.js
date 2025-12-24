@@ -86,6 +86,16 @@ class TileBaseMap {
       this.overlayResizeHandler = (event) => this.overlaySizer?.(event?.newSize);
       this.map?.on?.("resize", this.overlayResizeHandler);
     }
+    if (!this.overlayHost) {
+      this.overlayHost = document.createElement("div");
+      this.overlayHost.className = "orrery-layer-overlay-host";
+      this.overlayHost.style.position = "absolute";
+      this.overlayHost.style.inset = "0";
+      this.overlayHost.style.width = "100%";
+      this.overlayHost.style.height = "100%";
+      this.container.appendChild(this.overlayHost);
+    }
+    this.map?.invalidateSize?.();
 
     if (!this.overlayHost) {
       this.overlayHost = document.createElement("div");
