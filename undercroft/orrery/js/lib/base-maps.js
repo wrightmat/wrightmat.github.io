@@ -97,6 +97,17 @@ class TileBaseMap {
     }
     this.map?.invalidateSize?.();
 
+    if (!this.overlayHost) {
+      this.overlayHost = document.createElement("div");
+      this.overlayHost.className = "orrery-layer-overlay-host";
+      this.overlayHost.style.position = "absolute";
+      this.overlayHost.style.inset = "0";
+      this.overlayHost.style.width = "100%";
+      this.overlayHost.style.height = "100%";
+      this.container.appendChild(this.overlayHost);
+    }
+    this.map?.invalidateSize?.();
+
     this.map.on("moveend", () => this.emitChange());
     this.map.on("zoomend", () => this.emitChange());
   }
@@ -131,20 +142,16 @@ class TileBaseMap {
     }
     if (Number.isFinite(settings.minZoom)) {
       this.tileLayer.options.minZoom = settings.minZoom;
+      this.map?.setMinZoom?.(settings.minZoom);
     }
     if (Number.isFinite(settings.maxZoom)) {
       this.tileLayer.options.maxZoom = settings.maxZoom;
+      this.map?.setMaxZoom?.(settings.maxZoom);
     }
     if (settings.attribution !== undefined) {
       this.tileLayer.options.attribution = settings.attribution;
     }
     if (this.map) {
-      if (Number.isFinite(settings.minZoom)) {
-        this.map.setMinZoom(settings.minZoom);
-      }
-      if (Number.isFinite(settings.maxZoom)) {
-        this.map.setMaxZoom(settings.maxZoom);
-      }
       const currentZoom = this.map.getZoom();
       if (Number.isFinite(settings.maxZoom) && currentZoom > settings.maxZoom) {
         this.map.setZoom(settings.maxZoom);
@@ -480,11 +487,8 @@ export class BaseMapManager {
     }
   }
 
-  setDefaultView(view) {
-    if (!view) {
-      return;
-    }
-    this.defaultView = view;
+  setView(view) {
+    this.current?.setView?.(view);
   }
 
   getView() {
