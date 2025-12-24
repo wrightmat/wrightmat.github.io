@@ -53,6 +53,8 @@ const elements = {
   mapMain: document.querySelector("[data-map-main]"),
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
+  tileProvider: document.querySelector("#base-map-tile-provider"),
+  tileQuickPick: document.querySelector("[data-base-map-tile-quick-pick]"),
   imageSrc: document.querySelector("[data-base-map-image-src]"),
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
@@ -182,6 +184,13 @@ function renderBaseMapSettings() {
 
   const canvasSettings = baseMap.settings.canvas;
   elements.canvasBackground.value = canvasSettings.background;
+
+  if (elements.tileProvider) {
+    elements.tileProvider.value = baseMap.settings.tile.urlTemplate;
+  }
+  if (elements.tileQuickPick) {
+    elements.tileQuickPick.value = "";
+  }
 }
 
 function renderLayers() {
@@ -857,6 +866,17 @@ function renderAll() {
   renderJson();
 }
 
+function centerTileView(zoom) {
+  const nextZoom = Number.isFinite(zoom) ? zoom : state.map.view.zoom;
+  state.map.view = {
+    ...state.map.view,
+    zoom: nextZoom,
+    center: { lat: 0, lng: 0 },
+    pan: { x: 0, y: 0 },
+  };
+  baseMapManager.setView(state.map.view);
+}
+
 function setupBaseMapEvents() {
   elements.baseMapRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
@@ -869,6 +889,55 @@ function setupBaseMapEvents() {
       status.show(`Switched to ${radio.value} base map`, { type: "info", timeout: 1500 });
     });
   });
+
+  if (elements.tileProvider) {
+    elements.tileProvider.addEventListener("change", () => {
+      const value = elements.tileProvider.value.trim();
+      if (!value) {
+        elements.tileProvider.value = state.map.baseMap.settings.tile.urlTemplate;
+        return;
+      }
+      recordHistory("tile provider", () => {
+        state.map.baseMap.settings.tile.urlTemplate = value;
+        updateMapTimestamp(state.map);
+      });
+      if (state.map.baseMap.type === "tile") {
+        baseMapManager.updateSettings(state.map.baseMap.settings.tile);
+        centerTileView(state.map.baseMap.settings.tile.initialZoom);
+      }
+      renderJson();
+    });
+  }
+
+  if (elements.tileQuickPick) {
+    elements.tileQuickPick.addEventListener("change", () => {
+      const selection = elements.tileQuickPick.selectedOptions[0];
+      if (!selection || !selection.dataset.tileUrl) {
+        return;
+      }
+      const urlTemplate = selection.dataset.tileUrl;
+      const maxZoom = Number(selection.dataset.tileMaxZoom);
+      const initialZoom = Number(selection.dataset.tileInitialZoom);
+      recordHistory("tile quick pick", () => {
+        state.map.baseMap.settings.tile.urlTemplate = urlTemplate;
+        if (Number.isFinite(maxZoom)) {
+          state.map.baseMap.settings.tile.maxZoom = maxZoom;
+        }
+        if (Number.isFinite(initialZoom)) {
+          state.map.baseMap.settings.tile.initialZoom = initialZoom;
+        }
+        updateMapTimestamp(state.map);
+      });
+      if (elements.tileProvider) {
+        elements.tileProvider.value = urlTemplate;
+      }
+      if (state.map.baseMap.type === "tile") {
+        baseMapManager.updateSettings(state.map.baseMap.settings.tile);
+        centerTileView(state.map.baseMap.settings.tile.initialZoom);
+      }
+      renderJson();
+    });
+  }
 
   elements.imageSrc.addEventListener("change", () => {
     recordHistory("image source", () => {
