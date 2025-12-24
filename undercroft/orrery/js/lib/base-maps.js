@@ -46,6 +46,8 @@ class TileBaseMap {
     if (overlayPane) {
       overlayPane.style.zIndex = "650";
       overlayPane.style.pointerEvents = "none";
+      overlayPane.style.width = "100%";
+      overlayPane.style.height = "100%";
       const domUtil = leaflet?.DomUtil;
       if (domUtil) {
         this.overlayHost = domUtil.create(
