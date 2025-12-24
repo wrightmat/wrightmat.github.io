@@ -164,11 +164,13 @@ body[data-theme="dark"] .hover-lift:hover {
   padding: 0;
   flex-shrink: 0;
   margin-right: 0.75rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .undercroft-tool-button {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: grid;
   place-items: center;
   border-radius: 0;
@@ -182,6 +184,8 @@ body[data-theme="dark"] .hover-lift:hover {
 
 .undercroft-tool-button:first-child {
   border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .undercroft-tool-button:hover {
@@ -231,7 +235,7 @@ body[data-theme="dark"] .hover-lift:hover {
 .undercroft-tool-letter {
   display: block;
   color: var(--undercroft-tool-accent, var(--bs-body-color));
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-family: "Segoe UI", "Inter", system-ui, sans-serif;
   line-height: 1;
 }
