@@ -388,21 +388,37 @@
                   <label class="form-label mb-0" for="base-map-tile-quick-pick">Quick picks</label>
                   <select class="form-select form-select-sm" id="base-map-tile-quick-pick" data-base-map-tile-quick-pick>
                     <option value="">Select a tile provider</option>
-                    <option value="forgotten-realms" data-tile-url="https://loremaps.github.io/LoreMaps-Faerun-Tiles/Tiles/{z}/{x}/{y}.png" data-tile-max-zoom="6">
-                      Forgotten Realms (Max Zoom 6)
+                    <option
+                      value="forgotten-realms"
+                      data-tile-url="https://loremaps.github.io/LoreMaps-Faerun-Tiles/Tiles/{z}/{x}/{y}.png"
+                      data-tile-max-zoom="6"
+                      data-tile-initial-zoom="6"
+                    >
+                      Forgotten Realms
                     </option>
-                    <option value="eberron" data-tile-url="https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg" data-tile-max-zoom="7">
-                      Eberron (Max Zoom 7)
+                    <option
+                      value="eberron"
+                      data-tile-url="https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg"
+                      data-tile-max-zoom="7"
+                      data-tile-initial-zoom="7"
+                    >
+                      Eberron
                     </option>
                     <option
                       value="sharn"
                       data-tile-url="https://eberronmap.johnarcadian.com/worldbin/sharncityoftowers/{z}/{x}/{y}.jpg"
                       data-tile-max-zoom="6"
+                      data-tile-initial-zoom="6"
                     >
-                      Sharn: City of Towers (Max Zoom 6)
+                      Sharn: City of Towers
                     </option>
-                    <option value="real-world" data-tile-url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" data-tile-max-zoom="19">
-                      Real World (Max Zoom 19)
+                    <option
+                      value="real-world"
+                      data-tile-url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      data-tile-max-zoom="19"
+                      data-tile-initial-zoom="19"
+                    >
+                      Real World
                     </option>
                   </select>
                 </div>

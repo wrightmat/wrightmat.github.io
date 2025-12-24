@@ -42,6 +42,12 @@ class TileBaseMap {
         attribution: this.settings.attribution,
       })
       .addTo(this.map);
+    if (Number.isFinite(this.settings.minZoom)) {
+      this.map.setMinZoom(this.settings.minZoom);
+    }
+    if (Number.isFinite(this.settings.maxZoom)) {
+      this.map.setMaxZoom(this.settings.maxZoom);
+    }
 
     this.setView(this.view);
 
@@ -145,6 +151,9 @@ class TileBaseMap {
       }
       if (Number.isFinite(settings.minZoom) && currentZoom < settings.minZoom) {
         this.map.setZoom(settings.minZoom);
+      }
+      if (Number.isFinite(settings.initialZoom)) {
+        this.map.setZoom(settings.initialZoom);
       }
     }
   }
@@ -469,6 +478,13 @@ export class BaseMapManager {
     if (this.defaultView) {
       this.current?.reset(this.defaultView);
     }
+  }
+
+  setDefaultView(view) {
+    if (!view) {
+      return;
+    }
+    this.defaultView = view;
   }
 
   getView() {
