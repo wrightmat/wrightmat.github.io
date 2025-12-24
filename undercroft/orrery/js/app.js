@@ -866,6 +866,17 @@ function renderAll() {
   renderJson();
 }
 
+function resetTileView(zoom) {
+  if (!Number.isFinite(zoom)) {
+    return;
+  }
+  state.map.view.zoom = zoom;
+  state.map.view.center = { lat: 0, lng: 0 };
+  state.map.view.pan = { x: 0, y: 0 };
+  baseMapManager.setDefaultView(state.map.view);
+  baseMapManager.reset();
+}
+
 function setupBaseMapEvents() {
   elements.baseMapRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
@@ -890,10 +901,7 @@ function setupBaseMapEvents() {
         state.map.baseMap.settings.tile.urlTemplate = value;
         updateMapTimestamp(state.map);
       });
-      if (Number.isFinite(state.map.baseMap.settings.tile.initialZoom)) {
-        state.map.view.zoom = state.map.baseMap.settings.tile.initialZoom;
-        baseMapManager.setDefaultView(state.map.view);
-      }
+      resetTileView(state.map.baseMap.settings.tile.initialZoom);
       if (state.map.baseMap.type === "tile") {
         baseMapManager.updateSettings(state.map.baseMap.settings.tile);
       }
@@ -919,10 +927,7 @@ function setupBaseMapEvents() {
         }
         updateMapTimestamp(state.map);
       });
-      if (Number.isFinite(initialZoom)) {
-        state.map.view.zoom = initialZoom;
-        baseMapManager.setDefaultView(state.map.view);
-      }
+      resetTileView(state.map.baseMap.settings.tile.initialZoom);
       if (elements.tileProvider) {
         elements.tileProvider.value = urlTemplate;
       }
