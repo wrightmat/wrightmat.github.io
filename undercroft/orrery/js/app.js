@@ -547,14 +547,10 @@ function createGridLayerElement(layer, selectionState) {
       event.preventDefault();
       event.stopPropagation();
       baseMapManager.setInteractionEnabled(false);
-      const overlay = baseMapManager.getOverlayContainer();
-      if (!overlay) {
-        return;
-      }
-      const rect = overlay.getBoundingClientRect();
+      const rect = grid.getBoundingClientRect();
       const point = {
-        x: event.clientX - rect.left - (layer.position?.x || 0),
-        y: event.clientY - rect.top - (layer.position?.y || 0),
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
       };
       const coord = getGridCoordFromPoint(layer, point);
       const entry = createGridCellSelectionEntry(layer, coord);
