@@ -685,7 +685,7 @@ function createGridLayerElement(layer, selectionState) {
 }
 
 function getLayerPositionScale() {
-  return state.map.baseMap.type === "tile" ? getGridZoomScale() : 1;
+  return 1;
 }
 
 function getLayerSizeScale() {
@@ -1737,6 +1737,16 @@ function setupLayerEvents() {
       let layer = null;
       recordHistory(`add ${type} layer`, () => {
         layer = createLayer({ type });
+        if (type === "marker") {
+          const overlay = baseMapManager.getOverlayContainer();
+          if (overlay) {
+            const rect = overlay.getBoundingClientRect();
+            layer.position = {
+              x: rect.width / 2,
+              y: rect.height / 2,
+            };
+          }
+        }
         state.map.layers.push(layer);
         updateMapTimestamp(state.map);
       });
