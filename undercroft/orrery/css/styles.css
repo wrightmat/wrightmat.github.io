@@ -86,6 +86,12 @@
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 
+.orrery-grid-cell-highlight.is-group {
+  border-color: rgba(249, 115, 22, 0.9);
+  background: rgba(249, 115, 22, 0.2);
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.4);
+}
+
 .orrery-layer-raster-overlay {
   position: absolute;
   inset: 0;
