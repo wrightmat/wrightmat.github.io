@@ -8,6 +8,7 @@ import {
   createGridCell,
   createLayer,
   createMapModel,
+  createView,
   updateBaseMapType,
   updateMapTimestamp,
 } from "./lib/map-model.js";
@@ -79,6 +80,8 @@ const elements = {
   groupAdd: document.querySelector("[data-add-group]"),
   layerList: document.querySelector("[data-layer-list]"),
   groupList: document.querySelector("[data-group-list]"),
+  viewAdd: document.querySelector("[data-add-view]"),
+  viewList: document.querySelector("[data-view-list]"),
   selectionTitle: document.querySelector("[data-selection-title]"),
   selectionType: document.querySelector("[data-selection-type]"),
   selectionDetails: document.querySelector("[data-selection-details]"),
@@ -152,6 +155,9 @@ function applyMapSnapshot(snapshot) {
     return;
   }
   state.map = JSON.parse(snapshot);
+  if (!state.map.views) {
+    state.map.views = [];
+  }
   state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   renderAll();
@@ -178,7 +184,7 @@ function setSelection(kind, id = null, extra = {}) {
   renderSelection();
   renderLayerOverlays();
   syncOverlayInteractivity();
-  const shouldExpand = kind === "layer" || kind === "group" || kind === "grid-cells";
+  const shouldExpand = kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view";
   setSelectionCollapsed(!shouldExpand);
 }
 
@@ -261,9 +267,13 @@ function renderGroups() {
     return;
   }
   state.map.groups.forEach((group) => {
+    const isSelected = state.selection.kind === "group" && state.selection.id === group.id;
     const item = document.createElement("button");
     item.type = "button";
     item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+    if (isSelected) {
+      item.classList.add("active");
+    }
     item.textContent = group.name;
     const badge = document.createElement("span");
     badge.className = "badge text-bg-secondary";
@@ -271,6 +281,36 @@ function renderGroups() {
     item.appendChild(badge);
     item.addEventListener("click", () => setSelection("group", group.id));
     elements.groupList.appendChild(item);
+  });
+}
+
+function renderViewsList() {
+  if (!elements.viewList) {
+    return;
+  }
+  elements.viewList.innerHTML = "";
+  if (!state.map.views || state.map.views.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "list-group-item text-body-secondary small";
+    empty.textContent = "No views yet.";
+    elements.viewList.appendChild(empty);
+    return;
+  }
+  state.map.views.forEach((view) => {
+    const isSelected = state.selection.kind === "view" && state.selection.id === view.id;
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+    if (isSelected) {
+      item.classList.add("active");
+    }
+    item.textContent = view.name;
+    const badge = document.createElement("span");
+    badge.className = "badge text-bg-secondary";
+    badge.textContent = "View";
+    item.appendChild(badge);
+    item.addEventListener("click", () => setSelection("view", view.id));
+    elements.viewList.appendChild(item);
   });
 }
 
@@ -305,6 +345,19 @@ function renderSelection() {
     }
   }
 
+  if (selection.kind === "view") {
+    const view = map.views?.find((entry) => entry.id === selection.id);
+    if (view) {
+      elements.selectionTitle.textContent = view.name;
+      elements.selectionType.textContent = "View";
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = view.description ? "Custom view" : "No description yet.";
+      }
+      renderViewSelectionEditor(view);
+      return;
+    }
+  }
+
   if (selection.kind === "grid-cells") {
     const layer = map.layers.find((entry) => entry.id === selection.layerId);
     if (layer) {
@@ -323,7 +376,7 @@ function renderSelection() {
   elements.selectionTitle.textContent = "No selection";
   elements.selectionType.textContent = "None";
   if (elements.selectionDetails) {
-    elements.selectionDetails.textContent = "Select a layer or group to inspect it.";
+    elements.selectionDetails.textContent = "Select a layer, group, view, or grid cell to inspect it.";
   }
   clearSelectionEditor();
 }
@@ -333,7 +386,7 @@ function clearSelectionEditor() {
     elements.selectionEditor.innerHTML = "";
     const placeholder = document.createElement("p");
     placeholder.className = "text-body-secondary small mb-0";
-    placeholder.textContent = "Select a layer or grid cell to edit its properties.";
+    placeholder.textContent = "Select a layer, view, group, or grid cell to edit its properties.";
     elements.selectionEditor.appendChild(placeholder);
   }
 }
@@ -408,6 +461,39 @@ function createGridCellSelectionEntry(layer, coord) {
     key: getGridCellKey(layer, coord),
     coord,
   };
+}
+
+function normalizeGroupMembers(group) {
+  return (group.elementIds || []).map((entry) => {
+    if (typeof entry === "string") {
+      return { elementId: entry };
+    }
+    return entry || {};
+  });
+}
+
+function getGroupMemberKey(member) {
+  return `${member.layerId || "unknown"}:${member.elementId || "unknown"}`;
+}
+
+function findGridCellById(layer, elementId) {
+  return layer.elements?.find((element) => element.kind === "cell" && element.id === elementId) || null;
+}
+
+function getGroupCellsForLayer(group, layer) {
+  const members = normalizeGroupMembers(group);
+  const selections = [];
+  members.forEach((member) => {
+    if (member.kind !== "grid-cell" || member.layerId !== layer.id) {
+      return;
+    }
+    const cell = findGridCellById(layer, member.elementId);
+    if (!cell) {
+      return;
+    }
+    selections.push(createGridCellSelectionEntry(layer, cell.coord));
+  });
+  return selections;
 }
 
 function buildGridRangeSelection(layer, start, end) {
@@ -678,6 +764,9 @@ function createGridLayerElement(layer, selectionState) {
   }
   const offset = getGridOffset(layer);
   grid.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
+  if (selectionState?.groupCells?.length) {
+    grid.appendChild(createGridSelectionOverlay(layer, selectionState.groupCells, { variant: "group" }));
+  }
   if (selectionState?.selectedCells?.length) {
     grid.appendChild(createGridSelectionOverlay(layer, selectionState.selectedCells));
   }
@@ -763,15 +852,19 @@ function createRasterLayerElement(layer, renderState = {}) {
   return wrapper;
 }
 
-function createGridSelectionOverlay(layer, selectedCells) {
+function createGridSelectionOverlay(layer, selectedCells, options = {}) {
   const overlay = document.createElement("div");
   overlay.className = "orrery-layer-grid-selection";
+  const variant = options.variant || "selection";
   const gridType = getGridType(layer);
   const offset = getGridOffset(layer);
   selectedCells.forEach((cell) => {
     const rect = getGridCellPixelRect(layer, cell.coord);
     const highlight = document.createElement("div");
     highlight.className = "orrery-grid-cell-highlight";
+    if (variant === "group") {
+      highlight.classList.add("is-group");
+    }
     if (gridType === "hex") {
       highlight.classList.add("is-hex");
     }
@@ -930,6 +1023,8 @@ function renderLayerOverlays() {
   }
   syncOverlayInteractivity();
   overlay.innerHTML = "";
+  const activeGroup =
+    state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
   state.map.layers.forEach((layer) => {
     if (!layer.visible) {
       return;
@@ -937,6 +1032,7 @@ function renderLayerOverlays() {
     const isLayerSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
     const isGridCellsSelected = state.selection.kind === "grid-cells" && state.selection.layerId === layer.id;
     const isSelected = isLayerSelected || isGridCellsSelected;
+    const groupCells = activeGroup ? getGroupCellsForLayer(activeGroup, layer) : [];
     const wrapper = createLayerWrapper(layer, isSelected);
     let element = null;
     const layerPositionScale = getLayerPositionScale();
@@ -950,6 +1046,7 @@ function renderLayerOverlays() {
       element = createGridLayerElement(layer, {
         isInteractive: isSelected,
         selectedCells: isGridCellsSelected ? state.selection.cells : [],
+        groupCells,
       });
     } else if (layer.type === "raster") {
       element = createRasterLayerElement(layer, renderState);
@@ -1009,6 +1106,27 @@ function applyLayerSettingsChange(label, apply) {
   });
   renderSelection();
   renderLayerOverlays();
+  renderJson();
+}
+
+function applyGroupChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderGroups();
+  renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+function applyViewChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderViewsList();
+  renderSelection();
   renderJson();
 }
 
@@ -1190,7 +1308,7 @@ function renderLayerSelectionEditor(layer) {
     propertiesWrapper.appendChild(empty);
   } else {
     entries.forEach(([key, value]) => {
-      propertiesWrapper.appendChild(createPropertyRow(layer, key, value));
+      propertiesWrapper.appendChild(createLayerPropertyRow(layer, key, value));
     });
   }
 
@@ -1215,7 +1333,7 @@ function renderLayerSelectionEditor(layer) {
     if (emptyState) {
       emptyState.remove();
     }
-    propertiesWrapper.appendChild(createPropertyRow(layer, "", ""));
+    propertiesWrapper.appendChild(createLayerPropertyRow(layer, "", ""));
     refreshTooltips();
   });
 
@@ -1282,7 +1400,7 @@ function renderLayerSelectionEditor(layer) {
   container.appendChild(deleteButton);
 }
 
-function createPropertyRow(layer, key, value) {
+function createPropertyRow({ key, value, onUpdate, onRemove }) {
   const row = document.createElement("div");
   row.className = "d-flex gap-2 align-items-center";
 
@@ -1312,33 +1430,46 @@ function createPropertyRow(layer, key, value) {
   const updateProperty = () => {
     const nextKey = keyInput.value.trim();
     const nextValue = valueInput.value.trim();
-    applyLayerSettingsChange("layer property", () => {
-      layer.properties = layer.properties || {};
-      if (currentKey && currentKey !== nextKey) {
-        delete layer.properties[currentKey];
-      }
-      if (nextKey) {
-        layer.properties[nextKey] = nextValue;
-        currentKey = nextKey;
-      }
-    });
+    onUpdate?.({ currentKey, nextKey, nextValue });
+    currentKey = nextKey;
   };
 
   keyInput.addEventListener("change", updateProperty);
   valueInput.addEventListener("change", updateProperty);
   removeButton.addEventListener("click", () => {
-    applyLayerSettingsChange("remove layer property", () => {
-      if (currentKey && layer.properties) {
-        delete layer.properties[currentKey];
-      }
-    });
-    renderSelection();
+    onRemove?.({ currentKey });
   });
 
   row.appendChild(keyInput);
   row.appendChild(valueInput);
   row.appendChild(removeButton);
   return row;
+}
+
+function createLayerPropertyRow(layer, key, value) {
+  return createPropertyRow({
+    key,
+    value,
+    onUpdate: ({ currentKey, nextKey, nextValue }) => {
+      applyLayerSettingsChange("layer property", () => {
+        layer.properties = layer.properties || {};
+        if (currentKey && currentKey !== nextKey) {
+          delete layer.properties[currentKey];
+        }
+        if (nextKey) {
+          layer.properties[nextKey] = nextValue;
+        }
+      });
+    },
+    onRemove: ({ currentKey }) => {
+      applyLayerSettingsChange("remove layer property", () => {
+        if (currentKey && layer.properties) {
+          delete layer.properties[currentKey];
+        }
+      });
+      renderSelection();
+    },
+  });
 }
 
 function createGridCellPropertyRow(layer, selectionCoords, key, value) {
@@ -1459,6 +1590,79 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   const selectionCoords = selectedCells.map((cell) => cell.coord);
   const primaryCoord = selectedCells[0]?.coord;
   const primaryCell = primaryCoord ? findGridCell(layer, primaryCoord) : null;
+
+  container.appendChild(createSelectionSectionTitle("Groups"));
+
+  const groupSection = document.createElement("div");
+  groupSection.className = "d-flex flex-column gap-2";
+
+  if (!state.map.groups.length) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No groups yet. Create a group to assign these cells.";
+    groupSection.appendChild(empty);
+  } else {
+    state.map.groups.forEach((group) => {
+      const groupMembers = normalizeGroupMembers(group).filter(
+        (member) => member.kind === "grid-cell" && member.layerId === layer.id,
+      );
+      const memberIds = new Set(groupMembers.map((member) => member.elementId));
+      const existingCells = selectionCoords
+        .map((coord) => findGridCell(layer, coord))
+        .filter(Boolean)
+        .map((cell) => cell.id);
+      const matched = existingCells.filter((id) => memberIds.has(id)).length;
+      const total = selectionCoords.length;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "form-check";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "form-check-input";
+      checkbox.id = `group-assign-${group.id}`;
+      checkbox.checked = total > 0 && matched === total;
+      checkbox.indeterminate = matched > 0 && matched < total;
+      const label = document.createElement("label");
+      label.className = "form-check-label small";
+      label.setAttribute("for", checkbox.id);
+      label.textContent = group.name;
+
+      checkbox.addEventListener("change", () => {
+        applyGroupChange("update group members", () => {
+          if (checkbox.checked) {
+            const nextMembers = new Map(
+              normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]),
+            );
+            selectionCoords.forEach((coord) => {
+              const cell = ensureGridCell(layer, coord);
+              const member = { layerId: layer.id, elementId: cell.id, kind: "grid-cell" };
+              nextMembers.set(getGroupMemberKey(member), member);
+            });
+            group.elementIds = Array.from(nextMembers.values());
+          } else {
+            const selectedIds = new Set(
+              selectionCoords
+                .map((coord) => findGridCell(layer, coord))
+                .filter(Boolean)
+                .map((cell) => cell.id),
+            );
+            group.elementIds = normalizeGroupMembers(group).filter((member) => {
+              if (member.kind !== "grid-cell" || member.layerId !== layer.id) {
+                return true;
+              }
+              return !selectedIds.has(member.elementId);
+            });
+          }
+        });
+      });
+
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(label);
+      groupSection.appendChild(wrapper);
+    });
+  }
+
+  container.appendChild(groupSection);
 
   container.appendChild(createSelectionSectionTitle("Custom Properties"));
 
@@ -1592,8 +1796,283 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   container.appendChild(propertiesWrapper);
 }
 
-function renderGroupSelectionEditor() {
-  clearSelectionEditor();
+function createGroupPropertyRow(group, key, value) {
+  return createPropertyRow({
+    key,
+    value,
+    onUpdate: ({ currentKey, nextKey, nextValue }) => {
+      applyGroupChange("group property", () => {
+        group.properties = group.properties || {};
+        if (currentKey && currentKey !== nextKey) {
+          delete group.properties[currentKey];
+        }
+        if (nextKey) {
+          group.properties[nextKey] = nextValue;
+        }
+      });
+    },
+    onRemove: ({ currentKey }) => {
+      applyGroupChange("remove group property", () => {
+        if (currentKey && group.properties) {
+          delete group.properties[currentKey];
+        }
+      });
+      renderSelection();
+    },
+  });
+}
+
+function resolveGroupMemberLabel(member) {
+  const layer = state.map.layers.find((entry) => entry.id === member.layerId);
+  if (member.kind === "grid-cell" && layer) {
+    const cell = findGridCellById(layer, member.elementId);
+    if (cell) {
+      return `${layer.name} · ${formatGridCellLabel(layer, cell.coord)}`;
+    }
+  }
+  if (layer) {
+    return `${layer.name} · ${member.kind || "element"}`;
+  }
+  return member.label || "Missing element";
+}
+
+function renderGroupSelectionEditor(group) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  container.innerHTML = "";
+
+  container.appendChild(createSelectionSectionTitle("Group Properties"));
+
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "form-control form-control-sm";
+  nameInput.value = group.name;
+  nameInput.addEventListener("change", () => {
+    const value = nameInput.value.trim();
+    if (!value) {
+      nameInput.value = group.name;
+      return;
+    }
+    applyGroupChange("group name", () => {
+      group.name = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Name", nameInput));
+
+  container.appendChild(createSelectionSectionTitle("Custom Properties"));
+  const propertiesWrapper = document.createElement("div");
+  propertiesWrapper.className = "d-flex flex-column gap-2";
+  const entries = Object.entries(group.properties || {});
+
+  if (!entries.length) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No custom properties yet.";
+    propertiesWrapper.appendChild(empty);
+  } else {
+    entries.forEach(([key, value]) => {
+      propertiesWrapper.appendChild(createGroupPropertyRow(group, key, value));
+    });
+  }
+
+  const actionRow = document.createElement("div");
+  actionRow.className = "btn-toolbar";
+  actionRow.setAttribute("role", "toolbar");
+  actionRow.setAttribute("aria-label", "Group property actions");
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "btn-group btn-group-sm";
+  actionGroup.setAttribute("role", "group");
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  addButton.setAttribute("aria-label", "Add property");
+  addButton.setAttribute("data-bs-toggle", "tooltip");
+  addButton.setAttribute("data-bs-placement", "bottom");
+  addButton.setAttribute("data-bs-title", "Add property");
+  addButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:plus\" aria-hidden=\"true\"></span>";
+  addButton.addEventListener("click", () => {
+    const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
+    if (emptyState) {
+      emptyState.remove();
+    }
+    propertiesWrapper.appendChild(createGroupPropertyRow(group, "", ""));
+    refreshTooltips();
+  });
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  copyButton.setAttribute("aria-label", "Copy properties");
+  copyButton.setAttribute("data-bs-toggle", "tooltip");
+  copyButton.setAttribute("data-bs-placement", "bottom");
+  copyButton.setAttribute("data-bs-title", "Copy properties");
+  copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
+  copyButton.addEventListener("click", () => {
+    state.propertyClipboard = JSON.parse(JSON.stringify(group.properties || {}));
+    renderSelection();
+    status.show("Copied group properties", { type: "info", timeout: 1200 });
+  });
+
+  const pasteButton = document.createElement("button");
+  pasteButton.type = "button";
+  pasteButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  pasteButton.setAttribute("aria-label", "Paste properties");
+  pasteButton.setAttribute("data-bs-toggle", "tooltip");
+  pasteButton.setAttribute("data-bs-placement", "bottom");
+  pasteButton.setAttribute("data-bs-title", "Paste properties");
+  pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
+  pasteButton.disabled = !state.propertyClipboard;
+  pasteButton.addEventListener("click", () => {
+    if (!state.propertyClipboard) {
+      return;
+    }
+    applyGroupChange("paste group properties", () => {
+      group.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
+    });
+    status.show("Pasted group properties", { type: "success", timeout: 1200 });
+  });
+
+  actionGroup.appendChild(addButton);
+  actionGroup.appendChild(copyButton);
+  actionGroup.appendChild(pasteButton);
+  actionRow.appendChild(actionGroup);
+  container.appendChild(actionRow);
+  container.appendChild(propertiesWrapper);
+  refreshTooltips();
+
+  container.appendChild(createSelectionSectionTitle("Members"));
+  const memberList = document.createElement("div");
+  memberList.className = "d-flex flex-column gap-2";
+  const members = normalizeGroupMembers(group);
+
+  if (!members.length) {
+    const emptyMembers = document.createElement("div");
+    emptyMembers.className = "small text-body-secondary";
+    emptyMembers.textContent = "No members assigned yet.";
+    memberList.appendChild(emptyMembers);
+  } else {
+    members.forEach((member) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center justify-content-between gap-2";
+      const label = document.createElement("span");
+      label.className = "small";
+      label.textContent = resolveGroupMemberLabel(member);
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+      removeButton.setAttribute("aria-label", "Remove member");
+      removeButton.setAttribute("data-bs-toggle", "tooltip");
+      removeButton.setAttribute("data-bs-placement", "bottom");
+      removeButton.setAttribute("data-bs-title", "Remove member");
+      removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
+      removeButton.addEventListener("click", () => {
+        applyGroupChange("remove group member", () => {
+          const memberKey = getGroupMemberKey(member);
+          group.elementIds = normalizeGroupMembers(group).filter((entry) => getGroupMemberKey(entry) !== memberKey);
+        });
+      });
+
+      row.appendChild(label);
+      row.appendChild(removeButton);
+      memberList.appendChild(row);
+    });
+  }
+
+  if (members.length) {
+    const removeAllButton = document.createElement("button");
+    removeAllButton.type = "button";
+    removeAllButton.className = "btn btn-outline-danger btn-sm align-self-start";
+    removeAllButton.textContent = "Remove all members";
+    removeAllButton.addEventListener("click", () => {
+      applyGroupChange("clear group members", () => {
+        group.elementIds = [];
+      });
+    });
+    memberList.appendChild(removeAllButton);
+  }
+
+  container.appendChild(memberList);
+  refreshTooltips();
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "btn btn-danger btn-sm mt-3";
+  deleteButton.textContent = "Delete group";
+  deleteButton.addEventListener("click", () => {
+    const index = state.map.groups.findIndex((entry) => entry.id === group.id);
+    if (index === -1) {
+      return;
+    }
+    recordHistory("delete group", () => {
+      state.map.groups.splice(index, 1);
+      updateMapTimestamp(state.map);
+    });
+    setSelection(null);
+    renderGroups();
+    renderLayerOverlays();
+    renderJson();
+  });
+  container.appendChild(deleteButton);
+}
+
+function renderViewSelectionEditor(view) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  container.innerHTML = "";
+
+  container.appendChild(createSelectionSectionTitle("View Details"));
+
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "form-control form-control-sm";
+  nameInput.value = view.name;
+  nameInput.addEventListener("change", () => {
+    const value = nameInput.value.trim();
+    if (!value) {
+      nameInput.value = view.name;
+      return;
+    }
+    applyViewChange("view name", () => {
+      view.name = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Name", nameInput));
+
+  const descriptionInput = document.createElement("textarea");
+  descriptionInput.className = "form-control form-control-sm";
+  descriptionInput.rows = 3;
+  descriptionInput.value = view.description || "";
+  descriptionInput.addEventListener("change", () => {
+    applyViewChange("view description", () => {
+      view.description = descriptionInput.value.trim();
+    });
+  });
+  container.appendChild(createFieldWrapper("Description", descriptionInput));
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "btn btn-danger btn-sm mt-3";
+  deleteButton.textContent = "Delete view";
+  deleteButton.addEventListener("click", () => {
+    const index = state.map.views.findIndex((entry) => entry.id === view.id);
+    if (index === -1) {
+      return;
+    }
+    recordHistory("delete view", () => {
+      state.map.views.splice(index, 1);
+      updateMapTimestamp(state.map);
+    });
+    setSelection(null);
+    renderViewsList();
+    renderJson();
+  });
+  container.appendChild(deleteButton);
 }
 
 function renderView() {
@@ -1608,6 +2087,7 @@ function renderAll() {
   renderBaseMapSettings();
   renderLayers();
   renderGroups();
+  renderViewsList();
   renderSelection();
   renderLayerOverlays();
   renderView();
@@ -1781,6 +2261,28 @@ function setupGroupEvents() {
   });
 }
 
+function setupViewsListEvents() {
+  if (!elements.viewAdd) {
+    return;
+  }
+  elements.viewAdd.addEventListener("click", () => {
+    let view = null;
+    recordHistory("add view", () => {
+      view = createView({
+        name: `View ${state.map.views.length + 1}`,
+      });
+      state.map.views.push(view);
+      updateMapTimestamp(state.map);
+    });
+    renderViewsList();
+    renderJson();
+    if (view) {
+      setSelection("view", view.id);
+    }
+    status.show("View created", { type: "success", timeout: 1200 });
+  });
+}
+
 function setupViewEvents() {
   elements.zoomIn.addEventListener("click", () => baseMapManager.zoomBy(0.25));
   elements.zoomOut.addEventListener("click", () => baseMapManager.zoomBy(-0.25));
@@ -1880,6 +2382,7 @@ baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
 setupBaseMapEvents();
 setupLayerEvents();
 setupGroupEvents();
+setupViewsListEvents();
 setupViewEvents();
 setupActionEvents();
 setupViewPanelToggle();
