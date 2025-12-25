@@ -71,6 +71,7 @@ const elements = {
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
   selectionToggle: document.querySelector("[data-selection-toggle]"),
   selectionPanel: document.querySelector("[data-selection-panel]"),
+  selectionClear: document.querySelector("[data-selection-clear]"),
   undoButton: document.querySelector('[data-action="undo-layout"]'),
   redoButton: document.querySelector('[data-action="redo-layout"]'),
   layerButtons: Array.from(document.querySelectorAll("[data-add-layer]")),
@@ -1050,7 +1051,6 @@ function renderLayerSelectionEditor(layer) {
 
   const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
   if (settingsSchema.length) {
-    container.appendChild(createSelectionSectionTitle("Layer Settings"));
     settingsSchema.forEach((field) => {
       const input = document.createElement(field.type === "select" ? "select" : "input");
       if (field.type !== "select") {
@@ -1287,11 +1287,17 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   const container = elements.selectionEditor;
   container.innerHTML = "";
 
-  container.appendChild(createSelectionSectionTitle("Selection"));
   const selectionSummary = document.createElement("div");
   selectionSummary.className = "d-flex flex-column gap-2";
   const badgeRow = document.createElement("div");
-  badgeRow.className = "d-flex flex-wrap gap-2";
+  badgeRow.className = "d-flex align-items-center flex-wrap gap-2";
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+  clearButton.setAttribute("aria-label", "Clear selection");
+  clearButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:x\" aria-hidden=\"true\"></span>";
+  clearButton.addEventListener("click", () => setSelection(null));
+  badgeRow.appendChild(clearButton);
   selectedCells.slice(0, 8).forEach((cell) => {
     const badge = document.createElement("span");
     badge.className = "badge text-bg-light border";
@@ -1305,19 +1311,13 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     badgeRow.appendChild(more);
   }
   selectionSummary.appendChild(badgeRow);
-  const clearButton = document.createElement("button");
-  clearButton.type = "button";
-  clearButton.className = "btn btn-outline-secondary btn-sm align-self-start";
-  clearButton.textContent = "Clear selection";
-  clearButton.addEventListener("click", () => setSelection(null));
-  selectionSummary.appendChild(clearButton);
   container.appendChild(selectionSummary);
 
   const selectionCoords = selectedCells.map((cell) => cell.coord);
   const primaryCoord = selectedCells[0]?.coord;
   const primaryCell = primaryCoord ? findGridCell(layer, primaryCoord) : null;
 
-  container.appendChild(createSelectionSectionTitle("Cell Properties"));
+  container.appendChild(createSelectionSectionTitle("Custom Properties"));
 
   if (selectedCells.length > 1) {
     const notice = document.createElement("p");
@@ -1327,12 +1327,14 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   }
 
   const actionRow = document.createElement("div");
-  actionRow.className = "d-flex flex-wrap gap-2 mb-2";
+  actionRow.className = "d-inline-flex gap-2 mb-2";
 
   const copyButton = document.createElement("button");
   copyButton.type = "button";
-  copyButton.className = "btn btn-outline-secondary btn-sm";
-  copyButton.textContent = "Copy properties";
+  copyButton.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center";
+  copyButton.setAttribute("aria-label", "Copy properties");
+  copyButton.title = "Copy properties";
+  copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
   copyButton.disabled = !primaryCoord;
   copyButton.addEventListener("click", () => {
     const props = primaryCell?.properties || {};
@@ -1343,8 +1345,10 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
 
   const pasteButton = document.createElement("button");
   pasteButton.type = "button";
-  pasteButton.className = "btn btn-outline-secondary btn-sm";
-  pasteButton.textContent = "Paste properties";
+  pasteButton.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center";
+  pasteButton.setAttribute("aria-label", "Paste properties");
+  pasteButton.title = "Paste properties";
+  pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
   pasteButton.disabled = !state.cellClipboard;
   pasteButton.addEventListener("click", () => {
     if (!state.cellClipboard) {
@@ -1624,6 +1628,9 @@ function setupActionEvents() {
   }
   if (elements.redoButton) {
     elements.redoButton.addEventListener("click", () => redo());
+  }
+  if (elements.selectionClear) {
+    elements.selectionClear.addEventListener("click", () => setSelection(null));
   }
 }
 
