@@ -463,15 +463,25 @@
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
                 <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Selection</h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-selection-toggle
-                  aria-expanded="false"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-selection-toggle-label>Expand selection</span>
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                  <button
+                    class="btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center"
+                    type="button"
+                    data-selection-clear
+                    aria-label="Clear selection"
+                  >
+                    <span class="iconify" data-icon="tabler:x" aria-hidden="true"></span>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                    type="button"
+                    data-selection-toggle
+                    aria-expanded="false"
+                  >
+                    <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                    <span class="visually-hidden" data-selection-toggle-label>Expand selection</span>
+                  </button>
+                </div>
               </div>
               <div class="d-flex flex-column gap-3" data-selection-panel>
                 <div class="pane-card">
@@ -485,7 +495,6 @@
                 </div>
                 <div class="d-flex flex-column gap-3" data-selection-editor></div>
               </div>
-              <div class="d-flex flex-column gap-3" data-selection-editor></div>
             </section>
           </div>
         </aside>
