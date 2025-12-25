@@ -508,6 +508,182 @@ function formatGridCellLabel(layer, coord) {
   return `Col ${coord.col}, Row ${coord.row}`;
 }
 
+function updateOverlayInteractivity() {
+  const overlay = baseMapManager.getOverlayContainer();
+  if (!overlay) {
+    return;
+  }
+  const selectedLayerId =
+    state.selection.kind === "layer"
+      ? state.selection.id
+      : state.selection.kind === "grid-cells"
+        ? state.selection.layerId
+        : null;
+  const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
+  const isInteractive = Boolean(layer && layer.type === "grid");
+  overlay.classList.toggle("is-interactive", isInteractive);
+  if (overlay.parentElement && overlay.parentElement.classList.contains("leaflet-pane")) {
+    overlay.parentElement.style.pointerEvents = isInteractive ? "auto" : "none";
+  }
+}
+
+function getBaseZoom() {
+  return baseMapManager.getDefaultView?.()?.zoom ?? 1;
+}
+
+function getGridZoomScale() {
+  const baseZoom = getBaseZoom();
+  const viewZoom = Number.isFinite(state.map.view?.zoom) ? state.map.view.zoom : baseZoom;
+  if (state.map.baseMap.type === "tile") {
+    return Math.pow(2, viewZoom - baseZoom);
+  }
+  return baseZoom ? viewZoom / baseZoom : 1;
+}
+
+function getGridLayoutScale() {
+  return state.map.baseMap.type === "tile" ? getGridZoomScale() : 1;
+}
+
+function getGridHitTestScale() {
+  return state.map.baseMap.type === "tile" ? 1 : getGridZoomScale();
+}
+
+function getGridOffset(layer) {
+  const offsetScale = getGridLayoutScale();
+  return {
+    x: (layer.position?.x || 0) * offsetScale,
+    y: (layer.position?.y || 0) * offsetScale,
+  };
+}
+
+function getGridCellSize(layer) {
+  const baseSize = layer.settings?.cellSize || 50;
+  return baseSize * getGridLayoutScale();
+}
+
+function getGridType(layer) {
+  return layer.settings?.gridType || "square";
+}
+
+function getGridCellKey(layer, coord) {
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    return `hex:${coord.q},${coord.r}`;
+  }
+  return `square:${coord.col},${coord.row}`;
+}
+
+function createGridCellSelectionEntry(layer, coord) {
+  return {
+    key: getGridCellKey(layer, coord),
+    coord,
+  };
+}
+
+function findGridCell(layer, coord) {
+  const key = getGridCellKey(layer, coord);
+  return layer.elements?.find((element) => element.kind === "cell" && element.key === key) || null;
+}
+
+function ensureGridCell(layer, coord) {
+  const key = getGridCellKey(layer, coord);
+  let cell = findGridCell(layer, coord);
+  if (!cell) {
+    cell = createGridCell({
+      key,
+      coord,
+      gridType: getGridType(layer),
+    });
+    layer.elements = layer.elements || [];
+    layer.elements.push(cell);
+  }
+  return cell;
+}
+
+function getHexMetrics(cellSize) {
+  const size = cellSize / 2;
+  const height = Math.sqrt(3) * size;
+  return {
+    size,
+    height,
+    width: cellSize,
+    offsetX: size,
+    offsetY: height / 2,
+  };
+}
+
+function axialRound(q, r) {
+  let x = q;
+  let z = r;
+  let y = -x - z;
+  let rx = Math.round(x);
+  let ry = Math.round(y);
+  let rz = Math.round(z);
+
+  const xDiff = Math.abs(rx - x);
+  const yDiff = Math.abs(ry - y);
+  const zDiff = Math.abs(rz - z);
+
+  if (xDiff > yDiff && xDiff > zDiff) {
+    rx = -ry - rz;
+  } else if (yDiff > zDiff) {
+    ry = -rx - rz;
+  } else {
+    rz = -rx - ry;
+  }
+
+  return { q: rx, r: rz };
+}
+
+function getGridCoordFromPoint(layer, point) {
+  const hitScale = getGridHitTestScale();
+  const scaledPoint = hitScale ? { x: point.x / hitScale, y: point.y / hitScale } : point;
+  const cellSize = getGridCellSize(layer);
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const { size, offsetX, offsetY } = getHexMetrics(cellSize);
+    const x = scaledPoint.x - offsetX;
+    const y = scaledPoint.y - offsetY;
+    const q = (2 / 3) * (x / size);
+    const r = ((-1 / 3) * x + (Math.sqrt(3) / 3) * y) / size;
+    return axialRound(q, r);
+  }
+  return {
+    col: Math.floor(scaledPoint.x / cellSize),
+    row: Math.floor(scaledPoint.y / cellSize),
+  };
+}
+
+function getGridCellPixelRect(layer, coord) {
+  const cellSize = getGridCellSize(layer);
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const { size, height, width, offsetX, offsetY } = getHexMetrics(cellSize);
+    const centerX = size * 1.5 * coord.q + offsetX;
+    const centerY = size * Math.sqrt(3) * (coord.r + coord.q / 2) + offsetY;
+    return {
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      width,
+      height,
+    };
+  }
+  return {
+    x: coord.col * cellSize,
+    y: coord.row * cellSize,
+    width: cellSize,
+    height: cellSize,
+  };
+}
+
+function formatGridCellLabel(layer, coord) {
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    return `Q${coord.q}, R${coord.r}`;
+  }
+  return `Col ${coord.col}, Row ${coord.row}`;
+}
+
 function buildHexGridBackground(size, lineColor) {
   const side = Math.max(size / 2, 1);
   const hexHeight = Math.sqrt(3) * side;
