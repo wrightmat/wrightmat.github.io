@@ -20,8 +20,9 @@ const state = {
     id: null,
     layerId: null,
     cells: [],
+    anchor: null,
   },
-  cellClipboard: null,
+  propertyClipboard: null,
 };
 
 const { status, undoStack, undo, redo } = initAppShell({
@@ -151,7 +152,7 @@ function applyMapSnapshot(snapshot) {
     return;
   }
   state.map = JSON.parse(snapshot);
-  state.selection = { kind: null, id: null, layerId: null, cells: [] };
+  state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   renderAll();
   setSelectionCollapsed(true);
@@ -172,6 +173,7 @@ function setSelection(kind, id = null, extra = {}) {
     id,
     layerId: extra.layerId ?? null,
     cells: extra.cells ?? [],
+    anchor: extra.anchor ?? (extra.cells?.[0]?.coord ?? null),
   };
   renderSelection();
   renderLayerOverlays();
@@ -408,6 +410,33 @@ function createGridCellSelectionEntry(layer, coord) {
   };
 }
 
+function buildGridRangeSelection(layer, start, end) {
+  const selections = [];
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const minQ = Math.min(start.q, end.q);
+    const maxQ = Math.max(start.q, end.q);
+    const minR = Math.min(start.r, end.r);
+    const maxR = Math.max(start.r, end.r);
+    for (let q = minQ; q <= maxQ; q += 1) {
+      for (let r = minR; r <= maxR; r += 1) {
+        selections.push(createGridCellSelectionEntry(layer, { q, r }));
+      }
+    }
+    return selections;
+  }
+  const minCol = Math.min(start.col, end.col);
+  const maxCol = Math.max(start.col, end.col);
+  const minRow = Math.min(start.row, end.row);
+  const maxRow = Math.max(start.row, end.row);
+  for (let col = minCol; col <= maxCol; col += 1) {
+    for (let row = minRow; row <= maxRow; row += 1) {
+      selections.push(createGridCellSelectionEntry(layer, { col, row }));
+    }
+  }
+  return selections;
+}
+
 function findGridCell(layer, coord) {
   const key = getGridCellKey(layer, coord);
   return layer.elements?.find((element) => element.kind === "cell" && element.key === key) || null;
@@ -512,6 +541,29 @@ function formatGridCellLabel(layer, coord) {
   return `Col ${coord.col}, Row ${coord.row}`;
 }
 
+function summarizeGridSelection(layer, selectedCells) {
+  if (!selectedCells.length) {
+    return "";
+  }
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const qs = selectedCells.map((cell) => cell.coord.q);
+    const rs = selectedCells.map((cell) => cell.coord.r);
+    const minQ = Math.min(...qs);
+    const maxQ = Math.max(...qs);
+    const minR = Math.min(...rs);
+    const maxR = Math.max(...rs);
+    return `Q${minQ}, R${minR} → Q${maxQ}, R${maxR} · ${selectedCells.length} cells`;
+  }
+  const cols = selectedCells.map((cell) => cell.coord.col);
+  const rows = selectedCells.map((cell) => cell.coord.row);
+  const minCol = Math.min(...cols);
+  const maxCol = Math.max(...cols);
+  const minRow = Math.min(...rows);
+  const maxRow = Math.max(...rows);
+  return `Col ${minCol}, Row ${minRow} → Col ${maxCol}, Row ${maxRow} · ${selectedCells.length} cells`;
+}
+
 function buildHexGridBackground(size, lineColor) {
   const side = Math.max(size / 2, 1);
   const hexHeight = Math.sqrt(3) * side;
@@ -570,11 +622,19 @@ function createGridLayerElement(layer, selectionState) {
       };
       const coord = getGridCoordFromPoint(layer, point);
       const entry = createGridCellSelectionEntry(layer, coord);
-      const isMulti = event.shiftKey || event.metaKey || event.ctrlKey;
+      const isCtrl = event.metaKey || event.ctrlKey;
+      const isShift = event.shiftKey;
       const existing =
         state.selection.kind === "grid-cells" && state.selection.layerId === layer.id ? state.selection.cells : [];
       const selectionMap = new Map(existing.map((cell) => [cell.key, cell]));
-      if (isMulti) {
+      let nextAnchor = coord;
+      if (isShift && (state.selection.anchor || existing.length)) {
+        const anchor = state.selection.anchor || existing[0]?.coord || coord;
+        const range = buildGridRangeSelection(layer, anchor, coord);
+        selectionMap.clear();
+        range.forEach((cell) => selectionMap.set(cell.key, cell));
+        nextAnchor = anchor;
+      } else if (isCtrl) {
         if (selectionMap.has(entry.key)) {
           selectionMap.delete(entry.key);
         } else {
@@ -586,9 +646,9 @@ function createGridLayerElement(layer, selectionState) {
       }
       const nextCells = Array.from(selectionMap.values());
       if (nextCells.length === 0) {
-        setSelection(null);
+        setSelection("layer", layer.id);
       } else {
-        setSelection("grid-cells", null, { layerId: layer.id, cells: nextCells });
+        setSelection("grid-cells", null, { layerId: layer.id, cells: nextCells, anchor: nextAnchor });
       }
     });
     grid.addEventListener("pointerup", () => {
@@ -1125,20 +1185,72 @@ function renderLayerSelectionEditor(layer) {
     });
   }
 
+  const actionRow = document.createElement("div");
+  actionRow.className = "btn-toolbar";
+  actionRow.setAttribute("role", "toolbar");
+  actionRow.setAttribute("aria-label", "Layer property actions");
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "btn-group btn-group-sm";
+  actionGroup.setAttribute("role", "group");
+
   const addButton = document.createElement("button");
   addButton.type = "button";
-  addButton.className = "btn btn-outline-secondary btn-sm";
-  addButton.textContent = "Add property";
+  addButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  addButton.setAttribute("aria-label", "Add property");
+  addButton.setAttribute("data-bs-toggle", "tooltip");
+  addButton.setAttribute("data-bs-placement", "bottom");
+  addButton.setAttribute("data-bs-title", "Add property");
+  addButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:plus\" aria-hidden=\"true\"></span>";
   addButton.addEventListener("click", () => {
     const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
     if (emptyState) {
       emptyState.remove();
     }
     propertiesWrapper.appendChild(createPropertyRow(layer, "", ""));
+    refreshTooltips();
   });
 
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  copyButton.setAttribute("aria-label", "Copy properties");
+  copyButton.setAttribute("data-bs-toggle", "tooltip");
+  copyButton.setAttribute("data-bs-placement", "bottom");
+  copyButton.setAttribute("data-bs-title", "Copy properties");
+  copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
+  copyButton.addEventListener("click", () => {
+    state.propertyClipboard = JSON.parse(JSON.stringify(layer.properties || {}));
+    renderSelection();
+    status.show("Copied layer properties", { type: "info", timeout: 1200 });
+  });
+
+  const pasteButton = document.createElement("button");
+  pasteButton.type = "button";
+  pasteButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  pasteButton.setAttribute("aria-label", "Paste properties");
+  pasteButton.setAttribute("data-bs-toggle", "tooltip");
+  pasteButton.setAttribute("data-bs-placement", "bottom");
+  pasteButton.setAttribute("data-bs-title", "Paste properties");
+  pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
+  pasteButton.disabled = !state.propertyClipboard;
+  pasteButton.addEventListener("click", () => {
+    if (!state.propertyClipboard) {
+      return;
+    }
+    applyLayerSettingsChange("paste layer properties", () => {
+      layer.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
+    });
+    status.show("Pasted layer properties", { type: "success", timeout: 1200 });
+  });
+
+  actionGroup.appendChild(addButton);
+  actionGroup.appendChild(copyButton);
+  actionGroup.appendChild(pasteButton);
+  actionRow.appendChild(actionGroup);
+
   container.appendChild(propertiesWrapper);
-  container.appendChild(addButton);
+  container.appendChild(actionRow);
+  refreshTooltips();
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -1179,8 +1291,12 @@ function createPropertyRow(layer, key, value) {
 
   const removeButton = document.createElement("button");
   removeButton.type = "button";
-  removeButton.className = "btn btn-outline-danger btn-sm";
-  removeButton.textContent = "Remove";
+  removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+  removeButton.setAttribute("aria-label", "Remove property");
+  removeButton.setAttribute("data-bs-toggle", "tooltip");
+  removeButton.setAttribute("data-bs-placement", "bottom");
+  removeButton.setAttribute("data-bs-title", "Remove property");
+  removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
 
@@ -1234,8 +1350,12 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
 
   const removeButton = document.createElement("button");
   removeButton.type = "button";
-  removeButton.className = "btn btn-outline-danger btn-sm";
-  removeButton.textContent = "Remove";
+  removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+  removeButton.setAttribute("aria-label", "Remove property");
+  removeButton.setAttribute("data-bs-toggle", "tooltip");
+  removeButton.setAttribute("data-bs-placement", "bottom");
+  removeButton.setAttribute("data-bs-title", "Remove property");
+  removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
 
@@ -1310,7 +1430,14 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     badge.textContent = formatGridCellLabel(layer, cell.coord);
     badgeRow.appendChild(badge);
   });
-  if (selectedCells.length > 8) {
+  if (selectedCells.length > 12) {
+    badgeRow.innerHTML = "";
+    const summary = document.createElement("span");
+    summary.className = "badge text-bg-secondary";
+    summary.textContent = summarizeGridSelection(layer, selectedCells);
+    badgeRow.appendChild(clearButton);
+    badgeRow.appendChild(summary);
+  } else if (selectedCells.length > 8) {
     const more = document.createElement("span");
     more.className = "badge text-bg-secondary";
     more.textContent = `+${selectedCells.length - 8} more`;
@@ -1370,6 +1497,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
       emptyState.remove();
     }
     propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, "", ""));
+    refreshTooltips();
   });
 
   const copyButton = document.createElement("button");
@@ -1383,7 +1511,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   copyButton.disabled = !primaryCoord;
   copyButton.addEventListener("click", () => {
     const props = primaryCell?.properties || {};
-    state.cellClipboard = JSON.parse(JSON.stringify(props));
+    state.propertyClipboard = JSON.parse(JSON.stringify(props));
     renderSelection();
     status.show("Copied cell properties", { type: "info", timeout: 1200 });
   });
@@ -1396,15 +1524,15 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   pasteButton.setAttribute("data-bs-placement", "bottom");
   pasteButton.setAttribute("data-bs-title", "Paste properties");
   pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
-  pasteButton.disabled = !state.cellClipboard;
+  pasteButton.disabled = !state.propertyClipboard;
   pasteButton.addEventListener("click", () => {
-    if (!state.cellClipboard) {
+    if (!state.propertyClipboard) {
       return;
     }
     applyCellPropertiesChange("paste cell properties", () => {
       selectionCoords.forEach((coord) => {
         const cell = ensureGridCell(layer, coord);
-        cell.properties = JSON.parse(JSON.stringify(state.cellClipboard));
+        cell.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
       });
     });
     status.show("Pasted cell properties", { type: "success", timeout: 1200 });
