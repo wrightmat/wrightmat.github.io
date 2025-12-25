@@ -113,6 +113,15 @@ export function createGroup({ name } = {}) {
   };
 }
 
+export function createView({ name, description } = {}) {
+  return {
+    id: randomId(),
+    name: name || "New View",
+    description: description || "",
+    settings: {},
+  };
+}
+
 export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" } = {}) {
   const baseSettings = createBaseMapSettings();
   const type = BASE_MAP_TYPES.includes(baseMapType) ? baseMapType : "tile";
@@ -127,6 +136,7 @@ export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" }
     view: getDefaultView(type),
     layers: [createLayer({ type: "grid", name: "Primary Grid Layer" })],
     groups: [],
+    views: [],
     properties: {},
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
