@@ -274,6 +274,9 @@ function renderGroups() {
 
 function renderSelection() {
   const { selection, map } = state;
+  if (elements.selectionClear) {
+    elements.selectionClear.classList.toggle("d-none", selection.kind === null);
+  }
   if (selection.kind === "layer") {
     const layer = map.layers.find((entry) => entry.id === selection.id);
     if (layer) {
@@ -1295,8 +1298,11 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   clearButton.type = "button";
   clearButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
   clearButton.setAttribute("aria-label", "Clear selection");
+  clearButton.setAttribute("data-bs-toggle", "tooltip");
+  clearButton.setAttribute("data-bs-placement", "bottom");
+  clearButton.setAttribute("data-bs-title", "Clear cell selection");
   clearButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:x\" aria-hidden=\"true\"></span>";
-  clearButton.addEventListener("click", () => setSelection(null));
+  clearButton.addEventListener("click", () => setSelection("layer", layer.id));
   badgeRow.appendChild(clearButton);
   selectedCells.slice(0, 8).forEach((cell) => {
     const badge = document.createElement("span");
@@ -1311,6 +1317,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     badgeRow.appendChild(more);
   }
   selectionSummary.appendChild(badgeRow);
+  refreshTooltips();
   container.appendChild(selectionSummary);
 
   const selectionCoords = selectedCells.map((cell) => cell.coord);
@@ -1326,14 +1333,52 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     container.appendChild(notice);
   }
 
+  const propertiesWrapper = document.createElement("div");
+  propertiesWrapper.className = "d-flex flex-column gap-2";
+  const entries = Object.entries(primaryCell?.properties || {});
+
+  if (entries.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No custom properties yet.";
+    propertiesWrapper.appendChild(empty);
+  } else {
+    entries.forEach(([key, value]) => {
+      propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, key, value));
+    });
+  }
+
   const actionRow = document.createElement("div");
-  actionRow.className = "d-inline-flex gap-2 mb-2";
+  actionRow.className = "btn-toolbar";
+  actionRow.setAttribute("role", "toolbar");
+  actionRow.setAttribute("aria-label", "Cell property actions");
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "btn-group btn-group-sm";
+  actionGroup.setAttribute("role", "group");
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  addButton.setAttribute("aria-label", "Add property");
+  addButton.setAttribute("data-bs-toggle", "tooltip");
+  addButton.setAttribute("data-bs-placement", "bottom");
+  addButton.setAttribute("data-bs-title", "Add property");
+  addButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:plus\" aria-hidden=\"true\"></span>";
+  addButton.addEventListener("click", () => {
+    const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
+    if (emptyState) {
+      emptyState.remove();
+    }
+    propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, "", ""));
+  });
 
   const copyButton = document.createElement("button");
   copyButton.type = "button";
-  copyButton.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center";
+  copyButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
   copyButton.setAttribute("aria-label", "Copy properties");
-  copyButton.title = "Copy properties";
+  copyButton.setAttribute("data-bs-toggle", "tooltip");
+  copyButton.setAttribute("data-bs-placement", "bottom");
+  copyButton.setAttribute("data-bs-title", "Copy properties");
   copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
   copyButton.disabled = !primaryCoord;
   copyButton.addEventListener("click", () => {
@@ -1345,9 +1390,11 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
 
   const pasteButton = document.createElement("button");
   pasteButton.type = "button";
-  pasteButton.className = "btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center";
+  pasteButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
   pasteButton.setAttribute("aria-label", "Paste properties");
-  pasteButton.title = "Paste properties";
+  pasteButton.setAttribute("data-bs-toggle", "tooltip");
+  pasteButton.setAttribute("data-bs-placement", "bottom");
+  pasteButton.setAttribute("data-bs-title", "Paste properties");
   pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
   pasteButton.disabled = !state.cellClipboard;
   pasteButton.addEventListener("click", () => {
@@ -1363,9 +1410,12 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     status.show("Pasted cell properties", { type: "success", timeout: 1200 });
   });
 
-  actionRow.appendChild(copyButton);
-  actionRow.appendChild(pasteButton);
+  actionGroup.appendChild(addButton);
+  actionGroup.appendChild(copyButton);
+  actionGroup.appendChild(pasteButton);
+  actionRow.appendChild(actionGroup);
   container.appendChild(actionRow);
+  refreshTooltips();
 
   if (selectedCells.length > 1) {
     container.appendChild(createSelectionSectionTitle("Bulk Add/Update"));
@@ -1402,35 +1452,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     container.appendChild(bulkRow);
   }
 
-  const propertiesWrapper = document.createElement("div");
-  propertiesWrapper.className = "d-flex flex-column gap-2";
-  const entries = Object.entries(primaryCell?.properties || {});
-
-  if (entries.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "small text-body-secondary";
-    empty.textContent = "No custom properties yet.";
-    propertiesWrapper.appendChild(empty);
-  } else {
-    entries.forEach(([key, value]) => {
-      propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, key, value));
-    });
-  }
-
-  const addButton = document.createElement("button");
-  addButton.type = "button";
-  addButton.className = "btn btn-outline-secondary btn-sm";
-  addButton.textContent = "Add property";
-  addButton.addEventListener("click", () => {
-    const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
-    if (emptyState) {
-      emptyState.remove();
-    }
-    propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, "", ""));
-  });
-
   container.appendChild(propertiesWrapper);
-  container.appendChild(addButton);
 }
 
 function renderGroupSelectionEditor() {
