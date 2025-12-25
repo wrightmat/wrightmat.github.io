@@ -5,6 +5,7 @@ import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import {
   createGroup,
+  createGridCell,
   createLayer,
   createMapModel,
   updateBaseMapType,
@@ -14,7 +15,14 @@ import { BaseMapManager } from "./lib/base-maps.js";
 
 const state = {
   map: createMapModel(),
-  selection: { kind: null, id: null },
+  selection: {
+    kind: null,
+    id: null,
+    layerId: null,
+    cells: [],
+    anchor: null,
+  },
+  propertyClipboard: null,
 };
 
 const { status, undoStack, undo, redo } = initAppShell({
@@ -45,6 +53,7 @@ const baseMapManager = new BaseMapManager({
     state.map.view = { ...state.map.view, ...view };
     updateMapTimestamp(state.map);
     renderView();
+    renderLayerOverlays();
     renderJson();
   },
 });
@@ -63,6 +72,7 @@ const elements = {
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
   selectionToggle: document.querySelector("[data-selection-toggle]"),
   selectionPanel: document.querySelector("[data-selection-panel]"),
+  selectionClear: document.querySelector("[data-selection-clear]"),
   undoButton: document.querySelector('[data-action="undo-layout"]'),
   redoButton: document.querySelector('[data-action="redo-layout"]'),
   layerButtons: Array.from(document.querySelectorAll("[data-add-layer]")),
@@ -112,7 +122,6 @@ const LAYER_SETTINGS_SCHEMA = {
     },
     { key: "cellSize", label: "Cell size", type: "number", min: 5, step: 5 },
     { key: "lineColor", label: "Line color", type: "color" },
-    { key: "lineOpacity", label: "Line opacity", type: "range", min: 0, max: 1, step: 0.05 },
   ],
   raster: [
     { key: "src", label: "Image URL", type: "text" },
@@ -121,7 +130,7 @@ const LAYER_SETTINGS_SCHEMA = {
   ],
   marker: [
     { key: "icon", label: "Icon", type: "text" },
-    { key: "size", label: "Size", type: "number", min: 8, step: 1 },
+    { key: "size", label: "Size", type: "number", min: 2, step: 1 },
     { key: "color", label: "Color", type: "color" },
   ],
 };
@@ -143,7 +152,7 @@ function applyMapSnapshot(snapshot) {
     return;
   }
   state.map = JSON.parse(snapshot);
-  state.selection = { kind: null, id: null };
+  state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   renderAll();
   setSelectionCollapsed(true);
@@ -158,11 +167,18 @@ function recordHistory(label, applyChange) {
   }
 }
 
-function setSelection(kind, id = null) {
-  state.selection = { kind, id };
+function setSelection(kind, id = null, extra = {}) {
+  state.selection = {
+    kind,
+    id,
+    layerId: extra.layerId ?? null,
+    cells: extra.cells ?? [],
+    anchor: extra.anchor ?? (extra.cells?.[0]?.coord ?? null),
+  };
   renderSelection();
   renderLayerOverlays();
-  const shouldExpand = kind === "layer" || kind === "group";
+  syncOverlayInteractivity();
+  const shouldExpand = kind === "layer" || kind === "group" || kind === "grid-cells";
   setSelectionCollapsed(!shouldExpand);
 }
 
@@ -260,6 +276,9 @@ function renderGroups() {
 
 function renderSelection() {
   const { selection, map } = state;
+  if (elements.selectionClear) {
+    elements.selectionClear.classList.toggle("d-none", selection.kind === null);
+  }
   if (selection.kind === "layer") {
     const layer = map.layers.find((entry) => entry.id === selection.id);
     if (layer) {
@@ -286,6 +305,21 @@ function renderSelection() {
     }
   }
 
+  if (selection.kind === "grid-cells") {
+    const layer = map.layers.find((entry) => entry.id === selection.layerId);
+    if (layer) {
+      const cellCount = selection.cells.length;
+      const label = cellCount === 1 ? "Grid Cell" : "Grid Cells";
+      elements.selectionTitle.textContent = cellCount === 1 ? "Cell Selection" : "Cell Selection";
+      elements.selectionType.textContent = label;
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = `${layer.name} · ${cellCount} ${cellCount === 1 ? "cell" : "cells"}`;
+      }
+      renderGridCellSelectionEditor(layer, selection.cells);
+      return;
+    }
+  }
+
   elements.selectionTitle.textContent = "No selection";
   elements.selectionType.textContent = "None";
   if (elements.selectionDetails) {
@@ -299,30 +333,235 @@ function clearSelectionEditor() {
     elements.selectionEditor.innerHTML = "";
     const placeholder = document.createElement("p");
     placeholder.className = "text-body-secondary small mb-0";
-    placeholder.textContent = "Select a layer to edit its properties.";
+    placeholder.textContent = "Select a layer or grid cell to edit its properties.";
     elements.selectionEditor.appendChild(placeholder);
   }
 }
 
-function toRgba(color, opacity) {
-  if (typeof color !== "string" || color.trim() === "") {
-    return `rgba(15, 23, 42, ${opacity})`;
+function syncOverlayInteractivity() {
+  const overlay = baseMapManager.getOverlayContainer();
+  if (!overlay) {
+    return;
   }
-  const trimmed = color.trim();
-  if (trimmed.startsWith("rgba") || trimmed.startsWith("rgb")) {
-    return trimmed;
+  const selectedLayerId =
+    state.selection.kind === "layer"
+      ? state.selection.id
+      : state.selection.kind === "grid-cells"
+        ? state.selection.layerId
+        : null;
+  const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
+  const isInteractive = Boolean(layer && layer.type === "grid");
+  overlay.classList.toggle("is-interactive", isInteractive);
+  if (overlay.parentElement && overlay.parentElement.classList.contains("leaflet-pane")) {
+    overlay.parentElement.style.pointerEvents = isInteractive ? "auto" : "none";
   }
-  if (trimmed.startsWith("#")) {
-    const hex = trimmed.slice(1);
-    const normalized = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
-    if (normalized.length === 6) {
-      const r = parseInt(normalized.slice(0, 2), 16);
-      const g = parseInt(normalized.slice(2, 4), 16);
-      const b = parseInt(normalized.slice(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+function getBaseZoom() {
+  return baseMapManager.getDefaultView?.()?.zoom ?? 1;
+}
+
+function getGridZoomScale() {
+  const baseZoom = getBaseZoom();
+  const viewZoom = Number.isFinite(state.map.view?.zoom) ? state.map.view.zoom : baseZoom;
+  if (state.map.baseMap.type === "tile") {
+    return Math.pow(2, viewZoom - baseZoom);
+  }
+  return baseZoom ? viewZoom / baseZoom : 1;
+}
+
+function getGridLayoutScale() {
+  return state.map.baseMap.type === "tile" ? getGridZoomScale() * 0.1 : 1;
+}
+
+function getGridHitTestScale() {
+  return state.map.baseMap.type === "tile" ? 1 : getGridZoomScale();
+}
+
+function getGridOffset(layer) {
+  const offsetScale = getGridLayoutScale();
+  return {
+    x: (layer.position?.x || 0) * offsetScale,
+    y: (layer.position?.y || 0) * offsetScale,
+  };
+}
+
+function getGridCellSize(layer) {
+  const baseSize = layer.settings?.cellSize || 50;
+  return baseSize * getGridLayoutScale();
+}
+
+function getGridType(layer) {
+  return layer.settings?.gridType || "square";
+}
+
+function getGridCellKey(layer, coord) {
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    return `hex:${coord.q},${coord.r}`;
+  }
+  return `square:${coord.col},${coord.row}`;
+}
+
+function createGridCellSelectionEntry(layer, coord) {
+  return {
+    key: getGridCellKey(layer, coord),
+    coord,
+  };
+}
+
+function buildGridRangeSelection(layer, start, end) {
+  const selections = [];
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const minQ = Math.min(start.q, end.q);
+    const maxQ = Math.max(start.q, end.q);
+    const minR = Math.min(start.r, end.r);
+    const maxR = Math.max(start.r, end.r);
+    for (let q = minQ; q <= maxQ; q += 1) {
+      for (let r = minR; r <= maxR; r += 1) {
+        selections.push(createGridCellSelectionEntry(layer, { q, r }));
+      }
+    }
+    return selections;
+  }
+  const minCol = Math.min(start.col, end.col);
+  const maxCol = Math.max(start.col, end.col);
+  const minRow = Math.min(start.row, end.row);
+  const maxRow = Math.max(start.row, end.row);
+  for (let col = minCol; col <= maxCol; col += 1) {
+    for (let row = minRow; row <= maxRow; row += 1) {
+      selections.push(createGridCellSelectionEntry(layer, { col, row }));
     }
   }
-  return trimmed;
+  return selections;
+}
+
+function findGridCell(layer, coord) {
+  const key = getGridCellKey(layer, coord);
+  return layer.elements?.find((element) => element.kind === "cell" && element.key === key) || null;
+}
+
+function ensureGridCell(layer, coord) {
+  const key = getGridCellKey(layer, coord);
+  let cell = findGridCell(layer, coord);
+  if (!cell) {
+    cell = createGridCell({
+      key,
+      coord,
+      gridType: getGridType(layer),
+    });
+    layer.elements = layer.elements || [];
+    layer.elements.push(cell);
+  }
+  return cell;
+}
+
+function getHexMetrics(cellSize) {
+  const size = cellSize / 2;
+  const height = Math.sqrt(3) * size;
+  return {
+    size,
+    height,
+    width: cellSize,
+    offsetX: size,
+    offsetY: height / 2,
+  };
+}
+
+function axialRound(q, r) {
+  let x = q;
+  let z = r;
+  let y = -x - z;
+  let rx = Math.round(x);
+  let ry = Math.round(y);
+  let rz = Math.round(z);
+
+  const xDiff = Math.abs(rx - x);
+  const yDiff = Math.abs(ry - y);
+  const zDiff = Math.abs(rz - z);
+
+  if (xDiff > yDiff && xDiff > zDiff) {
+    rx = -ry - rz;
+  } else if (yDiff > zDiff) {
+    ry = -rx - rz;
+  } else {
+    rz = -rx - ry;
+  }
+
+  return { q: rx, r: rz };
+}
+
+function getGridCoordFromPoint(layer, point) {
+  const hitScale = getGridHitTestScale();
+  const scaledPoint = hitScale ? { x: point.x / hitScale, y: point.y / hitScale } : point;
+  const cellSize = getGridCellSize(layer);
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const { size, offsetX, offsetY } = getHexMetrics(cellSize);
+    const x = scaledPoint.x - offsetX;
+    const y = scaledPoint.y - offsetY;
+    const q = (2 / 3) * (x / size);
+    const r = ((-1 / 3) * x + (Math.sqrt(3) / 3) * y) / size;
+    return axialRound(q, r);
+  }
+  return {
+    col: Math.floor(scaledPoint.x / cellSize),
+    row: Math.floor(scaledPoint.y / cellSize),
+  };
+}
+
+function getGridCellPixelRect(layer, coord) {
+  const cellSize = getGridCellSize(layer);
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const { size, height, width, offsetX, offsetY } = getHexMetrics(cellSize);
+    const centerX = size * 1.5 * coord.q + offsetX;
+    const centerY = size * Math.sqrt(3) * (coord.r + coord.q / 2) + offsetY;
+    return {
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      width,
+      height,
+    };
+  }
+  return {
+    x: coord.col * cellSize,
+    y: coord.row * cellSize,
+    width: cellSize,
+    height: cellSize,
+  };
+}
+
+function formatGridCellLabel(layer, coord) {
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    return `Q${coord.q}, R${coord.r}`;
+  }
+  return `Col ${coord.col}, Row ${coord.row}`;
+}
+
+function summarizeGridSelection(layer, selectedCells) {
+  if (!selectedCells.length) {
+    return "";
+  }
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const qs = selectedCells.map((cell) => cell.coord.q);
+    const rs = selectedCells.map((cell) => cell.coord.r);
+    const minQ = Math.min(...qs);
+    const maxQ = Math.max(...qs);
+    const minR = Math.min(...rs);
+    const maxR = Math.max(...rs);
+    return `Q${minQ}, R${minR} → Q${maxQ}, R${maxR} · ${selectedCells.length} cells`;
+  }
+  const cols = selectedCells.map((cell) => cell.coord.col);
+  const rows = selectedCells.map((cell) => cell.coord.row);
+  const minCol = Math.min(...cols);
+  const maxCol = Math.max(...cols);
+  const minRow = Math.min(...rows);
+  const maxRow = Math.max(...rows);
+  return `Col ${minCol}, Row ${minRow} → Col ${maxCol}, Row ${maxRow} · ${selectedCells.length} cells`;
 }
 
 function buildHexGridBackground(size, lineColor) {
@@ -363,9 +602,62 @@ function buildHexGridBackground(size, lineColor) {
   };
 }
 
-function createGridLayerElement(layer) {
+function createGridLayerElement(layer, selectionState) {
   const grid = document.createElement("div");
   grid.className = "orrery-layer-grid-overlay";
+  if (selectionState?.isInteractive) {
+    grid.classList.add("is-interactive");
+    grid.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      baseMapManager.setInteractionEnabled(false);
+      const rect = grid.getBoundingClientRect();
+      const offset = getGridOffset(layer);
+      const point = {
+        x: event.clientX - rect.left - offset.x,
+        y: event.clientY - rect.top - offset.y,
+      };
+      const coord = getGridCoordFromPoint(layer, point);
+      const entry = createGridCellSelectionEntry(layer, coord);
+      const isCtrl = event.metaKey || event.ctrlKey;
+      const isShift = event.shiftKey;
+      const existing =
+        state.selection.kind === "grid-cells" && state.selection.layerId === layer.id ? state.selection.cells : [];
+      const selectionMap = new Map(existing.map((cell) => [cell.key, cell]));
+      let nextAnchor = coord;
+      if (isShift && (state.selection.anchor || existing.length)) {
+        const anchor = state.selection.anchor || existing[0]?.coord || coord;
+        const range = buildGridRangeSelection(layer, anchor, coord);
+        selectionMap.clear();
+        range.forEach((cell) => selectionMap.set(cell.key, cell));
+        nextAnchor = anchor;
+      } else if (isCtrl) {
+        if (selectionMap.has(entry.key)) {
+          selectionMap.delete(entry.key);
+        } else {
+          selectionMap.set(entry.key, entry);
+        }
+      } else {
+        selectionMap.clear();
+        selectionMap.set(entry.key, entry);
+      }
+      const nextCells = Array.from(selectionMap.values());
+      if (nextCells.length === 0) {
+        setSelection("layer", layer.id);
+      } else {
+        setSelection("grid-cells", null, { layerId: layer.id, cells: nextCells, anchor: nextAnchor });
+      }
+    });
+    grid.addEventListener("pointerup", () => {
+      baseMapManager.setInteractionEnabled(true);
+    });
+    grid.addEventListener("pointercancel", () => {
+      baseMapManager.setInteractionEnabled(true);
+    });
+  }
   const gridScale = 3;
   grid.style.width = `${gridScale * 100}%`;
   grid.style.height = `${gridScale * 100}%`;
@@ -373,10 +665,9 @@ function createGridLayerElement(layer) {
   grid.style.top = `-${((gridScale - 1) / 2) * 100}%`;
   grid.style.right = "auto";
   grid.style.bottom = "auto";
-  const size = layer.settings?.cellSize || 50;
+  const size = getGridCellSize(layer);
   const gridType = layer.settings?.gridType || "square";
-  const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
-  const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
+  const lineColor = layer.settings?.lineColor || "#0f172a";
   if (gridType === "hex") {
     const hexBackground = buildHexGridBackground(size, lineColor);
     grid.style.backgroundImage = hexBackground.image;
@@ -385,42 +676,145 @@ function createGridLayerElement(layer) {
     grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
     grid.style.backgroundSize = `${size}px ${size}px`;
   }
-  const offsetX = layer.position?.x || 0;
-  const offsetY = layer.position?.y || 0;
-  grid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+  const offset = getGridOffset(layer);
+  grid.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
+  if (selectionState?.selectedCells?.length) {
+    grid.appendChild(createGridSelectionOverlay(layer, selectionState.selectedCells));
+  }
   return grid;
 }
 
-function createRasterLayerElement(layer) {
+function getLayerPositionScale() {
+  return 1;
+}
+
+function getLayerSizeScale() {
+  return 1;
+}
+
+function getLayerRenderPosition(layer, scale) {
+  return {
+    x: (layer.position?.x || 0) * scale,
+    y: (layer.position?.y || 0) * scale,
+  };
+}
+
+function updateTileLayerElementPosition(layer, element) {
+  if (!element || state.map.baseMap.type !== "tile") {
+    return;
+  }
+  const positionScale = getLayerPositionScale();
+  const sizeScale = getLayerSizeScale();
+  const position = getLayerRenderPosition(layer, positionScale);
+  if (element.classList.contains("orrery-layer-marker-overlay")) {
+    const size = (layer.settings?.size || 24) * sizeScale;
+    element.style.width = `${size}px`;
+    element.style.height = `${size}px`;
+    element.style.left = `${position.x}px`;
+    element.style.top = `${position.y}px`;
+    return;
+  }
+  if (element.classList.contains("orrery-layer-vector-overlay")) {
+    const baseSize = 200;
+    const scaledSize = Math.max(1, Math.round(baseSize * sizeScale));
+    element.style.left = `${position.x}px`;
+    element.style.top = `${position.y}px`;
+    element.style.width = `${scaledSize}px`;
+    element.style.height = `${scaledSize}px`;
+    return;
+  }
+  if (element.classList.contains("orrery-layer-raster-overlay")) {
+    const image = element.querySelector("img");
+    if (image) {
+      if (layer.settings?.width) {
+        image.width = Math.max(1, Math.round(layer.settings.width * sizeScale));
+      }
+      if (layer.settings?.height) {
+        image.height = Math.max(1, Math.round(layer.settings.height * sizeScale));
+      }
+      image.style.left = `${position.x}px`;
+      image.style.top = `${position.y}px`;
+    }
+  }
+}
+
+function createRasterLayerElement(layer, renderState = {}) {
   const wrapper = document.createElement("div");
   wrapper.className = "orrery-layer-raster-overlay";
   const src = layer.settings?.src || "";
   const image = document.createElement("img");
   image.src = src || "data/sample-map.svg";
   image.alt = layer.name;
+  const scale = renderState.sizeScale ?? 1;
   if (layer.settings?.width) {
-    image.width = layer.settings.width;
+    image.width = Math.max(1, Math.round(layer.settings.width * scale));
   }
   if (layer.settings?.height) {
-    image.height = layer.settings.height;
+    image.height = Math.max(1, Math.round(layer.settings.height * scale));
+  }
+  if (renderState.position) {
+    wrapper.style.display = "block";
+    image.style.position = "absolute";
+    image.style.left = `${renderState.position.x}px`;
+    image.style.top = `${renderState.position.y}px`;
+    image.style.transform = "translate(-50%, -50%)";
   }
   wrapper.appendChild(image);
   return wrapper;
 }
 
-function createMarkerLayerElement(layer) {
+function createGridSelectionOverlay(layer, selectedCells) {
+  const overlay = document.createElement("div");
+  overlay.className = "orrery-layer-grid-selection";
+  const gridType = getGridType(layer);
+  const offset = getGridOffset(layer);
+  selectedCells.forEach((cell) => {
+    const rect = getGridCellPixelRect(layer, cell.coord);
+    const highlight = document.createElement("div");
+    highlight.className = "orrery-grid-cell-highlight";
+    if (gridType === "hex") {
+      highlight.classList.add("is-hex");
+    }
+    highlight.style.left = `${rect.x + offset.x}px`;
+    highlight.style.top = `${rect.y + offset.y}px`;
+    highlight.style.width = `${rect.width}px`;
+    highlight.style.height = `${rect.height}px`;
+    overlay.appendChild(highlight);
+  });
+  return overlay;
+}
+
+function createMarkerLayerElement(layer, renderState = {}) {
   const marker = document.createElement("div");
   marker.className = "orrery-layer-marker-overlay";
-  const size = layer.settings?.size || 24;
+  const scale = renderState.sizeScale ?? 1;
+  const size = (layer.settings?.size || 24) * scale;
   marker.style.width = `${size}px`;
   marker.style.height = `${size}px`;
   marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
+  if (renderState.position) {
+    marker.style.left = `${renderState.position.x}px`;
+    marker.style.top = `${renderState.position.y}px`;
+  }
   return marker;
 }
 
-function createVectorLayerElement(layer) {
+function createVectorLayerElement(layer, renderState = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const baseSize = 200;
+  const scale = renderState.sizeScale ?? 1;
+  const scaledSize = Math.max(1, Math.round(baseSize * scale));
   svg.setAttribute("viewBox", "0 0 200 200");
+  if (renderState.position) {
+    svg.style.position = "absolute";
+    svg.style.left = `${renderState.position.x}px`;
+    svg.style.top = `${renderState.position.y}px`;
+    svg.style.right = "auto";
+    svg.style.bottom = "auto";
+    svg.style.transform = "translate(-50%, -50%)";
+    svg.style.width = `${scaledSize}px`;
+    svg.style.height = `${scaledSize}px`;
+  }
   svg.classList.add("orrery-layer-vector-overlay");
   const stroke = layer.settings?.strokeColor || "#0f172a";
   const fill = layer.settings?.fillColor || "#93c5fd";
@@ -442,7 +836,9 @@ function createLayerWrapper(layer, isSelected) {
   }
   const offsetX = layer.position?.x || 0;
   const offsetY = layer.position?.y || 0;
-  wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  if (state.map.baseMap.type !== "tile") {
+    wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  }
   wrapper.dataset.layerId = layer.id;
   return wrapper;
 }
@@ -480,15 +876,28 @@ function bindLayerDrag(target, layer, element) {
     }
     const deltaX = event.clientX - activeLayerDrag.startX;
     const deltaY = event.clientY - activeLayerDrag.startY;
+    const scale =
+      state.map.baseMap.type === "tile"
+        ? layer.type === "grid"
+          ? getGridLayoutScale()
+          : getLayerPositionScale()
+        : 1;
+    const adjustedDeltaX = scale ? deltaX / scale : deltaX;
+    const adjustedDeltaY = scale ? deltaY / scale : deltaY;
     layer.position = {
-      x: activeLayerDrag.originX + deltaX,
-      y: activeLayerDrag.originY + deltaY,
+      x: activeLayerDrag.originX + adjustedDeltaX,
+      y: activeLayerDrag.originY + adjustedDeltaY,
     };
     if (activeLayerDrag.target) {
-      activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
+      if (state.map.baseMap.type !== "tile") {
+        activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
+      }
     }
     if (activeLayerDrag.element?.classList.contains("orrery-layer-grid-overlay")) {
-      activeLayerDrag.element.style.backgroundPosition = `${layer.position.x}px ${layer.position.y}px`;
+      const offset = getGridOffset(layer);
+      activeLayerDrag.element.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
+    } else {
+      updateTileLayerElementPosition(layer, activeLayerDrag.element);
     }
   });
 
@@ -519,29 +928,45 @@ function renderLayerOverlays() {
   if (!overlay) {
     return;
   }
+  syncOverlayInteractivity();
   overlay.innerHTML = "";
   state.map.layers.forEach((layer) => {
     if (!layer.visible) {
       return;
     }
-    const isSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
+    const isLayerSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
+    const isGridCellsSelected = state.selection.kind === "grid-cells" && state.selection.layerId === layer.id;
+    const isSelected = isLayerSelected || isGridCellsSelected;
     const wrapper = createLayerWrapper(layer, isSelected);
     let element = null;
+    const layerPositionScale = getLayerPositionScale();
+    const layerSizeScale = getLayerSizeScale();
+    const layerPosition = getLayerRenderPosition(layer, layerPositionScale);
+    const renderState =
+      state.map.baseMap.type === "tile"
+        ? { position: layerPosition, sizeScale: layerSizeScale }
+        : {};
     if (layer.type === "grid") {
-      element = createGridLayerElement(layer);
+      element = createGridLayerElement(layer, {
+        isInteractive: isSelected,
+        selectedCells: isGridCellsSelected ? state.selection.cells : [],
+      });
     } else if (layer.type === "raster") {
-      element = createRasterLayerElement(layer);
+      element = createRasterLayerElement(layer, renderState);
     } else if (layer.type === "marker") {
-      element = createMarkerLayerElement(layer);
+      element = createMarkerLayerElement(layer, renderState);
     } else {
-      element = createVectorLayerElement(layer);
+      element = createVectorLayerElement(layer, renderState);
     }
     if (element) {
       element.style.opacity = String(layer.opacity ?? 1);
       wrapper.appendChild(element);
-      if (isSelected && layer.visible) {
+      if (isLayerSelected && layer.visible) {
+        const handle = document.createElement("div");
+        handle.className = "orrery-layer-handle";
+        wrapper.appendChild(handle);
         wrapper.classList.add("is-draggable");
-        bindLayerDrag(wrapper, layer, element);
+        bindLayerDrag(handle, layer, element);
       }
       overlay.appendChild(wrapper);
     }
@@ -578,6 +1003,16 @@ function applyLayerChange(label, apply) {
 }
 
 function applyLayerSettingsChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+function applyCellPropertiesChange(label, apply) {
   recordHistory(label, () => {
     apply();
     updateMapTimestamp(state.map);
@@ -688,7 +1123,6 @@ function renderLayerSelectionEditor(layer) {
 
   const settingsSchema = LAYER_SETTINGS_SCHEMA[layer.type] || [];
   if (settingsSchema.length) {
-    container.appendChild(createSelectionSectionTitle("Layer Settings"));
     settingsSchema.forEach((field) => {
       const input = document.createElement(field.type === "select" ? "select" : "input");
       if (field.type !== "select") {
@@ -732,6 +1166,13 @@ function renderLayerSelectionEditor(layer) {
           layer.settings = layer.settings || {};
           layer.settings[field.key] = nextValue;
         });
+        if (
+          field.key === "gridType" &&
+          state.selection.kind === "grid-cells" &&
+          state.selection.layerId === layer.id
+        ) {
+          setSelection("layer", layer.id);
+        }
       });
       container.appendChild(createFieldWrapper(field.label, input));
     });
@@ -753,20 +1194,72 @@ function renderLayerSelectionEditor(layer) {
     });
   }
 
+  const actionRow = document.createElement("div");
+  actionRow.className = "btn-toolbar";
+  actionRow.setAttribute("role", "toolbar");
+  actionRow.setAttribute("aria-label", "Layer property actions");
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "btn-group btn-group-sm";
+  actionGroup.setAttribute("role", "group");
+
   const addButton = document.createElement("button");
   addButton.type = "button";
-  addButton.className = "btn btn-outline-secondary btn-sm";
-  addButton.textContent = "Add property";
+  addButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  addButton.setAttribute("aria-label", "Add property");
+  addButton.setAttribute("data-bs-toggle", "tooltip");
+  addButton.setAttribute("data-bs-placement", "bottom");
+  addButton.setAttribute("data-bs-title", "Add property");
+  addButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:plus\" aria-hidden=\"true\"></span>";
   addButton.addEventListener("click", () => {
     const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
     if (emptyState) {
       emptyState.remove();
     }
     propertiesWrapper.appendChild(createPropertyRow(layer, "", ""));
+    refreshTooltips();
   });
 
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  copyButton.setAttribute("aria-label", "Copy properties");
+  copyButton.setAttribute("data-bs-toggle", "tooltip");
+  copyButton.setAttribute("data-bs-placement", "bottom");
+  copyButton.setAttribute("data-bs-title", "Copy properties");
+  copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
+  copyButton.addEventListener("click", () => {
+    state.propertyClipboard = JSON.parse(JSON.stringify(layer.properties || {}));
+    renderSelection();
+    status.show("Copied layer properties", { type: "info", timeout: 1200 });
+  });
+
+  const pasteButton = document.createElement("button");
+  pasteButton.type = "button";
+  pasteButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  pasteButton.setAttribute("aria-label", "Paste properties");
+  pasteButton.setAttribute("data-bs-toggle", "tooltip");
+  pasteButton.setAttribute("data-bs-placement", "bottom");
+  pasteButton.setAttribute("data-bs-title", "Paste properties");
+  pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
+  pasteButton.disabled = !state.propertyClipboard;
+  pasteButton.addEventListener("click", () => {
+    if (!state.propertyClipboard) {
+      return;
+    }
+    applyLayerSettingsChange("paste layer properties", () => {
+      layer.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
+    });
+    status.show("Pasted layer properties", { type: "success", timeout: 1200 });
+  });
+
+  actionGroup.appendChild(addButton);
+  actionGroup.appendChild(copyButton);
+  actionGroup.appendChild(pasteButton);
+  actionRow.appendChild(actionGroup);
+
+  container.appendChild(actionRow);
   container.appendChild(propertiesWrapper);
-  container.appendChild(addButton);
+  refreshTooltips();
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -807,8 +1300,12 @@ function createPropertyRow(layer, key, value) {
 
   const removeButton = document.createElement("button");
   removeButton.type = "button";
-  removeButton.className = "btn btn-outline-danger btn-sm";
-  removeButton.textContent = "Remove";
+  removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+  removeButton.setAttribute("aria-label", "Remove property");
+  removeButton.setAttribute("data-bs-toggle", "tooltip");
+  removeButton.setAttribute("data-bs-placement", "bottom");
+  removeButton.setAttribute("data-bs-title", "Remove property");
+  removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
 
@@ -842,6 +1339,257 @@ function createPropertyRow(layer, key, value) {
   row.appendChild(valueInput);
   row.appendChild(removeButton);
   return row;
+}
+
+function createGridCellPropertyRow(layer, selectionCoords, key, value) {
+  const row = document.createElement("div");
+  row.className = "d-flex gap-2 align-items-center";
+
+  const keyInput = document.createElement("input");
+  keyInput.type = "text";
+  keyInput.className = "form-control form-control-sm";
+  keyInput.placeholder = "Key";
+  keyInput.value = key;
+
+  const valueInput = document.createElement("input");
+  valueInput.type = "text";
+  valueInput.className = "form-control form-control-sm";
+  valueInput.placeholder = "Value";
+  valueInput.value = value;
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+  removeButton.setAttribute("aria-label", "Remove property");
+  removeButton.setAttribute("data-bs-toggle", "tooltip");
+  removeButton.setAttribute("data-bs-placement", "bottom");
+  removeButton.setAttribute("data-bs-title", "Remove property");
+  removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
+
+  let currentKey = key;
+
+  const applyToSelection = (apply) => {
+    applyCellPropertiesChange("grid cell property", () => {
+      selectionCoords.forEach((coord) => {
+        const cell = ensureGridCell(layer, coord);
+        apply(cell);
+      });
+    });
+  };
+
+  const updateProperty = () => {
+    const nextKey = keyInput.value.trim();
+    const nextValue = valueInput.value.trim();
+    if (!nextKey && !currentKey) {
+      return;
+    }
+    applyToSelection((cell) => {
+      cell.properties = cell.properties || {};
+      if (currentKey && currentKey !== nextKey) {
+        delete cell.properties[currentKey];
+      }
+      if (nextKey) {
+        cell.properties[nextKey] = nextValue;
+      }
+    });
+    currentKey = nextKey;
+  };
+
+  keyInput.addEventListener("change", updateProperty);
+  valueInput.addEventListener("change", updateProperty);
+  removeButton.addEventListener("click", () => {
+    applyToSelection((cell) => {
+      if (currentKey && cell.properties) {
+        delete cell.properties[currentKey];
+      }
+    });
+    renderSelection();
+  });
+
+  row.appendChild(keyInput);
+  row.appendChild(valueInput);
+  row.appendChild(removeButton);
+  return row;
+}
+
+function renderGridCellSelectionEditor(layer, selectedCells) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  container.innerHTML = "";
+
+  const selectionSummary = document.createElement("div");
+  selectionSummary.className = "d-flex flex-column gap-2";
+  const badgeRow = document.createElement("div");
+  badgeRow.className = "d-flex align-items-center flex-wrap gap-2";
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
+  clearButton.setAttribute("aria-label", "Clear selection");
+  clearButton.setAttribute("data-bs-toggle", "tooltip");
+  clearButton.setAttribute("data-bs-placement", "bottom");
+  clearButton.setAttribute("data-bs-title", "Clear cell selection");
+  clearButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:x\" aria-hidden=\"true\"></span>";
+  clearButton.addEventListener("click", () => setSelection("layer", layer.id));
+  badgeRow.appendChild(clearButton);
+  selectedCells.slice(0, 8).forEach((cell) => {
+    const badge = document.createElement("span");
+    badge.className = "badge text-bg-light border";
+    badge.textContent = formatGridCellLabel(layer, cell.coord);
+    badgeRow.appendChild(badge);
+  });
+  if (selectedCells.length > 12) {
+    badgeRow.innerHTML = "";
+    const summary = document.createElement("span");
+    summary.className = "badge text-bg-secondary";
+    summary.textContent = summarizeGridSelection(layer, selectedCells);
+    badgeRow.appendChild(clearButton);
+    badgeRow.appendChild(summary);
+  } else if (selectedCells.length > 8) {
+    const more = document.createElement("span");
+    more.className = "badge text-bg-secondary";
+    more.textContent = `+${selectedCells.length - 8} more`;
+    badgeRow.appendChild(more);
+  }
+  selectionSummary.appendChild(badgeRow);
+  refreshTooltips();
+  container.appendChild(selectionSummary);
+
+  const selectionCoords = selectedCells.map((cell) => cell.coord);
+  const primaryCoord = selectedCells[0]?.coord;
+  const primaryCell = primaryCoord ? findGridCell(layer, primaryCoord) : null;
+
+  container.appendChild(createSelectionSectionTitle("Custom Properties"));
+
+  if (selectedCells.length > 1) {
+    const notice = document.createElement("p");
+    notice.className = "small text-body-secondary";
+    notice.textContent = "Editing properties applies to all selected cells.";
+    container.appendChild(notice);
+  }
+
+  const propertiesWrapper = document.createElement("div");
+  propertiesWrapper.className = "d-flex flex-column gap-2";
+  const entries = Object.entries(primaryCell?.properties || {});
+
+  if (entries.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No custom properties yet.";
+    propertiesWrapper.appendChild(empty);
+  } else {
+    entries.forEach(([key, value]) => {
+      propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, key, value));
+    });
+  }
+
+  const actionRow = document.createElement("div");
+  actionRow.className = "btn-toolbar";
+  actionRow.setAttribute("role", "toolbar");
+  actionRow.setAttribute("aria-label", "Cell property actions");
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "btn-group btn-group-sm";
+  actionGroup.setAttribute("role", "group");
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  addButton.setAttribute("aria-label", "Add property");
+  addButton.setAttribute("data-bs-toggle", "tooltip");
+  addButton.setAttribute("data-bs-placement", "bottom");
+  addButton.setAttribute("data-bs-title", "Add property");
+  addButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:plus\" aria-hidden=\"true\"></span>";
+  addButton.addEventListener("click", () => {
+    const emptyState = propertiesWrapper.querySelector(".text-body-secondary");
+    if (emptyState) {
+      emptyState.remove();
+    }
+    propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, "", ""));
+    refreshTooltips();
+  });
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  copyButton.setAttribute("aria-label", "Copy properties");
+  copyButton.setAttribute("data-bs-toggle", "tooltip");
+  copyButton.setAttribute("data-bs-placement", "bottom");
+  copyButton.setAttribute("data-bs-title", "Copy properties");
+  copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
+  copyButton.disabled = !primaryCoord;
+  copyButton.addEventListener("click", () => {
+    const props = primaryCell?.properties || {};
+    state.propertyClipboard = JSON.parse(JSON.stringify(props));
+    renderSelection();
+    status.show("Copied cell properties", { type: "info", timeout: 1200 });
+  });
+
+  const pasteButton = document.createElement("button");
+  pasteButton.type = "button";
+  pasteButton.className = "btn btn-outline-secondary d-inline-flex align-items-center justify-content-center";
+  pasteButton.setAttribute("aria-label", "Paste properties");
+  pasteButton.setAttribute("data-bs-toggle", "tooltip");
+  pasteButton.setAttribute("data-bs-placement", "bottom");
+  pasteButton.setAttribute("data-bs-title", "Paste properties");
+  pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
+  pasteButton.disabled = !state.propertyClipboard;
+  pasteButton.addEventListener("click", () => {
+    if (!state.propertyClipboard) {
+      return;
+    }
+    applyCellPropertiesChange("paste cell properties", () => {
+      selectionCoords.forEach((coord) => {
+        const cell = ensureGridCell(layer, coord);
+        cell.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
+      });
+    });
+    status.show("Pasted cell properties", { type: "success", timeout: 1200 });
+  });
+
+  actionGroup.appendChild(addButton);
+  actionGroup.appendChild(copyButton);
+  actionGroup.appendChild(pasteButton);
+  actionRow.appendChild(actionGroup);
+  container.appendChild(actionRow);
+  refreshTooltips();
+
+  if (selectedCells.length > 1) {
+    container.appendChild(createSelectionSectionTitle("Bulk Add/Update"));
+    const bulkRow = document.createElement("div");
+    bulkRow.className = "d-flex flex-column gap-2";
+    const bulkKey = document.createElement("input");
+    bulkKey.type = "text";
+    bulkKey.className = "form-control form-control-sm";
+    bulkKey.placeholder = "Property key";
+    const bulkValue = document.createElement("input");
+    bulkValue.type = "text";
+    bulkValue.className = "form-control form-control-sm";
+    bulkValue.placeholder = "Property value";
+    const bulkButton = document.createElement("button");
+    bulkButton.type = "button";
+    bulkButton.className = "btn btn-outline-primary btn-sm align-self-start";
+    bulkButton.textContent = "Apply to selection";
+    bulkButton.addEventListener("click", () => {
+      const key = bulkKey.value.trim();
+      if (!key) {
+        return;
+      }
+      applyCellPropertiesChange("bulk cell property", () => {
+        selectionCoords.forEach((coord) => {
+          const cell = ensureGridCell(layer, coord);
+          cell.properties = cell.properties || {};
+          cell.properties[key] = bulkValue.value.trim();
+        });
+      });
+    });
+    bulkRow.appendChild(bulkKey);
+    bulkRow.appendChild(bulkValue);
+    bulkRow.appendChild(bulkButton);
+    container.appendChild(bulkRow);
+  }
+
+  container.appendChild(propertiesWrapper);
 }
 
 function renderGroupSelectionEditor() {
@@ -989,6 +1737,16 @@ function setupLayerEvents() {
       let layer = null;
       recordHistory(`add ${type} layer`, () => {
         layer = createLayer({ type });
+        if (type === "marker") {
+          const overlay = baseMapManager.getOverlayContainer();
+          if (overlay) {
+            const rect = overlay.getBoundingClientRect();
+            layer.position = {
+              x: rect.width / 2,
+              y: rect.height / 2,
+            };
+          }
+        }
         state.map.layers.push(layer);
         updateMapTimestamp(state.map);
       });
@@ -1039,6 +1797,9 @@ function setupActionEvents() {
   }
   if (elements.redoButton) {
     elements.redoButton.addEventListener("click", () => redo());
+  }
+  if (elements.selectionClear) {
+    elements.selectionClear.addEventListener("click", () => setSelection(null));
   }
 }
 

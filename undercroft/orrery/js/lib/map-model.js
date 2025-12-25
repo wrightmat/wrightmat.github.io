@@ -15,7 +15,6 @@ export function createLayerSettings(type) {
         gridType: "square",
         cellSize: 50,
         lineColor: "#0f172a",
-        lineOpacity: 0.25,
       };
     case "raster":
       return {
@@ -86,10 +85,21 @@ export function createLayer({ type = "vector", name } = {}) {
     type: safeType,
     name: name || `${safeType.charAt(0).toUpperCase()}${safeType.slice(1)} Layer`,
     visible: true,
-    opacity: 1,
+    opacity: safeType === "grid" ? 0.35 : 1,
     position: { x: 0, y: 0 },
     elements: [],
     settings: createLayerSettings(safeType),
+    properties: {},
+  };
+}
+
+export function createGridCell({ key, coord, gridType = "square" } = {}) {
+  return {
+    id: randomId(),
+    kind: "cell",
+    key: key || randomId(),
+    gridType,
+    coord: coord || { col: 0, row: 0 },
     properties: {},
   };
 }
