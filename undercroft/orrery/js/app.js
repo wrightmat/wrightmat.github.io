@@ -120,7 +120,6 @@ const LAYER_SETTINGS_SCHEMA = {
     },
     { key: "cellSize", label: "Cell size", type: "number", min: 5, step: 5 },
     { key: "lineColor", label: "Line color", type: "color" },
-    { key: "lineOpacity", label: "Line opacity", type: "range", min: 0, max: 1, step: 0.05 },
   ],
   raster: [
     { key: "src", label: "Image URL", type: "text" },
@@ -333,25 +332,180 @@ function clearSelectionEditor() {
   }
 }
 
-function toRgba(color, opacity) {
-  if (typeof color !== "string" || color.trim() === "") {
-    return `rgba(15, 23, 42, ${opacity})`;
+function updateOverlayInteractivity() {
+  const overlay = baseMapManager.getOverlayContainer();
+  if (!overlay) {
+    return;
   }
-  const trimmed = color.trim();
-  if (trimmed.startsWith("rgba") || trimmed.startsWith("rgb")) {
-    return trimmed;
+  const selectedLayerId =
+    state.selection.kind === "layer"
+      ? state.selection.id
+      : state.selection.kind === "grid-cells"
+        ? state.selection.layerId
+        : null;
+  const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
+  const isInteractive = Boolean(layer && layer.type === "grid");
+  overlay.classList.toggle("is-interactive", isInteractive);
+  if (overlay.parentElement && overlay.parentElement.classList.contains("leaflet-pane")) {
+    overlay.parentElement.style.pointerEvents = isInteractive ? "auto" : "none";
   }
-  if (trimmed.startsWith("#")) {
-    const hex = trimmed.slice(1);
-    const normalized = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
-    if (normalized.length === 6) {
-      const r = parseInt(normalized.slice(0, 2), 16);
-      const g = parseInt(normalized.slice(2, 4), 16);
-      const b = parseInt(normalized.slice(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-    }
+}
+
+function getBaseZoom() {
+  return baseMapManager.getDefaultView?.()?.zoom ?? 1;
+}
+
+function getGridZoomScale() {
+  const baseZoom = getBaseZoom();
+  const viewZoom = Number.isFinite(state.map.view?.zoom) ? state.map.view.zoom : baseZoom;
+  if (state.map.baseMap.type === "tile") {
+    return Math.pow(2, viewZoom - baseZoom);
   }
-  return trimmed;
+  return baseZoom ? viewZoom / baseZoom : 1;
+}
+
+function getGridLayoutScale() {
+  return state.map.baseMap.type === "tile" ? getGridZoomScale() * 0.1 : 1;
+}
+
+function getGridHitTestScale() {
+  return state.map.baseMap.type === "tile" ? 1 : getGridZoomScale();
+}
+
+function getGridOffset(layer) {
+  const offsetScale = getGridLayoutScale();
+  return {
+    x: (layer.position?.x || 0) * offsetScale,
+    y: (layer.position?.y || 0) * offsetScale,
+  };
+}
+
+function getGridCellSize(layer) {
+  const baseSize = layer.settings?.cellSize || 50;
+  return baseSize * getGridLayoutScale();
+}
+
+function getGridType(layer) {
+  return layer.settings?.gridType || "square";
+}
+
+function getGridCellKey(layer, coord) {
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    return `hex:${coord.q},${coord.r}`;
+  }
+  return `square:${coord.col},${coord.row}`;
+}
+
+function createGridCellSelectionEntry(layer, coord) {
+  return {
+    key: getGridCellKey(layer, coord),
+    coord,
+  };
+}
+
+function findGridCell(layer, coord) {
+  const key = getGridCellKey(layer, coord);
+  return layer.elements?.find((element) => element.kind === "cell" && element.key === key) || null;
+}
+
+function ensureGridCell(layer, coord) {
+  const key = getGridCellKey(layer, coord);
+  let cell = findGridCell(layer, coord);
+  if (!cell) {
+    cell = createGridCell({
+      key,
+      coord,
+      gridType: getGridType(layer),
+    });
+    layer.elements = layer.elements || [];
+    layer.elements.push(cell);
+  }
+  return cell;
+}
+
+function getHexMetrics(cellSize) {
+  const size = cellSize / 2;
+  const height = Math.sqrt(3) * size;
+  return {
+    size,
+    height,
+    width: cellSize,
+    offsetX: size,
+    offsetY: height / 2,
+  };
+}
+
+function axialRound(q, r) {
+  let x = q;
+  let z = r;
+  let y = -x - z;
+  let rx = Math.round(x);
+  let ry = Math.round(y);
+  let rz = Math.round(z);
+
+  const xDiff = Math.abs(rx - x);
+  const yDiff = Math.abs(ry - y);
+  const zDiff = Math.abs(rz - z);
+
+  if (xDiff > yDiff && xDiff > zDiff) {
+    rx = -ry - rz;
+  } else if (yDiff > zDiff) {
+    ry = -rx - rz;
+  } else {
+    rz = -rx - ry;
+  }
+
+  return { q: rx, r: rz };
+}
+
+function getGridCoordFromPoint(layer, point) {
+  const hitScale = getGridHitTestScale();
+  const scaledPoint = hitScale ? { x: point.x / hitScale, y: point.y / hitScale } : point;
+  const cellSize = getGridCellSize(layer);
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const { size, offsetX, offsetY } = getHexMetrics(cellSize);
+    const x = scaledPoint.x - offsetX;
+    const y = scaledPoint.y - offsetY;
+    const q = (2 / 3) * (x / size);
+    const r = ((-1 / 3) * x + (Math.sqrt(3) / 3) * y) / size;
+    return axialRound(q, r);
+  }
+  return {
+    col: Math.floor(scaledPoint.x / cellSize),
+    row: Math.floor(scaledPoint.y / cellSize),
+  };
+}
+
+function getGridCellPixelRect(layer, coord) {
+  const cellSize = getGridCellSize(layer);
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    const { size, height, width, offsetX, offsetY } = getHexMetrics(cellSize);
+    const centerX = size * 1.5 * coord.q + offsetX;
+    const centerY = size * Math.sqrt(3) * (coord.r + coord.q / 2) + offsetY;
+    return {
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      width,
+      height,
+    };
+  }
+  return {
+    x: coord.col * cellSize,
+    y: coord.row * cellSize,
+    width: cellSize,
+    height: cellSize,
+  };
+}
+
+function formatGridCellLabel(layer, coord) {
+  const gridType = getGridType(layer);
+  if (gridType === "hex") {
+    return `Q${coord.q}, R${coord.r}`;
+  }
+  return `Col ${coord.col}, Row ${coord.row}`;
 }
 
 function updateOverlayInteractivity() {
@@ -625,8 +779,7 @@ function createGridLayerElement(layer, selectionState) {
   grid.style.bottom = "auto";
   const size = getGridCellSize(layer);
   const gridType = layer.settings?.gridType || "square";
-  const lineOpacity = layer.settings?.lineOpacity ?? 0.25;
-  const lineColor = toRgba(layer.settings?.lineColor || "#0f172a", lineOpacity);
+  const lineColor = layer.settings?.lineColor || "#0f172a";
   if (gridType === "hex") {
     const hexBackground = buildHexGridBackground(size, lineColor);
     grid.style.backgroundImage = hexBackground.image;
@@ -643,18 +796,75 @@ function createGridLayerElement(layer, selectionState) {
   return grid;
 }
 
-function createRasterLayerElement(layer) {
+function getLayerRenderScale(layer) {
+  return state.map.baseMap.type === "tile" ? getGridZoomScale() : 1;
+}
+
+function getLayerRenderPosition(layer, scale) {
+  return {
+    x: (layer.position?.x || 0) * scale,
+    y: (layer.position?.y || 0) * scale,
+  };
+}
+
+function updateTileLayerElementPosition(layer, element) {
+  if (!element || state.map.baseMap.type !== "tile") {
+    return;
+  }
+  const scale = getLayerRenderScale(layer);
+  const position = getLayerRenderPosition(layer, scale);
+  if (element.classList.contains("orrery-layer-marker-overlay")) {
+    const size = (layer.settings?.size || 24) * scale;
+    element.style.width = `${size}px`;
+    element.style.height = `${size}px`;
+    element.style.left = `${position.x}px`;
+    element.style.top = `${position.y}px`;
+    return;
+  }
+  if (element.classList.contains("orrery-layer-vector-overlay")) {
+    const baseSize = 200;
+    const scaledSize = Math.max(1, Math.round(baseSize * scale));
+    element.style.left = `${position.x}px`;
+    element.style.top = `${position.y}px`;
+    element.style.width = `${scaledSize}px`;
+    element.style.height = `${scaledSize}px`;
+    return;
+  }
+  if (element.classList.contains("orrery-layer-raster-overlay")) {
+    const image = element.querySelector("img");
+    if (image) {
+      if (layer.settings?.width) {
+        image.width = Math.max(1, Math.round(layer.settings.width * scale));
+      }
+      if (layer.settings?.height) {
+        image.height = Math.max(1, Math.round(layer.settings.height * scale));
+      }
+      image.style.left = `${position.x}px`;
+      image.style.top = `${position.y}px`;
+    }
+  }
+}
+
+function createRasterLayerElement(layer, renderState = {}) {
   const wrapper = document.createElement("div");
   wrapper.className = "orrery-layer-raster-overlay";
   const src = layer.settings?.src || "";
   const image = document.createElement("img");
   image.src = src || "data/sample-map.svg";
   image.alt = layer.name;
+  const scale = renderState.scale ?? 1;
   if (layer.settings?.width) {
-    image.width = layer.settings.width;
+    image.width = Math.max(1, Math.round(layer.settings.width * scale));
   }
   if (layer.settings?.height) {
-    image.height = layer.settings.height;
+    image.height = Math.max(1, Math.round(layer.settings.height * scale));
+  }
+  if (renderState.position) {
+    wrapper.style.display = "block";
+    image.style.position = "absolute";
+    image.style.left = `${renderState.position.x}px`;
+    image.style.top = `${renderState.position.y}px`;
+    image.style.transform = "translate(-50%, -50%)";
   }
   wrapper.appendChild(image);
   return wrapper;
@@ -681,19 +891,37 @@ function createGridSelectionOverlay(layer, selectedCells) {
   return overlay;
 }
 
-function createMarkerLayerElement(layer) {
+function createMarkerLayerElement(layer, renderState = {}) {
   const marker = document.createElement("div");
   marker.className = "orrery-layer-marker-overlay";
-  const size = layer.settings?.size || 24;
+  const scale = renderState.scale ?? 1;
+  const size = (layer.settings?.size || 24) * scale;
   marker.style.width = `${size}px`;
   marker.style.height = `${size}px`;
   marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
+  if (renderState.position) {
+    marker.style.left = `${renderState.position.x}px`;
+    marker.style.top = `${renderState.position.y}px`;
+  }
   return marker;
 }
 
-function createVectorLayerElement(layer) {
+function createVectorLayerElement(layer, renderState = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const baseSize = 200;
+  const scale = renderState.scale ?? 1;
+  const scaledSize = Math.max(1, Math.round(baseSize * scale));
   svg.setAttribute("viewBox", "0 0 200 200");
+  if (renderState.position) {
+    svg.style.position = "absolute";
+    svg.style.left = `${renderState.position.x}px`;
+    svg.style.top = `${renderState.position.y}px`;
+    svg.style.right = "auto";
+    svg.style.bottom = "auto";
+    svg.style.transform = "translate(-50%, -50%)";
+    svg.style.width = `${scaledSize}px`;
+    svg.style.height = `${scaledSize}px`;
+  }
   svg.classList.add("orrery-layer-vector-overlay");
   const stroke = layer.settings?.strokeColor || "#0f172a";
   const fill = layer.settings?.fillColor || "#93c5fd";
@@ -715,7 +943,9 @@ function createLayerWrapper(layer, isSelected) {
   }
   const offsetX = layer.position?.x || 0;
   const offsetY = layer.position?.y || 0;
-  wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  if (state.map.baseMap.type !== "tile") {
+    wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  }
   wrapper.dataset.layerId = layer.id;
   return wrapper;
 }
@@ -753,16 +983,28 @@ function bindLayerDrag(target, layer, element) {
     }
     const deltaX = event.clientX - activeLayerDrag.startX;
     const deltaY = event.clientY - activeLayerDrag.startY;
+    const scale =
+      state.map.baseMap.type === "tile"
+        ? layer.type === "grid"
+          ? getGridLayoutScale()
+          : getGridZoomScale()
+        : 1;
+    const adjustedDeltaX = scale ? deltaX / scale : deltaX;
+    const adjustedDeltaY = scale ? deltaY / scale : deltaY;
     layer.position = {
-      x: activeLayerDrag.originX + deltaX,
-      y: activeLayerDrag.originY + deltaY,
+      x: activeLayerDrag.originX + adjustedDeltaX,
+      y: activeLayerDrag.originY + adjustedDeltaY,
     };
     if (activeLayerDrag.target) {
-      activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
+      if (state.map.baseMap.type !== "tile") {
+        activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
+      }
     }
     if (activeLayerDrag.element?.classList.contains("orrery-layer-grid-overlay")) {
       const offset = getGridOffset(layer);
       activeLayerDrag.element.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
+    } else {
+      updateTileLayerElementPosition(layer, activeLayerDrag.element);
     }
   });
 
@@ -804,17 +1046,20 @@ function renderLayerOverlays() {
     const isSelected = isLayerSelected || isGridCellsSelected;
     const wrapper = createLayerWrapper(layer, isSelected);
     let element = null;
+    const layerScale = getLayerRenderScale(layer);
+    const layerPosition = getLayerRenderPosition(layer, layerScale);
+    const renderState = state.map.baseMap.type === "tile" ? { scale: layerScale, position: layerPosition } : {};
     if (layer.type === "grid") {
       element = createGridLayerElement(layer, {
         isInteractive: isSelected,
         selectedCells: isGridCellsSelected ? state.selection.cells : [],
       });
     } else if (layer.type === "raster") {
-      element = createRasterLayerElement(layer);
+      element = createRasterLayerElement(layer, renderState);
     } else if (layer.type === "marker") {
-      element = createMarkerLayerElement(layer);
+      element = createMarkerLayerElement(layer, renderState);
     } else {
-      element = createVectorLayerElement(layer);
+      element = createVectorLayerElement(layer, renderState);
     }
     if (element) {
       element.style.opacity = String(layer.opacity ?? 1);
