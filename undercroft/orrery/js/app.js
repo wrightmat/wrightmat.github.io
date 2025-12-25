@@ -130,7 +130,7 @@ const LAYER_SETTINGS_SCHEMA = {
   ],
   marker: [
     { key: "icon", label: "Icon", type: "text" },
-    { key: "size", label: "Size", type: "number", min: 8, step: 1 },
+    { key: "size", label: "Size", type: "number", min: 2, step: 1 },
     { key: "color", label: "Color", type: "color" },
   ],
 };
@@ -684,8 +684,12 @@ function createGridLayerElement(layer, selectionState) {
   return grid;
 }
 
-function getLayerRenderScale(layer) {
+function getLayerPositionScale() {
   return state.map.baseMap.type === "tile" ? getGridZoomScale() : 1;
+}
+
+function getLayerSizeScale() {
+  return 1;
 }
 
 function getLayerRenderPosition(layer, scale) {
@@ -699,10 +703,11 @@ function updateTileLayerElementPosition(layer, element) {
   if (!element || state.map.baseMap.type !== "tile") {
     return;
   }
-  const scale = getLayerRenderScale(layer);
-  const position = getLayerRenderPosition(layer, scale);
+  const positionScale = getLayerPositionScale();
+  const sizeScale = getLayerSizeScale();
+  const position = getLayerRenderPosition(layer, positionScale);
   if (element.classList.contains("orrery-layer-marker-overlay")) {
-    const size = (layer.settings?.size || 24) * scale;
+    const size = (layer.settings?.size || 24) * sizeScale;
     element.style.width = `${size}px`;
     element.style.height = `${size}px`;
     element.style.left = `${position.x}px`;
@@ -711,7 +716,7 @@ function updateTileLayerElementPosition(layer, element) {
   }
   if (element.classList.contains("orrery-layer-vector-overlay")) {
     const baseSize = 200;
-    const scaledSize = Math.max(1, Math.round(baseSize * scale));
+    const scaledSize = Math.max(1, Math.round(baseSize * sizeScale));
     element.style.left = `${position.x}px`;
     element.style.top = `${position.y}px`;
     element.style.width = `${scaledSize}px`;
@@ -722,10 +727,10 @@ function updateTileLayerElementPosition(layer, element) {
     const image = element.querySelector("img");
     if (image) {
       if (layer.settings?.width) {
-        image.width = Math.max(1, Math.round(layer.settings.width * scale));
+        image.width = Math.max(1, Math.round(layer.settings.width * sizeScale));
       }
       if (layer.settings?.height) {
-        image.height = Math.max(1, Math.round(layer.settings.height * scale));
+        image.height = Math.max(1, Math.round(layer.settings.height * sizeScale));
       }
       image.style.left = `${position.x}px`;
       image.style.top = `${position.y}px`;
@@ -740,7 +745,7 @@ function createRasterLayerElement(layer, renderState = {}) {
   const image = document.createElement("img");
   image.src = src || "data/sample-map.svg";
   image.alt = layer.name;
-  const scale = renderState.scale ?? 1;
+  const scale = renderState.sizeScale ?? 1;
   if (layer.settings?.width) {
     image.width = Math.max(1, Math.round(layer.settings.width * scale));
   }
@@ -782,7 +787,7 @@ function createGridSelectionOverlay(layer, selectedCells) {
 function createMarkerLayerElement(layer, renderState = {}) {
   const marker = document.createElement("div");
   marker.className = "orrery-layer-marker-overlay";
-  const scale = renderState.scale ?? 1;
+  const scale = renderState.sizeScale ?? 1;
   const size = (layer.settings?.size || 24) * scale;
   marker.style.width = `${size}px`;
   marker.style.height = `${size}px`;
@@ -797,7 +802,7 @@ function createMarkerLayerElement(layer, renderState = {}) {
 function createVectorLayerElement(layer, renderState = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   const baseSize = 200;
-  const scale = renderState.scale ?? 1;
+  const scale = renderState.sizeScale ?? 1;
   const scaledSize = Math.max(1, Math.round(baseSize * scale));
   svg.setAttribute("viewBox", "0 0 200 200");
   if (renderState.position) {
@@ -875,7 +880,7 @@ function bindLayerDrag(target, layer, element) {
       state.map.baseMap.type === "tile"
         ? layer.type === "grid"
           ? getGridLayoutScale()
-          : getGridZoomScale()
+          : getLayerPositionScale()
         : 1;
     const adjustedDeltaX = scale ? deltaX / scale : deltaX;
     const adjustedDeltaY = scale ? deltaY / scale : deltaY;
@@ -934,9 +939,13 @@ function renderLayerOverlays() {
     const isSelected = isLayerSelected || isGridCellsSelected;
     const wrapper = createLayerWrapper(layer, isSelected);
     let element = null;
-    const layerScale = getLayerRenderScale(layer);
-    const layerPosition = getLayerRenderPosition(layer, layerScale);
-    const renderState = state.map.baseMap.type === "tile" ? { scale: layerScale, position: layerPosition } : {};
+    const layerPositionScale = getLayerPositionScale();
+    const layerSizeScale = getLayerSizeScale();
+    const layerPosition = getLayerRenderPosition(layer, layerPositionScale);
+    const renderState =
+      state.map.baseMap.type === "tile"
+        ? { position: layerPosition, sizeScale: layerSizeScale }
+        : {};
     if (layer.type === "grid") {
       element = createGridLayerElement(layer, {
         isInteractive: isSelected,
@@ -1248,8 +1257,8 @@ function renderLayerSelectionEditor(layer) {
   actionGroup.appendChild(pasteButton);
   actionRow.appendChild(actionGroup);
 
-  container.appendChild(propertiesWrapper);
   container.appendChild(actionRow);
+  container.appendChild(propertiesWrapper);
   refreshTooltips();
 
   const deleteButton = document.createElement("button");
