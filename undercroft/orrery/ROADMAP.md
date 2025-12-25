@@ -77,10 +77,11 @@ Groups are used to represent concepts such as biomes, political regions, faction
 
 ### Epic 4 — Views and Map Interaction UX
 - Define tool-level views that control visibility, interaction affordances, and presentation of the map for different contexts (e.g. GM vs player). Views are not user-authored data, but curated UX states that shape how maps are experienced and interacted with. This epic focuses on making complex, layered maps usable without exposing unnecessary complexity.
+- These views function on saved maps (by reference to an ID or similar) and take into account user tier. It allows the map creator to define what views are available for different user tiers.
 
-### Epic 5 — Undercroft Integration
-- Integrate Orrery with the broader Undercroft ecosystem, such as the login panel and user permissions.
-- Add Undo/Redo system from other Undercroft tools.
+### Epic 5 — Documentation
+- Document all Orrery features, consistent with other Undercroft tools.
+- Add help topics and (?) icons to appropriate locations with user-facing information. Examples include but aren't limited to sections headers in the left and right panes.
 
 ---
 
