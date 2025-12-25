@@ -20,6 +20,10 @@
   pointer-events: none;
 }
 
+.orrery-layer-overlay-host.is-interactive {
+  pointer-events: auto;
+}
+
 .orrery-layer-item {
   position: absolute;
   inset: 0;
@@ -57,6 +61,29 @@
 .orrery-layer-grid-overlay {
   position: absolute;
   inset: 0;
+}
+
+.orrery-layer-grid-overlay.is-interactive {
+  pointer-events: auto;
+  cursor: cell;
+}
+
+.orrery-layer-grid-selection {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.orrery-grid-cell-highlight {
+  position: absolute;
+  border: 2px solid rgba(14, 165, 233, 0.9);
+  background: rgba(14, 165, 233, 0.2);
+  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.4);
+}
+
+.orrery-grid-cell-highlight.is-hex {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 
 .orrery-layer-raster-overlay {
