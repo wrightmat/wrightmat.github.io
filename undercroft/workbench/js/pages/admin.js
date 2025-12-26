@@ -1559,6 +1559,12 @@ function renderGroupTableRows(group) {
   selectLabel.className = "form-label mb-0";
   selectLabel.textContent = "Characters in group";
   selectLabel.htmlFor = `admin-group-${group.id}-members`;
+  const membersLabelRow = document.createElement("div");
+  membersLabelRow.className = "d-flex align-items-center gap-2";
+  const membersHelp = document.createElement("span");
+  membersHelp.className = "align-middle";
+  membersHelp.dataset.helpTopic = "admin.groups.members";
+  membersHelp.dataset.helpInsert = "replace";
   const membersSelect = document.createElement("select");
   membersSelect.id = `admin-group-${group.id}-members`;
   membersSelect.className = "form-select";
@@ -1606,9 +1612,12 @@ function renderGroupTableRows(group) {
   const selectHint = document.createElement("div");
   selectHint.className = "text-body-secondary small";
   selectHint.textContent = "Select to add or remove characters from this group.";
-  membersWrapper.appendChild(selectLabel);
+  membersLabelRow.appendChild(selectLabel);
+  membersLabelRow.appendChild(membersHelp);
+  membersWrapper.appendChild(membersLabelRow);
   membersWrapper.appendChild(membersSelect);
   membersWrapper.appendChild(selectHint);
+  void initHelpSystem({ root: membersWrapper });
 
   const shareControls = document.createElement("div");
   shareControls.className = "d-flex flex-column flex-lg-row gap-2 align-items-lg-center";
