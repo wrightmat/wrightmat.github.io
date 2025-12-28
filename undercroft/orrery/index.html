@@ -192,7 +192,19 @@
 
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
-                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Layers</h2>
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Layers</h2>
+                  <button
+                    class="btn btn-link p-0 text-body-secondary"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Layers hold vector shapes, grids, rasters, or markers. Add a layer to start placing content on the map."
+                    aria-label="About layers"
+                  >
+                    <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <div class="btn-toolbar" role="toolbar" aria-label="Add layers">
                   <div class="btn-group btn-group-sm" role="group">
                     <button
@@ -243,7 +255,19 @@
 
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
-                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Groups</h2>
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Groups</h2>
+                  <button
+                    class="btn btn-link p-0 text-body-secondary"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Groups organize layers or grid cells so you can manage related content together."
+                    aria-label="About groups"
+                  >
+                    <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <div class="btn-toolbar" role="toolbar" aria-label="Add group">
                   <div class="btn-group btn-group-sm" role="group">
                     <button
@@ -264,7 +288,19 @@
 
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
-                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Views</h2>
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Views</h2>
+                  <button
+                    class="btn btn-link p-0 text-body-secondary"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Views are presets for map visibility and audience tiers."
+                    aria-label="About views"
+                  >
+                    <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <div class="btn-toolbar" role="toolbar" aria-label="Add view">
                   <div class="btn-group btn-group-sm" role="group">
                     <button
@@ -284,17 +320,29 @@
             </section>
 
             <section class="pane-card mt-auto" data-json-section id="orrery-json">
-              <button
-                class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#orrery-json-preview"
-                aria-expanded="false"
-                aria-controls="orrery-json-preview"
-              >
-                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
-                <span class="badge text-bg-secondary" data-json-size>0 B</span>
-              </button>
+              <div class="d-flex align-items-center gap-2">
+                <button
+                  class="btn btn-link flex-grow-1 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#orrery-json-preview"
+                  aria-expanded="false"
+                  aria-controls="orrery-json-preview"
+                >
+                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
+                  <span class="badge text-bg-secondary" data-json-size>0 B</span>
+                </button>
+                <button
+                  class="btn btn-link p-0 text-body-secondary"
+                  type="button"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Preview the current map model and verify exported data."
+                  aria-label="About JSON preview"
+                >
+                  <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
+                </button>
+              </div>
               <div class="collapse" id="orrery-json-preview">
                 <div class="bg-body p-2 mt-2">
                   <pre class="text-body-secondary small mb-0 orrery-json-preview" data-json-preview>{}</pre>
@@ -356,7 +404,19 @@
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
-                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Base Map</h2>
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Base Map</h2>
+                  <button
+                    class="btn btn-link p-0 text-body-secondary"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Choose and configure the background tiles, image, or canvas for the map."
+                    aria-label="About base map settings"
+                  >
+                    <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <button
                   class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
                   type="button"
@@ -489,7 +549,19 @@
 
             <section class="d-flex flex-column gap-3">
               <div class="d-flex align-items-center justify-content-between">
-                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Selection</h2>
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Selection</h2>
+                  <button
+                    class="btn btn-link p-0 text-body-secondary"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Inspect and edit the currently selected layer, view, group, or grid cells."
+                    aria-label="About selection details"
+                  >
+                    <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
+                  </button>
+                </div>
                 <div class="d-flex align-items-center gap-2">
                   <button
                     class="btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center"

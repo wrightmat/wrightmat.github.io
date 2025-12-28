@@ -19,6 +19,16 @@ map interactions.
 4. Inspect selection details and the JSON preview in the right pane.
 5. Pan the map by dragging and zoom with the mouse wheel or view controls.
 
+## Interface Guide
+- **Layers**: Build the map by adding vector, grid, raster, or marker layers.
+- **Groups**: Bundle related layers or grid cells to manage shared metadata.
+- **Views**: Save visibility presets and access tiers for the map experience.
+- **JSON Preview**: Inspect the current map model to validate exports.
+- **Base Map**: Configure the foundational tile, image, or canvas background.
+- **Selection**: Edit the active layer, group, view, or grid cells in detail.
+
+Hover over the help icons next to section headers for quick in-app guidance.
+
 ## Map Model Overview
 The Orrery map model captures the core structure used by all future epics.
 

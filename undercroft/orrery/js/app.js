@@ -1157,6 +1157,15 @@ function applyLayerSettingsChange(label, apply) {
   renderJson();
 }
 
+function applyLayerPropertyChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
+  renderLayerOverlays();
+  renderJson();
+}
+
 function applyGroupChange(label, apply) {
   recordHistory(label, () => {
     apply();
@@ -1164,6 +1173,15 @@ function applyGroupChange(label, apply) {
   });
   renderGroups();
   renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+function applyGroupPropertyChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
   renderLayerOverlays();
   renderJson();
 }
@@ -1184,6 +1202,15 @@ function applyCellPropertiesChange(label, apply) {
     updateMapTimestamp(state.map);
   });
   renderSelection();
+  renderLayerOverlays();
+  renderJson();
+}
+
+function applyCellPropertyFieldChange(label, apply) {
+  recordHistory(label, () => {
+    apply();
+    updateMapTimestamp(state.map);
+  });
   renderLayerOverlays();
   renderJson();
 }
@@ -1502,7 +1529,7 @@ function createLayerPropertyRow(layer, key, value) {
     key,
     value,
     onUpdate: ({ currentKey, nextKey, nextValue }) => {
-      applyLayerSettingsChange("layer property", () => {
+      applyLayerPropertyChange("layer property", () => {
         layer.properties = layer.properties || {};
         if (currentKey && currentKey !== nextKey) {
           delete layer.properties[currentKey];
@@ -1566,14 +1593,17 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
     if (!nextKey && !currentKey) {
       return;
     }
-    applyToSelection((cell) => {
-      cell.properties = cell.properties || {};
-      if (currentKey && currentKey !== nextKey) {
-        delete cell.properties[currentKey];
-      }
-      if (nextKey) {
-        cell.properties[nextKey] = nextValue;
-      }
+    applyCellPropertyFieldChange("grid cell property", () => {
+      selectionCoords.forEach((coord) => {
+        const cell = ensureGridCell(layer, coord);
+        cell.properties = cell.properties || {};
+        if (currentKey && currentKey !== nextKey) {
+          delete cell.properties[currentKey];
+        }
+        if (nextKey) {
+          cell.properties[nextKey] = nextValue;
+        }
+      });
     });
     currentKey = nextKey;
   };
@@ -1855,7 +1885,7 @@ function createGroupPropertyRow(group, key, value) {
     key,
     value,
     onUpdate: ({ currentKey, nextKey, nextValue }) => {
-      applyGroupChange("group property", () => {
+      applyGroupPropertyChange("group property", () => {
         group.properties = group.properties || {};
         if (currentKey && currentKey !== nextKey) {
           delete group.properties[currentKey];
