@@ -2045,12 +2045,12 @@ function renderGroupSelectionEditor(group) {
   } else {
     summary.textContent = "Select grid cells on the map, then click Add selected cells.";
   }
-  const addButton = document.createElement("button");
-  addButton.type = "button";
-  addButton.className = "btn btn-outline-primary btn-sm align-self-start";
-  addButton.textContent = `Add selected cells${lastSelection?.cells?.length ? ` (${lastSelection.cells.length})` : ""}`;
-  addButton.disabled = !(lastSelection?.cells?.length && selectionLayer);
-  addButton.addEventListener("click", () => {
+  const addMembersButton = document.createElement("button");
+  addMembersButton.type = "button";
+  addMembersButton.className = "btn btn-outline-primary btn-sm align-self-start";
+  addMembersButton.textContent = `Add selected cells${lastSelection?.cells?.length ? ` (${lastSelection.cells.length})` : ""}`;
+  addMembersButton.disabled = !(lastSelection?.cells?.length && selectionLayer);
+  addMembersButton.addEventListener("click", () => {
     if (!lastSelection?.cells?.length || !selectionLayer) {
       return;
     }
@@ -2067,7 +2067,7 @@ function renderGroupSelectionEditor(group) {
     });
   });
   memberActions.appendChild(summary);
-  memberActions.appendChild(addButton);
+  memberActions.appendChild(addMembersButton);
   container.appendChild(memberActions);
   const memberList = document.createElement("div");
   memberList.className = "d-flex flex-column gap-2";
