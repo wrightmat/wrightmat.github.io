@@ -457,40 +457,6 @@ body[data-theme="dark"] .preview-stage {
 
 /* Character notecard template styles. */
 
-.press-notecard {
-  font-size: 8.5pt;
-  line-height: 1.15;
-  font-family: "Noto Sans", "Myriad Pro", Calibri, Helvetica, Arial, sans-serif;
-  color: #212529;
-  width: 100%;
-}
-
-.press-notecard h1,
-.press-notecard h3 {
-  margin: 0;
-  line-height: 1;
-}
-
-.press-notecard__header-right {
-  text-align: right;
-}
-
-.press-notecard__name {
-  font-size: 1.4em;
-}
-
-.press-notecard__class-summary {
-  font-size: 1.05em;
-}
-
-.press-notecard__personality {
-  margin-bottom: 0;
-}
-
-.press-notecard__columns {
-  align-items: flex-start;
-}
-
 .ability-scores {
   display: flex;
   flex-direction: column;
@@ -632,60 +598,25 @@ body[data-theme="dark"] .preview-stage {
   color: purple;
 }
 
-.press-notecard__table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
 .press-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.press-notecard__table th,
-.press-notecard__table td {
+.press-table th,
+.press-table td {
   padding: 2px 4px;
   vertical-align: top;
 }
 
-.press-notecard__table thead th {
+.press-table thead th {
   border-bottom: 1px solid #000;
   font-weight: bold;
   text-align: left;
   font-size: 0.85em;
 }
 
-.press-notecard__table tbody tr + tr td {
+.press-table tbody tr + tr td {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.press-notecard__attacks-meta,
-.press-notecard__spells-meta {
-  text-align: right;
-  font-size: 0.8em;
-}
-
-.press-notecard__limited {
-  text-align: right;
-  font-size: 0.8em;
-}
-
-.press-notecard__features {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.press-notecard__details {
-  font-size: 0.9em;
-}
-
-.press-notecard__hp-dice {
-  font-size: 0.85em;
-}
-
-.press-notecard__proficiency,
-.press-notecard__sense-list,
-.press-notecard__defense-list {
-  font-size: 0.9em;
 }
