@@ -467,13 +467,51 @@ function renderField(node, context) {
         table.appendChild(thead);
       }
       const tbody = document.createElement("tbody");
+      const tableCells = Array.isArray(node.cells) ? node.cells : [];
+      const getCellNodeId = (rowIndex, colIndex) => (node.uid ? `${node.uid}-cell-${rowIndex}-${colIndex}` : null);
+      const createCellNode = (rowIndex, column, columnIndex) => {
+        const textBinding = column.bind ?? column.text ?? column.value ?? "";
+        const cellNode = {
+          type: "field",
+          component: column.component ?? "text",
+          text: textBinding,
+          ...baseText,
+          ...(column.textStyle ? { textStyles: column.textStyle } : null),
+          ...(column.textSize ? { textSize: column.textSize } : null),
+          ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
+          ...(column.textAngle ? { textAngle: column.textAngle } : null),
+          ...(column.textCurve ? { textCurve: column.textCurve } : null),
+          ...(column.align ? { align: column.align } : null),
+          ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
+        };
+        const uid = getCellNodeId(rowIndex, columnIndex);
+        if (uid) {
+          cellNode.uid = uid;
+        }
+        if (cellNode.component === "icon") {
+          cellNode.className = textBinding;
+          cellNode.text = "";
+          const ariaLabel = resolveBinding(column.ariaLabel, context) ?? column.ariaLabel ?? context?.name;
+          cellNode.ariaLabel = ariaLabel;
+        }
+        return cellNode;
+      };
+      if (options?.editable) {
+        const rowCount = asArray(rows).length;
+        tableCells.length = rowCount;
+        tableCells.forEach((rowCells, rowIndex) => {
+          if (!Array.isArray(rowCells)) {
+            tableCells[rowIndex] = [];
+          }
+        });
+      }
       asArray(rows).forEach((row, index) => {
         const rowContext = typeof row === "object" && row !== null ? { ...context, ...row } : { ...context, value: row };
         rowContext.item = row;
         rowContext.index = index;
         const tr = document.createElement("tr");
         applyClassName(tr, node.rowClassName ?? "table-item");
-        columns.forEach((column) => {
+        columns.forEach((column, columnIndex) => {
           const td = document.createElement("td");
           const cellContext = { ...rowContext };
           if (column.className) {
@@ -484,26 +522,21 @@ function renderField(node, context) {
                 : rawClass;
             applyClassName(td, resolved);
           }
-          const cellValue = resolveBinding(column.bind ?? column.text ?? column.value, cellContext);
-          const cellTextNode = {
-            type: "field",
-            component: column.component ?? "text",
-            text: cellValue ?? "",
-            ...baseText,
-            ...(column.textStyle ? { textStyles: column.textStyle } : null),
-            ...(column.textSize ? { textSize: column.textSize } : null),
-            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
-            ...(column.textAngle ? { textAngle: column.textAngle } : null),
-            ...(column.textCurve ? { textCurve: column.textCurve } : null),
-            ...(column.align ? { align: column.align } : null),
-            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
-          };
-          if (cellTextNode.component === "icon") {
-            cellTextNode.className = typeof cellValue === "string" ? cellValue : "";
-            const ariaLabel = resolveBinding(column.ariaLabel, cellContext) ?? column.ariaLabel ?? cellContext?.name;
-            cellTextNode.ariaLabel = ariaLabel;
+          const rowCells = Array.isArray(tableCells[index]) ? tableCells[index] : [];
+          if (options?.editable && !Array.isArray(tableCells[index])) {
+            tableCells[index] = rowCells;
           }
-          td.appendChild(renderField(cellTextNode, cellContext));
+          let cellNode = rowCells[columnIndex];
+          if (!cellNode) {
+            cellNode = createCellNode(index, column, columnIndex);
+            if (options?.editable) {
+              rowCells[columnIndex] = cellNode;
+            }
+          }
+          if (options?.editable) {
+            rowCells.length = columns.length;
+          }
+          td.appendChild(renderNode(cellNode, cellContext, options));
           if (column.width) {
             td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
@@ -511,6 +544,9 @@ function renderField(node, context) {
         });
         tbody.appendChild(tr);
       });
+      if (options?.editable) {
+        node.cells = tableCells;
+      }
       table.appendChild(tbody);
       applyInlineStyles(table, node.style);
       return table;
