@@ -532,6 +532,21 @@
                     <textarea class="form-control" placeholder="Edit text" style="min-height: 72px" data-component-text></textarea>
                     <label class="fw-semibold">Binding / Text</label>
                   </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-table-fields hidden>
+                    <div class="form-floating">
+                      <input class="form-control" placeholder="@rows" type="text" data-component-table-rows />
+                      <label class="fw-semibold">Table rows binding</label>
+                    </div>
+                    <div class="form-floating">
+                      <textarea
+                        class="form-control"
+                        placeholder='[{ "header": "Column", "bind": "@value" }]'
+                        style="min-height: 96px"
+                        data-component-table-columns
+                      ></textarea>
+                      <label class="fw-semibold">Table columns (JSON)</label>
+                    </div>
+                  </div>
                   <div class="form-floating" data-inspector-image-field hidden>
                     <input class="form-control" placeholder="Image URL" type="text" data-component-image-url />
                     <label class="fw-semibold">Image URL</label>
@@ -572,6 +587,19 @@
                       data-component-gap
                     />
                     <label class="fw-semibold" for="componentGap">Gap</label>
+                  </div>
+                  <div class="form-floating" data-inspector-row-columns hidden>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="componentColumns"
+                      min="1"
+                      max="6"
+                      step="1"
+                      placeholder="2"
+                      data-component-columns
+                    />
+                    <label class="fw-semibold" for="componentColumns">Columns</label>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
                     <label class="fw-semibold text-body-secondary">Text size</label>
