@@ -77,7 +77,7 @@ const typeDescription = document.querySelector("[data-component-type-description
 const iconField = document.querySelector("[data-inspector-icon-field]");
 const iconInput = document.querySelector("[data-component-icon-class]");
 const iconPreview = document.querySelector("[data-component-icon-preview]");
-const iconDatalist = document.getElementById("press-icon-options");
+const iconOptionsList = document.querySelector("[data-component-icon-options]");
 const textEditor = document.querySelector("[data-component-text]");
 const textEditorLabel = document.querySelector("[data-component-text-label]");
 const ariaLabelField = document.querySelector("[data-inspector-aria-label-field]");
@@ -223,6 +223,8 @@ const PRESS_ICON_OPTIONS = [
   { group: "Misc", label: "Healing", value: "ddb-healing" },
   { group: "Misc", label: "Ritual", value: "ddb-ritual" },
 ];
+const BOOTSTRAP_ICON_CSS = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
+let bootstrapIconOptions = [];
 
 const paletteComponents = [
   {
@@ -1896,38 +1898,129 @@ function ptToPx(value) {
   return value * (4 / 3);
 }
 
-function populateIconOptions() {
-  if (!iconDatalist) return;
-  iconDatalist.innerHTML = "";
+async function loadBootstrapIcons() {
+  if (bootstrapIconOptions.length) return bootstrapIconOptions;
+  try {
+    const response = await fetch(BOOTSTRAP_ICON_CSS);
+    if (!response.ok) {
+      throw new Error(`Unable to load Bootstrap Icons CSS (${response.status})`);
+    }
+    const css = await response.text();
+    const matches = Array.from(css.matchAll(/\.bi-([a-z0-9-]+)::before/g));
+    bootstrapIconOptions = matches.map((match) => {
+      const slug = match[1];
+      const label = slug.replace(/-/g, " ");
+      return {
+        group: "Bootstrap",
+        label: label.replace(/\b\w/g, (letter) => letter.toUpperCase()),
+        value: `bi-${slug}`,
+        type: "bootstrap",
+      };
+    });
+  } catch (error) {
+    console.warn("Bootstrap icon list unavailable.", error);
+  }
+  return bootstrapIconOptions;
+}
+
+function createIconOptionRow(option) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "press-icon-option list-group-item list-group-item-action";
+  row.dataset.iconValue = option.value;
+
+  const preview = document.createElement("span");
+  preview.className = "press-icon-option__preview";
+  if (option.type === "bootstrap") {
+    const icon = document.createElement("i");
+    icon.className = `bi ${option.value}`;
+    preview.appendChild(icon);
+  } else {
+    const icon = document.createElement("span");
+    icon.className = option.value;
+    preview.appendChild(icon);
+  }
+
+  const label = document.createElement("span");
+  label.textContent = option.label;
+  const group = document.createElement("span");
+  group.className = "text-body-secondary ms-auto";
+  group.textContent = option.group;
+
+  row.append(preview, label, group);
+  return row;
+}
+
+function renderIconOptions(filterValue = "") {
+  if (!iconOptionsList) return;
+  const normalized = filterValue.trim().toLowerCase();
+  iconOptionsList.innerHTML = "";
   const fragment = document.createDocumentFragment();
-  PRESS_ICON_OPTIONS.forEach((option) => {
-    const entry = document.createElement("option");
-    entry.value = option.value;
-    entry.label = `${option.group} — ${option.label}`;
-    fragment.appendChild(entry);
-  });
-  iconDatalist.appendChild(fragment);
+  const mergedOptions = [
+    ...PRESS_ICON_OPTIONS.map((option) => ({ ...option, type: "ddb" })),
+    ...bootstrapIconOptions,
+  ];
+  mergedOptions
+    .filter((option) => {
+      if (!normalized) return true;
+      return option.label.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized);
+    })
+    .forEach((option) => {
+      fragment.appendChild(createIconOptionRow(option));
+    });
+  iconOptionsList.appendChild(fragment);
 }
 
 function getNodeIconClass(node) {
   if (!node) return "";
   if (node.iconClass) return node.iconClass;
   const classTokens = (node.className ?? "").split(/\s+/).filter(Boolean);
-  const iconTokens = classTokens.filter((token) => token.startsWith("ddb-"));
+  const iconTokens = classTokens.filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
   return iconTokens.join(" ");
 }
 
 function updateIconPreview(value) {
   if (!iconPreview) return;
   iconPreview.className = "press-icon-preview";
+  iconPreview.innerHTML = "";
   const trimmed = value?.trim() ?? "";
   if (!trimmed || trimmed.startsWith("@")) {
     return;
   }
-  trimmed
-    .split(/\s+/)
-    .filter(Boolean)
-    .forEach((token) => iconPreview.classList.add(token));
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
+  if (hasBootstrap) {
+    const icon = document.createElement("i");
+    icon.className = `bi ${tokens.find((token) => token.startsWith("bi-"))}`;
+    iconPreview.appendChild(icon);
+  } else {
+    const icon = document.createElement("span");
+    icon.className = tokens.join(" ");
+    iconPreview.appendChild(icon);
+  }
+}
+
+function applyIconSelection(value) {
+  if (iconInput) {
+    iconInput.value = value;
+  }
+  updateSelectedNode((node) => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      node.iconClass = trimmed;
+    } else {
+      delete node.iconClass;
+    }
+  });
+  updateIconPreview(value);
+  renderPreview();
+  updateSaveState();
+  renderIconOptions(value);
+  if (iconOptionsList) {
+    iconOptionsList.querySelectorAll("[data-icon-value]").forEach((row) => {
+      row.classList.toggle("is-active", row.dataset.iconValue === value);
+    });
+  }
 }
 
 function renderPalette() {
@@ -2071,6 +2164,7 @@ function updateInspector() {
     if (textEditor) textEditor.value = "";
     if (iconInput) iconInput.value = "";
     updateIconPreview("");
+    renderIconOptions("");
     if (imageUrlInput) imageUrlInput.value = "";
     if (imageWidthInput) imageWidthInput.value = "";
     if (imageHeightInput) imageHeightInput.value = "";
@@ -2267,6 +2361,12 @@ function updateInspector() {
     const iconClass = getNodeIconClass(node);
     iconInput.value = iconClass;
     updateIconPreview(iconClass);
+    renderIconOptions(iconClass);
+    if (iconOptionsList) {
+      iconOptionsList.querySelectorAll("[data-icon-value]").forEach((row) => {
+        row.classList.toggle("is-active", row.dataset.iconValue === iconClass);
+      });
+    }
   }
   if (ariaLabelInput) {
     ariaLabelInput.value = node.ariaLabel ?? "";
@@ -2881,17 +2981,15 @@ function bindInspectorControls() {
     iconInput.addEventListener("blur", () => commitPendingUndo(iconInput));
     iconInput.addEventListener("change", () => commitPendingUndo(iconInput));
     iconInput.addEventListener("input", () => {
-      const value = iconInput.value.trim();
-      updateSelectedNode((node) => {
-        if (value) {
-          node.iconClass = value;
-        } else {
-          delete node.iconClass;
-        }
-      });
-      updateIconPreview(value);
-      renderPreview();
-      updateSaveState();
+      applyIconSelection(iconInput.value);
+    });
+  }
+
+  if (iconOptionsList) {
+    iconOptionsList.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-icon-value]");
+      if (!target) return;
+      applyIconSelection(target.dataset.iconValue ?? "");
     });
   }
 
@@ -3307,7 +3405,8 @@ async function initPress() {
   renderFormatOptions(getActiveTemplate());
   renderSourceOptions(getActiveTemplate());
   updateTemplateInspector(getActiveTemplate());
-  populateIconOptions();
+  await loadBootstrapIcons();
+  renderIconOptions();
   bindTemplateInspectorControls();
   initDragAndDrop();
   bindInspectorControls();
