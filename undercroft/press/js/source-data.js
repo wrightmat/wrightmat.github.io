@@ -15,6 +15,28 @@ function formatSigned(value) {
   return value > 0 ? `+${value}` : `${value}`;
 }
 
+function titleCase(value) {
+  if (!value) return "";
+  return String(value)
+    .replace(/[_-]/g, " ")
+    .split(" ")
+    .map((part) => (part ? `${part[0].toUpperCase()}${part.slice(1)}` : ""))
+    .join(" ");
+}
+
+function formatList(values, fallback = "—") {
+  const list = ensureArray(values)
+    .map((entry) => (typeof entry === "string" ? entry : entry?.name || entry?.label || entry?.friendlySubtypeName))
+    .filter(Boolean);
+  return list.length ? list.join(", ") : fallback;
+}
+
+function formatRange(range, longRange) {
+  if (!range && !longRange) return "";
+  if (range && longRange) return `${range} / ${longRange}`;
+  return range || longRange || "";
+}
+
 function ensureArray(value) {
   if (Array.isArray(value)) return value;
   if (value === undefined || value === null) return [];
@@ -164,7 +186,40 @@ function buildManualData(text = "") {
       footer: "Manual entry generated sheet.",
     },
   };
-  return { cards, ...sheet };
+  const characterNotecard = {
+    name: "Manual Entry",
+    identityLine: "Manual Source",
+    race: "",
+    classSummary: "",
+    personalityTraits: truncateText(body, 120),
+    abilities: [],
+    saves: [],
+    skills: [],
+    hp: {},
+    proficiencyBonus: "",
+    initiative: { value: "", icon: "" },
+    ac: {},
+    speeds: {},
+    proficiencies: { armor: "", weapons: "", tools: "", languages: "" },
+    proficiencyLines: { armor: "", weapons: "", tools: "", languages: "" },
+    passives: {},
+    passiveLines: { perception: "", investigation: "", insight: "" },
+    senses: [],
+    defenses: [],
+    alignment: "",
+    detailsLine: "",
+    appearanceLine: "",
+    attacks: [],
+    attacking: {},
+    attacksMetaLine: "",
+    spellCasting: {},
+    spellsHeading: "Spells",
+    spellsMetaLine: "",
+    spells: { cantrips: [], level1: [], level2: [] },
+    limitedUses: [],
+    features: [],
+  };
+  return { cards, ...sheet, characterNotecard, characterNotecardCards: [characterNotecard] };
 }
 
 async function readJsonFile(file) {
@@ -194,7 +249,10 @@ function normalizeJsonData(data) {
     const cardsInput = data.cards ?? data.items ?? data.results ?? null;
     const cards = normalizeCards(cardsInput ?? []);
     const sheet = normalizeSheetData(data, cards);
-    return { cards, ...sheet };
+    const characterNotecard = data.characterNotecard ?? data.character ?? null;
+    return characterNotecard
+      ? { cards, ...sheet, characterNotecard, characterNotecardCards: [characterNotecard] }
+      : { cards, ...sheet };
   }
   return buildManualData(String(data));
 }
@@ -331,6 +389,190 @@ function buildDdbSheet(parsed) {
   };
 }
 
+function buildNotecardCharacter(parsed) {
+  const identity = parsed.identity || {};
+  const traits = parsed.traits || {};
+  const background = parsed.background || {};
+  const race = identity.race?.fullName || identity.race?.name || identity.race || "";
+  const classEntry = identity.classes?.[0] || {};
+  const className = classEntry.name || identity.class || "";
+  const subclass = classEntry.subclass ? ` (${classEntry.subclass})` : "";
+  const classSummary = `${className}${subclass}${identity.level ? ` ${identity.level}` : ""}`.trim();
+  const abilities = (parsed.abilities || []).map((ability, index) => ({
+    name: ability.shortName || ability.name || "",
+    modifier: formatSigned(ability.modifier ?? 0),
+    score: ability.score ?? 0,
+    display: `${formatSigned(ability.modifier ?? 0)} (${ability.score ?? 0})`,
+    abilityBlockClass: `ability-block stat-${index}`,
+  }));
+  const saves = (parsed.saves || []).map((save, index) => ({
+    name: save.friendlyName || save.name || "",
+    modifier: formatSigned(save.value ?? 0),
+    itemClass: `skill stat-${index}`,
+    circleClass: `circle p${save.proficiency ?? 0}`,
+  }));
+  const skills = (parsed.skills || []).map((skill) => ({
+    name: skill.friendlyName || skill.name || "",
+    modifier: formatSigned(skill.value ?? 0),
+    itemClass: `skill stat-${skill.stat ?? 0}`,
+    circleClass: `circle p${skill.proficiency ?? 0}`,
+    icon: skill.icon || "",
+  }));
+  const proficiencies = parsed.proficiencies || {};
+  const senses = parsed.senses || {};
+  const passiveSenses = senses.passives || {};
+  const passiveLines = {
+    perception: `Passive Percept.: ${passiveSenses.perception ?? ""}`,
+    investigation: `Passive Investig.: ${passiveSenses.investigation ?? ""}`,
+    insight: `Passive Insight: ${passiveSenses.insight ?? ""}`,
+  };
+  const senseExtras = Object.entries(senses)
+    .filter(([key]) => key !== "passives")
+    .map(([key, value]) => ({
+      name: titleCase(key),
+      range: value,
+    }));
+  const defenses = (proficiencies.defenses || []).map((defense) => ({
+    name: defense.friendlySubtypeName || defense.name || "",
+    iconClass: defense.type ? `ddb-${defense.type}` : "",
+  }));
+  const attacks = (parsed.attacks || []).map((attack) => ({
+    name: attack.name || "Attack",
+    toHit: formatSigned(attack.attackBonus ?? 0),
+    damage: attack.damage ? `${attack.damage}${attack.damageType ? ` ${attack.damageType}` : ""}`.trim() : "",
+    range: formatRange(attack.range, attack.longRange),
+    notes: attack.notes || "",
+  }));
+  const spellCasting = parsed.spellCasting || {};
+  const spells = parsed.spells || [];
+  const formatSpell = (spell) => {
+    const schoolName = typeof spell.school === "string" ? spell.school : spell.school?.name || "";
+    const iconClass = schoolName ? `ddb-${schoolName.toLowerCase()}` : "";
+    const notes = [
+      spell.duration ? `Dur ${spell.duration}` : null,
+      spell.components?.length ? `Comp ${spell.components.join("")}` : null,
+      spell.concentration ? "Conc" : null,
+      spell.ritual ? "Rit" : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return {
+      name: spell.name || "Spell",
+      hit: spell.toHit || spell.dc || "",
+      effect: spell.effect || "",
+      time: spell.castingTime || "",
+      range: spell.range || "",
+      notes,
+      iconClass,
+    };
+  };
+  const spellsByLevel = {
+    cantrips: ensureArray(spells[0]).map(formatSpell),
+    level1: ensureArray(spells[1]).map(formatSpell),
+    level2: ensureArray(spells[2]).map(formatSpell),
+  };
+  const limitedUses = (parsed.limitedUses || []).map((entry) => {
+    const maxUses = entry.total ?? entry.uses ?? entry.maxUses ?? entry.max ?? 0;
+    const used = entry.used ?? entry.spent ?? 0;
+    const remaining = entry.available ?? Math.max(maxUses - used, 0);
+    return {
+      name: entry.name || "Resource",
+      remainingUses: remaining,
+      maxUses,
+      label: entry.reset ? `${entry.reset}` : "",
+    };
+  });
+  const features = (parsed.features || []).map((feature) => ({
+    name: feature.name || "Feature",
+    description: truncateText(feature.description || "", 180),
+  }));
+
+  const alignment = parsed.alignment?.friendlyName || parsed.alignment?.name || "";
+  const proficiencyLines = {
+    armor: `Armor: ${formatList(proficiencies.armor)}`,
+    weapons: `Weapons: ${formatList(proficiencies.weapons)}`,
+    tools: `Tools: ${formatList(proficiencies.tools)}`,
+    languages: `Languages: ${formatList(proficiencies.languages)}`,
+  };
+  const attacksMetaLine = `Attacks Per Action: ${parsed.attacking?.attacksPerAction ?? 1}${
+    parsed.attacking?.fightingStyle ? `, Fighting Style: ${parsed.attacking.fightingStyle}` : ""
+  }`;
+  const spellsHeading = spellCasting.ability ? `Spells (${spellCasting.ability})` : "Spells";
+  const spellsMetaLine = `Spell Attack: ${spellCasting.attack ?? ""}, Spell Save DC: ${spellCasting.save ?? ""}`;
+  const detailsLine = [
+    traits.height ? `Height: ${traits.height}` : null,
+    traits.weight ? `Weight: ${traits.weight}` : null,
+    traits.age ? `Age: ${traits.age}` : null,
+    traits.size ? `Size: ${traits.size}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const appearanceLine = [
+    traits.appearance ? `Appearance: ${traits.appearance}` : null,
+    traits.hair ? `Hair: ${traits.hair}` : null,
+    traits.eyes ? `Eyes: ${traits.eyes}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const hpLine = parsed.hp?.max != null ? `/ ${parsed.hp.max}` : "";
+  const hitDiceLine =
+    parsed.hp?.hitDiceSize && parsed.hp?.hitDice ? `(${parsed.hp.hitDiceSize} x ${parsed.hp.hitDice})` : "";
+  const speedLine = parsed.speeds?.walk
+    ? `${parsed.speeds.walk} ft.${parsed.speeds.fly ? ` (${parsed.speeds.fly} ft.)` : ""}`
+    : "";
+  const alignmentLine = alignment ? `Alignment: ${alignment}` : "";
+  const limitedUsesLine = limitedUses.length
+    ? `${limitedUses[0].name}: ${limitedUses[0].remainingUses} / ${limitedUses[0].maxUses}`
+    : "";
+
+  return {
+    name: identity.name || "Character",
+    identityLine: [traits.gender, background.name].filter(Boolean).join(", "),
+    race,
+    classSummary,
+    personalityTraits: traits.personalityTraits || "",
+    abilities,
+    saves,
+    skills,
+    hp: parsed.hp || {},
+    proficiencyBonus: formatSigned(parsed.proficiency ?? 0),
+    initiative: {
+      value: formatSigned(parsed.initiative?.value ?? 0),
+      icon: parsed.initiative?.advantage ? "ddb-advantage" : parsed.initiative?.disadvantage ? "ddb-disadvantage" : "",
+    },
+    ac: parsed.ac || {},
+    speeds: parsed.speeds || {},
+    speedLine,
+    proficiencies: {
+      armor: formatList(proficiencies.armor),
+      weapons: formatList(proficiencies.weapons),
+      tools: formatList(proficiencies.tools),
+      languages: formatList(proficiencies.languages),
+    },
+    proficiencyLines,
+    passives: passiveSenses,
+    passiveLines,
+    senses: senseExtras,
+    defenses,
+    alignment,
+    alignmentLine,
+    detailsLine,
+    appearanceLine,
+    attacks,
+    attacking: parsed.attacking || {},
+    attacksMetaLine,
+    spellCasting,
+    spellsHeading,
+    spellsMetaLine,
+    spells: spellsByLevel,
+    limitedUses,
+    limitedUsesLine,
+    features,
+    hpLine,
+    hitDiceLine,
+  };
+}
+
 async function loadDdbData(value) {
   if (typeof window === "undefined" || typeof window.ddbParseCharacter !== "function") {
     throw new Error("D&D Beyond parser is not available.");
@@ -343,7 +585,8 @@ async function loadDdbData(value) {
   const parsed = window.ddbParseCharacter(rawCharacter);
   const cards = buildDdbCards(parsed);
   const sheet = buildDdbSheet(parsed);
-  return { cards, ...sheet };
+  const characterNotecard = buildNotecardCharacter(parsed);
+  return { cards, ...sheet, characterNotecard, characterNotecardCards: [characterNotecard] };
 }
 
 function normalizeSrdInput(value) {

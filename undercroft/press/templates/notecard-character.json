@@ -1,0 +1,317 @@
+{
+  "id": "notecard-character",
+  "title": "Notecard Character (5 × 7)",
+  "description": "Two-sided character notecard layout inspired by the Codex character notecard.",
+  "type": "card",
+  "formats": [
+    { "id": "letter", "label": "US Letter", "sizeId": "letter", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" }
+  ],
+  "supportedSources": ["ddb", "json", "manual"],
+  "card": { "width": 5, "height": 7, "gutter": 0, "safeInset": 0.2, "columns": 1, "rows": 1 },
+  "pages": {
+    "front": {
+      "repeat": "@characterNotecardCards",
+      "layout": {
+        "type": "stack",
+        "gap": 3,
+        "children": [
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 1,
+                  "children": [
+                    { "type": "field", "component": "heading", "level": "h1", "text": "@name" },
+                    { "type": "field", "component": "text", "text": "@identityLine", "textSize": "sm" }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "type": "stack",
+                  "className": "text-end",
+                  "gap": 1,
+                  "children": [
+                    { "type": "field", "component": "heading", "level": "h3", "text": "@classSummary" },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@personalityTraits",
+                      "textSize": "sm",
+                      "textStyles": { "italic": true }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "templateColumns": "1fr 1fr 1fr",
+            "gap": 2,
+            "columns": [
+              {
+                "node": {
+                  "type": "stack",
+                  "className": "ability-scores",
+                  "gap": 1,
+                  "children": [
+                    { "type": "field", "component": "stat", "label": "@abilities.0.name", "text": "@abilities.0.display", "className": "ability-block stat-0" },
+                    { "type": "field", "component": "stat", "label": "@abilities.1.name", "text": "@abilities.1.display", "className": "ability-block stat-1" },
+                    { "type": "field", "component": "stat", "label": "@abilities.2.name", "text": "@abilities.2.display", "className": "ability-block stat-2" },
+                    { "type": "field", "component": "stat", "label": "@abilities.3.name", "text": "@abilities.3.display", "className": "ability-block stat-3" },
+                    { "type": "field", "component": "stat", "label": "@abilities.4.name", "text": "@abilities.4.display", "className": "ability-block stat-4" },
+                    { "type": "field", "component": "stat", "label": "@abilities.5.name", "text": "@abilities.5.display", "className": "ability-block stat-5" }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 0,
+                  "children": [
+                    { "type": "field", "component": "text", "text": "Saving Throws", "className": "section mb-0" },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@saves",
+                      "className": "item-list mb-0",
+                      "itemClassNameBind": "@itemClass",
+                      "itemLayout": {
+                        "type": "row",
+                        "className": "skill-row",
+                        "templateColumns": "auto auto 1fr",
+                        "gap": 1,
+                        "columns": [
+                          { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@circleClass" } },
+                          { "node": { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" } },
+                          { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span", "className": "name" } }
+                        ]
+                      }
+                    },
+                    { "type": "field", "component": "text", "text": "Skills", "className": "section mb-0" },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@skills",
+                      "className": "item-list mb-0",
+                      "itemClassNameBind": "@itemClass",
+                      "itemLayout": {
+                        "type": "row",
+                        "className": "skill-row",
+                        "templateColumns": "auto auto 1fr",
+                        "gap": 1,
+                        "columns": [
+                          { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@circleClass" } },
+                          { "node": { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" } },
+                          { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span", "className": "name" } }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 0,
+                  "children": [
+                    { "type": "field", "component": "text", "text": "Hit Points", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@hpLine", "className": "larger" },
+                    { "type": "field", "component": "text", "text": "@hitDiceLine", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Proficiency Bonus", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyBonus", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Initiative", "className": "section mb-0" },
+                    {
+                      "type": "row",
+                      "gap": 1,
+                      "templateColumns": "auto auto",
+                      "className": "mb-0",
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "@initiative.value", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@initiative.icon" } }
+                      ]
+                    },
+                    { "type": "field", "component": "text", "text": "Armor Class", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@ac.value", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Speed", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@speedLine", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Proficiencies", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.armor", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.weapons", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.tools", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.languages", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Senses", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@passiveLines.perception", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@passiveLines.investigation", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@passiveLines.insight", "className": "mb-0" },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@senses",
+                      "className": "item-list mb-0",
+                      "itemLayout": {
+                        "type": "row",
+                        "templateColumns": "auto 1fr",
+                        "gap": 0,
+                        "columns": [
+                          { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span" } },
+                          { "node": { "type": "field", "component": "text", "text": "@range", "textStyle": "span" } }
+                        ]
+                      }
+                    },
+                    { "type": "field", "component": "text", "text": "Defenses", "className": "section mb-0" },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@defenses",
+                      "className": "item-list mb-0",
+                      "itemLayout": {
+                        "type": "row",
+                        "templateColumns": "auto 1fr",
+                        "gap": 0,
+                        "columns": [
+                          { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@iconClass" } },
+                          { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span" } }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "stack",
+            "gap": 1,
+            "children": [
+              { "type": "field", "component": "text", "text": "@alignmentLine", "textSize": "sm" },
+              { "type": "field", "component": "text", "text": "@detailsLine", "textSize": "sm" },
+              { "type": "field", "component": "text", "text": "@appearanceLine", "textSize": "sm" }
+            ]
+          }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@characterNotecardCards",
+      "layout": {
+        "type": "stack",
+        "gap": 3,
+        "children": [
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "text", "text": "Attacks", "className": "heading" } },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "text",
+                  "text": "@attacksMetaLine",
+                  "className": "text-end",
+                  "textSize": "xs"
+                }
+              }
+            ]
+          },
+          { "type": "field", "component": "text", "text": "@limitedUsesLine", "className": "text-end", "textSize": "xs" },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@attacks",
+            "className": "press-table",
+            "columns": [
+              { "header": "Attack Name", "bind": "@name", "width": "30%" },
+              { "header": "To Hit", "bind": "@toHit", "width": "10%" },
+              { "header": "Damage", "bind": "@damage", "width": "15%" },
+              { "header": "Range", "bind": "@range", "width": "15%" },
+              { "header": "Notes", "bind": "@notes", "width": "30%" }
+            ]
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "text", "text": "@spellsHeading", "className": "heading" } },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "text",
+                  "text": "@spellsMetaLine",
+                  "className": "text-end",
+                  "textSize": "xs"
+                }
+              }
+            ]
+          },
+          { "type": "field", "component": "text", "text": "Cantrips", "className": "section-short" },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@spells.cantrips",
+            "className": "press-table",
+            "columns": [
+              { "header": "Spell Name", "bind": "@name", "width": "35%" },
+              { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
+              { "header": "Effect", "bind": "@effect", "width": "15%" },
+              { "header": "Time", "bind": "@time", "width": "10%" },
+              { "header": "Range", "bind": "@range", "width": "10%" },
+              { "header": "Notes", "bind": "@notes", "width": "15%" }
+            ]
+          },
+          { "type": "field", "component": "text", "text": "1st Level", "className": "section-short" },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@spells.level1",
+            "className": "press-table",
+            "columns": [
+              { "header": "Spell Name", "bind": "@name", "width": "35%" },
+              { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
+              { "header": "Effect", "bind": "@effect", "width": "15%" },
+              { "header": "Time", "bind": "@time", "width": "10%" },
+              { "header": "Range", "bind": "@range", "width": "10%" },
+              { "header": "Notes", "bind": "@notes", "width": "15%" }
+            ]
+          },
+          { "type": "field", "component": "text", "text": "2nd Level", "className": "section-short" },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@spells.level2",
+            "className": "press-table",
+            "columns": [
+              { "header": "Spell Name", "bind": "@name", "width": "35%" },
+              { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
+              { "header": "Effect", "bind": "@effect", "width": "15%" },
+              { "header": "Time", "bind": "@time", "width": "10%" },
+              { "header": "Range", "bind": "@range", "width": "10%" },
+              { "header": "Notes", "bind": "@notes", "width": "15%" }
+            ]
+          },
+          { "type": "field", "component": "text", "text": "Features", "className": "heading" },
+          {
+            "type": "field",
+            "component": "list",
+            "itemsBind": "@features",
+            "listTag": "div",
+            "itemTag": "div",
+            "className": "d-flex flex-column gap-2",
+            "itemLayout": {
+              "type": "stack",
+              "gap": 1,
+              "children": [
+                { "type": "field", "component": "text", "text": "@name", "className": "section-short" },
+                { "type": "field", "component": "text", "text": "@description" }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
