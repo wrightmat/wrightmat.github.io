@@ -528,13 +528,25 @@
                       </div>
                     </div>
                   </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-icon-field hidden>
+                    <label class="form-label fw-semibold mb-0">Icon</label>
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <span class="press-icon-preview" data-component-icon-preview aria-hidden="true"></span>
+                      </span>
+                      <input
+                        class="form-control"
+                        placeholder="Search icons"
+                        type="search"
+                        list="press-icon-options"
+                        data-component-icon-class
+                      />
+                    </div>
+                    <datalist id="press-icon-options"></datalist>
+                  </div>
                   <div class="form-floating" data-inspector-text-field>
                     <textarea class="form-control" placeholder="Edit text" style="min-height: 72px" data-component-text></textarea>
                     <label class="fw-semibold" data-component-text-label>Binding / Text</label>
-                  </div>
-                  <div class="form-floating" data-inspector-class-name-field>
-                    <input class="form-control" placeholder="Classes" type="text" data-component-class-name />
-                    <label class="fw-semibold">Classes</label>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-table-fields hidden>
                     <div class="form-floating">
@@ -889,6 +901,17 @@
                     <div class="form-check form-switch">
                       <input class="form-check-input" type="checkbox" role="switch" id="componentVisibility" data-component-visible />
                       <label class="form-check-label" for="componentVisibility">Show in layout</label>
+                    </div>
+                  </div>
+                  <div class="border-top pt-2 mt-2 d-flex flex-column gap-2" data-inspector-advanced>
+                    <div class="fw-semibold text-body-secondary">Advanced</div>
+                    <div class="form-floating" data-inspector-aria-label-field hidden>
+                      <input class="form-control" placeholder="Aria label" type="text" data-component-aria-label />
+                      <label class="fw-semibold">Aria label</label>
+                    </div>
+                    <div class="form-floating" data-inspector-class-name-field>
+                      <input class="form-control" placeholder="Classes" type="text" data-component-class-name />
+                      <label class="fw-semibold">Classes</label>
                     </div>
                   </div>
                   <button class="btn btn-outline-danger w-100" type="button" data-component-delete>Delete Component</button>

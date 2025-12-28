@@ -74,8 +74,14 @@ const typeSummary = document.querySelector("[data-component-type-summary]");
 let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
+const iconField = document.querySelector("[data-inspector-icon-field]");
+const iconInput = document.querySelector("[data-component-icon-class]");
+const iconPreview = document.querySelector("[data-component-icon-preview]");
+const iconDatalist = document.getElementById("press-icon-options");
 const textEditor = document.querySelector("[data-component-text]");
 const textEditorLabel = document.querySelector("[data-component-text-label]");
+const ariaLabelField = document.querySelector("[data-inspector-aria-label-field]");
+const ariaLabelInput = document.querySelector("[data-component-aria-label]");
 const classNameField = document.querySelector("[data-inspector-class-name-field]");
 const classNameInput = document.querySelector("[data-component-class-name]");
 const imageFieldGroups = Array.from(document.querySelectorAll("[data-inspector-image-field]"));
@@ -158,6 +164,65 @@ const TEXT_SIZE_PX = {
   lg: 20,
   xl: 24,
 };
+const PRESS_ICON_OPTIONS = [
+  { group: "Damage", label: "Bludgeoning", value: "ddb-bludgeoning" },
+  { group: "Damage", label: "Piercing", value: "ddb-piercing" },
+  { group: "Damage", label: "Slashing", value: "ddb-slashing" },
+  { group: "Damage", label: "Acid", value: "ddb-acid" },
+  { group: "Damage", label: "Cold", value: "ddb-cold" },
+  { group: "Damage", label: "Fire", value: "ddb-fire" },
+  { group: "Damage", label: "Force", value: "ddb-force" },
+  { group: "Damage", label: "Lightning", value: "ddb-lightning" },
+  { group: "Damage", label: "Necrotic", value: "ddb-necrotic" },
+  { group: "Damage", label: "Poison", value: "ddb-poison" },
+  { group: "Damage", label: "Psychic", value: "ddb-psychic" },
+  { group: "Damage", label: "Radiant", value: "ddb-radiant" },
+  { group: "Damage", label: "Thunder", value: "ddb-thunder" },
+  { group: "Magic School", label: "Abjuration", value: "ddb-abjuration" },
+  { group: "Magic School", label: "Conjuration", value: "ddb-conjuration" },
+  { group: "Magic School", label: "Divination", value: "ddb-divination" },
+  { group: "Magic School", label: "Enchantment", value: "ddb-enchantment" },
+  { group: "Magic School", label: "Evocation", value: "ddb-evocation" },
+  { group: "Magic School", label: "Illusion", value: "ddb-illusion" },
+  { group: "Magic School", label: "Necromancy", value: "ddb-necromancy" },
+  { group: "Magic School", label: "Transmutation", value: "ddb-transmutation" },
+  { group: "Inner Circle", label: "Artifice", value: "ddb-artifice" },
+  { group: "Inner Circle", label: "Dunamancy", value: "ddb-dunamancy" },
+  { group: "Inner Circle", label: "Psionics", value: "ddb-psionics" },
+  { group: "Inner Circle", label: "Entropomancy", value: "ddb-entropomancy" },
+  { group: "Inner Circle", label: "Sangromancy", value: "ddb-sangromancy" },
+  { group: "Attack", label: "Melee Attack", value: "ddb-melee-attack" },
+  { group: "Attack", label: "Melee Weapon", value: "ddb-melee-weapon" },
+  { group: "Attack", label: "Ranged Attack", value: "ddb-ranged-attack" },
+  { group: "Attack", label: "Ranged Weapon", value: "ddb-ranged-weapon" },
+  { group: "Defense", label: "Immunity", value: "ddb-immunity" },
+  { group: "Defense", label: "Resistance", value: "ddb-resistance" },
+  { group: "Defense", label: "Vulnerability", value: "ddb-vulnerability" },
+  { group: "Area", label: "Cone", value: "ddb-cone" },
+  { group: "Area", label: "Cube", value: "ddb-cube" },
+  { group: "Area", label: "Cylinder", value: "ddb-cylinder" },
+  { group: "Area", label: "Sphere", value: "ddb-sphere" },
+  { group: "Area", label: "Square", value: "ddb-square" },
+  { group: "Class", label: "Artificer", value: "ddb-artificer" },
+  { group: "Class", label: "Barbarian", value: "ddb-barbarian" },
+  { group: "Class", label: "Bard", value: "ddb-bard" },
+  { group: "Class", label: "Cleric", value: "ddb-cleric" },
+  { group: "Class", label: "Druid", value: "ddb-druid" },
+  { group: "Class", label: "Fighter", value: "ddb-fighter" },
+  { group: "Class", label: "Monk", value: "ddb-monk" },
+  { group: "Class", label: "Paladin", value: "ddb-paladin" },
+  { group: "Class", label: "Ranger", value: "ddb-ranger" },
+  { group: "Class", label: "Rogue", value: "ddb-rogue" },
+  { group: "Class", label: "Sorcerer", value: "ddb-sorcerer" },
+  { group: "Class", label: "Warlock", value: "ddb-warlock" },
+  { group: "Class", label: "Wizard", value: "ddb-wizard" },
+  { group: "Misc", label: "Advantage", value: "ddb-advantage" },
+  { group: "Misc", label: "Attunement", value: "ddb-attunement" },
+  { group: "Misc", label: "Concentration", value: "ddb-concentration" },
+  { group: "Misc", label: "Disadvantage", value: "ddb-disadvantage" },
+  { group: "Misc", label: "Healing", value: "ddb-healing" },
+  { group: "Misc", label: "Ritual", value: "ddb-ritual" },
+];
 
 const paletteComponents = [
   {
@@ -207,7 +272,7 @@ const paletteComponents = [
     node: {
       type: "field",
       component: "icon",
-      className: "circle p4",
+      iconClass: "ddb-advantage",
       ariaLabel: "Status icon",
     },
   },
@@ -1831,6 +1896,40 @@ function ptToPx(value) {
   return value * (4 / 3);
 }
 
+function populateIconOptions() {
+  if (!iconDatalist) return;
+  iconDatalist.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  PRESS_ICON_OPTIONS.forEach((option) => {
+    const entry = document.createElement("option");
+    entry.value = option.value;
+    entry.label = `${option.group} — ${option.label}`;
+    fragment.appendChild(entry);
+  });
+  iconDatalist.appendChild(fragment);
+}
+
+function getNodeIconClass(node) {
+  if (!node) return "";
+  if (node.iconClass) return node.iconClass;
+  const classTokens = (node.className ?? "").split(/\s+/).filter(Boolean);
+  const iconTokens = classTokens.filter((token) => token.startsWith("ddb-"));
+  return iconTokens.join(" ");
+}
+
+function updateIconPreview(value) {
+  if (!iconPreview) return;
+  iconPreview.className = "press-icon-preview";
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed || trimmed.startsWith("@")) {
+    return;
+  }
+  trimmed
+    .split(/\s+/)
+    .filter(Boolean)
+    .forEach((token) => iconPreview.classList.add(token));
+}
+
 function renderPalette() {
   if (!paletteList) return;
   paletteList.innerHTML = "";
@@ -1970,6 +2069,8 @@ function updateInspector() {
 
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
+    if (iconInput) iconInput.value = "";
+    updateIconPreview("");
     if (imageUrlInput) imageUrlInput.value = "";
     if (imageWidthInput) imageWidthInput.value = "";
     if (imageHeightInput) imageHeightInput.value = "";
@@ -1977,11 +2078,14 @@ function updateInspector() {
     if (rowColumnsInput) rowColumnsInput.value = "";
     if (templateColumnsInput) templateColumnsInput.value = "";
     if (tableRowsInput) tableRowsInput.value = "";
+    if (ariaLabelInput) ariaLabelInput.value = "";
     if (classNameInput) classNameInput.value = "";
     renderTableColumnsList(null);
     setGroupVisibility(textFieldGroup, true);
+    setGroupVisibility(iconField, false);
     setGroupVisibility(tableFieldGroup, false);
     setGroupVisibility(textDecorationGroup, true);
+    setGroupVisibility(ariaLabelField, false);
     setGroupVisibility(classNameField, true);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     textSettingGroups.forEach((group) => {
@@ -2047,8 +2151,10 @@ function updateInspector() {
   const isImageNode = node?.component === "image";
   const isTableNode = node?.component === "table";
   const isIconNode = node?.component === "icon";
-  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode);
+  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
+  setGroupVisibility(iconField, isIconNode);
   setGroupVisibility(tableFieldGroup, isTableNode);
+  setGroupVisibility(ariaLabelField, isIconNode);
   setGroupVisibility(classNameField, true);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
   textSettingGroups.forEach((group) => {
@@ -2121,20 +2227,21 @@ function updateInspector() {
   }
 
   if (textEditor) {
-    textEditor.value = isImageNode ? "" : getNodeText(node);
-    if (node.component === "list") {
-      textEditor.placeholder = node.itemsBind ? "Binding (@path)" : "One entry per line";
-    } else if (node.component === "icon") {
-      textEditor.placeholder = "Optional aria-label";
+    if (isIconNode) {
+      textEditor.value = "";
+      textEditor.placeholder = "";
     } else {
-      textEditor.placeholder = "Binding / Text";
+      textEditor.value = isImageNode ? "" : getNodeText(node);
+      if (node.component === "list") {
+        textEditor.placeholder = node.itemsBind ? "Binding (@path)" : "One entry per line";
+      } else {
+        textEditor.placeholder = "Binding / Text";
+      }
     }
   }
   if (textEditorLabel) {
     if (node.component === "list") {
       textEditorLabel.textContent = node.itemsBind ? "List binding" : "List items";
-    } else if (node.component === "icon") {
-      textEditorLabel.textContent = "Aria label";
     } else {
       textEditorLabel.textContent = "Binding / Text";
     }
@@ -2155,6 +2262,14 @@ function updateInspector() {
   }
   if (classNameInput) {
     classNameInput.value = node.className ?? "";
+  }
+  if (iconInput) {
+    const iconClass = getNodeIconClass(node);
+    iconInput.value = iconClass;
+    updateIconPreview(iconClass);
+  }
+  if (ariaLabelInput) {
+    ariaLabelInput.value = node.ariaLabel ?? "";
   }
 
   const textSize = resolveTextSize(node);
@@ -2643,13 +2758,6 @@ function bindInspectorControls() {
               .filter(Boolean);
             delete node.itemsBind;
           }
-        } else if (node.component === "icon") {
-          const value = textEditor.value.trim();
-          if (value) {
-            node.ariaLabel = value;
-          } else {
-            delete node.ariaLabel;
-          }
         } else {
           node.text = textEditor.value;
           node.label = textEditor.value;
@@ -2761,6 +2869,43 @@ function bindInspectorControls() {
           node.templateColumns = value;
         } else {
           delete node.templateColumns;
+        }
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (iconInput) {
+    iconInput.addEventListener("focus", () => beginPendingUndo(iconInput));
+    iconInput.addEventListener("blur", () => commitPendingUndo(iconInput));
+    iconInput.addEventListener("change", () => commitPendingUndo(iconInput));
+    iconInput.addEventListener("input", () => {
+      const value = iconInput.value.trim();
+      updateSelectedNode((node) => {
+        if (value) {
+          node.iconClass = value;
+        } else {
+          delete node.iconClass;
+        }
+      });
+      updateIconPreview(value);
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (ariaLabelInput) {
+    ariaLabelInput.addEventListener("focus", () => beginPendingUndo(ariaLabelInput));
+    ariaLabelInput.addEventListener("blur", () => commitPendingUndo(ariaLabelInput));
+    ariaLabelInput.addEventListener("change", () => commitPendingUndo(ariaLabelInput));
+    ariaLabelInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        const value = ariaLabelInput.value.trim();
+        if (value) {
+          node.ariaLabel = value;
+        } else {
+          delete node.ariaLabel;
         }
       });
       renderPreview();
@@ -3162,6 +3307,7 @@ async function initPress() {
   renderFormatOptions(getActiveTemplate());
   renderSourceOptions(getActiveTemplate());
   updateTemplateInspector(getActiveTemplate());
+  populateIconOptions();
   bindTemplateInspectorControls();
   initDragAndDrop();
   bindInspectorControls();
