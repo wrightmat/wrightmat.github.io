@@ -473,15 +473,25 @@ function renderField(node, context, options = {}) {
             th.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
           applyClassName(th, column.className);
-          const headerNode = headerCells[columnIndex] ?? {
+          const headerStyles = column.textStyle ?? {};
+          const headerNode = {
             type: "field",
             component: "text",
             text: column.header ?? column.label ?? "",
             ...baseText,
-            textStyles: { ...(baseText.textStyles ?? {}), bold: true },
-            uid: node.uid ? `${node.uid}-header-${columnIndex}` : undefined,
+            textStyles: {
+              bold: typeof headerStyles.bold === "boolean" ? headerStyles.bold : true,
+              italic: Boolean(headerStyles.italic),
+              underline: Boolean(headerStyles.underline),
+            },
+            ...(column.textSize ? { textSize: column.textSize } : null),
+            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
+            ...(column.textAngle ? { textAngle: column.textAngle } : null),
+            ...(column.textCurve ? { textCurve: column.textCurve } : null),
+            ...(column.align ? { align: column.align } : null),
+            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
           };
-          th.appendChild(renderNode(headerNode, context, options));
+          th.appendChild(renderField(headerNode, context, options));
           headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
@@ -558,9 +568,6 @@ function renderField(node, context, options = {}) {
         });
         tbody.appendChild(tr);
       });
-      if (options?.editable && node.showHeadings !== false && columns.length) {
-        node.headerCells = headerCells;
-      }
       if (options?.editable) {
         node.cells = tableCells;
       }
