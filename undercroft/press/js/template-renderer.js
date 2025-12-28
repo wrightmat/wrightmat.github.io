@@ -483,6 +483,7 @@ function renderRow(node, context, options) {
   applyGap(container, node.gap ?? 4);
   (node.columns || []).forEach((column) => {
     const col = document.createElement("div");
+    applyClassName(col, "w-100");
     if (column.span) {
       col.style.gridColumn = `span ${column.span}`;
     }
