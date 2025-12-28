@@ -336,12 +336,11 @@ function renderGroups() {
     return;
   }
   state.map.groups.forEach((group) => {
-    const isSelected = state.selection.kind === "group" && state.selection.id === group.id;
     const item = document.createElement("button");
     item.type = "button";
     item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
-    if (isSelected) {
-      item.classList.add("active");
+    if (state.selection.kind === "group" && state.selection.id === group.id) {
+      item.setAttribute("aria-current", "true");
     }
     item.textContent = group.name;
     const badge = document.createElement("span");
@@ -1841,6 +1840,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     bulkValue.type = "text";
     bulkValue.className = "form-control form-control-sm";
     bulkValue.placeholder = "Property value";
+    bindPropertyRowTabOrder(bulkKey, bulkValue);
     const bulkButton = document.createElement("button");
     bulkButton.type = "button";
     bulkButton.className = "btn btn-outline-primary btn-sm align-self-start";
@@ -2038,35 +2038,36 @@ function renderGroupSelectionEditor(group) {
   const selectionLayer = lastSelection?.layerId
     ? state.map.layers.find((layer) => layer.id === lastSelection.layerId)
     : null;
+  const summary = document.createElement("div");
+  summary.className = "small text-body-secondary";
   if (lastSelection?.cells?.length && selectionLayer) {
-    const summary = document.createElement("div");
-    summary.className = "small text-body-secondary";
     summary.textContent = `Last selection: ${selectionLayer.name} • ${lastSelection.cells.length} cells`;
-    const addButton = document.createElement("button");
-    addButton.type = "button";
-    addButton.className = "btn btn-outline-primary btn-sm align-self-start";
-    addButton.textContent = "Add selected cells";
-    addButton.addEventListener("click", () => {
-      applyGroupChange("add group members", () => {
-        const nextMembers = new Map(
-          normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]),
-        );
-        lastSelection.cells.forEach((cell) => {
-          const resolved = findGridCell(selectionLayer, cell.coord) || ensureGridCell(selectionLayer, cell.coord);
-          const member = { layerId: selectionLayer.id, elementId: resolved.id, kind: "grid-cell" };
-          nextMembers.set(getGroupMemberKey(member), member);
-        });
-        group.elementIds = Array.from(nextMembers.values());
-      });
-    });
-    memberActions.appendChild(summary);
-    memberActions.appendChild(addButton);
   } else {
-    const emptyAction = document.createElement("div");
-    emptyAction.className = "small text-body-secondary";
-    emptyAction.textContent = "Select grid cells on the map to make them available for adding.";
-    memberActions.appendChild(emptyAction);
+    summary.textContent = "Select grid cells on the map, then click Add selected cells.";
   }
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "btn btn-outline-primary btn-sm align-self-start";
+  addButton.textContent = `Add selected cells${lastSelection?.cells?.length ? ` (${lastSelection.cells.length})` : ""}`;
+  addButton.disabled = !(lastSelection?.cells?.length && selectionLayer);
+  addButton.addEventListener("click", () => {
+    if (!lastSelection?.cells?.length || !selectionLayer) {
+      return;
+    }
+    applyGroupChange("add group members", () => {
+      const nextMembers = new Map(
+        normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]),
+      );
+      lastSelection.cells.forEach((cell) => {
+        const resolved = findGridCell(selectionLayer, cell.coord) || ensureGridCell(selectionLayer, cell.coord);
+        const member = { layerId: selectionLayer.id, elementId: resolved.id, kind: "grid-cell" };
+        nextMembers.set(getGroupMemberKey(member), member);
+      });
+      group.elementIds = Array.from(nextMembers.values());
+    });
+  });
+  memberActions.appendChild(summary);
+  memberActions.appendChild(addButton);
   container.appendChild(memberActions);
   const memberList = document.createElement("div");
   memberList.className = "d-flex flex-column gap-2";
