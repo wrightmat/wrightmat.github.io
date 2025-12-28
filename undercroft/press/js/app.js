@@ -75,6 +75,9 @@ let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
 const textEditor = document.querySelector("[data-component-text]");
+const textEditorLabel = document.querySelector("[data-component-text-label]");
+const classNameField = document.querySelector("[data-inspector-class-name-field]");
+const classNameInput = document.querySelector("[data-component-class-name]");
 const imageFieldGroups = Array.from(document.querySelectorAll("[data-inspector-image-field]"));
 const imageUrlInput = document.querySelector("[data-component-image-url]");
 const imageWidthInput = document.querySelector("[data-component-image-width]");
@@ -83,6 +86,8 @@ const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
 const rowColumnsInput = document.querySelector("[data-component-columns]");
 const rowColumnsField = document.querySelector("[data-inspector-row-columns]");
+const templateColumnsInput = document.querySelector("[data-component-template-columns]");
+const templateColumnsField = document.querySelector("[data-inspector-template-columns]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
 const tableFieldGroup = document.querySelector("[data-inspector-table-fields]");
 const tableRowsInput = document.querySelector("[data-component-table-rows]");
@@ -182,18 +187,6 @@ const paletteComponents = [
     },
   },
   {
-    id: "badge",
-    label: "Badge",
-    description: "Small highlights or tags",
-    icon: "tabler:badge",
-    node: {
-      type: "field",
-      component: "badge",
-      text: "Badge",
-      className: "badge text-bg-primary",
-    },
-  },
-  {
     id: "image",
     label: "Image",
     description: "Artwork or icon with URL binding",
@@ -203,6 +196,18 @@ const paletteComponents = [
       component: "image",
       url: "",
       className: "press-image",
+    },
+  },
+  {
+    id: "icon",
+    label: "Icon",
+    description: "CSS class icons and status markers",
+    icon: "tabler:star",
+    node: {
+      type: "field",
+      component: "icon",
+      className: "circle p4",
+      ariaLabel: "Status icon",
     },
   },
   {
@@ -1395,6 +1400,7 @@ function describeNode(node) {
   if (node.type === "stack") return "Stack";
   if (node.component === "heading") return node.text || "Heading";
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
+  if (node.component === "icon") return node.ariaLabel || "Icon";
   if (node.component === "badge") return node.text || node.label || "Badge";
   if (node.component === "image") return node.url || "Image";
   if (node.component === "list") return "List";
@@ -1721,7 +1727,13 @@ function renderLayoutList() {
 function getNodeText(node) {
   if (!node) return "";
   if (node.component === "list") {
+    if (node.itemsBind) {
+      return node.itemsBind;
+    }
     return Array.isArray(node.items) ? node.items.join("\n") : "";
+  }
+  if (node.component === "icon") {
+    return node.ariaLabel ?? "";
   }
   if (typeof node.text === "string") return node.text;
   if (typeof node.label === "string") return node.label;
@@ -1782,10 +1794,13 @@ function updateInspector() {
     if (imageHeightInput) imageHeightInput.value = "";
     if (gapInput) gapInput.value = "";
     if (rowColumnsInput) rowColumnsInput.value = "";
+    if (templateColumnsInput) templateColumnsInput.value = "";
     if (tableRowsInput) tableRowsInput.value = "";
+    if (classNameInput) classNameInput.value = "";
     renderTableColumnsList(null);
     setGroupVisibility(textFieldGroup, true);
     setGroupVisibility(tableFieldGroup, false);
+    setGroupVisibility(classNameField, true);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     textSettingGroups.forEach((group) => setGroupVisibility(group, true));
     setGroupVisibility(colorGroup, true);
@@ -1795,6 +1810,9 @@ function updateInspector() {
     }
     if (rowColumnsField) {
       rowColumnsField.hidden = true;
+    }
+    if (templateColumnsField) {
+      templateColumnsField.hidden = true;
     }
     textStyleToggles.forEach((input) => {
       input.disabled = false;
@@ -1833,6 +1851,9 @@ function updateInspector() {
       input.checked = input.value === "start";
     });
     if (visibilityToggle) visibilityToggle.checked = true;
+    if (textEditorLabel) {
+      textEditorLabel.textContent = "Binding / Text";
+    }
     return;
   }
 
@@ -1842,6 +1863,7 @@ function updateInspector() {
   const isTableNode = node?.component === "table";
   setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode);
   setGroupVisibility(tableFieldGroup, isTableNode);
+  setGroupVisibility(classNameField, true);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
   textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode));
   setGroupVisibility(colorGroup, true);
@@ -1855,6 +1877,9 @@ function updateInspector() {
   if (rowColumnsField) {
     rowColumnsField.hidden = node?.type !== "row";
   }
+  if (templateColumnsField) {
+    templateColumnsField.hidden = node?.type !== "row";
+  }
 
   if (gapInput) {
     const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
@@ -1862,6 +1887,9 @@ function updateInspector() {
   }
   if (rowColumnsInput) {
     rowColumnsInput.value = node?.type === "row" ? String(node.columns?.length ?? 0) : "";
+  }
+  if (templateColumnsInput) {
+    templateColumnsInput.value = node?.type === "row" ? node.templateColumns ?? "" : "";
   }
 
   if (alignmentTitle) {
@@ -1904,7 +1932,22 @@ function updateInspector() {
 
   if (textEditor) {
     textEditor.value = isImageNode ? "" : getNodeText(node);
-    textEditor.placeholder = node.component === "list" ? "One entry per line" : "Binding / Text";
+    if (node.component === "list") {
+      textEditor.placeholder = node.itemsBind ? "Binding (@path)" : "One entry per line";
+    } else if (node.component === "icon") {
+      textEditor.placeholder = "Optional aria-label";
+    } else {
+      textEditor.placeholder = "Binding / Text";
+    }
+  }
+  if (textEditorLabel) {
+    if (node.component === "list") {
+      textEditorLabel.textContent = node.itemsBind ? "List binding" : "List items";
+    } else if (node.component === "icon") {
+      textEditorLabel.textContent = "Aria label";
+    } else {
+      textEditorLabel.textContent = "Binding / Text";
+    }
   }
   if (tableRowsInput) {
     tableRowsInput.value = isTableNode ? node.rowsBind ?? node.itemsBind ?? "" : "";
@@ -1919,6 +1962,9 @@ function updateInspector() {
   }
   if (imageHeightInput) {
     imageHeightInput.value = isImageNode && node.height !== undefined ? String(node.height) : "";
+  }
+  if (classNameInput) {
+    classNameInput.value = node.className ?? "";
   }
 
   const textSize = resolveTextSize(node);
@@ -2385,6 +2431,8 @@ function bindInspectorControls() {
     textEditor.addEventListener("blur", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("change", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("input", () => {
+      const listBinding = textEditor.value.trim().startsWith("@");
+      let isListNode = false;
       updateSelectedNode((node) => {
         if (node.component === "image") {
           return;
@@ -2393,15 +2441,38 @@ function bindInspectorControls() {
           return;
         }
         if (node.component === "list") {
-          node.items = textEditor.value
-            .split("\n")
-            .map((entry) => entry.trim())
-            .filter(Boolean);
+          isListNode = true;
+          const trimmed = textEditor.value.trim();
+          if (trimmed.startsWith("@")) {
+            node.itemsBind = trimmed;
+            node.items = [];
+          } else {
+            node.items = textEditor.value
+              .split("\n")
+              .map((entry) => entry.trim())
+              .filter(Boolean);
+            delete node.itemsBind;
+          }
+        } else if (node.component === "icon") {
+          const value = textEditor.value.trim();
+          if (value) {
+            node.ariaLabel = value;
+          } else {
+            delete node.ariaLabel;
+          }
         } else {
           node.text = textEditor.value;
           node.label = textEditor.value;
         }
       });
+      if (isListNode) {
+        if (textEditorLabel) {
+          textEditorLabel.textContent = listBinding ? "List binding" : "List items";
+        }
+        if (textEditor) {
+          textEditor.placeholder = listBinding ? "Binding (@path)" : "One entry per line";
+        }
+      }
       renderPreview();
       renderLayoutList();
       updateSaveState();
@@ -2481,6 +2552,43 @@ function bindInspectorControls() {
           node.columns = [...columns, ...additions];
         } else {
           node.columns = columns.slice(0, next);
+        }
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (templateColumnsInput) {
+    templateColumnsInput.addEventListener("focus", () => beginPendingUndo(templateColumnsInput));
+    templateColumnsInput.addEventListener("blur", () => commitPendingUndo(templateColumnsInput));
+    templateColumnsInput.addEventListener("change", () => commitPendingUndo(templateColumnsInput));
+    templateColumnsInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.type !== "row") return;
+        const value = templateColumnsInput.value.trim();
+        if (value) {
+          node.templateColumns = value;
+        } else {
+          delete node.templateColumns;
+        }
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (classNameInput) {
+    classNameInput.addEventListener("focus", () => beginPendingUndo(classNameInput));
+    classNameInput.addEventListener("blur", () => commitPendingUndo(classNameInput));
+    classNameInput.addEventListener("change", () => commitPendingUndo(classNameInput));
+    classNameInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        const value = classNameInput.value.trim();
+        if (value) {
+          node.className = value;
+        } else {
+          delete node.className;
         }
       });
       renderPreview();
