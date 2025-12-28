@@ -454,3 +454,232 @@ body[data-theme="dark"] .preview-stage {
     display: none !important;
   }
 }
+
+/* Character notecard template styles. */
+
+.press-notecard {
+  font-size: 8.5pt;
+  line-height: 1.15;
+  font-family: "Noto Sans", "Myriad Pro", Calibri, Helvetica, Arial, sans-serif;
+  color: #212529;
+}
+
+.press-notecard h1,
+.press-notecard h3 {
+  margin: 0;
+  line-height: 1;
+}
+
+.press-notecard__header-right {
+  text-align: right;
+}
+
+.press-notecard__name {
+  font-size: 1.4em;
+}
+
+.press-notecard__class-summary {
+  font-size: 1.05em;
+}
+
+.press-notecard__personality {
+  margin-bottom: 0;
+}
+
+.press-notecard__columns {
+  align-items: flex-start;
+}
+
+.ability-scores {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ability-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70%;
+  height: 15%;
+  border: 2px solid #000;
+  border-radius: 8px;
+  background: #f8f8f8;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 6px;
+}
+
+.ability-block .name {
+  font-size: 1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+}
+
+.ability-block .modifier {
+  font-size: 2em;
+  font-weight: bold;
+  color: #000;
+  padding-bottom: 4px;
+  line-height: 1em;
+}
+
+.ability-block .score {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.skill,
+.skill-row {
+  display: flex;
+  align-items: center;
+  font-size: 1em;
+}
+
+.skill .modifier,
+.skill-row .modifier {
+  padding: 0 6px;
+}
+
+.circle {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #333;
+  border-radius: 50%;
+  background-color: #fff;
+  margin-right: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.p4 {
+  background-color: #36454f;
+}
+
+.p3 {
+  background-color: #b2beb5;
+}
+
+.p1 {
+  background-color: #e8e8e8;
+}
+
+.section {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.section-short {
+  font-size: 1.1em;
+  font-weight: bold;
+  line-height: 1em;
+}
+
+.heading {
+  font-size: 1.3em;
+  text-decoration: underline;
+  font-weight: bold;
+  line-height: 1em;
+}
+
+.larger {
+  font-size: 2em;
+}
+
+.notes {
+  font-size: 0.7em;
+  line-height: 0.8;
+  display: inline-block;
+}
+
+.stat-0,
+.str {
+  color: red;
+}
+
+.stat-1,
+.dex {
+  color: gold;
+}
+
+.stat-2,
+.con {
+  color: darkorange;
+}
+
+.stat-3,
+.int {
+  color: blue;
+}
+
+.stat-4,
+.wis {
+  color: green;
+}
+
+.stat-5,
+.cha {
+  color: purple;
+}
+
+.press-notecard__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.press-notecard__table th,
+.press-notecard__table td {
+  padding: 2px 4px;
+  vertical-align: top;
+}
+
+.press-notecard__table thead th {
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+  text-align: left;
+  font-size: 0.85em;
+}
+
+.press-notecard__table tbody tr + tr td {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.press-notecard__attacks-meta,
+.press-notecard__spells-meta {
+  text-align: right;
+  font-size: 0.9em;
+}
+
+.press-notecard__limited {
+  text-align: right;
+  font-size: 0.9em;
+}
+
+.press-notecard__features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.press-notecard__details {
+  font-size: 0.9em;
+}
+
+.press-notecard__hp-dice {
+  font-size: 0.85em;
+}
+
+.press-notecard__proficiency,
+.press-notecard__sense-list,
+.press-notecard__defense-list {
+  font-size: 0.9em;
+}
