@@ -23,6 +23,7 @@ const state = {
     cells: [],
     anchor: null,
   },
+  lastGridSelection: null,
   propertyClipboard: null,
 };
 
@@ -138,6 +139,15 @@ const LAYER_SETTINGS_SCHEMA = {
   ],
 };
 
+const VIEW_TIER_OPTIONS = [
+  { value: "free", label: "Free" },
+  { value: "player", label: "Player" },
+  { value: "gm", label: "GM" },
+  { value: "creator", label: "Creator" },
+  { value: "admin", label: "Admin" },
+];
+const VIEW_TIER_VALUES = new Set(VIEW_TIER_OPTIONS.map((option) => option.value));
+
 bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
   collapsed: false,
   expandLabel: "Expand base map",
@@ -150,6 +160,53 @@ const setSelectionCollapsed = bindCollapsibleToggle(elements.selectionToggle, el
   collapseLabel: "Collapse selection",
 });
 
+function normalizeTier(tier) {
+  return typeof tier === "string" ? tier.trim().toLowerCase() : "";
+}
+
+function normalizeView(view, { layerIds = [], groupIds = [] } = {}) {
+  const safeView = view && typeof view === "object" ? view : {};
+  const name = typeof safeView.name === "string" && safeView.name.trim() ? safeView.name.trim() : "New View";
+  const description = typeof safeView.description === "string" ? safeView.description.trim() : "";
+  const tiers = Array.isArray(safeView.tiers)
+    ? safeView.tiers.map(normalizeTier).filter((tier) => VIEW_TIER_VALUES.has(tier))
+    : [];
+  const normalizedLayerIds = Array.isArray(safeView.layerIds) ? safeView.layerIds.filter(Boolean) : null;
+  const normalizedGroupIds = Array.isArray(safeView.groupIds) ? safeView.groupIds.filter(Boolean) : null;
+  const nextLayerIds = normalizedLayerIds ?? layerIds.filter(Boolean);
+  const nextGroupIds = normalizedGroupIds ?? groupIds.filter(Boolean);
+  const settings = safeView.settings && typeof safeView.settings === "object" ? safeView.settings : {};
+  return {
+    ...safeView,
+    name,
+    description,
+    tiers,
+    layerIds: nextLayerIds,
+    groupIds: nextGroupIds,
+    settings,
+  };
+}
+
+function bindPropertyRowTabOrder(keyInput, valueInput) {
+  if (!keyInput || !valueInput) {
+    return;
+  }
+  keyInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab" || event.shiftKey) {
+      return;
+    }
+    event.preventDefault();
+    valueInput.focus();
+  });
+  valueInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab" || !event.shiftKey) {
+      return;
+    }
+    event.preventDefault();
+    keyInput.focus();
+  });
+}
+
 function applyMapSnapshot(snapshot) {
   if (!snapshot) {
     return;
@@ -158,6 +215,12 @@ function applyMapSnapshot(snapshot) {
   if (!state.map.views) {
     state.map.views = [];
   }
+  state.map.views = state.map.views.map((view) =>
+    normalizeView(view, {
+      layerIds: state.map.layers?.map((layer) => layer.id) || [],
+      groupIds: state.map.groups?.map((group) => group.id) || [],
+    }),
+  );
   state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   renderAll();
@@ -181,6 +244,12 @@ function setSelection(kind, id = null, extra = {}) {
     cells: extra.cells ?? [],
     anchor: extra.anchor ?? (extra.cells?.[0]?.coord ?? null),
   };
+  if (kind === "grid-cells" && state.selection.cells.length) {
+    state.lastGridSelection = {
+      layerId: state.selection.layerId,
+      cells: state.selection.cells.map((cell) => ({ ...cell })),
+    };
+  }
   renderSelection();
   renderLayerOverlays();
   syncOverlayInteractivity();
@@ -1426,6 +1495,7 @@ function createPropertyRow({ key, value, onUpdate, onRemove }) {
   removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
+  bindPropertyRowTabOrder(keyInput, valueInput);
 
   const updateProperty = () => {
     const nextKey = keyInput.value.trim();
@@ -1498,6 +1568,7 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
   removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
+  bindPropertyRowTabOrder(keyInput, valueInput);
 
   const applyToSelection = (apply) => {
     applyCellPropertiesChange("grid cell property", () => {
@@ -1943,7 +2014,60 @@ function renderGroupSelectionEditor(group) {
   container.appendChild(propertiesWrapper);
   refreshTooltips();
 
-  container.appendChild(createSelectionSectionTitle("Members"));
+  const membersHeader = document.createElement("div");
+  membersHeader.className = "d-flex align-items-center justify-content-between gap-2";
+  const membersTitle = createSelectionSectionTitle("Members");
+  const membersHelp = document.createElement("button");
+  membersHelp.type = "button";
+  membersHelp.className = "btn btn-link p-0 text-body-secondary";
+  membersHelp.setAttribute("aria-label", "How to add members");
+  membersHelp.setAttribute("data-bs-toggle", "tooltip");
+  membersHelp.setAttribute("data-bs-placement", "top");
+  membersHelp.setAttribute(
+    "data-bs-title",
+    "To add members, select grid cells on the map, then return here and click Add selected cells.",
+  );
+  membersHelp.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:help\" aria-hidden=\"true\"></span>";
+  membersHeader.appendChild(membersTitle);
+  membersHeader.appendChild(membersHelp);
+  container.appendChild(membersHeader);
+
+  const memberActions = document.createElement("div");
+  memberActions.className = "d-flex flex-column gap-2";
+  const lastSelection = state.lastGridSelection;
+  const selectionLayer = lastSelection?.layerId
+    ? state.map.layers.find((layer) => layer.id === lastSelection.layerId)
+    : null;
+  if (lastSelection?.cells?.length && selectionLayer) {
+    const summary = document.createElement("div");
+    summary.className = "small text-body-secondary";
+    summary.textContent = `Last selection: ${selectionLayer.name} • ${lastSelection.cells.length} cells`;
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn btn-outline-primary btn-sm align-self-start";
+    addButton.textContent = "Add selected cells";
+    addButton.addEventListener("click", () => {
+      applyGroupChange("add group members", () => {
+        const nextMembers = new Map(
+          normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]),
+        );
+        lastSelection.cells.forEach((cell) => {
+          const resolved = findGridCell(selectionLayer, cell.coord) || ensureGridCell(selectionLayer, cell.coord);
+          const member = { layerId: selectionLayer.id, elementId: resolved.id, kind: "grid-cell" };
+          nextMembers.set(getGroupMemberKey(member), member);
+        });
+        group.elementIds = Array.from(nextMembers.values());
+      });
+    });
+    memberActions.appendChild(summary);
+    memberActions.appendChild(addButton);
+  } else {
+    const emptyAction = document.createElement("div");
+    emptyAction.className = "small text-body-secondary";
+    emptyAction.textContent = "Select grid cells on the map to make them available for adding.";
+    memberActions.appendChild(emptyAction);
+  }
+  container.appendChild(memberActions);
   const memberList = document.createElement("div");
   memberList.className = "d-flex flex-column gap-2";
   const members = normalizeGroupMembers(group);
@@ -2048,12 +2172,126 @@ function renderViewSelectionEditor(view) {
   descriptionInput.className = "form-control form-control-sm";
   descriptionInput.rows = 3;
   descriptionInput.value = view.description || "";
+  descriptionInput.placeholder = "Describe what this view shows or hides.";
   descriptionInput.addEventListener("change", () => {
     applyViewChange("view description", () => {
       view.description = descriptionInput.value.trim();
     });
   });
   container.appendChild(createFieldWrapper("Description", descriptionInput));
+
+  container.appendChild(createSelectionSectionTitle("Visible Layers"));
+  const layerVisibility = document.createElement("div");
+  layerVisibility.className = "d-flex flex-column gap-2";
+  if (!state.map.layers.length) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No layers yet.";
+    layerVisibility.appendChild(empty);
+  } else {
+    const selectedLayers = new Set(view.layerIds || []);
+    state.map.layers.forEach((layer) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "form-check";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "form-check-input";
+      checkbox.id = `view-${view.id}-layer-${layer.id}`;
+      checkbox.checked = selectedLayers.has(layer.id);
+      const label = document.createElement("label");
+      label.className = "form-check-label small";
+      label.setAttribute("for", checkbox.id);
+      label.textContent = layer.name;
+      checkbox.addEventListener("change", () => {
+        applyViewChange("view layer visibility", () => {
+          const next = new Set(view.layerIds || []);
+          if (checkbox.checked) {
+            next.add(layer.id);
+          } else {
+            next.delete(layer.id);
+          }
+          view.layerIds = Array.from(next);
+        });
+      });
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(label);
+      layerVisibility.appendChild(wrapper);
+    });
+  }
+  container.appendChild(layerVisibility);
+
+  container.appendChild(createSelectionSectionTitle("Visible Groups"));
+  const groupVisibility = document.createElement("div");
+  groupVisibility.className = "d-flex flex-column gap-2";
+  if (!state.map.groups.length) {
+    const empty = document.createElement("div");
+    empty.className = "small text-body-secondary";
+    empty.textContent = "No groups yet.";
+    groupVisibility.appendChild(empty);
+  } else {
+    const selectedGroups = new Set(view.groupIds || []);
+    state.map.groups.forEach((group) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "form-check";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "form-check-input";
+      checkbox.id = `view-${view.id}-group-${group.id}`;
+      checkbox.checked = selectedGroups.has(group.id);
+      const label = document.createElement("label");
+      label.className = "form-check-label small";
+      label.setAttribute("for", checkbox.id);
+      label.textContent = group.name;
+      checkbox.addEventListener("change", () => {
+        applyViewChange("view group visibility", () => {
+          const next = new Set(view.groupIds || []);
+          if (checkbox.checked) {
+            next.add(group.id);
+          } else {
+            next.delete(group.id);
+          }
+          view.groupIds = Array.from(next);
+        });
+      });
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(label);
+      groupVisibility.appendChild(wrapper);
+    });
+  }
+  container.appendChild(groupVisibility);
+
+  container.appendChild(createSelectionSectionTitle("Access Tiers"));
+  const tierWrapper = document.createElement("div");
+  tierWrapper.className = "d-flex flex-column gap-2";
+  const selectedTiers = new Set(view.tiers || []);
+  VIEW_TIER_OPTIONS.forEach((tier) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "form-check-input";
+    checkbox.id = `view-${view.id}-tier-${tier.value}`;
+    checkbox.checked = selectedTiers.has(tier.value);
+    const label = document.createElement("label");
+    label.className = "form-check-label small";
+    label.setAttribute("for", checkbox.id);
+    label.textContent = tier.label;
+    checkbox.addEventListener("change", () => {
+      applyViewChange("view tier access", () => {
+        const next = new Set(view.tiers || []);
+        if (checkbox.checked) {
+          next.add(tier.value);
+        } else {
+          next.delete(tier.value);
+        }
+        view.tiers = Array.from(next);
+      });
+    });
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(label);
+    tierWrapper.appendChild(wrapper);
+  });
+  container.appendChild(tierWrapper);
 
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
@@ -2270,6 +2508,8 @@ function setupViewsListEvents() {
     recordHistory("add view", () => {
       view = createView({
         name: `View ${state.map.views.length + 1}`,
+        layerIds: state.map.layers.map((layer) => layer.id),
+        groupIds: state.map.groups.map((group) => group.id),
       });
       state.map.views.push(view);
       updateMapTimestamp(state.map);

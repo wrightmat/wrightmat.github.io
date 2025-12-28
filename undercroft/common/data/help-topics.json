@@ -127,6 +127,17 @@
       "href": "docs/index.html#collaboration-shares"
     },
     {
+      "id": "admin.groups.members",
+      "title": "Group Members",
+      "summary": "Assign characters to a campaign group using the multi-select list.",
+      "details": [
+        "Open a group row to see the Members picker. Click characters to add or remove them from the group.",
+        "Hold Ctrl (Windows/Linux) or Cmd (macOS) to select multiple characters at once.",
+        "Changes save automatically once you adjust the selection."],
+      "category": "Collaboration",
+      "href": "docs/index.html#collaboration-shares"
+    },
+    {
       "id": "accounts.roles",
       "title": "Account Tiers & Access Gates",
       "summary": "Feature availability is driven by user tier with graceful fallbacks for anonymous users.",

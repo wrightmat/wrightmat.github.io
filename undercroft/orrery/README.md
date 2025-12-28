@@ -27,4 +27,6 @@ The Orrery map model captures the core structure used by all future epics.
 - `layers`: Array of layer descriptors with visibility, opacity, and element
   collections (including grid cell elements with per-cell properties).
 - `groups`: Cross-layer group definitions with member references and properties.
+- `views`: Curated view presets that describe visible layers/groups, tier access,
+  and descriptive intent for the map experience.
 - `properties`: Arbitrary metadata attached to maps, layers, elements, and groups.
