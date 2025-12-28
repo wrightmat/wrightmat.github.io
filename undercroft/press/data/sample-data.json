@@ -183,6 +183,184 @@
       }
     ]
   },
+  "characterNotecard": {
+    "name": "Lira Quill",
+    "identityLine": "Female, Expedition Scribe",
+    "race": "Half-Elf",
+    "classSummary": "Lorebinder (Curator) 5",
+    "personalityTraits": "Curious, meticulous, and quick to catalog new lore.",
+    "abilities": [
+      { "name": "Str", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-0" },
+      { "name": "Dex", "modifier": "+2", "score": 14, "display": "+2 (14)", "abilityBlockClass": "ability-block stat-1" },
+      { "name": "Con", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-2" },
+      { "name": "Int", "modifier": "+4", "score": 18, "display": "+4 (18)", "abilityBlockClass": "ability-block stat-3" },
+      { "name": "Wis", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-4" },
+      { "name": "Cha", "modifier": "+0", "score": 10, "display": "+0 (10)", "abilityBlockClass": "ability-block stat-5" }
+    ],
+    "saves": [
+      { "name": "Strength", "modifier": "+3", "itemClass": "skill stat-0", "circleClass": "circle p3" },
+      { "name": "Dexterity", "modifier": "+5", "itemClass": "skill stat-1", "circleClass": "circle p3" },
+      { "name": "Constitution", "modifier": "+3", "itemClass": "skill stat-2", "circleClass": "circle p1" },
+      { "name": "Intelligence", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
+      { "name": "Wisdom", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
+      { "name": "Charisma", "modifier": "+0", "itemClass": "skill stat-5", "circleClass": "circle p0" }
+    ],
+    "skills": [
+      { "name": "Arcana", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
+      { "name": "History", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
+      { "name": "Investigation", "modifier": "+5", "itemClass": "skill stat-3", "circleClass": "circle p1" },
+      { "name": "Perception", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
+      { "name": "Persuasion", "modifier": "+2", "itemClass": "skill stat-5", "circleClass": "circle p1" }
+    ],
+    "hp": { "max": 38, "hitDice": 5, "hitDiceSize": "1d8+2" },
+    "hpLine": "/ 38",
+    "hitDiceLine": "(1d8+2 x 5)",
+    "proficiencyBonus": "+3",
+    "initiative": { "value": "+2", "icon": "ddb-advantage" },
+    "ac": { "value": 15 },
+    "speeds": { "walk": 30, "fly": 0 },
+    "speedLine": "30 ft.",
+    "proficiencies": {
+      "armor": "Light armor",
+      "weapons": "Simple weapons, light crossbows",
+      "tools": "Calligrapher's supplies",
+      "languages": "Common, Elvish, Draconic"
+    },
+    "proficiencyLines": {
+      "armor": "Armor: Light armor",
+      "weapons": "Weapons: Simple weapons, light crossbows",
+      "tools": "Tools: Calligrapher's supplies",
+      "languages": "Languages: Common, Elvish, Draconic"
+    },
+    "passives": { "perception": 14, "investigation": 12, "insight": 13 },
+    "passiveLines": {
+      "perception": "Passive Percept.: 14",
+      "investigation": "Passive Investig.: 12",
+      "insight": "Passive Insight: 13"
+    },
+    "senses": [{ "name": "Darkvision", "range": 60 }],
+    "defenses": [{ "name": "Fire Resistance", "iconClass": "ddb-resistance" }],
+    "alignment": "Neutral Good",
+    "alignmentLine": "Alignment: Neutral Good",
+    "detailsLine": "Height: 5'6\", Weight: 135 lb., Age: 24, Size: Medium",
+    "appearanceLine": "Appearance: Tidy braids and ink-stained gloves, Hair: Auburn, Eyes: Hazel",
+    "attacks": [
+      { "name": "Arcane Quill", "toHit": "+6", "damage": "1d8+3 force", "range": "60 ft.", "notes": "Ranged spell" },
+      { "name": "Dagger", "toHit": "+5", "damage": "1d4+2 piercing", "range": "20/60 ft.", "notes": "Finesse, light" }
+    ],
+    "attacking": { "attacksPerAction": 1, "fightingStyle": "Defensive" },
+    "attacksMetaLine": "Attacks Per Action: 1, Fighting Style: Defensive",
+    "spellCasting": { "ability": "INT", "attack": "+6", "save": 14 },
+    "spellsHeading": "Spells (INT)",
+    "spellsMetaLine": "Spell Attack: +6, Spell Save DC: 14",
+    "spells": {
+      "cantrips": [
+        { "name": "Mage Hand", "hit": "--", "effect": "Utility", "time": "1A", "range": "30 ft.", "notes": "Conc 1 min" }
+      ],
+      "level1": [
+        { "name": "Magic Missile", "hit": "--", "effect": "3 darts", "time": "1A", "range": "120 ft.", "notes": "Instant" }
+      ],
+      "level2": [
+        { "name": "Misty Step", "hit": "--", "effect": "Teleport", "time": "BA", "range": "30 ft.", "notes": "Instant" }
+      ]
+    },
+    "limitedUses": [{ "name": "Arcane Recovery", "remainingUses": 1, "maxUses": 1, "label": "Short Rest" }],
+    "limitedUsesLine": "Arcane Recovery: 1 / 1",
+    "features": [
+      { "name": "Arcane Recovery", "description": "Recover spell slots on a short rest to keep spells flowing." },
+      { "name": "Scribe's Insight", "description": "Add double proficiency to lore checks tied to written records." }
+    ]
+  },
+  "characterNotecardCards": [
+    {
+      "name": "Lira Quill",
+      "identityLine": "Female, Expedition Scribe",
+      "race": "Half-Elf",
+      "classSummary": "Lorebinder (Curator) 5",
+      "personalityTraits": "Curious, meticulous, and quick to catalog new lore.",
+      "abilities": [
+        { "name": "Str", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-0" },
+        { "name": "Dex", "modifier": "+2", "score": 14, "display": "+2 (14)", "abilityBlockClass": "ability-block stat-1" },
+        { "name": "Con", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-2" },
+        { "name": "Int", "modifier": "+4", "score": 18, "display": "+4 (18)", "abilityBlockClass": "ability-block stat-3" },
+        { "name": "Wis", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-4" },
+        { "name": "Cha", "modifier": "+0", "score": 10, "display": "+0 (10)", "abilityBlockClass": "ability-block stat-5" }
+      ],
+      "saves": [
+        { "name": "Strength", "modifier": "+3", "itemClass": "skill stat-0", "circleClass": "circle p3" },
+        { "name": "Dexterity", "modifier": "+5", "itemClass": "skill stat-1", "circleClass": "circle p3" },
+        { "name": "Constitution", "modifier": "+3", "itemClass": "skill stat-2", "circleClass": "circle p1" },
+        { "name": "Intelligence", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
+        { "name": "Wisdom", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
+        { "name": "Charisma", "modifier": "+0", "itemClass": "skill stat-5", "circleClass": "circle p0" }
+      ],
+      "skills": [
+        { "name": "Arcana", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
+        { "name": "History", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
+        { "name": "Investigation", "modifier": "+5", "itemClass": "skill stat-3", "circleClass": "circle p1" },
+        { "name": "Perception", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
+        { "name": "Persuasion", "modifier": "+2", "itemClass": "skill stat-5", "circleClass": "circle p1" }
+      ],
+      "hp": { "max": 38, "hitDice": 5, "hitDiceSize": "1d8+2" },
+      "hpLine": "/ 38",
+      "hitDiceLine": "(1d8+2 x 5)",
+      "proficiencyBonus": "+3",
+      "initiative": { "value": "+2", "icon": "ddb-advantage" },
+      "ac": { "value": 15 },
+      "speeds": { "walk": 30, "fly": 0 },
+      "speedLine": "30 ft.",
+      "proficiencies": {
+        "armor": "Light armor",
+        "weapons": "Simple weapons, light crossbows",
+        "tools": "Calligrapher's supplies",
+        "languages": "Common, Elvish, Draconic"
+      },
+      "proficiencyLines": {
+        "armor": "Armor: Light armor",
+        "weapons": "Weapons: Simple weapons, light crossbows",
+        "tools": "Tools: Calligrapher's supplies",
+        "languages": "Languages: Common, Elvish, Draconic"
+      },
+      "passives": { "perception": 14, "investigation": 12, "insight": 13 },
+      "passiveLines": {
+        "perception": "Passive Percept.: 14",
+        "investigation": "Passive Investig.: 12",
+        "insight": "Passive Insight: 13"
+      },
+      "senses": [{ "name": "Darkvision", "range": 60 }],
+      "defenses": [{ "name": "Fire Resistance", "iconClass": "ddb-resistance" }],
+      "alignment": "Neutral Good",
+      "alignmentLine": "Alignment: Neutral Good",
+      "detailsLine": "Height: 5'6\", Weight: 135 lb., Age: 24, Size: Medium",
+      "appearanceLine": "Appearance: Tidy braids and ink-stained gloves, Hair: Auburn, Eyes: Hazel",
+      "attacks": [
+        { "name": "Arcane Quill", "toHit": "+6", "damage": "1d8+3 force", "range": "60 ft.", "notes": "Ranged spell" },
+        { "name": "Dagger", "toHit": "+5", "damage": "1d4+2 piercing", "range": "20/60 ft.", "notes": "Finesse, light" }
+      ],
+      "attacking": { "attacksPerAction": 1, "fightingStyle": "Defensive" },
+      "attacksMetaLine": "Attacks Per Action: 1, Fighting Style: Defensive",
+      "spellCasting": { "ability": "INT", "attack": "+6", "save": 14 },
+      "spellsHeading": "Spells (INT)",
+      "spellsMetaLine": "Spell Attack: +6, Spell Save DC: 14",
+      "spells": {
+        "cantrips": [
+          { "name": "Mage Hand", "hit": "--", "effect": "Utility", "time": "1A", "range": "30 ft.", "notes": "Conc 1 min" }
+        ],
+        "level1": [
+          { "name": "Magic Missile", "hit": "--", "effect": "3 darts", "time": "1A", "range": "120 ft.", "notes": "Instant" }
+        ],
+        "level2": [
+          { "name": "Misty Step", "hit": "--", "effect": "Teleport", "time": "BA", "range": "30 ft.", "notes": "Instant" }
+        ]
+      },
+      "limitedUses": [{ "name": "Arcane Recovery", "remainingUses": 1, "maxUses": 1, "label": "Short Rest" }],
+      "limitedUsesLine": "Arcane Recovery: 1 / 1",
+      "features": [
+        { "name": "Arcane Recovery", "description": "Recover spell slots on a short rest to keep spells flowing." },
+        { "name": "Scribe's Insight", "description": "Add double proficiency to lore checks tied to written records." }
+      ]
+    }
+  ],
   "chips": [
     {
       "label": "Explorer",
