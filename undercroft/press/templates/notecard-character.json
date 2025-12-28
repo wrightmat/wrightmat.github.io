@@ -13,7 +13,6 @@
       "repeat": "@characterNotecardCards",
       "layout": {
         "type": "stack",
-        "className": "press-notecard press-notecard--front",
         "gap": 3,
         "children": [
           {
@@ -23,26 +22,25 @@
               {
                 "node": {
                   "type": "stack",
-                  "className": "press-notecard__header-left",
                   "gap": 1,
                   "children": [
-                    { "type": "field", "component": "heading", "level": "h1", "text": "@name", "className": "press-notecard__name" },
-                    { "type": "field", "component": "text", "text": "@identityLine", "className": "press-notecard__subtext" }
+                    { "type": "field", "component": "heading", "level": "h1", "text": "@name" },
+                    { "type": "field", "component": "text", "text": "@identityLine", "textSize": "sm" }
                   ]
                 }
               },
               {
                 "node": {
                   "type": "stack",
-                  "className": "press-notecard__header-right",
+                  "className": "text-end",
                   "gap": 1,
                   "children": [
-                    { "type": "field", "component": "heading", "level": "h3", "text": "@classSummary", "className": "press-notecard__class-summary" },
+                    { "type": "field", "component": "heading", "level": "h3", "text": "@classSummary" },
                     {
                       "type": "field",
                       "component": "text",
                       "text": "@personalityTraits",
-                      "className": "press-notecard__personality",
+                      "textSize": "sm",
                       "textStyles": { "italic": true }
                     }
                   ]
@@ -52,7 +50,6 @@
           },
           {
             "type": "row",
-            "className": "press-notecard__columns",
             "templateColumns": "1fr 1fr 1fr",
             "gap": 2,
             "columns": [
@@ -79,7 +76,6 @@
               {
                 "node": {
                   "type": "stack",
-                  "className": "press-notecard__skills",
                   "gap": 2,
                   "children": [
                     { "type": "field", "component": "text", "text": "Saving Throws", "className": "section" },
@@ -126,12 +122,11 @@
               {
                 "node": {
                   "type": "stack",
-                  "className": "press-notecard__misc",
                   "gap": 2,
                   "children": [
                     { "type": "field", "component": "text", "text": "Hit Points", "className": "section" },
                     { "type": "field", "component": "text", "text": "@hpLine", "className": "larger" },
-                    { "type": "field", "component": "text", "text": "@hitDiceLine", "className": "press-notecard__hp-dice" },
+                    { "type": "field", "component": "text", "text": "@hitDiceLine", "textSize": "sm" },
                     { "type": "field", "component": "text", "text": "Proficiency Bonus", "className": "section" },
                     { "type": "field", "component": "text", "text": "@proficiencyBonus" },
                     { "type": "field", "component": "text", "text": "Initiative", "className": "section" },
@@ -139,7 +134,6 @@
                       "type": "row",
                       "gap": 1,
                       "templateColumns": "auto auto",
-                      "className": "press-notecard__initiative",
                       "columns": [
                         { "node": { "type": "field", "component": "text", "text": "@initiative.value", "textStyle": "span" } },
                         { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@initiative.icon" } }
@@ -150,10 +144,10 @@
                     { "type": "field", "component": "text", "text": "Speed", "className": "section" },
                     { "type": "field", "component": "text", "text": "@speedLine" },
                     { "type": "field", "component": "text", "text": "Proficiencies", "className": "section" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.armor", "className": "press-notecard__proficiency" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.weapons", "className": "press-notecard__proficiency" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.tools", "className": "press-notecard__proficiency" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.languages", "className": "press-notecard__proficiency" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.armor", "textSize": "sm" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.weapons", "textSize": "sm" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.tools", "textSize": "sm" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.languages", "textSize": "sm" },
                     { "type": "field", "component": "text", "text": "Senses", "className": "section" },
                     { "type": "field", "component": "text", "text": "@passiveLines.perception" },
                     { "type": "field", "component": "text", "text": "@passiveLines.investigation" },
@@ -162,7 +156,7 @@
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@senses",
-                      "className": "item-list press-notecard__sense-list",
+                      "className": "item-list",
                       "itemLayout": {
                         "type": "row",
                         "templateColumns": "auto 1fr",
@@ -178,7 +172,7 @@
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@defenses",
-                      "className": "item-list press-notecard__defense-list",
+                      "className": "item-list",
                       "itemLayout": {
                         "type": "row",
                         "templateColumns": "auto 1fr",
@@ -197,11 +191,10 @@
           {
             "type": "stack",
             "gap": 1,
-            "className": "press-notecard__details",
             "children": [
-              { "type": "field", "component": "text", "text": "@alignmentLine" },
-              { "type": "field", "component": "text", "text": "@detailsLine" },
-              { "type": "field", "component": "text", "text": "@appearanceLine" }
+              { "type": "field", "component": "text", "text": "@alignmentLine", "textSize": "sm" },
+              { "type": "field", "component": "text", "text": "@detailsLine", "textSize": "sm" },
+              { "type": "field", "component": "text", "text": "@appearanceLine", "textSize": "sm" }
             ]
           }
         ]
@@ -211,7 +204,6 @@
       "repeat": "@characterNotecardCards",
       "layout": {
         "type": "stack",
-        "className": "press-notecard press-notecard--back",
         "gap": 3,
         "children": [
           {
@@ -224,17 +216,18 @@
                   "type": "field",
                   "component": "text",
                   "text": "@attacksMetaLine",
-                  "className": "press-notecard__attacks-meta"
+                  "className": "text-end",
+                  "textSize": "xs"
                 }
               }
             ]
           },
-          { "type": "field", "component": "text", "text": "@limitedUsesLine", "className": "press-notecard__limited" },
+          { "type": "field", "component": "text", "text": "@limitedUsesLine", "className": "text-end", "textSize": "xs" },
           {
             "type": "field",
             "component": "table",
             "rowsBind": "@attacks",
-            "className": "press-notecard__table",
+            "className": "press-table",
             "columns": [
               { "header": "Attack Name", "bind": "@name", "width": "30%" },
               { "header": "To Hit", "bind": "@toHit", "width": "10%" },
@@ -253,7 +246,8 @@
                   "type": "field",
                   "component": "text",
                   "text": "@spellsMetaLine",
-                  "className": "press-notecard__spells-meta"
+                  "className": "text-end",
+                  "textSize": "xs"
                 }
               }
             ]
@@ -263,7 +257,7 @@
             "type": "field",
             "component": "table",
             "rowsBind": "@spells.cantrips",
-            "className": "press-notecard__table",
+            "className": "press-table",
             "columns": [
               { "header": "Spell Name", "bind": "@name", "width": "35%" },
               { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
@@ -278,7 +272,7 @@
             "type": "field",
             "component": "table",
             "rowsBind": "@spells.level1",
-            "className": "press-notecard__table",
+            "className": "press-table",
             "columns": [
               { "header": "Spell Name", "bind": "@name", "width": "35%" },
               { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
@@ -293,7 +287,7 @@
             "type": "field",
             "component": "table",
             "rowsBind": "@spells.level2",
-            "className": "press-notecard__table",
+            "className": "press-table",
             "columns": [
               { "header": "Spell Name", "bind": "@name", "width": "35%" },
               { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
@@ -310,7 +304,7 @@
             "itemsBind": "@features",
             "listTag": "div",
             "itemTag": "div",
-            "className": "press-notecard__features",
+            "className": "d-flex flex-column gap-2",
             "itemLayout": {
               "type": "stack",
               "gap": 1,
