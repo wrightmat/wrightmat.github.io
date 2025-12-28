@@ -826,6 +826,9 @@ function stripNodeIds(node) {
       node: stripNodeIds(column.node),
     }));
   }
+  if (Array.isArray(next.cells)) {
+    next.cells = next.cells.map((row) => (Array.isArray(row) ? row.map((cell) => stripNodeIds(cell)) : row));
+  }
   return next;
 }
 
@@ -936,6 +939,9 @@ function assignNodeIds(node) {
   }
   if (Array.isArray(node.columns)) {
     clone.columns = node.columns.map((column) => ({ ...column, node: assignNodeIds(column.node) }));
+  }
+  if (Array.isArray(node.cells)) {
+    clone.cells = node.cells.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
   }
   return clone;
 }
@@ -1294,6 +1300,15 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) {
+        const found = findNodeById(cell, uid);
+        if (found) return found;
+      }
+    }
+  }
   return null;
 }
 
@@ -1319,6 +1334,20 @@ function removeNodeById(node, uid) {
       }
       const removed = removeNodeById(column.node, uid);
       if (removed) return removed;
+    }
+  }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      const index = row.findIndex((cell) => cell?.uid === uid);
+      if (index >= 0) {
+        const [removed] = row.splice(index, 1, null);
+        return removed;
+      }
+      for (const cell of row) {
+        const removed = removeNodeById(cell, uid);
+        if (removed) return removed;
+      }
     }
   }
   return null;
@@ -1395,6 +1424,31 @@ function createDefaultRowColumn() {
   };
 }
 
+function removeTableColumnCells(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    row.splice(index, 1);
+  });
+}
+
+function moveTableColumnCells(node, fromIndex, toIndex) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    const [moved] = row.splice(fromIndex, 1);
+    row.splice(toIndex, 0, moved ?? null);
+  });
+}
+
+function addTableColumnCells(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    row.splice(index, 0, null);
+  });
+}
+
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
@@ -1467,6 +1521,7 @@ function renderTableColumnsList(node) {
           const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
           nextColumns.splice(index, 1);
           nodeToUpdate.columns = nextColumns;
+          removeTableColumnCells(nodeToUpdate, index);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -1596,14 +1651,15 @@ function renderTableColumnsList(node) {
       { key: "italic", label: "Italic" },
       { key: "underline", label: "Underline" },
     ];
-    const currentStyles = column?.textStyle ?? {};
+    const currentStyles = column?.textStyle ?? { bold: true };
     textStyleOptions.forEach((styleOption) => {
       const wrapper = document.createElement("label");
       wrapper.className = "form-check form-check-inline small mb-0";
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "form-check-input";
-      checkbox.checked = Boolean(currentStyles?.[styleOption.key]);
+      checkbox.checked =
+        styleOption.key === "bold" ? currentStyles?.bold !== false : Boolean(currentStyles?.[styleOption.key]);
       checkbox.addEventListener("change", () => {
         recordUndoableChange(() => {
           updateSelectedNode((nodeToUpdate) => {
@@ -1612,7 +1668,7 @@ function renderTableColumnsList(node) {
             const target = { ...(nextColumns[index] ?? {}) };
             const nextStyles = { ...(target.textStyle ?? {}) };
             nextStyles[styleOption.key] = checkbox.checked;
-            if (Object.values(nextStyles).some(Boolean)) {
+            if (Object.values(nextStyles).some((value) => value !== undefined)) {
               target.textStyle = nextStyles;
             } else {
               delete target.textStyle;
@@ -1686,6 +1742,7 @@ function renderTableColumnsList(node) {
           const [moved] = nextColumns.splice(event.oldIndex ?? 0, 1);
           nextColumns.splice(event.newIndex ?? 0, 0, moved);
           nodeToUpdate.columns = nextColumns;
+          moveTableColumnCells(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -2154,17 +2211,17 @@ function updateInspector() {
 function selectFirstNode() {
   const first = getRootChildren(currentSide)[0];
   selectedNodeId = first?.uid ?? null;
+  renderPreview();
   renderLayoutList();
   updateInspector();
-  renderPreview();
 }
 
 function selectNode(uid, { fromPreview = false } = {}) {
   selectedNodeId = uid;
+  renderPreview();
   renderLayoutList();
   updateInspector();
   setInspectorMode("component");
-  renderPreview();
 }
 
 function updateSelectedNode(updater) {
@@ -2752,6 +2809,7 @@ function bindInspectorControls() {
           const nextColumns = Array.isArray(node.columns) ? [...node.columns] : [];
           nextColumns.push({ header: "New Column", bind: "@value", width: "" });
           node.columns = nextColumns;
+          addTableColumnCells(node, nextColumns.length - 1);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
