@@ -187,6 +187,8 @@ function normalizeView(view, { layerIds = [], groupIds = [] } = {}) {
   };
 }
 
+function bindPropertyRowTabOrder() {}
+
 function applyMapSnapshot(snapshot) {
   if (!snapshot) {
     return;
