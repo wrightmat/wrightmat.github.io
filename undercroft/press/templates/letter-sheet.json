@@ -24,7 +24,7 @@
                 "gap": 2,
                 "columns": [
                   { "node": { "type": "field", "component": "heading", "text": "@title" } },
-                  { "node": { "type": "field", "component": "badge", "text": "@badge" } }
+                  { "node": { "type": "field", "component": "text", "text": "@badge", "className": "badge text-bg-primary" } }
                 ]
               },
               { "type": "field", "component": "text", "text": "@subtitle", "className": "mb-0 text-body-secondary" }
@@ -94,7 +94,7 @@
                 "gap": 2,
                 "columns": [
                   { "node": { "type": "field", "component": "heading", "text": "@title" } },
-                  { "node": { "type": "field", "component": "badge", "text": "@badge" } }
+                  { "node": { "type": "field", "component": "text", "text": "@badge", "className": "badge text-bg-primary" } }
                 ]
               },
               { "type": "field", "component": "text", "text": "@subtitle", "className": "mb-0 text-body-secondary" }

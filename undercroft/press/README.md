@@ -25,7 +25,7 @@ printed output for cards and sheets.
 - Drag-and-drop component editing for each side of a template, including a
   palette, sortable layout outline, and component inspector for text, image
   URLs, font sizing (XS–XL plus custom points), orientation (vertical, diagonal,
-  curved) with curve depth controls, visibility, and heading level tweaks.
+  curved) with curve depth controls, visibility, and text size tweaks.
   Layout edits flow to the live preview and print stack in real time.
 
 ## Usage
