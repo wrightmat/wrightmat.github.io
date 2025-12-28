@@ -187,26 +187,6 @@ function normalizeView(view, { layerIds = [], groupIds = [] } = {}) {
   };
 }
 
-function bindPropertyRowTabOrder(keyInput, valueInput) {
-  if (!keyInput || !valueInput) {
-    return;
-  }
-  keyInput.addEventListener("keydown", (event) => {
-    if (event.key !== "Tab" || event.shiftKey) {
-      return;
-    }
-    event.preventDefault();
-    valueInput.focus();
-  });
-  valueInput.addEventListener("keydown", (event) => {
-    if (event.key !== "Tab" || !event.shiftKey) {
-      return;
-    }
-    event.preventDefault();
-    keyInput.focus();
-  });
-}
-
 function applyMapSnapshot(snapshot) {
   if (!snapshot) {
     return;
@@ -1401,7 +1381,9 @@ function renderLayerSelectionEditor(layer) {
     if (emptyState) {
       emptyState.remove();
     }
-    propertiesWrapper.appendChild(createLayerPropertyRow(layer, "", ""));
+    const row = createLayerPropertyRow(layer, "", "");
+    propertiesWrapper.appendChild(row);
+    row.querySelector("[data-property-key]")?.focus();
     refreshTooltips();
   });
 
@@ -1477,6 +1459,7 @@ function createPropertyRow({ key, value, onUpdate, onRemove }) {
   keyInput.className = "form-control form-control-sm";
   keyInput.placeholder = "Key";
   keyInput.value = key;
+  keyInput.dataset.propertyKey = "true";
 
   const valueInput = document.createElement("input");
   valueInput.type = "text";
@@ -1550,6 +1533,7 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
   keyInput.className = "form-control form-control-sm";
   keyInput.placeholder = "Key";
   keyInput.value = key;
+  keyInput.dataset.propertyKey = "true";
 
   const valueInput = document.createElement("input");
   valueInput.type = "text";
@@ -1779,7 +1763,9 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     if (emptyState) {
       emptyState.remove();
     }
-    propertiesWrapper.appendChild(createGridCellPropertyRow(layer, selectionCoords, "", ""));
+    const row = createGridCellPropertyRow(layer, selectionCoords, "", "");
+    propertiesWrapper.appendChild(row);
+    row.querySelector("[data-property-key]")?.focus();
     refreshTooltips();
   });
 
@@ -1969,7 +1955,9 @@ function renderGroupSelectionEditor(group) {
     if (emptyState) {
       emptyState.remove();
     }
-    propertiesWrapper.appendChild(createGroupPropertyRow(group, "", ""));
+    const row = createGroupPropertyRow(group, "", "");
+    propertiesWrapper.appendChild(row);
+    row.querySelector("[data-property-key]")?.focus();
     refreshTooltips();
   });
 
