@@ -345,10 +345,10 @@ function renderField(node, context, options = {}) {
     case "icon": {
       const resolvedClass = resolveClassName(node, context) ?? "";
       const classTokens = resolvedClass.split(/\s+/).filter(Boolean);
-      const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-"));
-      const fallbackIconTokens = classTokens.filter((token) => token.startsWith("ddb-"));
+      const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-") && !token.startsWith("bi-") && token !== "bi");
+      const fallbackIconTokens = classTokens.filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
       const iconClassRaw = resolveBinding(node.iconClass, context) ?? node.iconClass ?? "";
-      const iconTokens = iconClassRaw.split(/\s+/).filter((token) => token.startsWith("ddb-"));
+      const iconTokens = iconClassRaw.split(/\s+/).filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
       const resolvedIconTokens = iconTokens.length ? iconTokens : fallbackIconTokens;
       const wrapper = document.createElement("span");
       applyClassName(wrapper, wrapperTokens.join(" "));
@@ -357,7 +357,9 @@ function renderField(node, context, options = {}) {
       applyTextTransform(wrapper, node);
       if (resolvedIconTokens.length) {
         const icon = document.createElement("span");
-        applyClassName(icon, resolvedIconTokens.join(" "));
+        const needsBootstrapBase = resolvedIconTokens.some((token) => token.startsWith("bi-"));
+        const iconClasses = needsBootstrapBase ? ["bi", ...resolvedIconTokens] : resolvedIconTokens;
+        applyClassName(icon, iconClasses.join(" "));
         if (node?.style?.color) {
           icon.style.color = node.style.color;
         }
