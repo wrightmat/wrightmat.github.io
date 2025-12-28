@@ -1576,6 +1576,9 @@ function renderTableColumnsList(node) {
         target.bind = bindInput.value;
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableColumnCells(nodeToUpdate, index, (cell) => {
+          cell.text = bindInput.value;
+        });
       });
       renderPreview();
       updateSaveState();
