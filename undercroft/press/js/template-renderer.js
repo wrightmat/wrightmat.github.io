@@ -444,15 +444,26 @@ function renderField(node, context, options = {}) {
         if (options?.editable) {
           headerCells.length = columns.length;
           headerCells.forEach((headerCell, index) => {
+            const fallbackText = columns[index]?.header ?? columns[index]?.label ?? "";
             if (!headerCell) {
               headerCells[index] = {
                 type: "field",
                 component: "text",
-                text: columns[index]?.header ?? columns[index]?.label ?? "",
+                text: fallbackText,
                 ...baseText,
                 textStyles: { ...(baseText.textStyles ?? {}), bold: true },
                 uid: node.uid ? `${node.uid}-header-${index}` : undefined,
               };
+              return;
+            }
+            headerCell.type = "field";
+            headerCell.component = "text";
+            if (headerCell.text === undefined || headerCell.text === null || headerCell.text === "") {
+              headerCell.text = fallbackText;
+            }
+            headerCell.textStyles = { ...(baseText.textStyles ?? {}), ...(headerCell.textStyles ?? {}), bold: true };
+            if (!headerCell.uid) {
+              headerCell.uid = node.uid ? `${node.uid}-header-${index}` : headerCell.uid;
             }
           });
         }
