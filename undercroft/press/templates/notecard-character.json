@@ -779,7 +779,7 @@
                           "node": {
                             "type": "field",
                             "component": "icon",
-                            "className": "@initiative.icon"
+                            "iconClass": "@initiative.icon"
                           }
                         }
                       ]

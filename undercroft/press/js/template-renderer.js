@@ -345,16 +345,21 @@ function renderField(node, context, options = {}) {
     case "icon": {
       const resolvedClass = resolveClassName(node, context) ?? "";
       const classTokens = resolvedClass.split(/\s+/).filter(Boolean);
-      const iconTokens = classTokens.filter((token) => token.startsWith("ddb-"));
-      const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-"));
+      const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-") && !token.startsWith("bi-") && token !== "bi");
+      const fallbackIconTokens = classTokens.filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
+      const iconClassRaw = resolveBinding(node.iconClass, context) ?? node.iconClass ?? "";
+      const iconTokens = iconClassRaw.split(/\s+/).filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
+      const resolvedIconTokens = iconTokens.length ? iconTokens : fallbackIconTokens;
       const wrapper = document.createElement("span");
       applyClassName(wrapper, wrapperTokens.join(" "));
       applyInlineStyles(wrapper, node.style);
       applyTextFormatting(wrapper, node);
       applyTextTransform(wrapper, node);
-      if (iconTokens.length) {
+      if (resolvedIconTokens.length) {
         const icon = document.createElement("span");
-        applyClassName(icon, iconTokens.join(" "));
+        const needsBootstrapBase = resolvedIconTokens.some((token) => token.startsWith("bi-"));
+        const iconClasses = needsBootstrapBase ? ["bi", ...resolvedIconTokens] : resolvedIconTokens;
+        applyClassName(icon, iconClasses.join(" "));
         if (node?.style?.color) {
           icon.style.color = node.style.color;
         }
@@ -513,7 +518,7 @@ function renderField(node, context, options = {}) {
           cellNode.uid = uid;
         }
         if (cellNode.component === "icon") {
-          cellNode.className = textBinding;
+          cellNode.iconClass = textBinding;
           cellNode.text = "";
           const ariaLabel = resolveBinding(column.ariaLabel, context) ?? column.ariaLabel ?? context?.name;
           cellNode.ariaLabel = ariaLabel;
