@@ -264,7 +264,7 @@ function applyTextColor(element, styles = {}) {
   }
 }
 
-function renderField(node, context) {
+function renderField(node, context, options = {}) {
   const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
   switch (node.component) {
     case "heading": {
@@ -460,7 +460,7 @@ function renderField(node, context) {
             ...(column.align ? { align: column.align } : null),
             ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
           };
-          th.appendChild(renderField(headerNode, context));
+          th.appendChild(renderField(headerNode, context, options));
           headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
@@ -629,7 +629,7 @@ export function renderNode(node, context = {}, options = {}) {
     case "row":
       return attachEditorHooks(renderRow(node, context, options), node, options);
     case "field":
-      return attachEditorHooks(renderField(node, context), node, options);
+      return attachEditorHooks(renderField(node, context, options), node, options);
     default:
       return document.createComment(`unsupported node: ${node.type}`);
   }
