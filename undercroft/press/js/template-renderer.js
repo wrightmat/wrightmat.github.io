@@ -453,6 +453,8 @@ function renderStack(node, context, options) {
   applyClassName(container, "d-flex flex-column");
   applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
+  container.style.alignSelf = "stretch";
+  container.style.width = "100%";
   container.style.justifyContent = resolveStackAlignment(node);
   const hasAlignment = typeof node?.align === "string" && node.align.trim() !== "";
   applyGap(container, node.gap ?? 4);
