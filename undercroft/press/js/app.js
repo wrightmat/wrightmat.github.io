@@ -2143,17 +2143,17 @@ function updateInspector() {
 function selectFirstNode() {
   const first = getRootChildren(currentSide)[0];
   selectedNodeId = first?.uid ?? null;
+  renderPreview();
   renderLayoutList();
   updateInspector();
-  renderPreview();
 }
 
 function selectNode(uid, { fromPreview = false } = {}) {
   selectedNodeId = uid;
+  renderPreview();
   renderLayoutList();
   updateInspector();
   setInspectorMode("component");
-  renderPreview();
 }
 
 function updateSelectedNode(updater) {
