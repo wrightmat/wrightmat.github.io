@@ -1923,7 +1923,10 @@ function updateInspector() {
     setGroupVisibility(textDecorationGroup, true);
     setGroupVisibility(classNameField, true);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
-    textSettingGroups.forEach((group) => setGroupVisibility(group, true));
+    textSettingGroups.forEach((group) => {
+      if (group === textDecorationGroup) return;
+      setGroupVisibility(group, true);
+    });
     setGroupVisibility(colorGroup, true);
     setGroupVisibility(alignmentGroup, true);
     if (gapField) {
@@ -1987,7 +1990,10 @@ function updateInspector() {
   setGroupVisibility(tableFieldGroup, isTableNode);
   setGroupVisibility(classNameField, true);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
-  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode));
+  textSettingGroups.forEach((group) => {
+    if (group === textDecorationGroup) return;
+    setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode);
+  });
   setGroupVisibility(textDecorationGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
   setGroupVisibility(colorGroup, true);
   setGroupVisibility(alignmentGroup, !isImageNode && !isIconNode);
