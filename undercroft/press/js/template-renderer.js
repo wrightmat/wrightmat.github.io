@@ -264,7 +264,7 @@ function applyTextColor(element, styles = {}) {
   }
 }
 
-function renderField(node, context) {
+function renderField(node, context, options = {}) {
   const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
   switch (node.component) {
     case "heading": {
@@ -436,44 +436,85 @@ function renderField(node, context) {
         align: node.align,
         style: node.style ? { ...node.style } : undefined,
       };
+      const headerCells = Array.isArray(node.headerCells) ? node.headerCells : [];
       if (node.showHeadings !== false && columns.length) {
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
         applyClassName(headerRow, node.headerRowClassName ?? "table-header");
-        columns.forEach((column) => {
+        if (options?.editable) {
+          headerCells.length = columns.length;
+          headerCells.forEach((headerCell, index) => {
+            if (!headerCell) {
+              headerCells[index] = {
+                type: "field",
+                component: "text",
+                text: columns[index]?.header ?? columns[index]?.label ?? "",
+                ...baseText,
+                textStyles: { ...(baseText.textStyles ?? {}), bold: true },
+                uid: node.uid ? `${node.uid}-header-${index}` : undefined,
+              };
+            }
+          });
+        }
+        columns.forEach((column, columnIndex) => {
           const th = document.createElement("th");
           if (column.width) {
             th.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
           applyClassName(th, column.className);
-          const headerText = column.header ?? column.label ?? "";
-          const headerNode = {
+          const headerNode = headerCells[columnIndex] ?? {
             type: "field",
             component: "text",
-            text: headerText,
+            text: column.header ?? column.label ?? "",
             ...baseText,
-            ...(column.textStyle ? { textStyles: column.textStyle } : null),
-            ...(column.textSize ? { textSize: column.textSize } : null),
-            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
-            ...(column.textAngle ? { textAngle: column.textAngle } : null),
-            ...(column.textCurve ? { textCurve: column.textCurve } : null),
-            ...(column.align ? { align: column.align } : null),
-            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
+            textStyles: { ...(baseText.textStyles ?? {}), bold: true },
+            uid: node.uid ? `${node.uid}-header-${columnIndex}` : undefined,
           };
-          th.appendChild(renderField(headerNode, context));
+          th.appendChild(renderNode(headerNode, context, options));
           headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
         table.appendChild(thead);
       }
       const tbody = document.createElement("tbody");
+      const tableCells = Array.isArray(node.cells) ? node.cells : [];
+      const getCellNodeId = (rowIndex, colIndex) => (node.uid ? `${node.uid}-cell-${rowIndex}-${colIndex}` : null);
+      const createCellNode = (rowIndex, column, columnIndex) => {
+        const textBinding = column.bind ?? column.text ?? column.value ?? "";
+        const cellNode = {
+          type: "field",
+          component: column.component ?? "text",
+          text: textBinding,
+          ...baseText,
+        };
+        const uid = getCellNodeId(rowIndex, columnIndex);
+        if (uid) {
+          cellNode.uid = uid;
+        }
+        if (cellNode.component === "icon") {
+          cellNode.className = textBinding;
+          cellNode.text = "";
+          const ariaLabel = resolveBinding(column.ariaLabel, context) ?? column.ariaLabel ?? context?.name;
+          cellNode.ariaLabel = ariaLabel;
+        }
+        return cellNode;
+      };
+      if (options?.editable) {
+        const rowCount = asArray(rows).length;
+        tableCells.length = rowCount;
+        tableCells.forEach((rowCells, rowIndex) => {
+          if (!Array.isArray(rowCells)) {
+            tableCells[rowIndex] = [];
+          }
+        });
+      }
       asArray(rows).forEach((row, index) => {
         const rowContext = typeof row === "object" && row !== null ? { ...context, ...row } : { ...context, value: row };
         rowContext.item = row;
         rowContext.index = index;
         const tr = document.createElement("tr");
         applyClassName(tr, node.rowClassName ?? "table-item");
-        columns.forEach((column) => {
+        columns.forEach((column, columnIndex) => {
           const td = document.createElement("td");
           const cellContext = { ...rowContext };
           if (column.className) {
@@ -484,26 +525,21 @@ function renderField(node, context) {
                 : rawClass;
             applyClassName(td, resolved);
           }
-          const cellValue = resolveBinding(column.bind ?? column.text ?? column.value, cellContext);
-          const cellTextNode = {
-            type: "field",
-            component: column.component ?? "text",
-            text: cellValue ?? "",
-            ...baseText,
-            ...(column.textStyle ? { textStyles: column.textStyle } : null),
-            ...(column.textSize ? { textSize: column.textSize } : null),
-            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
-            ...(column.textAngle ? { textAngle: column.textAngle } : null),
-            ...(column.textCurve ? { textCurve: column.textCurve } : null),
-            ...(column.align ? { align: column.align } : null),
-            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
-          };
-          if (cellTextNode.component === "icon") {
-            cellTextNode.className = typeof cellValue === "string" ? cellValue : "";
-            const ariaLabel = resolveBinding(column.ariaLabel, cellContext) ?? column.ariaLabel ?? cellContext?.name;
-            cellTextNode.ariaLabel = ariaLabel;
+          const rowCells = Array.isArray(tableCells[index]) ? tableCells[index] : [];
+          if (options?.editable && !Array.isArray(tableCells[index])) {
+            tableCells[index] = rowCells;
           }
-          td.appendChild(renderField(cellTextNode, cellContext));
+          let cellNode = rowCells[columnIndex];
+          if (!cellNode) {
+            cellNode = createCellNode(index, column, columnIndex);
+            if (options?.editable) {
+              rowCells[columnIndex] = cellNode;
+            }
+          }
+          if (options?.editable) {
+            rowCells.length = columns.length;
+          }
+          td.appendChild(renderNode(cellNode, cellContext, options));
           if (column.width) {
             td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
@@ -511,6 +547,12 @@ function renderField(node, context) {
         });
         tbody.appendChild(tr);
       });
+      if (options?.editable && node.showHeadings !== false && columns.length) {
+        node.headerCells = headerCells;
+      }
+      if (options?.editable) {
+        node.cells = tableCells;
+      }
       table.appendChild(tbody);
       applyInlineStyles(table, node.style);
       return table;
@@ -593,7 +635,7 @@ export function renderNode(node, context = {}, options = {}) {
     case "row":
       return attachEditorHooks(renderRow(node, context, options), node, options);
     case "field":
-      return attachEditorHooks(renderField(node, context), node, options);
+      return attachEditorHooks(renderField(node, context, options), node, options);
     default:
       return document.createComment(`unsupported node: ${node.type}`);
   }
