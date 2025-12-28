@@ -233,7 +233,7 @@
               { "header": "To Hit", "bind": "@toHit", "width": "10%" },
               { "header": "Damage", "bind": "@damage", "width": "15%" },
               { "header": "Range", "bind": "@range", "width": "15%" },
-              { "header": "Notes", "bind": "@notes", "width": "30%", "className": "notes" }
+              { "header": "Notes", "bind": "@notes", "width": "30%" }
             ]
           },
           {
@@ -264,7 +264,7 @@
               { "header": "Effect", "bind": "@effect", "width": "15%" },
               { "header": "Time", "bind": "@time", "width": "10%" },
               { "header": "Range", "bind": "@range", "width": "10%" },
-              { "header": "Notes", "bind": "@notes", "width": "15%", "className": "notes" }
+              { "header": "Notes", "bind": "@notes", "width": "15%" }
             ]
           },
           { "type": "field", "component": "text", "text": "1st Level", "className": "section-short" },
@@ -279,7 +279,7 @@
               { "header": "Effect", "bind": "@effect", "width": "15%" },
               { "header": "Time", "bind": "@time", "width": "10%" },
               { "header": "Range", "bind": "@range", "width": "10%" },
-              { "header": "Notes", "bind": "@notes", "width": "15%", "className": "notes" }
+              { "header": "Notes", "bind": "@notes", "width": "15%" }
             ]
           },
           { "type": "field", "component": "text", "text": "2nd Level", "className": "section-short" },
@@ -294,7 +294,7 @@
               { "header": "Effect", "bind": "@effect", "width": "15%" },
               { "header": "Time", "bind": "@time", "width": "10%" },
               { "header": "Range", "bind": "@range", "width": "10%" },
-              { "header": "Notes", "bind": "@notes", "width": "15%", "className": "notes" }
+              { "header": "Notes", "bind": "@notes", "width": "15%" }
             ]
           },
           { "type": "field", "component": "text", "text": "Features", "className": "heading" },
