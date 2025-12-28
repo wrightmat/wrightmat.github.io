@@ -450,6 +450,7 @@ function renderField(node, context, options = {}) {
                 component: "text",
                 text: columns[index]?.header ?? columns[index]?.label ?? "",
                 ...baseText,
+                textStyles: { ...(baseText.textStyles ?? {}), bold: true },
                 uid: node.uid ? `${node.uid}-header-${index}` : undefined,
               };
             }
@@ -466,6 +467,7 @@ function renderField(node, context, options = {}) {
             component: "text",
             text: column.header ?? column.label ?? "",
             ...baseText,
+            textStyles: { ...(baseText.textStyles ?? {}), bold: true },
             uid: node.uid ? `${node.uid}-header-${columnIndex}` : undefined,
           };
           th.appendChild(renderNode(headerNode, context, options));
