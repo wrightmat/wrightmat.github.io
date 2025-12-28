@@ -537,14 +537,14 @@
                       <input class="form-control" placeholder="@rows" type="text" data-component-table-rows />
                       <label class="fw-semibold">Table rows binding</label>
                     </div>
-                    <div class="form-floating">
-                      <textarea
-                        class="form-control"
-                        placeholder='[{ "header": "Column", "bind": "@value" }]'
-                        style="min-height: 96px"
-                        data-component-table-columns
-                      ></textarea>
-                      <label class="fw-semibold">Table columns (JSON)</label>
+                    <div class="d-flex flex-column gap-2">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <span class="fw-semibold">Table columns</span>
+                        <button class="btn btn-sm btn-outline-primary" type="button" data-component-table-columns-add>
+                          Add column
+                        </button>
+                      </div>
+                      <div class="list-group" data-component-table-columns-list></div>
                     </div>
                   </div>
                   <div class="form-floating" data-inspector-image-field hidden>

@@ -462,6 +462,7 @@ body[data-theme="dark"] .preview-stage {
   line-height: 1.15;
   font-family: "Noto Sans", "Myriad Pro", Calibri, Helvetica, Arial, sans-serif;
   color: #212529;
+  width: 100%;
 }
 
 .press-notecard h1,
@@ -632,6 +633,11 @@ body[data-theme="dark"] .preview-stage {
 }
 
 .press-notecard__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.press-table {
   width: 100%;
   border-collapse: collapse;
 }
