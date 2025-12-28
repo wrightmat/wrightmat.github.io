@@ -1550,7 +1550,126 @@ function renderTableColumnsList(node) {
     });
     widthField.appendChild(widthInput);
 
-    formRow.append(headerField, bindField, widthField);
+    const textSizeField = document.createElement("div");
+    textSizeField.className = "col-12 col-md-4";
+    const textSizeSelect = document.createElement("select");
+    textSizeSelect.className = "form-select form-select-sm";
+    [
+      { label: "Text size (inherit)", value: "" },
+      { label: "XS", value: "xs" },
+      { label: "Sm", value: "sm" },
+      { label: "Md", value: "md" },
+      { label: "Lg", value: "lg" },
+      { label: "XL", value: "xl" },
+    ].forEach((option) => {
+      const entry = document.createElement("option");
+      entry.value = option.value;
+      entry.textContent = option.label;
+      textSizeSelect.appendChild(entry);
+    });
+    textSizeSelect.value = column?.textSize ?? "";
+    textSizeSelect.addEventListener("focus", () => beginPendingUndo(textSizeSelect));
+    textSizeSelect.addEventListener("blur", () => commitPendingUndo(textSizeSelect));
+    textSizeSelect.addEventListener("change", () => commitPendingUndo(textSizeSelect));
+    textSizeSelect.addEventListener("input", () => {
+      updateSelectedNode((nodeToUpdate) => {
+        if (nodeToUpdate.component !== "table") return;
+        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+        const target = { ...(nextColumns[index] ?? {}) };
+        if (textSizeSelect.value) {
+          target.textSize = textSizeSelect.value;
+        } else {
+          delete target.textSize;
+        }
+        nextColumns[index] = target;
+        nodeToUpdate.columns = nextColumns;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+    textSizeField.appendChild(textSizeSelect);
+
+    const textStyleField = document.createElement("div");
+    textStyleField.className = "col-12 col-md-4 d-flex align-items-center gap-2 flex-wrap";
+    const textStyleOptions = [
+      { key: "bold", label: "Bold" },
+      { key: "italic", label: "Italic" },
+      { key: "underline", label: "Underline" },
+    ];
+    const currentStyles = column?.textStyle ?? {};
+    textStyleOptions.forEach((styleOption) => {
+      const wrapper = document.createElement("label");
+      wrapper.className = "form-check form-check-inline small mb-0";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "form-check-input";
+      checkbox.checked = Boolean(currentStyles?.[styleOption.key]);
+      checkbox.addEventListener("change", () => {
+        recordUndoableChange(() => {
+          updateSelectedNode((nodeToUpdate) => {
+            if (nodeToUpdate.component !== "table") return;
+            const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+            const target = { ...(nextColumns[index] ?? {}) };
+            const nextStyles = { ...(target.textStyle ?? {}) };
+            nextStyles[styleOption.key] = checkbox.checked;
+            if (Object.values(nextStyles).some(Boolean)) {
+              target.textStyle = nextStyles;
+            } else {
+              delete target.textStyle;
+            }
+            nextColumns[index] = target;
+            nodeToUpdate.columns = nextColumns;
+          });
+          renderPreview();
+        });
+        updateSaveState();
+      });
+      const label = document.createElement("span");
+      label.className = "form-check-label";
+      label.textContent = styleOption.label;
+      wrapper.append(checkbox, label);
+      textStyleField.appendChild(wrapper);
+    });
+
+    const alignField = document.createElement("div");
+    alignField.className = "col-12 col-md-4";
+    const alignSelect = document.createElement("select");
+    alignSelect.className = "form-select form-select-sm";
+    [
+      { label: "Alignment (inherit)", value: "" },
+      { label: "Left", value: "start" },
+      { label: "Center", value: "center" },
+      { label: "Right", value: "end" },
+      { label: "Justify", value: "justify" },
+    ].forEach((option) => {
+      const entry = document.createElement("option");
+      entry.value = option.value;
+      entry.textContent = option.label;
+      alignSelect.appendChild(entry);
+    });
+    alignSelect.value = column?.align ?? "";
+    alignSelect.addEventListener("focus", () => beginPendingUndo(alignSelect));
+    alignSelect.addEventListener("blur", () => commitPendingUndo(alignSelect));
+    alignSelect.addEventListener("change", () => commitPendingUndo(alignSelect));
+    alignSelect.addEventListener("input", () => {
+      updateSelectedNode((nodeToUpdate) => {
+        if (nodeToUpdate.component !== "table") return;
+        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+        const target = { ...(nextColumns[index] ?? {}) };
+        if (alignSelect.value) {
+          target.align = alignSelect.value;
+        } else {
+          delete target.align;
+        }
+        nextColumns[index] = target;
+        nodeToUpdate.columns = nextColumns;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+    alignField.appendChild(alignSelect);
+
+    formRow.append(headerField, bindField, widthField, textSizeField, textStyleField, alignField);
     item.appendChild(formRow);
     tableColumnsList.appendChild(item);
   });
@@ -1804,7 +1923,10 @@ function updateInspector() {
     setGroupVisibility(textDecorationGroup, true);
     setGroupVisibility(classNameField, true);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
-    textSettingGroups.forEach((group) => setGroupVisibility(group, true));
+    textSettingGroups.forEach((group) => {
+      if (group === textDecorationGroup) return;
+      setGroupVisibility(group, true);
+    });
     setGroupVisibility(colorGroup, true);
     setGroupVisibility(alignmentGroup, true);
     if (gapField) {
@@ -1868,7 +1990,10 @@ function updateInspector() {
   setGroupVisibility(tableFieldGroup, isTableNode);
   setGroupVisibility(classNameField, true);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
-  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode));
+  textSettingGroups.forEach((group) => {
+    if (group === textDecorationGroup) return;
+    setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode);
+  });
   setGroupVisibility(textDecorationGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
   setGroupVisibility(colorGroup, true);
   setGroupVisibility(alignmentGroup, !isImageNode && !isIconNode);
