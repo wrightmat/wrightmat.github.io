@@ -343,19 +343,31 @@ function renderField(node, context) {
       return el;
     }
     case "icon": {
-      const el = document.createElement("span");
-      applyClassName(el, resolveClassName(node, context) ?? "");
-      applyInlineStyles(el, node.style);
-      applyTextFormatting(el, node);
-      applyTextTransform(el, node);
+      const resolvedClass = resolveClassName(node, context) ?? "";
+      const classTokens = resolvedClass.split(/\s+/).filter(Boolean);
+      const iconTokens = classTokens.filter((token) => token.startsWith("ddb-"));
+      const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-"));
+      const wrapper = document.createElement("span");
+      applyClassName(wrapper, wrapperTokens.join(" "));
+      applyInlineStyles(wrapper, node.style);
+      applyTextFormatting(wrapper, node);
+      applyTextTransform(wrapper, node);
+      if (iconTokens.length) {
+        const icon = document.createElement("span");
+        applyClassName(icon, iconTokens.join(" "));
+        if (node?.style?.color) {
+          icon.style.color = node.style.color;
+        }
+        wrapper.appendChild(icon);
+      }
       const ariaLabel = resolveBinding(node.ariaLabel, context) ?? node.ariaLabel ?? node.label;
       if (ariaLabel) {
-        el.setAttribute("role", "img");
-        el.setAttribute("aria-label", ariaLabel);
+        wrapper.setAttribute("role", "img");
+        wrapper.setAttribute("aria-label", ariaLabel);
       } else {
-        el.setAttribute("aria-hidden", "true");
+        wrapper.setAttribute("aria-hidden", "true");
       }
-      return el;
+      return wrapper;
     }
     case "stat": {
       const wrapper = document.createElement("div");
