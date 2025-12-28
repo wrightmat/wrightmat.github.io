@@ -55,41 +55,36 @@
             "columns": [
               {
                 "node": {
-                  "type": "field",
-                  "component": "list",
-                  "itemsBind": "@abilities",
-                  "listTag": "div",
-                  "itemTag": "div",
+                  "type": "stack",
                   "className": "ability-scores",
-                  "itemLayout": {
-                    "type": "stack",
-                    "classNameBind": "@abilityBlockClass",
-                    "gap": 1,
-                    "children": [
-                      { "type": "field", "component": "text", "text": "@name", "textStyle": "span", "className": "name" },
-                      { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" },
-                      { "type": "field", "component": "text", "text": "@score", "textStyle": "span", "className": "score" }
-                    ]
-                  }
+                  "gap": 1,
+                  "children": [
+                    { "type": "field", "component": "stat", "label": "@abilities.0.name", "text": "@abilities.0.display", "className": "ability-block stat-0" },
+                    { "type": "field", "component": "stat", "label": "@abilities.1.name", "text": "@abilities.1.display", "className": "ability-block stat-1" },
+                    { "type": "field", "component": "stat", "label": "@abilities.2.name", "text": "@abilities.2.display", "className": "ability-block stat-2" },
+                    { "type": "field", "component": "stat", "label": "@abilities.3.name", "text": "@abilities.3.display", "className": "ability-block stat-3" },
+                    { "type": "field", "component": "stat", "label": "@abilities.4.name", "text": "@abilities.4.display", "className": "ability-block stat-4" },
+                    { "type": "field", "component": "stat", "label": "@abilities.5.name", "text": "@abilities.5.display", "className": "ability-block stat-5" }
+                  ]
                 }
               },
               {
                 "node": {
                   "type": "stack",
-                  "gap": 2,
+                  "gap": 0,
                   "children": [
-                    { "type": "field", "component": "text", "text": "Saving Throws", "className": "section" },
+                    { "type": "field", "component": "text", "text": "Saving Throws", "className": "section mb-0" },
                     {
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@saves",
-                      "className": "item-list",
+                      "className": "item-list mb-0",
                       "itemClassNameBind": "@itemClass",
                       "itemLayout": {
                         "type": "row",
                         "className": "skill-row",
                         "templateColumns": "auto auto 1fr",
-                        "gap": 2,
+                        "gap": 1,
                         "columns": [
                           { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@circleClass" } },
                           { "node": { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" } },
@@ -97,18 +92,18 @@
                         ]
                       }
                     },
-                    { "type": "field", "component": "text", "text": "Skills", "className": "section" },
+                    { "type": "field", "component": "text", "text": "Skills", "className": "section mb-0" },
                     {
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@skills",
-                      "className": "item-list",
+                      "className": "item-list mb-0",
                       "itemClassNameBind": "@itemClass",
                       "itemLayout": {
                         "type": "row",
                         "className": "skill-row",
                         "templateColumns": "auto auto 1fr",
-                        "gap": 2,
+                        "gap": 1,
                         "columns": [
                           { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@circleClass" } },
                           { "node": { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" } },
@@ -122,61 +117,62 @@
               {
                 "node": {
                   "type": "stack",
-                  "gap": 2,
+                  "gap": 0,
                   "children": [
-                    { "type": "field", "component": "text", "text": "Hit Points", "className": "section" },
+                    { "type": "field", "component": "text", "text": "Hit Points", "className": "section mb-0" },
                     { "type": "field", "component": "text", "text": "@hpLine", "className": "larger" },
-                    { "type": "field", "component": "text", "text": "@hitDiceLine", "textSize": "sm" },
-                    { "type": "field", "component": "text", "text": "Proficiency Bonus", "className": "section" },
-                    { "type": "field", "component": "text", "text": "@proficiencyBonus" },
-                    { "type": "field", "component": "text", "text": "Initiative", "className": "section" },
+                    { "type": "field", "component": "text", "text": "@hitDiceLine", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Proficiency Bonus", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyBonus", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Initiative", "className": "section mb-0" },
                     {
                       "type": "row",
                       "gap": 1,
                       "templateColumns": "auto auto",
+                      "className": "mb-0",
                       "columns": [
                         { "node": { "type": "field", "component": "text", "text": "@initiative.value", "textStyle": "span" } },
                         { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@initiative.icon" } }
                       ]
                     },
-                    { "type": "field", "component": "text", "text": "Armor Class", "className": "section" },
-                    { "type": "field", "component": "text", "text": "@ac.value" },
-                    { "type": "field", "component": "text", "text": "Speed", "className": "section" },
-                    { "type": "field", "component": "text", "text": "@speedLine" },
-                    { "type": "field", "component": "text", "text": "Proficiencies", "className": "section" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.armor", "textSize": "sm" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.weapons", "textSize": "sm" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.tools", "textSize": "sm" },
-                    { "type": "field", "component": "text", "text": "@proficiencyLines.languages", "textSize": "sm" },
-                    { "type": "field", "component": "text", "text": "Senses", "className": "section" },
-                    { "type": "field", "component": "text", "text": "@passiveLines.perception" },
-                    { "type": "field", "component": "text", "text": "@passiveLines.investigation" },
-                    { "type": "field", "component": "text", "text": "@passiveLines.insight" },
+                    { "type": "field", "component": "text", "text": "Armor Class", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@ac.value", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Speed", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@speedLine", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Proficiencies", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.armor", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.weapons", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.tools", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@proficiencyLines.languages", "textSize": "sm", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "Senses", "className": "section mb-0" },
+                    { "type": "field", "component": "text", "text": "@passiveLines.perception", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@passiveLines.investigation", "className": "mb-0" },
+                    { "type": "field", "component": "text", "text": "@passiveLines.insight", "className": "mb-0" },
                     {
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@senses",
-                      "className": "item-list",
+                      "className": "item-list mb-0",
                       "itemLayout": {
                         "type": "row",
                         "templateColumns": "auto 1fr",
-                        "gap": 1,
+                        "gap": 0,
                         "columns": [
                           { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span" } },
                           { "node": { "type": "field", "component": "text", "text": "@range", "textStyle": "span" } }
                         ]
                       }
                     },
-                    { "type": "field", "component": "text", "text": "Defenses", "className": "section" },
+                    { "type": "field", "component": "text", "text": "Defenses", "className": "section mb-0" },
                     {
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@defenses",
-                      "className": "item-list",
+                      "className": "item-list mb-0",
                       "itemLayout": {
                         "type": "row",
                         "templateColumns": "auto 1fr",
-                        "gap": 1,
+                        "gap": 0,
                         "columns": [
                           { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@iconClass" } },
                           { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span" } }

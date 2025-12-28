@@ -402,6 +402,7 @@ function buildNotecardCharacter(parsed) {
     name: ability.shortName || ability.name || "",
     modifier: formatSigned(ability.modifier ?? 0),
     score: ability.score ?? 0,
+    display: `${formatSigned(ability.modifier ?? 0)} (${ability.score ?? 0})`,
     abilityBlockClass: `ability-block stat-${index}`,
   }));
   const saves = (parsed.saves || []).map((save, index) => ({
