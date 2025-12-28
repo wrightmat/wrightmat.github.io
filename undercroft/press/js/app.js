@@ -1552,6 +1552,7 @@ function renderTableColumnsList(node) {
         target.header = headerInput.value;
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableHeaderCellText(nodeToUpdate, index, headerInput.value);
       });
       title.textContent = headerInput.value || `Column ${index + 1}`;
       renderPreview();
@@ -1576,6 +1577,9 @@ function renderTableColumnsList(node) {
         target.bind = bindInput.value;
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableColumnCells(nodeToUpdate, index, (cell) => {
+          cell.text = bindInput.value;
+        });
       });
       renderPreview();
       updateSaveState();
