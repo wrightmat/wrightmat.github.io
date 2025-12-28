@@ -81,7 +81,12 @@ const imageWidthInput = document.querySelector("[data-component-image-width]");
 const imageHeightInput = document.querySelector("[data-component-image-height]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
+const rowColumnsInput = document.querySelector("[data-component-columns]");
+const rowColumnsField = document.querySelector("[data-inspector-row-columns]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
+const tableFieldGroup = document.querySelector("[data-inspector-table-fields]");
+const tableRowsInput = document.querySelector("[data-component-table-rows]");
+const tableColumnsInput = document.querySelector("[data-component-table-columns]");
 const textSettingGroups = Array.from(document.querySelectorAll("[data-inspector-text-settings]"));
 const colorGroup = document.querySelector("[data-inspector-color-group]");
 const alignmentGroup = document.querySelector("[data-inspector-alignment]");
@@ -290,6 +295,22 @@ const paletteComponents = [
       type: "field",
       component: "noteLines",
       className: "note-lines",
+    },
+  },
+  {
+    id: "table",
+    label: "Table",
+    description: "Column-based data tables",
+    icon: "tabler:table",
+    node: {
+      type: "field",
+      component: "table",
+      rowsBind: "@rows",
+      className: "press-table",
+      columns: [
+        { header: "Column 1", bind: "@value" },
+        { header: "Column 2", bind: "@detail" },
+      ],
     },
   },
 ];
@@ -1354,6 +1375,18 @@ function createNodeFromPalette(type) {
   return assignNodeIds(clone);
 }
 
+function createDefaultRowColumn() {
+  return {
+    node: assignNodeIds({
+      type: "field",
+      component: "text",
+      text: "Column text",
+      textSize: "md",
+      className: "mb-0",
+    }),
+  };
+}
+
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
@@ -1363,6 +1396,7 @@ function describeNode(node) {
   if (node.component === "badge") return node.text || node.label || "Badge";
   if (node.component === "image") return node.url || "Image";
   if (node.component === "list") return "List";
+  if (node.component === "table") return "Table";
   if (node.component === "noteLines") return "Notes";
   if (node.component === "stat") return node.label || "Block";
   return node.component || node.type || "Component";
@@ -1594,13 +1628,23 @@ function updateInspector() {
     if (imageWidthInput) imageWidthInput.value = "";
     if (imageHeightInput) imageHeightInput.value = "";
     if (gapInput) gapInput.value = "";
+    if (rowColumnsInput) rowColumnsInput.value = "";
+    if (tableRowsInput) tableRowsInput.value = "";
+    if (tableColumnsInput) {
+      tableColumnsInput.value = "";
+      tableColumnsInput.classList.remove("is-invalid");
+    }
     setGroupVisibility(textFieldGroup, true);
+    setGroupVisibility(tableFieldGroup, false);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     textSettingGroups.forEach((group) => setGroupVisibility(group, true));
     setGroupVisibility(colorGroup, true);
     setGroupVisibility(alignmentGroup, true);
     if (gapField) {
       gapField.hidden = true;
+    }
+    if (rowColumnsField) {
+      rowColumnsField.hidden = true;
     }
     textStyleToggles.forEach((input) => {
       input.disabled = false;
@@ -1645,21 +1689,29 @@ function updateInspector() {
   const isLayoutNode = node?.type === "row" || node?.type === "stack";
   const isStackNode = node?.type === "stack";
   const isImageNode = node?.component === "image";
-  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode);
+  const isTableNode = node?.component === "table";
+  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode);
+  setGroupVisibility(tableFieldGroup, isTableNode);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
-  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode));
+  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode));
   setGroupVisibility(colorGroup, true);
-  setGroupVisibility(alignmentGroup, !isImageNode);
+  setGroupVisibility(alignmentGroup, !isImageNode && !isTableNode);
   textStyleToggles.forEach((input) => {
-    input.disabled = isLayoutNode || isImageNode;
+    input.disabled = isLayoutNode || isImageNode || isTableNode;
   });
   if (gapField) {
     gapField.hidden = !isLayoutNode;
+  }
+  if (rowColumnsField) {
+    rowColumnsField.hidden = node?.type !== "row";
   }
 
   if (gapInput) {
     const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
     gapInput.value = isLayoutNode ? String(gapValue) : "";
+  }
+  if (rowColumnsInput) {
+    rowColumnsInput.value = node?.type === "row" ? String(node.columns?.length ?? 0) : "";
   }
 
   if (alignmentTitle) {
@@ -1703,6 +1755,18 @@ function updateInspector() {
   if (textEditor) {
     textEditor.value = isImageNode ? "" : getNodeText(node);
     textEditor.placeholder = node.component === "list" ? "One entry per line" : "Binding / Text";
+  }
+  if (tableRowsInput) {
+    tableRowsInput.value = isTableNode ? node.rowsBind ?? node.itemsBind ?? "" : "";
+  }
+  if (tableColumnsInput) {
+    if (isTableNode) {
+      tableColumnsInput.value = JSON.stringify(node.columns ?? [], null, 2);
+      tableColumnsInput.classList.remove("is-invalid");
+    } else {
+      tableColumnsInput.value = "";
+      tableColumnsInput.classList.remove("is-invalid");
+    }
   }
 
   if (imageUrlInput) {
@@ -2183,6 +2247,9 @@ function bindInspectorControls() {
         if (node.component === "image") {
           return;
         }
+        if (node.component === "table") {
+          return;
+        }
         if (node.component === "list") {
           node.items = textEditor.value
             .split("\n")
@@ -2251,6 +2318,77 @@ function bindInspectorControls() {
       updateSelectedNode((node) => {
         if (node.type !== "row" && node.type !== "stack") return;
         node.gap = next;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (rowColumnsInput) {
+    rowColumnsInput.addEventListener("focus", () => beginPendingUndo(rowColumnsInput));
+    rowColumnsInput.addEventListener("blur", () => commitPendingUndo(rowColumnsInput));
+    rowColumnsInput.addEventListener("change", () => commitPendingUndo(rowColumnsInput));
+    rowColumnsInput.addEventListener("input", () => {
+      const parsed = Number(rowColumnsInput.value);
+      const next = Number.isFinite(parsed) ? Math.max(1, Math.min(parsed, 6)) : 1;
+      updateSelectedNode((node) => {
+        if (node.type !== "row") return;
+        const columns = Array.isArray(node.columns) ? node.columns : [];
+        if (next > columns.length) {
+          const additions = Array.from({ length: next - columns.length }, () => createDefaultRowColumn());
+          node.columns = [...columns, ...additions];
+        } else {
+          node.columns = columns.slice(0, next);
+        }
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (tableRowsInput) {
+    tableRowsInput.addEventListener("focus", () => beginPendingUndo(tableRowsInput));
+    tableRowsInput.addEventListener("blur", () => commitPendingUndo(tableRowsInput));
+    tableRowsInput.addEventListener("change", () => commitPendingUndo(tableRowsInput));
+    tableRowsInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "table") return;
+        const value = tableRowsInput.value.trim();
+        if (value) {
+          node.rowsBind = value;
+        } else {
+          delete node.rowsBind;
+        }
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (tableColumnsInput) {
+    tableColumnsInput.addEventListener("focus", () => beginPendingUndo(tableColumnsInput));
+    tableColumnsInput.addEventListener("blur", () => commitPendingUndo(tableColumnsInput));
+    tableColumnsInput.addEventListener("change", () => commitPendingUndo(tableColumnsInput));
+    tableColumnsInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "table") return;
+        const value = tableColumnsInput.value.trim();
+        if (!value) {
+          node.columns = [];
+          tableColumnsInput.classList.remove("is-invalid");
+          return;
+        }
+        try {
+          const parsed = JSON.parse(value);
+          if (Array.isArray(parsed)) {
+            node.columns = parsed;
+            tableColumnsInput.classList.remove("is-invalid");
+          } else {
+            tableColumnsInput.classList.add("is-invalid");
+          }
+        } catch (error) {
+          tableColumnsInput.classList.add("is-invalid");
+        }
       });
       renderPreview();
       updateSaveState();

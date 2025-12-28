@@ -656,12 +656,12 @@ body[data-theme="dark"] .preview-stage {
 .press-notecard__attacks-meta,
 .press-notecard__spells-meta {
   text-align: right;
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 
 .press-notecard__limited {
   text-align: right;
-  font-size: 0.9em;
+  font-size: 0.8em;
 }
 
 .press-notecard__features {

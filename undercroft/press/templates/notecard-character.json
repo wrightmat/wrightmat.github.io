@@ -53,6 +53,7 @@
           {
             "type": "row",
             "className": "press-notecard__columns",
+            "templateColumns": "1fr 1fr 1fr",
             "gap": 2,
             "columns": [
               {
