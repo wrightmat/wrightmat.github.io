@@ -23,6 +23,7 @@ const state = {
     cells: [],
     anchor: null,
   },
+  lastGridSelection: null,
   propertyClipboard: null,
 };
 
@@ -243,6 +244,12 @@ function setSelection(kind, id = null, extra = {}) {
     cells: extra.cells ?? [],
     anchor: extra.anchor ?? (extra.cells?.[0]?.coord ?? null),
   };
+  if (kind === "grid-cells" && state.selection.cells.length) {
+    state.lastGridSelection = {
+      layerId: state.selection.layerId,
+      cells: state.selection.cells.map((cell) => ({ ...cell })),
+    };
+  }
   renderSelection();
   renderLayerOverlays();
   syncOverlayInteractivity();
@@ -2007,7 +2014,60 @@ function renderGroupSelectionEditor(group) {
   container.appendChild(propertiesWrapper);
   refreshTooltips();
 
-  container.appendChild(createSelectionSectionTitle("Members"));
+  const membersHeader = document.createElement("div");
+  membersHeader.className = "d-flex align-items-center justify-content-between gap-2";
+  const membersTitle = createSelectionSectionTitle("Members");
+  const membersHelp = document.createElement("button");
+  membersHelp.type = "button";
+  membersHelp.className = "btn btn-link p-0 text-body-secondary";
+  membersHelp.setAttribute("aria-label", "How to add members");
+  membersHelp.setAttribute("data-bs-toggle", "tooltip");
+  membersHelp.setAttribute("data-bs-placement", "top");
+  membersHelp.setAttribute(
+    "data-bs-title",
+    "To add members, select grid cells on the map, then return here and click Add selected cells.",
+  );
+  membersHelp.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:help\" aria-hidden=\"true\"></span>";
+  membersHeader.appendChild(membersTitle);
+  membersHeader.appendChild(membersHelp);
+  container.appendChild(membersHeader);
+
+  const memberActions = document.createElement("div");
+  memberActions.className = "d-flex flex-column gap-2";
+  const lastSelection = state.lastGridSelection;
+  const selectionLayer = lastSelection?.layerId
+    ? state.map.layers.find((layer) => layer.id === lastSelection.layerId)
+    : null;
+  if (lastSelection?.cells?.length && selectionLayer) {
+    const summary = document.createElement("div");
+    summary.className = "small text-body-secondary";
+    summary.textContent = `Last selection: ${selectionLayer.name} • ${lastSelection.cells.length} cells`;
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn btn-outline-primary btn-sm align-self-start";
+    addButton.textContent = "Add selected cells";
+    addButton.addEventListener("click", () => {
+      applyGroupChange("add group members", () => {
+        const nextMembers = new Map(
+          normalizeGroupMembers(group).map((member) => [getGroupMemberKey(member), member]),
+        );
+        lastSelection.cells.forEach((cell) => {
+          const resolved = findGridCell(selectionLayer, cell.coord) || ensureGridCell(selectionLayer, cell.coord);
+          const member = { layerId: selectionLayer.id, elementId: resolved.id, kind: "grid-cell" };
+          nextMembers.set(getGroupMemberKey(member), member);
+        });
+        group.elementIds = Array.from(nextMembers.values());
+      });
+    });
+    memberActions.appendChild(summary);
+    memberActions.appendChild(addButton);
+  } else {
+    const emptyAction = document.createElement("div");
+    emptyAction.className = "small text-body-secondary";
+    emptyAction.textContent = "Select grid cells on the map to make them available for adding.";
+    memberActions.appendChild(emptyAction);
+  }
+  container.appendChild(memberActions);
   const memberList = document.createElement("div");
   memberList.className = "d-flex flex-column gap-2";
   const members = normalizeGroupMembers(group);
