@@ -452,13 +452,6 @@ function renderField(node, context, options = {}) {
             component: "text",
             text: headerText,
             ...baseText,
-            ...(column.textStyle ? { textStyles: column.textStyle } : null),
-            ...(column.textSize ? { textSize: column.textSize } : null),
-            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
-            ...(column.textAngle ? { textAngle: column.textAngle } : null),
-            ...(column.textCurve ? { textCurve: column.textCurve } : null),
-            ...(column.align ? { align: column.align } : null),
-            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
           };
           th.appendChild(renderField(headerNode, context, options));
           headerRow.appendChild(th);
@@ -476,13 +469,6 @@ function renderField(node, context, options = {}) {
           component: column.component ?? "text",
           text: textBinding,
           ...baseText,
-          ...(column.textStyle ? { textStyles: column.textStyle } : null),
-          ...(column.textSize ? { textSize: column.textSize } : null),
-          ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
-          ...(column.textAngle ? { textAngle: column.textAngle } : null),
-          ...(column.textCurve ? { textCurve: column.textCurve } : null),
-          ...(column.align ? { align: column.align } : null),
-          ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
         };
         const uid = getCellNodeId(rowIndex, columnIndex);
         if (uid) {
