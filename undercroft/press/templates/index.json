@@ -4,6 +4,7 @@
     "./chip-grid.json",
     "./tarot-grid.json",
     "./notecard.json",
+    "./notecard-character.json",
     "./letter-sheet.json",
     "./a6-sheet.json"
   ]
