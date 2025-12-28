@@ -602,6 +602,7 @@ body[data-theme="dark"] .preview-stage {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  font-size: 0.85em;
 }
 
 .press-table th,
