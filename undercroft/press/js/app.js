@@ -90,6 +90,7 @@ const templateColumnsInput = document.querySelector("[data-component-template-co
 const templateColumnsField = document.querySelector("[data-inspector-template-columns]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
 const tableFieldGroup = document.querySelector("[data-inspector-table-fields]");
+const textDecorationGroup = document.querySelector("[data-inspector-text-decoration]");
 const tableRowsInput = document.querySelector("[data-component-table-rows]");
 const tableColumnsList = document.querySelector("[data-component-table-columns-list]");
 const tableColumnsAddButton = document.querySelector("[data-component-table-columns-add]");
@@ -1800,6 +1801,7 @@ function updateInspector() {
     renderTableColumnsList(null);
     setGroupVisibility(textFieldGroup, true);
     setGroupVisibility(tableFieldGroup, false);
+    setGroupVisibility(textDecorationGroup, true);
     setGroupVisibility(classNameField, true);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
     textSettingGroups.forEach((group) => setGroupVisibility(group, true));
@@ -1861,15 +1863,17 @@ function updateInspector() {
   const isStackNode = node?.type === "stack";
   const isImageNode = node?.component === "image";
   const isTableNode = node?.component === "table";
+  const isIconNode = node?.component === "icon";
   setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode);
   setGroupVisibility(tableFieldGroup, isTableNode);
   setGroupVisibility(classNameField, true);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
-  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode));
+  textSettingGroups.forEach((group) => setGroupVisibility(group, !isLayoutNode && !isImageNode));
+  setGroupVisibility(textDecorationGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
   setGroupVisibility(colorGroup, true);
-  setGroupVisibility(alignmentGroup, !isImageNode && !isTableNode);
+  setGroupVisibility(alignmentGroup, !isImageNode && !isIconNode);
   textStyleToggles.forEach((input) => {
-    input.disabled = isLayoutNode || isImageNode || isTableNode;
+    input.disabled = isLayoutNode || isImageNode || isIconNode;
   });
   if (gapField) {
     gapField.hidden = !isLayoutNode;
