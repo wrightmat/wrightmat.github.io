@@ -450,7 +450,8 @@ function renderField(node, context) {
 
 function renderStack(node, context, options) {
   const container = document.createElement("div");
-  applyClassName(container, resolveClassName(node, context) ?? "d-flex flex-column");
+  applyClassName(container, "d-flex flex-column");
+  applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
   container.style.justifyContent = resolveStackAlignment(node);
   const hasAlignment = typeof node?.align === "string" && node.align.trim() !== "";
@@ -467,12 +468,13 @@ function renderStack(node, context, options) {
 
 function renderRow(node, context, options) {
   const container = document.createElement("div");
-  applyClassName(container, resolveClassName(node, context) ?? "d-grid");
+  applyClassName(container, "d-grid");
+  applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
   const columnCount = (node.columns && node.columns.length) || 1;
   if (node.templateColumns) {
     container.style.gridTemplateColumns = node.templateColumns;
-  } else if (!node.className) {
+  } else {
     container.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
   }
   container.style.justifyItems = resolveLayoutAlignment(node);

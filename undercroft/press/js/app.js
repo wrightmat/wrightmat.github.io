@@ -86,7 +86,8 @@ const rowColumnsField = document.querySelector("[data-inspector-row-columns]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
 const tableFieldGroup = document.querySelector("[data-inspector-table-fields]");
 const tableRowsInput = document.querySelector("[data-component-table-rows]");
-const tableColumnsInput = document.querySelector("[data-component-table-columns]");
+const tableColumnsList = document.querySelector("[data-component-table-columns-list]");
+const tableColumnsAddButton = document.querySelector("[data-component-table-columns-add]");
 const textSettingGroups = Array.from(document.querySelectorAll("[data-inspector-text-settings]"));
 const colorGroup = document.querySelector("[data-inspector-color-group]");
 const alignmentGroup = document.querySelector("[data-inspector-alignment]");
@@ -120,6 +121,7 @@ let editablePages = { front: null, back: null };
 let paletteSortable = null;
 let layoutSortable = null;
 let canvasSortable = null;
+let tableColumnsSortable = null;
 let undoStack = null;
 let performUndo = null;
 let performRedo = null;
@@ -1416,6 +1418,157 @@ function getPaletteEntryForNode(node) {
   return null;
 }
 
+function destroyTableColumnsSortable() {
+  if (tableColumnsSortable && typeof tableColumnsSortable.destroy === "function") {
+    tableColumnsSortable.destroy();
+  }
+  tableColumnsSortable = null;
+}
+
+function renderTableColumnsList(node) {
+  if (!tableColumnsList) return;
+  tableColumnsList.innerHTML = "";
+  destroyTableColumnsSortable();
+  if (!node || node.component !== "table") return;
+  const columns = Array.isArray(node.columns) ? node.columns : [];
+  columns.forEach((column, index) => {
+    const item = document.createElement("div");
+    item.className = "list-group-item d-flex flex-column gap-2";
+    item.dataset.columnIndex = String(index);
+
+    const header = document.createElement("div");
+    header.className = "d-flex align-items-center gap-2";
+
+    const handle = document.createElement("span");
+    handle.className = "iconify text-body-secondary";
+    handle.dataset.icon = "tabler:grip-vertical";
+    handle.setAttribute("data-sortable-handle", "");
+    handle.setAttribute("aria-hidden", "true");
+
+    const title = document.createElement("span");
+    title.className = "fw-semibold";
+    title.textContent = column?.header || `Column ${index + 1}`;
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "btn btn-sm btn-outline-danger ms-auto";
+    removeButton.type = "button";
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", () => {
+      recordUndoableChange(() => {
+        updateSelectedNode((nodeToUpdate) => {
+          if (nodeToUpdate.component !== "table") return;
+          const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+          nextColumns.splice(index, 1);
+          nodeToUpdate.columns = nextColumns;
+        });
+        renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
+        renderPreview();
+      });
+      updateSaveState();
+    });
+
+    header.append(handle, title, removeButton);
+    item.appendChild(header);
+
+    const formRow = document.createElement("div");
+    formRow.className = "row g-2";
+
+    const headerField = document.createElement("div");
+    headerField.className = "col-12 col-md-4";
+    const headerInput = document.createElement("input");
+    headerInput.type = "text";
+    headerInput.className = "form-control form-control-sm";
+    headerInput.placeholder = "Header";
+    headerInput.value = column?.header ?? "";
+    headerInput.addEventListener("focus", () => beginPendingUndo(headerInput));
+    headerInput.addEventListener("blur", () => commitPendingUndo(headerInput));
+    headerInput.addEventListener("input", () => {
+      updateSelectedNode((nodeToUpdate) => {
+        if (nodeToUpdate.component !== "table") return;
+        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+        const target = { ...(nextColumns[index] ?? {}) };
+        target.header = headerInput.value;
+        nextColumns[index] = target;
+        nodeToUpdate.columns = nextColumns;
+      });
+      title.textContent = headerInput.value || `Column ${index + 1}`;
+      renderPreview();
+      updateSaveState();
+    });
+    headerField.appendChild(headerInput);
+
+    const bindField = document.createElement("div");
+    bindField.className = "col-12 col-md-4";
+    const bindInput = document.createElement("input");
+    bindInput.type = "text";
+    bindInput.className = "form-control form-control-sm";
+    bindInput.placeholder = "@value";
+    bindInput.value = column?.bind ?? "";
+    bindInput.addEventListener("focus", () => beginPendingUndo(bindInput));
+    bindInput.addEventListener("blur", () => commitPendingUndo(bindInput));
+    bindInput.addEventListener("input", () => {
+      updateSelectedNode((nodeToUpdate) => {
+        if (nodeToUpdate.component !== "table") return;
+        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+        const target = { ...(nextColumns[index] ?? {}) };
+        target.bind = bindInput.value;
+        nextColumns[index] = target;
+        nodeToUpdate.columns = nextColumns;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+    bindField.appendChild(bindInput);
+
+    const widthField = document.createElement("div");
+    widthField.className = "col-12 col-md-4";
+    const widthInput = document.createElement("input");
+    widthInput.type = "text";
+    widthInput.className = "form-control form-control-sm";
+    widthInput.placeholder = "Width (%, in, etc.)";
+    widthInput.value = column?.width ?? "";
+    widthInput.addEventListener("focus", () => beginPendingUndo(widthInput));
+    widthInput.addEventListener("blur", () => commitPendingUndo(widthInput));
+    widthInput.addEventListener("input", () => {
+      updateSelectedNode((nodeToUpdate) => {
+        if (nodeToUpdate.component !== "table") return;
+        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+        const target = { ...(nextColumns[index] ?? {}) };
+        target.width = widthInput.value;
+        nextColumns[index] = target;
+        nodeToUpdate.columns = nextColumns;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+    widthField.appendChild(widthInput);
+
+    formRow.append(headerField, bindField, widthField);
+    item.appendChild(formRow);
+    tableColumnsList.appendChild(item);
+  });
+
+  tableColumnsSortable = createSortable(tableColumnsList, {
+    animation: 150,
+    handle: "[data-sortable-handle]",
+    draggable: ".list-group-item",
+    onUpdate: (event) => {
+      recordUndoableChange(() => {
+        updateSelectedNode((nodeToUpdate) => {
+          if (nodeToUpdate.component !== "table") return;
+          const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
+          const [moved] = nextColumns.splice(event.oldIndex ?? 0, 1);
+          nextColumns.splice(event.newIndex ?? 0, 0, moved);
+          nodeToUpdate.columns = nextColumns;
+        });
+        renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
+        renderPreview();
+      });
+      updateSaveState();
+    },
+  });
+}
+
 function replaceTypeIcon(icon) {
   if (!typeSummary) return;
   const parent = typeSummary.querySelector("[data-component-type-icon]")?.parentElement;
@@ -1630,10 +1783,7 @@ function updateInspector() {
     if (gapInput) gapInput.value = "";
     if (rowColumnsInput) rowColumnsInput.value = "";
     if (tableRowsInput) tableRowsInput.value = "";
-    if (tableColumnsInput) {
-      tableColumnsInput.value = "";
-      tableColumnsInput.classList.remove("is-invalid");
-    }
+    renderTableColumnsList(null);
     setGroupVisibility(textFieldGroup, true);
     setGroupVisibility(tableFieldGroup, false);
     imageFieldGroups.forEach((group) => setGroupVisibility(group, false));
@@ -1759,15 +1909,7 @@ function updateInspector() {
   if (tableRowsInput) {
     tableRowsInput.value = isTableNode ? node.rowsBind ?? node.itemsBind ?? "" : "";
   }
-  if (tableColumnsInput) {
-    if (isTableNode) {
-      tableColumnsInput.value = JSON.stringify(node.columns ?? [], null, 2);
-      tableColumnsInput.classList.remove("is-invalid");
-    } else {
-      tableColumnsInput.value = "";
-      tableColumnsInput.classList.remove("is-invalid");
-    }
-  }
+  renderTableColumnsList(isTableNode ? node : null);
 
   if (imageUrlInput) {
     imageUrlInput.value = isImageNode ? node.url ?? "" : "";
@@ -2365,32 +2507,18 @@ function bindInspectorControls() {
     });
   }
 
-  if (tableColumnsInput) {
-    tableColumnsInput.addEventListener("focus", () => beginPendingUndo(tableColumnsInput));
-    tableColumnsInput.addEventListener("blur", () => commitPendingUndo(tableColumnsInput));
-    tableColumnsInput.addEventListener("change", () => commitPendingUndo(tableColumnsInput));
-    tableColumnsInput.addEventListener("input", () => {
-      updateSelectedNode((node) => {
-        if (node.component !== "table") return;
-        const value = tableColumnsInput.value.trim();
-        if (!value) {
-          node.columns = [];
-          tableColumnsInput.classList.remove("is-invalid");
-          return;
-        }
-        try {
-          const parsed = JSON.parse(value);
-          if (Array.isArray(parsed)) {
-            node.columns = parsed;
-            tableColumnsInput.classList.remove("is-invalid");
-          } else {
-            tableColumnsInput.classList.add("is-invalid");
-          }
-        } catch (error) {
-          tableColumnsInput.classList.add("is-invalid");
-        }
+  if (tableColumnsAddButton) {
+    tableColumnsAddButton.addEventListener("click", () => {
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component !== "table") return;
+          const nextColumns = Array.isArray(node.columns) ? [...node.columns] : [];
+          nextColumns.push({ header: "New Column", bind: "@value", width: "" });
+          node.columns = nextColumns;
+        });
+        renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
+        renderPreview();
       });
-      renderPreview();
       updateSaveState();
     });
   }
