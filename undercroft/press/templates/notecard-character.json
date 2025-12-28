@@ -56,15 +56,15 @@
               {
                 "node": {
                   "type": "stack",
-                  "className": "ability-scores",
+                  "className": "ability-scores w-100",
                   "gap": 1,
                   "children": [
-                    { "type": "field", "component": "stat", "label": "@abilities.0.name", "text": "@abilities.0.display", "className": "ability-block stat-0" },
-                    { "type": "field", "component": "stat", "label": "@abilities.1.name", "text": "@abilities.1.display", "className": "ability-block stat-1" },
-                    { "type": "field", "component": "stat", "label": "@abilities.2.name", "text": "@abilities.2.display", "className": "ability-block stat-2" },
-                    { "type": "field", "component": "stat", "label": "@abilities.3.name", "text": "@abilities.3.display", "className": "ability-block stat-3" },
-                    { "type": "field", "component": "stat", "label": "@abilities.4.name", "text": "@abilities.4.display", "className": "ability-block stat-4" },
-                    { "type": "field", "component": "stat", "label": "@abilities.5.name", "text": "@abilities.5.display", "className": "ability-block stat-5" }
+                    { "type": "field", "component": "stat", "label": "@abilities.0.name", "text": "@abilities.0.display", "className": "ability-block stat-0 w-100" },
+                    { "type": "field", "component": "stat", "label": "@abilities.1.name", "text": "@abilities.1.display", "className": "ability-block stat-1 w-100" },
+                    { "type": "field", "component": "stat", "label": "@abilities.2.name", "text": "@abilities.2.display", "className": "ability-block stat-2 w-100" },
+                    { "type": "field", "component": "stat", "label": "@abilities.3.name", "text": "@abilities.3.display", "className": "ability-block stat-3 w-100" },
+                    { "type": "field", "component": "stat", "label": "@abilities.4.name", "text": "@abilities.4.display", "className": "ability-block stat-4 w-100" },
+                    { "type": "field", "component": "stat", "label": "@abilities.5.name", "text": "@abilities.5.display", "className": "ability-block stat-5 w-100" }
                   ]
                 }
               },
@@ -75,41 +75,203 @@
                   "children": [
                     { "type": "field", "component": "text", "text": "Saving Throws", "className": "section mb-0" },
                     {
-                      "type": "field",
-                      "component": "list",
-                      "itemsBind": "@saves",
-                      "className": "item-list mb-0",
-                      "itemClassNameBind": "@itemClass",
-                      "itemLayout": {
-                        "type": "row",
-                        "className": "skill-row",
-                        "templateColumns": "auto auto 1fr",
-                        "gap": 1,
-                        "columns": [
-                          { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@circleClass" } },
-                          { "node": { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" } },
-                          { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span", "className": "name" } }
-                        ]
-                      }
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@saves.0.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.0.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.0.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@saves.1.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.1.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.1.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@saves.2.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.2.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.2.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@saves.3.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.3.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.3.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@saves.4.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.4.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.4.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@saves.5.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.5.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@saves.5.name", "textStyle": "span" } }
+                      ]
                     },
                     { "type": "field", "component": "text", "text": "Skills", "className": "section mb-0" },
                     {
-                      "type": "field",
-                      "component": "list",
-                      "itemsBind": "@skills",
-                      "className": "item-list mb-0",
-                      "itemClassNameBind": "@itemClass",
-                      "itemLayout": {
-                        "type": "row",
-                        "className": "skill-row",
-                        "templateColumns": "auto auto 1fr",
-                        "gap": 1,
-                        "columns": [
-                          { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@circleClass" } },
-                          { "node": { "type": "field", "component": "text", "text": "@modifier", "textStyle": "span", "className": "modifier" } },
-                          { "node": { "type": "field", "component": "text", "text": "@name", "textStyle": "span", "className": "name" } }
-                        ]
-                      }
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.0.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.0.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.0.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.1.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.1.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.1.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.2.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.2.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.2.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.3.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.3.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.3.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.4.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.4.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.4.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.5.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.5.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.5.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.6.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.6.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.6.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.7.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.7.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.7.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.8.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.8.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.8.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.9.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.9.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.9.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.10.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.10.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.10.name", "textStyle": "span" } }
+                      ]
+                    },
+                    {
+                      "type": "row",
+                      "className": "align-items-center",
+                      "templateColumns": "auto auto 1fr",
+                      "gap": 1,
+                      "columns": [
+                        { "node": { "type": "field", "component": "text", "text": "", "textStyle": "span", "classNameBind": "@skills.11.circleClass" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.11.modifier", "textStyle": "span" } },
+                        { "node": { "type": "field", "component": "text", "text": "@skills.11.name", "textStyle": "span" } }
+                      ]
                     }
                   ]
                 }
