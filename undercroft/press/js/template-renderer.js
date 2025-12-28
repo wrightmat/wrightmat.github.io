@@ -436,24 +436,39 @@ function renderField(node, context, options = {}) {
         align: node.align,
         style: node.style ? { ...node.style } : undefined,
       };
+      const headerCells = Array.isArray(node.headerCells) ? node.headerCells : [];
       if (node.showHeadings !== false && columns.length) {
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
         applyClassName(headerRow, node.headerRowClassName ?? "table-header");
-        columns.forEach((column) => {
+        if (options?.editable) {
+          headerCells.length = columns.length;
+          headerCells.forEach((headerCell, index) => {
+            if (!headerCell) {
+              headerCells[index] = {
+                type: "field",
+                component: "text",
+                text: columns[index]?.header ?? columns[index]?.label ?? "",
+                ...baseText,
+                uid: node.uid ? `${node.uid}-header-${index}` : undefined,
+              };
+            }
+          });
+        }
+        columns.forEach((column, columnIndex) => {
           const th = document.createElement("th");
           if (column.width) {
             th.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
           applyClassName(th, column.className);
-          const headerText = column.header ?? column.label ?? "";
-          const headerNode = {
+          const headerNode = headerCells[columnIndex] ?? {
             type: "field",
             component: "text",
-            text: headerText,
+            text: column.header ?? column.label ?? "",
             ...baseText,
+            uid: node.uid ? `${node.uid}-header-${columnIndex}` : undefined,
           };
-          th.appendChild(renderField(headerNode, context, options));
+          th.appendChild(renderNode(headerNode, context, options));
           headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
@@ -530,6 +545,9 @@ function renderField(node, context, options = {}) {
         });
         tbody.appendChild(tr);
       });
+      if (options?.editable && node.showHeadings !== false && columns.length) {
+        node.headerCells = headerCells;
+      }
       if (options?.editable) {
         node.cells = tableCells;
       }
