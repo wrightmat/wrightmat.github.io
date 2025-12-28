@@ -826,6 +826,12 @@ function stripNodeIds(node) {
       node: stripNodeIds(column.node),
     }));
   }
+  if (Array.isArray(next.headerCells)) {
+    next.headerCells = next.headerCells.map((cell) => stripNodeIds(cell));
+  }
+  if (Array.isArray(next.cells)) {
+    next.cells = next.cells.map((row) => (Array.isArray(row) ? row.map((cell) => stripNodeIds(cell)) : row));
+  }
   return next;
 }
 
@@ -936,6 +942,12 @@ function assignNodeIds(node) {
   }
   if (Array.isArray(node.columns)) {
     clone.columns = node.columns.map((column) => ({ ...column, node: assignNodeIds(column.node) }));
+  }
+  if (Array.isArray(node.headerCells)) {
+    clone.headerCells = node.headerCells.map((cell) => assignNodeIds(cell));
+  }
+  if (Array.isArray(node.cells)) {
+    clone.cells = node.cells.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
   }
   return clone;
 }
@@ -1294,6 +1306,21 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
+  if (Array.isArray(node.headerCells)) {
+    for (const cell of node.headerCells) {
+      const found = findNodeById(cell, uid);
+      if (found) return found;
+    }
+  }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) {
+        const found = findNodeById(cell, uid);
+        if (found) return found;
+      }
+    }
+  }
   return null;
 }
 
@@ -1319,6 +1346,31 @@ function removeNodeById(node, uid) {
       }
       const removed = removeNodeById(column.node, uid);
       if (removed) return removed;
+    }
+  }
+  if (Array.isArray(node.headerCells)) {
+    const headerIndex = node.headerCells.findIndex((cell) => cell?.uid === uid);
+    if (headerIndex >= 0) {
+      const [removed] = node.headerCells.splice(headerIndex, 1, null);
+      return removed;
+    }
+    for (const cell of node.headerCells) {
+      const removed = removeNodeById(cell, uid);
+      if (removed) return removed;
+    }
+  }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      const index = row.findIndex((cell) => cell?.uid === uid);
+      if (index >= 0) {
+        const [removed] = row.splice(index, 1, null);
+        return removed;
+      }
+      for (const cell of row) {
+        const removed = removeNodeById(cell, uid);
+        if (removed) return removed;
+      }
     }
   }
   return null;
@@ -1395,6 +1447,54 @@ function createDefaultRowColumn() {
   };
 }
 
+function removeTableColumnCells(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    row.splice(index, 1);
+  });
+}
+
+function moveTableColumnCells(node, fromIndex, toIndex) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    const [moved] = row.splice(fromIndex, 1);
+    row.splice(toIndex, 0, moved ?? null);
+  });
+}
+
+function addTableColumnCells(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    row.splice(index, 0, null);
+  });
+}
+
+function removeTableHeaderCell(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  node.headerCells.splice(index, 1);
+}
+
+function moveTableHeaderCell(node, fromIndex, toIndex) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  const [moved] = node.headerCells.splice(fromIndex, 1);
+  node.headerCells.splice(toIndex, 0, moved ?? null);
+}
+
+function addTableHeaderCell(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  node.headerCells.splice(index, 0, null);
+}
+
+function updateTableHeaderCellText(node, index, text) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  const cell = node.headerCells[index];
+  if (!cell) return;
+  cell.text = text;
+}
+
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
@@ -1467,6 +1567,8 @@ function renderTableColumnsList(node) {
           const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
           nextColumns.splice(index, 1);
           nodeToUpdate.columns = nextColumns;
+          removeTableColumnCells(nodeToUpdate, index);
+          removeTableHeaderCell(nodeToUpdate, index);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -1497,6 +1599,7 @@ function renderTableColumnsList(node) {
         target.header = headerInput.value;
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableHeaderCellText(nodeToUpdate, index, headerInput.value);
       });
       title.textContent = headerInput.value || `Column ${index + 1}`;
       renderPreview();
@@ -1550,126 +1653,7 @@ function renderTableColumnsList(node) {
     });
     widthField.appendChild(widthInput);
 
-    const textSizeField = document.createElement("div");
-    textSizeField.className = "col-12 col-md-4";
-    const textSizeSelect = document.createElement("select");
-    textSizeSelect.className = "form-select form-select-sm";
-    [
-      { label: "Text size (inherit)", value: "" },
-      { label: "XS", value: "xs" },
-      { label: "Sm", value: "sm" },
-      { label: "Md", value: "md" },
-      { label: "Lg", value: "lg" },
-      { label: "XL", value: "xl" },
-    ].forEach((option) => {
-      const entry = document.createElement("option");
-      entry.value = option.value;
-      entry.textContent = option.label;
-      textSizeSelect.appendChild(entry);
-    });
-    textSizeSelect.value = column?.textSize ?? "";
-    textSizeSelect.addEventListener("focus", () => beginPendingUndo(textSizeSelect));
-    textSizeSelect.addEventListener("blur", () => commitPendingUndo(textSizeSelect));
-    textSizeSelect.addEventListener("change", () => commitPendingUndo(textSizeSelect));
-    textSizeSelect.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        if (textSizeSelect.value) {
-          target.textSize = textSizeSelect.value;
-        } else {
-          delete target.textSize;
-        }
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-      });
-      renderPreview();
-      updateSaveState();
-    });
-    textSizeField.appendChild(textSizeSelect);
-
-    const textStyleField = document.createElement("div");
-    textStyleField.className = "col-12 col-md-4 d-flex align-items-center gap-2 flex-wrap";
-    const textStyleOptions = [
-      { key: "bold", label: "Bold" },
-      { key: "italic", label: "Italic" },
-      { key: "underline", label: "Underline" },
-    ];
-    const currentStyles = column?.textStyle ?? {};
-    textStyleOptions.forEach((styleOption) => {
-      const wrapper = document.createElement("label");
-      wrapper.className = "form-check form-check-inline small mb-0";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "form-check-input";
-      checkbox.checked = Boolean(currentStyles?.[styleOption.key]);
-      checkbox.addEventListener("change", () => {
-        recordUndoableChange(() => {
-          updateSelectedNode((nodeToUpdate) => {
-            if (nodeToUpdate.component !== "table") return;
-            const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-            const target = { ...(nextColumns[index] ?? {}) };
-            const nextStyles = { ...(target.textStyle ?? {}) };
-            nextStyles[styleOption.key] = checkbox.checked;
-            if (Object.values(nextStyles).some(Boolean)) {
-              target.textStyle = nextStyles;
-            } else {
-              delete target.textStyle;
-            }
-            nextColumns[index] = target;
-            nodeToUpdate.columns = nextColumns;
-          });
-          renderPreview();
-        });
-        updateSaveState();
-      });
-      const label = document.createElement("span");
-      label.className = "form-check-label";
-      label.textContent = styleOption.label;
-      wrapper.append(checkbox, label);
-      textStyleField.appendChild(wrapper);
-    });
-
-    const alignField = document.createElement("div");
-    alignField.className = "col-12 col-md-4";
-    const alignSelect = document.createElement("select");
-    alignSelect.className = "form-select form-select-sm";
-    [
-      { label: "Alignment (inherit)", value: "" },
-      { label: "Left", value: "start" },
-      { label: "Center", value: "center" },
-      { label: "Right", value: "end" },
-      { label: "Justify", value: "justify" },
-    ].forEach((option) => {
-      const entry = document.createElement("option");
-      entry.value = option.value;
-      entry.textContent = option.label;
-      alignSelect.appendChild(entry);
-    });
-    alignSelect.value = column?.align ?? "";
-    alignSelect.addEventListener("focus", () => beginPendingUndo(alignSelect));
-    alignSelect.addEventListener("blur", () => commitPendingUndo(alignSelect));
-    alignSelect.addEventListener("change", () => commitPendingUndo(alignSelect));
-    alignSelect.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        if (alignSelect.value) {
-          target.align = alignSelect.value;
-        } else {
-          delete target.align;
-        }
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-      });
-      renderPreview();
-      updateSaveState();
-    });
-    alignField.appendChild(alignSelect);
-
-    formRow.append(headerField, bindField, widthField, textSizeField, textStyleField, alignField);
+    formRow.append(headerField, bindField, widthField);
     item.appendChild(formRow);
     tableColumnsList.appendChild(item);
   });
@@ -1686,6 +1670,8 @@ function renderTableColumnsList(node) {
           const [moved] = nextColumns.splice(event.oldIndex ?? 0, 1);
           nextColumns.splice(event.newIndex ?? 0, 0, moved);
           nodeToUpdate.columns = nextColumns;
+          moveTableColumnCells(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
+          moveTableHeaderCell(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -2154,17 +2140,17 @@ function updateInspector() {
 function selectFirstNode() {
   const first = getRootChildren(currentSide)[0];
   selectedNodeId = first?.uid ?? null;
+  renderPreview();
   renderLayoutList();
   updateInspector();
-  renderPreview();
 }
 
 function selectNode(uid, { fromPreview = false } = {}) {
   selectedNodeId = uid;
+  renderPreview();
   renderLayoutList();
   updateInspector();
   setInspectorMode("component");
-  renderPreview();
 }
 
 function updateSelectedNode(updater) {
@@ -2752,6 +2738,8 @@ function bindInspectorControls() {
           const nextColumns = Array.isArray(node.columns) ? [...node.columns] : [];
           nextColumns.push({ header: "New Column", bind: "@value", width: "" });
           node.columns = nextColumns;
+          addTableColumnCells(node, nextColumns.length - 1);
+          addTableHeaderCell(node, nextColumns.length - 1);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
