@@ -1479,6 +1479,7 @@ function createPropertyRow({ key, value, onUpdate, onRemove }) {
   removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
+  bindPropertyRowTabOrder(keyInput, valueInput);
 
   const updateProperty = () => {
     const nextKey = keyInput.value.trim();
@@ -1552,6 +1553,7 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
   removeButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:trash\" aria-hidden=\"true\"></span>";
 
   let currentKey = key;
+  bindPropertyRowTabOrder(keyInput, valueInput);
 
   const applyToSelection = (apply) => {
     applyCellPropertiesChange("grid cell property", () => {
@@ -1826,6 +1828,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     bulkValue.type = "text";
     bulkValue.className = "form-control form-control-sm";
     bulkValue.placeholder = "Property value";
+    bindPropertyRowTabOrder(bulkKey, bulkValue);
     const bulkButton = document.createElement("button");
     bulkButton.type = "button";
     bulkButton.className = "btn btn-outline-primary btn-sm align-self-start";
