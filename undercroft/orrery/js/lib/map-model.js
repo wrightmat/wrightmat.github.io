@@ -113,11 +113,14 @@ export function createGroup({ name } = {}) {
   };
 }
 
-export function createView({ name, description } = {}) {
+export function createView({ name, description, layerIds = [], groupIds = [], tiers = [] } = {}) {
   return {
     id: randomId(),
     name: name || "New View",
     description: description || "",
+    layerIds: Array.isArray(layerIds) ? layerIds.filter(Boolean) : [],
+    groupIds: Array.isArray(groupIds) ? groupIds.filter(Boolean) : [],
+    tiers: Array.isArray(tiers) ? tiers.filter(Boolean) : [],
     settings: {},
   };
 }
