@@ -143,32 +143,39 @@ function applyTextFormatting(element, node) {
   if (size) {
     element.style.fontSize = `${size}px`;
   }
-  const defaultBold = node?.component === "heading";
-  const isBold = typeof node?.textStyles?.bold === "boolean" ? node.textStyles.bold : defaultBold;
-  if (isBold) {
-    element.style.fontWeight = "600";
+  if (node?.component !== "icon") {
+    const defaultBold = node?.component === "heading";
+    const isBold = typeof node?.textStyles?.bold === "boolean" ? node.textStyles.bold : defaultBold;
+    if (isBold) {
+      element.style.fontWeight = "600";
+    } else {
+      element.style.removeProperty("font-weight");
+    }
+    if (node.textStyles?.italic) {
+      element.style.fontStyle = "italic";
+    } else {
+      element.style.removeProperty("font-style");
+    }
+    if (node.textStyles?.underline) {
+      element.style.textDecoration = "underline";
+    } else {
+      element.style.removeProperty("text-decoration");
+    }
+    const alignment = node.align || "start";
+    if (alignment === "center") {
+      element.style.textAlign = "center";
+    } else if (alignment === "end") {
+      element.style.textAlign = "right";
+    } else if (alignment === "justify") {
+      element.style.textAlign = "justify";
+    } else {
+      element.style.textAlign = "left";
+    }
   } else {
     element.style.removeProperty("font-weight");
-  }
-  if (node.textStyles?.italic) {
-    element.style.fontStyle = "italic";
-  } else {
     element.style.removeProperty("font-style");
-  }
-  if (node.textStyles?.underline) {
-    element.style.textDecoration = "underline";
-  } else {
     element.style.removeProperty("text-decoration");
-  }
-  const alignment = node.align || "start";
-  if (alignment === "center") {
-    element.style.textAlign = "center";
-  } else if (alignment === "end") {
-    element.style.textAlign = "right";
-  } else if (alignment === "justify") {
-    element.style.textAlign = "justify";
-  } else {
-    element.style.textAlign = "left";
+    element.style.removeProperty("text-align");
   }
 }
 
@@ -407,6 +414,16 @@ function renderField(node, context) {
       const columns = node.columns ?? [];
       const table = document.createElement("table");
       applyClassName(table, resolveClassName(node, context) ?? "press-table");
+      const baseText = {
+        textSize: node.textSize,
+        textSizeCustom: node.textSizeCustom,
+        textStyles: node.textStyles,
+        textOrientation: node.textOrientation,
+        textAngle: node.textAngle,
+        textCurve: node.textCurve,
+        align: node.align,
+        style: node.style ? { ...node.style } : undefined,
+      };
       if (node.showHeadings !== false && columns.length) {
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
@@ -417,7 +434,21 @@ function renderField(node, context) {
             th.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
           applyClassName(th, column.className);
-          th.textContent = column.header ?? column.label ?? "";
+          const headerText = column.header ?? column.label ?? "";
+          const headerNode = {
+            type: "field",
+            component: "text",
+            text: headerText,
+            ...baseText,
+            ...(column.textStyle ? { textStyles: column.textStyle } : null),
+            ...(column.textSize ? { textSize: column.textSize } : null),
+            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
+            ...(column.textAngle ? { textAngle: column.textAngle } : null),
+            ...(column.textCurve ? { textCurve: column.textCurve } : null),
+            ...(column.align ? { align: column.align } : null),
+            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
+          };
+          th.appendChild(renderField(headerNode, context));
           headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
@@ -442,22 +473,25 @@ function renderField(node, context) {
             applyClassName(td, resolved);
           }
           const cellValue = resolveBinding(column.bind ?? column.text ?? column.value, cellContext);
-          if (column.component === "icon") {
-            const icon = document.createElement("span");
-            if (typeof cellValue === "string") {
-              applyClassName(icon, cellValue);
-            }
+          const cellTextNode = {
+            type: "field",
+            component: column.component ?? "text",
+            text: cellValue ?? "",
+            ...baseText,
+            ...(column.textStyle ? { textStyles: column.textStyle } : null),
+            ...(column.textSize ? { textSize: column.textSize } : null),
+            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
+            ...(column.textAngle ? { textAngle: column.textAngle } : null),
+            ...(column.textCurve ? { textCurve: column.textCurve } : null),
+            ...(column.align ? { align: column.align } : null),
+            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
+          };
+          if (cellTextNode.component === "icon") {
+            cellTextNode.className = typeof cellValue === "string" ? cellValue : "";
             const ariaLabel = resolveBinding(column.ariaLabel, cellContext) ?? column.ariaLabel ?? cellContext?.name;
-            if (ariaLabel) {
-              icon.setAttribute("role", "img");
-              icon.setAttribute("aria-label", ariaLabel);
-            } else {
-              icon.setAttribute("aria-hidden", "true");
-            }
-            td.appendChild(icon);
-          } else {
-            td.textContent = cellValue ?? "";
+            cellTextNode.ariaLabel = ariaLabel;
           }
+          td.appendChild(renderField(cellTextNode, cellContext));
           if (column.width) {
             td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
