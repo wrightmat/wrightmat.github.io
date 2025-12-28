@@ -36,6 +36,14 @@ function applyClassName(element, className) {
   }
 }
 
+function resolveClassName(node, context) {
+  const raw = node?.classNameBind ?? node?.className ?? "";
+  if (typeof raw === "string" && raw.startsWith("@")) {
+    return resolveBinding(raw, context) || null;
+  }
+  return raw || null;
+}
+
 function resolveTextSizePx(node) {
   if (typeof node?.style?.fontSize === "number") {
     return node.style.fontSize;
@@ -255,9 +263,9 @@ function renderField(node, context) {
     case "heading": {
       const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
       if (useCurved) {
-        return createCurvedTextElement(node, value ?? node.label, node.className ?? "fw-semibold");
+        return createCurvedTextElement(node, value ?? node.label, resolveClassName(node, context) ?? "fw-semibold");
       }
-      const el = createTextElement(node.level ?? "h2", value ?? node.label, node.className ?? "fw-semibold");
+      const el = createTextElement(node.level ?? "h2", value ?? node.label, resolveClassName(node, context) ?? "fw-semibold");
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
       applyTextTransform(el, node);
@@ -267,9 +275,9 @@ function renderField(node, context) {
       const tag = node.textStyle ?? "p";
       const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
       if (useCurved) {
-        return createCurvedTextElement(node, value ?? "", node.className ?? "mb-0");
+        return createCurvedTextElement(node, value ?? "", resolveClassName(node, context) ?? "mb-0");
       }
-      const el = createTextElement(tag, value ?? "", node.className ?? "mb-0");
+      const el = createTextElement(tag, value ?? "", resolveClassName(node, context) ?? "mb-0");
       if (node.muted) {
         applyClassName(el, "text-body-secondary");
       }
@@ -281,9 +289,17 @@ function renderField(node, context) {
     case "badge": {
       const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
       if (useCurved) {
-        return createCurvedTextElement(node, value ?? node.label ?? "Badge", node.className ?? "badge text-bg-primary");
+        return createCurvedTextElement(
+          node,
+          value ?? node.label ?? "Badge",
+          resolveClassName(node, context) ?? "badge text-bg-primary",
+        );
       }
-      const el = createTextElement("span", value ?? node.label ?? "Badge", node.className ?? "badge text-bg-primary");
+      const el = createTextElement(
+        "span",
+        value ?? node.label ?? "Badge",
+        resolveClassName(node, context) ?? "badge text-bg-primary",
+      );
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
       applyTextTransform(el, node);
@@ -291,11 +307,27 @@ function renderField(node, context) {
     }
     case "list": {
       const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
-      const el = document.createElement("ul");
-      applyClassName(el, node.className ?? "mb-0 ps-3 d-flex flex-column gap-1");
-      asArray(items).forEach((item) => {
-        const li = document.createElement("li");
-        li.textContent = item;
+      const listTag = node.listTag ?? "ul";
+      const itemTag = node.itemTag ?? "li";
+      const el = document.createElement(listTag);
+      applyClassName(el, resolveClassName(node, context) ?? "mb-0 ps-3 d-flex flex-column gap-1");
+      const itemLayout = node.itemLayout ?? null;
+      asArray(items).forEach((item, index) => {
+        const li = document.createElement(itemTag);
+        const itemContext = typeof item === "object" && item !== null ? { ...context, ...item } : { ...context, value: item };
+        itemContext.item = item;
+        itemContext.index = index;
+        const itemClassRaw = node.itemClassNameBind ?? node.itemClassName ?? "";
+        const itemClass =
+          typeof itemClassRaw === "string" && itemClassRaw.startsWith("@")
+            ? resolveBinding(itemClassRaw, itemContext) ?? ""
+            : itemClassRaw;
+        applyClassName(li, itemClass);
+        if (itemLayout) {
+          li.appendChild(renderNode(itemLayout, itemContext));
+        } else {
+          li.textContent = item;
+        }
         el.appendChild(li);
       });
       applyInlineStyles(el, node.style);
@@ -305,7 +337,7 @@ function renderField(node, context) {
     }
     case "stat": {
       const wrapper = document.createElement("div");
-      applyClassName(wrapper, node.className ?? "panel-box");
+      applyClassName(wrapper, resolveClassName(node, context) ?? "panel-box");
       const labelValue = resolveBinding(node.label, context) ?? node.label ?? "";
       const label = createTextElement("p", labelValue, "card-meta mb-0");
       const val = createTextElement("p", value ?? "—", "mb-0 fw-semibold");
@@ -320,14 +352,14 @@ function renderField(node, context) {
     }
     case "noteLines": {
       const el = document.createElement("div");
-      applyClassName(el, node.className ?? "note-lines");
+      applyClassName(el, resolveClassName(node, context) ?? "note-lines");
       applyInlineStyles(el, node.style);
       return el;
     }
     case "image": {
       const src = resolveBinding(node.url ?? node.src ?? node.text ?? node.value ?? node.bind, context);
       const el = document.createElement("div");
-      applyClassName(el, node.className ?? "press-image");
+      applyClassName(el, resolveClassName(node, context) ?? "press-image");
       applyInlineStyles(el, node.style);
       if (typeof node.width === "number") {
         el.style.width = `${node.width}in`;
@@ -355,6 +387,58 @@ function renderField(node, context) {
       }
       return el;
     }
+    case "table": {
+      const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
+      const columns = node.columns ?? [];
+      const table = document.createElement("table");
+      applyClassName(table, resolveClassName(node, context) ?? "press-table");
+      if (node.showHeadings !== false && columns.length) {
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        applyClassName(headerRow, node.headerRowClassName ?? "table-header");
+        columns.forEach((column) => {
+          const th = document.createElement("th");
+          if (column.width) {
+            th.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
+          }
+          applyClassName(th, column.className);
+          th.textContent = column.header ?? column.label ?? "";
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+      }
+      const tbody = document.createElement("tbody");
+      asArray(rows).forEach((row, index) => {
+        const rowContext = typeof row === "object" && row !== null ? { ...context, ...row } : { ...context, value: row };
+        rowContext.item = row;
+        rowContext.index = index;
+        const tr = document.createElement("tr");
+        applyClassName(tr, node.rowClassName ?? "table-item");
+        columns.forEach((column) => {
+          const td = document.createElement("td");
+          const cellContext = { ...rowContext };
+          if (column.className) {
+            const rawClass = column.className;
+            const resolved =
+              typeof rawClass === "string" && rawClass.startsWith("@")
+                ? resolveBinding(rawClass, cellContext) ?? ""
+                : rawClass;
+            applyClassName(td, resolved);
+          }
+          const cellValue = resolveBinding(column.bind ?? column.text ?? column.value, cellContext);
+          td.textContent = cellValue ?? "";
+          if (column.width) {
+            td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      applyInlineStyles(table, node.style);
+      return table;
+    }
     default: {
       const el = document.createElement("div");
       el.className = "border border-dashed rounded-3 p-3 fs-6 text-body-secondary";
@@ -366,7 +450,8 @@ function renderField(node, context) {
 
 function renderStack(node, context, options) {
   const container = document.createElement("div");
-  applyClassName(container, node.className ?? "d-flex flex-column");
+  applyClassName(container, "d-flex flex-column");
+  applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
   container.style.justifyContent = resolveStackAlignment(node);
   const hasAlignment = typeof node?.align === "string" && node.align.trim() !== "";
@@ -383,12 +468,13 @@ function renderStack(node, context, options) {
 
 function renderRow(node, context, options) {
   const container = document.createElement("div");
-  applyClassName(container, node.className ?? "d-grid");
+  applyClassName(container, "d-grid");
+  applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
   const columnCount = (node.columns && node.columns.length) || 1;
   if (node.templateColumns) {
     container.style.gridTemplateColumns = node.templateColumns;
-  } else if (!node.className) {
+  } else {
     container.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
   }
   container.style.justifyItems = resolveLayoutAlignment(node);
