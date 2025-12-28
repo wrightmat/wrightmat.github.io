@@ -37,7 +37,7 @@ function applyClassName(element, className) {
 }
 
 function resolveClassName(node, context) {
-  const raw = node?.classNameBind ?? node?.className ?? "";
+  const raw = node?.className ?? node?.classNameBind ?? "";
   if (typeof raw === "string" && raw.startsWith("@")) {
     return resolveBinding(raw, context) || null;
   }
@@ -335,6 +335,21 @@ function renderField(node, context) {
       applyTextTransform(el, node);
       return el;
     }
+    case "icon": {
+      const el = document.createElement("span");
+      applyClassName(el, resolveClassName(node, context) ?? "");
+      applyInlineStyles(el, node.style);
+      applyTextFormatting(el, node);
+      applyTextTransform(el, node);
+      const ariaLabel = resolveBinding(node.ariaLabel, context) ?? node.ariaLabel ?? node.label;
+      if (ariaLabel) {
+        el.setAttribute("role", "img");
+        el.setAttribute("aria-label", ariaLabel);
+      } else {
+        el.setAttribute("aria-hidden", "true");
+      }
+      return el;
+    }
     case "stat": {
       const wrapper = document.createElement("div");
       applyClassName(wrapper, resolveClassName(node, context) ?? "panel-box");
@@ -427,7 +442,22 @@ function renderField(node, context) {
             applyClassName(td, resolved);
           }
           const cellValue = resolveBinding(column.bind ?? column.text ?? column.value, cellContext);
-          td.textContent = cellValue ?? "";
+          if (column.component === "icon") {
+            const icon = document.createElement("span");
+            if (typeof cellValue === "string") {
+              applyClassName(icon, cellValue);
+            }
+            const ariaLabel = resolveBinding(column.ariaLabel, cellContext) ?? column.ariaLabel ?? cellContext?.name;
+            if (ariaLabel) {
+              icon.setAttribute("role", "img");
+              icon.setAttribute("aria-label", ariaLabel);
+            } else {
+              icon.setAttribute("aria-hidden", "true");
+            }
+            td.appendChild(icon);
+          } else {
+            td.textContent = cellValue ?? "";
+          }
           if (column.width) {
             td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
