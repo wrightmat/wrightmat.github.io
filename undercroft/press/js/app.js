@@ -826,6 +826,9 @@ function stripNodeIds(node) {
       node: stripNodeIds(column.node),
     }));
   }
+  if (Array.isArray(next.cells)) {
+    next.cells = next.cells.map((row) => (Array.isArray(row) ? row.map((cell) => stripNodeIds(cell)) : row));
+  }
   return next;
 }
 
@@ -936,6 +939,9 @@ function assignNodeIds(node) {
   }
   if (Array.isArray(node.columns)) {
     clone.columns = node.columns.map((column) => ({ ...column, node: assignNodeIds(column.node) }));
+  }
+  if (Array.isArray(node.cells)) {
+    clone.cells = node.cells.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
   }
   return clone;
 }
@@ -1294,6 +1300,15 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) {
+        const found = findNodeById(cell, uid);
+        if (found) return found;
+      }
+    }
+  }
   return null;
 }
 
@@ -1319,6 +1334,20 @@ function removeNodeById(node, uid) {
       }
       const removed = removeNodeById(column.node, uid);
       if (removed) return removed;
+    }
+  }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      const index = row.findIndex((cell) => cell?.uid === uid);
+      if (index >= 0) {
+        const [removed] = row.splice(index, 1, null);
+        return removed;
+      }
+      for (const cell of row) {
+        const removed = removeNodeById(cell, uid);
+        if (removed) return removed;
+      }
     }
   }
   return null;
@@ -1395,6 +1424,41 @@ function createDefaultRowColumn() {
   };
 }
 
+function removeTableColumnCells(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    row.splice(index, 1);
+  });
+}
+
+function moveTableColumnCells(node, fromIndex, toIndex) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    const [moved] = row.splice(fromIndex, 1);
+    row.splice(toIndex, 0, moved ?? null);
+  });
+}
+
+function addTableColumnCells(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    row.splice(index, 0, null);
+  });
+}
+
+function updateTableColumnCells(node, columnIndex, updater) {
+  if (!node || node.component !== "table" || !Array.isArray(node.cells)) return;
+  node.cells.forEach((row) => {
+    if (!Array.isArray(row)) return;
+    const cell = row[columnIndex];
+    if (!cell) return;
+    updater(cell);
+  });
+}
+
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
@@ -1467,6 +1531,7 @@ function renderTableColumnsList(node) {
           const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
           nextColumns.splice(index, 1);
           nodeToUpdate.columns = nextColumns;
+          removeTableColumnCells(nodeToUpdate, index);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -1521,6 +1586,9 @@ function renderTableColumnsList(node) {
         target.bind = bindInput.value;
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableColumnCells(nodeToUpdate, index, (cell) => {
+          cell.text = bindInput.value;
+        });
       });
       renderPreview();
       updateSaveState();
@@ -1583,6 +1651,13 @@ function renderTableColumnsList(node) {
         }
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableColumnCells(nodeToUpdate, index, (cell) => {
+          if (textSizeSelect.value) {
+            cell.textSize = textSizeSelect.value;
+          } else {
+            delete cell.textSize;
+          }
+        });
       });
       renderPreview();
       updateSaveState();
@@ -1619,6 +1694,15 @@ function renderTableColumnsList(node) {
             }
             nextColumns[index] = target;
             nodeToUpdate.columns = nextColumns;
+            updateTableColumnCells(nodeToUpdate, index, (cell) => {
+              const cellStyles = { ...(cell.textStyles ?? {}) };
+              cellStyles[styleOption.key] = checkbox.checked;
+              if (Object.values(cellStyles).some(Boolean)) {
+                cell.textStyles = cellStyles;
+              } else {
+                delete cell.textStyles;
+              }
+            });
           });
           renderPreview();
         });
@@ -1663,6 +1747,13 @@ function renderTableColumnsList(node) {
         }
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableColumnCells(nodeToUpdate, index, (cell) => {
+          if (alignSelect.value) {
+            cell.align = alignSelect.value;
+          } else {
+            delete cell.align;
+          }
+        });
       });
       renderPreview();
       updateSaveState();
@@ -1686,6 +1777,7 @@ function renderTableColumnsList(node) {
           const [moved] = nextColumns.splice(event.oldIndex ?? 0, 1);
           nextColumns.splice(event.newIndex ?? 0, 0, moved);
           nodeToUpdate.columns = nextColumns;
+          moveTableColumnCells(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -2752,6 +2844,7 @@ function bindInspectorControls() {
           const nextColumns = Array.isArray(node.columns) ? [...node.columns] : [];
           nextColumns.push({ header: "New Column", bind: "@value", width: "" });
           node.columns = nextColumns;
+          addTableColumnCells(node, nextColumns.length - 1);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
