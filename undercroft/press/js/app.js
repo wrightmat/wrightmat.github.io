@@ -826,6 +826,9 @@ function stripNodeIds(node) {
       node: stripNodeIds(column.node),
     }));
   }
+  if (Array.isArray(next.headerCells)) {
+    next.headerCells = next.headerCells.map((cell) => stripNodeIds(cell));
+  }
   if (Array.isArray(next.cells)) {
     next.cells = next.cells.map((row) => (Array.isArray(row) ? row.map((cell) => stripNodeIds(cell)) : row));
   }
@@ -939,6 +942,9 @@ function assignNodeIds(node) {
   }
   if (Array.isArray(node.columns)) {
     clone.columns = node.columns.map((column) => ({ ...column, node: assignNodeIds(column.node) }));
+  }
+  if (Array.isArray(node.headerCells)) {
+    clone.headerCells = node.headerCells.map((cell) => assignNodeIds(cell));
   }
   if (Array.isArray(node.cells)) {
     clone.cells = node.cells.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
@@ -1300,6 +1306,12 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
+  if (Array.isArray(node.headerCells)) {
+    for (const cell of node.headerCells) {
+      const found = findNodeById(cell, uid);
+      if (found) return found;
+    }
+  }
   if (Array.isArray(node.cells)) {
     for (const row of node.cells) {
       if (!Array.isArray(row)) continue;
@@ -1333,6 +1345,17 @@ function removeNodeById(node, uid) {
         return removed;
       }
       const removed = removeNodeById(column.node, uid);
+      if (removed) return removed;
+    }
+  }
+  if (Array.isArray(node.headerCells)) {
+    const headerIndex = node.headerCells.findIndex((cell) => cell?.uid === uid);
+    if (headerIndex >= 0) {
+      const [removed] = node.headerCells.splice(headerIndex, 1, null);
+      return removed;
+    }
+    for (const cell of node.headerCells) {
+      const removed = removeNodeById(cell, uid);
       if (removed) return removed;
     }
   }
@@ -1449,6 +1472,29 @@ function addTableColumnCells(node, index) {
   });
 }
 
+function removeTableHeaderCell(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  node.headerCells.splice(index, 1);
+}
+
+function moveTableHeaderCell(node, fromIndex, toIndex) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  const [moved] = node.headerCells.splice(fromIndex, 1);
+  node.headerCells.splice(toIndex, 0, moved ?? null);
+}
+
+function addTableHeaderCell(node, index) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  node.headerCells.splice(index, 0, null);
+}
+
+function updateTableHeaderCellText(node, index, text) {
+  if (!node || node.component !== "table" || !Array.isArray(node.headerCells)) return;
+  const cell = node.headerCells[index];
+  if (!cell) return;
+  cell.text = text;
+}
+
 function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
@@ -1522,6 +1568,7 @@ function renderTableColumnsList(node) {
           nextColumns.splice(index, 1);
           nodeToUpdate.columns = nextColumns;
           removeTableColumnCells(nodeToUpdate, index);
+          removeTableHeaderCell(nodeToUpdate, index);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -1552,6 +1599,7 @@ function renderTableColumnsList(node) {
         target.header = headerInput.value;
         nextColumns[index] = target;
         nodeToUpdate.columns = nextColumns;
+        updateTableHeaderCellText(nodeToUpdate, index, headerInput.value);
       });
       title.textContent = headerInput.value || `Column ${index + 1}`;
       renderPreview();
@@ -1626,6 +1674,7 @@ function renderTableColumnsList(node) {
           nextColumns.splice(event.newIndex ?? 0, 0, moved);
           nodeToUpdate.columns = nextColumns;
           moveTableColumnCells(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
+          moveTableHeaderCell(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
@@ -2693,6 +2742,7 @@ function bindInspectorControls() {
           nextColumns.push({ header: "New Column", bind: "@value", width: "" });
           node.columns = nextColumns;
           addTableColumnCells(node, nextColumns.length - 1);
+          addTableHeaderCell(node, nextColumns.length - 1);
         });
         renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
         renderPreview();
