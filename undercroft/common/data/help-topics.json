@@ -277,6 +277,18 @@
       "href": "../press/index.html#press-sample-data"
     },
     {
+      "id": "press.page-bindings",
+      "title": "Page Bindings",
+      "summary": "Control which data scope each side uses and which collections repeat across grids.",
+      "details": [
+        "Data bindings set the root context for a side so all bindings resolve from a sub-object instead of the full payload.",
+        "Repeat bindings are used for card/chip grids to iterate over a list such as @features or @attacks.",
+        "Leave data blank to keep the full source payload in scope for the current side."
+      ],
+      "category": "Press",
+      "href": "../press/index.html#press-page-bindings"
+    },
+    {
       "id": "press.layout",
       "title": "Layout Canvas & Outline",
       "summary": "Use the right-pane outline or the on-page drag handles to change the order of components for the current side.",
