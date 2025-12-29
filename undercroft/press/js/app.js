@@ -18,7 +18,8 @@ import {
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData } from "./source-data.js";
-import { loadSampleData, setSampleDataText, getSampleDataText, subscribeSampleData } from "./sample-data.js";
+import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
+import { resolveBinding } from "./bindings.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -44,6 +45,7 @@ const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
 const sampleDataInput = document.querySelector("[data-sample-data-input]");
 const sampleDataError = document.querySelector("[data-sample-data-error]");
+const sampleDataLabel = document.querySelector("[data-sample-data-label]");
 const templateInspector = document.querySelector("[data-template-inspector]");
 const templateIdInput = document.querySelector("[data-template-id]");
 const templateNameInput = document.querySelector("[data-template-name]");
@@ -158,6 +160,7 @@ let applyComponentCollapse = null;
 let activeTemplateId = null;
 let templateIdAuto = false;
 let sampleDataSaveTimer = null;
+let sampleDataMode = "sample";
 
 const COLOR_DEFAULTS = {
   foreground: "#212529",
@@ -702,6 +705,96 @@ function getSelectionContext() {
   };
 }
 
+function asArray(value) {
+  if (Array.isArray(value)) return value;
+  if (value === undefined || value === null) return [];
+  return [value];
+}
+
+function createItemContext(context, item, index) {
+  const base = item && typeof item === "object" ? { ...context, ...item } : { ...context, value: item };
+  return { ...base, item, index };
+}
+
+function resolveBasePreviewData() {
+  const { sourceData } = getSelectionContext();
+  if (sourceData && typeof sourceData === "object") {
+    return sourceData;
+  }
+  const sample = getSampleData();
+  if (sample && typeof sample === "object") {
+    return sample;
+  }
+  return {};
+}
+
+function resolveNodePreviewContext(node, targetId, context) {
+  if (!node || !targetId) return null;
+  if (node.uid === targetId) return context;
+  if (Array.isArray(node.children)) {
+    for (const child of node.children) {
+      const found = resolveNodePreviewContext(child, targetId, context);
+      if (found) return found;
+    }
+  }
+  if (Array.isArray(node.columns)) {
+    for (const column of node.columns) {
+      const found = resolveNodePreviewContext(column?.node, targetId, context);
+      if (found) return found;
+    }
+  }
+  if (node.type === "field" && node.component === "list" && node.itemLayout) {
+    const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
+    const itemContext = createItemContext(context, asArray(items)[0], 0);
+    const found = resolveNodePreviewContext(node.itemLayout, targetId, itemContext);
+    if (found) return found;
+  }
+  if (node.type === "field" && node.component === "table") {
+    const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
+    const rowContext = createItemContext(context, asArray(rows)[0], 0);
+    if (Array.isArray(node.cells)) {
+      const row = node.cells[0];
+      if (Array.isArray(row)) {
+        for (const cell of row) {
+          if (Array.isArray(cell)) {
+            for (const nested of cell) {
+              const found = resolveNodePreviewContext(nested, targetId, rowContext);
+              if (found) return found;
+            }
+            continue;
+          }
+          const found = resolveNodePreviewContext(cell, targetId, rowContext);
+          if (found) return found;
+        }
+      }
+    }
+  }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) {
+        if (Array.isArray(cell)) {
+          for (const nested of cell) {
+            const found = resolveNodePreviewContext(nested, targetId, context);
+            if (found) return found;
+          }
+          continue;
+        }
+        const found = resolveNodePreviewContext(cell, targetId, context);
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+}
+
+function getInspectorPreviewContext(nodeId) {
+  const layout = getLayoutForSide(currentSide);
+  const baseContext = resolveBasePreviewData();
+  if (!layout || !nodeId) return baseContext;
+  return resolveNodePreviewContext(layout, nodeId, baseContext) ?? baseContext;
+}
+
 const renderJsonPreview = createJsonPreviewRenderer({
   resolvePreviewElement: () => jsonPreview,
   resolveBytesElement: () => jsonBytes,
@@ -754,12 +847,45 @@ function updateSampleDataFeedback(result) {
   }
 }
 
+function renderSampleDataSection() {
+  if (!sampleDataInput) return;
+  const { sourceData } = getSelectionContext();
+  const hasLoadedData = sourceData && typeof sourceData === "object";
+  if (hasLoadedData) {
+    sampleDataMode = "loaded";
+    sampleDataInput.readOnly = true;
+    sampleDataInput.classList.add("bg-body-secondary");
+    sampleDataInput.value = JSON.stringify(sourceData, null, 2);
+    if (sampleDataLabel) {
+      sampleDataLabel.textContent = "Loaded Data";
+    }
+    if (sampleDataError) {
+      sampleDataError.classList.add("d-none");
+      sampleDataError.textContent = "";
+    }
+    sampleDataInput.classList.remove("is-invalid");
+    return;
+  }
+
+  if (sampleDataMode !== "sample") {
+    sampleDataMode = "sample";
+    sampleDataInput.readOnly = false;
+    sampleDataInput.classList.remove("bg-body-secondary");
+    sampleDataInput.value = getSampleDataText() ?? "";
+    if (sampleDataLabel) {
+      sampleDataLabel.textContent = "Sample Data";
+    }
+  }
+}
+
 async function initSampleDataEditor() {
   const { text } = await loadSampleData();
   if (!sampleDataInput) return;
   sampleDataInput.value = text ?? getSampleDataText() ?? "";
+  renderSampleDataSection();
   updateSampleDataFeedback({ valid: true });
   sampleDataInput.addEventListener("input", () => {
+    if (sampleDataInput.readOnly) return;
     const nextValue = sampleDataInput.value;
     if (sampleDataSaveTimer) {
       window.clearTimeout(sampleDataSaveTimer);
@@ -770,6 +896,7 @@ async function initSampleDataEditor() {
     }, 400);
   });
   subscribeSampleData(() => {
+    renderSampleDataSection();
     renderPreview();
   });
 }
@@ -924,6 +1051,9 @@ function stripNodeIds(node) {
   if (Array.isArray(next.children)) {
     next.children = next.children.map((child) => stripNodeIds(child));
   }
+  if (next.itemLayout) {
+    next.itemLayout = stripNodeIds(next.itemLayout);
+  }
   if (Array.isArray(next.columns)) {
     next.columns = next.columns.map((column) => ({
       ...column,
@@ -1040,6 +1170,9 @@ function assignNodeIds(node) {
   const clone = { ...node, uid: node.uid ?? nextNodeId() };
   if (Array.isArray(node.children)) {
     clone.children = node.children.map((child) => assignNodeIds(child));
+  }
+  if (node.itemLayout) {
+    clone.itemLayout = assignNodeIds(node.itemLayout);
   }
   if (Array.isArray(node.columns)) {
     clone.columns = node.columns.map((column) => ({ ...column, node: assignNodeIds(column.node) }));
@@ -1398,6 +1531,10 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
+  if (node.itemLayout) {
+    const found = findNodeById(node.itemLayout, uid);
+    if (found) return found;
+  }
   if (Array.isArray(node.columns)) {
     for (const column of node.columns) {
       const found = findNodeById(column.node, uid);
@@ -1432,6 +1569,11 @@ function findParentNode(node, uid, parent = null) {
       const found = findParentNode(child, uid, node);
       if (found) return found;
     }
+  }
+  if (node.itemLayout) {
+    if (node.itemLayout?.uid === uid) return node;
+    const found = findParentNode(node.itemLayout, uid, node);
+    if (found) return found;
   }
   if (Array.isArray(node.columns)) {
     for (const column of node.columns) {
@@ -1473,6 +1615,15 @@ function removeNodeById(node, uid) {
       const removed = removeNodeById(child, uid);
       if (removed) return removed;
     }
+  }
+  if (node.itemLayout) {
+    if (node.itemLayout.uid === uid) {
+      const removed = node.itemLayout;
+      node.itemLayout = null;
+      return removed;
+    }
+    const removed = removeNodeById(node.itemLayout, uid);
+    if (removed) return removed;
   }
   if (Array.isArray(node.columns)) {
     for (const column of node.columns) {
@@ -2150,15 +2301,25 @@ function getNodeIconClass(node) {
   return iconTokens.join(" ");
 }
 
-function updateIconPreview(value) {
+function resolveIconPreviewValue(value, context) {
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed) return "";
+  if (trimmed.startsWith("@")) {
+    const resolved = resolveBinding(trimmed, context);
+    return typeof resolved === "string" ? resolved.trim() : "";
+  }
+  return trimmed;
+}
+
+function updateIconPreview(value, context) {
   if (!iconPreview) return;
   iconPreview.className = "press-icon-preview";
   iconPreview.innerHTML = "";
-  const trimmed = value?.trim() ?? "";
-  if (!trimmed || trimmed.startsWith("@")) {
+  const resolvedValue = resolveIconPreviewValue(value, context);
+  if (!resolvedValue) {
     return;
   }
-  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  const tokens = resolvedValue.split(/\s+/).filter(Boolean);
   const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
   if (hasBootstrap) {
     const icon = document.createElement("i");
@@ -2183,7 +2344,7 @@ function applyIconSelection(value) {
       delete node.iconClass;
     }
   });
-  updateIconPreview(value);
+  updateIconPreview(value, getInspectorPreviewContext(selectedNodeId));
   renderPreview();
   updateSaveState();
   renderIconOptions(value);
@@ -2352,7 +2513,7 @@ function updateInspector() {
   if (!hasSelection) {
     if (textEditor) textEditor.value = "";
     if (iconInput) iconInput.value = "";
-    updateIconPreview("");
+    updateIconPreview("", {});
     renderIconOptions("");
     if (imageUrlInput) imageUrlInput.value = "";
     if (imageWidthInput) imageWidthInput.value = "";
@@ -2554,7 +2715,7 @@ function updateInspector() {
   if (iconInput) {
     const iconClass = getNodeIconClass(node);
     iconInput.value = iconClass;
-    updateIconPreview(iconClass);
+    updateIconPreview(iconClass, getInspectorPreviewContext(node?.uid));
     renderIconOptions(iconClass);
     if (iconOptionsList) {
       iconOptionsList.querySelectorAll("[data-icon-value]").forEach((row) => {
@@ -2767,6 +2928,7 @@ function renderPreview() {
 
   buildPrintStack(template, { size, format, data: sourceData, source: sourceContext });
   updateSideButton();
+  renderSampleDataSection();
   renderJsonPreview();
 }
 
