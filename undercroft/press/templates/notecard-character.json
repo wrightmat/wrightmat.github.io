@@ -46,9 +46,12 @@
                   "children": [
                     {
                       "type": "field",
-                      "component": "heading",
+                      "component": "text",
                       "text": "@name",
-                      "textSize": "xl"
+                      "textSize": "xl",
+                      "textStyles": {
+                        "bold": true
+                      }
                     },
                     {
                       "type": "field",
@@ -67,9 +70,12 @@
                   "children": [
                     {
                       "type": "field",
-                      "component": "heading",
+                      "component": "text",
                       "text": "@classSummary",
-                      "textSize": "lg"
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      }
                     },
                     {
                       "type": "field",
