@@ -14,6 +14,7 @@ import {
   getStandardFormats,
   getTemplateById,
   getTemplates,
+  buildTemplatePreview,
   loadTemplates,
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
@@ -800,23 +801,11 @@ const renderJsonPreview = createJsonPreviewRenderer({
   resolveBytesElement: () => jsonBytes,
   serialize: () => {
     const context = getSelectionContext();
-    return {
-      source: {
-        id: context.source?.id ?? null,
-        value: context.sourceValue,
-        data: context.sourceData ?? null,
-      },
-      template: {
-        id: context.template?.id ?? null,
-        format: context.format?.id ?? null,
-        orientation: context.orientation,
-        size: context.size,
-      },
-      view: {
-        side: currentSide,
-        overlays: true,
-      },
-    };
+    if (!context.template) {
+      return {};
+    }
+    const previewData = resolveBasePreviewData();
+    return buildTemplatePreview(context.template, previewData);
   },
 });
 
