@@ -1,0 +1,1022 @@
+{
+  "id": "notecard-character",
+  "title": "Character Notecard (5 \u00d7 7)",
+  "description": "Compact character overview aligned to the classic notecard layout.",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "supportedSources": [
+    "ddb",
+    "srd",
+    "json",
+    "manual"
+  ],
+  "card": {
+    "width": 5,
+    "height": 7,
+    "gutter": 0,
+    "safeInset": 0.1,
+    "columns": 1,
+    "rows": 1
+  },
+  "pages": {
+    "front": {
+      "repeat": "@characterNotecardCards",
+      "layout": {
+        "type": "stack",
+        "gap": 2,
+        "children": [
+          {
+            "type": "row",
+            "gap": 1,
+            "templateColumns": "1.7fr 1fr",
+            "columns": [
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 0,
+                  "children": [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@name",
+                      "textSize": "sm",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@identityLine",
+                      "textSize": "xs",
+                      "className": "text-body-secondary"
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 0,
+                  "children": [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@classSummary",
+                      "textSize": "sm",
+                      "textStyles": {
+                        "bold": true
+                      },
+                      "align": "end"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@personalityTraits",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "italic": true
+                      },
+                      "align": "end"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "gap": 1,
+            "templateColumns": "1fr 1.2fr 1.6fr",
+            "columns": [
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Ability Scores",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "stack",
+                      "gap": 1,
+                      "children": [
+                        {
+                          "type": "field",
+                          "component": "stat",
+                          "label": "@abilities.0.name",
+                          "text": "@abilities.0.display",
+                          "textSize": "xs",
+                          "align": "center",
+                          "style": {
+                            "color": "red",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
+                        },
+                        {
+                          "type": "field",
+                          "component": "stat",
+                          "label": "@abilities.1.name",
+                          "text": "@abilities.1.display",
+                          "textSize": "xs",
+                          "align": "center",
+                          "style": {
+                            "color": "gold",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
+                        },
+                        {
+                          "type": "field",
+                          "component": "stat",
+                          "label": "@abilities.2.name",
+                          "text": "@abilities.2.display",
+                          "textSize": "xs",
+                          "align": "center",
+                          "style": {
+                            "color": "darkorange",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
+                        },
+                        {
+                          "type": "field",
+                          "component": "stat",
+                          "label": "@abilities.3.name",
+                          "text": "@abilities.3.display",
+                          "textSize": "xs",
+                          "align": "center",
+                          "style": {
+                            "color": "blue",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
+                        },
+                        {
+                          "type": "field",
+                          "component": "stat",
+                          "label": "@abilities.4.name",
+                          "text": "@abilities.4.display",
+                          "textSize": "xs",
+                          "align": "center",
+                          "style": {
+                            "color": "green",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
+                        },
+                        {
+                          "type": "field",
+                          "component": "stat",
+                          "label": "@abilities.5.name",
+                          "text": "@abilities.5.display",
+                          "textSize": "xs",
+                          "align": "center",
+                          "style": {
+                            "color": "purple",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Saving Throws",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@saves",
+                      "listTag": "div",
+                      "itemTag": "div",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
+                      "itemClassNameBind": "@itemClass",
+                      "itemLayout": {
+                        "type": "row",
+                        "gap": 1,
+                        "templateColumns": "auto auto 1fr",
+                        "columns": [
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "",
+                              "textStyle": "span",
+                              "classNameBind": "@circleClass"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@modifier",
+                              "textStyle": "span",
+                              "textSize": "xs",
+                              "className": "modifier"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@name",
+                              "textStyle": "span",
+                              "textSize": "xs",
+                              "className": "name"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Skills",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@skills",
+                      "listTag": "div",
+                      "itemTag": "div",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
+                      "itemClassNameBind": "@itemClass",
+                      "itemLayout": {
+                        "type": "row",
+                        "gap": 1,
+                        "templateColumns": "auto auto 1fr auto",
+                        "columns": [
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "",
+                              "textStyle": "span",
+                              "classNameBind": "@circleClass"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@modifier",
+                              "textStyle": "span",
+                              "textSize": "xs",
+                              "className": "modifier"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@name",
+                              "textStyle": "span",
+                              "textSize": "xs",
+                              "className": "name"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "icon",
+                              "iconClass": "@icon",
+                              "className": "text-body-secondary"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "type": "stack",
+                  "gap": 1,
+                  "children": [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Hit Points",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@hpLine",
+                      "textSize": "sm",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@hitDiceLine",
+                      "textSize": "xs",
+                      "className": "text-body-secondary"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Temp:",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "stat",
+                      "label": "Proficiency Bonus",
+                      "text": "@proficiencyBonus",
+                      "textSize": "xs",
+                      "className": "press-block",
+                      "gap": 2,
+                      "style": {
+                        "borderColor": "#adb5bd",
+                        "borderWidth": 1,
+                        "borderStyle": "solid",
+                        "borderRadius": 6,
+                        "borderSides": {
+                          "top": true,
+                          "right": true,
+                          "bottom": true,
+                          "left": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "row",
+                      "gap": 0,
+                      "templateColumns": "1fr auto",
+                      "columns": [
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "Initiative",
+                            "text": "@initiative.value",
+                            "textSize": "xs",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "icon",
+                            "iconClass": "@initiative.icon",
+                            "className": "text-body-secondary"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "field",
+                      "component": "stat",
+                      "label": "Armor Class",
+                      "text": "@ac.value",
+                      "textSize": "xs",
+                      "className": "press-block",
+                      "gap": 2,
+                      "style": {
+                        "borderColor": "#adb5bd",
+                        "borderWidth": 1,
+                        "borderStyle": "solid",
+                        "borderRadius": 6,
+                        "borderSides": {
+                          "top": true,
+                          "right": true,
+                          "bottom": true,
+                          "left": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "stat",
+                      "label": "Speed",
+                      "text": "@speedLine",
+                      "textSize": "xs",
+                      "className": "press-block",
+                      "gap": 2,
+                      "style": {
+                        "borderColor": "#adb5bd",
+                        "borderWidth": 1,
+                        "borderStyle": "solid",
+                        "borderRadius": 6,
+                        "borderSides": {
+                          "top": true,
+                          "right": true,
+                          "bottom": true,
+                          "left": true
+                        }
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Proficiencies",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@proficiencyLines.armor",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@proficiencyLines.weapons",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@proficiencyLines.tools",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@proficiencyLines.languages",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Senses",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@passiveLines.perception",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@passiveLines.investigation",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@passiveLines.insight",
+                      "textSize": "xs"
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@senses",
+                      "listTag": "div",
+                      "itemTag": "div",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
+                      "itemLayout": {
+                        "type": "row",
+                        "gap": 1,
+                        "templateColumns": "1fr auto",
+                        "columns": [
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@name",
+                              "textSize": "xs"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@range",
+                              "textSize": "xs",
+                              "align": "end"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Defenses",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@defenses",
+                      "listTag": "div",
+                      "itemTag": "div",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
+                      "itemLayout": {
+                        "type": "row",
+                        "gap": 1,
+                        "templateColumns": "auto 1fr",
+                        "columns": [
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "icon",
+                              "iconClass": "@iconClass",
+                              "className": "text-body-secondary"
+                            }
+                          },
+                          {
+                            "node": {
+                              "type": "field",
+                              "component": "text",
+                              "text": "@name",
+                              "textSize": "xs"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "stack",
+            "gap": 0,
+            "children": [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@alignmentLine",
+                "textSize": "xs",
+                "className": "text-body-secondary mb-0"
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@detailsLine",
+                "textSize": "xs",
+                "className": "text-body-secondary mb-0"
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@appearanceLine",
+                "textSize": "xs",
+                "className": "text-body-secondary mb-0"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@characterNotecardCards",
+      "layout": {
+        "type": "stack",
+        "gap": 2,
+        "children": [
+          {
+            "type": "stack",
+            "gap": 0,
+            "children": [
+              {
+                "type": "row",
+                "gap": 1,
+                "templateColumns": "1fr 1fr",
+                "columns": [
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Attacks",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true,
+                        "underline": true
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@attacksMetaLine",
+                      "textSize": "xs",
+                      "align": "end"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@limitedUsesLine",
+                "textSize": "xs",
+                "className": "text-body-secondary",
+                "align": "end"
+              }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@attacks",
+            "textSize": "xs",
+            "gap": 1,
+            "textSizeCustom": true,
+            "style": {
+              "fontSize": 10
+            },
+            "columns": [
+              {
+                "header": "Attack Name",
+                "bind": "@name",
+                "width": "30%"
+              },
+              {
+                "header": "To Hit",
+                "bind": "@toHit",
+                "width": "10%"
+              },
+              {
+                "header": "Damage",
+                "bind": "@damage",
+                "width": "15%"
+              },
+              {
+                "header": "Range",
+                "bind": "@range",
+                "width": "15%"
+              },
+              {
+                "header": "Notes",
+                "bind": "@notes",
+                "width": "30%"
+              }
+            ]
+          },
+          {
+            "type": "stack",
+            "gap": 1,
+            "children": [
+              {
+                "type": "row",
+                "gap": 1,
+                "templateColumns": "1fr 1fr",
+                "columns": [
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@spellsHeading",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true,
+                        "underline": true
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@spellsMetaLine",
+                      "textSize": "xs",
+                      "align": "end"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "Cantrips",
+                "textSize": "xs",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "table",
+                "rowsBind": "@spells.cantrips",
+                "textSize": "xs",
+                "gap": 1,
+                "textSizeCustom": true,
+                "style": {
+                  "fontSize": 10
+                },
+                "columns": [
+                  {
+                    "header": "Spell Name",
+                    "bind": "@name",
+                    "width": "35%"
+                  },
+                  {
+                    "header": "Hit/DC",
+                    "bind": "@hit",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Effect",
+                    "bind": "@effect",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Time",
+                    "bind": "@time",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Range",
+                    "bind": "@range",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Notes",
+                    "bind": "@notes",
+                    "width": "15%"
+                  }
+                ]
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "1st Level",
+                "textSize": "xs",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "table",
+                "rowsBind": "@spells.level1",
+                "textSize": "xs",
+                "gap": 1,
+                "textSizeCustom": true,
+                "style": {
+                  "fontSize": 10
+                },
+                "columns": [
+                  {
+                    "header": "Spell Name",
+                    "bind": "@name",
+                    "width": "35%"
+                  },
+                  {
+                    "header": "Hit/DC",
+                    "bind": "@hit",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Effect",
+                    "bind": "@effect",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Time",
+                    "bind": "@time",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Range",
+                    "bind": "@range",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Notes",
+                    "bind": "@notes",
+                    "width": "15%"
+                  }
+                ]
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "2nd Level",
+                "textSize": "xs",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "table",
+                "rowsBind": "@spells.level2",
+                "textSize": "xs",
+                "gap": 1,
+                "textSizeCustom": true,
+                "style": {
+                  "fontSize": 10
+                },
+                "columns": [
+                  {
+                    "header": "Spell Name",
+                    "bind": "@name",
+                    "width": "35%"
+                  },
+                  {
+                    "header": "Hit/DC",
+                    "bind": "@hit",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Effect",
+                    "bind": "@effect",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Time",
+                    "bind": "@time",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Range",
+                    "bind": "@range",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Notes",
+                    "bind": "@notes",
+                    "width": "15%"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "stack",
+            "gap": 1,
+            "children": [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "Features",
+                "textSize": "xs",
+                "textStyles": {
+                  "bold": true,
+                  "underline": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "list",
+                "itemsBind": "@features",
+                "listTag": "div",
+                "itemTag": "div",
+                "gap": 1,
+                "className": "d-flex flex-column",
+                "itemLayout": {
+                  "type": "stack",
+                  "gap": 0,
+                  "children": [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@name",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@description",
+                      "textSize": "xs"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

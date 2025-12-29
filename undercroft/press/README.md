@@ -12,8 +12,8 @@ printed output for cards and sheets.
   live source payloads when Generate Print is used, replacing placeholder data
   inside the preview and print stack.
 - Poker card (3 × 3), chip (1-inch circle), and tarot (2 × 2) grids, 5 × 7
-  notecard, letter sheet, and A6 sheet templates with selectable
-  size/orientation where applicable.
+  notecard and character notecard, letter sheet, and A6 sheet templates with
+  selectable size/orientation where applicable.
 - Live overlay toggles for trim lines and safe areas to measure alignment before
   production. Preview labels include the selected source and format for quick
   verification.

@@ -257,8 +257,8 @@ body[data-theme="dark"] .preview-stage {
 }
 
 .card-tile {
-  background: linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(13, 110, 253, 0));
-  border: 1px solid rgba(13, 110, 253, 0.35);
+  background: #fff;
+  border: 1px solid rgba(33, 37, 41, 0.2);
   border-radius: 0.35rem;
   padding: 0.125in;
   display: flex;
@@ -417,6 +417,12 @@ body[data-theme="dark"] .preview-stage {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+}
+
+.press-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .panel-box h3 {
