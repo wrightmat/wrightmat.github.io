@@ -420,11 +420,9 @@ body[data-theme="dark"] .preview-stage {
 }
 
 .press-block {
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.75);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0;
 }
 
 .panel-box h3 {
