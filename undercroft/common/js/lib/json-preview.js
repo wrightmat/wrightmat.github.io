@@ -28,7 +28,11 @@ export function updateJsonPreview(previewElement, bytesElement, data) {
     return;
   }
   const text = toPrettyJson(data);
-  previewElement.textContent = text;
+  if ("value" in previewElement) {
+    previewElement.value = text;
+  } else {
+    previewElement.textContent = text;
+  }
   if (bytesElement) {
     const size = new Blob([text]).size;
     bytesElement.textContent = formatSize(size);
