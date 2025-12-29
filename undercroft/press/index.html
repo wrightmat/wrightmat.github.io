@@ -489,6 +489,49 @@
                   </div>
                 </div>
               </section>
+              <section class="border rounded-3 bg-body p-3 d-flex flex-column gap-3" data-template-page-bindings>
+                <div class="d-flex align-items-center justify-content-between">
+                  <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Page Bindings</h3>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateFrontData">Front data binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateFrontData"
+                      placeholder="@"
+                      data-template-front-data
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateFrontRepeat">Front repeat binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateFrontRepeat"
+                      placeholder="@features"
+                      data-template-front-repeat
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateBackData">Back data binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateBackData"
+                      placeholder="@"
+                      data-template-back-data
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateBackRepeat">Back repeat binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateBackRepeat"
+                      placeholder="@features"
+                      data-template-back-repeat
+                    />
+                  </div>
+                </div>
+              </section>
               <button class="btn btn-outline-danger w-100" type="button" data-template-delete>
                 Delete Template
               </button>
