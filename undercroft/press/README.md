@@ -19,9 +19,10 @@ printed output for cards and sheets.
   verification.
 - Templates live as JSON in the `templates/` directory using the Workbench-style
   component layout schema and are hydrated into the preview at runtime with
-  source data payloads (falling back to the global sample data in
+  raw source data payloads (falling back to the global sample data in
   `data/sample-data.json`, which is editable from the left-pane Sample Data
-  section).
+  section). The JSON Preview panel shows the template with `@` bindings resolved
+  against the current raw data.
 - Drag-and-drop component editing for each side of a template, including a
   palette, sortable layout outline, and component inspector for text, image
   URLs, font sizing (XS–XL plus custom points), orientation (vertical, diagonal,

@@ -582,11 +582,7 @@ async function loadDdbData(value) {
     throw new Error("Enter a valid D&D Beyond character ID or URL.");
   }
   const rawCharacter = await fetchDdbCharacter(id);
-  const parsed = window.ddbParseCharacter(rawCharacter);
-  const cards = buildDdbCards(parsed);
-  const sheet = buildDdbSheet(parsed);
-  const characterNotecard = buildNotecardCharacter(parsed);
-  return { cards, ...sheet, characterNotecard, characterNotecardCards: [characterNotecard] };
+  return window.ddbParseCharacter(rawCharacter);
 }
 
 function normalizeSrdInput(value) {
@@ -823,23 +819,7 @@ async function loadSrdData(value) {
   if (!response.ok) {
     throw new Error(`5e API request failed (${response.status}).`);
   }
-  const data = await response.json();
-  if (Array.isArray(data?.results)) {
-    const cards = normalizeCards(
-      data.results.map((item) => ({
-        title: item.name || item.index || "Entry",
-        type: "SRD Index",
-        label: item.index || "",
-        body: item.url || "",
-        footer: "Use the item URL or slug to load full details.",
-      })),
-    );
-    const sheet = normalizeSheetData(null, cards);
-    return { cards, ...sheet };
-  }
-  const cards = buildSrdCards(data);
-  const sheet = buildSrdSheet(data);
-  return { cards, ...sheet };
+  return response.json();
 }
 
 export async function loadSourceData(source, value) {
@@ -856,11 +836,11 @@ export async function loadSourceData(source, value) {
         throw new Error("Select a JSON file to load.");
       }
       const raw = await readJsonFile(value);
-      return normalizeJsonData(raw);
+      return raw;
     }
     case "manual":
-      return buildManualData(value || "");
+      return { text: value || "" };
     default:
-      return buildManualData("Unsupported source.");
+      return { text: "Unsupported source." };
   }
 }
