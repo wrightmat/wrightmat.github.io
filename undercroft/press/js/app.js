@@ -752,12 +752,6 @@ function resolveNodePreviewContext(node, targetId, context) {
       if (found) return found;
     }
   }
-  if (node.type === "field" && node.component === "list" && node.itemLayout) {
-    const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
-    const itemContext = createItemContext(context, asArray(items)[0], 0);
-    const found = resolveNodePreviewContext(node.itemLayout, targetId, itemContext);
-    if (found) return found;
-  }
   if (node.type === "field" && node.component === "table") {
     const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
     const rowContext = createItemContext(context, asArray(rows)[0], 0);
@@ -1048,9 +1042,6 @@ function stripNodeIds(node) {
   if (Array.isArray(next.children)) {
     next.children = next.children.map((child) => stripNodeIds(child));
   }
-  if (next.itemLayout) {
-    next.itemLayout = stripNodeIds(next.itemLayout);
-  }
   if (Array.isArray(next.columns)) {
     next.columns = next.columns.map((column) => ({
       ...column,
@@ -1167,9 +1158,6 @@ function assignNodeIds(node) {
   const clone = { ...node, uid: node.uid ?? nextNodeId() };
   if (Array.isArray(node.children)) {
     clone.children = node.children.map((child) => assignNodeIds(child));
-  }
-  if (node.itemLayout) {
-    clone.itemLayout = assignNodeIds(node.itemLayout);
   }
   if (Array.isArray(node.columns)) {
     clone.columns = node.columns.map((column) => ({ ...column, node: assignNodeIds(column.node) }));
@@ -1562,10 +1550,6 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
-  if (node.itemLayout) {
-    const found = findNodeById(node.itemLayout, uid);
-    if (found) return found;
-  }
   if (Array.isArray(node.columns)) {
     for (const column of node.columns) {
       const found = findNodeById(column.node, uid);
@@ -1600,11 +1584,6 @@ function findParentNode(node, uid, parent = null) {
       const found = findParentNode(child, uid, node);
       if (found) return found;
     }
-  }
-  if (node.itemLayout) {
-    if (node.itemLayout?.uid === uid) return node;
-    const found = findParentNode(node.itemLayout, uid, node);
-    if (found) return found;
   }
   if (Array.isArray(node.columns)) {
     for (const column of node.columns) {
@@ -1646,15 +1625,6 @@ function removeNodeById(node, uid) {
       const removed = removeNodeById(child, uid);
       if (removed) return removed;
     }
-  }
-  if (node.itemLayout) {
-    if (node.itemLayout.uid === uid) {
-      const removed = node.itemLayout;
-      node.itemLayout = null;
-      return removed;
-    }
-    const removed = removeNodeById(node.itemLayout, uid);
-    if (removed) return removed;
   }
   if (Array.isArray(node.columns)) {
     for (const column of node.columns) {
