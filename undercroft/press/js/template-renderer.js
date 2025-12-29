@@ -622,11 +622,12 @@ function renderField(node, context, options = {}) {
           if (options?.editable && !Array.isArray(tableCells[index])) {
             tableCells[index] = rowCells;
           }
-          let cellNode = rowCells[columnIndex];
-          if (!cellNode) {
-            cellNode = createCellNode(index, column, columnIndex);
+          let cellNodes = rowCells[columnIndex];
+          if (!Array.isArray(cellNodes)) {
+            const baseNode = cellNodes || createCellNode(index, column, columnIndex);
+            cellNodes = baseNode ? [baseNode] : [];
             if (options?.editable) {
-              rowCells[columnIndex] = cellNode;
+              rowCells[columnIndex] = cellNodes;
             }
           }
           if (options?.editable) {
@@ -639,10 +640,18 @@ function renderField(node, context, options = {}) {
             slot.dataset.parentNodeId = node.uid ?? "";
             slot.dataset.rowIndex = String(index);
             slot.dataset.columnIndex = String(columnIndex);
-            slot.appendChild(renderNode(cellNode, cellContext, options));
+            cellNodes.forEach((cellNode) => {
+              slot.appendChild(renderNode(cellNode, cellContext, options));
+            });
             td.appendChild(slot);
           } else {
-            td.appendChild(renderNode(cellNode, cellContext, options));
+            if (Array.isArray(cellNodes)) {
+              cellNodes.forEach((cellNode) => {
+                td.appendChild(renderNode(cellNode, cellContext, options));
+              });
+            } else {
+              td.appendChild(renderNode(cellNodes, cellContext, options));
+            }
           }
           if (column.width) {
             td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
