@@ -34,7 +34,7 @@
       "repeat": "@characterNotecardCards",
       "layout": {
         "type": "stack",
-        "gap": 2,
+        "gap": 0,
         "children": [
           {
             "type": "row",
@@ -56,11 +56,30 @@
                       }
                     },
                     {
-                      "type": "field",
-                      "component": "text",
-                      "text": "@identityLine",
-                      "textSize": "xs",
-                      "className": "text-body-secondary"
+                      "type": "row",
+                      "gap": 0,
+                      "columns": [
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "text",
+                            "text": "@gender",
+                            "textSize": "xs",
+                            "className": "card-body-text",
+                            "textSizeCustom": false,
+                            "label": "@gender"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "text",
+                            "text": "@identityLine",
+                            "textSize": "xs",
+                            "className": "text-body-secondary"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -88,7 +107,11 @@
                       "textStyles": {
                         "italic": true
                       },
-                      "align": "end"
+                      "align": "end",
+                      "style": {
+                        "fontSize": 9.333333333333332
+                      },
+                      "textSizeCustom": true
                     }
                   ]
                 }
@@ -123,7 +146,7 @@
                           "component": "stat",
                           "label": "@abilities.0.name",
                           "text": "@abilities.0.display",
-                          "textSize": "xs",
+                          "textSize": "xl",
                           "align": "center",
                           "style": {
                             "color": "red",
@@ -139,14 +162,15 @@
                             }
                           },
                           "className": "press-block",
-                          "gap": 2
+                          "gap": 2,
+                          "textSizeCustom": false
                         },
                         {
                           "type": "field",
                           "component": "stat",
                           "label": "@abilities.1.name",
                           "text": "@abilities.1.display",
-                          "textSize": "xs",
+                          "textSize": "xl",
                           "align": "center",
                           "style": {
                             "color": "gold",
@@ -162,14 +186,15 @@
                             }
                           },
                           "className": "press-block",
-                          "gap": 2
+                          "gap": 2,
+                          "textSizeCustom": false
                         },
                         {
                           "type": "field",
                           "component": "stat",
                           "label": "@abilities.2.name",
                           "text": "@abilities.2.display",
-                          "textSize": "xs",
+                          "textSize": "xl",
                           "align": "center",
                           "style": {
                             "color": "darkorange",
@@ -185,14 +210,15 @@
                             }
                           },
                           "className": "press-block",
-                          "gap": 2
+                          "gap": 2,
+                          "textSizeCustom": false
                         },
                         {
                           "type": "field",
                           "component": "stat",
                           "label": "@abilities.3.name",
                           "text": "@abilities.3.display",
-                          "textSize": "xs",
+                          "textSize": "xl",
                           "align": "center",
                           "style": {
                             "color": "blue",
@@ -208,14 +234,15 @@
                             }
                           },
                           "className": "press-block",
-                          "gap": 2
+                          "gap": 2,
+                          "textSizeCustom": false
                         },
                         {
                           "type": "field",
                           "component": "stat",
                           "label": "@abilities.4.name",
                           "text": "@abilities.4.display",
-                          "textSize": "xs",
+                          "textSize": "xl",
                           "align": "center",
                           "style": {
                             "color": "green",
@@ -231,14 +258,15 @@
                             }
                           },
                           "className": "press-block",
-                          "gap": 2
+                          "gap": 2,
+                          "textSizeCustom": false
                         },
                         {
                           "type": "field",
                           "component": "stat",
                           "label": "@abilities.5.name",
                           "text": "@abilities.5.display",
-                          "textSize": "xs",
+                          "textSize": "xl",
                           "align": "center",
                           "style": {
                             "color": "purple",
@@ -254,7 +282,8 @@
                             }
                           },
                           "className": "press-block",
-                          "gap": 2
+                          "gap": 2,
+                          "textSizeCustom": false
                         }
                       ]
                     }
@@ -281,7 +310,7 @@
                       "itemsBind": "@saves",
                       "listTag": "div",
                       "itemTag": "div",
-                      "gap": 1,
+                      "gap": 0,
                       "className": "d-flex flex-column",
                       "itemClassNameBind": "@itemClass",
                       "itemLayout": {
@@ -319,7 +348,9 @@
                             }
                           }
                         ]
-                      }
+                      },
+                      "textSize": "sm",
+                      "textSizeCustom": false
                     },
                     {
                       "type": "field",
@@ -336,7 +367,7 @@
                       "itemsBind": "@skills",
                       "listTag": "div",
                       "itemTag": "div",
-                      "gap": 1,
+                      "gap": 0,
                       "className": "d-flex flex-column",
                       "itemClassNameBind": "@itemClass",
                       "itemLayout": {
@@ -382,7 +413,9 @@
                             }
                           }
                         ]
-                      }
+                      },
+                      "textSize": "sm",
+                      "textSizeCustom": false
                     }
                   ]
                 }
@@ -390,7 +423,7 @@
               {
                 "node": {
                   "type": "stack",
-                  "gap": 1,
+                  "gap": 0,
                   "children": [
                     {
                       "type": "field",
@@ -405,23 +438,35 @@
                       "type": "field",
                       "component": "text",
                       "text": "@hpLine",
-                      "textSize": "sm",
+                      "textSize": "lg",
                       "textStyles": {
                         "bold": true
-                      }
+                      },
+                      "textSizeCustom": false,
+                      "align": "center"
                     },
                     {
-                      "type": "field",
-                      "component": "text",
-                      "text": "@hitDiceLine",
-                      "textSize": "xs",
-                      "className": "text-body-secondary"
-                    },
-                    {
-                      "type": "field",
-                      "component": "text",
-                      "text": "Temp:",
-                      "textSize": "xs"
+                      "type": "row",
+                      "gap": 3,
+                      "columns": [
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "text",
+                            "text": "@hitDiceLine",
+                            "textSize": "xs",
+                            "className": "text-body-secondary"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "text",
+                            "text": "Temp:",
+                            "textSize": "xs"
+                          }
+                        }
+                      ]
                     },
                     {
                       "type": "field",
@@ -430,19 +475,7 @@
                       "text": "@proficiencyBonus",
                       "textSize": "xs",
                       "className": "press-block",
-                      "gap": 2,
-                      "style": {
-                        "borderColor": "#adb5bd",
-                        "borderWidth": 1,
-                        "borderStyle": "solid",
-                        "borderRadius": 6,
-                        "borderSides": {
-                          "top": true,
-                          "right": true,
-                          "bottom": true,
-                          "left": true
-                        }
-                      }
+                      "gap": 0
                     },
                     {
                       "type": "row",
@@ -457,19 +490,7 @@
                             "text": "@initiative.value",
                             "textSize": "xs",
                             "className": "press-block",
-                            "gap": 2,
-                            "style": {
-                              "borderColor": "#adb5bd",
-                              "borderWidth": 1,
-                              "borderStyle": "solid",
-                              "borderRadius": 6,
-                              "borderSides": {
-                                "top": true,
-                                "right": true,
-                                "bottom": true,
-                                "left": true
-                              }
-                            }
+                            "gap": 0
                           }
                         },
                         {
@@ -489,19 +510,7 @@
                       "text": "@ac.value",
                       "textSize": "xs",
                       "className": "press-block",
-                      "gap": 2,
-                      "style": {
-                        "borderColor": "#adb5bd",
-                        "borderWidth": 1,
-                        "borderStyle": "solid",
-                        "borderRadius": 6,
-                        "borderSides": {
-                          "top": true,
-                          "right": true,
-                          "bottom": true,
-                          "left": true
-                        }
-                      }
+                      "gap": 0
                     },
                     {
                       "type": "field",
@@ -510,19 +519,7 @@
                       "text": "@speedLine",
                       "textSize": "xs",
                       "className": "press-block",
-                      "gap": 2,
-                      "style": {
-                        "borderColor": "#adb5bd",
-                        "borderWidth": 1,
-                        "borderStyle": "solid",
-                        "borderRadius": 6,
-                        "borderSides": {
-                          "top": true,
-                          "right": true,
-                          "bottom": true,
-                          "left": true
-                        }
-                      }
+                      "gap": 0
                     },
                     {
                       "type": "field",
@@ -632,7 +629,7 @@
                       "itemsBind": "@defenses",
                       "listTag": "div",
                       "itemTag": "div",
-                      "gap": 1,
+                      "gap": 0,
                       "className": "d-flex flex-column",
                       "itemLayout": {
                         "type": "row",
@@ -656,7 +653,9 @@
                             }
                           }
                         ]
-                      }
+                      },
+                      "textSize": "xs",
+                      "textSizeCustom": false
                     }
                   ]
                 }
@@ -706,7 +705,7 @@
               {
                 "type": "row",
                 "gap": 1,
-                "templateColumns": "1fr 1fr",
+                "templateColumns": "0.6fr 1.4fr",
                 "columns": [
                   {
                     "node": {
@@ -730,14 +729,6 @@
                     }
                   }
                 ]
-              },
-              {
-                "type": "field",
-                "component": "text",
-                "text": "@limitedUsesLine",
-                "textSize": "xs",
-                "className": "text-body-secondary",
-                "align": "end"
               }
             ]
           },
@@ -755,28 +746,531 @@
               {
                 "header": "Attack Name",
                 "bind": "@name",
-                "width": "30%"
+                "width": "30%",
+                "node": null
               },
               {
                 "header": "To Hit",
                 "bind": "@toHit",
-                "width": "10%"
+                "width": "10%",
+                "node": null
               },
               {
                 "header": "Damage",
                 "bind": "@damage",
-                "width": "15%"
+                "width": "15%",
+                "node": null
               },
               {
                 "header": "Range",
                 "bind": "@range",
-                "width": "15%"
+                "width": "15%",
+                "node": null
               },
               {
                 "header": "Notes",
                 "bind": "@notes",
-                "width": "30%"
+                "width": "30%",
+                "node": null
               }
+            ],
+            "cells": [
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 6.666666666666666
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 6.666666666666666
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 6.666666666666666
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 6.666666666666666
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 6.666666666666666
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 6.666666666666666
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ]
+              ],
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@name",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@toHit",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@damage",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@range",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "@notes",
+                    "textSize": "xs",
+                    "textSizeCustom": true,
+                    "style": {
+                      "fontSize": 10
+                    }
+                  }
+                ]
+              ]
             ]
           },
           {
@@ -834,33 +1328,485 @@
                   {
                     "header": "Spell Name",
                     "bind": "@name",
-                    "width": "35%"
+                    "width": "35%",
+                    "node": null
                   },
                   {
                     "header": "Hit/DC",
                     "bind": "@hit",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   },
                   {
                     "header": "Effect",
                     "bind": "@effect",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   },
                   {
                     "header": "Time",
                     "bind": "@time",
-                    "width": "10%"
+                    "width": "10%",
+                    "node": null
                   },
                   {
                     "header": "Range",
                     "bind": "@range",
-                    "width": "10%"
+                    "width": "10%",
+                    "node": null
                   },
                   {
                     "header": "Notes",
                     "bind": "@notes",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   }
+                ],
+                "cells": [
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 8.666666666666666
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 8.666666666666666
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 8.666666666666666
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 8.666666666666666
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 8.666666666666666
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 8.666666666666666
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ]
                 ]
               },
               {
@@ -886,33 +1832,263 @@
                   {
                     "header": "Spell Name",
                     "bind": "@name",
-                    "width": "35%"
+                    "width": "35%",
+                    "node": null
                   },
                   {
                     "header": "Hit/DC",
                     "bind": "@hit",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   },
                   {
                     "header": "Effect",
                     "bind": "@effect",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   },
                   {
                     "header": "Time",
                     "bind": "@time",
-                    "width": "10%"
+                    "width": "10%",
+                    "node": null
                   },
                   {
                     "header": "Range",
                     "bind": "@range",
-                    "width": "10%"
+                    "width": "10%",
+                    "node": null
                   },
                   {
                     "header": "Notes",
                     "bind": "@notes",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   }
+                ],
+                "cells": [
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ],
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@hit",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@effect",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@time",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@range",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        }
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@notes",
+                        "textSize": "xs",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 6.666666666666666
+                        }
+                      }
+                    ]
+                  ]
                 ]
               },
               {
@@ -938,34 +2114,41 @@
                   {
                     "header": "Spell Name",
                     "bind": "@name",
-                    "width": "35%"
+                    "width": "35%",
+                    "node": null
                   },
                   {
                     "header": "Hit/DC",
                     "bind": "@hit",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   },
                   {
                     "header": "Effect",
                     "bind": "@effect",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   },
                   {
                     "header": "Time",
                     "bind": "@time",
-                    "width": "10%"
+                    "width": "10%",
+                    "node": null
                   },
                   {
                     "header": "Range",
                     "bind": "@range",
-                    "width": "10%"
+                    "width": "10%",
+                    "node": null
                   },
                   {
                     "header": "Notes",
                     "bind": "@notes",
-                    "width": "15%"
+                    "width": "15%",
+                    "node": null
                   }
-                ]
+                ],
+                "cells": []
               }
             ]
           },
@@ -1018,5 +2201,10 @@
         ]
       }
     }
-  }
+  },
+  "name": "Character Notecard (5 \u00d7 7)",
+  "sides": [
+    "front",
+    "back"
+  ]
 }
