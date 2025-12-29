@@ -41,7 +41,7 @@
   },
   "pages": {
     "front": {
-      "repeat": "@chips",
+      "repeat": "@skills",
       "layout": {
         "type": "stack",
         "gap": 1,
@@ -51,22 +51,21 @@
           {
             "type": "field",
             "component": "text",
-            "text": "@label",
+            "text": "@friendlyName",
             "textSize": "sm",
             "className": "chip-meta mb-0"
           },
           {
             "type": "field",
-            "component": "image",
-            "url": "@image",
-            "width": 0.5,
-            "height": 0.5,
-            "className": "press-image chip-image"
+            "component": "text",
+            "text": "@ability",
+            "textSize": "sm",
+            "className": "chip-meta mb-0"
           },
           {
             "type": "field",
             "component": "text",
-            "text": "@subtitle",
+            "text": "@value",
             "textSize": "sm",
             "className": "chip-meta mb-0"
           }
