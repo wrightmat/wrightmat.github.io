@@ -4,9 +4,23 @@
   "description": "Full-page character layout with matching notes back for double-sided runs.",
   "type": "sheet",
   "formats": [
-    { "id": "letter", "label": "US Letter", "sizeId": "letter", "orientations": ["portrait", "landscape"], "defaultOrientation": "portrait" }
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    }
   ],
-  "supportedSources": ["ddb", "srd", "json", "manual"],
+  "supportedSources": [
+    "ddb",
+    "srd",
+    "json",
+    "manual"
+  ],
   "pages": {
     "front": {
       "data": "@front",
@@ -23,11 +37,33 @@
                 "type": "row",
                 "gap": 2,
                 "columns": [
-                  { "node": { "type": "field", "component": "heading", "text": "@title" } },
-                  { "node": { "type": "field", "component": "text", "text": "@badge", "className": "badge text-bg-primary" } }
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@title",
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@badge",
+                      "className": "badge text-bg-primary"
+                    }
+                  }
                 ]
               },
-              { "type": "field", "component": "text", "text": "@subtitle", "className": "mb-0 text-body-secondary" }
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@subtitle",
+                "className": "mb-0 text-body-secondary"
+              }
             ]
           },
           {
@@ -41,22 +77,90 @@
                   "className": "panel-box",
                   "gap": 4,
                   "children": [
-                    { "type": "field", "component": "heading", "text": "Character Snapshot", "className": "fw-semibold" },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Character Snapshot",
+                      "className": "fw-semibold",
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
                     {
                       "type": "row",
                       "gap": 3,
                       "columns": [
-                        { "node": { "type": "field", "component": "stat", "label": "@stats.0.label", "text": "@stats.0.value" } },
-                        { "node": { "type": "field", "component": "stat", "label": "@stats.1.label", "text": "@stats.1.value" } },
-                        { "node": { "type": "field", "component": "stat", "label": "@stats.2.label", "text": "@stats.2.value" } },
-                        { "node": { "type": "field", "component": "stat", "label": "@stats.3.label", "text": "@stats.3.value" } },
-                        { "node": { "type": "field", "component": "stat", "label": "@stats.4.label", "text": "@stats.4.value" } },
-                        { "node": { "type": "field", "component": "stat", "label": "@stats.5.label", "text": "@stats.5.value" } }
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "@stats.0.label",
+                            "text": "@stats.0.value"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "@stats.1.label",
+                            "text": "@stats.1.value"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "@stats.2.label",
+                            "text": "@stats.2.value"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "@stats.3.label",
+                            "text": "@stats.3.value"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "@stats.4.label",
+                            "text": "@stats.4.value"
+                          }
+                        },
+                        {
+                          "node": {
+                            "type": "field",
+                            "component": "stat",
+                            "label": "@stats.5.label",
+                            "text": "@stats.5.value"
+                          }
+                        }
                       ]
                     },
-                    { "type": "field", "component": "heading", "text": "Highlights" },
-                    { "type": "field", "component": "text", "text": "Quick summary of combat moves, exploration tricks, and social edges used to confirm spacing.", "className": "mb-0" },
-                    { "type": "field", "component": "list", "itemsBind": "@highlights" }
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Highlights",
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Quick summary of combat moves, exploration tricks, and social edges used to confirm spacing.",
+                      "className": "mb-0"
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@highlights"
+                    }
                   ]
                 }
               },
@@ -66,15 +170,37 @@
                   "className": "panel-box",
                   "gap": 3,
                   "children": [
-                    { "type": "field", "component": "heading", "text": "Inventory & Slots" },
-                    { "type": "field", "component": "text", "text": "Slots mirror the Scriptorium starter pack for quick alignment.", "className": "mb-0" },
-                    { "type": "field", "component": "list", "itemsBind": "@inventory" }
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Inventory & Slots",
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Slots mirror the Scriptorium starter pack for quick alignment.",
+                      "className": "mb-0"
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@inventory"
+                    }
                   ]
                 }
               }
             ]
           },
-          { "type": "field", "component": "text", "text": "@footer", "className": "text-body-secondary small mb-0" }
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@footer",
+            "className": "text-body-secondary small mb-0"
+          }
         ]
       }
     },
@@ -93,11 +219,33 @@
                 "type": "row",
                 "gap": 2,
                 "columns": [
-                  { "node": { "type": "field", "component": "heading", "text": "@title" } },
-                  { "node": { "type": "field", "component": "text", "text": "@badge", "className": "badge text-bg-primary" } }
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@title",
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    }
+                  },
+                  {
+                    "node": {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@badge",
+                      "className": "badge text-bg-primary"
+                    }
+                  }
                 ]
               },
-              { "type": "field", "component": "text", "text": "@subtitle", "className": "mb-0 text-body-secondary" }
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@subtitle",
+                "className": "mb-0 text-body-secondary"
+              }
             ]
           },
           {
@@ -105,8 +253,19 @@
             "className": "panel-box flex-grow-1",
             "gap": 4,
             "children": [
-              { "type": "field", "component": "heading", "text": "Session Log" },
-              { "type": "field", "component": "noteLines" },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "Session Log",
+                "textSize": "lg",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "noteLines"
+              },
               {
                 "type": "row",
                 "className": "panel-columns",
@@ -118,8 +277,20 @@
                       "className": "panel-box",
                       "gap": 2,
                       "children": [
-                        { "type": "field", "component": "heading", "text": "Allies" },
-                        { "type": "field", "component": "text", "text": "@allies" }
+                        {
+                          "type": "field",
+                          "component": "text",
+                          "text": "Allies",
+                          "textSize": "lg",
+                          "textStyles": {
+                            "bold": true
+                          }
+                        },
+                        {
+                          "type": "field",
+                          "component": "text",
+                          "text": "@allies"
+                        }
                       ]
                     }
                   },
@@ -129,8 +300,20 @@
                       "className": "panel-box",
                       "gap": 2,
                       "children": [
-                        { "type": "field", "component": "heading", "text": "Risks" },
-                        { "type": "field", "component": "text", "text": "@risks" }
+                        {
+                          "type": "field",
+                          "component": "text",
+                          "text": "Risks",
+                          "textSize": "lg",
+                          "textStyles": {
+                            "bold": true
+                          }
+                        },
+                        {
+                          "type": "field",
+                          "component": "text",
+                          "text": "@risks"
+                        }
                       ]
                     }
                   },
@@ -140,8 +323,20 @@
                       "className": "panel-box",
                       "gap": 2,
                       "children": [
-                        { "type": "field", "component": "heading", "text": "Reminders" },
-                        { "type": "field", "component": "text", "text": "@reminders" }
+                        {
+                          "type": "field",
+                          "component": "text",
+                          "text": "Reminders",
+                          "textSize": "lg",
+                          "textStyles": {
+                            "bold": true
+                          }
+                        },
+                        {
+                          "type": "field",
+                          "component": "text",
+                          "text": "@reminders"
+                        }
                       ]
                     }
                   }
@@ -149,7 +344,12 @@
               }
             ]
           },
-          { "type": "field", "component": "text", "text": "@footer", "className": "text-body-secondary small mb-0" }
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@footer",
+            "className": "text-body-secondary small mb-0"
+          }
         ]
       }
     }

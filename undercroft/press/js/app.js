@@ -228,20 +228,6 @@ let bootstrapIconOptions = [];
 
 const paletteComponents = [
   {
-    id: "heading",
-    label: "Heading",
-    description: "Section headers and callouts",
-    icon: "tabler:text-size",
-    node: {
-      type: "field",
-      component: "heading",
-      text: "New Heading",
-      textSize: "lg",
-      textStyles: { bold: true },
-      className: "card-title",
-    },
-  },
-  {
     id: "text",
     label: "Text",
     description: "Paragraphs, summaries, or captions",
@@ -315,9 +301,9 @@ const paletteComponents = [
       children: [
         {
           type: "field",
-          component: "heading",
+          component: "text",
           text: "Stack heading",
-          textSize: "md",
+          textSize: "lg",
           textStyles: { bold: true },
           className: "card-title",
         },
@@ -1520,7 +1506,6 @@ function describeNode(node) {
   if (!node) return "Component";
   if (node.type === "row") return "Row";
   if (node.type === "stack") return "Stack";
-  if (node.component === "heading") return node.text || "Heading";
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
   if (node.component === "icon") return node.ariaLabel || "Icon";
   if (node.component === "badge") return node.text || node.label || "Badge";
@@ -1846,7 +1831,6 @@ function mapFontSizeToToken(size) {
 }
 
 function getDefaultTextSize(node) {
-  if (node?.component === "heading") return "lg";
   if (node?.component === "text") return "md";
   return "md";
 }
@@ -1863,7 +1847,7 @@ function resolveTextSize(node) {
 
 function resolveTextStyles(node) {
   const defaults = {
-    bold: node?.component === "heading",
+    bold: false,
     italic: false,
     underline: false,
   };
