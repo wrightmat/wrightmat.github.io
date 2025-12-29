@@ -268,11 +268,11 @@
     {
       "id": "press.sample-data",
       "title": "Global Sample Data",
-      "summary": "Edit the shared JSON used for previews when no source data is loaded.",
+      "summary": "Edit the shared JSON used for previews when no source data is loaded, or review loaded data when available.",
       "details": [
         "Changes are saved automatically to local storage.",
         "Valid JSON updates the preview immediately; invalid JSON is highlighted until corrected.",
-        "Use this for placeholder content across all templates."],
+        "When source data is loaded, this panel switches to display the loaded payload instead of the sample JSON."],
       "category": "Press",
       "href": "../press/index.html#press-sample-data"
     },
