@@ -61,6 +61,10 @@ const templateCardGutterInput = document.querySelector("[data-template-card-gutt
 const templateCardSafeInsetInput = document.querySelector("[data-template-card-safe-inset]");
 const templateCardColumnsInput = document.querySelector("[data-template-card-columns]");
 const templateCardRowsInput = document.querySelector("[data-template-card-rows]");
+const templateFrontDataInput = document.querySelector("[data-template-front-data]");
+const templateFrontRepeatInput = document.querySelector("[data-template-front-repeat]");
+const templateBackDataInput = document.querySelector("[data-template-back-data]");
+const templateBackRepeatInput = document.querySelector("[data-template-back-repeat]");
 const templateToggle = document.querySelector("[data-template-toggle]");
 const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
 const templatePanel = document.querySelector("[data-template-panel]");
@@ -1353,6 +1357,13 @@ function updateTemplateInspector(template) {
     if (templateCardColumnsInput) templateCardColumnsInput.value = "";
     if (templateCardRowsInput) templateCardRowsInput.value = "";
   }
+
+  const frontPage = editablePages?.front ?? {};
+  const backPage = editablePages?.back ?? {};
+  if (templateFrontDataInput) templateFrontDataInput.value = frontPage.data ?? "";
+  if (templateFrontRepeatInput) templateFrontRepeatInput.value = frontPage.repeat ?? "";
+  if (templateBackDataInput) templateBackDataInput.value = backPage.data ?? "";
+  if (templateBackRepeatInput) templateBackRepeatInput.value = backPage.repeat ?? "";
 }
 
 function bindTemplateInspectorControls() {
@@ -1494,6 +1505,33 @@ function bindTemplateInspectorControls() {
       }
       updateSaveState();
       renderPreview();
+    });
+  });
+
+  const pageBindingInputs = [
+    { input: templateFrontDataInput, side: "front", key: "data" },
+    { input: templateFrontRepeatInput, side: "front", key: "repeat" },
+    { input: templateBackDataInput, side: "back", key: "data" },
+    { input: templateBackRepeatInput, side: "back", key: "repeat" },
+  ];
+
+  pageBindingInputs.forEach(({ input, side, key }) => {
+    if (!input) return;
+    input.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      const trimmed = input.value.trim();
+      const page = editablePages?.[side] ?? {};
+      const next = { ...page };
+      if (trimmed) {
+        next[key] = trimmed;
+      } else {
+        delete next[key];
+      }
+      editablePages = { ...editablePages, [side]: next };
+      updateSaveState();
+      renderPreview();
+      renderJsonPreview();
     });
   });
 
