@@ -844,6 +844,54 @@
                       </div>
                     </div>
                   </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-border-group hidden>
+                    <div class="fw-semibold text-body-secondary">Borders</div>
+                    <div class="d-flex align-items-start gap-2 flex-wrap">
+                      <div class="d-flex flex-column gap-1">
+                        <label class="form-label small text-body-secondary mb-0" for="componentBorderWidth">Thickness (px)</label>
+                        <input class="form-control" type="number" min="0" max="12" step="1" id="componentBorderWidth" data-component-border-width />
+                      </div>
+                      <div class="d-flex flex-column gap-1">
+                        <label class="form-label small text-body-secondary mb-0" for="componentBorderRadius">Corner radius (px)</label>
+                        <input class="form-control" type="number" min="0" max="24" step="1" id="componentBorderRadius" data-component-border-radius />
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label small text-body-secondary mb-0" for="componentBorderStyle">Border style</label>
+                      <select class="form-select" id="componentBorderStyle" data-component-border-style>
+                        <option value="solid">Solid</option>
+                        <option value="dashed">Dashed</option>
+                        <option value="dotted">Dotted</option>
+                        <option value="double">Double</option>
+                        <option value="groove">Groove</option>
+                        <option value="ridge">Ridge</option>
+                        <option value="inset">Inset</option>
+                        <option value="outset">Outset</option>
+                        <option value="none">None</option>
+                      </select>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                      <label class="form-label small text-body-secondary mb-0">Border sides</label>
+                      <div class="d-flex flex-wrap gap-2">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="componentBorderSideTop" data-component-border-side="top" />
+                          <label class="form-check-label" for="componentBorderSideTop">Top</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="componentBorderSideRight" data-component-border-side="right" />
+                          <label class="form-check-label" for="componentBorderSideRight">Right</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="componentBorderSideBottom" data-component-border-side="bottom" />
+                          <label class="form-check-label" for="componentBorderSideBottom">Bottom</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="componentBorderSideLeft" data-component-border-side="left" />
+                          <label class="form-check-label" for="componentBorderSideLeft">Left</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div class="d-flex flex-column gap-2" data-inspector-alignment>
                     <label class="fw-semibold text-body-secondary" data-alignment-title>Alignment</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Text alignment">
