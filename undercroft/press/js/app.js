@@ -241,18 +241,6 @@ const paletteComponents = [
     },
   },
   {
-    id: "image",
-    label: "Image",
-    description: "Artwork or icon with URL binding",
-    icon: "tabler:photo",
-    node: {
-      type: "field",
-      component: "image",
-      url: "",
-      className: "press-image",
-    },
-  },
-  {
     id: "icon",
     label: "Icon",
     description: "CSS class icons and status markers",
@@ -262,6 +250,18 @@ const paletteComponents = [
       component: "icon",
       iconClass: "ddb-advantage",
       ariaLabel: "Status icon",
+    },
+  },
+  {
+    id: "image",
+    label: "Image",
+    description: "Artwork or icon with URL binding",
+    icon: "tabler:photo",
+    node: {
+      type: "field",
+      component: "image",
+      url: "",
+      className: "press-image",
     },
   },
   {
@@ -277,43 +277,18 @@ const paletteComponents = [
     },
   },
   {
-    id: "stat",
-    label: "Block",
-    description: "Label + value blocks",
-    icon: "tabler:graph",
+    id: "table",
+    label: "Table",
+    description: "Column-based data tables",
+    icon: "tabler:table",
     node: {
       type: "field",
-      component: "stat",
-      label: "Label",
-      text: "Value",
-      className: "panel-box",
-    },
-  },
-  {
-    id: "stack",
-    label: "Stack",
-    description: "Vertical layout groups",
-    icon: "tabler:layout-list",
-    node: {
-      type: "stack",
-      gap: 4,
-      align: "justify",
-      children: [
-        {
-          type: "field",
-          component: "text",
-          text: "Stack heading",
-          textSize: "lg",
-          textStyles: { bold: true },
-          className: "card-title",
-        },
-        {
-          type: "field",
-          component: "text",
-          text: "Stack body text",
-          textSize: "md",
-          className: "mb-0",
-        },
+      component: "table",
+      rowsBind: "@rows",
+      className: "press-table",
+      columns: [
+        { header: "Column 1", bind: "@value" },
+        { header: "Column 2", bind: "@detail" },
       ],
     },
   },
@@ -348,6 +323,47 @@ const paletteComponents = [
     },
   },
   {
+    id: "stack",
+    label: "Stack",
+    description: "Vertical layout groups",
+    icon: "tabler:layout-list",
+    node: {
+      type: "stack",
+      gap: 4,
+      align: "justify",
+      children: [
+        {
+          type: "field",
+          component: "text",
+          text: "Stack heading",
+          textSize: "lg",
+          textStyles: { bold: true },
+          className: "card-title",
+        },
+        {
+          type: "field",
+          component: "text",
+          text: "Stack body text",
+          textSize: "md",
+          className: "mb-0",
+        },
+      ],
+    },
+  },
+  {
+    id: "stat",
+    label: "Block",
+    description: "Label + value blocks",
+    icon: "tabler:graph",
+    node: {
+      type: "field",
+      component: "stat",
+      label: "Label",
+      text: "Value",
+      className: "panel-box",
+    },
+  },
+  {
     id: "noteLines",
     label: "Note Lines",
     description: "Ruled space for handwriting",
@@ -358,23 +374,37 @@ const paletteComponents = [
       className: "note-lines",
     },
   },
-  {
-    id: "table",
-    label: "Table",
-    description: "Column-based data tables",
-    icon: "tabler:table",
-    node: {
-      type: "field",
-      component: "table",
-      rowsBind: "@rows",
-      className: "press-table",
-      columns: [
-        { header: "Column 1", bind: "@value" },
-        { header: "Column 2", bind: "@detail" },
-      ],
-    },
-  },
 ];
+
+const COMPONENT_REQUIRED_CLASS_MAP = {
+  image: ["press-image"],
+  table: ["press-table"],
+  noteLines: ["note-lines"],
+  stat: ["panel-box"],
+};
+
+function getComponentRequiredClassTokens(node) {
+  if (!node?.component) return [];
+  return COMPONENT_REQUIRED_CLASS_MAP[node.component] ?? [];
+}
+
+function splitClassTokens(value = "") {
+  return value.split(/\s+/).filter(Boolean);
+}
+
+function getClassNameWithoutRequiredTokens(node, value) {
+  const tokens = splitClassTokens(value);
+  if (!tokens.length) return "";
+  const requiredTokens = new Set(getComponentRequiredClassTokens(node));
+  return tokens.filter((token) => !requiredTokens.has(token)).join(" ");
+}
+
+function mergeRequiredClassTokens(node, value) {
+  const requiredTokens = getComponentRequiredClassTokens(node);
+  const tokens = splitClassTokens(value);
+  const combined = [...requiredTokens, ...tokens];
+  return Array.from(new Set(combined)).join(" ");
+}
 
 const standardFormats = getStandardFormats();
 const standardFormatMap = new Map(standardFormats.map((format) => [format.id, format]));
@@ -2339,7 +2369,7 @@ function updateInspector() {
     imageHeightInput.value = isImageNode && node.height !== undefined ? String(node.height) : "";
   }
   if (classNameInput) {
-    classNameInput.value = node.className ?? "";
+    classNameInput.value = getClassNameWithoutRequiredTokens(node, node.className ?? "");
   }
   if (iconInput) {
     const iconClass = getNodeIconClass(node);
@@ -3002,8 +3032,9 @@ function bindInspectorControls() {
     classNameInput.addEventListener("input", () => {
       updateSelectedNode((node) => {
         const value = classNameInput.value.trim();
-        if (value) {
-          node.className = value;
+        const merged = mergeRequiredClassTokens(node, value);
+        if (merged) {
+          node.className = merged;
         } else {
           delete node.className;
         }
