@@ -68,6 +68,9 @@ const templateBackRepeatInput = document.querySelector("[data-template-back-repe
 const templateToggle = document.querySelector("[data-template-toggle]");
 const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
 const templatePanel = document.querySelector("[data-template-panel]");
+const pageBindingsToggle = document.querySelector("[data-page-bindings-toggle]");
+const pageBindingsToggleLabel = pageBindingsToggle?.querySelector("[data-page-bindings-toggle-label]");
+const pageBindingsPanel = document.querySelector("[data-page-bindings-panel]");
 const templateSaveButton = document.querySelector("[data-template-save]");
 const templateDeleteButton = document.querySelector("[data-template-delete]");
 const cardToggle = document.querySelector("[data-card-toggle]");
@@ -160,6 +163,7 @@ let isSaving = false;
 let isGenerating = false;
 let applySelectionCollapse = null;
 let applyTemplateCollapse = null;
+let applyPageBindingsCollapse = null;
 let applyCardCollapse = null;
 let applyComponentCollapse = null;
 let activeTemplateId = null;
@@ -3109,6 +3113,12 @@ function initPressCollapsibles() {
     collapseLabel: "Collapse template properties",
     labelElement: templateToggleLabel,
   });
+  applyPageBindingsCollapse = bindCollapsibleToggle(pageBindingsToggle, pageBindingsPanel, {
+    collapsed: false,
+    expandLabel: "Expand page bindings",
+    collapseLabel: "Collapse page bindings",
+    labelElement: pageBindingsToggleLabel,
+  });
   applyCardCollapse = bindCollapsibleToggle(cardToggle, cardPanel, {
     collapsed: false,
     expandLabel: "Expand card properties",
@@ -3129,11 +3139,13 @@ function setInspectorMode(mode) {
   }
   if (mode === "template") {
     if (applyTemplateCollapse) applyTemplateCollapse(false);
+    if (applyPageBindingsCollapse) applyPageBindingsCollapse(false);
     if (applyCardCollapse) applyCardCollapse(false);
     if (applyComponentCollapse) applyComponentCollapse(true);
   }
   if (mode === "component") {
     if (applyTemplateCollapse) applyTemplateCollapse(true);
+    if (applyPageBindingsCollapse) applyPageBindingsCollapse(true);
     if (applyCardCollapse) applyCardCollapse(true);
     if (applyComponentCollapse) applyComponentCollapse(false);
   }
