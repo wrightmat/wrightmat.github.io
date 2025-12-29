@@ -1408,6 +1408,13 @@ function findNodeById(node, uid) {
     for (const row of node.cells) {
       if (!Array.isArray(row)) continue;
       for (const cell of row) {
+        if (Array.isArray(cell)) {
+          for (const nestedCell of cell) {
+            const found = findNodeById(nestedCell, uid);
+            if (found) return found;
+          }
+          continue;
+        }
         const found = findNodeById(cell, uid);
         if (found) return found;
       }
@@ -1437,6 +1444,14 @@ function findParentNode(node, uid, parent = null) {
     for (const row of node.cells) {
       if (!Array.isArray(row)) continue;
       for (const cell of row) {
+        if (Array.isArray(cell)) {
+          for (const nestedCell of cell) {
+            if (nestedCell?.uid === uid) return node;
+            const found = findParentNode(nestedCell, uid, node);
+            if (found) return found;
+          }
+          continue;
+        }
         if (cell?.uid === uid) return node;
         const found = findParentNode(cell, uid, node);
         if (found) return found;
@@ -1479,6 +1494,18 @@ function removeNodeById(node, uid) {
         return removed;
       }
       for (const cell of row) {
+        if (Array.isArray(cell)) {
+          const nestedIndex = cell.findIndex((entry) => entry?.uid === uid);
+          if (nestedIndex >= 0) {
+            const [removed] = cell.splice(nestedIndex, 1);
+            return removed;
+          }
+          for (const nestedCell of cell) {
+            const removed = removeNodeById(nestedCell, uid);
+            if (removed) return removed;
+          }
+          continue;
+        }
         const removed = removeNodeById(cell, uid);
         if (removed) return removed;
       }
@@ -1573,7 +1600,7 @@ function setRowColumnNode(rowNode, columnIndex, node) {
   rowNode.columns[columnIndex].node = node;
 }
 
-function setTableCellNode(tableNode, rowIndex, columnIndex, node) {
+function getTableCellNodes(tableNode, rowIndex, columnIndex) {
   if (!tableNode || tableNode.component !== "table") return;
   if (!Array.isArray(tableNode.cells)) {
     tableNode.cells = [];
@@ -1587,7 +1614,25 @@ function setTableCellNode(tableNode, rowIndex, columnIndex, node) {
   while (tableNode.cells[rowIndex].length <= columnIndex) {
     tableNode.cells[rowIndex].push(null);
   }
-  tableNode.cells[rowIndex][columnIndex] = node;
+  const cellEntry = tableNode.cells[rowIndex][columnIndex];
+  if (!Array.isArray(cellEntry)) {
+    tableNode.cells[rowIndex][columnIndex] = cellEntry ? [cellEntry] : [];
+  }
+  return tableNode.cells[rowIndex][columnIndex];
+}
+
+function insertTableCellNode(tableNode, rowIndex, columnIndex, node, index) {
+  const cellNodes = getTableCellNodes(tableNode, rowIndex, columnIndex);
+  if (!Array.isArray(cellNodes)) return;
+  const targetIndex = Math.max(0, Math.min(index, cellNodes.length));
+  cellNodes.splice(targetIndex, 0, node);
+}
+
+function reorderTableCellNodes(tableNode, rowIndex, columnIndex, fromIndex, toIndex) {
+  const cellNodes = getTableCellNodes(tableNode, rowIndex, columnIndex);
+  if (!Array.isArray(cellNodes) || !cellNodes[fromIndex]) return;
+  const [moved] = cellNodes.splice(fromIndex, 1);
+  cellNodes.splice(Math.max(0, toIndex), 0, moved);
 }
 
 function getDraggedNodeId(item) {
@@ -3041,11 +3086,31 @@ function handleSlotAdd(event, slotElement) {
     } else if (slotType === "table") {
       const rowIndex = Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
       const columnIndex = Number.parseInt(slotElement.dataset.columnIndex ?? "0", 10);
-      setTableCellNode(parentNode, rowIndex, columnIndex, node);
+      const targetIndex = typeof event.newIndex === "number" ? event.newIndex : Number.MAX_SAFE_INTEGER;
+      insertTableCellNode(parentNode, rowIndex, columnIndex, node, targetIndex);
     }
     selectedNodeId = node.uid ?? selectedNodeId;
     renderLayoutList();
     updateInspector();
+    renderPreview();
+  });
+  updateSaveState();
+}
+
+function handleSlotReorder(event, slotElement) {
+  const slotType = slotElement?.dataset?.pressSlot;
+  if (slotType !== "table") return;
+  const layout = getLayoutForSide(currentSide);
+  if (!layout || !slotElement) return;
+  const parentId = slotElement.dataset.parentNodeId;
+  if (!parentId) return;
+  const parentNode = findNodeById(layout, parentId);
+  if (!parentNode) return;
+  const rowIndex = Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
+  const columnIndex = Number.parseInt(slotElement.dataset.columnIndex ?? "0", 10);
+  recordUndoableChange(() => {
+    reorderTableCellNodes(parentNode, rowIndex, columnIndex, event.oldIndex ?? 0, event.newIndex ?? 0);
+    renderLayoutList();
     renderPreview();
   });
   updateSaveState();
@@ -3080,14 +3145,16 @@ function initCanvasDnd(rootElement) {
 
   const slotTargets = Array.from(rootElement.querySelectorAll("[data-press-slot]"));
   slotTargets.forEach((slot) => {
+    const isTableSlot = slot.dataset.pressSlot === "table";
     const sortable = createSortable(slot, {
       group: { name: "press-layout", pull: true, put: true },
       animation: 150,
       fallbackOnBody: true,
       handle: null,
-      sort: false,
+      sort: isTableSlot,
       draggable: "[data-node-id], [data-component-type]",
       onAdd: (event) => handleSlotAdd(event, slot),
+      onUpdate: (event) => handleSlotReorder(event, slot),
     });
     if (sortable) canvasSortables.push(sortable);
   });
