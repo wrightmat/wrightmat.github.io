@@ -341,13 +341,14 @@
         </main>
 
         <aside
-          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg workbench-pane"
+          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar-lg workbench-pane"
           data-pane="right"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <section class="d-flex flex-column gap-4" data-template-properties>
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-4" data-template-properties>
             <div class="d-flex align-items-center justify-content-between">
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
               <div class="d-flex align-items-center gap-2">
@@ -405,6 +406,65 @@
                   data-template-sources
                 ></select>
               </div>
+              <section
+                class="border rounded-3 bg-body p-3 d-flex flex-column gap-3"
+                id="press-page-bindings"
+                data-template-page-bindings
+              >
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-2">
+                    <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Page Bindings</h3>
+                    <span class="align-middle" data-help-topic="press.page-bindings" data-help-insert="replace"></span>
+                  </div>
+                  <button
+                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                    type="button"
+                    data-page-bindings-toggle
+                    aria-expanded="true"
+                  >
+                    <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                    <span class="visually-hidden" data-page-bindings-toggle-label>Collapse page bindings</span>
+                  </button>
+                </div>
+                <div class="d-flex flex-column gap-3" data-page-bindings-panel>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateFrontData">Front data binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateFrontData"
+                      placeholder="@"
+                      data-template-front-data
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateFrontRepeat">Front repeat binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateFrontRepeat"
+                      placeholder="@features"
+                      data-template-front-repeat
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateBackData">Back data binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateBackData"
+                      placeholder="@"
+                      data-template-back-data
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label small text-body-secondary fw-semibold" for="templateBackRepeat">Back repeat binding</label>
+                    <input
+                      class="form-control form-control-sm"
+                      id="templateBackRepeat"
+                      placeholder="@features"
+                      data-template-back-repeat
+                    />
+                  </div>
+                </div>
+              </section>
               <section class="border rounded-3 bg-body p-3 d-flex flex-column gap-3" data-template-card-group hidden>
                 <div class="d-flex align-items-center justify-content-between">
                   <h3 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Grid Properties</h3>
@@ -973,6 +1033,7 @@
               </section>
             </div>
           </section>
+          </div>
         </aside>
       </div>
     </div>

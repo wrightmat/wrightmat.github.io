@@ -17,6 +17,10 @@ printed output for cards and sheets.
 - Live overlay toggles for trim lines and safe areas to measure alignment before
   production. Preview labels include the selected source and format for quick
   verification.
+- Page bindings can optionally set the root data scope for each side and control
+  repeat bindings for card/chip grids. Leaving the data binding blank keeps the
+  full source payload in scope, while repeat bindings target arrays such as
+  `@features` or `@attacks`.
 - Templates live as JSON in the `templates/` directory using the Workbench-style
   component layout schema and are hydrated into the preview at runtime with
   raw source data payloads (falling back to the global sample data in
