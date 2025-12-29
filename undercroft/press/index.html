@@ -846,9 +846,15 @@
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-border-group hidden>
                     <div class="fw-semibold text-body-secondary">Borders</div>
-                    <div class="d-flex flex-column gap-1">
-                      <label class="form-label small text-body-secondary mb-0" for="componentBorderWidth">Border thickness (px)</label>
-                      <input class="form-control" type="number" min="0" max="12" step="1" id="componentBorderWidth" data-component-border-width />
+                    <div class="d-flex align-items-start gap-2 flex-wrap">
+                      <div class="d-flex flex-column gap-1">
+                        <label class="form-label small text-body-secondary mb-0" for="componentBorderWidth">Thickness (px)</label>
+                        <input class="form-control" type="number" min="0" max="12" step="1" id="componentBorderWidth" data-component-border-width />
+                      </div>
+                      <div class="d-flex flex-column gap-1">
+                        <label class="form-label small text-body-secondary mb-0" for="componentBorderRadius">Corner radius (px)</label>
+                        <input class="form-control" type="number" min="0" max="24" step="1" id="componentBorderRadius" data-component-border-radius />
+                      </div>
                     </div>
                     <div class="d-flex flex-column gap-1">
                       <label class="form-label small text-body-secondary mb-0" for="componentBorderStyle">Border style</label>
@@ -863,10 +869,6 @@
                         <option value="outset">Outset</option>
                         <option value="none">None</option>
                       </select>
-                    </div>
-                    <div class="d-flex flex-column gap-1">
-                      <label class="form-label small text-body-secondary mb-0" for="componentBorderRadius">Corner radius (px)</label>
-                      <input class="form-control" type="number" min="0" max="24" step="1" id="componentBorderRadius" data-component-border-radius />
                     </div>
                     <div class="d-flex flex-column gap-2">
                       <label class="form-label small text-body-secondary mb-0">Border sides</label>

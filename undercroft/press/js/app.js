@@ -3293,6 +3293,7 @@ function bindInspectorControls() {
           node.style = styles;
         });
         renderPreview();
+        updateInspector();
         updateSaveState();
       });
     });

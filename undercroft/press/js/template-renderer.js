@@ -389,6 +389,7 @@ function renderField(node, context, options = {}) {
             ? resolveBinding(itemClassRaw, itemContext) ?? ""
             : itemClassRaw;
         applyClassName(li, itemClass);
+        applyTextFormatting(li, node);
         if (itemLayout) {
           li.appendChild(renderNode(itemLayout, itemContext));
         } else {
