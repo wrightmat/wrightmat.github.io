@@ -1,5 +1,6 @@
 import { renderLayout } from "./template-renderer.js";
 import { getSampleData } from "./sample-data.js";
+import { resolveBinding } from "./bindings.js";
 
 const MILLIMETERS_PER_INCH = 25.4;
 const pageSizes = {};
@@ -78,19 +79,6 @@ async function loadJson(url) {
     throw new Error(`Unable to load ${url}: ${response.status}`);
   }
   return response.json();
-}
-
-function resolveBinding(binding, context) {
-  if (typeof binding !== "string" || !binding.startsWith("@")) {
-    return binding;
-  }
-  const path = binding.slice(1).split(".");
-  return path.reduce((acc, key) => {
-    if (acc && typeof acc === "object" && key in acc) {
-      return acc[key];
-    }
-    return undefined;
-  }, context);
 }
 
 function resolveTemplateData(template, data) {

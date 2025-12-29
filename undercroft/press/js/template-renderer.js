@@ -1,3 +1,5 @@
+import { resolveBinding } from "./bindings.js";
+
 const GAP_UNIT_REM = 0.25;
 const TEXT_SIZE_MAP = {
   xs: 12,
@@ -9,19 +11,6 @@ const TEXT_SIZE_MAP = {
 
 function shouldHide(node) {
   return Boolean(node?.hidden);
-}
-
-function resolveBinding(binding, context) {
-  if (typeof binding !== "string" || !binding.startsWith("@")) {
-    return binding;
-  }
-  const path = binding.slice(1).split(".");
-  return path.reduce((acc, key) => {
-    if (acc && typeof acc === "object" && key in acc) {
-      return acc[key];
-    }
-    return undefined;
-  }, context);
 }
 
 function asArray(value) {
