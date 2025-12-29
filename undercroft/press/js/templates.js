@@ -130,6 +130,8 @@ function getRepeatData(template, pageConfig, data) {
   if (pageConfig.repeat) {
     const bound = resolveBinding(pageConfig.repeat, data);
     if (Array.isArray(bound)) return bound;
+    if (bound && typeof bound === "object") return [bound];
+    if (pageConfig.repeat === "@") return [data];
   }
   if (Array.isArray(data)) {
     return data;
@@ -236,6 +238,95 @@ function renderSheet(template, side, context) {
   return page;
 }
 
+function resolveBindingsDeep(value, context) {
+  if (typeof value === "string" && value.startsWith("@")) {
+    return resolveBinding(value, context);
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => resolveBindingsDeep(entry, context));
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value).reduce((acc, [key, entry]) => {
+      acc[key] = resolveBindingsDeep(entry, context);
+      return acc;
+    }, {});
+  }
+  return value;
+}
+
+function asArray(value) {
+  if (Array.isArray(value)) return value;
+  if (value === undefined || value === null) return [];
+  return [value];
+}
+
+function resolveLayoutBindings(node, context) {
+  if (!node || typeof node !== "object") {
+    return resolveBindingsDeep(node, context);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map((entry) => resolveLayoutBindings(entry, context));
+  }
+
+  const resolved = resolveBindingsDeep(node, context);
+
+  if (node.type === "stack" && Array.isArray(node.children)) {
+    resolved.children = node.children.map((child) => resolveLayoutBindings(child, context));
+  }
+
+  if (node.type === "row" && Array.isArray(node.columns)) {
+    resolved.columns = node.columns.map((column) => {
+      if (!column || typeof column !== "object") {
+        return column;
+      }
+      const resolvedColumn = resolveBindingsDeep(column, context);
+      if (column.node) {
+        resolvedColumn.node = resolveLayoutBindings(column.node, context);
+      }
+      return resolvedColumn;
+    });
+  }
+
+  if (node.type === "field" && node.component === "list") {
+    const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
+    resolved.items = asArray(items).map((item, index) => {
+      const itemContext = typeof item === "object" && item !== null ? { ...context, ...item } : { ...context, value: item };
+      itemContext.item = item;
+      itemContext.index = index;
+      if (node.itemLayout) {
+        return resolveLayoutBindings(node.itemLayout, itemContext);
+      }
+      return resolveBindingsDeep(item, itemContext);
+    });
+  }
+
+  if (node.type === "field" && node.component === "table") {
+    const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
+    const columns = Array.isArray(node.columns) ? node.columns : [];
+    const cells = Array.isArray(node.cells) ? node.cells : [];
+    resolved.rows = asArray(rows).map((row, rowIndex) => {
+      const rowContext = typeof row === "object" && row !== null ? { ...context, ...row } : { ...context, value: row };
+      rowContext.item = row;
+      rowContext.index = rowIndex;
+      return columns.map((column, columnIndex) => {
+        const cellNodes = Array.isArray(cells[rowIndex]?.[columnIndex]) ? cells[rowIndex][columnIndex] : null;
+        if (cellNodes) {
+          return cellNodes.map((cellNode) => resolveLayoutBindings(cellNode, rowContext));
+        }
+        const fallbackNode = {
+          type: "field",
+          component: column.component ?? "text",
+          text: column.bind ?? column.text ?? column.value ?? "",
+        };
+        return [resolveLayoutBindings(fallbackNode, rowContext)];
+      });
+    });
+  }
+
+  return resolved;
+}
+
 function normalizeTemplate(raw) {
   const template = {
     ...raw,
@@ -262,6 +353,42 @@ function normalizeTemplate(raw) {
 
 export function createTemplate(definition) {
   return normalizeTemplate(definition);
+}
+
+export function buildTemplatePreview(template, data) {
+  if (!template) return {};
+  const templateData = resolveTemplateData(template, data);
+  const resolvedPages = {};
+
+  template.sides.forEach((side) => {
+    const pageConfig = template.pages?.[side] ?? {};
+    if (template.type === "sheet") {
+      const pageData = resolveBinding(pageConfig.data ?? "@", templateData) ?? templateData ?? {};
+      resolvedPages[side] = {
+        ...pageConfig,
+        data: pageData,
+        layout: pageConfig.layout ? resolveLayoutBindings(pageConfig.layout, pageData) : null,
+      };
+      return;
+    }
+
+    const items = getRepeatData(template, pageConfig, templateData);
+    resolvedPages[side] = {
+      ...pageConfig,
+      items: items.map((item) => resolveLayoutBindings(pageConfig.layout, item)),
+    };
+  });
+
+  return {
+    id: template.id,
+    name: template.name,
+    description: template.description,
+    type: template.type,
+    formats: template.formats,
+    supportedSources: template.supportedSources,
+    card: template.card,
+    pages: resolvedPages,
+  };
 }
 
 export async function loadTemplates() {

@@ -31,7 +31,7 @@
   },
   "pages": {
     "front": {
-      "repeat": "@cards.front",
+      "repeat": "@features",
       "layout": {
         "type": "stack",
         "gap": 5,
@@ -44,7 +44,7 @@
                 "node": {
                   "type": "field",
                   "component": "text",
-                  "text": "@type",
+                  "text": "Feature",
                   "className": "card-meta"
                 }
               },
@@ -52,7 +52,7 @@
                 "node": {
                   "type": "field",
                   "component": "text",
-                  "text": "@label",
+                  "text": "",
                   "className": "card-meta text-end"
                 }
               }
@@ -61,7 +61,7 @@
           {
             "type": "field",
             "component": "text",
-            "text": "@title",
+            "text": "@name",
             "className": "card-title",
             "textSize": "lg",
             "textStyles": {
@@ -71,20 +71,20 @@
           {
             "type": "field",
             "component": "text",
-            "text": "@body",
+            "text": "@description",
             "className": "card-body-text"
           },
           {
             "type": "field",
             "component": "text",
-            "text": "@footer",
+            "text": "",
             "className": "card-footer"
           }
         ]
       }
     },
     "back": {
-      "repeat": "@cards.back",
+      "repeat": "@inventory.0",
       "layout": {
         "type": "stack",
         "gap": 5,
@@ -97,7 +97,7 @@
                 "node": {
                   "type": "field",
                   "component": "text",
-                  "text": "@type",
+                  "text": "Item",
                   "className": "card-meta"
                 }
               },
@@ -105,7 +105,7 @@
                 "node": {
                   "type": "field",
                   "component": "text",
-                  "text": "@label",
+                  "text": "@quantity",
                   "className": "card-meta text-end"
                 }
               }
@@ -114,7 +114,7 @@
           {
             "type": "field",
             "component": "text",
-            "text": "@title",
+            "text": "@name",
             "className": "card-title",
             "textSize": "lg",
             "textStyles": {
@@ -124,13 +124,13 @@
           {
             "type": "field",
             "component": "text",
-            "text": "@body",
+            "text": "@notes",
             "className": "card-body-text"
           },
           {
             "type": "field",
             "component": "text",
-            "text": "@footer",
+            "text": "@weight",
             "className": "card-footer"
           }
         ]
