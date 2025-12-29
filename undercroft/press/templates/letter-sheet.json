@@ -244,26 +244,7 @@
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@features",
-                      "itemLayout": {
-                        "type": "stack",
-                        "gap": 1,
-                        "children": [
-                          {
-                            "type": "field",
-                            "component": "text",
-                            "text": "@name",
-                            "textStyles": {
-                              "bold": true
-                            }
-                          },
-                          {
-                            "type": "field",
-                            "component": "text",
-                            "text": "@description",
-                            "className": "text-body-secondary small mb-0"
-                          }
-                        ]
-                      }
+                      "className": "d-flex flex-column gap-1"
                     }
                   ]
                 }
@@ -293,28 +274,7 @@
                       "type": "field",
                       "component": "list",
                       "itemsBind": "@inventory.0",
-                      "itemLayout": {
-                        "type": "row",
-                        "gap": 1,
-                        "templateColumns": "1fr auto",
-                        "columns": [
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@name"
-                            }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@quantity",
-                              "align": "end"
-                            }
-                          }
-                        ]
-                      }
+                      "className": "d-flex flex-column gap-1"
                     }
                   ]
                 }

@@ -19,6 +19,20 @@ function asArray(value) {
   return [value];
 }
 
+function resolveListItemText(item) {
+  if (item && typeof item === "object") {
+    if (Object.hasOwn(item, "name") && item.name !== undefined && item.name !== null) {
+      return item.name;
+    }
+    const [firstKey] = Object.keys(item);
+    if (firstKey) {
+      return item[firstKey];
+    }
+    return "";
+  }
+  return item ?? "";
+}
+
 function applyClassName(element, className) {
   if (className) {
     element.className = [element.className, className].filter(Boolean).join(" ");
@@ -366,7 +380,6 @@ function renderField(node, context, options = {}) {
         el.style.flexDirection = "column";
         applyGap(el, node.gap);
       }
-      const itemLayout = node.itemLayout ?? null;
       asArray(items).forEach((item, index) => {
         const li = document.createElement(itemTag);
         const itemContext = typeof item === "object" && item !== null ? { ...context, ...item } : { ...context, value: item };
@@ -379,11 +392,7 @@ function renderField(node, context, options = {}) {
             : itemClassRaw;
         applyClassName(li, itemClass);
         applyTextFormatting(li, node);
-        if (itemLayout) {
-          li.appendChild(renderNode(itemLayout, itemContext));
-        } else {
-          li.textContent = item;
-        }
+        li.textContent = resolveListItemText(item);
         el.appendChild(li);
       });
       applyInlineStyles(el, node.style);

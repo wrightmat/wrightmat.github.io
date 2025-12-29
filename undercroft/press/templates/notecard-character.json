@@ -305,51 +305,226 @@
                       }
                     },
                     {
-                      "type": "field",
-                      "component": "list",
-                      "itemsBind": "@saves",
-                      "listTag": "div",
-                      "itemTag": "div",
+                      "type": "stack",
                       "gap": 0,
-                      "className": "d-flex flex-column",
-                      "itemLayout": {
-                        "type": "row",
-                        "gap": 1,
-                        "templateColumns": "auto auto 1fr",
-                        "columns": [
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@shortName",
-                              "textStyle": "span",
-                              "className": "circle"
+                      "children": [
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.0.shortName",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.0.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.0.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
                             }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@value",
-                              "textStyle": "span",
-                              "textSize": "xs",
-                              "className": "modifier"
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.1.shortName",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.1.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.1.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
                             }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@friendlyName",
-                              "textStyle": "span",
-                              "textSize": "xs",
-                              "className": "name"
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.2.shortName",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.2.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.2.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
                             }
-                          }
-                        ]
-                      },
-                      "textSize": "sm",
-                      "textSizeCustom": false
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.3.shortName",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.3.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.3.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.4.shortName",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.4.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.4.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.5.shortName",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.5.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@saves.5.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            }
+                          ]
+                        }
+                      ]
                     },
                     {
                       "type": "field",
@@ -361,59 +536,230 @@
                       }
                     },
                     {
-                      "type": "field",
-                      "component": "list",
-                      "itemsBind": "@skills",
-                      "listTag": "div",
-                      "itemTag": "div",
+                      "type": "stack",
                       "gap": 0,
-                      "className": "d-flex flex-column",
-                      "itemLayout": {
-                        "type": "row",
-                        "gap": 1,
-                        "templateColumns": "auto auto 1fr auto",
-                        "columns": [
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@ability",
-                              "textStyle": "span",
-                              "className": "circle"
+                      "children": [
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr auto",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.0.ability",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.0.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.0.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.0.proficiency",
+                                "className": "text-body-secondary"
+                              }
                             }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@value",
-                              "textStyle": "span",
-                              "textSize": "xs",
-                              "className": "modifier"
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr auto",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.1.ability",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.1.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.1.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.1.proficiency",
+                                "className": "text-body-secondary"
+                              }
                             }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@friendlyName",
-                              "textStyle": "span",
-                              "textSize": "xs",
-                              "className": "name"
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr auto",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.2.ability",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.2.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.2.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.2.proficiency",
+                                "className": "text-body-secondary"
+                              }
                             }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@proficiency",
-                              "className": "text-body-secondary"
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr auto",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.3.ability",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.3.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.3.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.3.proficiency",
+                                "className": "text-body-secondary"
+                              }
                             }
-                          }
-                        ]
-                      },
-                      "textSize": "sm",
-                      "textSizeCustom": false
+                          ]
+                        },
+                        {
+                          "type": "row",
+                          "gap": 1,
+                          "templateColumns": "auto auto 1fr auto",
+                          "columns": [
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.4.ability",
+                                "textStyle": "span",
+                                "className": "circle"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.4.value",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "modifier"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.4.friendlyName",
+                                "textStyle": "span",
+                                "textSize": "xs",
+                                "className": "name"
+                              }
+                            },
+                            {
+                              "node": {
+                                "type": "field",
+                                "component": "text",
+                                "text": "@skills.4.proficiency",
+                                "className": "text-body-secondary"
+                              }
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
@@ -586,13 +932,7 @@
                       "listTag": "div",
                       "itemTag": "div",
                       "gap": 1,
-                      "className": "d-flex flex-column",
-                      "itemLayout": {
-                        "type": "field",
-                        "component": "text",
-                        "text": "@value",
-                        "textSize": "xs"
-                      }
+                      "className": "d-flex flex-column"
                     },
                     {
                       "type": "field",
@@ -611,30 +951,6 @@
                       "itemTag": "div",
                       "gap": 0,
                       "className": "d-flex flex-column",
-                      "itemLayout": {
-                        "type": "row",
-                        "gap": 1,
-                        "templateColumns": "1fr auto",
-                        "columns": [
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@name",
-                              "textSize": "xs"
-                            }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@type",
-                              "textSize": "xs",
-                              "align": "end"
-                            }
-                          }
-                        ]
-                      },
                       "textSize": "xs",
                       "textSizeCustom": false
                     }
@@ -2154,28 +2470,7 @@
                 "listTag": "div",
                 "itemTag": "div",
                 "gap": 1,
-                "className": "d-flex flex-column",
-                "itemLayout": {
-                  "type": "stack",
-                  "gap": 0,
-                  "children": [
-                    {
-                      "type": "field",
-                      "component": "text",
-                      "text": "@name",
-                      "textSize": "xs",
-                      "textStyles": {
-                        "bold": true
-                      }
-                    },
-                    {
-                      "type": "field",
-                      "component": "text",
-                      "text": "@description",
-                      "textSize": "xs"
-                    }
-                  ]
-                }
+                "className": "d-flex flex-column"
               }
             ]
           }
