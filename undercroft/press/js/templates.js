@@ -290,15 +290,7 @@ function resolveLayoutBindings(node, context) {
 
   if (node.type === "field" && node.component === "list") {
     const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
-    resolved.items = asArray(items).map((item, index) => {
-      const itemContext = typeof item === "object" && item !== null ? { ...context, ...item } : { ...context, value: item };
-      itemContext.item = item;
-      itemContext.index = index;
-      if (node.itemLayout) {
-        return resolveLayoutBindings(node.itemLayout, itemContext);
-      }
-      return resolveBindingsDeep(item, itemContext);
-    });
+    resolved.items = asArray(items).map((item) => resolveBindingsDeep(item, context));
   }
 
   if (node.type === "field" && node.component === "table") {

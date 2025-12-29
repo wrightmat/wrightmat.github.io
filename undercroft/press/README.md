@@ -27,6 +27,8 @@ printed output for cards and sheets.
   `data/sample-data.json`, which is editable from the left-pane Sample Data
   section). The JSON Preview panel shows the template with `@` bindings resolved
   against the current raw data.
+- List components render arrays directly; when an array item is an object they
+  display the `name` field if present, otherwise the first key value.
 - Drag-and-drop component editing for each side of a template, including a
   palette, sortable layout outline, and component inspector for text, image
   URLs, font sizing (XS–XL plus custom points), orientation (vertical, diagonal,
