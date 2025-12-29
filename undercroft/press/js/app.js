@@ -61,9 +61,16 @@ const templateCardGutterInput = document.querySelector("[data-template-card-gutt
 const templateCardSafeInsetInput = document.querySelector("[data-template-card-safe-inset]");
 const templateCardColumnsInput = document.querySelector("[data-template-card-columns]");
 const templateCardRowsInput = document.querySelector("[data-template-card-rows]");
+const templateFrontDataInput = document.querySelector("[data-template-front-data]");
+const templateFrontRepeatInput = document.querySelector("[data-template-front-repeat]");
+const templateBackDataInput = document.querySelector("[data-template-back-data]");
+const templateBackRepeatInput = document.querySelector("[data-template-back-repeat]");
 const templateToggle = document.querySelector("[data-template-toggle]");
 const templateToggleLabel = templateToggle?.querySelector("[data-template-toggle-label]");
 const templatePanel = document.querySelector("[data-template-panel]");
+const pageBindingsToggle = document.querySelector("[data-page-bindings-toggle]");
+const pageBindingsToggleLabel = pageBindingsToggle?.querySelector("[data-page-bindings-toggle-label]");
+const pageBindingsPanel = document.querySelector("[data-page-bindings-panel]");
 const templateSaveButton = document.querySelector("[data-template-save]");
 const templateDeleteButton = document.querySelector("[data-template-delete]");
 const cardToggle = document.querySelector("[data-card-toggle]");
@@ -156,6 +163,7 @@ let isSaving = false;
 let isGenerating = false;
 let applySelectionCollapse = null;
 let applyTemplateCollapse = null;
+let applyPageBindingsCollapse = null;
 let applyCardCollapse = null;
 let applyComponentCollapse = null;
 let activeTemplateId = null;
@@ -1353,6 +1361,13 @@ function updateTemplateInspector(template) {
     if (templateCardColumnsInput) templateCardColumnsInput.value = "";
     if (templateCardRowsInput) templateCardRowsInput.value = "";
   }
+
+  const frontPage = editablePages?.front ?? {};
+  const backPage = editablePages?.back ?? {};
+  if (templateFrontDataInput) templateFrontDataInput.value = frontPage.data ?? "";
+  if (templateFrontRepeatInput) templateFrontRepeatInput.value = frontPage.repeat ?? "";
+  if (templateBackDataInput) templateBackDataInput.value = backPage.data ?? "";
+  if (templateBackRepeatInput) templateBackRepeatInput.value = backPage.repeat ?? "";
 }
 
 function bindTemplateInspectorControls() {
@@ -1494,6 +1509,33 @@ function bindTemplateInspectorControls() {
       }
       updateSaveState();
       renderPreview();
+    });
+  });
+
+  const pageBindingInputs = [
+    { input: templateFrontDataInput, side: "front", key: "data" },
+    { input: templateFrontRepeatInput, side: "front", key: "repeat" },
+    { input: templateBackDataInput, side: "back", key: "data" },
+    { input: templateBackRepeatInput, side: "back", key: "repeat" },
+  ];
+
+  pageBindingInputs.forEach(({ input, side, key }) => {
+    if (!input) return;
+    input.addEventListener("change", () => {
+      const template = getActiveTemplate();
+      if (!template) return;
+      const trimmed = input.value.trim();
+      const page = editablePages?.[side] ?? {};
+      const next = { ...page };
+      if (trimmed) {
+        next[key] = trimmed;
+      } else {
+        delete next[key];
+      }
+      editablePages = { ...editablePages, [side]: next };
+      updateSaveState();
+      renderPreview();
+      renderJsonPreview();
     });
   });
 
@@ -3071,6 +3113,12 @@ function initPressCollapsibles() {
     collapseLabel: "Collapse template properties",
     labelElement: templateToggleLabel,
   });
+  applyPageBindingsCollapse = bindCollapsibleToggle(pageBindingsToggle, pageBindingsPanel, {
+    collapsed: false,
+    expandLabel: "Expand page bindings",
+    collapseLabel: "Collapse page bindings",
+    labelElement: pageBindingsToggleLabel,
+  });
   applyCardCollapse = bindCollapsibleToggle(cardToggle, cardPanel, {
     collapsed: false,
     expandLabel: "Expand card properties",
@@ -3091,11 +3139,13 @@ function setInspectorMode(mode) {
   }
   if (mode === "template") {
     if (applyTemplateCollapse) applyTemplateCollapse(false);
+    if (applyPageBindingsCollapse) applyPageBindingsCollapse(false);
     if (applyCardCollapse) applyCardCollapse(false);
     if (applyComponentCollapse) applyComponentCollapse(true);
   }
   if (mode === "component") {
     if (applyTemplateCollapse) applyTemplateCollapse(true);
+    if (applyPageBindingsCollapse) applyPageBindingsCollapse(true);
     if (applyCardCollapse) applyCardCollapse(true);
     if (applyComponentCollapse) applyComponentCollapse(false);
   }
