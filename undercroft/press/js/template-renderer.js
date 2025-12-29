@@ -622,17 +622,37 @@ function renderField(node, context, options = {}) {
           if (options?.editable && !Array.isArray(tableCells[index])) {
             tableCells[index] = rowCells;
           }
-          let cellNode = rowCells[columnIndex];
-          if (!cellNode) {
-            cellNode = createCellNode(index, column, columnIndex);
+          let cellNodes = rowCells[columnIndex];
+          if (!Array.isArray(cellNodes)) {
+            const baseNode = cellNodes || createCellNode(index, column, columnIndex);
+            cellNodes = baseNode ? [baseNode] : [];
             if (options?.editable) {
-              rowCells[columnIndex] = cellNode;
+              rowCells[columnIndex] = cellNodes;
             }
           }
           if (options?.editable) {
             rowCells.length = columns.length;
           }
-          td.appendChild(renderNode(cellNode, cellContext, options));
+          if (options?.editable) {
+            const slot = document.createElement("div");
+            slot.className = "press-drop-slot d-flex flex-column h-100 w-100";
+            slot.dataset.pressSlot = "table";
+            slot.dataset.parentNodeId = node.uid ?? "";
+            slot.dataset.rowIndex = String(index);
+            slot.dataset.columnIndex = String(columnIndex);
+            cellNodes.forEach((cellNode) => {
+              slot.appendChild(renderNode(cellNode, cellContext, options));
+            });
+            td.appendChild(slot);
+          } else {
+            if (Array.isArray(cellNodes)) {
+              cellNodes.forEach((cellNode) => {
+                td.appendChild(renderNode(cellNode, cellContext, options));
+              });
+            } else {
+              td.appendChild(renderNode(cellNodes, cellContext, options));
+            }
+          }
           if (column.width) {
             td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
           }
@@ -658,6 +678,7 @@ function renderField(node, context, options = {}) {
 
 function renderStack(node, context, options) {
   const container = document.createElement("div");
+  container.dataset.pressContainer = "stack";
   applyClassName(container, "d-flex flex-column");
   applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
@@ -689,13 +710,25 @@ function renderRow(node, context, options) {
   }
   container.style.justifyItems = resolveLayoutAlignment(node);
   applyGap(container, node.gap ?? 4);
-  (node.columns || []).forEach((column) => {
+  (node.columns || []).forEach((column, columnIndex) => {
     const col = document.createElement("div");
     applyClassName(col, "w-100");
     if (column.span) {
       col.style.gridColumn = `span ${column.span}`;
     }
-    col.appendChild(renderNode(column.node, context, options));
+    if (options?.editable) {
+      const slot = document.createElement("div");
+      slot.className = "press-drop-slot d-flex flex-column h-100 w-100";
+      slot.dataset.pressSlot = "row";
+      slot.dataset.parentNodeId = node.uid ?? "";
+      slot.dataset.columnIndex = String(columnIndex);
+      if (column.node) {
+        slot.appendChild(renderNode(column.node, context, options));
+      }
+      col.appendChild(slot);
+    } else if (column.node) {
+      col.appendChild(renderNode(column.node, context, options));
+    }
     container.appendChild(col);
   });
   return container;
@@ -704,6 +737,12 @@ function renderRow(node, context, options) {
 function attachEditorHooks(element, node, options) {
   if (!element || !options?.editable || !node?.uid) return element;
   element.dataset.nodeId = node.uid;
+  element.dataset.nodeType = node.type;
+  if (node.component) {
+    element.dataset.nodeComponent = node.component;
+  } else {
+    delete element.dataset.nodeComponent;
+  }
   element.classList.add("press-component");
   if (options.selectedId && options.selectedId === node.uid) {
     element.classList.add("press-component--selected");
