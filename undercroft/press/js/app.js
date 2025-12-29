@@ -277,7 +277,6 @@ const paletteComponents = [
     },
   },
   {
-  {
     id: "table",
     label: "Table",
     description: "Column-based data tables",
