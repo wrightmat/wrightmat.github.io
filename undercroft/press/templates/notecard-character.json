@@ -25,7 +25,7 @@
     "width": 5,
     "height": 7,
     "gutter": 0,
-    "safeInset": 0.2,
+    "safeInset": 0.1,
     "columns": 1,
     "rows": 1
   },
@@ -34,23 +34,23 @@
       "repeat": "@characterNotecardCards",
       "layout": {
         "type": "stack",
-        "gap": 3,
+        "gap": 2,
         "children": [
           {
             "type": "row",
-            "gap": 2,
+            "gap": 1,
             "templateColumns": "1.7fr 1fr",
             "columns": [
               {
                 "node": {
                   "type": "stack",
-                  "gap": 1,
+                  "gap": 0,
                   "children": [
                     {
                       "type": "field",
                       "component": "text",
                       "text": "@name",
-                      "textSize": "lg",
+                      "textSize": "sm",
                       "textStyles": {
                         "bold": true
                       }
@@ -68,7 +68,7 @@
               {
                 "node": {
                   "type": "stack",
-                  "gap": 1,
+                  "gap": 0,
                   "children": [
                     {
                       "type": "field",
@@ -97,26 +97,26 @@
           },
           {
             "type": "row",
-            "gap": 2,
+            "gap": 1,
             "templateColumns": "1fr 1.2fr 1.6fr",
             "columns": [
               {
                 "node": {
                   "type": "stack",
-                  "gap": 2,
+                  "gap": 1,
                   "children": [
                     {
                       "type": "field",
                       "component": "text",
                       "text": "Ability Scores",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
                     },
                     {
                       "type": "stack",
-                      "gap": 2,
+                      "gap": 1,
                       "children": [
                         {
                           "type": "field",
@@ -124,6 +124,7 @@
                           "label": "@abilities.0.name",
                           "text": "@abilities.0.display",
                           "textSize": "xs",
+                          "align": "center",
                           "style": {
                             "color": "red"
                           }
@@ -134,6 +135,7 @@
                           "label": "@abilities.1.name",
                           "text": "@abilities.1.display",
                           "textSize": "xs",
+                          "align": "center",
                           "style": {
                             "color": "gold"
                           }
@@ -144,6 +146,7 @@
                           "label": "@abilities.2.name",
                           "text": "@abilities.2.display",
                           "textSize": "xs",
+                          "align": "center",
                           "style": {
                             "color": "darkorange"
                           }
@@ -154,6 +157,7 @@
                           "label": "@abilities.3.name",
                           "text": "@abilities.3.display",
                           "textSize": "xs",
+                          "align": "center",
                           "style": {
                             "color": "blue"
                           }
@@ -164,6 +168,7 @@
                           "label": "@abilities.4.name",
                           "text": "@abilities.4.display",
                           "textSize": "xs",
+                          "align": "center",
                           "style": {
                             "color": "green"
                           }
@@ -174,6 +179,7 @@
                           "label": "@abilities.5.name",
                           "text": "@abilities.5.display",
                           "textSize": "xs",
+                          "align": "center",
                           "style": {
                             "color": "purple"
                           }
@@ -186,13 +192,13 @@
               {
                 "node": {
                   "type": "stack",
-                  "gap": 2,
+                  "gap": 1,
                   "children": [
                     {
                       "type": "field",
                       "component": "text",
                       "text": "Saving Throws",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
@@ -203,7 +209,8 @@
                       "itemsBind": "@saves",
                       "listTag": "div",
                       "itemTag": "div",
-                      "className": "d-flex flex-column gap-1",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
                       "itemClassNameBind": "@itemClass",
                       "itemLayout": {
                         "type": "row",
@@ -246,7 +253,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "Skills",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
@@ -257,7 +264,8 @@
                       "itemsBind": "@skills",
                       "listTag": "div",
                       "itemTag": "div",
-                      "className": "d-flex flex-column gap-1",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
                       "itemClassNameBind": "@itemClass",
                       "itemLayout": {
                         "type": "row",
@@ -310,13 +318,13 @@
               {
                 "node": {
                   "type": "stack",
-                  "gap": 2,
+                  "gap": 1,
                   "children": [
                     {
                       "type": "field",
                       "component": "text",
                       "text": "Hit Points",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
@@ -325,7 +333,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "@hpLine",
-                      "textSize": "md",
+                      "textSize": "sm",
                       "textStyles": {
                         "bold": true
                       }
@@ -352,7 +360,7 @@
                     },
                     {
                       "type": "row",
-                      "gap": 1,
+                      "gap": 0,
                       "templateColumns": "1fr auto",
                       "columns": [
                         {
@@ -392,7 +400,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "Proficiencies",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
@@ -425,7 +433,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "Senses",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
@@ -454,7 +462,8 @@
                       "itemsBind": "@senses",
                       "listTag": "div",
                       "itemTag": "div",
-                      "className": "d-flex flex-column gap-1",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
                       "itemLayout": {
                         "type": "row",
                         "gap": 1,
@@ -484,7 +493,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "Defenses",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true
                       }
@@ -495,7 +504,8 @@
                       "itemsBind": "@defenses",
                       "listTag": "div",
                       "itemTag": "div",
-                      "className": "d-flex flex-column gap-1",
+                      "gap": 1,
+                      "className": "d-flex flex-column",
                       "itemLayout": {
                         "type": "row",
                         "gap": 1,
@@ -527,7 +537,7 @@
           },
           {
             "type": "stack",
-            "gap": 1,
+            "gap": 0,
             "children": [
               {
                 "type": "field",
@@ -559,15 +569,15 @@
       "repeat": "@characterNotecardCards",
       "layout": {
         "type": "stack",
-        "gap": 3,
+        "gap": 2,
         "children": [
           {
             "type": "stack",
-            "gap": 1,
+            "gap": 0,
             "children": [
               {
                 "type": "row",
-                "gap": 2,
+                "gap": 1,
                 "templateColumns": "1fr 1fr",
                 "columns": [
                   {
@@ -575,7 +585,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "Attacks",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true,
                         "underline": true
@@ -608,6 +618,11 @@
             "component": "table",
             "rowsBind": "@attacks",
             "textSize": "xs",
+            "gap": 1,
+            "textSizeCustom": true,
+            "style": {
+              "fontSize": 10
+            },
             "columns": [
               { "header": "Attack Name", "bind": "@name", "width": "30%" },
               { "header": "To Hit", "bind": "@toHit", "width": "10%" },
@@ -618,11 +633,11 @@
           },
           {
             "type": "stack",
-            "gap": 2,
+            "gap": 1,
             "children": [
               {
                 "type": "row",
-                "gap": 2,
+                "gap": 1,
                 "templateColumns": "1fr 1fr",
                 "columns": [
                   {
@@ -630,7 +645,7 @@
                       "type": "field",
                       "component": "text",
                       "text": "@spellsHeading",
-                      "textSize": "sm",
+                      "textSize": "xs",
                       "textStyles": {
                         "bold": true,
                         "underline": true
@@ -662,6 +677,11 @@
                 "component": "table",
                 "rowsBind": "@spells.cantrips",
                 "textSize": "xs",
+                "gap": 1,
+                "textSizeCustom": true,
+                "style": {
+                  "fontSize": 10
+                },
                 "columns": [
                   { "header": "Spell Name", "bind": "@name", "width": "35%" },
                   { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
@@ -685,6 +705,11 @@
                 "component": "table",
                 "rowsBind": "@spells.level1",
                 "textSize": "xs",
+                "gap": 1,
+                "textSizeCustom": true,
+                "style": {
+                  "fontSize": 10
+                },
                 "columns": [
                   { "header": "Spell Name", "bind": "@name", "width": "35%" },
                   { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
@@ -708,6 +733,11 @@
                 "component": "table",
                 "rowsBind": "@spells.level2",
                 "textSize": "xs",
+                "gap": 1,
+                "textSizeCustom": true,
+                "style": {
+                  "fontSize": 10
+                },
                 "columns": [
                   { "header": "Spell Name", "bind": "@name", "width": "35%" },
                   { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
@@ -721,13 +751,13 @@
           },
           {
             "type": "stack",
-            "gap": 2,
+            "gap": 1,
             "children": [
               {
                 "type": "field",
                 "component": "text",
                 "text": "Features",
-                "textSize": "sm",
+                "textSize": "xs",
                 "textStyles": {
                   "bold": true,
                   "underline": true
@@ -739,10 +769,11 @@
                 "itemsBind": "@features",
                 "listTag": "div",
                 "itemTag": "div",
-                "className": "d-flex flex-column gap-2",
+                "gap": 1,
+                "className": "d-flex flex-column",
                 "itemLayout": {
                   "type": "stack",
-                  "gap": 1,
+                  "gap": 0,
                   "children": [
                     {
                       "type": "field",
