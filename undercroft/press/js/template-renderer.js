@@ -302,7 +302,12 @@ function renderField(node, context, options = {}) {
       const listTag = node.listTag ?? "ul";
       const itemTag = node.itemTag ?? "li";
       const el = document.createElement(listTag);
-      applyClassName(el, resolveClassName(node, context) ?? "mb-0 ps-3 d-flex flex-column gap-1");
+      applyClassName(el, resolveClassName(node, context) ?? "mb-0 ps-3 d-flex flex-column");
+      if (Number.isFinite(node?.gap)) {
+        el.style.display = "flex";
+        el.style.flexDirection = "column";
+        applyGap(el, node.gap);
+      }
       const itemLayout = node.itemLayout ?? null;
       asArray(items).forEach((item, index) => {
         const li = document.createElement(itemTag);
@@ -362,6 +367,9 @@ function renderField(node, context, options = {}) {
     case "stat": {
       const wrapper = document.createElement("div");
       applyClassName(wrapper, resolveClassName(node, context) ?? "panel-box");
+      if (Number.isFinite(node?.gap)) {
+        applyGap(wrapper, node.gap);
+      }
       const labelValue = resolveBinding(node.label, context) ?? node.label ?? "";
       const label = createTextElement("p", labelValue, "card-meta mb-0");
       const val = createTextElement("p", value ?? "—", "mb-0 fw-semibold");
@@ -416,6 +424,10 @@ function renderField(node, context, options = {}) {
       const columns = node.columns ?? [];
       const table = document.createElement("table");
       applyClassName(table, resolveClassName(node, context) ?? "press-table");
+      if (Number.isFinite(node?.gap) && node.gap > 0) {
+        table.style.borderCollapse = "separate";
+        table.style.borderSpacing = `0 ${node.gap * GAP_UNIT_REM}rem`;
+      }
       const baseText = {
         textSize: node.textSize,
         textSizeCustom: node.textSizeCustom,

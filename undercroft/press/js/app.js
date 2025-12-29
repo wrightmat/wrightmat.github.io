@@ -273,7 +273,8 @@ const paletteComponents = [
       type: "field",
       component: "list",
       items: ["First entry", "Second entry", "Third entry"],
-      className: "mb-0 ps-3 d-flex flex-column gap-1",
+      gap: 1,
+      className: "mb-0 ps-3 d-flex flex-column",
     },
   },
   {
@@ -2255,6 +2256,7 @@ function updateInspector() {
   }
 
   const isLayoutNode = node?.type === "row" || node?.type === "stack";
+  const isGapNode = isLayoutNode || ["list", "stat", "table"].includes(node?.component);
   const isStackNode = node?.type === "stack";
   const isImageNode = node?.component === "image";
   const isTableNode = node?.component === "table";
@@ -2276,7 +2278,7 @@ function updateInspector() {
     input.disabled = isLayoutNode || isImageNode || isIconNode;
   });
   if (gapField) {
-    gapField.hidden = !isLayoutNode;
+    gapField.hidden = !isGapNode;
   }
   if (rowColumnsField) {
     rowColumnsField.hidden = node?.type !== "row";
@@ -2287,7 +2289,7 @@ function updateInspector() {
 
   if (gapInput) {
     const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
-    gapInput.value = isLayoutNode ? String(gapValue) : "";
+    gapInput.value = isGapNode ? String(gapValue) : "";
   }
   if (rowColumnsInput) {
     rowColumnsInput.value = node?.type === "row" ? String(node.columns?.length ?? 0) : "";
@@ -2941,7 +2943,9 @@ function bindInspectorControls() {
       const parsed = Number(gapInput.value);
       const next = Number.isFinite(parsed) ? Math.max(0, Math.min(parsed, 12)) : 0;
       updateSelectedNode((node) => {
-        if (node.type !== "row" && node.type !== "stack") return;
+        const isLayoutNode = node.type === "row" || node.type === "stack";
+        const isGapComponent = ["list", "stat", "table"].includes(node.component);
+        if (!isLayoutNode && !isGapComponent) return;
         node.gap = next;
       });
       renderPreview();
