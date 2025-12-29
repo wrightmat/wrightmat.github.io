@@ -4,9 +4,20 @@
   "description": "Standalone A6 preview sized for inserts and small handouts.",
   "type": "sheet",
   "formats": [
-    { "id": "a6", "label": "A6", "sizeId": "a6", "orientations": ["portrait"], "defaultOrientation": "portrait" }
+    {
+      "id": "a6",
+      "label": "A6",
+      "sizeId": "a6",
+      "orientations": [
+        "portrait"
+      ],
+      "defaultOrientation": "portrait"
+    }
   ],
-  "supportedSources": ["json", "manual"],
+  "supportedSources": [
+    "json",
+    "manual"
+  ],
   "pages": {
     "front": {
       "data": "@front",
@@ -19,8 +30,21 @@
             "className": "panel-box",
             "gap": 3,
             "children": [
-              { "type": "field", "component": "heading", "text": "@title" },
-              { "type": "field", "component": "text", "text": "@subtitle", "className": "mb-0 text-body-secondary" }
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@title",
+                "textSize": "lg",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@subtitle",
+                "className": "mb-0 text-body-secondary"
+              }
             ]
           },
           {
@@ -28,8 +52,21 @@
             "className": "panel-box",
             "gap": 3,
             "children": [
-              { "type": "field", "component": "heading", "text": "Front Content" },
-              { "type": "field", "component": "text", "text": "@body", "className": "mb-0" }
+              {
+                "type": "field",
+                "component": "text",
+                "text": "Front Content",
+                "textSize": "lg",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@body",
+                "className": "mb-0"
+              }
             ]
           }
         ]
@@ -46,8 +83,21 @@
             "className": "panel-box",
             "gap": 3,
             "children": [
-              { "type": "field", "component": "heading", "text": "@title" },
-              { "type": "field", "component": "text", "text": "@subtitle", "className": "mb-0 text-body-secondary" }
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@title",
+                "textSize": "lg",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@subtitle",
+                "className": "mb-0 text-body-secondary"
+              }
             ]
           },
           {
@@ -55,8 +105,21 @@
             "className": "panel-box",
             "gap": 3,
             "children": [
-              { "type": "field", "component": "heading", "text": "Back Content" },
-              { "type": "field", "component": "text", "text": "@body", "className": "mb-0" }
+              {
+                "type": "field",
+                "component": "text",
+                "text": "Back Content",
+                "textSize": "lg",
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@body",
+                "className": "mb-0"
+              }
             ]
           }
         ]
