@@ -74,6 +74,8 @@ const typeSummary = document.querySelector("[data-component-type-summary]");
 let typeIcon = document.querySelector("[data-component-type-icon]");
 const typeLabel = document.querySelector("[data-component-type-label]");
 const typeDescription = document.querySelector("[data-component-type-description]");
+const parentIndicator = document.querySelector("[data-component-parent-indicator]");
+const parentSelectButton = document.querySelector("[data-component-parent-select]");
 const iconField = document.querySelector("[data-inspector-icon-field]");
 const iconInput = document.querySelector("[data-component-icon-class]");
 const iconPreview = document.querySelector("[data-component-icon-preview]");
@@ -137,7 +139,7 @@ let nodeCounter = 0;
 let editablePages = { front: null, back: null };
 let paletteSortable = null;
 let layoutSortable = null;
-let canvasSortable = null;
+let canvasSortables = [];
 let tableColumnsSortable = null;
 let undoStack = null;
 let performUndo = null;
@@ -1414,6 +1416,36 @@ function findNodeById(node, uid) {
   return null;
 }
 
+function findParentNode(node, uid, parent = null) {
+  if (!node || !uid) return null;
+  if (node.uid === uid) return parent;
+  if (Array.isArray(node.children)) {
+    for (const child of node.children) {
+      if (child?.uid === uid) return node;
+      const found = findParentNode(child, uid, node);
+      if (found) return found;
+    }
+  }
+  if (Array.isArray(node.columns)) {
+    for (const column of node.columns) {
+      if (column?.node?.uid === uid) return node;
+      const found = findParentNode(column?.node, uid, node);
+      if (found) return found;
+    }
+  }
+  if (Array.isArray(node.cells)) {
+    for (const row of node.cells) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) {
+        if (cell?.uid === uid) return node;
+        const found = findParentNode(cell, uid, node);
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+}
+
 function removeNodeById(node, uid) {
   if (!node || !uid) return null;
   if (Array.isArray(node.children)) {
@@ -1512,6 +1544,56 @@ function createNodeFromPalette(type) {
   if (!entry?.node) return null;
   const clone = typeof structuredClone === "function" ? structuredClone(entry.node) : JSON.parse(JSON.stringify(entry.node));
   return assignNodeIds(clone);
+}
+
+function reorderStackChildren(stackNode, fromIndex, toIndex) {
+  if (!stackNode || stackNode.type !== "stack" || !Array.isArray(stackNode.children)) return;
+  if (!stackNode.children[fromIndex]) return;
+  const [moved] = stackNode.children.splice(fromIndex, 1);
+  stackNode.children.splice(Math.max(0, toIndex), 0, moved);
+}
+
+function insertNodeIntoStack(stackNode, node, index) {
+  if (!stackNode || stackNode.type !== "stack") return;
+  if (!Array.isArray(stackNode.children)) {
+    stackNode.children = [];
+  }
+  const targetIndex = Math.max(0, Math.min(index, stackNode.children.length));
+  stackNode.children.splice(targetIndex, 0, node);
+}
+
+function setRowColumnNode(rowNode, columnIndex, node) {
+  if (!rowNode || rowNode.type !== "row") return;
+  if (!Array.isArray(rowNode.columns)) {
+    rowNode.columns = [];
+  }
+  while (rowNode.columns.length <= columnIndex) {
+    rowNode.columns.push({ node: null });
+  }
+  rowNode.columns[columnIndex].node = node;
+}
+
+function setTableCellNode(tableNode, rowIndex, columnIndex, node) {
+  if (!tableNode || tableNode.component !== "table") return;
+  if (!Array.isArray(tableNode.cells)) {
+    tableNode.cells = [];
+  }
+  while (tableNode.cells.length <= rowIndex) {
+    tableNode.cells.push([]);
+  }
+  if (!Array.isArray(tableNode.cells[rowIndex])) {
+    tableNode.cells[rowIndex] = [];
+  }
+  while (tableNode.cells[rowIndex].length <= columnIndex) {
+    tableNode.cells[rowIndex].push(null);
+  }
+  tableNode.cells[rowIndex][columnIndex] = node;
+}
+
+function getDraggedNodeId(item) {
+  if (!item) return null;
+  if (item.dataset?.nodeId) return item.dataset.nodeId;
+  return item.querySelector?.("[data-node-id]")?.dataset?.nodeId ?? null;
 }
 
 function createDefaultRowColumn() {
@@ -2162,6 +2244,10 @@ function updateInspector() {
   const layout = getLayoutForSide(currentSide);
   const node = findNodeById(layout, selectedNodeId);
   const hasSelection = Boolean(node);
+  const parentNode = hasSelection ? findParentNode(layout, selectedNodeId) : null;
+  const parentIsContainer = Boolean(
+    parentNode && (parentNode.type === "stack" || parentNode.type === "row" || parentNode.component === "table")
+  );
 
   inspectorSection.classList.toggle("opacity-50", !hasSelection);
   inspectorSection.querySelectorAll("input, select, textarea, button").forEach((el) => {
@@ -2194,6 +2280,20 @@ function updateInspector() {
     }
     if (window.Iconify && typeof window.Iconify.scan === "function") {
       window.Iconify.scan(typeSummary);
+    }
+  }
+
+  if (parentIndicator && parentSelectButton) {
+    parentIndicator.hidden = !parentIsContainer;
+    parentIndicator.classList.toggle("d-none", !parentIsContainer);
+    if (parentIsContainer) {
+      parentSelectButton.textContent = describeNode(parentNode);
+      parentSelectButton.dataset.parentNodeId = parentNode.uid ?? "";
+      parentSelectButton.disabled = false;
+    } else {
+      parentSelectButton.textContent = "";
+      parentSelectButton.dataset.parentNodeId = "";
+      parentSelectButton.disabled = true;
     }
   }
 
@@ -2854,30 +2954,101 @@ function initLayoutDnd() {
 }
 
 function destroyCanvasDnd() {
-  if (canvasSortable?.destroy) {
-    canvasSortable.destroy();
-  }
-  canvasSortable = null;
-}
-
-function handleCanvasAdd(event) {
-  const type = event.item?.dataset?.componentType;
-  const newNode = createNodeFromPalette(type);
-  event.item?.remove();
-  if (!newNode) return;
-  recordUndoableChange(() => {
-    const index = typeof event.newIndex === "number" ? event.newIndex : getRootChildren(currentSide).length;
-    insertNodeAtRoot(currentSide, newNode, index);
-    selectNode(newNode.uid);
+  canvasSortables.forEach((sortable) => {
+    if (sortable?.destroy) {
+      sortable.destroy();
+    }
   });
+  canvasSortables = [];
 }
 
-function handleCanvasReorder(event) {
+function handleStackAdd(event, stackId) {
+  const type = event.item?.dataset?.componentType;
+  const layout = getLayoutForSide(currentSide);
+  if (!layout) {
+    event.item?.remove();
+    return;
+  }
+  const stackNode = findNodeById(layout, stackId);
+  if (!stackNode || stackNode.type !== "stack") {
+    event.item?.remove();
+    return;
+  }
+  const draggedId = getDraggedNodeId(event.item);
+  event.item?.remove();
   recordUndoableChange(() => {
-    reorderRootChildren(currentSide, event.oldIndex ?? 0, event.newIndex ?? 0);
+    let node = null;
+    if (type) {
+      node = createNodeFromPalette(type);
+    } else if (draggedId) {
+      node = removeNodeById(layout, draggedId);
+    }
+    if (!node) return;
+    const index = typeof event.newIndex === "number" ? event.newIndex : stackNode.children?.length ?? 0;
+    insertNodeIntoStack(stackNode, node, index);
+    selectedNodeId = node.uid ?? selectedNodeId;
+    renderLayoutList();
+    updateInspector();
+    renderPreview();
+  });
+  updateSaveState();
+}
+
+function handleStackReorder(event, stackId) {
+  const layout = getLayoutForSide(currentSide);
+  if (!layout) return;
+  const stackNode = findNodeById(layout, stackId);
+  if (!stackNode || stackNode.type !== "stack") return;
+  recordUndoableChange(() => {
+    reorderStackChildren(stackNode, event.oldIndex ?? 0, event.newIndex ?? 0);
     renderLayoutList();
     renderPreview();
   });
+  updateSaveState();
+}
+
+function handleSlotAdd(event, slotElement) {
+  const slotType = slotElement?.dataset?.pressSlot;
+  const layout = getLayoutForSide(currentSide);
+  if (!layout || !slotElement) {
+    event.item?.remove();
+    return;
+  }
+  const parentId = slotElement.dataset.parentNodeId;
+  if (!parentId) {
+    event.item?.remove();
+    return;
+  }
+  const parentNode = findNodeById(layout, parentId);
+  if (!parentNode) {
+    event.item?.remove();
+    return;
+  }
+  const type = event.item?.dataset?.componentType;
+  const draggedId = getDraggedNodeId(event.item);
+  event.item?.remove();
+  recordUndoableChange(() => {
+    let node = null;
+    if (type) {
+      node = createNodeFromPalette(type);
+    } else if (draggedId) {
+      node = removeNodeById(layout, draggedId);
+    }
+    if (!node) return;
+    if (slotType === "row") {
+      const columnIndex = Number.parseInt(slotElement.dataset.columnIndex ?? "0", 10);
+      setRowColumnNode(parentNode, columnIndex, node);
+    } else if (slotType === "table") {
+      const rowIndex = Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
+      const columnIndex = Number.parseInt(slotElement.dataset.columnIndex ?? "0", 10);
+      setTableCellNode(parentNode, rowIndex, columnIndex, node);
+    }
+    selectedNodeId = node.uid ?? selectedNodeId;
+    renderLayoutList();
+    updateInspector();
+    renderPreview();
+  });
+  updateSaveState();
 }
 
 function initCanvasDnd(rootElement) {
@@ -2887,14 +3058,38 @@ function initCanvasDnd(rootElement) {
   }
 
   destroyCanvasDnd();
-  canvasSortable = createSortable(rootElement, {
-    group: { name: "press-layout", pull: true, put: true },
-    animation: 150,
-    fallbackOnBody: true,
-    handle: null,
-    draggable: "[data-node-id], [data-component-type]",
-    onAdd: handleCanvasAdd,
-    onUpdate: handleCanvasReorder,
+  const stackContainers = [];
+  if (rootElement.dataset.pressContainer === "stack") {
+    stackContainers.push(rootElement);
+  }
+  stackContainers.push(...rootElement.querySelectorAll('[data-press-container="stack"]'));
+  stackContainers.forEach((container) => {
+    const stackId = container.dataset.nodeId;
+    if (!stackId) return;
+    const sortable = createSortable(container, {
+      group: { name: "press-layout", pull: true, put: true },
+      animation: 150,
+      fallbackOnBody: true,
+      handle: null,
+      draggable: "[data-node-id], [data-component-type]",
+      onAdd: (event) => handleStackAdd(event, stackId),
+      onUpdate: (event) => handleStackReorder(event, stackId),
+    });
+    if (sortable) canvasSortables.push(sortable);
+  });
+
+  const slotTargets = Array.from(rootElement.querySelectorAll("[data-press-slot]"));
+  slotTargets.forEach((slot) => {
+    const sortable = createSortable(slot, {
+      group: { name: "press-layout", pull: true, put: true },
+      animation: 150,
+      fallbackOnBody: true,
+      handle: null,
+      sort: false,
+      draggable: "[data-node-id], [data-component-type]",
+      onAdd: (event) => handleSlotAdd(event, slot),
+    });
+    if (sortable) canvasSortables.push(sortable);
   });
 }
 
@@ -2904,6 +3099,15 @@ function initDragAndDrop() {
 }
 
 function bindInspectorControls() {
+  if (parentSelectButton) {
+    parentSelectButton.addEventListener("click", () => {
+      const parentId = parentSelectButton.dataset.parentNodeId;
+      if (parentId) {
+        selectNode(parentId);
+      }
+    });
+  }
+
   if (textEditor) {
     textEditor.addEventListener("focus", () => beginPendingUndo(textEditor));
     textEditor.addEventListener("blur", () => commitPendingUndo(textEditor));
