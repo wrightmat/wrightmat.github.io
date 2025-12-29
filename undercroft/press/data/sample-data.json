@@ -1,426 +1,209 @@
 {
-  "front": {
-    "title": "Adventurer Overview",
-    "badge": "Frontline",
-    "subtitle": "Built to mirror the Scriptorium starter sheet.",
-    "stats": [
-      {
-        "label": "Name",
-        "value": "Lira Quill"
-      },
-      {
-        "label": "Class",
-        "value": "Lorebinder"
-      },
-      {
-        "label": "Level",
-        "value": "5"
-      },
-      {
-        "label": "Background",
-        "value": "Expedition Scribe"
-      },
-      {
-        "label": "Player",
-        "value": "Demo"
-      },
-      {
-        "label": "Campaign",
-        "value": "Undercroft Trials"
-      }
-    ],
-    "highlights": [
-      "Reaction: Counter-script once per short rest",
-      "Exploration: Cartographic sense grants advantage on mapping checks",
-      "Social: Scribe’s seal offers advantage with archivists"
-    ],
-    "inventory": [
-      "Pack | 60 lb",
-      "Spellbook | 12 spells",
-      "Focus | Arcane quill",
-      "Notes | 6 pages"
-    ],
-    "footer": "Flip on long edge to align the notes back page."
-  },
-  "back": {
-    "title": "Encounters & Notes",
-    "badge": "Notebook",
-    "subtitle": "Ruled back page for encounters, factions, and reminders.",
-    "allies": "Trismegistus press crew, Riverwatch scouts, friendly printer techs.",
-    "risks": "Moisture warp, long-edge flip errors, expired toner streaks.",
-    "reminders": "Lock scaling to 100%, orient pages consistently, let ink dry before stacking.",
-    "footer": "Use the trim lines to confirm front/back alignment."
-  },
-  "cards": {
-    "front": [
-      {
-        "title": "Ithril Scout",
-        "type": "Companion",
-        "label": "Front",
-        "body": "Skilled pathfinder adept at sniffing out danger before it reaches the party.",
-        "footer": "Keen Hearing and Smell | Advantage on Perception checks based on scent"
-      },
-      {
-        "title": "Fane Scholar",
-        "type": "Retainer",
-        "label": "Front",
-        "body": "Keeps meticulous notes and provides lore snippets drawn from ancient catacombs.",
-        "footer": "Arcana +5 | Translate runes and sigils during downtime"
-      },
-      {
-        "title": "Runeseal",
-        "type": "Spell",
-        "label": "Front",
-        "body": "Anchor an unstable portal until end of turn; spell ends if you move or take damage.",
-        "footer": "1 action | Concentration | Glyphs light faintly when active"
-      },
-      {
-        "title": "Copperback",
-        "type": "Creature",
-        "label": "Front",
-        "body": "Armoured tortoise used to haul gear across shifting dunes.",
-        "footer": "AC 15 | Speed 25 ft | Carrying capacity 420 lb"
-      },
-      {
-        "title": "Spell Tag",
-        "type": "Tool",
-        "label": "Front",
-        "body": "Thin copper tag that stores a minor cantrip for one later cast.",
-        "footer": "Single use | Imbue during a short rest"
-      },
-      {
-        "title": "Press Master",
-        "type": "Role",
-        "label": "Front",
-        "body": "Verifies that the preview matches printed output before production runs.",
-        "footer": "Checklist ready | Calipers set | Front alignment locked"
-      },
-      {
-        "title": "Courier Raven",
-        "type": "Creature",
-        "label": "Front",
-        "body": "Takes short messages between nearby settlements without attracting attention.",
-        "footer": "Speed 60 ft (fly) | Advantage on perception while airborne"
-      },
-      {
-        "title": "Wardstone",
-        "type": "Item",
-        "label": "Front",
-        "body": "Small stone etched with protective runes; glows when aberrations draw near.",
-        "footer": "Attune | 10 charges | Spend 1 to gain +1 AC for one round"
-      },
-      {
-        "title": "Field Rations",
-        "type": "Gear",
-        "label": "Front",
-        "body": "Sealed packets that stay fresh for weeks; printed expiration helps alignment tests.",
-        "footer": "Feeds one creature for a day | Waterproof packaging"
-      }
-    ],
-    "back": [
-      {
-        "title": "Alignment Grid",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Light grid with center weight to ensure long-edge flips line up across the whole page.",
-        "footer": "Verify every trim line crosses this grid."
-      },
-      {
-        "title": "Rune Motif",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Repeating rune to keep the reverse side consistent on all nine cards.",
-        "footer": "Line art scaled to poker safe area."
-      },
-      {
-        "title": "Cut Proof",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Use this side to test duplex cuts before committing to thicker stock.",
-        "footer": "Match dashed guides from the overlay."
-      },
-      {
-        "title": "Pocket Notes",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Space for handwriting on the reverse while keeping the front intact.",
-        "footer": "Works with 0.125 in safe inset."
-      },
-      {
-        "title": "Tone Check",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Muted wash that will not bleed through standard cardstock.",
-        "footer": "Use to calibrate printer density."
-      },
-      {
-        "title": "Promo Face",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Include a generic crest for printing starter packs and samples.",
-        "footer": "Safe for public distribution."
-      },
-      {
-        "title": "QR Anchor",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Placeholder for scannable codes once source data is wired in.",
-        "footer": "Keep codes inside the dashed safe zone."
-      },
-      {
-        "title": "Notebook Back",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Subtle dots keep handwriting aligned without overpowering the face art.",
-        "footer": "Confirm opacity before bulk runs."
-      },
-      {
-        "title": "Logo Plate",
-        "type": "Backer",
-        "label": "Back",
-        "body": "Centered Undercroft mark to match the Workbench visual language.",
-        "footer": "Pairs with front sample set."
-      }
-    ]
-  },
-  "characterNotecard": {
+  "identity": {
+    "id": 4481,
+    "userId": 203,
+    "username": "Demo",
     "name": "Lira Quill",
-    "identityLine": "Female, Expedition Scribe",
+    "class": "Lorebinder",
+    "classes": [
+      {
+        "name": "Lorebinder",
+        "level": 5,
+        "subclass": "Curator"
+      }
+    ],
     "race": "Half-Elf",
-    "classSummary": "Lorebinder (Curator) 5",
-    "personalityTraits": "Curious, meticulous, and quick to catalog new lore.",
-    "abilities": [
-      { "name": "Str", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-0" },
-      { "name": "Dex", "modifier": "+2", "score": 14, "display": "+2 (14)", "abilityBlockClass": "ability-block stat-1" },
-      { "name": "Con", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-2" },
-      { "name": "Int", "modifier": "+4", "score": 18, "display": "+4 (18)", "abilityBlockClass": "ability-block stat-3" },
-      { "name": "Wis", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-4" },
-      { "name": "Cha", "modifier": "+0", "score": 10, "display": "+0 (10)", "abilityBlockClass": "ability-block stat-5" }
-    ],
-    "saves": [
-      { "name": "Strength", "modifier": "+3", "itemClass": "skill stat-0", "circleClass": "circle p3" },
-      { "name": "Dexterity", "modifier": "+5", "itemClass": "skill stat-1", "circleClass": "circle p3" },
-      { "name": "Constitution", "modifier": "+3", "itemClass": "skill stat-2", "circleClass": "circle p1" },
-      { "name": "Intelligence", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
-      { "name": "Wisdom", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
-      { "name": "Charisma", "modifier": "+0", "itemClass": "skill stat-5", "circleClass": "circle p0" }
-    ],
-    "skills": [
-      { "name": "Arcana", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
-      { "name": "History", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
-      { "name": "Investigation", "modifier": "+5", "itemClass": "skill stat-3", "circleClass": "circle p1" },
-      { "name": "Perception", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
-      { "name": "Persuasion", "modifier": "+2", "itemClass": "skill stat-5", "circleClass": "circle p1" }
-    ],
-    "hp": { "max": 38, "hitDice": 5, "hitDiceSize": "1d8+2" },
-    "hpLine": "/ 38",
-    "hitDiceLine": "(1d8+2 x 5)",
-    "proficiencyBonus": "+3",
-    "initiative": { "value": "+2", "icon": "ddb-advantage" },
-    "ac": { "value": 15 },
-    "speeds": { "walk": 30, "fly": 0 },
-    "speedLine": "30 ft.",
-    "proficiencies": {
-      "armor": "Light armor",
-      "weapons": "Simple weapons, light crossbows",
-      "tools": "Calligrapher's supplies",
-      "languages": "Common, Elvish, Draconic"
+    "level": 5,
+    "levels": {
+      "level_monk": 0,
+      "level_multiclass": 0
     },
-    "proficiencyLines": {
-      "armor": "Armor: Light armor",
-      "weapons": "Weapons: Simple weapons, light crossbows",
-      "tools": "Tools: Calligrapher's supplies",
-      "languages": "Languages: Common, Elvish, Draconic"
-    },
-    "passives": { "perception": 14, "investigation": 12, "insight": 13 },
-    "passiveLines": {
-      "perception": "Passive Percept.: 14",
-      "investigation": "Passive Investig.: 12",
-      "insight": "Passive Insight: 13"
-    },
-    "senses": [{ "name": "Darkvision", "range": 60 }],
-    "defenses": [{ "name": "Fire Resistance", "iconClass": "ddb-resistance" }],
-    "alignment": "Neutral Good",
-    "alignmentLine": "Alignment: Neutral Good",
-    "detailsLine": "Height: 5'6\", Weight: 135 lb., Age: 24, Size: Medium",
-    "appearanceLine": "Appearance: Tidy braids and ink-stained gloves, Hair: Auburn, Eyes: Hazel",
-    "attacks": [
-      { "name": "Arcane Quill", "toHit": "+6", "damage": "1d8+3 force", "range": "60 ft.", "notes": "Ranged spell" },
-      { "name": "Dagger", "toHit": "+5", "damage": "1d4+2 piercing", "range": "20/60 ft.", "notes": "Finesse, light" }
-    ],
-    "attacking": { "attacksPerAction": 1, "fightingStyle": "Defensive" },
-    "attacksMetaLine": "Attacks Per Action: 1, Fighting Style: Defensive",
-    "spellCasting": { "ability": "INT", "attack": "+6", "save": 14 },
-    "spellsHeading": "Spells (INT)",
-    "spellsMetaLine": "Spell Attack: +6, Spell Save DC: 14",
-    "spells": {
-      "cantrips": [
-        { "name": "Mage Hand", "hit": "--", "effect": "Utility", "time": "1A", "range": "30 ft.", "notes": "Conc 1 min" }
-      ],
-      "level1": [
-        { "name": "Magic Missile", "hit": "--", "effect": "3 darts", "time": "1A", "range": "120 ft.", "notes": "Instant" }
-      ],
-      "level2": [
-        { "name": "Misty Step", "hit": "--", "effect": "Teleport", "time": "BA", "range": "30 ft.", "notes": "Instant" }
-      ]
-    },
-    "limitedUses": [{ "name": "Arcane Recovery", "remainingUses": 1, "maxUses": 1, "label": "Short Rest" }],
-    "limitedUsesLine": "Arcane Recovery: 1 / 1",
-    "features": [
-      { "name": "Arcane Recovery", "description": "Recover spell slots on a short rest to keep spells flowing." },
-      { "name": "Scribe's Insight", "description": "Add double proficiency to lore checks tied to written records." }
+    "inspiration": true
+  },
+  "campaign": {
+    "name": "Undercroft Trials"
+  },
+  "alignment": {
+    "name": "neutral-good",
+    "friendlyName": "Neutral Good",
+    "shortName": "NG"
+  },
+  "background": {
+    "name": "Expedition Scribe",
+    "description": "Cartographer assigned to record the Undercroft’s shifting halls.",
+    "feature": "Scribe’s Insight",
+    "characteristics": [
+      "Curious",
+      "Meticulous",
+      "Quick to catalog new lore"
     ]
   },
-  "characterNotecardCards": [
+  "traits": {
+    "age": 24,
+    "appearance": "Tidy braids and ink-stained gloves.",
+    "bonds": "Press crew at Riverwatch.",
+    "ideals": "Knowledge must be preserved.",
+    "flaws": "Overcommits to documenting every relic.",
+    "personalityTraits": "Curious, meticulous, and quick to catalog new lore.",
+    "eyes": "Hazel",
+    "hair": "Auburn",
+    "skin": "Warm tan",
+    "height": "5'6\"",
+    "weight": 135,
+    "size": "med"
+  },
+  "abilities": [
+    { "id": 1, "name": "strength", "friendlyName": "Strength", "shortName": "STR", "score": 12, "modifier": 1 },
+    { "id": 2, "name": "dexterity", "friendlyName": "Dexterity", "shortName": "DEX", "score": 14, "modifier": 2 },
+    { "id": 3, "name": "constitution", "friendlyName": "Constitution", "shortName": "CON", "score": 12, "modifier": 1 },
+    { "id": 4, "name": "intelligence", "friendlyName": "Intelligence", "shortName": "INT", "score": 18, "modifier": 4 },
+    { "id": 5, "name": "wisdom", "friendlyName": "Wisdom", "shortName": "WIS", "score": 12, "modifier": 1 },
+    { "id": 6, "name": "charisma", "friendlyName": "Charisma", "shortName": "CHA", "score": 10, "modifier": 0 }
+  ],
+  "saves": [
+    { "id": 1, "name": "strength", "friendlyName": "Strength", "shortName": "STR", "value": 3, "proficiency": 1 },
+    { "id": 2, "name": "dexterity", "friendlyName": "Dexterity", "shortName": "DEX", "value": 5, "proficiency": 2 },
+    { "id": 3, "name": "constitution", "friendlyName": "Constitution", "shortName": "CON", "value": 3, "proficiency": 1 },
+    { "id": 4, "name": "intelligence", "friendlyName": "Intelligence", "shortName": "INT", "value": 7, "proficiency": 2 },
+    { "id": 5, "name": "wisdom", "friendlyName": "Wisdom", "shortName": "WIS", "value": 3, "proficiency": 1 },
+    { "id": 6, "name": "charisma", "friendlyName": "Charisma", "shortName": "CHA", "value": 0, "proficiency": 0 }
+  ],
+  "skills": [
+    { "id": 6, "name": "arcana", "friendlyName": "Arcana", "ability": "INT", "value": 7, "proficiency": 2 },
+    { "id": 7, "name": "history", "friendlyName": "History", "ability": "INT", "value": 7, "proficiency": 2 },
+    { "id": 8, "name": "investigation", "friendlyName": "Investigation", "ability": "INT", "value": 5, "proficiency": 1 },
+    { "id": 14, "name": "perception", "friendlyName": "Perception", "ability": "WIS", "value": 3, "proficiency": 1 },
+    { "id": 18, "name": "persuasion", "friendlyName": "Persuasion", "ability": "CHA", "value": 2, "proficiency": 1 }
+  ],
+  "senses": {
+    "passives": {
+      "perception": 14,
+      "investigation": 12,
+      "insight": 13
+    },
+    "darkvision": 60
+  },
+  "speeds": {
+    "walk": 30,
+    "fly": 0
+  },
+  "ac": {
+    "value": 15,
+    "shieldBonus": 0,
+    "bonus": 2
+  },
+  "hp": {
+    "max": 38,
+    "current": 38,
+    "temp": 0,
+    "hitDice": 5,
+    "hitDiceSize": "1d8+2"
+  },
+  "initiative": {
+    "value": 2,
+    "advantage": true,
+    "disadvantage": false
+  },
+  "proficiency": 3,
+  "proficiencies": {
+    "armor": ["Light armor"],
+    "weapons": ["Simple weapons", "Light crossbows"],
+    "tools": ["Calligrapher's supplies"],
+    "languages": ["Common", "Elvish", "Draconic"],
+    "defenses": [
+      { "name": "Fire Resistance", "type": "resistance", "condition": null }
+    ],
+    "senses": ["Darkvision"]
+  },
+  "attacks": [
     {
-      "name": "Lira Quill",
-      "identityLine": "Female, Expedition Scribe",
-      "race": "Half-Elf",
-      "classSummary": "Lorebinder (Curator) 5",
-      "personalityTraits": "Curious, meticulous, and quick to catalog new lore.",
-      "abilities": [
-        { "name": "Str", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-0" },
-        { "name": "Dex", "modifier": "+2", "score": 14, "display": "+2 (14)", "abilityBlockClass": "ability-block stat-1" },
-        { "name": "Con", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-2" },
-        { "name": "Int", "modifier": "+4", "score": 18, "display": "+4 (18)", "abilityBlockClass": "ability-block stat-3" },
-        { "name": "Wis", "modifier": "+1", "score": 12, "display": "+1 (12)", "abilityBlockClass": "ability-block stat-4" },
-        { "name": "Cha", "modifier": "+0", "score": 10, "display": "+0 (10)", "abilityBlockClass": "ability-block stat-5" }
-      ],
-      "saves": [
-        { "name": "Strength", "modifier": "+3", "itemClass": "skill stat-0", "circleClass": "circle p3" },
-        { "name": "Dexterity", "modifier": "+5", "itemClass": "skill stat-1", "circleClass": "circle p3" },
-        { "name": "Constitution", "modifier": "+3", "itemClass": "skill stat-2", "circleClass": "circle p1" },
-        { "name": "Intelligence", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
-        { "name": "Wisdom", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
-        { "name": "Charisma", "modifier": "+0", "itemClass": "skill stat-5", "circleClass": "circle p0" }
-      ],
-      "skills": [
-        { "name": "Arcana", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
-        { "name": "History", "modifier": "+7", "itemClass": "skill stat-3", "circleClass": "circle p3" },
-        { "name": "Investigation", "modifier": "+5", "itemClass": "skill stat-3", "circleClass": "circle p1" },
-        { "name": "Perception", "modifier": "+3", "itemClass": "skill stat-4", "circleClass": "circle p1" },
-        { "name": "Persuasion", "modifier": "+2", "itemClass": "skill stat-5", "circleClass": "circle p1" }
-      ],
-      "hp": { "max": 38, "hitDice": 5, "hitDiceSize": "1d8+2" },
-      "hpLine": "/ 38",
-      "hitDiceLine": "(1d8+2 x 5)",
-      "proficiencyBonus": "+3",
-      "initiative": { "value": "+2", "icon": "ddb-advantage" },
-      "ac": { "value": 15 },
-      "speeds": { "walk": 30, "fly": 0 },
-      "speedLine": "30 ft.",
-      "proficiencies": {
-        "armor": "Light armor",
-        "weapons": "Simple weapons, light crossbows",
-        "tools": "Calligrapher's supplies",
-        "languages": "Common, Elvish, Draconic"
-      },
-      "proficiencyLines": {
-        "armor": "Armor: Light armor",
-        "weapons": "Weapons: Simple weapons, light crossbows",
-        "tools": "Tools: Calligrapher's supplies",
-        "languages": "Languages: Common, Elvish, Draconic"
-      },
-      "passives": { "perception": 14, "investigation": 12, "insight": 13 },
-      "passiveLines": {
-        "perception": "Passive Percept.: 14",
-        "investigation": "Passive Investig.: 12",
-        "insight": "Passive Insight: 13"
-      },
-      "senses": [{ "name": "Darkvision", "range": 60 }],
-      "defenses": [{ "name": "Fire Resistance", "iconClass": "ddb-resistance" }],
-      "alignment": "Neutral Good",
-      "alignmentLine": "Alignment: Neutral Good",
-      "detailsLine": "Height: 5'6\", Weight: 135 lb., Age: 24, Size: Medium",
-      "appearanceLine": "Appearance: Tidy braids and ink-stained gloves, Hair: Auburn, Eyes: Hazel",
-      "attacks": [
-        { "name": "Arcane Quill", "toHit": "+6", "damage": "1d8+3 force", "range": "60 ft.", "notes": "Ranged spell" },
-        { "name": "Dagger", "toHit": "+5", "damage": "1d4+2 piercing", "range": "20/60 ft.", "notes": "Finesse, light" }
-      ],
-      "attacking": { "attacksPerAction": 1, "fightingStyle": "Defensive" },
-      "attacksMetaLine": "Attacks Per Action: 1, Fighting Style: Defensive",
-      "spellCasting": { "ability": "INT", "attack": "+6", "save": 14 },
-      "spellsHeading": "Spells (INT)",
-      "spellsMetaLine": "Spell Attack: +6, Spell Save DC: 14",
-      "spells": {
-        "cantrips": [
-          { "name": "Mage Hand", "hit": "--", "effect": "Utility", "time": "1A", "range": "30 ft.", "notes": "Conc 1 min" }
-        ],
-        "level1": [
-          { "name": "Magic Missile", "hit": "--", "effect": "3 darts", "time": "1A", "range": "120 ft.", "notes": "Instant" }
-        ],
-        "level2": [
-          { "name": "Misty Step", "hit": "--", "effect": "Teleport", "time": "BA", "range": "30 ft.", "notes": "Instant" }
-        ]
-      },
-      "limitedUses": [{ "name": "Arcane Recovery", "remainingUses": 1, "maxUses": 1, "label": "Short Rest" }],
-      "limitedUsesLine": "Arcane Recovery: 1 / 1",
-      "features": [
-        { "name": "Arcane Recovery", "description": "Recover spell slots on a short rest to keep spells flowing." },
-        { "name": "Scribe's Insight", "description": "Add double proficiency to lore checks tied to written records." }
-      ]
+      "name": "Arcane Quill",
+      "attackBonus": 6,
+      "damage": "1d8+3 force",
+      "range": "60 ft.",
+      "notes": "Ranged spell"
+    },
+    {
+      "name": "Dagger",
+      "attackBonus": 5,
+      "damage": "1d4+2 piercing",
+      "range": "20/60 ft.",
+      "notes": "Finesse, light"
     }
   ],
-  "chips": [
-    {
-      "label": "Explorer",
-      "subtitle": "Press Crew",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e0f2fe' stroke='%230d6efd' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Archivist",
-      "subtitle": "Lore",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fef3c7' stroke='%23f59e0b' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Forge",
-      "subtitle": "Workshop",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fee2e2' stroke='%23ef4444' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Grove",
-      "subtitle": "Warden",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23dcfce7' stroke='%2316a34a' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Seer",
-      "subtitle": "Vision",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ede9fe' stroke='%237c3aed' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Cavern",
-      "subtitle": "Guide",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23f5f5f4' stroke='%238b5e34' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Tactician",
-      "subtitle": "Frontline",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23cffafe' stroke='%2306b6d4' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Quartermaster",
-      "subtitle": "Logistics",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fef2f2' stroke='%239f1239' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Messenger",
-      "subtitle": "Courier",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ecfccb' stroke='%2384cc16' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Scribe",
-      "subtitle": "Layouts",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23e2e8f0' stroke='%23334155' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Archivist",
-      "subtitle": "Index",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23fae8ff' stroke='%23a855f7' stroke-width='4'/></svg>"
-    },
-    {
-      "label": "Sentinel",
-      "subtitle": "Watch",
-      "image": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ffedd5' stroke='%23ea580c' stroke-width='4'/></svg>"
-    }
-  ]
+  "features": [
+    { "name": "Arcane Recovery", "description": "Recover spell slots on a short rest to keep spells flowing." },
+    { "name": "Scribe's Insight", "description": "Add double proficiency to lore checks tied to written records." }
+  ],
+  "inventory": [
+    [
+      { "name": "Pack", "quantity": 1, "weight": 60, "notes": "Expedition pack with field gear." },
+      { "name": "Spellbook", "quantity": 1, "weight": 3, "notes": "Annotated for the Undercroft archives." },
+      { "name": "Focus", "quantity": 1, "weight": 1, "notes": "Arcane quill focus." },
+      { "name": "Notes", "quantity": 6, "weight": 0.5, "notes": "Loose pages, indexed." }
+    ]
+  ],
+  "notes": {
+    "allies": "Trismegistus press crew, Riverwatch scouts.",
+    "backstory": "Raised among archivists and trained to map labyrinthine libraries.",
+    "enemies": "Moisture warp, expired toner streaks.",
+    "organizations": "Undercroft Surveyors.",
+    "personalPossessions": "Sealed field journal, sigil wax.",
+    "otherHoldings": "Portable press toolkit.",
+    "otherNotes": "Lock scaling to 100% and flip on the long edge."
+  },
+  "spellCasting": {
+    "ability": "INT",
+    "mod": "+4",
+    "attack": "+6",
+    "save": 14
+  },
+  "spells": [
+    [
+      {
+        "name": "Mage Hand",
+        "level": 0,
+        "castingTime": "1A",
+        "range": "30 ft.",
+        "effect": "Utility",
+        "duration": "1 min",
+        "toHit": null,
+        "dc": null
+      }
+    ],
+    [
+      {
+        "name": "Magic Missile",
+        "level": 1,
+        "castingTime": "1A",
+        "range": "120 ft.",
+        "effect": "Force",
+        "duration": "Instant",
+        "toHit": null,
+        "dc": null
+      }
+    ],
+    [
+      {
+        "name": "Misty Step",
+        "level": 2,
+        "castingTime": "BA",
+        "range": "30 ft.",
+        "effect": "Teleport",
+        "duration": "Instant",
+        "toHit": null,
+        "dc": null
+      }
+    ]
+  ],
+  "limitedUses": [
+    { "name": "Arcane Recovery", "uses": 1, "used": 0, "available": 1, "reset": "Short Rest" }
+  ],
+  "currencies": {
+    "cp": 12,
+    "sp": 48,
+    "ep": 0,
+    "gp": 142,
+    "pp": 2
+  }
 }
