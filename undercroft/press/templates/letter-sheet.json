@@ -96,7 +96,21 @@
                             "type": "field",
                             "component": "stat",
                             "label": "@stats.0.label",
-                            "text": "@stats.0.value"
+                            "text": "@stats.0.value",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         },
                         {
@@ -104,7 +118,21 @@
                             "type": "field",
                             "component": "stat",
                             "label": "@stats.1.label",
-                            "text": "@stats.1.value"
+                            "text": "@stats.1.value",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         },
                         {
@@ -112,7 +140,21 @@
                             "type": "field",
                             "component": "stat",
                             "label": "@stats.2.label",
-                            "text": "@stats.2.value"
+                            "text": "@stats.2.value",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         },
                         {
@@ -120,7 +162,21 @@
                             "type": "field",
                             "component": "stat",
                             "label": "@stats.3.label",
-                            "text": "@stats.3.value"
+                            "text": "@stats.3.value",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         },
                         {
@@ -128,7 +184,21 @@
                             "type": "field",
                             "component": "stat",
                             "label": "@stats.4.label",
-                            "text": "@stats.4.value"
+                            "text": "@stats.4.value",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         },
                         {
@@ -136,7 +206,21 @@
                             "type": "field",
                             "component": "stat",
                             "label": "@stats.5.label",
-                            "text": "@stats.5.value"
+                            "text": "@stats.5.value",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         }
                       ]
