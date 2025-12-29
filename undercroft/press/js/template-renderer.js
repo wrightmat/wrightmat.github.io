@@ -51,9 +51,6 @@ function resolveTextSizePx(node) {
   if (node?.textSize) {
     return TEXT_SIZE_MAP[node.textSize] ?? null;
   }
-  if (node?.component === "heading") {
-    return TEXT_SIZE_MAP.lg;
-  }
   if (node?.component === "text") {
     return TEXT_SIZE_MAP.md;
   }
@@ -144,8 +141,7 @@ function applyTextFormatting(element, node) {
     element.style.fontSize = `${size}px`;
   }
   if (node?.component !== "icon") {
-    const defaultBold = node?.component === "heading";
-    const isBold = typeof node?.textStyles?.bold === "boolean" ? node.textStyles.bold : defaultBold;
+    const isBold = typeof node?.textStyles?.bold === "boolean" ? node.textStyles.bold : false;
     if (isBold) {
       element.style.fontWeight = "600";
     } else {
@@ -267,17 +263,6 @@ function applyTextColor(element, styles = {}) {
 function renderField(node, context, options = {}) {
   const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
   switch (node.component) {
-    case "heading": {
-      const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
-      if (useCurved) {
-        return createCurvedTextElement(node, value ?? node.label, resolveClassName(node, context) ?? "fw-semibold");
-      }
-      const el = createTextElement(node.level ?? "h2", value ?? node.label, resolveClassName(node, context) ?? "fw-semibold");
-      applyInlineStyles(el, node.style);
-      applyTextFormatting(el, node);
-      applyTextTransform(el, node);
-      return el;
-    }
     case "text": {
       const tag = node.textStyle ?? "p";
       const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
