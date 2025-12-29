@@ -117,6 +117,11 @@ const textAngleInput = document.querySelector("[data-component-text-angle]");
 const textCurveInput = document.querySelector("[data-component-text-curve]");
 const colorInputs = Array.from(document.querySelectorAll("[data-component-color]"));
 const colorClearButtons = Array.from(document.querySelectorAll("[data-component-color-clear]"));
+const borderGroup = document.querySelector("[data-inspector-border-group]");
+const borderWidthInput = document.querySelector("[data-component-border-width]");
+const borderStyleInput = document.querySelector("[data-component-border-style]");
+const borderRadiusInput = document.querySelector("[data-component-border-radius]");
+const borderSideInputs = Array.from(document.querySelectorAll("[data-component-border-side]"));
 const textStyleToggles = Array.from(document.querySelectorAll("[data-component-text-style]"));
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
@@ -361,7 +366,20 @@ const paletteComponents = [
       component: "stat",
       label: "Label",
       text: "Value",
-      className: "panel-box",
+      gap: 2,
+      className: "press-block",
+      style: {
+        borderColor: "#adb5bd",
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderRadius: 6,
+        borderSides: {
+          top: true,
+          right: true,
+          bottom: true,
+          left: true,
+        },
+      },
     },
   },
   {
@@ -1903,6 +1921,17 @@ function resolveTextTransform(node) {
   };
 }
 
+function hasBorderStyles(styles = {}) {
+  return (
+    styles.borderColor ||
+    typeof styles.borderWidth === "number" ||
+    styles.borderStyle ||
+    typeof styles.borderRadius === "number" ||
+    typeof styles.borderRadius === "string" ||
+    styles.borderSides
+  );
+}
+
 function pxToPt(value) {
   if (!Number.isFinite(value)) return "";
   return (value * 0.75).toFixed(1).replace(/\.0$/, "");
@@ -2202,6 +2231,7 @@ function updateInspector() {
       setGroupVisibility(group, true);
     });
     setGroupVisibility(colorGroup, true);
+    setGroupVisibility(borderGroup, false);
     setGroupVisibility(alignmentGroup, true);
     if (gapField) {
       gapField.hidden = true;
@@ -2261,6 +2291,7 @@ function updateInspector() {
   const isImageNode = node?.component === "image";
   const isTableNode = node?.component === "table";
   const isIconNode = node?.component === "icon";
+  const borderVisible = hasBorderStyles(node?.style ?? {});
   setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
   setGroupVisibility(iconField, isIconNode);
   setGroupVisibility(tableFieldGroup, isTableNode);
@@ -2273,6 +2304,7 @@ function updateInspector() {
   });
   setGroupVisibility(textDecorationGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
   setGroupVisibility(colorGroup, true);
+  setGroupVisibility(borderGroup, borderVisible);
   setGroupVisibility(alignmentGroup, !isImageNode && !isIconNode);
   textStyleToggles.forEach((input) => {
     input.disabled = isLayoutNode || isImageNode || isIconNode;
@@ -2288,7 +2320,8 @@ function updateInspector() {
   }
 
   if (gapInput) {
-    const gapValue = Number.isFinite(node?.gap) ? node.gap : 4;
+    const defaultGap = node?.component === "stat" ? 2 : 4;
+    const gapValue = Number.isFinite(node?.gap) ? node.gap : defaultGap;
     gapInput.value = isGapNode ? String(gapValue) : "";
   }
   if (rowColumnsInput) {
@@ -2426,6 +2459,30 @@ function updateInspector() {
       input.value = styles.borderColor || COLOR_DEFAULTS.border;
     }
   });
+
+  if (borderWidthInput) {
+    borderWidthInput.value = borderVisible
+      ? String(Number.isFinite(node?.style?.borderWidth) ? node.style.borderWidth : 1)
+      : "";
+  }
+  if (borderStyleInput) {
+    borderStyleInput.value = borderVisible ? node?.style?.borderStyle ?? "solid" : "solid";
+  }
+  if (borderRadiusInput) {
+    const rawRadius = node?.style?.borderRadius;
+    borderRadiusInput.value =
+      borderVisible && rawRadius !== undefined && rawRadius !== null
+        ? String(typeof rawRadius === "number" ? rawRadius : parseFloat(rawRadius) || 0)
+        : "";
+  }
+  if (borderSideInputs.length) {
+    const sides = node?.style?.borderSides ?? {};
+    borderSideInputs.forEach((input) => {
+      const key = input.dataset.componentBorderSide;
+      if (!key) return;
+      input.checked = borderVisible ? sides[key] !== false : false;
+    });
+  }
 
   textStyleToggles.forEach((input) => {
     const styleKey = input.dataset.componentTextStyle;
@@ -3220,6 +3277,18 @@ function bindInspectorControls() {
             styles.backgroundColor = value;
           } else if (key === "border") {
             styles.borderColor = value;
+            if (!Number.isFinite(styles.borderWidth)) {
+              styles.borderWidth = 1;
+            }
+            if (!styles.borderStyle) {
+              styles.borderStyle = "solid";
+            }
+            if (!("borderRadius" in styles)) {
+              styles.borderRadius = 6;
+            }
+            if (!styles.borderSides) {
+              styles.borderSides = { top: true, right: true, bottom: true, left: true };
+            }
           }
           node.style = styles;
         });
@@ -3242,6 +3311,10 @@ function bindInspectorControls() {
               delete styles.backgroundColor;
             } else if (key === "border") {
               delete styles.borderColor;
+              delete styles.borderWidth;
+              delete styles.borderStyle;
+              delete styles.borderRadius;
+              delete styles.borderSides;
             }
             if (Object.keys(styles).length) {
               node.style = styles;
@@ -3254,8 +3327,87 @@ function bindInspectorControls() {
             input.value = COLOR_DEFAULTS[key] || "#000000";
           }
           renderPreview();
+          updateInspector();
           updateSaveState();
         });
+      });
+    });
+  }
+
+  if (borderWidthInput) {
+    borderWidthInput.addEventListener("focus", () => beginPendingUndo(borderWidthInput));
+    borderWidthInput.addEventListener("blur", () => commitPendingUndo(borderWidthInput));
+    borderWidthInput.addEventListener("change", () => commitPendingUndo(borderWidthInput));
+    borderWidthInput.addEventListener("input", () => {
+      const parsed = borderWidthInput.value === "" ? null : Number(borderWidthInput.value);
+      updateSelectedNode((node) => {
+        const styles = { ...(node.style ?? {}) };
+        if (parsed === null || Number.isNaN(parsed)) {
+          delete styles.borderWidth;
+        } else {
+          styles.borderWidth = Math.max(0, Math.min(parsed, 12));
+        }
+        node.style = styles;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (borderStyleInput) {
+    borderStyleInput.addEventListener("focus", () => beginPendingUndo(borderStyleInput));
+    borderStyleInput.addEventListener("blur", () => commitPendingUndo(borderStyleInput));
+    borderStyleInput.addEventListener("change", () => commitPendingUndo(borderStyleInput));
+    borderStyleInput.addEventListener("input", () => {
+      const value = borderStyleInput.value;
+      updateSelectedNode((node) => {
+        const styles = { ...(node.style ?? {}) };
+        if (!value) {
+          delete styles.borderStyle;
+        } else {
+          styles.borderStyle = value;
+        }
+        node.style = styles;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (borderRadiusInput) {
+    borderRadiusInput.addEventListener("focus", () => beginPendingUndo(borderRadiusInput));
+    borderRadiusInput.addEventListener("blur", () => commitPendingUndo(borderRadiusInput));
+    borderRadiusInput.addEventListener("change", () => commitPendingUndo(borderRadiusInput));
+    borderRadiusInput.addEventListener("input", () => {
+      const parsed = borderRadiusInput.value === "" ? null : Number(borderRadiusInput.value);
+      updateSelectedNode((node) => {
+        const styles = { ...(node.style ?? {}) };
+        if (parsed === null || Number.isNaN(parsed)) {
+          delete styles.borderRadius;
+        } else {
+          styles.borderRadius = Math.max(0, Math.min(parsed, 24));
+        }
+        node.style = styles;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (borderSideInputs.length) {
+    borderSideInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        const side = input.dataset.componentBorderSide;
+        if (!side) return;
+        updateSelectedNode((node) => {
+          const styles = { ...(node.style ?? {}) };
+          const sides = { ...(styles.borderSides ?? {}) };
+          sides[side] = input.checked;
+          styles.borderSides = sides;
+          node.style = styles;
+        });
+        renderPreview();
+        updateSaveState();
       });
     });
   }

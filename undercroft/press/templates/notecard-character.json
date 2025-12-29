@@ -126,8 +126,20 @@
                           "textSize": "xs",
                           "align": "center",
                           "style": {
-                            "color": "red"
-                          }
+                            "color": "red",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
                         },
                         {
                           "type": "field",
@@ -137,8 +149,20 @@
                           "textSize": "xs",
                           "align": "center",
                           "style": {
-                            "color": "gold"
-                          }
+                            "color": "gold",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
                         },
                         {
                           "type": "field",
@@ -148,8 +172,20 @@
                           "textSize": "xs",
                           "align": "center",
                           "style": {
-                            "color": "darkorange"
-                          }
+                            "color": "darkorange",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
                         },
                         {
                           "type": "field",
@@ -159,8 +195,20 @@
                           "textSize": "xs",
                           "align": "center",
                           "style": {
-                            "color": "blue"
-                          }
+                            "color": "blue",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
                         },
                         {
                           "type": "field",
@@ -170,8 +218,20 @@
                           "textSize": "xs",
                           "align": "center",
                           "style": {
-                            "color": "green"
-                          }
+                            "color": "green",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
                         },
                         {
                           "type": "field",
@@ -181,8 +241,20 @@
                           "textSize": "xs",
                           "align": "center",
                           "style": {
-                            "color": "purple"
-                          }
+                            "color": "purple",
+                            "borderColor": "#adb5bd",
+                            "borderWidth": 1,
+                            "borderStyle": "solid",
+                            "borderRadius": 6,
+                            "borderSides": {
+                              "top": true,
+                              "right": true,
+                              "bottom": true,
+                              "left": true
+                            }
+                          },
+                          "className": "press-block",
+                          "gap": 2
                         }
                       ]
                     }
@@ -356,7 +428,21 @@
                       "component": "stat",
                       "label": "Proficiency Bonus",
                       "text": "@proficiencyBonus",
-                      "textSize": "xs"
+                      "textSize": "xs",
+                      "className": "press-block",
+                      "gap": 2,
+                      "style": {
+                        "borderColor": "#adb5bd",
+                        "borderWidth": 1,
+                        "borderStyle": "solid",
+                        "borderRadius": 6,
+                        "borderSides": {
+                          "top": true,
+                          "right": true,
+                          "bottom": true,
+                          "left": true
+                        }
+                      }
                     },
                     {
                       "type": "row",
@@ -369,7 +455,21 @@
                             "component": "stat",
                             "label": "Initiative",
                             "text": "@initiative.value",
-                            "textSize": "xs"
+                            "textSize": "xs",
+                            "className": "press-block",
+                            "gap": 2,
+                            "style": {
+                              "borderColor": "#adb5bd",
+                              "borderWidth": 1,
+                              "borderStyle": "solid",
+                              "borderRadius": 6,
+                              "borderSides": {
+                                "top": true,
+                                "right": true,
+                                "bottom": true,
+                                "left": true
+                              }
+                            }
                           }
                         },
                         {
@@ -387,14 +487,42 @@
                       "component": "stat",
                       "label": "Armor Class",
                       "text": "@ac.value",
-                      "textSize": "xs"
+                      "textSize": "xs",
+                      "className": "press-block",
+                      "gap": 2,
+                      "style": {
+                        "borderColor": "#adb5bd",
+                        "borderWidth": 1,
+                        "borderStyle": "solid",
+                        "borderRadius": 6,
+                        "borderSides": {
+                          "top": true,
+                          "right": true,
+                          "bottom": true,
+                          "left": true
+                        }
+                      }
                     },
                     {
                       "type": "field",
                       "component": "stat",
                       "label": "Speed",
                       "text": "@speedLine",
-                      "textSize": "xs"
+                      "textSize": "xs",
+                      "className": "press-block",
+                      "gap": 2,
+                      "style": {
+                        "borderColor": "#adb5bd",
+                        "borderWidth": 1,
+                        "borderStyle": "solid",
+                        "borderRadius": 6,
+                        "borderSides": {
+                          "top": true,
+                          "right": true,
+                          "bottom": true,
+                          "left": true
+                        }
+                      }
                     },
                     {
                       "type": "field",
@@ -544,21 +672,21 @@
                 "component": "text",
                 "text": "@alignmentLine",
                 "textSize": "xs",
-                "className": "text-body-secondary"
+                "className": "text-body-secondary mb-0"
               },
               {
                 "type": "field",
                 "component": "text",
                 "text": "@detailsLine",
                 "textSize": "xs",
-                "className": "text-body-secondary"
+                "className": "text-body-secondary mb-0"
               },
               {
                 "type": "field",
                 "component": "text",
                 "text": "@appearanceLine",
                 "textSize": "xs",
-                "className": "text-body-secondary"
+                "className": "text-body-secondary mb-0"
               }
             ]
           }
@@ -624,11 +752,31 @@
               "fontSize": 10
             },
             "columns": [
-              { "header": "Attack Name", "bind": "@name", "width": "30%" },
-              { "header": "To Hit", "bind": "@toHit", "width": "10%" },
-              { "header": "Damage", "bind": "@damage", "width": "15%" },
-              { "header": "Range", "bind": "@range", "width": "15%" },
-              { "header": "Notes", "bind": "@notes", "width": "30%" }
+              {
+                "header": "Attack Name",
+                "bind": "@name",
+                "width": "30%"
+              },
+              {
+                "header": "To Hit",
+                "bind": "@toHit",
+                "width": "10%"
+              },
+              {
+                "header": "Damage",
+                "bind": "@damage",
+                "width": "15%"
+              },
+              {
+                "header": "Range",
+                "bind": "@range",
+                "width": "15%"
+              },
+              {
+                "header": "Notes",
+                "bind": "@notes",
+                "width": "30%"
+              }
             ]
           },
           {
@@ -683,12 +831,36 @@
                   "fontSize": 10
                 },
                 "columns": [
-                  { "header": "Spell Name", "bind": "@name", "width": "35%" },
-                  { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
-                  { "header": "Effect", "bind": "@effect", "width": "15%" },
-                  { "header": "Time", "bind": "@time", "width": "10%" },
-                  { "header": "Range", "bind": "@range", "width": "10%" },
-                  { "header": "Notes", "bind": "@notes", "width": "15%" }
+                  {
+                    "header": "Spell Name",
+                    "bind": "@name",
+                    "width": "35%"
+                  },
+                  {
+                    "header": "Hit/DC",
+                    "bind": "@hit",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Effect",
+                    "bind": "@effect",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Time",
+                    "bind": "@time",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Range",
+                    "bind": "@range",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Notes",
+                    "bind": "@notes",
+                    "width": "15%"
+                  }
                 ]
               },
               {
@@ -711,12 +883,36 @@
                   "fontSize": 10
                 },
                 "columns": [
-                  { "header": "Spell Name", "bind": "@name", "width": "35%" },
-                  { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
-                  { "header": "Effect", "bind": "@effect", "width": "15%" },
-                  { "header": "Time", "bind": "@time", "width": "10%" },
-                  { "header": "Range", "bind": "@range", "width": "10%" },
-                  { "header": "Notes", "bind": "@notes", "width": "15%" }
+                  {
+                    "header": "Spell Name",
+                    "bind": "@name",
+                    "width": "35%"
+                  },
+                  {
+                    "header": "Hit/DC",
+                    "bind": "@hit",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Effect",
+                    "bind": "@effect",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Time",
+                    "bind": "@time",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Range",
+                    "bind": "@range",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Notes",
+                    "bind": "@notes",
+                    "width": "15%"
+                  }
                 ]
               },
               {
@@ -739,12 +935,36 @@
                   "fontSize": 10
                 },
                 "columns": [
-                  { "header": "Spell Name", "bind": "@name", "width": "35%" },
-                  { "header": "Hit/DC", "bind": "@hit", "width": "15%" },
-                  { "header": "Effect", "bind": "@effect", "width": "15%" },
-                  { "header": "Time", "bind": "@time", "width": "10%" },
-                  { "header": "Range", "bind": "@range", "width": "10%" },
-                  { "header": "Notes", "bind": "@notes", "width": "15%" }
+                  {
+                    "header": "Spell Name",
+                    "bind": "@name",
+                    "width": "35%"
+                  },
+                  {
+                    "header": "Hit/DC",
+                    "bind": "@hit",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Effect",
+                    "bind": "@effect",
+                    "width": "15%"
+                  },
+                  {
+                    "header": "Time",
+                    "bind": "@time",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Range",
+                    "bind": "@range",
+                    "width": "10%"
+                  },
+                  {
+                    "header": "Notes",
+                    "bind": "@notes",
+                    "width": "15%"
+                  }
                 ]
               }
             ]

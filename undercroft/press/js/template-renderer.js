@@ -59,6 +59,7 @@ function resolveTextSizePx(node) {
 
 function applyInlineStyles(element, styles = {}) {
   if (!element || typeof styles !== "object") return;
+  const borderEnabled = hasBorderStyles(styles);
   if (typeof styles.fontSize === "number") {
     element.style.fontSize = `${styles.fontSize}px`;
   }
@@ -73,13 +74,81 @@ function applyInlineStyles(element, styles = {}) {
   }
   if (styles.borderColor) {
     element.style.borderColor = styles.borderColor;
-    element.style.borderStyle = "solid";
-    element.style.borderWidth = "1px";
   } else {
     element.style.removeProperty("border-color");
-    element.style.removeProperty("border-style");
-    element.style.removeProperty("border-width");
   }
+  if (borderEnabled) {
+    applyBorderStyles(element, styles);
+  } else {
+    resetBorderStyles(element);
+  }
+}
+
+function hasBorderStyles(styles = {}) {
+  return (
+    styles.borderColor ||
+    typeof styles.borderWidth === "number" ||
+    styles.borderStyle ||
+    typeof styles.borderRadius === "number" ||
+    typeof styles.borderRadius === "string" ||
+    styles.borderSides
+  );
+}
+
+function applyBorderStyles(element, styles = {}) {
+  const borderWidth = typeof styles.borderWidth === "number" ? styles.borderWidth : 1;
+  const borderStyle = styles.borderStyle || "solid";
+  const borderRadius =
+    typeof styles.borderRadius === "number"
+      ? `${styles.borderRadius}px`
+      : typeof styles.borderRadius === "string"
+        ? styles.borderRadius
+        : null;
+  if (borderRadius) {
+    element.style.borderRadius = borderRadius;
+  } else {
+    element.style.removeProperty("border-radius");
+  }
+
+  const sides = styles.borderSides;
+  if (sides && typeof sides === "object") {
+    applyBorderSide(element.style, "Top", sides.top, borderWidth, borderStyle);
+    applyBorderSide(element.style, "Right", sides.right, borderWidth, borderStyle);
+    applyBorderSide(element.style, "Bottom", sides.bottom, borderWidth, borderStyle);
+    applyBorderSide(element.style, "Left", sides.left, borderWidth, borderStyle);
+  } else {
+    element.style.borderWidth = `${borderWidth}px`;
+    element.style.borderStyle = borderStyle;
+    element.style.removeProperty("border-top-width");
+    element.style.removeProperty("border-right-width");
+    element.style.removeProperty("border-bottom-width");
+    element.style.removeProperty("border-left-width");
+    element.style.removeProperty("border-top-style");
+    element.style.removeProperty("border-right-style");
+    element.style.removeProperty("border-bottom-style");
+    element.style.removeProperty("border-left-style");
+  }
+}
+
+function applyBorderSide(style, side, enabled, width, borderStyle) {
+  const widthValue = enabled === false ? 0 : width;
+  const styleValue = enabled === false ? "none" : borderStyle;
+  style[`border${side}Width`] = `${widthValue}px`;
+  style[`border${side}Style`] = styleValue;
+}
+
+function resetBorderStyles(element) {
+  element.style.removeProperty("border-width");
+  element.style.removeProperty("border-style");
+  element.style.removeProperty("border-radius");
+  element.style.removeProperty("border-top-width");
+  element.style.removeProperty("border-right-width");
+  element.style.removeProperty("border-bottom-width");
+  element.style.removeProperty("border-left-width");
+  element.style.removeProperty("border-top-style");
+  element.style.removeProperty("border-right-style");
+  element.style.removeProperty("border-bottom-style");
+  element.style.removeProperty("border-left-style");
 }
 
 function applyGap(element, gap) {
@@ -366,7 +435,7 @@ function renderField(node, context, options = {}) {
     }
     case "stat": {
       const wrapper = document.createElement("div");
-      applyClassName(wrapper, resolveClassName(node, context) ?? "panel-box");
+      applyClassName(wrapper, resolveClassName(node, context) ?? "press-block");
       if (Number.isFinite(node?.gap)) {
         applyGap(wrapper, node.gap);
       }
