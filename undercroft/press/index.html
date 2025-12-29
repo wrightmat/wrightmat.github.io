@@ -57,7 +57,7 @@
     <link rel="stylesheet" href="css/ddb-icons.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="press">
-    <div class="d-flex flex-column min-vh-100 no-print">
+    <div class="workbench-app d-flex flex-column no-print">
       <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="workbench-header-grid pe-2 py-3">
           <div class="d-flex align-items-center">
@@ -108,7 +108,7 @@
         </div>
       </header>
 
-      <div class="d-flex flex-grow-1 overflow-hidden">
+      <div class="workbench-shell d-flex">
         <aside
           class="border-end border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
           data-pane="left"
@@ -217,11 +217,13 @@
                 </button>
                 <div class="collapse" id="press-json-preview">
                   <div class="bg-body p-2 mt-2">
-                    <pre
-                      class="text-body-secondary small overflow-auto mb-0 press-json-preview"
+                    <textarea
+                      class="form-control form-control-sm font-monospace small press-json-preview"
+                      rows="10"
                       style="max-height: 16rem"
                       data-json-preview
-                    >{}</pre>
+                      readonly
+                    ></textarea>
                   </div>
                 </div>
               </section>
@@ -255,7 +257,7 @@
           </div>
         </aside>
 
-        <main class="flex-grow-1 overflow-auto bg-body-secondary py-4">
+        <main class="workbench-main flex-grow-1 bg-body-secondary py-4">
           <section class="container-xl d-flex flex-column gap-4">
             <div class="card shadow-theme">
               <div class="card-body">

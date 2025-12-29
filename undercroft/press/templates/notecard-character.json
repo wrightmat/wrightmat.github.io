@@ -31,7 +31,7 @@
   },
   "pages": {
     "front": {
-      "repeat": "@characterNotecardCards",
+      "repeat": "@",
       "layout": {
         "type": "stack",
         "gap": 0,
@@ -49,7 +49,7 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@name",
+                      "text": "@identity.name",
                       "textSize": "sm",
                       "textStyles": {
                         "bold": true
@@ -63,18 +63,18 @@
                           "node": {
                             "type": "field",
                             "component": "text",
-                            "text": "@gender",
+                            "text": "@identity.race",
                             "textSize": "xs",
                             "className": "card-body-text",
                             "textSizeCustom": false,
-                            "label": "@gender"
+                            "label": "@identity.race"
                           }
                         },
                         {
                           "node": {
                             "type": "field",
                             "component": "text",
-                            "text": "@identityLine",
+                            "text": "@background.name",
                             "textSize": "xs",
                             "className": "text-body-secondary"
                           }
@@ -92,7 +92,7 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@classSummary",
+                      "text": "@identity.class",
                       "textSize": "sm",
                       "textStyles": {
                         "bold": true
@@ -102,7 +102,7 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@personalityTraits",
+                      "text": "@traits.personalityTraits",
                       "textSize": "xs",
                       "textStyles": {
                         "italic": true
@@ -144,8 +144,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.0.name",
-                          "text": "@abilities.0.display",
+                          "label": "@abilities.0.shortName",
+                          "text": "@abilities.0.score",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -168,8 +168,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.1.name",
-                          "text": "@abilities.1.display",
+                          "label": "@abilities.1.shortName",
+                          "text": "@abilities.1.score",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -192,8 +192,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.2.name",
-                          "text": "@abilities.2.display",
+                          "label": "@abilities.2.shortName",
+                          "text": "@abilities.2.score",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -216,8 +216,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.3.name",
-                          "text": "@abilities.3.display",
+                          "label": "@abilities.3.shortName",
+                          "text": "@abilities.3.score",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -240,8 +240,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.4.name",
-                          "text": "@abilities.4.display",
+                          "label": "@abilities.4.shortName",
+                          "text": "@abilities.4.score",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -264,8 +264,8 @@
                         {
                           "type": "field",
                           "component": "stat",
-                          "label": "@abilities.5.name",
-                          "text": "@abilities.5.display",
+                          "label": "@abilities.5.shortName",
+                          "text": "@abilities.5.score",
                           "textSize": "xl",
                           "align": "center",
                           "style": {
@@ -312,7 +312,6 @@
                       "itemTag": "div",
                       "gap": 0,
                       "className": "d-flex flex-column",
-                      "itemClassNameBind": "@itemClass",
                       "itemLayout": {
                         "type": "row",
                         "gap": 1,
@@ -322,16 +321,16 @@
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "",
+                              "text": "@shortName",
                               "textStyle": "span",
-                              "classNameBind": "@circleClass"
+                              "className": "circle"
                             }
                           },
                           {
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "@modifier",
+                              "text": "@value",
                               "textStyle": "span",
                               "textSize": "xs",
                               "className": "modifier"
@@ -341,7 +340,7 @@
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "@name",
+                              "text": "@friendlyName",
                               "textStyle": "span",
                               "textSize": "xs",
                               "className": "name"
@@ -369,7 +368,6 @@
                       "itemTag": "div",
                       "gap": 0,
                       "className": "d-flex flex-column",
-                      "itemClassNameBind": "@itemClass",
                       "itemLayout": {
                         "type": "row",
                         "gap": 1,
@@ -379,16 +377,16 @@
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "",
+                              "text": "@ability",
                               "textStyle": "span",
-                              "classNameBind": "@circleClass"
+                              "className": "circle"
                             }
                           },
                           {
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "@modifier",
+                              "text": "@value",
                               "textStyle": "span",
                               "textSize": "xs",
                               "className": "modifier"
@@ -398,7 +396,7 @@
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "@name",
+                              "text": "@friendlyName",
                               "textStyle": "span",
                               "textSize": "xs",
                               "className": "name"
@@ -407,8 +405,8 @@
                           {
                             "node": {
                               "type": "field",
-                              "component": "icon",
-                              "iconClass": "@icon",
+                              "component": "text",
+                              "text": "@proficiency",
                               "className": "text-body-secondary"
                             }
                           }
@@ -437,7 +435,7 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@hpLine",
+                      "text": "@hp.max",
                       "textSize": "lg",
                       "textStyles": {
                         "bold": true
@@ -453,7 +451,7 @@
                           "node": {
                             "type": "field",
                             "component": "text",
-                            "text": "@hitDiceLine",
+                            "text": "@hp.hitDiceSize",
                             "textSize": "xs",
                             "className": "text-body-secondary"
                           }
@@ -472,7 +470,7 @@
                       "type": "field",
                       "component": "stat",
                       "label": "Proficiency Bonus",
-                      "text": "@proficiencyBonus",
+                      "text": "@proficiency",
                       "textSize": "xs",
                       "className": "press-block",
                       "gap": 0
@@ -497,7 +495,7 @@
                           "node": {
                             "type": "field",
                             "component": "icon",
-                            "iconClass": "@initiative.icon",
+                            "iconClass": "",
                             "className": "text-body-secondary"
                           }
                         }
@@ -516,7 +514,7 @@
                       "type": "field",
                       "component": "stat",
                       "label": "Speed",
-                      "text": "@speedLine",
+                      "text": "@speeds.walk",
                       "textSize": "xs",
                       "className": "press-block",
                       "gap": 0
@@ -533,25 +531,25 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@proficiencyLines.armor",
+                      "text": "@proficiencies.armor",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@proficiencyLines.weapons",
+                      "text": "@proficiencies.weapons",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@proficiencyLines.tools",
+                      "text": "@proficiencies.tools",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@proficiencyLines.languages",
+                      "text": "@proficiencies.languages",
                       "textSize": "xs"
                     },
                     {
@@ -566,28 +564,52 @@
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@passiveLines.perception",
+                      "text": "@senses.passives.perception",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@passiveLines.investigation",
+                      "text": "@senses.passives.investigation",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "text",
-                      "text": "@passiveLines.insight",
+                      "text": "@senses.passives.insight",
                       "textSize": "xs"
                     },
                     {
                       "type": "field",
                       "component": "list",
-                      "itemsBind": "@senses",
+                      "itemsBind": "@proficiencies.senses",
                       "listTag": "div",
                       "itemTag": "div",
                       "gap": 1,
+                      "className": "d-flex flex-column",
+                      "itemLayout": {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@value",
+                        "textSize": "xs"
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Defenses",
+                      "textSize": "xs",
+                      "textStyles": {
+                        "bold": true
+                      }
+                    },
+                    {
+                      "type": "field",
+                      "component": "list",
+                      "itemsBind": "@proficiencies.defenses",
+                      "listTag": "div",
+                      "itemTag": "div",
+                      "gap": 0,
                       "className": "d-flex flex-column",
                       "itemLayout": {
                         "type": "row",
@@ -606,50 +628,9 @@
                             "node": {
                               "type": "field",
                               "component": "text",
-                              "text": "@range",
+                              "text": "@type",
                               "textSize": "xs",
                               "align": "end"
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "field",
-                      "component": "text",
-                      "text": "Defenses",
-                      "textSize": "xs",
-                      "textStyles": {
-                        "bold": true
-                      }
-                    },
-                    {
-                      "type": "field",
-                      "component": "list",
-                      "itemsBind": "@defenses",
-                      "listTag": "div",
-                      "itemTag": "div",
-                      "gap": 0,
-                      "className": "d-flex flex-column",
-                      "itemLayout": {
-                        "type": "row",
-                        "gap": 1,
-                        "templateColumns": "auto 1fr",
-                        "columns": [
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "icon",
-                              "iconClass": "@iconClass",
-                              "className": "text-body-secondary"
-                            }
-                          },
-                          {
-                            "node": {
-                              "type": "field",
-                              "component": "text",
-                              "text": "@name",
-                              "textSize": "xs"
                             }
                           }
                         ]
@@ -669,21 +650,21 @@
               {
                 "type": "field",
                 "component": "text",
-                "text": "@alignmentLine",
+                "text": "@alignment.friendlyName",
                 "textSize": "xs",
                 "className": "text-body-secondary mb-0"
               },
               {
                 "type": "field",
                 "component": "text",
-                "text": "@detailsLine",
+                "text": "@traits.height",
                 "textSize": "xs",
                 "className": "text-body-secondary mb-0"
               },
               {
                 "type": "field",
                 "component": "text",
-                "text": "@appearanceLine",
+                "text": "@traits.appearance",
                 "textSize": "xs",
                 "className": "text-body-secondary mb-0"
               }
@@ -693,7 +674,7 @@
       }
     },
     "back": {
-      "repeat": "@characterNotecardCards",
+      "repeat": "@",
       "layout": {
         "type": "stack",
         "gap": 2,
@@ -723,7 +704,7 @@
                     "node": {
                       "type": "field",
                       "component": "text",
-                      "text": "@attacksMetaLine",
+                      "text": "@attacking.attacksPerAction",
                       "textSize": "xs",
                       "align": "end"
                     }
@@ -751,7 +732,7 @@
               },
               {
                 "header": "To Hit",
-                "bind": "@toHit",
+                "bind": "@attackBonus",
                 "width": "10%",
                 "node": null
               },
@@ -792,7 +773,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -854,7 +835,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -916,7 +897,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -978,7 +959,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -1040,7 +1021,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -1102,7 +1083,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -1164,7 +1145,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -1226,7 +1207,7 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "@toHit",
+                    "text": "@attackBonus",
                     "textSize": "xs",
                     "textSizeCustom": true,
                     "style": {
@@ -1286,7 +1267,7 @@
                     "node": {
                       "type": "field",
                       "component": "text",
-                      "text": "@spellsHeading",
+                      "text": "Spellcasting",
                       "textSize": "xs",
                       "textStyles": {
                         "bold": true,
@@ -1298,7 +1279,7 @@
                     "node": {
                       "type": "field",
                       "component": "text",
-                      "text": "@spellsMetaLine",
+                      "text": "@spellCasting.save",
                       "textSize": "xs",
                       "align": "end"
                     }
@@ -1317,7 +1298,7 @@
               {
                 "type": "field",
                 "component": "table",
-                "rowsBind": "@spells.cantrips",
+                "rowsBind": "@spells.0",
                 "textSize": "xs",
                 "gap": 1,
                 "textSizeCustom": true,
@@ -1333,7 +1314,7 @@
                   },
                   {
                     "header": "Hit/DC",
-                    "bind": "@hit",
+                    "bind": "@toHit",
                     "width": "15%",
                     "node": null
                   },
@@ -1345,7 +1326,7 @@
                   },
                   {
                     "header": "Time",
-                    "bind": "@time",
+                    "bind": "@castingTime",
                     "width": "10%",
                     "node": null
                   },
@@ -1357,7 +1338,7 @@
                   },
                   {
                     "header": "Notes",
-                    "bind": "@notes",
+                    "bind": "@duration",
                     "width": "15%",
                     "node": null
                   }
@@ -1380,7 +1361,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1404,7 +1385,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1428,7 +1409,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1454,7 +1435,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1478,7 +1459,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1502,7 +1483,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1528,7 +1509,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1552,7 +1533,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1576,7 +1557,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1602,7 +1583,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1626,7 +1607,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1650,7 +1631,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1676,7 +1657,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1700,7 +1681,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1724,7 +1705,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1750,7 +1731,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1774,7 +1755,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1798,7 +1779,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1821,7 +1802,7 @@
               {
                 "type": "field",
                 "component": "table",
-                "rowsBind": "@spells.level1",
+                "rowsBind": "@spells.1",
                 "textSize": "xs",
                 "gap": 1,
                 "textSizeCustom": true,
@@ -1837,7 +1818,7 @@
                   },
                   {
                     "header": "Hit/DC",
-                    "bind": "@hit",
+                    "bind": "@toHit",
                     "width": "15%",
                     "node": null
                   },
@@ -1849,7 +1830,7 @@
                   },
                   {
                     "header": "Time",
-                    "bind": "@time",
+                    "bind": "@castingTime",
                     "width": "10%",
                     "node": null
                   },
@@ -1861,7 +1842,7 @@
                   },
                   {
                     "header": "Notes",
-                    "bind": "@notes",
+                    "bind": "@duration",
                     "width": "15%",
                     "node": null
                   }
@@ -1884,7 +1865,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1908,7 +1889,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1932,7 +1913,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1958,7 +1939,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -1982,7 +1963,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -2006,7 +1987,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -2032,7 +2013,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@hit",
+                        "text": "@toHit",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -2056,7 +2037,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@time",
+                        "text": "@castingTime",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -2080,7 +2061,7 @@
                       {
                         "type": "field",
                         "component": "text",
-                        "text": "@notes",
+                        "text": "@duration",
                         "textSize": "xs",
                         "textSizeCustom": true,
                         "style": {
@@ -2103,7 +2084,7 @@
               {
                 "type": "field",
                 "component": "table",
-                "rowsBind": "@spells.level2",
+                "rowsBind": "@spells.2",
                 "textSize": "xs",
                 "gap": 1,
                 "textSizeCustom": true,
@@ -2119,7 +2100,7 @@
                   },
                   {
                     "header": "Hit/DC",
-                    "bind": "@hit",
+                    "bind": "@toHit",
                     "width": "15%",
                     "node": null
                   },
@@ -2131,7 +2112,7 @@
                   },
                   {
                     "header": "Time",
-                    "bind": "@time",
+                    "bind": "@castingTime",
                     "width": "10%",
                     "node": null
                   },
@@ -2143,7 +2124,7 @@
                   },
                   {
                     "header": "Notes",
-                    "bind": "@notes",
+                    "bind": "@duration",
                     "width": "15%",
                     "node": null
                   }
