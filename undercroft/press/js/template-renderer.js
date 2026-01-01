@@ -41,8 +41,9 @@ function applyClassName(element, className) {
 
 function resolveClassName(node, context) {
   const raw = node?.className ?? node?.classNameBind ?? "";
-  if (typeof raw === "string" && raw.startsWith("@")) {
-    return resolveBinding(raw, context) || null;
+  if (typeof raw === "string") {
+    const resolved = resolveBinding(raw, context);
+    return resolved ?? null;
   }
   return raw || null;
 }
@@ -386,10 +387,9 @@ function renderField(node, context, options = {}) {
         itemContext.item = item;
         itemContext.index = index;
         const itemClassRaw = node.itemClassNameBind ?? node.itemClassName ?? "";
-        const itemClass =
-          typeof itemClassRaw === "string" && itemClassRaw.startsWith("@")
-            ? resolveBinding(itemClassRaw, itemContext) ?? ""
-            : itemClassRaw;
+        const resolvedClass =
+          typeof itemClassRaw === "string" ? resolveBinding(itemClassRaw, itemContext) : itemClassRaw;
+        const itemClass = resolvedClass ?? "";
         applyClassName(li, itemClass);
         applyTextFormatting(li, node);
         li.textContent = resolveListItemText(item);
