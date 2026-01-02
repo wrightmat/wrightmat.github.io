@@ -12,7 +12,7 @@ function shouldEvaluateFormula(value) {
     return false;
   }
   if (trimmed.startsWith("=")) {
-    return true;
+    return trimmed.length > 1;
   }
   if (!trimmed.includes("@")) {
     return false;
@@ -31,22 +31,28 @@ export function resolveBinding(binding, context) {
   if (!trimmed) {
     return binding;
   }
+  const resolvePath = (path) => {
+    const segments = path.slice(1).split(".");
+    return segments.reduce((acc, key) => {
+      if (acc && typeof acc === "object" && key in acc) {
+        return acc[key];
+      }
+      return undefined;
+    }, context);
+  };
   if (shouldEvaluateFormula(trimmed)) {
     try {
       return evaluateFormula(trimmed, context ?? {});
     } catch (error) {
       console.warn("Press bindings: unable to evaluate formula", error);
+      if (trimmed.startsWith("@")) {
+        return resolvePath(trimmed);
+      }
       return "";
     }
   }
   if (!trimmed.startsWith("@")) {
     return binding;
   }
-  const path = trimmed.slice(1).split(".");
-  return path.reduce((acc, key) => {
-    if (acc && typeof acc === "object" && key in acc) {
-      return acc[key];
-    }
-    return undefined;
-  }, context);
+  return resolvePath(trimmed);
 }
