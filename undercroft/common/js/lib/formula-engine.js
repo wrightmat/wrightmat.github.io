@@ -95,7 +95,7 @@ export function evaluateFormula(formula, context = {}, options = {}) {
     }
   };
 
-  const functionNames = Object.keys(runtimeFunctions);
+  const functionNames = Object.keys(runtimeFunctions).filter((name) => name !== "if");
   const evaluator = new Function(
     "__get",
     "__fn",
