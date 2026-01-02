@@ -2294,7 +2294,11 @@ function createIconOptionRow(option) {
 function renderIconOptions(filterValue = "") {
   if (!iconOptionsList) return;
   const normalized = filterValue.trim().toLowerCase();
+  const resultRow = ensureIconResultRow();
   iconOptionsList.innerHTML = "";
+  if (resultRow) {
+    iconOptionsList.appendChild(resultRow);
+  }
   const fragment = document.createDocumentFragment();
   const mergedOptions = [
     ...PRESS_ICON_OPTIONS.map((option) => ({ ...option, type: "ddb" })),
@@ -2327,6 +2331,51 @@ function getIconTokens(value) {
     .filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
 }
 
+function ensureIconResultRow() {
+  if (!iconOptionsList) return null;
+  let row = iconOptionsList.querySelector("[data-icon-result-row]");
+  if (!row) {
+    row = document.createElement("div");
+    row.className = "press-icon-option list-group-item";
+    row.dataset.iconResultRow = "true";
+    const preview = document.createElement("span");
+    preview.className = "press-icon-option__preview";
+    preview.dataset.iconResultPreview = "true";
+    const label = document.createElement("span");
+    label.dataset.iconResultText = "true";
+    label.textContent = "Result: —";
+    row.append(preview, label);
+    iconOptionsList.prepend(row);
+  }
+  return row;
+}
+
+function updateIconResultRow(resolvedValue) {
+  const row = ensureIconResultRow();
+  if (!row) return;
+  const preview = row.querySelector("[data-icon-result-preview]");
+  const label = row.querySelector("[data-icon-result-text]");
+  const tokens = getIconTokens(resolvedValue);
+  if (preview) {
+    preview.innerHTML = "";
+    if (tokens.length) {
+      const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
+      if (hasBootstrap) {
+        const icon = document.createElement("i");
+        icon.className = `bi ${tokens.find((token) => token.startsWith("bi-"))}`;
+        preview.appendChild(icon);
+      } else {
+        const icon = document.createElement("span");
+        icon.className = tokens.join(" ");
+        preview.appendChild(icon);
+      }
+    }
+  }
+  if (label) {
+    label.textContent = resolvedValue ? `Result: ${resolvedValue}` : "Result: —";
+  }
+}
+
 function resolveIconPreviewValue(value, context) {
   const trimmed = value?.trim() ?? "";
   if (!trimmed) return "";
@@ -2347,40 +2396,23 @@ function updateIconPreview(value, context) {
   const resolvedValue = resolveIconPreviewValue(value, context);
   const iconTokens = getIconTokens(resolvedValue);
   if (!resolvedValue) {
-    if (iconResultPreview) iconResultPreview.innerHTML = "";
-    if (iconResultText) iconResultText.textContent = "Result: —";
+    updateIconResultRow("");
     return;
   }
-  const tokens = resolvedValue.split(/\s+/).filter(Boolean);
-  const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
-  if (hasBootstrap) {
-    const icon = document.createElement("i");
-    icon.className = `bi ${tokens.find((token) => token.startsWith("bi-"))}`;
-    iconPreview.appendChild(icon);
-  } else {
-    const icon = document.createElement("span");
-    icon.className = tokens.join(" ");
-    iconPreview.appendChild(icon);
-  }
-
-  if (iconResultPreview) {
-    iconResultPreview.innerHTML = "";
-    if (iconTokens.length) {
-      const hasResultBootstrap = iconTokens.some((token) => token.startsWith("bi-"));
-      if (hasResultBootstrap) {
-        const icon = document.createElement("i");
-        icon.className = `bi ${iconTokens.find((token) => token.startsWith("bi-"))}`;
-        iconResultPreview.appendChild(icon);
-      } else {
-        const icon = document.createElement("span");
-        icon.className = iconTokens.join(" ");
-        iconResultPreview.appendChild(icon);
-      }
+  const iconTokens = getIconTokens(resolvedValue);
+  if (iconTokens.length) {
+    const hasBootstrap = iconTokens.some((token) => token.startsWith("bi-"));
+    if (hasBootstrap) {
+      const icon = document.createElement("i");
+      icon.className = `bi ${iconTokens.find((token) => token.startsWith("bi-"))}`;
+      iconPreview.appendChild(icon);
+    } else {
+      const icon = document.createElement("span");
+      icon.className = iconTokens.join(" ");
+      iconPreview.appendChild(icon);
     }
   }
-  if (iconResultText) {
-    iconResultText.textContent = `Result: ${resolvedValue}`;
-  }
+  updateIconResultRow(resolvedValue);
 }
 
 function applyIconSelection(value) {
