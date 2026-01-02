@@ -406,7 +406,8 @@ function renderField(node, context, options = {}) {
       const wrapperTokens = classTokens.filter((token) => !token.startsWith("ddb-") && !token.startsWith("bi-") && token !== "bi");
       const fallbackIconTokens = classTokens.filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
       const iconClassRaw = resolveBinding(node.iconClass, context) ?? node.iconClass ?? "";
-      const iconTokens = iconClassRaw.split(/\s+/).filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
+      const iconClassText = typeof iconClassRaw === "string" ? iconClassRaw : String(iconClassRaw ?? "");
+      const iconTokens = iconClassText.split(/\s+/).filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
       const resolvedIconTokens = iconTokens.length ? iconTokens : fallbackIconTokens;
       const wrapper = document.createElement("span");
       applyClassName(wrapper, wrapperTokens.join(" "));
