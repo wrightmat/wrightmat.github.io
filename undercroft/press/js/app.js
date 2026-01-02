@@ -2399,16 +2399,16 @@ function updateIconPreview(value, context) {
     updateIconResultRow("");
     return;
   }
-  const iconTokens = getIconTokens(resolvedValue);
-  if (iconTokens.length) {
-    const hasBootstrap = iconTokens.some((token) => token.startsWith("bi-"));
+  const resolvedIconTokens = getIconTokens(resolvedValue);
+  if (resolvedIconTokens.length) {
+    const hasBootstrap = resolvedIconTokens.some((token) => token.startsWith("bi-"));
     if (hasBootstrap) {
       const icon = document.createElement("i");
-      icon.className = `bi ${iconTokens.find((token) => token.startsWith("bi-"))}`;
+      icon.className = `bi ${resolvedIconTokens.find((token) => token.startsWith("bi-"))}`;
       iconPreview.appendChild(icon);
     } else {
       const icon = document.createElement("span");
-      icon.className = iconTokens.join(" ");
+      icon.className = resolvedIconTokens.join(" ");
       iconPreview.appendChild(icon);
     }
   }
