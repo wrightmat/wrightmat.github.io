@@ -92,6 +92,9 @@ const parentSelectButton = document.querySelector("[data-component-parent-select
 const iconField = document.querySelector("[data-inspector-icon-field]");
 const iconInput = document.querySelector("[data-component-icon-class]");
 const iconPreview = document.querySelector("[data-component-icon-preview]");
+const iconResultButton = document.querySelector("[data-component-icon-result]");
+const iconResultPreview = document.querySelector("[data-component-icon-result-preview]");
+const iconResultText = document.querySelector("[data-component-icon-result-text]");
 const iconOptionsList = document.querySelector("[data-component-icon-options]");
 const textEditor = document.querySelector("[data-component-text]");
 const textEditorLabel = document.querySelector("[data-component-text-label]");
@@ -2391,6 +2394,7 @@ function updateIconPreview(value, context) {
   iconPreview.className = "press-icon-preview";
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
+  const iconTokens = getIconTokens(resolvedValue);
   if (!resolvedValue) {
     updateIconResultRow("");
     return;
