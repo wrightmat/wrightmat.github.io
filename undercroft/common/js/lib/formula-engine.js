@@ -64,7 +64,7 @@ export function evaluateFormula(formula, context = {}, options = {}) {
   const expression = sanitized.replace(/@([A-Za-z0-9_.]+)/g, (_, path) => {
     return `__get("${path}")`;
   });
-  const normalizedExpression = expression.replace(/\bif\s*\(/g, "__fn.if(");
+  const normalizedExpression = expression.replace(/\bif\s*\(/gi, "__fn.if(");
 
   const { functions = {}, onRoll, rollContext, random, rollDice } =
     typeof options === "object" && options !== null ? options : {};
