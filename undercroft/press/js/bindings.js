@@ -3,6 +3,24 @@ import { evaluateFormula } from "../../common/js/lib/formula-engine.js";
 const SIMPLE_BINDING_PATTERN = /^@[A-Za-z0-9_.]+$/;
 const FORMULA_HINT_PATTERN = /[+*/<>=!?&|()-]|\bif\s*\(/;
 
+function hasBalancedQuotes(value) {
+  let doubleCount = 0;
+  let singleCount = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (char === "\\" && index + 1 < value.length) {
+      index += 1;
+      continue;
+    }
+    if (char === "\"") {
+      doubleCount += 1;
+    } else if (char === "'") {
+      singleCount += 1;
+    }
+  }
+  return doubleCount % 2 === 0 && singleCount % 2 === 0;
+}
+
 function shouldEvaluateFormula(value) {
   if (typeof value !== "string") {
     return false;
@@ -12,7 +30,10 @@ function shouldEvaluateFormula(value) {
     return false;
   }
   if (trimmed.startsWith("=")) {
-    return trimmed.length > 1;
+    if (trimmed.length <= 1) {
+      return false;
+    }
+    return hasBalancedQuotes(trimmed);
   }
   if (!trimmed.includes("@")) {
     return false;
