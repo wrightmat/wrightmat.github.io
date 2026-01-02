@@ -21,6 +21,9 @@ import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
 import { resolveBinding } from "./bindings.js";
+import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
+import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
+import { collectDataFields } from "../../common/js/lib/data-fields.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -138,6 +141,14 @@ const textStyleToggles = Array.from(document.querySelectorAll("[data-component-t
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
 const deleteButton = document.querySelector("[data-component-delete]");
+
+const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
+const MAX_AUTOCOMPLETE_ITEMS = 12;
+const bindingAutocompleteInstances = new Set();
+const bindingFieldCache = {
+  source: null,
+  entries: [],
+};
 const rightPane = document.querySelector('[data-pane="right"]');
 const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
 
@@ -889,6 +900,8 @@ async function initSampleDataEditor() {
   subscribeSampleData(() => {
     renderSampleDataSection();
     renderPreview();
+    bindingFieldCache.source = null;
+    refreshBindingAutocomplete();
   });
 }
 
@@ -1947,6 +1960,7 @@ function renderTableColumnsList(node) {
     bindInput.className = "form-control form-control-sm";
     bindInput.placeholder = "@value";
     bindInput.value = column?.bind ?? "";
+    attachBindingAutocomplete(bindInput, { resolveContext: () => getInspectorPreviewContext(selectedNodeId) });
     bindInput.addEventListener("focus", () => beginPendingUndo(bindInput));
     bindInput.addEventListener("blur", () => commitPendingUndo(bindInput));
     bindInput.addEventListener("input", () => {
@@ -2277,7 +2291,11 @@ function createIconOptionRow(option) {
 function renderIconOptions(filterValue = "") {
   if (!iconOptionsList) return;
   const normalized = filterValue.trim().toLowerCase();
+  const resultRow = ensureIconResultRow();
   iconOptionsList.innerHTML = "";
+  if (resultRow) {
+    iconOptionsList.appendChild(resultRow);
+  }
   const fragment = document.createDocumentFragment();
   const mergedOptions = [
     ...PRESS_ICON_OPTIONS.map((option) => ({ ...option, type: "ddb" })),
@@ -2302,14 +2320,70 @@ function getNodeIconClass(node) {
   return iconTokens.join(" ");
 }
 
+function getIconTokens(value) {
+  if (!value) return [];
+  return value
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
+}
+
+function ensureIconResultRow() {
+  if (!iconOptionsList) return null;
+  let row = iconOptionsList.querySelector("[data-icon-result-row]");
+  if (!row) {
+    row = document.createElement("div");
+    row.className = "press-icon-option list-group-item";
+    row.dataset.iconResultRow = "true";
+    const preview = document.createElement("span");
+    preview.className = "press-icon-option__preview";
+    preview.dataset.iconResultPreview = "true";
+    const label = document.createElement("span");
+    label.dataset.iconResultText = "true";
+    label.textContent = "Result: —";
+    row.append(preview, label);
+    iconOptionsList.prepend(row);
+  }
+  return row;
+}
+
+function updateIconResultRow(resolvedValue) {
+  const row = ensureIconResultRow();
+  if (!row) return;
+  const preview = row.querySelector("[data-icon-result-preview]");
+  const label = row.querySelector("[data-icon-result-text]");
+  const tokens = getIconTokens(resolvedValue);
+  if (preview) {
+    preview.innerHTML = "";
+    if (tokens.length) {
+      const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
+      if (hasBootstrap) {
+        const icon = document.createElement("i");
+        icon.className = `bi ${tokens.find((token) => token.startsWith("bi-"))}`;
+        preview.appendChild(icon);
+      } else {
+        const icon = document.createElement("span");
+        icon.className = tokens.join(" ");
+        preview.appendChild(icon);
+      }
+    }
+  }
+  if (label) {
+    label.textContent = resolvedValue ? `Result: ${resolvedValue}` : "Result: —";
+  }
+}
+
 function resolveIconPreviewValue(value, context) {
   const trimmed = value?.trim() ?? "";
   if (!trimmed) return "";
-  if (trimmed.startsWith("@")) {
-    const resolved = resolveBinding(trimmed, context);
-    return typeof resolved === "string" ? resolved.trim() : "";
+  const resolved = resolveBinding(trimmed, context);
+  if (typeof resolved === "string") {
+    return resolved.trim();
   }
-  return trimmed;
+  if (resolved === null || resolved === undefined) {
+    return "";
+  }
+  return String(resolved).trim();
 }
 
 function updateIconPreview(value, context) {
@@ -2318,19 +2392,23 @@ function updateIconPreview(value, context) {
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
   if (!resolvedValue) {
+    updateIconResultRow("");
     return;
   }
-  const tokens = resolvedValue.split(/\s+/).filter(Boolean);
-  const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
-  if (hasBootstrap) {
-    const icon = document.createElement("i");
-    icon.className = `bi ${tokens.find((token) => token.startsWith("bi-"))}`;
-    iconPreview.appendChild(icon);
-  } else {
-    const icon = document.createElement("span");
-    icon.className = tokens.join(" ");
-    iconPreview.appendChild(icon);
+  const resolvedIconTokens = getIconTokens(resolvedValue);
+  if (resolvedIconTokens.length) {
+    const hasBootstrap = resolvedIconTokens.some((token) => token.startsWith("bi-"));
+    if (hasBootstrap) {
+      const icon = document.createElement("i");
+      icon.className = `bi ${resolvedIconTokens.find((token) => token.startsWith("bi-"))}`;
+      iconPreview.appendChild(icon);
+    } else {
+      const icon = document.createElement("span");
+      icon.className = resolvedIconTokens.join(" ");
+      iconPreview.appendChild(icon);
+    }
   }
+  updateIconResultRow(resolvedValue);
 }
 
 function applyIconSelection(value) {
@@ -2354,6 +2432,110 @@ function applyIconSelection(value) {
       row.classList.toggle("is-active", row.dataset.iconValue === value);
     });
   }
+}
+
+function formatBindingPreviewValue(value) {
+  if (value === undefined) return "—";
+  if (value === null) return "null";
+  if (Array.isArray(value)) {
+    return value.length ? `Array(${value.length})` : "[]";
+  }
+  if (typeof value === "object") {
+    return "Object";
+  }
+  const stringified = String(value);
+  if (!stringified) return "\"\"";
+  if (stringified.length <= 40) return stringified;
+  return `${stringified.slice(0, 37)}…`;
+}
+
+function getBindingFieldEntries(context) {
+  const source = context && typeof context === "object" ? context : resolveBasePreviewData();
+  if (source !== bindingFieldCache.source) {
+    bindingFieldCache.source = source;
+    bindingFieldCache.entries = collectDataFields(source);
+  }
+  return bindingFieldCache.entries;
+}
+
+function getBindingFieldSuggestions(query = "", context) {
+  const normalized = query.trim().toLowerCase();
+  const entries = getBindingFieldEntries(context);
+  const filtered = normalized
+    ? entries.filter((entry) => entry.path.toLowerCase().includes(normalized))
+    : entries;
+  return filtered.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((entry) => ({
+    type: "field",
+    path: entry.path,
+    display: `@${entry.path}`,
+    description: formatBindingPreviewValue(entry.value),
+  }));
+}
+
+function getFunctionSuggestions(query = "") {
+  const normalized = query.trim().toLowerCase();
+  const matches = normalized
+    ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+    : FORMULA_FUNCTIONS;
+  return matches.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((fn) => ({
+    type: "function",
+    name: fn.name,
+    display: fn.signature,
+    description: fn.name,
+  }));
+}
+
+function ensureAutocompleteContainer(input) {
+  if (!input || !input.parentElement) return null;
+  const parent = input.closest(".form-floating") ?? input.parentElement;
+  parent.classList.add("position-relative");
+  let container = parent.querySelector("[data-binding-autocomplete]");
+  if (!container) {
+    container = document.createElement("div");
+    container.dataset.bindingAutocomplete = "true";
+    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    container.style.zIndex = "1300";
+    container.style.fontSize = "0.8125rem";
+    container.style.maxHeight = "16rem";
+    container.style.overflowY = "auto";
+    parent.appendChild(container);
+  }
+  return container;
+}
+
+function attachBindingAutocomplete(input, { supportsFunctions = true, resolveContext = null } = {}) {
+  if (!input) return null;
+  const container = ensureAutocompleteContainer(input);
+  if (!container) return null;
+  input.setAttribute("aria-autocomplete", "list");
+  const contextResolver = typeof resolveContext === "function" ? resolveContext : () => resolveBasePreviewData();
+  const autocomplete = attachFormulaAutocomplete(input, {
+    container,
+    supportsBinding: true,
+    supportsFunctions,
+    getFieldItems: (query) => getBindingFieldSuggestions(query, contextResolver()),
+    getFunctionItems: (query) => getFunctionSuggestions(query),
+    maxItems: MAX_AUTOCOMPLETE_ITEMS,
+  });
+  bindingAutocompleteInstances.add(autocomplete);
+  return autocomplete;
+}
+
+function refreshBindingAutocomplete() {
+  bindingAutocompleteInstances.forEach((instance) => instance.update());
+}
+
+function initBindingAutocompletes() {
+  attachBindingAutocomplete(templateFrontRepeatInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateBackRepeatInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateFrontDataInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateBackDataInput, { supportsFunctions: false });
+  const resolveInspectorContext = () => getInspectorPreviewContext(selectedNodeId);
+  attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(tableRowsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });
 }
 
 function renderPalette() {
@@ -3050,6 +3232,8 @@ async function handleGeneratePrint() {
       fetchedAt: new Date().toISOString(),
     });
     renderPreview();
+    bindingFieldCache.source = null;
+    refreshBindingAutocomplete();
     if (applySelectionCollapse) {
       applySelectionCollapse(true);
     }
@@ -4024,6 +4208,7 @@ async function initPress() {
   bindTemplateInspectorControls();
   initDragAndDrop();
   bindInspectorControls();
+  initBindingAutocompletes();
   renderLayoutList();
   selectedNodeId = null;
   updateInspector();
