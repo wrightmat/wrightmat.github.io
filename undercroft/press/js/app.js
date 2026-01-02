@@ -21,6 +21,9 @@ import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
 import { resolveBinding } from "./bindings.js";
+import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
+import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
+import { collectDataFields } from "../../common/js/lib/data-fields.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -89,6 +92,9 @@ const parentSelectButton = document.querySelector("[data-component-parent-select
 const iconField = document.querySelector("[data-inspector-icon-field]");
 const iconInput = document.querySelector("[data-component-icon-class]");
 const iconPreview = document.querySelector("[data-component-icon-preview]");
+const iconResultButton = document.querySelector("[data-component-icon-result]");
+const iconResultPreview = document.querySelector("[data-component-icon-result-preview]");
+const iconResultText = document.querySelector("[data-component-icon-result-text]");
 const iconOptionsList = document.querySelector("[data-component-icon-options]");
 const textEditor = document.querySelector("[data-component-text]");
 const textEditorLabel = document.querySelector("[data-component-text-label]");
@@ -138,6 +144,14 @@ const textStyleToggles = Array.from(document.querySelectorAll("[data-component-t
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
 const deleteButton = document.querySelector("[data-component-delete]");
+
+const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
+const MAX_AUTOCOMPLETE_ITEMS = 12;
+const bindingAutocompleteInstances = new Set();
+const bindingFieldCache = {
+  source: null,
+  entries: [],
+};
 const rightPane = document.querySelector('[data-pane="right"]');
 const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
 
@@ -889,6 +903,8 @@ async function initSampleDataEditor() {
   subscribeSampleData(() => {
     renderSampleDataSection();
     renderPreview();
+    bindingFieldCache.source = null;
+    refreshBindingAutocomplete();
   });
 }
 
@@ -1947,6 +1963,7 @@ function renderTableColumnsList(node) {
     bindInput.className = "form-control form-control-sm";
     bindInput.placeholder = "@value";
     bindInput.value = column?.bind ?? "";
+    attachBindingAutocomplete(bindInput, { resolveContext: () => getInspectorPreviewContext(selectedNodeId) });
     bindInput.addEventListener("focus", () => beginPendingUndo(bindInput));
     bindInput.addEventListener("blur", () => commitPendingUndo(bindInput));
     bindInput.addEventListener("input", () => {
@@ -2302,14 +2319,25 @@ function getNodeIconClass(node) {
   return iconTokens.join(" ");
 }
 
+function getIconTokens(value) {
+  if (!value) return [];
+  return value
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
+}
+
 function resolveIconPreviewValue(value, context) {
   const trimmed = value?.trim() ?? "";
   if (!trimmed) return "";
-  if (trimmed.startsWith("@")) {
-    const resolved = resolveBinding(trimmed, context);
-    return typeof resolved === "string" ? resolved.trim() : "";
+  const resolved = resolveBinding(trimmed, context);
+  if (typeof resolved === "string") {
+    return resolved.trim();
   }
-  return trimmed;
+  if (resolved === null || resolved === undefined) {
+    return "";
+  }
+  return String(resolved).trim();
 }
 
 function updateIconPreview(value, context) {
@@ -2317,7 +2345,10 @@ function updateIconPreview(value, context) {
   iconPreview.className = "press-icon-preview";
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
+  const iconTokens = getIconTokens(resolvedValue);
   if (!resolvedValue) {
+    if (iconResultPreview) iconResultPreview.innerHTML = "";
+    if (iconResultText) iconResultText.textContent = "Result: —";
     return;
   }
   const tokens = resolvedValue.split(/\s+/).filter(Boolean);
@@ -2330,6 +2361,25 @@ function updateIconPreview(value, context) {
     const icon = document.createElement("span");
     icon.className = tokens.join(" ");
     iconPreview.appendChild(icon);
+  }
+
+  if (iconResultPreview) {
+    iconResultPreview.innerHTML = "";
+    if (iconTokens.length) {
+      const hasResultBootstrap = iconTokens.some((token) => token.startsWith("bi-"));
+      if (hasResultBootstrap) {
+        const icon = document.createElement("i");
+        icon.className = `bi ${iconTokens.find((token) => token.startsWith("bi-"))}`;
+        iconResultPreview.appendChild(icon);
+      } else {
+        const icon = document.createElement("span");
+        icon.className = iconTokens.join(" ");
+        iconResultPreview.appendChild(icon);
+      }
+    }
+  }
+  if (iconResultText) {
+    iconResultText.textContent = `Result: ${resolvedValue}`;
   }
 }
 
@@ -2354,6 +2404,110 @@ function applyIconSelection(value) {
       row.classList.toggle("is-active", row.dataset.iconValue === value);
     });
   }
+}
+
+function formatBindingPreviewValue(value) {
+  if (value === undefined) return "—";
+  if (value === null) return "null";
+  if (Array.isArray(value)) {
+    return value.length ? `Array(${value.length})` : "[]";
+  }
+  if (typeof value === "object") {
+    return "Object";
+  }
+  const stringified = String(value);
+  if (!stringified) return "\"\"";
+  if (stringified.length <= 40) return stringified;
+  return `${stringified.slice(0, 37)}…`;
+}
+
+function getBindingFieldEntries(context) {
+  const source = context && typeof context === "object" ? context : resolveBasePreviewData();
+  if (source !== bindingFieldCache.source) {
+    bindingFieldCache.source = source;
+    bindingFieldCache.entries = collectDataFields(source);
+  }
+  return bindingFieldCache.entries;
+}
+
+function getBindingFieldSuggestions(query = "", context) {
+  const normalized = query.trim().toLowerCase();
+  const entries = getBindingFieldEntries(context);
+  const filtered = normalized
+    ? entries.filter((entry) => entry.path.toLowerCase().includes(normalized))
+    : entries;
+  return filtered.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((entry) => ({
+    type: "field",
+    path: entry.path,
+    display: `@${entry.path}`,
+    description: formatBindingPreviewValue(entry.value),
+  }));
+}
+
+function getFunctionSuggestions(query = "") {
+  const normalized = query.trim().toLowerCase();
+  const matches = normalized
+    ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+    : FORMULA_FUNCTIONS;
+  return matches.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((fn) => ({
+    type: "function",
+    name: fn.name,
+    display: fn.signature,
+    description: fn.name,
+  }));
+}
+
+function ensureAutocompleteContainer(input) {
+  if (!input || !input.parentElement) return null;
+  const parent = input.closest(".form-floating") ?? input.parentElement;
+  parent.classList.add("position-relative");
+  let container = parent.querySelector("[data-binding-autocomplete]");
+  if (!container) {
+    container = document.createElement("div");
+    container.dataset.bindingAutocomplete = "true";
+    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    container.style.zIndex = "1300";
+    container.style.fontSize = "0.8125rem";
+    container.style.maxHeight = "16rem";
+    container.style.overflowY = "auto";
+    parent.appendChild(container);
+  }
+  return container;
+}
+
+function attachBindingAutocomplete(input, { supportsFunctions = true, resolveContext = null } = {}) {
+  if (!input) return null;
+  const container = ensureAutocompleteContainer(input);
+  if (!container) return null;
+  input.setAttribute("aria-autocomplete", "list");
+  const contextResolver = typeof resolveContext === "function" ? resolveContext : () => resolveBasePreviewData();
+  const autocomplete = attachFormulaAutocomplete(input, {
+    container,
+    supportsBinding: true,
+    supportsFunctions,
+    getFieldItems: (query) => getBindingFieldSuggestions(query, contextResolver()),
+    getFunctionItems: (query) => getFunctionSuggestions(query),
+    maxItems: MAX_AUTOCOMPLETE_ITEMS,
+  });
+  bindingAutocompleteInstances.add(autocomplete);
+  return autocomplete;
+}
+
+function refreshBindingAutocomplete() {
+  bindingAutocompleteInstances.forEach((instance) => instance.update());
+}
+
+function initBindingAutocompletes() {
+  attachBindingAutocomplete(templateFrontRepeatInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateBackRepeatInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateFrontDataInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateBackDataInput, { supportsFunctions: false });
+  const resolveInspectorContext = () => getInspectorPreviewContext(selectedNodeId);
+  attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(tableRowsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });
 }
 
 function renderPalette() {
@@ -3050,6 +3204,8 @@ async function handleGeneratePrint() {
       fetchedAt: new Date().toISOString(),
     });
     renderPreview();
+    bindingFieldCache.source = null;
+    refreshBindingAutocomplete();
     if (applySelectionCollapse) {
       applySelectionCollapse(true);
     }
@@ -4024,6 +4180,7 @@ async function initPress() {
   bindTemplateInspectorControls();
   initDragAndDrop();
   bindInspectorControls();
+  initBindingAutocompletes();
   renderLayoutList();
   selectedNodeId = null;
   updateInspector();

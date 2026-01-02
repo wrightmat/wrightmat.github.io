@@ -23,8 +23,8 @@ import {
 } from "../lib/content-registry.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 import { collectSystemFields } from "../lib/system-schema.js";
-import { attachFormulaAutocomplete } from "../lib/formula-autocomplete.js";
-import { listFormulaFunctionMetadata } from "../lib/formula-metadata.js";
+import { attachFormulaAutocomplete } from "../../../common/js/lib/formula-autocomplete.js";
+import { listFormulaFunctionMetadata } from "../../../common/js/lib/formula-metadata.js";
 import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
 
 (async () => {
