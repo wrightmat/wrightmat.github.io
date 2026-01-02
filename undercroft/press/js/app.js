@@ -2318,7 +2318,7 @@ function applyIconSelection(value) {
   updateSaveState();
 }
 
-function formatBindingPreviewValue(value) {
+function formatBindingPreviewLabel(value) {
   if (value === undefined) return "—";
   if (value === null) return "null";
   if (Array.isArray(value)) {
@@ -2352,111 +2352,7 @@ function getBindingFieldSuggestions(query = "", context) {
     type: "field",
     path: entry.path,
     display: `@${entry.path}`,
-    description: formatBindingPreviewValue(entry.value),
-  }));
-}
-
-function getFunctionSuggestions(query = "") {
-  const normalized = query.trim().toLowerCase();
-  const matches = normalized
-    ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
-    : FORMULA_FUNCTIONS;
-  return matches.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((fn) => ({
-    type: "function",
-    name: fn.name,
-    display: fn.signature,
-    description: fn.name,
-  }));
-}
-
-function ensureAutocompleteContainer(input) {
-  if (!input || !input.parentElement) return null;
-  const parent = input.closest(".form-floating") ?? input.parentElement;
-  parent.classList.add("position-relative");
-  let container = parent.querySelector("[data-binding-autocomplete]");
-  if (!container) {
-    container = document.createElement("div");
-    container.dataset.bindingAutocomplete = "true";
-    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
-    container.style.zIndex = "1300";
-    container.style.fontSize = "0.8125rem";
-    container.style.maxHeight = "16rem";
-    container.style.overflowY = "auto";
-    parent.appendChild(container);
-  }
-  return container;
-}
-
-function attachBindingAutocomplete(input, { supportsFunctions = true, resolveContext = null } = {}) {
-  if (!input) return null;
-  const container = ensureAutocompleteContainer(input);
-  if (!container) return null;
-  input.setAttribute("aria-autocomplete", "list");
-  const contextResolver = typeof resolveContext === "function" ? resolveContext : () => resolveBasePreviewData();
-  const autocomplete = attachFormulaAutocomplete(input, {
-    container,
-    supportsBinding: true,
-    supportsFunctions,
-    getFieldItems: (query) => getBindingFieldSuggestions(query, contextResolver()),
-    getFunctionItems: (query) => getFunctionSuggestions(query),
-    maxItems: MAX_AUTOCOMPLETE_ITEMS,
-  });
-  bindingAutocompleteInstances.add(autocomplete);
-  return autocomplete;
-}
-
-function refreshBindingAutocomplete() {
-  bindingAutocompleteInstances.forEach((instance) => instance.update());
-}
-
-function initBindingAutocompletes() {
-  attachBindingAutocomplete(templateFrontRepeatInput, { supportsFunctions: false });
-  attachBindingAutocomplete(templateBackRepeatInput, { supportsFunctions: false });
-  attachBindingAutocomplete(templateFrontDataInput, { supportsFunctions: false });
-  attachBindingAutocomplete(templateBackDataInput, { supportsFunctions: false });
-  const resolveInspectorContext = () => getInspectorPreviewContext(selectedNodeId);
-  attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
-  attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
-  attachBindingAutocomplete(tableRowsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
-  attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
-  attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });
-}
-
-function formatBindingPreviewValue(value) {
-  if (value === undefined) return "—";
-  if (value === null) return "null";
-  if (Array.isArray(value)) {
-    return value.length ? `Array(${value.length})` : "[]";
-  }
-  if (typeof value === "object") {
-    return "Object";
-  }
-  const stringified = String(value);
-  if (!stringified) return "\"\"";
-  if (stringified.length <= 40) return stringified;
-  return `${stringified.slice(0, 37)}…`;
-}
-
-function getBindingFieldEntries(context) {
-  const source = context && typeof context === "object" ? context : resolveBasePreviewData();
-  if (source !== bindingFieldCache.source) {
-    bindingFieldCache.source = source;
-    bindingFieldCache.entries = collectDataFields(source);
-  }
-  return bindingFieldCache.entries;
-}
-
-function getBindingFieldSuggestions(query = "", context) {
-  const normalized = query.trim().toLowerCase();
-  const entries = getBindingFieldEntries(context);
-  const filtered = normalized
-    ? entries.filter((entry) => entry.path.toLowerCase().includes(normalized))
-    : entries;
-  return filtered.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((entry) => ({
-    type: "field",
-    path: entry.path,
-    display: `@${entry.path}`,
-    description: formatBindingPreviewValue(entry.value),
+    description: formatBindingPreviewLabel(entry.value),
   }));
 }
 
