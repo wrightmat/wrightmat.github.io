@@ -25,7 +25,8 @@ import {
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { createLabeledField } from "../lib/component-layout.js";
-import { evaluateFormula } from "../lib/formula-engine.js";
+import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
+import { rollDiceExpression } from "../lib/dice.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import {
   normalizeOptionEntries,
@@ -3545,6 +3546,7 @@ import {
             }
           },
           rollContext: dataContext,
+          rollDice: rollDiceExpression,
         });
         applyRollDirectives(collected);
         return result;
