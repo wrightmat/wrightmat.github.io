@@ -2265,7 +2265,9 @@ function updateIconResult(resolvedValue, tokens) {
 function resolveIconPreviewValue(value, context) {
   const trimmed = value?.trim() ?? "";
   if (!trimmed) return "";
-  const resolved = resolveBinding(trimmed, context);
+  const resolvedContext =
+    context && typeof context === "object" && Object.keys(context).length ? context : resolveBasePreviewData();
+  const resolved = resolveBinding(trimmed, resolvedContext);
   if (typeof resolved === "string") {
     return resolved.trim();
   }
