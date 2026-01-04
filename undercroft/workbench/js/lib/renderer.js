@@ -1,4 +1,5 @@
-import { evaluateFormula } from "./formula-engine.js";
+import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
+import { rollDiceExpression } from "./dice.js";
 
 function resolveBinding(binding, context) {
   if (typeof binding !== "string" || !binding.startsWith("@")) {
@@ -175,7 +176,7 @@ function renderField(node, context) {
   let value = node.bind ? resolveBinding(node.bind, context) : node.value;
   if (node.formula) {
     try {
-      value = evaluateFormula(node.formula, context);
+      value = evaluateFormula(node.formula, context, { rollDice: rollDiceExpression });
     } catch (error) {
       console.warn("Renderer: unable to evaluate formula", error);
     }
