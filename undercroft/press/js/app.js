@@ -2242,8 +2242,10 @@ function getNodeIconClass(node) {
 }
 
 function getIconTokens(value) {
-  if (!value) return [];
-  return value
+  if (value === undefined || value === null) return [];
+  const text = typeof value === "string" ? value : String(value);
+  if (!text) return [];
+  return text
     .split(/\s+/)
     .map((token) => token.trim())
     .filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
@@ -2277,21 +2279,11 @@ function resolveIconPreviewValue(value, context) {
   if (!trimmed) return "";
   const resolvedContext =
     context && typeof context === "object" && Object.keys(context).length ? context : resolveBasePreviewData();
-  if (trimmed.startsWith("@")) {
-    const entries = getBindingFieldEntries(resolvedContext);
-    const match = entries.find((entry) => entry.path === trimmed.slice(1));
-    if (match) {
-      return match.value ?? "";
-    }
-  }
   const resolved = resolveBinding(trimmed, resolvedContext);
-  if (typeof resolved === "string") {
-    return resolved.trim();
-  }
   if (resolved === null || resolved === undefined) {
     return "";
   }
-  return String(resolved).trim();
+  return resolved;
 }
 
 function updateIconPreview(value, context) {
@@ -2299,13 +2291,13 @@ function updateIconPreview(value, context) {
   iconPreview.className = "press-icon-preview";
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
-  const iconTokens = getIconTokens(resolvedValue);
-  if (!resolvedValue) {
+  if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
     updateIconResult("", false);
     return;
   }
-  const matchedIcon = findIconMatch(String(resolvedValue));
-  const iconValue = matchedIcon?.value || String(resolvedValue);
+  const resolvedText = typeof resolvedValue === "string" ? resolvedValue : String(resolvedValue);
+  const matchedIcon = findIconMatch(resolvedText);
+  const iconValue = matchedIcon?.value || resolvedText;
   const resolvedIconTokens = getIconTokens(iconValue);
   if (resolvedIconTokens.length) {
     const hasBootstrap = resolvedIconTokens.some((token) => token.startsWith("bi-"));
@@ -2319,7 +2311,7 @@ function updateIconPreview(value, context) {
       iconPreview.appendChild(icon);
     }
   }
-  updateIconResult(resolvedValue, resolvedIconTokens.length > 0);
+  updateIconResult(resolvedText, resolvedIconTokens.length > 0);
 }
 
 function applyIconSelection(value) {
