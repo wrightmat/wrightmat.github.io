@@ -2249,13 +2249,23 @@ function getIconTokens(value) {
     .filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
 }
 
-function updateIconResult(resolvedValue, tokens) {
+function findIconMatch(value) {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  return (
+    PRESS_ICON_OPTIONS.find((option) => option.value.toLowerCase() === normalized) ||
+    PRESS_ICON_OPTIONS.find((option) => option.label.toLowerCase() === normalized) ||
+    null
+  );
+}
+
+function updateIconResult(resolvedValue, hasIcon) {
   if (!iconResult) return;
   if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
     iconResult.textContent = "Result: —";
     return;
   }
-  if (tokens.length) {
+  if (hasIcon) {
     iconResult.textContent = `Result: ${resolvedValue}`;
     return;
   }
@@ -2267,6 +2277,13 @@ function resolveIconPreviewValue(value, context) {
   if (!trimmed) return "";
   const resolvedContext =
     context && typeof context === "object" && Object.keys(context).length ? context : resolveBasePreviewData();
+  if (trimmed.startsWith("@")) {
+    const entries = getBindingFieldEntries(resolvedContext);
+    const match = entries.find((entry) => entry.path === trimmed.slice(1));
+    if (match) {
+      return match.value ?? "";
+    }
+  }
   const resolved = resolveBinding(trimmed, resolvedContext);
   if (typeof resolved === "string") {
     return resolved.trim();
@@ -2284,10 +2301,12 @@ function updateIconPreview(value, context) {
   const resolvedValue = resolveIconPreviewValue(value, context);
   const iconTokens = getIconTokens(resolvedValue);
   if (!resolvedValue) {
-    updateIconResult("", []);
+    updateIconResult("", false);
     return;
   }
-  const resolvedIconTokens = getIconTokens(resolvedValue);
+  const matchedIcon = findIconMatch(String(resolvedValue));
+  const iconValue = matchedIcon?.value || String(resolvedValue);
+  const resolvedIconTokens = getIconTokens(iconValue);
   if (resolvedIconTokens.length) {
     const hasBootstrap = resolvedIconTokens.some((token) => token.startsWith("bi-"));
     if (hasBootstrap) {
@@ -2300,7 +2319,7 @@ function updateIconPreview(value, context) {
       iconPreview.appendChild(icon);
     }
   }
-  updateIconResult(resolvedValue, resolvedIconTokens);
+  updateIconResult(resolvedValue, resolvedIconTokens.length > 0);
 }
 
 function applyIconSelection(value) {
@@ -2389,6 +2408,128 @@ function ensureAutocompleteContainer(input) {
   return container;
 }
 
+function ensureIconAutocompleteContainer(input) {
+  if (!input || !input.parentElement) return null;
+  const parent = input.closest(".form-floating") ?? input.parentElement;
+  parent.classList.add("position-relative");
+  let container = parent.querySelector("[data-icon-autocomplete]");
+  if (!container) {
+    container = document.createElement("div");
+    container.dataset.iconAutocomplete = "true";
+    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    container.style.zIndex = "1300";
+    container.style.fontSize = "0.8125rem";
+    container.style.maxHeight = "16rem";
+    container.style.overflowY = "auto";
+    parent.appendChild(container);
+  }
+  return container;
+}
+
+function renderIconAutocompleteOption(option) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
+  const preview = document.createElement("span");
+  preview.className = "press-icon-option__preview";
+  const icon = document.createElement("span");
+  icon.className = option.value;
+  preview.appendChild(icon);
+  const label = document.createElement("span");
+  label.className = "text-truncate";
+  label.textContent = option.label;
+  const group = document.createElement("small");
+  group.className = "text-body-secondary text-nowrap ms-auto";
+  group.textContent = option.group;
+  row.append(preview, label, group);
+  return row;
+}
+
+function attachIconAutocomplete(input) {
+  if (!input) return null;
+  const container = ensureIconAutocompleteContainer(input);
+  if (!container) return null;
+  const MAX_ITEMS = 12;
+  let items = [];
+  let activeIndex = -1;
+
+  const close = () => {
+    items = [];
+    activeIndex = -1;
+    container.innerHTML = "";
+    container.classList.add("d-none");
+  };
+
+  const render = (nextItems) => {
+    items = nextItems;
+    activeIndex = -1;
+    container.innerHTML = "";
+    if (!items.length) {
+      close();
+      return;
+    }
+    items.forEach((option, index) => {
+      const row = renderIconAutocompleteOption(option);
+      row.dataset.iconIndex = String(index);
+      row.setAttribute("role", "option");
+      row.addEventListener("mousedown", (event) => event.preventDefault());
+      row.addEventListener("click", () => {
+        applyIconSelection(option.value);
+        close();
+      });
+      container.appendChild(row);
+    });
+    container.classList.remove("d-none");
+  };
+
+  const update = () => {
+    const value = input.value.trim();
+    if (!value || value.startsWith("@") || value.startsWith("=")) {
+      close();
+      return;
+    }
+    const normalized = value.toLowerCase();
+    const filtered = PRESS_ICON_OPTIONS.filter((option) => {
+      return (
+        option.label.toLowerCase().includes(normalized) ||
+        option.value.toLowerCase().includes(normalized)
+      );
+    }).slice(0, MAX_ITEMS);
+    render(filtered);
+  };
+
+  const onKeyDown = (event) => {
+    if (!items.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      if (activeIndex >= 0 && items[activeIndex]) {
+        applyIconSelection(items[activeIndex].value);
+        close();
+      }
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
+    Array.from(container.querySelectorAll("[data-icon-index]")).forEach((row) => {
+      row.classList.toggle("active", Number(row.dataset.iconIndex) === activeIndex);
+    });
+  };
+
+  input.addEventListener("input", update);
+  input.addEventListener("focus", update);
+  input.addEventListener("click", update);
+  input.addEventListener("keydown", onKeyDown);
+  input.addEventListener("blur", () => setTimeout(close, 120));
+
+  return { update, close };
+}
+
 function attachBindingAutocomplete(input, { supportsFunctions = true, resolveContext = null } = {}) {
   if (!input) return null;
   const container = ensureAutocompleteContainer(input);
@@ -2419,6 +2560,7 @@ function initBindingAutocompletes() {
   const resolveInspectorContext = () => getInspectorPreviewContext(selectedNodeId);
   attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
+  attachIconAutocomplete(iconInput);
   attachBindingAutocomplete(tableRowsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });

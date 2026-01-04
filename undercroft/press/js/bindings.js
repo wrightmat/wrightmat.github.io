@@ -43,7 +43,7 @@ function shouldEvaluateFormula(value) {
     if (/["']/.test(body)) {
       return hasBalancedQuotes(trimmed);
     }
-    if (/[0-9]/.test(body)) {
+    if (/^[0-9+\-*/().\s]+$/.test(body)) {
       return true;
     }
     if (/\b[A-Za-z_][A-Za-z0-9_]*\s*\(/.test(body)) {
