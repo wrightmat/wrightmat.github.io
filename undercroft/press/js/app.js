@@ -2251,7 +2251,7 @@ function getIconTokens(value) {
 
 function updateIconResult(resolvedValue, tokens) {
   if (!iconResult) return;
-  if (!resolvedValue) {
+  if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
     iconResult.textContent = "Result: —";
     return;
   }
