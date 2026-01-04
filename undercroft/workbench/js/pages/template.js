@@ -27,9 +27,9 @@ import {
 } from "../lib/content-registry.js";
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { collectSystemFields, categorizeFieldType } from "../lib/system-schema.js";
-import { attachFormulaAutocomplete } from "../lib/formula-autocomplete.js";
+import { attachFormulaAutocomplete } from "../../../common/js/lib/formula-autocomplete.js";
 import { resolveFieldTypeMeta } from "../lib/field-type-meta.js";
-import { listFormulaFunctionMetadata } from "../lib/formula-metadata.js";
+import { listFormulaFunctionMetadata } from "../../../common/js/lib/formula-metadata.js";
 import { initTierGate, initTierVisibility } from "../lib/access.js";
 import {
   normalizeBindingValue,
