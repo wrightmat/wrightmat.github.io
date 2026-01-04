@@ -2299,6 +2299,7 @@ function updateIconPreview(value, context) {
   iconPreview.className = "press-icon-preview";
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
+  const iconTokens = getIconTokens(resolvedValue);
   if (!resolvedValue) {
     updateIconResult("", false);
     return;
