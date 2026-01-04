@@ -21,6 +21,9 @@ printed output for cards and sheets.
   repeat bindings for card/chip grids. Leaving the data binding blank keeps the
   full source payload in scope, while repeat bindings target arrays such as
   `@features` or `@attacks`.
+- Binding inputs now surface `@` autocomplete suggestions sourced from the
+  sample/loaded data, and they accept lightweight formulas prefixed with `=` for
+  simple logic and string concatenation.
 - Templates live as JSON in the `templates/` directory using the Workbench-style
   component layout schema and are hydrated into the preview at runtime with
   raw source data payloads (falling back to the global sample data in
