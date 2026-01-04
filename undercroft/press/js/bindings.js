@@ -33,7 +33,23 @@ function shouldEvaluateFormula(value) {
     if (trimmed.length <= 1) {
       return false;
     }
-    return hasBalancedQuotes(trimmed);
+    const body = trimmed.slice(1).trim();
+    if (!body) {
+      return false;
+    }
+    if (body.includes("@")) {
+      return true;
+    }
+    if (/["']/.test(body)) {
+      return hasBalancedQuotes(trimmed);
+    }
+    if (/[0-9]/.test(body)) {
+      return true;
+    }
+    if (/\b[A-Za-z_][A-Za-z0-9_]*\s*\(/.test(body)) {
+      return true;
+    }
+    return false;
   }
   if (!trimmed.includes("@")) {
     return false;
@@ -71,6 +87,9 @@ export function resolveBinding(binding, context) {
       }
       return "";
     }
+  }
+  if (trimmed.startsWith("=")) {
+    return "";
   }
   if (!trimmed.startsWith("@")) {
     return binding;
