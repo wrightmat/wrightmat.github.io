@@ -2279,6 +2279,28 @@ function resolveIconPreviewValue(value, context) {
   if (!trimmed) return "";
   const resolvedContext =
     context && typeof context === "object" && Object.keys(context).length ? context : resolveBasePreviewData();
+  const resolvePathValue = (binding) => {
+    if (!binding.startsWith("@")) return undefined;
+    const segments = binding.slice(1).split(".");
+    return segments.reduce((acc, key) => {
+      if (acc == null) {
+        return undefined;
+      }
+      if (Array.isArray(acc) && /^\d+$/.test(key)) {
+        return acc[Number(key)];
+      }
+      if (typeof acc === "object" && key in acc) {
+        return acc[key];
+      }
+      return undefined;
+    }, resolvedContext);
+  };
+  if (trimmed.startsWith("@")) {
+    const directValue = resolvePathValue(trimmed);
+    if (directValue !== undefined) {
+      return directValue;
+    }
+  }
   const resolved = resolveBinding(trimmed, resolvedContext);
   if (resolved === null || resolved === undefined) {
     return "";
