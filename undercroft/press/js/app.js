@@ -21,6 +21,9 @@ import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
 import { resolveBinding } from "./bindings.js";
+import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
+import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
+import { collectDataFields } from "../../common/js/lib/data-fields.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -89,7 +92,7 @@ const parentSelectButton = document.querySelector("[data-component-parent-select
 const iconField = document.querySelector("[data-inspector-icon-field]");
 const iconInput = document.querySelector("[data-component-icon-class]");
 const iconPreview = document.querySelector("[data-component-icon-preview]");
-const iconOptionsList = document.querySelector("[data-component-icon-options]");
+const iconResult = document.querySelector("[data-component-icon-result]");
 const textEditor = document.querySelector("[data-component-text]");
 const textEditorLabel = document.querySelector("[data-component-text-label]");
 const ariaLabelField = document.querySelector("[data-inspector-aria-label-field]");
@@ -138,6 +141,14 @@ const textStyleToggles = Array.from(document.querySelectorAll("[data-component-t
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
 const deleteButton = document.querySelector("[data-component-delete]");
+
+const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
+const MAX_AUTOCOMPLETE_ITEMS = 12;
+const bindingAutocompleteInstances = new Set();
+const bindingFieldCache = {
+  source: null,
+  entries: [],
+};
 const rightPane = document.querySelector('[data-pane="right"]');
 const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
 
@@ -242,8 +253,6 @@ const PRESS_ICON_OPTIONS = [
   { group: "Misc", label: "Healing", value: "ddb-healing" },
   { group: "Misc", label: "Ritual", value: "ddb-ritual" },
 ];
-const BOOTSTRAP_ICON_CSS = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
-let bootstrapIconOptions = [];
 
 const paletteComponents = [
   {
@@ -889,6 +898,8 @@ async function initSampleDataEditor() {
   subscribeSampleData(() => {
     renderSampleDataSection();
     renderPreview();
+    bindingFieldCache.source = null;
+    refreshBindingAutocomplete();
   });
 }
 
@@ -1947,6 +1958,7 @@ function renderTableColumnsList(node) {
     bindInput.className = "form-control form-control-sm";
     bindInput.placeholder = "@value";
     bindInput.value = column?.bind ?? "";
+    attachBindingAutocomplete(bindInput, { resolveContext: () => getInspectorPreviewContext(selectedNodeId) });
     bindInput.addEventListener("focus", () => beginPendingUndo(bindInput));
     bindInput.addEventListener("blur", () => commitPendingUndo(bindInput));
     bindInput.addEventListener("input", () => {
@@ -2221,79 +2233,6 @@ function ptToPx(value) {
   return value * (4 / 3);
 }
 
-async function loadBootstrapIcons() {
-  if (bootstrapIconOptions.length) return bootstrapIconOptions;
-  try {
-    const response = await fetch(BOOTSTRAP_ICON_CSS);
-    if (!response.ok) {
-      throw new Error(`Unable to load Bootstrap Icons CSS (${response.status})`);
-    }
-    const css = await response.text();
-    const matches = Array.from(css.matchAll(/\.bi-([a-z0-9-]+)::before/g));
-    bootstrapIconOptions = matches.map((match) => {
-      const slug = match[1];
-      const label = slug.replace(/-/g, " ");
-      return {
-        group: "Bootstrap",
-        label: label.replace(/\b\w/g, (letter) => letter.toUpperCase()),
-        value: `bi-${slug}`,
-        type: "bootstrap",
-      };
-    });
-  } catch (error) {
-    console.warn("Bootstrap icon list unavailable.", error);
-  }
-  return bootstrapIconOptions;
-}
-
-function createIconOptionRow(option) {
-  const row = document.createElement("button");
-  row.type = "button";
-  row.className = "press-icon-option list-group-item list-group-item-action";
-  row.dataset.iconValue = option.value;
-
-  const preview = document.createElement("span");
-  preview.className = "press-icon-option__preview";
-  if (option.type === "bootstrap") {
-    const icon = document.createElement("i");
-    icon.className = `bi ${option.value}`;
-    preview.appendChild(icon);
-  } else {
-    const icon = document.createElement("span");
-    icon.className = option.value;
-    preview.appendChild(icon);
-  }
-
-  const label = document.createElement("span");
-  label.textContent = option.label;
-  const group = document.createElement("span");
-  group.className = "text-body-secondary ms-auto";
-  group.textContent = option.group;
-
-  row.append(preview, label, group);
-  return row;
-}
-
-function renderIconOptions(filterValue = "") {
-  if (!iconOptionsList) return;
-  const normalized = filterValue.trim().toLowerCase();
-  iconOptionsList.innerHTML = "";
-  const fragment = document.createDocumentFragment();
-  const mergedOptions = [
-    ...PRESS_ICON_OPTIONS.map((option) => ({ ...option, type: "ddb" })),
-    ...bootstrapIconOptions,
-  ];
-  mergedOptions
-    .filter((option) => {
-      if (!normalized) return true;
-      return option.label.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized);
-    })
-    .forEach((option) => {
-      fragment.appendChild(createIconOptionRow(option));
-    });
-  iconOptionsList.appendChild(fragment);
-}
-
 function getNodeIconClass(node) {
   if (!node) return "";
   if (node.iconClass) return node.iconClass;
@@ -2302,14 +2241,49 @@ function getNodeIconClass(node) {
   return iconTokens.join(" ");
 }
 
+function getIconTokens(value) {
+  if (value === undefined || value === null) return [];
+  const text = typeof value === "string" ? value : String(value);
+  if (!text) return [];
+  return text
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.startsWith("ddb-") || token.startsWith("bi-"));
+}
+
+function findIconMatch(value) {
+  if (!value) return null;
+  const normalized = value.toLowerCase();
+  return (
+    PRESS_ICON_OPTIONS.find((option) => option.value.toLowerCase() === normalized) ||
+    PRESS_ICON_OPTIONS.find((option) => option.label.toLowerCase() === normalized) ||
+    null
+  );
+}
+
+function updateIconResult(resolvedValue, hasIcon) {
+  if (!iconResult) return;
+  if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
+    iconResult.textContent = "Result: —";
+    return;
+  }
+  if (hasIcon) {
+    iconResult.textContent = `Result: ${resolvedValue}`;
+    return;
+  }
+  iconResult.textContent = `Result: ${resolvedValue} (no icon found)`;
+}
+
 function resolveIconPreviewValue(value, context) {
   const trimmed = value?.trim() ?? "";
   if (!trimmed) return "";
-  if (trimmed.startsWith("@")) {
-    const resolved = resolveBinding(trimmed, context);
-    return typeof resolved === "string" ? resolved.trim() : "";
+  const resolvedContext =
+    context && typeof context === "object" && Object.keys(context).length ? context : resolveBasePreviewData();
+  const resolved = resolveBinding(trimmed, resolvedContext);
+  if (resolved === null || resolved === undefined) {
+    return "";
   }
-  return trimmed;
+  return resolved;
 }
 
 function updateIconPreview(value, context) {
@@ -2317,20 +2291,27 @@ function updateIconPreview(value, context) {
   iconPreview.className = "press-icon-preview";
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
-  if (!resolvedValue) {
+  if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
+    updateIconResult("", false);
     return;
   }
-  const tokens = resolvedValue.split(/\s+/).filter(Boolean);
-  const hasBootstrap = tokens.some((token) => token.startsWith("bi-"));
-  if (hasBootstrap) {
-    const icon = document.createElement("i");
-    icon.className = `bi ${tokens.find((token) => token.startsWith("bi-"))}`;
-    iconPreview.appendChild(icon);
-  } else {
-    const icon = document.createElement("span");
-    icon.className = tokens.join(" ");
-    iconPreview.appendChild(icon);
+  const resolvedText = typeof resolvedValue === "string" ? resolvedValue : String(resolvedValue);
+  const matchedIcon = findIconMatch(resolvedText);
+  const iconValue = matchedIcon?.value || resolvedText;
+  const resolvedIconTokens = getIconTokens(iconValue);
+  if (resolvedIconTokens.length) {
+    const hasBootstrap = resolvedIconTokens.some((token) => token.startsWith("bi-"));
+    if (hasBootstrap) {
+      const icon = document.createElement("i");
+      icon.className = `bi ${resolvedIconTokens.find((token) => token.startsWith("bi-"))}`;
+      iconPreview.appendChild(icon);
+    } else {
+      const icon = document.createElement("span");
+      icon.className = resolvedIconTokens.join(" ");
+      iconPreview.appendChild(icon);
+    }
   }
+  updateIconResult(resolvedText, resolvedIconTokens.length > 0);
 }
 
 function applyIconSelection(value) {
@@ -2348,12 +2329,233 @@ function applyIconSelection(value) {
   updateIconPreview(value, getInspectorPreviewContext(selectedNodeId));
   renderPreview();
   updateSaveState();
-  renderIconOptions(value);
-  if (iconOptionsList) {
-    iconOptionsList.querySelectorAll("[data-icon-value]").forEach((row) => {
-      row.classList.toggle("is-active", row.dataset.iconValue === value);
-    });
+}
+
+function formatBindingPreviewLabel(value) {
+  if (value === undefined) return "—";
+  if (value === null) return "null";
+  if (Array.isArray(value)) {
+    return value.length ? `Array(${value.length})` : "[]";
   }
+  if (typeof value === "object") {
+    return "Object";
+  }
+  const stringified = String(value);
+  if (!stringified) return "\"\"";
+  if (stringified.length <= 40) return stringified;
+  return `${stringified.slice(0, 37)}…`;
+}
+
+function getBindingFieldEntries(context) {
+  const source = context && typeof context === "object" ? context : resolveBasePreviewData();
+  if (source !== bindingFieldCache.source) {
+    bindingFieldCache.source = source;
+    bindingFieldCache.entries = collectDataFields(source);
+  }
+  return bindingFieldCache.entries;
+}
+
+function getBindingFieldSuggestions(query = "", context) {
+  const normalized = query.trim().toLowerCase();
+  const entries = getBindingFieldEntries(context);
+  const filtered = normalized
+    ? entries.filter((entry) => entry.path.toLowerCase().includes(normalized))
+    : entries;
+  return filtered.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((entry) => ({
+    type: "field",
+    path: entry.path,
+    display: `@${entry.path}`,
+    description: formatBindingPreviewLabel(entry.value),
+  }));
+}
+
+function getFunctionSuggestions(query = "") {
+  const normalized = query.trim().toLowerCase();
+  const matches = normalized
+    ? FORMULA_FUNCTIONS.filter((fn) => fn.name.toLowerCase().startsWith(normalized))
+    : FORMULA_FUNCTIONS;
+  return matches.slice(0, MAX_AUTOCOMPLETE_ITEMS).map((fn) => ({
+    type: "function",
+    name: fn.name,
+    display: fn.signature,
+    description: fn.name,
+  }));
+}
+
+function ensureAutocompleteContainer(input) {
+  if (!input || !input.parentElement) return null;
+  const parent = input.closest(".form-floating") ?? input.parentElement;
+  parent.classList.add("position-relative");
+  let container = parent.querySelector("[data-binding-autocomplete]");
+  if (!container) {
+    container = document.createElement("div");
+    container.dataset.bindingAutocomplete = "true";
+    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    container.style.zIndex = "1300";
+    container.style.fontSize = "0.8125rem";
+    container.style.maxHeight = "16rem";
+    container.style.overflowY = "auto";
+    parent.appendChild(container);
+  }
+  return container;
+}
+
+function ensureIconAutocompleteContainer(input) {
+  if (!input || !input.parentElement) return null;
+  const parent = input.closest(".form-floating") ?? input.parentElement;
+  parent.classList.add("position-relative");
+  let container = parent.querySelector("[data-icon-autocomplete]");
+  if (!container) {
+    container = document.createElement("div");
+    container.dataset.iconAutocomplete = "true";
+    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    container.style.zIndex = "1300";
+    container.style.fontSize = "0.8125rem";
+    container.style.maxHeight = "16rem";
+    container.style.overflowY = "auto";
+    parent.appendChild(container);
+  }
+  return container;
+}
+
+function renderIconAutocompleteOption(option) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
+  const preview = document.createElement("span");
+  preview.className = "press-icon-option__preview";
+  const icon = document.createElement("span");
+  icon.className = option.value;
+  preview.appendChild(icon);
+  const label = document.createElement("span");
+  label.className = "text-truncate";
+  label.textContent = option.label;
+  const group = document.createElement("small");
+  group.className = "text-body-secondary text-nowrap ms-auto";
+  group.textContent = option.group;
+  row.append(preview, label, group);
+  return row;
+}
+
+function attachIconAutocomplete(input) {
+  if (!input) return null;
+  const container = ensureIconAutocompleteContainer(input);
+  if (!container) return null;
+  const MAX_ITEMS = 12;
+  let items = [];
+  let activeIndex = -1;
+
+  const close = () => {
+    items = [];
+    activeIndex = -1;
+    container.innerHTML = "";
+    container.classList.add("d-none");
+  };
+
+  const render = (nextItems) => {
+    items = nextItems;
+    activeIndex = -1;
+    container.innerHTML = "";
+    if (!items.length) {
+      close();
+      return;
+    }
+    items.forEach((option, index) => {
+      const row = renderIconAutocompleteOption(option);
+      row.dataset.iconIndex = String(index);
+      row.setAttribute("role", "option");
+      row.addEventListener("mousedown", (event) => event.preventDefault());
+      row.addEventListener("click", () => {
+        applyIconSelection(option.value);
+        close();
+      });
+      container.appendChild(row);
+    });
+    container.classList.remove("d-none");
+  };
+
+  const update = () => {
+    const value = input.value.trim();
+    if (!value || value.startsWith("@") || value.startsWith("=")) {
+      close();
+      return;
+    }
+    const normalized = value.toLowerCase();
+    const filtered = PRESS_ICON_OPTIONS.filter((option) => {
+      return (
+        option.label.toLowerCase().includes(normalized) ||
+        option.value.toLowerCase().includes(normalized)
+      );
+    }).slice(0, MAX_ITEMS);
+    render(filtered);
+  };
+
+  const onKeyDown = (event) => {
+    if (!items.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      if (activeIndex >= 0 && items[activeIndex]) {
+        applyIconSelection(items[activeIndex].value);
+        close();
+      }
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
+    Array.from(container.querySelectorAll("[data-icon-index]")).forEach((row) => {
+      row.classList.toggle("active", Number(row.dataset.iconIndex) === activeIndex);
+    });
+  };
+
+  input.addEventListener("input", update);
+  input.addEventListener("focus", update);
+  input.addEventListener("click", update);
+  input.addEventListener("keydown", onKeyDown);
+  input.addEventListener("blur", () => setTimeout(close, 120));
+
+  return { update, close };
+}
+
+function attachBindingAutocomplete(input, { supportsFunctions = true, resolveContext = null } = {}) {
+  if (!input) return null;
+  const container = ensureAutocompleteContainer(input);
+  if (!container) return null;
+  input.setAttribute("aria-autocomplete", "list");
+  const contextResolver = typeof resolveContext === "function" ? resolveContext : () => resolveBasePreviewData();
+  const autocomplete = attachFormulaAutocomplete(input, {
+    container,
+    supportsBinding: true,
+    supportsFunctions,
+    getFieldItems: (query) => getBindingFieldSuggestions(query, contextResolver()),
+    getFunctionItems: (query) => getFunctionSuggestions(query),
+    maxItems: MAX_AUTOCOMPLETE_ITEMS,
+  });
+  bindingAutocompleteInstances.add(autocomplete);
+  return autocomplete;
+}
+
+function refreshBindingAutocomplete() {
+  bindingAutocompleteInstances.forEach((instance) => instance.update());
+}
+
+function initBindingAutocompletes() {
+  attachBindingAutocomplete(templateFrontRepeatInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateBackRepeatInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateFrontDataInput, { supportsFunctions: false });
+  attachBindingAutocomplete(templateBackDataInput, { supportsFunctions: false });
+  const resolveInspectorContext = () => getInspectorPreviewContext(selectedNodeId);
+  attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
+  attachIconAutocomplete(iconInput);
+  attachBindingAutocomplete(tableRowsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });
 }
 
 function renderPalette() {
@@ -2515,7 +2717,6 @@ function updateInspector() {
     if (textEditor) textEditor.value = "";
     if (iconInput) iconInput.value = "";
     updateIconPreview("", {});
-    renderIconOptions("");
     if (imageUrlInput) imageUrlInput.value = "";
     if (imageWidthInput) imageWidthInput.value = "";
     if (imageHeightInput) imageHeightInput.value = "";
@@ -2717,12 +2918,6 @@ function updateInspector() {
     const iconClass = getNodeIconClass(node);
     iconInput.value = iconClass;
     updateIconPreview(iconClass, getInspectorPreviewContext(node?.uid));
-    renderIconOptions(iconClass);
-    if (iconOptionsList) {
-      iconOptionsList.querySelectorAll("[data-icon-value]").forEach((row) => {
-        row.classList.toggle("is-active", row.dataset.iconValue === iconClass);
-      });
-    }
   }
   if (ariaLabelInput) {
     ariaLabelInput.value = node.ariaLabel ?? "";
@@ -3050,6 +3245,8 @@ async function handleGeneratePrint() {
       fetchedAt: new Date().toISOString(),
     });
     renderPreview();
+    bindingFieldCache.source = null;
+    refreshBindingAutocomplete();
     if (applySelectionCollapse) {
       applySelectionCollapse(true);
     }
@@ -3499,14 +3696,6 @@ function bindInspectorControls() {
     iconInput.addEventListener("change", () => commitPendingUndo(iconInput));
     iconInput.addEventListener("input", () => {
       applyIconSelection(iconInput.value);
-    });
-  }
-
-  if (iconOptionsList) {
-    iconOptionsList.addEventListener("click", (event) => {
-      const target = event.target.closest("[data-icon-value]");
-      if (!target) return;
-      applyIconSelection(target.dataset.iconValue ?? "");
     });
   }
 
@@ -4019,11 +4208,10 @@ async function initPress() {
   renderFormatOptions(getActiveTemplate());
   renderSourceOptions(getActiveTemplate());
   updateTemplateInspector(getActiveTemplate());
-  await loadBootstrapIcons();
-  renderIconOptions();
   bindTemplateInspectorControls();
   initDragAndDrop();
   bindInspectorControls();
+  initBindingAutocompletes();
   renderLayoutList();
   selectedNodeId = null;
   updateInspector();
