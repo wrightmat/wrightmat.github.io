@@ -7,7 +7,7 @@
 <div class="card {{preferences.size}} {{preferences.orientation}}" id="item-{{index}}-{{id}}">
   <div class="front" id="item_front-{{index}}-{{id}}">
     <h2>{{name}}</h2>
-    <p class="info">{{race.fullName}} {{background.definition.name}}, {{alignment.description}}</p>
+    <p class="info">{{#traits.ageGroup}}{{traits.ageGroup}} {{/traits.ageGroup}}({{traits.genderPronouns}}) {{race.fullName}} {{#background.definition.name}}{{background.definition.name}}{{/background.definition.name}}, {{alignment.description}}</p><br />
     {{#traits.personaityTraits}}<p class="info">{{traits.personaityTraits}}</p>{{/traits.personaityTraits}}
     {{#traits.saying}}<blockquote>{{traits.saying}}</blockquote>{{/traits.saying}}
     <p class="content">{{{notes.backstory}}}</p>
@@ -30,11 +30,17 @@
     </table><!-- {{/stats.0}} -->
     <span class="float-left">{{#ac.value}}<p class="content"><b>AC:</b> {{ac.value}} {{#ac.description}}({{ac.description}}){{/ac.description}}</p>{{/ac.value}}</span>
     <span class="float-right">{{#hp.value}}<p class="content"><b>HP:</b> {{hp.value}} {{#hp.hitDieSize}}({{hp.hitDieSize}}){{/hp.hitDieSize}}</p>{{/hp.value}}</span>
+    <p>
+      {{#race.weightSpeeds.normal.walk}}<b>Speed:</b> {{race.weightSpeeds.normal.walk}} ft.{{/race.weightSpeeds.normal.walk}}{{#race.weightSpeeds.normal.fly}}, fly {{race.weightSpeeds.normal.fly}} ft.{{/race.weightSpeeds.normal.fly}}
+{{#race.weightSpeeds.normal.burrow}}, burrow ({{race.weightSpeeds.normal.burrow}} ft.{{/race.weightSpeeds.normal.burrow}}
+{{#race.weightSpeeds.normal.swim}}, swim ({{race.weightSpeeds.normal.swim}} ft.{{/race.weightSpeeds.normal.swim}}
+{{#race.weightSpeeds.normal.climb}}, climb ({{race.weightSpeeds.normal.climb}} ft.{{/race.weightSpeeds.normal.climb}}
+    </p>
   </div>
   <div class="back" id="item_back-{{index}}-{{id}}">
     <div class="header" id="card_back-header-{{index}}-{{id}}">
       <h2>{{name}}</h2>
-      <p class="info">{{traits.genderPronouns}}</p>
+      <p class="info">({{traits.genderPronouns}})</p>
       <div class="topright"><i class="bi {{decorations.icon}}"></i></div>
     </div>
     <div class="image" id="card_back-image-{{index}}-{{id}}" style="vertical-align: middle;"><img src="{{decorations.avatarUrl}}" style="border-radius: 5px;" /></div>

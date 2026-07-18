@@ -5,8 +5,8 @@ const sources = [
     description: "",
     input: {
       type: "text",
-      label: "URL or ID",
-      placeholder: "https://www.dndbeyond.com/monsters/12345",
+      label: "Character URL/ID, or a classes/backgrounds/species page URL",
+      placeholder: "https://www.dndbeyond.com/classes/2190875-barbarian",
       helpTopic: "press.source.ddb",
     },
   },
@@ -16,9 +16,19 @@ const sources = [
     description: "",
     input: {
       type: "text",
-      label: "5e API endpoint or slug",
-      placeholder: "/api/spells/acid-arrow",
+      label: "5e API endpoint or slug (a list endpoint fetches every item)",
+      placeholder: "/api/2024/classes",
       helpTopic: "press.source.srd",
+    },
+  },
+  {
+    id: "library",
+    name: "Library",
+    description: "",
+    input: {
+      type: "library",
+      label: "Kind and item",
+      helpTopic: "press.source.library",
     },
   },
   {
@@ -38,8 +48,8 @@ const sources = [
     description: "",
     input: {
       type: "textarea",
-      label: "Notes or copy",
-      placeholder: "Describe what you plan to print.",
+      label: "Pasted JSON (optional)",
+      placeholder: "Paste JSON matching a template's bindings, or leave blank to edit Sample Data instead.",
       helpTopic: "press.source.manual",
       rows: 3,
     },

@@ -3,3 +3,4 @@ __pycache__/
 data/database.sqlite
 undercroft/workbench/data/database.sqlite
 *.sqlite
+server/ddb-session.local.json

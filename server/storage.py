@@ -257,7 +257,7 @@ def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[s
                 continue
             if allowed and entry.suffix.lower() not in allowed:
                 continue
-            item: Dict[str, Any] = {"filename": entry.stem}
+            item: Dict[str, Any] = {"filename": entry.stem, "modified": entry.stat().st_mtime}
             item.update(_parse_metadata(entry))
             files.append(item)
         return {"files": files}

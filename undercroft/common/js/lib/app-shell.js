@@ -25,6 +25,12 @@ const TOOL_DEFINITIONS = [
     summary: "Map creator and viewer.",
   },
   {
+    id: "loom",
+    label: "Loom",
+    letter: "L",
+    summary: "Fetches and normalizes external content into standardized local data.",
+  },
+  {
     id: "forge",
     label: "Forge",
     letter: "F",
@@ -81,6 +87,10 @@ function resolveToolHref(toolId, currentSection) {
 
   if (toolId === "press") {
     return currentSection === "press" ? "index.html" : "../press/index.html";
+  }
+
+  if (toolId === "loom") {
+    return currentSection === "loom" ? "index.html" : "../loom/index.html";
   }
 
   return "#";

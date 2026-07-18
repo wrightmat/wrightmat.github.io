@@ -439,5 +439,10 @@
         ]
       }
     }
-  }
+  },
+  "name": "Letter Character Spread",
+  "sides": [
+    "front",
+    "back"
+  ]
 }

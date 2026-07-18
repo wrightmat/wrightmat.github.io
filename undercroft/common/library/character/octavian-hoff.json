@@ -1,0 +1,545 @@
+{
+  "kind": "character",
+  "name": "Octavian Hoff",
+  "identity": {
+    "id": 133639844,
+    "userId": 100499308,
+    "username": "wrighmat",
+    "name": "Octavian Hoff",
+    "level": 7,
+    "classes": [
+      {
+        "name": "Ranger",
+        "level": 7,
+        "subclass": "Gloom Stalker"
+      }
+    ]
+  },
+  "proficiency": 3,
+  "conditions": [],
+  "abilities": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "score": 10,
+      "modifier": 0
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "score": 16,
+      "modifier": 3
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "score": 15,
+      "modifier": 2
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "score": 12,
+      "modifier": 1
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "score": 15,
+      "modifier": 2
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "score": 8,
+      "modifier": -1
+    }
+  ],
+  "saves": [
+    {
+      "id": 1,
+      "name": "strength",
+      "friendlyName": "Strength",
+      "shortName": "STR",
+      "value": 3,
+      "proficiency": 1
+    },
+    {
+      "id": 2,
+      "name": "dexterity",
+      "friendlyName": "Dexterity",
+      "shortName": "DEX",
+      "value": 6,
+      "proficiency": 1
+    },
+    {
+      "id": 3,
+      "name": "constitution",
+      "friendlyName": "Constitution",
+      "shortName": "CON",
+      "value": 2,
+      "proficiency": 0
+    },
+    {
+      "id": 4,
+      "name": "intelligence",
+      "friendlyName": "Intelligence",
+      "shortName": "INT",
+      "value": 1,
+      "proficiency": 0
+    },
+    {
+      "id": 5,
+      "name": "wisdom",
+      "friendlyName": "Wisdom",
+      "shortName": "WIS",
+      "value": 5,
+      "proficiency": 1
+    },
+    {
+      "id": 6,
+      "name": "charisma",
+      "friendlyName": "Charisma",
+      "shortName": "CHA",
+      "value": -1,
+      "proficiency": 0
+    }
+  ],
+  "skills": [
+    {
+      "id": 3,
+      "name": "acrobatics",
+      "friendlyName": "Acrobatics",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 3,
+      "proficiency": 0
+    },
+    {
+      "id": 11,
+      "name": "animal-handling",
+      "friendlyName": "Animal Handling",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 5,
+      "proficiency": 1
+    },
+    {
+      "id": 6,
+      "name": "arcana",
+      "friendlyName": "Arcana",
+      "stat": 3,
+      "ability": "INT",
+      "value": 1,
+      "proficiency": 0
+    },
+    {
+      "id": 2,
+      "name": "athletics",
+      "friendlyName": "Athletics",
+      "stat": 0,
+      "ability": "STR",
+      "value": 0,
+      "proficiency": 0
+    },
+    {
+      "id": 16,
+      "name": "deception",
+      "friendlyName": "Deception",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0
+    },
+    {
+      "id": 7,
+      "name": "history",
+      "friendlyName": "History",
+      "stat": 3,
+      "ability": "INT",
+      "value": 1,
+      "proficiency": 0
+    },
+    {
+      "id": 12,
+      "name": "insight",
+      "friendlyName": "Insight",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 8,
+      "proficiency": 2
+    },
+    {
+      "id": 17,
+      "name": "intimidation",
+      "friendlyName": "Intimidation",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0
+    },
+    {
+      "id": 8,
+      "name": "investigation",
+      "friendlyName": "Investigation",
+      "stat": 3,
+      "ability": "INT",
+      "value": 1,
+      "proficiency": 0
+    },
+    {
+      "id": 13,
+      "name": "medicine",
+      "friendlyName": "Medicine",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 2,
+      "proficiency": 0
+    },
+    {
+      "id": 9,
+      "name": "nature",
+      "friendlyName": "Nature",
+      "stat": 3,
+      "ability": "INT",
+      "value": 4,
+      "proficiency": 1
+    },
+    {
+      "id": 14,
+      "name": "perception",
+      "friendlyName": "Perception",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 5,
+      "proficiency": 1
+    },
+    {
+      "id": 18,
+      "name": "performance",
+      "friendlyName": "Performance",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0
+    },
+    {
+      "id": 19,
+      "name": "persuasion",
+      "friendlyName": "Persuasion",
+      "stat": 5,
+      "ability": "CHA",
+      "value": -1,
+      "proficiency": 0
+    },
+    {
+      "id": 10,
+      "name": "religion",
+      "friendlyName": "Religion",
+      "stat": 3,
+      "ability": "INT",
+      "value": 1,
+      "proficiency": 0
+    },
+    {
+      "id": 4,
+      "name": "sleight-of-hand",
+      "friendlyName": "Sleight of Hand",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 3,
+      "proficiency": 0
+    },
+    {
+      "id": 5,
+      "name": "stealth",
+      "friendlyName": "Stealth",
+      "stat": 1,
+      "ability": "DEX",
+      "value": 6,
+      "proficiency": 1
+    },
+    {
+      "id": 15,
+      "name": "survival",
+      "friendlyName": "Survival",
+      "stat": 4,
+      "ability": "WIS",
+      "value": 5,
+      "proficiency": 1
+    }
+  ],
+  "currencies": {
+    "cp": 148,
+    "sp": 290,
+    "ep": 0,
+    "gp": 30,
+    "pp": 0
+  },
+  "background": {
+    "name": "Farmer",
+    "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Constitution, Wisdom<br /><strong>Feat:</strong>&nbsp;Tough<br /><strong>Skill Proficiencies:</strong> Animal Handling and Nature<br /><strong>Tool Proficiency:</strong>&nbsp;Carpenter's Tools<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler's Clothes, 30 GP; or (B) 50 GP</p>\r\n<p>You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature\u2019s bounty alongside a healthy respect for nature\u2019s wrath.</p>",
+    "feature": "Feat: Tough"
+  },
+  "deathSaves": {
+    "successes": null,
+    "failures": null,
+    "stabilized": false
+  },
+  "notes": {
+    "allies": null,
+    "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+    "enemies": null,
+    "organizations": null
+  },
+  "traits": {
+    "age": 17,
+    "eyes": "Brown",
+    "hair": "Blonde",
+    "skin": "White",
+    "height": "6'",
+    "weight": 170,
+    "faith": null,
+    "appearance": "White skin (farmer\u2019s tan)",
+    "bonds": "Family",
+    "flaws": null,
+    "ideals": null,
+    "personalityTraits": "Innocent, Ambitious, Curious, Hardy",
+    "size": "Medium"
+  },
+  "spells": {
+    "1": [
+      {
+        "name": "Hunter's Mark",
+        "level": 1,
+        "prepared": false,
+        "castingTime": "BA",
+        "range": {
+          "origin": "Ranged",
+          "rangeValue": 90,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Divination",
+        "source": "class",
+        "concentration": true,
+        "ritual": false,
+        "components": [
+          "V"
+        ],
+        "toHit": null,
+        "dc": null,
+        "effect": "Damage",
+        "duration": "1 Hour (Concentration)"
+      },
+      {
+        "name": "Disguise Self",
+        "level": 1,
+        "prepared": false,
+        "castingTime": "A",
+        "range": {
+          "origin": "Self",
+          "rangeValue": null,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Illusion",
+        "source": "class",
+        "concentration": false,
+        "ritual": false,
+        "components": [
+          "V",
+          "S"
+        ],
+        "toHit": null,
+        "dc": null,
+        "effect": "Shapechanging",
+        "duration": "1 Hour (Time)"
+      },
+      {
+        "name": "Ensnaring Strike",
+        "level": 1,
+        "prepared": false,
+        "castingTime": "BA",
+        "range": {
+          "origin": "Self",
+          "rangeValue": null,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Conjuration",
+        "source": "class",
+        "concentration": true,
+        "ritual": false,
+        "components": [
+          "V"
+        ],
+        "toHit": null,
+        "dc": 13,
+        "effect": "Damage",
+        "duration": "1 Minute (Concentration)"
+      },
+      {
+        "name": "Hail of Thorns",
+        "level": 1,
+        "prepared": false,
+        "castingTime": "BA",
+        "range": {
+          "origin": "Self",
+          "rangeValue": null,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Conjuration",
+        "source": "class",
+        "concentration": false,
+        "ritual": false,
+        "components": [
+          "V"
+        ],
+        "toHit": null,
+        "dc": 13,
+        "effect": "Damage",
+        "duration": " (Instantaneous)"
+      },
+      {
+        "name": "Snare",
+        "level": 1,
+        "prepared": false,
+        "castingTime": "m",
+        "range": {
+          "origin": "Touch",
+          "rangeValue": null,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Abjuration",
+        "source": "class",
+        "concentration": false,
+        "ritual": false,
+        "components": [
+          "S",
+          "M"
+        ],
+        "toHit": null,
+        "dc": 13,
+        "effect": "Control",
+        "duration": "8 Hour (Time)"
+      },
+      {
+        "name": "Beast Bond",
+        "level": 1,
+        "prepared": false,
+        "castingTime": "A",
+        "range": {
+          "origin": "Touch",
+          "rangeValue": null,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Divination",
+        "source": "class",
+        "concentration": true,
+        "ritual": false,
+        "components": [
+          "V",
+          "S",
+          "M"
+        ],
+        "toHit": null,
+        "dc": null,
+        "effect": "Communication",
+        "duration": "10 Minute (Concentration)"
+      }
+    ],
+    "2": [
+      {
+        "name": "Rope Trick",
+        "level": 2,
+        "prepared": false,
+        "castingTime": "A",
+        "range": {
+          "origin": "Touch",
+          "rangeValue": 0,
+          "aoeType": null,
+          "aoeValue": null
+        },
+        "school": "Transmutation",
+        "source": "class",
+        "concentration": false,
+        "ritual": false,
+        "components": [
+          "V",
+          "S",
+          "M"
+        ],
+        "toHit": null,
+        "dc": null,
+        "effect": "Utility",
+        "duration": "1 Hour (Time)"
+      },
+      {
+        "name": "Healing Spirit",
+        "level": 2,
+        "prepared": false,
+        "castingTime": "BA",
+        "range": {
+          "origin": "Ranged",
+          "rangeValue": 60,
+          "aoeType": "Cube",
+          "aoeValue": 5
+        },
+        "school": "Conjuration",
+        "source": "class",
+        "concentration": true,
+        "ritual": false,
+        "components": [
+          "V",
+          "S"
+        ],
+        "toHit": null,
+        "dc": null,
+        "effect": "Healing",
+        "duration": "1 Minute (Concentration)"
+      },
+      {
+        "name": "Pass without Trace",
+        "level": 2,
+        "prepared": false,
+        "castingTime": "A",
+        "range": {
+          "origin": "Self",
+          "rangeValue": 0,
+          "aoeType": "Emanation",
+          "aoeValue": 30
+        },
+        "school": "Abjuration",
+        "source": "class",
+        "concentration": true,
+        "ritual": false,
+        "components": [
+          "V",
+          "S",
+          "M"
+        ],
+        "toHit": null,
+        "dc": null,
+        "effect": "Buff",
+        "duration": "1 Hour (Concentration)"
+      }
+    ]
+  },
+  "updated_at": "2026-07-17T23:33:33.958Z"
+}

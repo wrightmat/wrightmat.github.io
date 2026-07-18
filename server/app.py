@@ -4,6 +4,7 @@ import http.server
 import json
 import logging
 import threading
+from datetime import datetime, timezone
 from http import HTTPStatus
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -254,13 +255,181 @@ def register_routes():
         if template.get("id") != template_id:
             return json_response({"error": "Template id mismatch"}, status=HTTPStatus.BAD_REQUEST)
         path = resolve_press_template_path(request.state, template_id)
-        if not path.exists():
-            return json_response({"error": "Template file not found"}, status=HTTPStatus.NOT_FOUND)
         serialized = json.dumps(template, indent=2, sort_keys=False)
         path.write_text(f"{serialized}\n", encoding="utf-8")
         return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
 
     router.add("POST", r"^/press/templates/(?P<id>[^/]+)$", handle_press_template_save)
+
+    # POST /press/custom-sizes
+    def resolve_press_custom_sizes_path(state: ServerState) -> Path:
+        return state.root_dir / "undercroft" / "press" / "data" / "custom-page-sizes.json"
+
+    def handle_press_custom_size_save(request: Request) -> Response:
+        payload = require_json(request)
+        size = payload.get("size", payload)
+        if not size or not isinstance(size, dict) or not size.get("id"):
+            return json_response({"error": "Invalid custom page size payload"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_press_custom_sizes_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        sizes = existing.get("sizes") if isinstance(existing.get("sizes"), list) else []
+        sizes = [entry for entry in sizes if entry.get("id") != size.get("id")]
+        sizes.append(size)
+        serialized = json.dumps({"sizes": sizes}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "sizes": sizes})
+
+    router.add("POST", r"^/press/custom-sizes$", handle_press_custom_size_save)
+
+    # POST /loom/mappings/{id}
+    def resolve_loom_mapping_path(state: ServerState, mapping_id: str) -> Path:
+        base_dir = state.root_dir / "undercroft" / "loom" / "mappings"
+        candidate = (base_dir / f"{mapping_id}.json").resolve()
+        if not str(candidate).startswith(str(base_dir.resolve())):
+            raise AuthError("Invalid mapping path")
+        return candidate
+
+    def handle_loom_mapping_save(request: Request) -> Response:
+        params = getattr(request, "params")
+        mapping_id = params["id"]
+        payload = require_json(request)
+        definition = payload.get("definition", payload)
+        if not definition or not isinstance(definition, dict):
+            return json_response({"error": "Invalid mapping payload"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_loom_mapping_path(request.state, mapping_id)
+        serialized = json.dumps(definition, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
+
+    router.add("POST", r"^/loom/mappings/(?P<id>[^/]+)$", handle_loom_mapping_save)
+
+    # POST /loom/mappings/{id}/rename
+    def handle_loom_mapping_rename(request: Request) -> Response:
+        params = getattr(request, "params")
+        mapping_id = params["id"]
+        payload = require_json(request)
+        new_id = str(payload.get("newId") or "").strip()
+        if not new_id:
+            return json_response({"error": "Missing newId"}, status=HTTPStatus.BAD_REQUEST)
+        old_path = resolve_loom_mapping_path(request.state, mapping_id)
+        new_path = resolve_loom_mapping_path(request.state, new_id)
+        if not old_path.exists():
+            return json_response({"error": "Mapping not found"}, status=HTTPStatus.NOT_FOUND)
+        if new_path.exists():
+            return json_response({"error": "A mapping with that id already exists"}, status=HTTPStatus.CONFLICT)
+        old_path.rename(new_path)
+        return json_response({"ok": True, "path": str(new_path.relative_to(request.state.root_dir))})
+
+    router.add("POST", r"^/loom/mappings/(?P<id>[^/]+)/rename$", handle_loom_mapping_rename)
+
+    # POST /library/{kind}/{id}
+    #
+    # Loom's per-entity save target: plain JSON files, one directory per kind,
+    # discoverable via the library-* static mounts in server.config.json (same
+    # pattern as press-templates/loom-mappings — no database bucket). Characters
+    # are included: saving one is an explicit archival snapshot, not something
+    # this endpoint conflates with live use — Press/Workbench keep fetching
+    # characters fresh via the live parser regardless of what's archived here.
+    LIBRARY_KINDS = {"class", "subclass", "background", "species", "variant", "character"}
+
+    def resolve_library_path(state: ServerState, kind: str, entry_id: str) -> Path:
+        if kind not in LIBRARY_KINDS:
+            raise AuthError(f"Unsupported library kind '{kind}'")
+        base_dir = state.root_dir / "undercroft" / "common" / "library" / kind
+        candidate = (base_dir / f"{entry_id}.json").resolve()
+        if not str(candidate).startswith(str(base_dir.resolve())):
+            raise AuthError("Invalid library path")
+        return candidate
+
+    def handle_library_save(request: Request) -> Response:
+        params = getattr(request, "params")
+        kind = params["kind"]
+        entry_id = params["id"]
+        payload = require_json(request)
+        data = payload.get("data", payload)
+        if not data or not isinstance(data, dict):
+            return json_response({"error": "Invalid library entry payload"}, status=HTTPStatus.BAD_REQUEST)
+        # updated_at reflects when this save happened, not anything from the
+        # source (D&D Beyond/5e API) — the mapping never sets it, so this is
+        # the one and only place it comes from, always overwritten on save.
+        now = datetime.now(timezone.utc)
+        data = dict(data)
+        data["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
+        path = resolve_library_path(request.state, kind, entry_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        serialized = json.dumps(data, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
+
+    router.add("POST", r"^/library/(?P<kind>[^/]+)/(?P<id>[^/]+)$", handle_library_save)
+
+    # GET /ddb-proxy?url=...
+    #
+    # Fetches a dndbeyond.com page server-side and attaches a session cookie
+    # read from a LOCAL, gitignored file (server/ddb-session.local.json) —
+    # never from the request, never from a third party. This exists because
+    # some D&D Beyond content (e.g. non-free subclasses) is only served in
+    # full to a logged-in session; routing that session cookie through a
+    # public third-party CORS proxy would hand full account access to that
+    # proxy, which this deliberately avoids by keeping the cookie server-side
+    # and talking directly to dndbeyond.com.
+    DDB_PROXY_ALLOWED_HOSTS = {"www.dndbeyond.com", "dndbeyond.com"}
+
+    def load_ddb_session_cookie(state: ServerState) -> str:
+        path = state.root_dir / "server" / "ddb-session.local.json"
+        if not path.exists():
+            return ""
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return ""
+        cookie = str(data.get("cookie") or "").strip()
+        if cookie and "=" not in cookie:
+            # Tolerate pasting just the cookie's value (as shown in DevTools'
+            # "Value" column) instead of a full name=value pair — a bare value
+            # is otherwise silently ignored by the Cookie header entirely.
+            cookie = f"CobaltSession={cookie}"
+        return cookie
+
+    def handle_ddb_proxy(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+        from urllib.parse import parse_qs, urlsplit
+
+        query = parse_qs(urlsplit(request.handler.path).query)
+        target = query.get("url", [""])[0]
+        if not target:
+            return json_response({"error": "Missing url parameter"}, status=HTTPStatus.BAD_REQUEST)
+        parsed_target = urlsplit(target)
+        if parsed_target.hostname not in DDB_PROXY_ALLOWED_HOSTS:
+            return json_response({"error": "Only dndbeyond.com URLs are allowed"}, status=HTTPStatus.BAD_REQUEST)
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        }
+        cookie = load_ddb_session_cookie(request.state)
+        if cookie:
+            headers["Cookie"] = cookie
+
+        proxy_request = urllib.request.Request(target, headers=headers, method="GET")
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
+                body = upstream.read()
+        except urllib.error.HTTPError as exc:
+            return json_response({"error": f"D&D Beyond fetch failed ({exc.code})"}, status=HTTPStatus.BAD_GATEWAY)
+        except urllib.error.URLError as exc:
+            return json_response({"error": f"D&D Beyond fetch failed ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+
+        return Response(status=200, body=body, headers={"Content-Type": "text/html; charset=utf-8"})
+
+    router.add("GET", r"^/ddb-proxy$", handle_ddb_proxy)
 
     # GET /content/owned
     def handle_owned_content(request: Request) -> Response:

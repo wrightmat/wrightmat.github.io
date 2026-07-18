@@ -1,0 +1,193 @@
+{
+  "kind": "class",
+  "index": "barbarian",
+  "name": "Barbarian",
+  "primary_ability": {
+    "desc": "Strength",
+    "ability_scores": [
+      {
+        "index": "str",
+        "name": "STR"
+      }
+    ]
+  },
+  "hit_die": 12,
+  "proficiency_choices": [
+    {
+      "desc": "Choose 2: Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival",
+      "choose": 2,
+      "type": "proficiencies",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-animal-handling",
+              "name": "Skill: Animal Handling"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-athletics",
+              "name": "Skill: Athletics"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-intimidation",
+              "name": "Skill: Intimidation"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-nature",
+              "name": "Skill: Nature"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-perception",
+              "name": "Skill: Perception"
+            }
+          },
+          {
+            "option_type": "reference",
+            "item": {
+              "index": "skill-survival",
+              "name": "Skill: Survival"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "proficiencies": [
+    {
+      "index": "light-armor",
+      "name": "Light Armor"
+    },
+    {
+      "index": "medium-armor",
+      "name": "Medium Armor"
+    },
+    {
+      "index": "shields",
+      "name": "Shields"
+    },
+    {
+      "index": "simple-weapons",
+      "name": "Simple Weapons"
+    },
+    {
+      "index": "martial-weapons",
+      "name": "Martial Weapons"
+    },
+    {
+      "index": "saving-throw-str",
+      "name": "Saving Throw: STR"
+    },
+    {
+      "index": "saving-throw-con",
+      "name": "Saving Throw: CON"
+    }
+  ],
+  "saving_throws": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "con",
+      "name": "CON"
+    }
+  ],
+  "starting_equipment_options": [
+    {
+      "desc": "(A) Greataxe, 4 Handaxes, Explorer\u2019s Pack, and 15 GP or (B) 75 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "greataxe",
+                  "name": "Greataxe"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 4,
+                "of": {
+                  "index": "handaxe",
+                  "name": "Handaxe"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "explorer-s-pack",
+                  "name": "Explorer\u2019s Pack"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 15,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 75,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "subclasses": [
+    {
+      "index": "path-of-the-berserker",
+      "name": "Path of the Berserker",
+      "url": "https://www.dndbeyond.com/classes/2190875-barbarian"
+    },
+    {
+      "index": "path-of-the-wild-heart",
+      "name": "Path of the Wild Heart",
+      "url": "https://www.dndbeyond.com/classes/2190875-barbarian"
+    },
+    {
+      "index": "path-of-the-world-tree",
+      "name": "Path of the World Tree",
+      "url": "https://www.dndbeyond.com/classes/2190875-barbarian"
+    },
+    {
+      "index": "path-of-the-zealot",
+      "name": "Path of the Zealot",
+      "url": "https://www.dndbeyond.com/classes/2190875-barbarian"
+    }
+  ],
+  "url": "https://www.dndbeyond.com/classes/2190875-barbarian",
+  "coreTraits": {
+    "primaryAbility": "Strength",
+    "hitPointDie": "D12 per Barbarian level",
+    "savingThrowProficiencies": "Strength and Constitution",
+    "skillProficiencies": "Choose 2: Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival",
+    "weaponProficiencies": "Simple and Martial weapons",
+    "armorTraining": "Light and Medium armor and Shields",
+    "startingEquipment": "Choose A or B: (A) Greataxe, 4 Handaxes, Explorer\u2019s Pack, and 15 GP; or (B) 75 GP"
+  },
+  "updated_at": "2026-07-17T22:31:34.692Z"
+}

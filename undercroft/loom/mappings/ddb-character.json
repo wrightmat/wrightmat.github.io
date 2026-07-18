@@ -1,0 +1,154 @@
+{
+  "type": "object",
+  "$source": "ddb",
+  "fields": {
+    "kind": { "type": "field", "bind": "='character'" },
+    "name": { "type": "field", "bind": "@name" },
+    "identity": {
+      "type": "object",
+      "fields": {
+        "id": { "type": "field", "bind": "@id" },
+        "userId": { "type": "field", "bind": "@userId" },
+        "username": { "type": "field", "bind": "@username" },
+        "name": { "type": "field", "bind": "@name" },
+        "level": { "type": "custom", "fn": "totalLevel" },
+        "classes": {
+          "type": "pipeline",
+          "source": "@classes",
+          "steps": [
+            {
+              "step": "map",
+              "item": {
+                "type": "object",
+                "fields": {
+                  "name": { "type": "field", "bind": "@definition.name" },
+                  "level": { "type": "field", "bind": "@level" },
+                  "subclass": { "type": "field", "bind": "@subclassDefinition.name" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "proficiency": { "type": "custom", "fn": "proficiencyBonus" },
+    "conditions": {
+      "type": "pipeline",
+      "source": "@conditions",
+      "steps": [
+        { "step": "map", "item": { "type": "field", "bind": "=lookup('conditions', @value)" } },
+        { "step": "filter", "bind": "=@value" }
+      ]
+    },
+    "abilities": { "type": "custom", "fn": "abilitiesTable" },
+    "saves": { "type": "custom", "fn": "savingThrowsTable" },
+    "skills": { "type": "custom", "fn": "skillsTable" },
+    "currencies": {
+      "type": "object",
+      "fields": {
+        "cp": { "type": "field", "bind": "@currencies.cp" },
+        "sp": { "type": "field", "bind": "@currencies.sp" },
+        "ep": { "type": "field", "bind": "@currencies.ep" },
+        "gp": { "type": "field", "bind": "@currencies.gp" },
+        "pp": { "type": "field", "bind": "@currencies.pp" }
+      }
+    },
+    "background": {
+      "type": "object",
+      "fields": {
+        "name": { "type": "field", "bind": "@background.definition.name" },
+        "description": { "type": "field", "bind": "@background.definition.description" },
+        "feature": { "type": "field", "bind": "@background.definition.featureName" },
+        "characteristics": { "type": "field", "bind": "@background.personalityTraits" }
+      }
+    },
+    "deathSaves": {
+      "type": "object",
+      "fields": {
+        "successes": { "type": "field", "bind": "@deathSaves.successCount" },
+        "failures": { "type": "field", "bind": "@deathSaves.failCount" },
+        "stabilized": { "type": "field", "bind": "=@deathSaves.isStabilized ? true : false" }
+      }
+    },
+    "notes": {
+      "type": "object",
+      "fields": {
+        "allies": { "type": "field", "bind": "@notes.allies" },
+        "backstory": { "type": "field", "bind": "@notes.backstory" },
+        "enemies": { "type": "field", "bind": "@notes.enemies" },
+        "organizations": { "type": "field", "bind": "@notes.organizations" }
+      }
+    },
+    "traits": {
+      "type": "object",
+      "fields": {
+        "age": { "type": "field", "bind": "@age" },
+        "eyes": { "type": "field", "bind": "@eyes" },
+        "hair": { "type": "field", "bind": "@hair" },
+        "skin": { "type": "field", "bind": "@skin" },
+        "height": { "type": "field", "bind": "@height" },
+        "weight": { "type": "field", "bind": "@weight" },
+        "faith": { "type": "field", "bind": "@faith" },
+        "appearance": { "type": "field", "bind": "@traits.appearance" },
+        "bonds": { "type": "field", "bind": "@traits.bonds" },
+        "flaws": { "type": "field", "bind": "@traits.flaws" },
+        "ideals": { "type": "field", "bind": "@traits.ideals" },
+        "personalityTraits": { "type": "field", "bind": "@traits.personalityTraits" },
+        "size": { "type": "custom", "fn": "determineSize" }
+      }
+    },
+    "spells": {
+      "type": "with",
+      "bindings": {
+        "spellAbilityMod": { "type": "custom", "fn": "spellAbilityMod" },
+        "spellSaveDc": { "type": "custom", "fn": "spellSaveDc" },
+        "spellToHitBonus": { "type": "custom", "fn": "spellToHitBonus" }
+      },
+      "body": {
+        "type": "pipeline",
+        "source": { "fn": "collectRawSpells" },
+        "steps": [
+          {
+            "step": "map",
+            "item": {
+              "type": "with",
+              "bindings": {
+                "durationText": {
+                  "type": "field",
+                  "bind": "=@spell.definition.duration ? ((@spell.definition.duration.durationInterval || '') + ' ' + (@spell.definition.duration.durationUnit || '')).trim() + (@spell.definition.duration.durationType ? (' (' + @spell.definition.duration.durationType + ')') : '') : ''"
+                }
+              },
+              "body": {
+                "type": "object",
+                "fields": {
+                  "name": { "type": "field", "bind": "@spell.definition.name" },
+                  "level": { "type": "field", "bind": "@spell.definition.level" },
+                  "prepared": { "type": "field", "bind": "=@spell.prepared ? true : false" },
+                  "castingTime": { "type": "field", "bind": "=lookup('activations', @spell.definition.activation.activationType || 0)" },
+                  "range": { "type": "field", "bind": "=@spell.definition.range || ''" },
+                  "school": { "type": "field", "bind": "@spell.definition.school" },
+                  "source": { "type": "field", "bind": "@source" },
+                  "concentration": { "type": "field", "bind": "=@spell.definition.concentration ? true : false" },
+                  "ritual": { "type": "field", "bind": "=@spell.definition.ritual ? true : false" },
+                  "components": {
+                    "type": "pipeline",
+                    "source": "@spell.definition.components",
+                    "steps": [
+                      { "step": "map", "item": { "type": "field", "bind": "=lookup('components', @value)" } }
+                    ]
+                  },
+                  "toHit": { "type": "field", "bind": "=@spell.definition.requiresAttackRoll ? @spellToHitBonus : null" },
+                  "dc": { "type": "field", "bind": "=@spell.definition.requiresSavingThrow ? @spellSaveDc : null" },
+                  "effect": { "type": "field", "bind": "=@spell.definition.tags.0 ? @spell.definition.tags.0 : null" },
+                  "duration": { "type": "field", "bind": "=@durationText ? @durationText : null" }
+                }
+              }
+            }
+          },
+          { "step": "dedup", "bind": "@name" },
+          { "step": "group-by", "bind": "@level" }
+        ]
+      }
+    }
+  }
+}

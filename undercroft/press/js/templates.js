@@ -1,6 +1,6 @@
 import { renderLayout } from "./template-renderer.js";
 import { getSampleData } from "./sample-data.js";
-import { resolveBinding } from "./bindings.js";
+import { resolveBinding } from "../../common/js/lib/bindings.js";
 
 const MILLIMETERS_PER_INCH = 25.4;
 const pageSizes = {};
@@ -81,6 +81,37 @@ async function loadJson(url) {
   return response.json();
 }
 
+export function registerCustomPageSize({ id, label, width, height, margin, orientations } = {}) {
+  if (!id || !(width > 0) || !(height > 0) || pageSizes[id]) return null;
+  registerPageSize({ id, label: label || id, width, height, margin, orientations });
+  return pageSizes[id];
+}
+
+export async function loadCustomPageSizes() {
+  try {
+    const url = new URL("../data/custom-page-sizes.json", import.meta.url);
+    const payload = await loadJson(url);
+    const sizes = Array.isArray(payload?.sizes) ? payload.sizes : [];
+    sizes.forEach((size) => registerCustomPageSize(size));
+    return sizes;
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function saveCustomPageSize(size) {
+  const response = await fetch("/press/custom-sizes", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ size }),
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error || "Unable to save custom page size.");
+  }
+  return response.json();
+}
+
 function resolveTemplateData(template, data) {
   if (data && typeof data === "object") {
     return data;
@@ -125,30 +156,88 @@ function createPageWrapper(template, side, { size, format, source }) {
   return { page, inner, resolvedSize };
 }
 
-function getRepeatData(template, pageConfig, data) {
+// A back side can set `repeat: "same"` to reuse the front side's own repeat
+// binding against the same data, guaranteeing front[i]/back[i] stay index-aligned
+// (the same physical card, two sides) instead of independently repeating over
+// whatever array each side happens to name.
+export function getRepeatData(template, pageConfig, data) {
   if (!pageConfig) return [];
-  if (pageConfig.repeat) {
-    const bound = resolveBinding(pageConfig.repeat, data);
-    if (Array.isArray(bound)) return bound;
+  const repeat = pageConfig.repeat === "same" ? template?.pages?.front?.repeat : pageConfig.repeat;
+  if (repeat) {
+    const bound = resolveBinding(repeat, data);
+    if (Array.isArray(bound) && bound.length) return bound;
     if (bound && typeof bound === "object") return [bound];
-    if (pageConfig.repeat === "@") return [data];
+    if (repeat === "@") return [data];
   }
-  if (Array.isArray(data)) {
+  if (Array.isArray(data) && data.length) {
     return data;
   }
-  if (Array.isArray(data?.cards)) {
+  if (Array.isArray(data?.cards) && data.cards.length) {
     return data.cards;
+  }
+  // The named repeat path (e.g. "@features") doesn't exist on this data — rather
+  // than render nothing (and leave the preview with no editable root at all),
+  // fall back to treating the whole object as a single card so at least whatever
+  // basic fields (e.g. @name) do exist still show up.
+  if (data && typeof data === "object") {
+    return [data];
   }
   return [];
 }
 
+// Bleed can only extend into the gutter (shared with a neighboring card) or the
+// page margin (at the sheet's outer edge) — never both, and never past whichever
+// is smaller, so adjacent cards' bleed can't overwrite each other and the sheet's
+// bleed can't run off the physical page.
+export function computeBleedInsets(bleed, { row, col, rows, columns, gutter = 0, margin = 0 }) {
+  const raw = Number(bleed) || 0;
+  if (raw <= 0) return { top: 0, right: 0, bottom: 0, left: 0 };
+  const interior = gutter / 2;
+  const limit = (isEdge) => Math.max(0, Math.min(raw, isEdge ? margin : interior));
+  return {
+    top: limit(row === 0),
+    bottom: limit(row === rows - 1),
+    left: limit(col === 0),
+    right: limit(col === columns - 1),
+  };
+}
+
+function applyBackground(element, background) {
+  if (!background) return;
+  if (background.color) {
+    element.style.backgroundColor = background.color;
+  }
+  if (background.image) {
+    element.style.backgroundImage = `url("${background.image}")`;
+    element.style.backgroundSize = "cover";
+    element.style.backgroundPosition = "center";
+  }
+}
+
+function createBleedLayer(background, insets, { circle = false } = {}) {
+  const layer = document.createElement("div");
+  layer.className = circle ? "card-bleed-layer card-bleed-layer--circle" : "card-bleed-layer";
+  layer.style.position = "absolute";
+  layer.style.top = `-${insets.top}in`;
+  layer.style.right = `-${insets.right}in`;
+  layer.style.bottom = `-${insets.bottom}in`;
+  layer.style.left = `-${insets.left}in`;
+  applyBackground(layer, background);
+  return layer;
+}
+
+function hasBleed(insets) {
+  return insets.top > 0 || insets.right > 0 || insets.bottom > 0 || insets.left > 0;
+}
+
 function renderCardGrid(template, side, context) {
-  const { page, inner } = createPageWrapper(template, side, context);
+  const { page, inner, resolvedSize } = createPageWrapper(template, side, context);
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const templateData = resolveTemplateData(template, context.data);
   const data = getRepeatData(template, pageConfig, templateData);
   const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
-  const { width, height, gutter = 0, safeInset = 0, columns = 1, rows = 1 } = template.card ?? {};
+  const { width, height, gutter = 0, safeInset = 0, bleed = 0, background, columns = 1, rows = 1 } = template.card ?? {};
+  const margin = resolvedSize.margin ?? 0;
   const grid = document.createElement("div");
   grid.className = "card-grid";
   grid.style.gridTemplateColumns = `repeat(${columns}, ${width}in)`;
@@ -162,15 +251,25 @@ function renderCardGrid(template, side, context) {
 
   const cards = data.slice(0, columns * rows);
   cards.forEach((card, index) => {
+    const row = Math.floor(index / columns);
+    const col = index % columns;
+    const insets = computeBleedInsets(bleed, { row, col, rows, columns, gutter, margin });
     const tile = document.createElement("article");
     tile.className = "card-tile";
-    tile.style.padding = `${safeInset}in`;
+    applyBackground(tile, background);
+    if (hasBleed(insets)) {
+      tile.appendChild(createBleedLayer(background, insets));
+    }
+    const contentWrapper = document.createElement("div");
+    contentWrapper.className = "card-tile-content";
+    contentWrapper.style.padding = `${safeInset}in`;
     const layout = pageConfig.layout ?? null;
     const options = index === 0 && typeof onRootReady === "function"
       ? { ...renderOptions, onRootReady }
       : renderOptions;
     const content = layout ? renderLayout(layout, card, options) : document.createTextNode(card?.title ?? "Card");
-    tile.append(content);
+    contentWrapper.append(content);
+    tile.append(contentWrapper);
     grid.appendChild(tile);
   });
 
@@ -179,13 +278,14 @@ function renderCardGrid(template, side, context) {
 }
 
 function renderChipGrid(template, side, context) {
-  const { page, inner } = createPageWrapper(template, side, context);
+  const { page, inner, resolvedSize } = createPageWrapper(template, side, context);
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const templateData = resolveTemplateData(template, context.data);
   const data = getRepeatData(template, pageConfig, templateData);
   const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
-  const { width = 1, height = 1, gutter = 0, safeInset = 0, columns = 1, rows = 1 } = template.card ?? {};
+  const { width = 1, height = 1, gutter = 0, safeInset = 0, bleed = 0, background, columns = 1, rows = 1 } = template.card ?? {};
   const diameter = width || height || 1;
+  const margin = resolvedSize.margin ?? 0;
   const grid = document.createElement("div");
   grid.className = "chip-grid";
   grid.style.gridTemplateColumns = `repeat(${columns}, ${diameter}in)`;
@@ -205,13 +305,20 @@ function renderChipGrid(template, side, context) {
 
   const chips = data.slice(0, columns * rows);
   chips.forEach((chip, index) => {
+    const row = Math.floor(index / columns);
+    const col = index % columns;
+    const insets = computeBleedInsets(bleed, { row, col, rows, columns, gutter, margin });
     const tile = document.createElement("article");
     tile.className = "chip-tile";
+    if (hasBleed(insets)) {
+      tile.appendChild(createBleedLayer(background, insets, { circle: true }));
+    }
     const circle = document.createElement("div");
     circle.className = "chip-circle";
     circle.style.width = `${diameter}in`;
     circle.style.height = `${diameter}in`;
     circle.style.padding = `${safeInset}in`;
+    applyBackground(circle, background);
     const layout = pageConfig.layout ?? null;
     const options = index === 0 && typeof onRootReady === "function"
       ? { ...renderOptions, onRootReady }
@@ -319,6 +426,24 @@ function resolveLayoutBindings(node, context) {
   return resolved;
 }
 
+// Collects the root data-scope keys a template's sides expect (its `repeat`/`data`
+// bindings, e.g. "@features"/"@attacks") so they can be checked against whatever
+// data was actually loaded, without needing to resolve every per-field binding
+// inside a repeated item's own (different) context.
+export function collectTemplateBindingPaths(template) {
+  const paths = new Set();
+  const pages = template?.pages ?? {};
+  Object.values(pages).forEach((pageConfig) => {
+    if (!pageConfig) return;
+    [pageConfig.repeat, pageConfig.data].forEach((binding) => {
+      if (typeof binding !== "string" || !binding.startsWith("@") || binding === "@") return;
+      const match = binding.slice(1).match(/^[A-Za-z0-9_]+/);
+      if (match) paths.add(match[0]);
+    });
+  });
+  return paths;
+}
+
 function normalizeTemplate(raw) {
   const template = {
     ...raw,
@@ -383,11 +508,50 @@ export function buildTemplatePreview(template, data) {
   };
 }
 
+function templateNameFromFile(file) {
+  return file.replace(/^\.\//, "").replace(/\.json$/, "");
+}
+
+// Prefers server-side directory listing (so templates saved via the /press/templates
+// endpoint are discovered without hand-editing index.json), falling back to the
+// static manifest for non-server hosting. When both are available, the manifest's
+// order is kept for files it already lists (so the default/first template doesn't
+// change), and newly discovered files are appended after it.
+async function listTemplateFiles(manifestUrl) {
+  let discovered = null;
+  try {
+    const response = await fetch("/list/press-templates");
+    if (response.ok) {
+      const payload = await response.json();
+      const names = new Set(
+        (payload.files || [])
+          .map((entry) => entry.filename)
+          .filter((name) => Boolean(name) && name !== "index"),
+      );
+      if (names.size) {
+        discovered = names;
+      }
+    }
+  } catch (error) {
+    // No shared server available — fall back to the static manifest below.
+  }
+
+  const manifest = await loadJson(manifestUrl).catch(() => ({ templates: [] }));
+  const manifestFiles = manifest.templates || [];
+  if (!discovered) {
+    return manifestFiles;
+  }
+
+  const manifestNames = new Set(manifestFiles.map(templateNameFromFile));
+  const ordered = manifestFiles.filter((file) => discovered.has(templateNameFromFile(file)));
+  const extra = [...discovered].filter((name) => !manifestNames.has(name)).sort();
+  return [...ordered, ...extra.map((name) => `./${name}.json`)];
+}
+
 export async function loadTemplates() {
   if (templates.length) return templates;
   const manifestUrl = new URL("../templates/index.json", import.meta.url);
-  const manifest = await loadJson(manifestUrl);
-  const files = manifest.templates || [];
+  const files = await listTemplateFiles(manifestUrl);
   const loaded = await Promise.all(files.map((file) => loadJson(new URL(file, manifestUrl))));
   templates = loaded.map(normalizeTemplate);
   return templates;

@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "$source": "srd",
+  "fields": {
+    "kind": { "type": "field", "bind": "='species'" },
+    "name": { "type": "field", "bind": "@name" },
+    "description": { "type": "field", "bind": "@size_description" },
+    "traits": { "type": "field", "bind": "@traits" },
+    "variants": {
+      "type": "pipeline",
+      "source": "@subraces",
+      "steps": [
+        {
+          "step": "map",
+          "item": {
+            "type": "object",
+            "fields": {
+              "name": { "type": "field", "bind": "@name" },
+              "source": { "type": "field", "bind": "='5e API'" },
+              "description": { "type": "field", "bind": "@desc" },
+              "features": {
+                "type": "pipeline",
+                "source": "@features",
+                "steps": [
+                  {
+                    "step": "map",
+                    "item": {
+                      "type": "object",
+                      "fields": {
+                        "name": { "type": "field", "bind": "@name" },
+                        "description": { "type": "field", "bind": "@desc" }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

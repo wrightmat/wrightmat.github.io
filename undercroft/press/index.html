@@ -395,6 +395,23 @@
                   multiple
                   data-template-formats
                 ></select>
+                <div class="row g-2 align-items-end" data-custom-size-form>
+                  <div class="col-4">
+                    <label class="form-label small text-body-secondary" for="customSizeLabel">Custom size label</label>
+                    <input class="form-control form-control-sm" id="customSizeLabel" type="text" placeholder="Postcard" data-custom-size-label />
+                  </div>
+                  <div class="col-3">
+                    <label class="form-label small text-body-secondary" for="customSizeWidth">Width (in)</label>
+                    <input class="form-control form-control-sm" id="customSizeWidth" type="number" min="0" step="0.01" data-custom-size-width />
+                  </div>
+                  <div class="col-3">
+                    <label class="form-label small text-body-secondary" for="customSizeHeight">Height (in)</label>
+                    <input class="form-control form-control-sm" id="customSizeHeight" type="number" min="0" step="0.01" data-custom-size-height />
+                  </div>
+                  <div class="col-2">
+                    <button class="btn btn-outline-secondary btn-sm w-100" type="button" data-custom-size-add>Add</button>
+                  </div>
+                </div>
               </div>
               <div class="d-flex flex-column gap-2">
                 <label class="form-label small text-body-secondary fw-semibold" for="templateSources">Supported sources</label>
@@ -522,6 +539,17 @@
                         min="0"
                         step="0.01"
                         data-template-card-safe-inset
+                      />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardBleed">Bleed (in)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="templateCardBleed"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-template-card-bleed
                       />
                     </div>
                     <div class="col-6">
@@ -1049,7 +1077,7 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <script src="../common/ddb-parser.js"></script>
+    <script src="../common/ddb-content-parser.js"></script>
     <script type="module" src="js/app.js"></script>
   </body>
 </html>

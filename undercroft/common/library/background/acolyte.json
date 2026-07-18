@@ -1,0 +1,120 @@
+{
+  "kind": "background",
+  "index": "acolyte",
+  "name": "Acolyte",
+  "url": "https://www.dndbeyond.com/backgrounds/406475-acolyte",
+  "ability_scores": [
+    {
+      "index": "int",
+      "name": "INT"
+    },
+    {
+      "index": "wis",
+      "name": "WIS"
+    },
+    {
+      "index": "cha",
+      "name": "CHA"
+    }
+  ],
+  "feat": {
+    "index": "magic-initiate",
+    "name": "Magic Initiate",
+    "note": "Cleric"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-insight",
+      "name": "Skill: Insight"
+    },
+    {
+      "index": "skill-religion",
+      "name": "Skill: Religion"
+    },
+    {
+      "index": "tool-calligraphers-supplies",
+      "name": "Tool: Calligrapher's Supplies"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "calligraphers-supplies",
+                  "name": "Calligrapher's Supplies"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "book",
+                  "name": "Book",
+                  "note": "Prayers"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "holy-symbol",
+                  "name": "Holy Symbol"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 10,
+                "of": {
+                  "index": "parchment",
+                  "name": "Parchment"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "robe",
+                  "name": "Robe"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 8,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You devoted yourself to service in a temple, either nestled in a town or secluded in a sacred grove. There you performed rites in honor of a god or pantheon. You served under a priest and studied religion. Thanks to your priest\u2019s instruction and your own devotion, you also learned how to channel a modicum of divine power in service to your place of worship and the people who prayed there."
+  ],
+  "source": "Player\u2019s Handbook, pg. 178",
+  "traits": {
+    "abilityScores": "Intelligence, Wisdom, Charisma",
+    "feat": "Magic Initiate (Cleric)",
+    "skillProficiencies": "Insight and Religion",
+    "toolProficiencies": "Calligrapher's Supplies",
+    "equipment": "Choose A or B: (A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-17T23:06:04.767Z"
+}

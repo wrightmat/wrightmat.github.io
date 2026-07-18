@@ -1,4 +1,4 @@
-import { resolveBinding } from "./bindings.js";
+import { resolveBinding } from "../../common/js/lib/bindings.js";
 
 const GAP_UNIT_REM = 0.25;
 const TEXT_SIZE_MAP = {
@@ -334,17 +334,35 @@ function applyTextColor(element, styles = {}) {
 }
 
 function renderField(node, context, options = {}) {
-  const value = resolveBinding(node.text ?? node.value ?? node.bind, context);
+  const bindingExpr = node.text ?? node.value ?? node.bind;
+  const resolved = resolveBinding(bindingExpr, context);
+  // A real "@path"/"=formula" binding that has nothing to resolve against
+  // (no data loaded, or this field is genuinely blank in the loaded data)
+  // falls back to showing the binding expression itself rather than nothing
+  // — an empty text node has no height, which collapses any stack relying on
+  // it for sizing, making the template unbuildable/uneditable without data
+  // loaded. Plain static text (not a binding at all) is unaffected: for that,
+  // resolveBinding already just returns the literal string unchanged.
+  const isEmptyBindingResult =
+    (resolved === undefined || resolved === null || resolved === "") &&
+    typeof bindingExpr === "string" &&
+    bindingExpr.trim().length > 0;
+  const value = isEmptyBindingResult ? bindingExpr : resolved;
   switch (node.component) {
     case "text": {
       const tag = node.textStyle ?? "p";
       const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
       if (useCurved) {
-        return createCurvedTextElement(node, value ?? "", resolveClassName(node, context) ?? "mb-0");
+        const el = createCurvedTextElement(node, value ?? "", resolveClassName(node, context) ?? "mb-0");
+        if (isEmptyBindingResult) applyClassName(el, "press-binding-placeholder");
+        return el;
       }
       const el = createTextElement(tag, value ?? "", resolveClassName(node, context) ?? "mb-0");
       if (node.muted) {
         applyClassName(el, "text-body-secondary");
+      }
+      if (isEmptyBindingResult) {
+        applyClassName(el, "press-binding-placeholder");
       }
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
@@ -354,17 +372,22 @@ function renderField(node, context, options = {}) {
     case "badge": {
       const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
       if (useCurved) {
-        return createCurvedTextElement(
+        const el = createCurvedTextElement(
           node,
           value ?? node.label ?? "Badge",
           resolveClassName(node, context) ?? "badge text-bg-primary",
         );
+        if (isEmptyBindingResult) applyClassName(el, "press-binding-placeholder");
+        return el;
       }
       const el = createTextElement(
         "span",
         value ?? node.label ?? "Badge",
         resolveClassName(node, context) ?? "badge text-bg-primary",
       );
+      if (isEmptyBindingResult) {
+        applyClassName(el, "press-binding-placeholder");
+      }
       applyInlineStyles(el, node.style);
       applyTextFormatting(el, node);
       applyTextTransform(el, node);
@@ -442,6 +465,9 @@ function renderField(node, context, options = {}) {
       const labelValue = resolveBinding(node.label, context) ?? node.label ?? "";
       const label = createTextElement("p", labelValue, "card-meta mb-0");
       const val = createTextElement("p", value ?? "—", "mb-0 fw-semibold");
+      if (isEmptyBindingResult) {
+        applyClassName(val, "press-binding-placeholder");
+      }
       applyInlineStyles(wrapper, node.style);
       applyTextColor(label, node.style);
       applyTextColor(val, node.style);

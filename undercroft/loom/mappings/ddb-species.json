@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "$source": "ddb",
+  "fields": {
+    "kind": { "type": "field", "bind": "@kind" },
+    "name": { "type": "field", "bind": "@name" },
+    "url": { "type": "field", "bind": "@url" },
+    "description": { "type": "field", "bind": "@descLines" },
+    "type": { "type": "field", "bind": "@coreTraits.creatureType" },
+    "size": { "type": "field", "bind": "@coreTraits.size" },
+    "speed": { "type": "custom", "fn": "ddbSpeciesSpeed" },
+    "traits": {
+      "type": "pipeline",
+      "source": "@namedTraits",
+      "steps": [
+        {
+          "step": "map",
+          "item": {
+            "type": "object",
+            "fields": {
+              "name": { "type": "field", "bind": "@name" },
+              "description": { "type": "custom", "fn": "joinLines" }
+            }
+          }
+        }
+      ]
+    },
+    "variants": {
+      "type": "pipeline",
+      "source": "@variants",
+      "steps": [
+        {
+          "step": "map",
+          "item": {
+            "type": "object",
+            "fields": {
+              "name": { "type": "field", "bind": "@name" },
+              "url": { "type": "field", "bind": "@root.url" },
+              "source": { "type": "field", "bind": "@source" },
+              "description": { "type": "field", "bind": "@descLines" },
+              "features": {
+                "type": "pipeline",
+                "source": "@features",
+                "steps": [
+                  {
+                    "step": "map",
+                    "item": {
+                      "type": "object",
+                      "fields": {
+                        "name": { "type": "field", "bind": "@name" },
+                        "level": { "type": "field", "bind": "@level" },
+                        "description": { "type": "field", "bind": "@descLines" }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

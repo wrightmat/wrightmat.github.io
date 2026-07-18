@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Loom — character mapping validation</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; background: #111; color: #eee; }
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1rem; margin-top: 2rem; }
+  .row { display: flex; gap: 1rem; }
+  .col { flex: 1; min-width: 0; }
+  pre { background: #1a1a1a; padding: 0.75rem; overflow: auto; max-height: 70vh; font-size: 0.8rem; }
+  table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+  th, td { border: 1px solid #333; padding: 0.35rem 0.5rem; text-align: left; font-size: 0.85rem; vertical-align: top; }
+  th { background: #222; }
+  .match { color: #7fd67f; }
+  .mismatch { color: #ff8080; font-weight: bold; }
+  .note { color: #999; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+  <h1>Loom Phase 1 — ddbParseCharacter vs applyMapping(ddb-character.json)</h1>
+  <p class="note">Compares the hand-written parser against the declarative mapping engine on the same raw sample. Fields/sections not yet ported to the mapping definition are intentionally excluded, not silently wrong — see the report table.</p>
+  <div id="report"></div>
+  <h2>Raw ddbParseCharacter() output</h2>
+  <pre id="legacyOutput"></pre>
+  <h2>Raw applyMapping() output</h2>
+  <pre id="mappingOutput"></pre>
+
+  <script src="../../common/ddb-parser.js"></script>
+  <script type="module" src="character-mapping-diff.js"></script>
+</body>
+</html>

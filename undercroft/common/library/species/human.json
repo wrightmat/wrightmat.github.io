@@ -1,0 +1,28 @@
+{
+  "kind": "species",
+  "name": "Human",
+  "url": "https://www.dndbeyond.com/species/1751441-human",
+  "description": [
+    "Found throughout the multiverse, humans are as varied as they are numerous, and they endeavor to achieve as much as they can in the years they are given. Their ambition and resourcefulness are commended, respected, and feared on many worlds.",
+    "Humans are as diverse in appearance as the people of Earth, and they have many gods. Scholars dispute the origin of humanity, but one of the earliest known human gatherings is said to have occurred in Sigil, the torus-shaped city at the center of the multiverse and the place where the Common language was born. From there, humans could have spread to every part of the multiverse, bringing the City of Doors\u2019 cosmopolitanism with them."
+  ],
+  "type": "Humanoid",
+  "size": "Medium (about 4\u20137 feet tall) or Small (about 2\u20134 feet tall), chosen when you select this species",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Resourceful",
+      "description": "You gain Heroic Inspiration whenever you finish a Long Rest."
+    },
+    {
+      "name": "Skillful",
+      "description": "You gain proficiency in one skill of your choice."
+    },
+    {
+      "name": "Versatile",
+      "description": "You gain an Origin feat of your choice."
+    }
+  ],
+  "variants": [],
+  "updated_at": "2026-07-17T22:51:20.794Z"
+}

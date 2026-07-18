@@ -1,0 +1,194 @@
+{
+  "id": "srd-monster-card",
+  "title": "5e API Monster Card",
+  "description": "Single stat-block card populated directly from a 5e API monster lookup (raw response fields).",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    },
+    {
+      "id": "a4",
+      "label": "A4",
+      "sizeId": "a4",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "supportedSources": [
+    "srd"
+  ],
+  "card": {
+    "width": 5,
+    "height": 7,
+    "gutter": 0,
+    "safeInset": 0.15,
+    "bleed": 0.125,
+    "columns": 1,
+    "rows": 1
+  },
+  "pages": {
+    "front": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": {
+              "bold": true
+            }
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              {
+                "node": {
+                  "type": "field",
+                  "component": "text",
+                  "text": "@size",
+                  "className": "card-meta"
+                }
+              },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "text",
+                  "text": "@type",
+                  "className": "card-meta"
+                }
+              },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "text",
+                  "text": "@alignment",
+                  "className": "card-meta text-end"
+                }
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "@armor_class.0.value",
+                  "label": "AC"
+                }
+              },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "@hit_points",
+                  "label": "HP"
+                }
+              },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "@challenge_rating",
+                  "label": "CR"
+                }
+              }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@speed.walk",
+            "className": "card-meta"
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "Special Abilities",
+            "className": "card-footer"
+          },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@special_abilities",
+            "className": "card-body-text",
+            "columns": [
+              { "header": "Ability", "bind": "@name", "width": "30%" },
+              { "header": "Description", "bind": "@desc", "width": "70%" }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "Actions",
+            "className": "card-footer"
+          },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@actions",
+            "className": "card-body-text",
+            "columns": [
+              { "header": "Action", "bind": "@name", "width": "30%" },
+              { "header": "Description", "bind": "@desc", "width": "70%" }
+            ]
+          }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": {
+              "bold": true
+            }
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "Legendary Actions",
+            "className": "card-footer"
+          },
+          {
+            "type": "field",
+            "component": "table",
+            "rowsBind": "@legendary_actions",
+            "className": "card-body-text",
+            "columns": [
+              { "header": "Action", "bind": "@name", "width": "30%" },
+              { "header": "Description", "bind": "@desc", "width": "70%" }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

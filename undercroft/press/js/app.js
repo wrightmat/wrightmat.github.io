@@ -16,11 +16,17 @@ import {
   getTemplates,
   buildTemplatePreview,
   loadTemplates,
+  computeBleedInsets,
+  collectTemplateBindingPaths,
+  loadCustomPageSizes,
+  registerCustomPageSize,
+  saveCustomPageSize,
+  getRepeatData,
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
-import { loadSourceData } from "./source-data.js";
+import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
-import { resolveBinding } from "./bindings.js";
+import { resolveBinding } from "../../common/js/lib/bindings.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
 import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
 import { collectDataFields } from "../../common/js/lib/data-fields.js";
@@ -56,12 +62,17 @@ const templateNameInput = document.querySelector("[data-template-name]");
 const templateDescriptionInput = document.querySelector("[data-template-description]");
 const templateTypeSelect = document.querySelector("[data-template-type]");
 const templateFormatsSelect = document.querySelector("[data-template-formats]");
+const customSizeLabelInput = document.querySelector("[data-custom-size-label]");
+const customSizeWidthInput = document.querySelector("[data-custom-size-width]");
+const customSizeHeightInput = document.querySelector("[data-custom-size-height]");
+const customSizeAddButton = document.querySelector("[data-custom-size-add]");
 const templateSourcesSelect = document.querySelector("[data-template-sources]");
 const templateCardGroup = document.querySelector("[data-template-card-group]");
 const templateCardWidthInput = document.querySelector("[data-template-card-width]");
 const templateCardHeightInput = document.querySelector("[data-template-card-height]");
 const templateCardGutterInput = document.querySelector("[data-template-card-gutter]");
 const templateCardSafeInsetInput = document.querySelector("[data-template-card-safe-inset]");
+const templateCardBleedInput = document.querySelector("[data-template-card-bleed]");
 const templateCardColumnsInput = document.querySelector("[data-template-card-columns]");
 const templateCardRowsInput = document.querySelector("[data-template-card-rows]");
 const templateFrontDataInput = document.querySelector("[data-template-front-data]");
@@ -448,8 +459,13 @@ function mergeRequiredClassTokens(node, value) {
   return Array.from(new Set(combined)).join(" ");
 }
 
-const standardFormats = getStandardFormats();
-const standardFormatMap = new Map(standardFormats.map((format) => [format.id, format]));
+let standardFormats = getStandardFormats();
+let standardFormatMap = new Map(standardFormats.map((format) => [format.id, format]));
+
+function refreshStandardFormats() {
+  standardFormats = getStandardFormats();
+  standardFormatMap = new Map(standardFormats.map((format) => [format.id, format]));
+}
 
 function initShell() {
   const { undoStack: stack, undo, redo, status: shellStatus } = initAppShell({
@@ -1303,6 +1319,7 @@ function setCardInputsDisabled(isDisabled) {
     templateCardHeightInput,
     templateCardGutterInput,
     templateCardSafeInsetInput,
+    templateCardBleedInput,
     templateCardColumnsInput,
     templateCardRowsInput,
   ].forEach((input) => {
@@ -1350,6 +1367,7 @@ function updateTemplateInspector(template) {
     if (templateCardHeightInput) templateCardHeightInput.value = card.height ?? "";
     if (templateCardGutterInput) templateCardGutterInput.value = card.gutter ?? "";
     if (templateCardSafeInsetInput) templateCardSafeInsetInput.value = card.safeInset ?? "";
+    if (templateCardBleedInput) templateCardBleedInput.value = card.bleed ?? "";
     if (templateCardColumnsInput) templateCardColumnsInput.value = card.columns ?? "";
     if (templateCardRowsInput) templateCardRowsInput.value = card.rows ?? "";
   } else {
@@ -1357,6 +1375,7 @@ function updateTemplateInspector(template) {
     if (templateCardHeightInput) templateCardHeightInput.value = "";
     if (templateCardGutterInput) templateCardGutterInput.value = "";
     if (templateCardSafeInsetInput) templateCardSafeInsetInput.value = "";
+    if (templateCardBleedInput) templateCardBleedInput.value = "";
     if (templateCardColumnsInput) templateCardColumnsInput.value = "";
     if (templateCardRowsInput) templateCardRowsInput.value = "";
   }
@@ -1469,6 +1488,42 @@ function bindTemplateInspectorControls() {
     });
   }
 
+  if (customSizeAddButton) {
+    customSizeAddButton.addEventListener("click", async () => {
+      const label = (customSizeLabelInput?.value || "").trim();
+      const width = parseFloat(customSizeWidthInput?.value);
+      const height = parseFloat(customSizeHeightInput?.value);
+      if (!label || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+        if (status) {
+          status.show("Enter a label, width, and height for the custom size.", { type: "warning", timeout: 3000 });
+        }
+        return;
+      }
+      const id = `custom-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}-${Date.now().toString(36)}`;
+      const size = { id, label, width, height };
+      registerCustomPageSize(size);
+      refreshStandardFormats();
+      renderTemplateFormatOptions();
+      const template = getActiveTemplate();
+      if (template) {
+        setTemplateFormatSelections(template);
+      }
+      if (customSizeLabelInput) customSizeLabelInput.value = "";
+      if (customSizeWidthInput) customSizeWidthInput.value = "";
+      if (customSizeHeightInput) customSizeHeightInput.value = "";
+      try {
+        await saveCustomPageSize(size);
+        if (status) {
+          status.show(`Added custom size "${label}".`, { type: "success", timeout: 2000 });
+        }
+      } catch (error) {
+        if (status) {
+          status.show(error.message || "Unable to save custom page size.", { type: "error", timeout: 4000 });
+        }
+      }
+    });
+  }
+
   if (templateSourcesSelect) {
     templateSourcesSelect.addEventListener("change", () => {
       const template = getActiveTemplate();
@@ -1487,6 +1542,7 @@ function bindTemplateInspectorControls() {
     { input: templateCardHeightInput, key: "height", parse: parseFloat },
     { input: templateCardGutterInput, key: "gutter", parse: parseFloat },
     { input: templateCardSafeInsetInput, key: "safeInset", parse: parseFloat },
+    { input: templateCardBleedInput, key: "bleed", parse: parseFloat },
     { input: templateCardColumnsInput, key: "columns", parse: (value) => parseInt(value, 10) },
     { input: templateCardRowsInput, key: "rows", parse: (value) => parseInt(value, 10) },
   ];
@@ -3091,6 +3147,32 @@ function applyOverlays(page, template, size, { forPrint = false } = {}) {
     });
 
     page.appendChild(guides);
+
+    if (!forPrint && card.bleed) {
+      const bleedGuides = document.createElement("div");
+      bleedGuides.className = "page-overlay bleed-lines card-guides";
+      for (let row = 0; row < rows; row += 1) {
+        for (let col = 0; col < columns; col += 1) {
+          const insets = computeBleedInsets(card.bleed, {
+            row,
+            col,
+            rows,
+            columns,
+            gutter: card.gutter ?? 0,
+            margin: size.margin ?? 0,
+          });
+          if (!insets.top && !insets.right && !insets.bottom && !insets.left) continue;
+          const box = document.createElement("div");
+          box.className = template.type === "chip" ? "guide-bleed-box guide-bleed-box--circle" : "guide-bleed-box";
+          box.style.left = `${horizontalInset + col * (cellWidth + card.gutter) - insets.left}in`;
+          box.style.top = `${verticalInset + row * (cellHeight + card.gutter) - insets.top}in`;
+          box.style.width = `${cellWidth + insets.left + insets.right}in`;
+          box.style.height = `${cellHeight + insets.top + insets.bottom}in`;
+          bleedGuides.appendChild(box);
+        }
+      }
+      page.appendChild(bleedGuides);
+    }
   }
 
   if (!forPrint) {
@@ -3201,6 +3283,12 @@ function renderSourceInput(source) {
     initHelpSystem({ root: labelRow });
   }
 
+  if (inputSpec.type === "library") {
+    sourceInputContainer.append(labelRow);
+    renderLibrarySourceInput(source, labelRow);
+    return;
+  }
+
   let input;
   if (inputSpec.type === "textarea") {
     input = document.createElement("textarea");
@@ -3238,6 +3326,106 @@ function renderSourceInput(source) {
   sourceInputContainer.append(labelRow, input);
 }
 
+// "species" is already plural (singular and plural are the same word); the
+// rest just need "es" after s/x/z/ch/sh ("class" -> "classes") vs. a plain
+// "s" otherwise ("variant" -> "variants").
+function pluralizeKind(kind) {
+  if (kind === "species") return "species";
+  if (/(s|x|z|ch|sh)$/i.test(kind)) return `${kind}es`;
+  return `${kind}s`;
+}
+
+// Kind + item selects instead of free text — the whole point is not having
+// to remember directory/file names. Selecting "All" fetches every saved
+// entry of that kind as one array, matching how a 5e API list endpoint
+// (e.g. /api/2024/classes) already expands into one card per entry.
+async function renderLibrarySourceInput(source, labelRow) {
+  const wrap = document.createElement("div");
+  wrap.className = "d-flex flex-row gap-2";
+
+  const kindSelect = document.createElement("select");
+  kindSelect.className = "form-select flex-fill";
+  kindSelect.id = `${source.id}-input`;
+  LIBRARY_KINDS.forEach((kind) => {
+    const option = document.createElement("option");
+    option.value = kind;
+    option.textContent = kind.charAt(0).toUpperCase() + kind.slice(1);
+    kindSelect.appendChild(option);
+  });
+
+  const itemSelect = document.createElement("select");
+  itemSelect.className = "form-select flex-fill";
+
+  const [savedKind, savedId] = String(sourceValues[source.id] || "").split("/");
+  if (savedKind && LIBRARY_KINDS.includes(savedKind)) {
+    kindSelect.value = savedKind;
+  }
+
+  function commitValue() {
+    sourceValues[source.id] = `${kindSelect.value}/${itemSelect.value}`;
+    clearSourcePayload(source);
+    updateGenerateButtonState();
+    renderPreview();
+  }
+
+  async function populateItems() {
+    itemSelect.innerHTML = "";
+    let names = [];
+    try {
+      const response = await fetch(`/list/library-${kindSelect.value}`);
+      if (response.ok) {
+        const payload = await response.json();
+        names = (payload.files || []).map((entry) => entry.filename).filter(Boolean).sort();
+      }
+    } catch (error) {
+      // Leave names empty — the "All (0)" option below makes the empty
+      // result visible rather than silently offering nothing.
+    }
+    const allOption = document.createElement("option");
+    allOption.value = "*";
+    allOption.textContent = `All ${pluralizeKind(kindSelect.value)} (${names.length})`;
+    itemSelect.appendChild(allOption);
+    names.forEach((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      itemSelect.appendChild(option);
+    });
+    itemSelect.value = names.includes(savedId) ? savedId : "*";
+    commitValue();
+  }
+
+  kindSelect.addEventListener("change", populateItems);
+  itemSelect.addEventListener("change", commitValue);
+
+  wrap.append(kindSelect, itemSelect);
+  sourceInputContainer.appendChild(wrap);
+  await populateItems();
+}
+
+function describeBindingMismatch(template, data) {
+  const bindingPaths = collectTemplateBindingPaths(template);
+  if (bindingPaths.size) {
+    const dataFieldPaths = new Set(collectDataFields(data).map((field) => field.path));
+    const unresolved = [...bindingPaths].filter((path) => !dataFieldPaths.has(path));
+    if (unresolved.length && unresolved.length / bindingPaths.size >= 0.5) {
+      return `Loaded data doesn't match this template's bindings (missing: ${unresolved.join(", ")}) — the preview may render blank.`;
+    }
+  }
+  if (template?.type === "card" || template?.type === "chip") {
+    const frontRepeat = template.pages?.front?.repeat;
+    const backRepeat = template.pages?.back?.repeat;
+    if (typeof frontRepeat === "string" && typeof backRepeat === "string" && backRepeat !== "same" && frontRepeat !== backRepeat) {
+      const frontCount = getRepeatData(template, template.pages.front, data).length;
+      const backCount = getRepeatData(template, template.pages.back, data).length;
+      if (frontCount && backCount && frontCount !== backCount) {
+        return `Front has ${frontCount} card${frontCount === 1 ? "" : "s"}, back has ${backCount} — fronts and backs won't line up 1:1.`;
+      }
+    }
+  }
+  return null;
+}
+
 async function handleGeneratePrint() {
   const context = getSelectionContext();
   const { source, sourceValue } = context;
@@ -3272,8 +3460,13 @@ async function handleGeneratePrint() {
     if (applySelectionCollapse) {
       applySelectionCollapse(true);
     }
+    const mismatchWarning = describeBindingMismatch(context.template, data);
     if (status) {
-      status.show("Source data loaded for printing.", { type: "success", timeout: 2000 });
+      if (mismatchWarning) {
+        status.show(mismatchWarning, { type: "warning", timeout: 5000 });
+      } else {
+        status.show("Source data loaded for printing.", { type: "success", timeout: 2000 });
+      }
     }
   } catch (error) {
     console.error("Unable to generate print data", error);
@@ -4206,7 +4399,10 @@ function wireEvents() {
   if (generateButton) {
     generateButton.addEventListener("click", handleGeneratePrint);
   }
-  printButton.addEventListener("click", () => window.print());
+  printButton.addEventListener("click", () => {
+    window.bootstrap?.Tooltip?.getInstance(printButton)?.hide();
+    window.print();
+  });
 }
 
 async function initPress() {
@@ -4222,6 +4418,9 @@ async function initPress() {
     console.error("Unable to load templates", error);
     return;
   }
+
+  await loadCustomPageSizes();
+  refreshStandardFormats();
 
   populateSources();
   renderTemplateSourceOptions();

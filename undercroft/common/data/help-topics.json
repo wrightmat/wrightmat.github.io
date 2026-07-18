@@ -220,6 +220,41 @@
       "href": "../press/index.html#press-selection"
     },
     {
+      "id": "press.source.library",
+      "title": "Library Entries",
+      "summary": "Pick a kind and item saved locally by Loom, instead of typing a URL or endpoint.",
+      "details": [
+        "Kind lists the entity kinds Loom saves (class, subclass, background, species, variant, character).",
+        "Item lists every saved entry of that kind, or \"All\" to load every entry at once as a list — one card per entry, the same way a 5e API list endpoint expands.",
+        "These files live under undercroft/common/library/ and are only populated once you've saved something from Loom's Entities pane."
+      ],
+      "category": "Press",
+      "href": "../press/index.html#press-selection"
+    },
+    {
+      "id": "loom.source.ddb",
+      "title": "D&D Beyond ID or URL",
+      "summary": "A bare number or character sheet URL fetches a live character; a classes/backgrounds/species page URL fetches that content instead.",
+      "details": [
+        "A plain number (or a character sheet URL) fetches the live character from D&D Beyond's character API.",
+        "A classes/backgrounds/species page URL (e.g. https://www.dndbeyond.com/classes/2190875-barbarian) scrapes that content page instead.",
+        "Character fetches are always previewable but never saved to the library — they're live/mutable and always re-fetched fresh."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
+      "id": "loom.source.srd",
+      "title": "5e API Endpoint or URL",
+      "summary": "An endpoint path or full URL; a list endpoint fetches every item in the list.",
+      "details": [
+        "Paste an endpoint path (e.g. /api/2024/classes/barbarian) or a full URL.",
+        "A list endpoint (e.g. /api/2024/classes) recursively fetches every linked item's full detail as one array."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
       "id": "press.templates",
       "title": "Template & Size Pairing",
       "summary": "Template choices drive supported sizes and orientations, which auto-refresh when the template changes.",
