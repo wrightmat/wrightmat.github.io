@@ -136,5 +136,10 @@
         ]
       }
     }
-  }
+  },
+  "name": "Notecard (5 \u00d7 7)",
+  "sides": [
+    "front",
+    "back"
+  ]
 }

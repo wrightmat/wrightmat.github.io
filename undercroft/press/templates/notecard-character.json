@@ -1073,8 +1073,8 @@
             ],
             "cells": [
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1084,9 +1084,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1096,9 +1096,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1108,9 +1108,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1120,9 +1120,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1132,11 +1132,11 @@
                       "fontSize": 6.666666666666666
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1146,9 +1146,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1158,9 +1158,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1170,9 +1170,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1182,9 +1182,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1194,11 +1194,11 @@
                       "fontSize": 6.666666666666666
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1208,9 +1208,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1220,9 +1220,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1232,9 +1232,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1244,9 +1244,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1256,11 +1256,11 @@
                       "fontSize": 6.666666666666666
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1270,9 +1270,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1282,9 +1282,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1294,9 +1294,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1306,9 +1306,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1318,11 +1318,11 @@
                       "fontSize": 6.666666666666666
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1332,9 +1332,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1344,9 +1344,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1356,9 +1356,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1368,9 +1368,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1380,11 +1380,11 @@
                       "fontSize": 6.666666666666666
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1394,9 +1394,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1406,9 +1406,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1418,9 +1418,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1430,9 +1430,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1442,11 +1442,11 @@
                       "fontSize": 6.666666666666666
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1456,9 +1456,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1468,9 +1468,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1480,9 +1480,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1492,9 +1492,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1504,11 +1504,11 @@
                       "fontSize": 10
                     }
                   }
-                ]
+                }
               ],
               [
-                [
-                  {
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@name",
@@ -1518,9 +1518,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@attackBonus",
@@ -1530,9 +1530,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@damage",
@@ -1542,9 +1542,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@range",
@@ -1554,9 +1554,9 @@
                       "fontSize": 10
                     }
                   }
-                ],
-                [
-                  {
+                },
+                {
+                  "0": {
                     "type": "field",
                     "component": "text",
                     "text": "@notes",
@@ -1566,7 +1566,7 @@
                       "fontSize": 10
                     }
                   }
-                ]
+                }
               ]
             ]
           },
@@ -1661,8 +1661,8 @@
                 ],
                 "cells": [
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -1672,9 +1672,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -1684,9 +1684,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -1696,9 +1696,9 @@
                           "fontSize": 8.666666666666666
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -1708,9 +1708,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -1720,9 +1720,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -1732,11 +1732,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -1746,9 +1746,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -1758,9 +1758,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -1770,9 +1770,9 @@
                           "fontSize": 8.666666666666666
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -1782,9 +1782,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -1794,9 +1794,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -1806,11 +1806,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -1820,9 +1820,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -1832,9 +1832,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -1844,9 +1844,9 @@
                           "fontSize": 8.666666666666666
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -1856,9 +1856,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -1868,9 +1868,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -1880,11 +1880,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -1894,9 +1894,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -1906,9 +1906,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -1918,9 +1918,9 @@
                           "fontSize": 8.666666666666666
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -1930,9 +1930,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -1942,9 +1942,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -1954,11 +1954,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -1968,9 +1968,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -1980,9 +1980,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -1992,9 +1992,9 @@
                           "fontSize": 8.666666666666666
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -2004,9 +2004,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -2016,9 +2016,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -2028,11 +2028,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -2042,9 +2042,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -2054,9 +2054,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -2066,9 +2066,9 @@
                           "fontSize": 8.666666666666666
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -2078,9 +2078,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -2090,9 +2090,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -2102,7 +2102,7 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ]
                 ]
               },
@@ -2165,8 +2165,8 @@
                 ],
                 "cells": [
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -2176,9 +2176,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -2188,9 +2188,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -2200,9 +2200,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -2212,9 +2212,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -2224,9 +2224,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -2236,11 +2236,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -2250,9 +2250,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -2262,9 +2262,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -2274,9 +2274,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -2286,9 +2286,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -2298,9 +2298,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -2310,11 +2310,11 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ],
                   [
-                    [
-                      {
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@name",
@@ -2324,9 +2324,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@toHit",
@@ -2336,9 +2336,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@effect",
@@ -2348,9 +2348,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@castingTime",
@@ -2360,9 +2360,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@range",
@@ -2372,9 +2372,9 @@
                           "fontSize": 10
                         }
                       }
-                    ],
-                    [
-                      {
+                    },
+                    {
+                      "0": {
                         "type": "field",
                         "component": "text",
                         "text": "@duration",
@@ -2384,7 +2384,7 @@
                           "fontSize": 6.666666666666666
                         }
                       }
-                    ]
+                    }
                   ]
                 ]
               },

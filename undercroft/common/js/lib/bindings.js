@@ -1,4 +1,4 @@
-import { evaluateFormula } from "../../common/js/lib/formula-engine.js";
+import { evaluateFormula } from "./formula-engine.js";
 
 const SIMPLE_BINDING_PATTERN = /^@[A-Za-z0-9_.]+$/;
 const FORMULA_HINT_PATTERN = /[+*/<>=!?&|()-]|\bif\s*\(/;
@@ -60,7 +60,10 @@ function shouldEvaluateFormula(value) {
   return FORMULA_HINT_PATTERN.test(trimmed);
 }
 
-export function resolveBinding(binding, context) {
+// `formulaOptions` is passed straight through to evaluateFormula's `options`
+// (e.g. `{ functions: { lookup } }`) — optional and additive, existing two-arg
+// callers are unaffected.
+export function resolveBinding(binding, context, formulaOptions) {
   if (typeof binding !== "string") {
     return binding;
   }
@@ -79,9 +82,9 @@ export function resolveBinding(binding, context) {
   };
   if (shouldEvaluateFormula(trimmed)) {
     try {
-      return evaluateFormula(trimmed, context ?? {});
+      return evaluateFormula(trimmed, context ?? {}, formulaOptions);
     } catch (error) {
-      console.warn("Press bindings: unable to evaluate formula", error);
+      console.warn("bindings: unable to evaluate formula", error);
       if (trimmed.startsWith("@")) {
         return resolvePath(trimmed);
       }

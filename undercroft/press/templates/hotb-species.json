@@ -1,0 +1,82 @@
+{
+  "id": "hotb-species",
+  "title": "HotB Species (Tarot)",
+  "name": "HotB Species (Tarot)",
+  "description": "",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "Letter",
+      "sizeId": "letter",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "supportedSources": [
+    "ddb",
+    "srd",
+    "library",
+    "json",
+    "manual"
+  ],
+  "sides": [
+    "front",
+    "back"
+  ],
+  "pages": {
+    "front": {
+      "data": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "stack",
+            "gap": 4,
+            "align": "justify",
+            "children": [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@name",
+                "textSize": "lg",
+                "textStyles": {
+                  "bold": true
+                },
+                "className": "card-title",
+                "label": "@name"
+              },
+              {
+                "type": "field",
+                "component": "text",
+                "text": "Stack body text",
+                "textSize": "md",
+                "className": "mb-0"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "back": {
+      "data": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": []
+      }
+    }
+  },
+  "card": {
+    "width": 2.75,
+    "height": 4.75,
+    "gutter": 0,
+    "safeInset": 0.125,
+    "columns": 2,
+    "rows": 2
+  }
+}

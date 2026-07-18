@@ -99,3 +99,6 @@ Epic 5 – UX Refinement, Validation, and Documentation
   - How Sizes and Orientation affect output.
   - How to adjust components and styling.
   - How to achieve reliable double-sided printing.
+
+Backlog
+- Per-format card/layout overrides: every template currently shares one `card` geometry (width/height/columns/rows) across every format it declares support for (`resolvePageSize`/`getPageSize` in `js/templates.js`). This works today because the shipped templates' card sizes fit comfortably within every format they support, but it isn't enforced — a template author could declare an incompatible Format/Size combination and get overflow or a badly-centered grid with no warning. Fixing this generally means turning `template.formats` into `(format, cardOverride)` pairs and making page-size resolution and the Grid Properties inspector format-aware. Deferred until a real template needs it.

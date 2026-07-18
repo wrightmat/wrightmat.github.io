@@ -7565,6 +7565,71 @@
     }
   },
   {
+    "index": "cindermaw-1196",
+    "name": "Cindermaw",
+    "group": {
+      "index": "forgotten-realms",
+      "name": "Forgotten Realms",
+      "subgroupDefinition": ""
+    },
+    "ac": {
+      "value": 13,
+      "description": ""
+    },
+    "alignment": {
+      "name": "NE",
+      "description": "Neutral Evil"
+    },
+    "classes": [
+      {
+        "definition": {
+          "name": "Cindermaw"
+        },
+        "subclassDefinition": {
+          "name": ""
+        }
+      }
+    ],
+    "decorations": {
+      "avatarUrl": "https://www.dndbeyond.com/avatars/thumbnails/30833/688/1000/1000/638063870454021777.png"
+    },
+    "hp": {
+      "value": 68,
+      "hitDieSize": "8d10 + 24"
+    },
+    "level": 0,
+    "race": {
+      "fullName": "Nightmare",
+      "baseName": "",
+      "weightSpeeds": {
+        "normal": {
+          "walk": 60,
+          "fly": 90,
+          "burrow": 0,
+          "swim": 0,
+          "climb": 0
+        }
+      }
+    },
+    "stats": [
+      { "id": 1, "name": "STR", "value": 18, "mod": 4, "str": "+4" },
+      { "id": 2, "name": "DEX", "value": 15, "mod": 2, "str": "+2" },
+      { "id": 3, "name": "CON", "value": 16, "mod": 3, "str": "+3" },
+      { "id": 4, "name": "INT", "value": 10, "mod": 0, "str": "+0" },
+      { "id": 5, "name": "WIS", "value": 13, "mod": 1, "str": "+1" },
+      { "id": 6, "name": "CHA", "value": 15, "mod": 2, "str": "+2" }
+    ],
+    "notes": {
+      "backstory": "A denizen of the first level of Avernus, calmed and captured by Octavian's party.<br /><br /><b>Confer Fire Resistance.</b> The nightmare can grant resistance to fire damage to anyone riding it.<br /><br /><b>Illumination.</b> The nightmare sheds bright light in a 10-foot radius and dim light for an additional 10 feet.<br /><br /><b><u>Actions</u></b><br /><b>Hooves.</b> Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) bludgeoning damage plus 7 (2d6) fire damage.<br /><br /><b>Ethereal Stride (1/day).</b> The nightmare and up to three willing creatures within 5 feet of it magically enter the Ethereal Plane from the Material Plane, or vice versa."
+    },
+    "tags": [ "NPC", "Mount" ],
+    "traits": {
+      "ageGroup": "Adult",
+      "gender": "Male",
+      "genderPronouns": [ "he", "him" ]
+    }
+  },
+  {
     "index": "malakar-draksang-001",
     "name": "Malakar Draksang",
     "group": {

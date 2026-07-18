@@ -1,0 +1,89 @@
+/* Loom-specific styling builds on the shared Workbench shell. */
+
+.loom-node {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.4rem;
+  background: var(--bs-body-bg);
+  cursor: pointer;
+  transition: outline 120ms ease, box-shadow 120ms ease;
+}
+
+/* Hover is JS-driven (see js/app.js's delegated mouseover listener), not
+   CSS :hover — plain :hover matches every ancestor of the hovered element
+   too, which made nested nodes flicker/highlight the wrong box. The JS
+   listener uses event.target (the actual topmost element under the cursor)
+   to toggle this class on exactly one element at a time. */
+.loom-hovered {
+  outline: 1px dashed rgba(13, 110, 253, 0.6);
+}
+
+.loom-node--selected {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.loom-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.loom-node-type {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+}
+
+.loom-node-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.loom-node-remove {
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+}
+
+.loom-node-children,
+.loom-node-steps {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--bs-border-color);
+  min-height: 0.5rem;
+}
+
+.loom-step {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.3rem;
+  background: var(--bs-tertiary-bg);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.loom-step--selected {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 1px;
+}
+
+.loom-empty-hint {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+  font-style: italic;
+}
+
+pre[data-raw-preview],
+pre[data-mapped-preview] {
+  max-height: 40vh;
+  overflow: auto;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

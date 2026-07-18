@@ -1,0 +1,6 @@
+{
+  "_comment": "Copy this file to ddb-session.local.json (same folder, keep this one as-is) and fill in 'cookie'. That filename is gitignored — never commit your actual session cookie.",
+  "_warning": "This cookie grants full access to your D&D Beyond account, not just read access to rules content. Treat it like a password: keep it on this machine only, never paste it into a third-party site/tool/proxy, and expect to replace it periodically as it expires or rotates.",
+  "_how_to_get_it": "In your browser, sign in to dndbeyond.com, open DevTools > Application (Chrome/Edge) or Storage (Firefox) > Cookies > https://www.dndbeyond.com, find the row named CobaltSession, and copy its Value column. The 'cookie' field below needs the full name=value pair, e.g. \"CobaltSession=eyJhbGciOi...\" — NOT just the value by itself (the server will try to fix a bare value for you, but a name=value pair is the reliable format).",
+  "cookie": ""
+}

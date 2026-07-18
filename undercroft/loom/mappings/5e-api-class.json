@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "$source": "srd",
+  "fields": {
+    "kind": { "type": "field", "bind": "='class'" },
+    "index": { "type": "field", "bind": "@index" },
+    "name": { "type": "field", "bind": "@name" },
+    "primary_ability": { "type": "field", "bind": "@primary_ability" },
+    "hit_die": { "type": "field", "bind": "@hit_die" },
+    "proficiency_choices": { "type": "field", "bind": "@proficiency_choices" },
+    "proficiencies": { "type": "field", "bind": "@proficiencies" },
+    "saving_throws": { "type": "field", "bind": "@saving_throws" },
+    "starting_equipment_options": { "type": "field", "bind": "@starting_equipment_options" },
+    "subclasses": { "type": "field", "bind": "@subclasses" },
+    "url": { "type": "field", "bind": "@url" }
+  }
+}

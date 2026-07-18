@@ -28,6 +28,7 @@
   "supportedSources": [
     "ddb",
     "srd",
+    "library",
     "json",
     "manual"
   ],
@@ -36,6 +37,7 @@
     "height": 3.5,
     "gutter": 0,
     "safeInset": 0.125,
+    "bleed": 0.125,
     "columns": 3,
     "rows": 3
   },
@@ -146,5 +148,10 @@
         ]
       }
     }
-  }
+  },
+  "name": "Poker Card Grid (3 \u00d7 3)",
+  "sides": [
+    "front",
+    "back"
+  ]
 }

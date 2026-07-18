@@ -69,6 +69,62 @@
       "root": "codex/templates",
       "directory_listing": true,
       "directory_extensions": [".htm", ".html"]
+    },
+    {
+      "name": "press-templates",
+      "type": "static",
+      "root": "undercroft/press/templates",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "loom-mappings",
+      "type": "static",
+      "root": "undercroft/loom/mappings",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "library-class",
+      "type": "static",
+      "root": "undercroft/common/library/class",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "library-subclass",
+      "type": "static",
+      "root": "undercroft/common/library/subclass",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "library-background",
+      "type": "static",
+      "root": "undercroft/common/library/background",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "library-species",
+      "type": "static",
+      "root": "undercroft/common/library/species",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "library-variant",
+      "type": "static",
+      "root": "undercroft/common/library/variant",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    },
+    {
+      "name": "library-character",
+      "type": "static",
+      "root": "undercroft/common/library/character",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
     }
   ]
 }

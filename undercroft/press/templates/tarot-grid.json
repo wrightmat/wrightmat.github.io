@@ -146,5 +146,10 @@
         ]
       }
     }
-  }
+  },
+  "name": "Tarot Card Grid (2 \u00d7 2)",
+  "sides": [
+    "front",
+    "back"
+  ]
 }

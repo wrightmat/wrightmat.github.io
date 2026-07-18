@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "$source": "srd",
+  "fields": {
+    "kind": { "type": "field", "bind": "='subclass'" },
+    "index": { "type": "field", "bind": "@index" },
+    "url": { "type": "field", "bind": "@url" },
+    "name": { "type": "field", "bind": "@name" },
+    "class": { "type": "field", "bind": "@class" },
+    "summary": { "type": "field", "bind": "@summary" },
+    "description": { "type": "field", "bind": "@description" },
+    "features": { "type": "field", "bind": "@features" }
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "id": 123456789,
+  "userId": 987654321,
+  "username": "test-user",
+  "name": "Sample Fighter-Wizard",
+  "age": 29,
+  "eyes": "Green",
+  "hair": "Black",
+  "skin": "Tan",
+  "height": "5'10\"",
+  "weight": 165,
+  "faith": "",
+  "alignmentId": 3,
+  "inspiration": false,
+  "stats": [
+    { "id": 1, "value": 14 },
+    { "id": 2, "value": 16 },
+    { "id": 3, "value": 13 },
+    { "id": 4, "value": 18 },
+    { "id": 5, "value": 10 },
+    { "id": 6, "value": 8 }
+  ],
+  "bonusStats": [
+    { "id": 1, "value": null },
+    { "id": 2, "value": null },
+    { "id": 3, "value": null },
+    { "id": 4, "value": null },
+    { "id": 5, "value": null },
+    { "id": 6, "value": null }
+  ],
+  "overrideStats": [
+    { "id": 1, "value": null },
+    { "id": 2, "value": null },
+    { "id": 3, "value": null },
+    { "id": 4, "value": null },
+    { "id": 5, "value": null },
+    { "id": 6, "value": null }
+  ],
+  "modifiers": {
+    "class": [
+      { "id": "m1", "type": "proficiency", "subType": "constitution-saving-throws", "value": 1 },
+      { "id": "m2", "type": "proficiency", "subType": "intelligence-saving-throws", "value": 1 },
+      { "id": "m3", "type": "proficiency", "subType": "arcana", "value": 1 },
+      { "id": "m4", "type": "proficiency", "subType": "perception", "value": 1 },
+      { "id": "m5", "type": "proficiency", "subType": "light-armor", "value": 1 },
+      { "id": "m6", "type": "proficiency", "subType": "simple-weapons", "value": 1 }
+    ],
+    "race": [],
+    "background": [],
+    "item": [],
+    "feat": [],
+    "condition": []
+  },
+  "classes": [
+    {
+      "definition": { "name": "Fighter", "hitDice": 10, "canCastSpells": false },
+      "level": 3,
+      "isStartingClass": true,
+      "subclassDefinition": { "name": "Champion" },
+      "classFeatures": []
+    },
+    {
+      "definition": { "name": "Wizard", "hitDice": 6, "canCastSpells": true, "spellCastingAbilityId": 4 },
+      "level": 2,
+      "isStartingClass": false,
+      "subclassDefinition": { "name": "" },
+      "classFeatures": []
+    }
+  ],
+  "race": {
+    "fullName": "Human",
+    "sizeId": 4,
+    "racialTraits": [],
+    "weightSpeeds": { "normal": { "walk": 30, "fly": 0, "burrow": 0, "swim": 0, "climb": 0 } }
+  },
+  "inventory": [],
+  "background": {
+    "definition": {
+      "name": "Soldier",
+      "description": "You had a military career before adventuring.",
+      "featureName": "Military Rank"
+    },
+    "personalityTraits": ["I face problems head-on.", "I would die before dishonoring myself."]
+  },
+  "feats": [],
+  "actions": {},
+  "currencies": { "cp": 5, "sp": 12, "ep": 0, "gp": 43, "pp": 0 },
+  "conditions": [3, 9],
+  "deathSaves": { "successCount": 0, "failCount": 0, "isStabilized": false },
+  "notes": {
+    "allies": "The Order of the Gauntlet",
+    "backstory": "Raised on the frontier, trained in the legion.",
+    "enemies": "The Red Hand mercenaries",
+    "organizations": "The Order of the Gauntlet",
+    "personalPossessions": "",
+    "otherHoldings": "",
+    "otherNotes": ""
+  },
+  "traits": {
+    "appearance": "Weathered and scarred",
+    "bonds": "My squad is my family.",
+    "flaws": "I have little patience for weakness.",
+    "ideals": "Discipline above all.",
+    "personalityTraits": "I face problems head-on."
+  },
+  "baseHitPoints": 30,
+  "bonusHitPoints": 0,
+  "overrideHitPoints": null,
+  "removedHitPoints": 0,
+  "temporaryHitPoints": 0,
+  "spells": {
+    "class": [
+      {
+        "prepared": true,
+        "definition": {
+          "name": "Fire Bolt",
+          "level": 0,
+          "school": "Evocation",
+          "components": [1, 2],
+          "concentration": false,
+          "ritual": false,
+          "requiresAttackRoll": true,
+          "requiresSavingThrow": false,
+          "range": "120 feet",
+          "duration": {},
+          "tags": ["Damage"]
+        }
+      },
+      {
+        "prepared": true,
+        "definition": {
+          "name": "Mage Armor",
+          "level": 1,
+          "school": "Abjuration",
+          "components": [1, 2, 3],
+          "concentration": false,
+          "ritual": false,
+          "requiresAttackRoll": false,
+          "requiresSavingThrow": false,
+          "range": "Touch",
+          "duration": { "durationInterval": 8, "durationUnit": "Hours", "durationType": "" },
+          "tags": ["Defense"]
+        }
+      },
+      {
+        "prepared": true,
+        "definition": {
+          "name": "Magic Missile",
+          "level": 1,
+          "school": "Evocation",
+          "components": [1, 2],
+          "concentration": false,
+          "ritual": false,
+          "requiresAttackRoll": false,
+          "requiresSavingThrow": false,
+          "range": "120 feet",
+          "duration": {},
+          "tags": ["Damage"]
+        }
+      },
+      {
+        "prepared": false,
+        "definition": {
+          "name": "Shield",
+          "level": 1,
+          "school": "Abjuration",
+          "components": [1],
+          "concentration": false,
+          "ritual": false,
+          "requiresAttackRoll": false,
+          "requiresSavingThrow": false,
+          "range": "Self",
+          "duration": {},
+          "tags": ["Defense"]
+        }
+      }
+    ],
+    "race": [],
+    "feat": []
+  },
+  "classSpells": [
+    {
+      "spells": [
+        {
+          "prepared": true,
+          "definition": {
+            "name": "Fire Bolt",
+            "level": 0,
+            "school": "Evocation",
+            "components": [1, 2],
+            "concentration": false,
+            "ritual": false,
+            "requiresAttackRoll": true,
+            "requiresSavingThrow": false,
+            "range": "120 feet",
+            "duration": {},
+            "tags": ["Damage"]
+          }
+        }
+      ]
+    }
+  ]
+}

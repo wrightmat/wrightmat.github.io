@@ -56,8 +56,29 @@ export class StatusManager {
     }
 
     wrapper.className = classes.join(" ");
-    
-    wrapper.textContent = item.message;
+
+    const text = document.createElement("span");
+    text.className = "status-toast-message";
+    text.textContent = item.message;
+    wrapper.appendChild(text);
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "btn btn-sm btn-link status-toast-copy p-0 ms-2 align-baseline";
+    copyButton.textContent = "Copy";
+    copyButton.setAttribute("aria-label", "Copy message text");
+    copyButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!navigator.clipboard?.writeText) return;
+      navigator.clipboard.writeText(item.message).then(() => {
+        copyButton.textContent = "Copied";
+        window.setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 1200);
+      }, () => {});
+    });
+    wrapper.appendChild(copyButton);
+
     return wrapper;
   }
 

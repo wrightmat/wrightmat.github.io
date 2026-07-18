@@ -36,6 +36,7 @@
     "height": 1,
     "gutter": 0.1,
     "safeInset": 0.05,
+    "bleed": 0.04,
     "columns": 7,
     "rows": 9
   },
@@ -72,5 +73,9 @@
         ]
       }
     }
-  }
+  },
+  "name": "Chip Grid (1 in circles)",
+  "sides": [
+    "front"
+  ]
 }
