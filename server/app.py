@@ -33,6 +33,7 @@ from .auth import (
 from .builtins import builtin_catalog
 from .config import ConfigLoader
 from .importer import run_importer
+from .roles import role_rank
 from .router import Request, Response, Router
 from .shares import (
     create_share_link,
@@ -283,6 +284,90 @@ def register_routes():
         return json_response({"ok": True, "sizes": sizes})
 
     router.add("POST", r"^/press/custom-sizes$", handle_press_custom_size_save)
+
+    # POST /press/custom-fonts
+    def resolve_press_custom_fonts_path(state: ServerState) -> Path:
+        return state.root_dir / "undercroft" / "press" / "data" / "custom-fonts.json"
+
+    def handle_press_custom_font_save(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        if role_rank(user.tier) < role_rank("creator"):
+            raise AuthError("Creator tier or higher required to add fonts")
+        payload = require_json(request)
+        font = payload.get("font", payload)
+        if not font or not isinstance(font, dict) or not font.get("id"):
+            return json_response({"error": "Invalid custom font payload"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_press_custom_fonts_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        fonts = existing.get("fonts") if isinstance(existing.get("fonts"), list) else []
+        fonts = [entry for entry in fonts if entry.get("id") != font.get("id")]
+        fonts.append(font)
+        serialized = json.dumps({"fonts": fonts}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "fonts": fonts})
+
+    router.add("POST", r"^/press/custom-fonts$", handle_press_custom_font_save)
+
+    # POST /press/custom-fonts/delete — this server has no do_DELETE at all
+    # (only do_GET/do_POST are wired up), so every deletion in this codebase
+    # goes through a POST .../delete route instead of a true HTTP DELETE
+    # (see /auth/users/delete, /content/{bucket}/{id}/delete).
+    def handle_press_custom_font_delete(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user or user.tier != "admin":
+            raise AuthError("Admin only")
+        payload = require_json(request)
+        font_id = payload.get("id")
+        if not font_id:
+            return json_response({"error": "font id required"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_press_custom_fonts_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        fonts = existing.get("fonts") if isinstance(existing.get("fonts"), list) else []
+        fonts = [entry for entry in fonts if entry.get("id") != font_id]
+        serialized = json.dumps({"fonts": fonts}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "fonts": fonts})
+
+    router.add("POST", r"^/press/custom-fonts/delete$", handle_press_custom_font_delete)
+
+    # GET /press/google-fonts-metadata
+    #
+    # Proxies Google's font-picker metadata endpoint server-side. That
+    # endpoint is Google's internal API (not published for third-party use)
+    # and doesn't send CORS headers permitting a browser fetch() read from
+    # this origin — a public CORS proxy (corsproxy.io, used elsewhere for
+    # D&D Beyond) was tried first but its free tier now rejects non-localhost
+    # callers outright. Fetching it here instead sidesteps CORS entirely,
+    # same reasoning as /ddb-proxy above, just with a fixed target and no
+    # session cookie needed.
+    def handle_press_google_fonts_metadata(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        proxy_request = urllib.request.Request(
+            "https://fonts.google.com/metadata/fonts",
+            headers={"Accept": "application/json"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
+                body = upstream.read()
+        except urllib.error.HTTPError as exc:
+            return json_response({"error": f"Google Fonts metadata fetch failed ({exc.code})"}, status=HTTPStatus.BAD_GATEWAY)
+        except urllib.error.URLError as exc:
+            return json_response({"error": f"Google Fonts metadata fetch failed ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
+
+        return Response(status=200, body=body, headers={"Content-Type": "application/json; charset=utf-8"})
+
+    router.add("GET", r"^/press/google-fonts-metadata$", handle_press_google_fonts_metadata)
 
     # POST /loom/mappings/{id}
     def resolve_loom_mapping_path(state: ServerState, mapping_id: str) -> Path:

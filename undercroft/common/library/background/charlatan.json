@@ -1,0 +1,102 @@
+{
+  "kind": "background",
+  "index": "charlatan",
+  "name": "Charlatan",
+  "url": "https://www.dndbeyond.com/backgrounds/406477-charlatan",
+  "ability_scores": [
+    {
+      "index": "dex",
+      "name": "DEX"
+    },
+    {
+      "index": "con",
+      "name": "CON"
+    },
+    {
+      "index": "cha",
+      "name": "CHA"
+    }
+  ],
+  "feat": {
+    "index": "skilled",
+    "name": "Skilled"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-deception",
+      "name": "Skill: Deception"
+    },
+    {
+      "index": "skill-sleight-of-hand",
+      "name": "Skill: Sleight of Hand"
+    },
+    {
+      "index": "tool-forgery-kit",
+      "name": "Tool: Forgery Kit"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Forgery Kit, Costume, Fine Clothes, 15 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "forgery-kit",
+                  "name": "Forgery Kit"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "costume",
+                  "name": "Costume"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "fine-clothes",
+                  "name": "Fine Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 15,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "Once you were old enough to order an ale, you soon had a favorite stool in every tavern within ten miles of where you were born. As you traveled the circuit from public house to watering hole, you learned to prey on unfortunates who were in the market for a comforting lie or two\u2014perhaps a sham potion or forged ancestry records."
+  ],
+  "source": "Player\u2019s Handbook, pg. 179",
+  "traits": {
+    "abilityScores": "Dexterity, Constitution, Charisma",
+    "feat": "Skilled",
+    "skillProficiencies": "Deception and Sleight of Hand",
+    "toolProficiencies": "Forgery Kit",
+    "equipment": "Choose A or B: (A) Forgery Kit, Costume, Fine Clothes, 15 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-18T21:25:46.416Z"
+}

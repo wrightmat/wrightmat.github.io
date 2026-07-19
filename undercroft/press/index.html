@@ -192,6 +192,18 @@
                     <span class="iconify fs-5" data-icon="tabler:printer" aria-hidden="true"></span>
                     <span class="visually-hidden">Print</span>
                   </button>
+                  <button
+                    class="btn btn-outline-secondary p-2"
+                    type="button"
+                    data-action="new-template"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="New Template"
+                    aria-label="New Template"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                    <span class="visually-hidden">New Template</span>
+                  </button>
                 </div>
               </div>
               <div class="d-flex flex-column gap-3" id="press-palette">
@@ -268,9 +280,6 @@
                       <span class="align-middle" data-help-topic="press.selection" data-help-insert="replace"></span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                      <button class="btn btn-outline-success btn-sm" type="button" data-action="new-template">
-                        New Template
-                      </button>
                       <button
                         class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
                         type="button"
@@ -328,8 +337,35 @@
               <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between">
                 <div class="d-flex flex-column gap-1">
                   <h2 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Live Preview</h2>
+                  <div class="press-guide-legend" data-canvas-guide-legend hidden></div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Canvas zoom">
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      data-canvas-zoom-out
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Zoom out"
+                    >−</button>
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      data-canvas-zoom-reset
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Reset to 100%"
+                    ><span data-canvas-zoom-level>100%</span></button>
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      data-canvas-zoom-in
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Zoom in"
+                    >+</button>
+                  </div>
                   <button class="btn btn-outline-secondary btn-sm" id="swapSide">Show Back Side</button>
                 </div>
               </div>
@@ -553,6 +589,17 @@
                       />
                     </div>
                     <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="templateCardCornerRadius">Corner radius (in)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="templateCardCornerRadius"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        data-template-card-corner-radius
+                      />
+                    </div>
+                    <div class="col-6">
                       <label class="form-label small text-body-secondary fw-semibold" for="templateCardColumns">Columns</label>
                       <input
                         class="form-control form-control-sm"
@@ -577,6 +624,9 @@
                   </div>
                 </div>
               </section>
+              <button class="btn btn-outline-secondary w-100" type="button" data-template-duplicate>
+                Duplicate Template
+              </button>
               <button class="btn btn-outline-danger w-100" type="button" data-template-delete>
                 Delete Template
               </button>
@@ -619,7 +669,14 @@
                       </div>
                       <div class="d-flex align-items-center gap-2 small text-body-secondary" data-component-parent-indicator hidden>
                         <span>In</span>
-                        <button class="btn btn-link p-0 align-baseline text-body-secondary" type="button" data-component-parent-select></button>
+                        <button
+                          class="btn btn-link p-0 align-baseline text-body-secondary"
+                          type="button"
+                          data-component-parent-select
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="right"
+                          data-bs-title="Select the parent container"
+                        ></button>
                       </div>
                     </div>
                   </div>
@@ -659,11 +716,24 @@
                       <div class="list-group" data-component-table-columns-list></div>
                     </div>
                   </div>
-                  <div class="form-floating" data-inspector-image-field hidden>
-                    <input class="form-control" placeholder="Image URL" type="text" data-component-image-url />
-                    <label class="fw-semibold">Image URL</label>
+                  <div class="input-group" data-inspector-image-field hidden>
+                    <div class="form-floating">
+                      <input class="form-control" placeholder="Image URL" type="text" data-component-image-url />
+                      <label class="fw-semibold">Image URL</label>
+                    </div>
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      data-pattern-picker-open
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Insert a pattern or shape"
+                    >
+                      <span class="iconify" data-icon="tabler:brush" aria-hidden="true"></span>
+                      <span class="visually-hidden">Insert a pattern or shape</span>
+                    </button>
                   </div>
-                  <div class="row g-2" data-inspector-image-field hidden>
+                  <div class="row g-2" data-inspector-image-size-field hidden>
                     <div class="col-6">
                       <label class="form-label small text-body-secondary fw-semibold" for="componentImageWidth">Image width (in)</label>
                       <input
@@ -686,6 +756,89 @@
                         data-component-image-height
                       />
                     </div>
+                  </div>
+                  <div class="form-floating" data-inspector-image-field hidden>
+                    <select class="form-select" id="componentImageFit" data-component-image-fit>
+                      <option value="cover">Cover (crop to fill, preserve aspect ratio)</option>
+                      <option value="contain">Contain (fit inside box, preserve aspect ratio)</option>
+                      <option value="fill">Fill (stretch to exactly fill box)</option>
+                    </select>
+                    <label class="fw-semibold" for="componentImageFit">Image fit</label>
+                  </div>
+                  <div class="form-floating" data-inspector-image-field hidden>
+                    <input
+                      class="form-control"
+                      placeholder="0"
+                      type="number"
+                      min="0"
+                      step="1"
+                      id="componentImageCornerRadius"
+                      data-component-image-corner-radius
+                    />
+                    <label class="fw-semibold" for="componentImageCornerRadius">Corner radius (px)</label>
+                  </div>
+                  <div class="row g-2" data-inspector-image-field hidden>
+                    <div class="col-4">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageFocalX">Pan X (%)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageFocalX"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        placeholder="50"
+                        data-component-image-focal-x
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentImageFocalY">Pan Y (%)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageFocalY"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        placeholder="50"
+                        data-component-image-focal-y
+                      />
+                    </div>
+                    <div class="col-4">
+                      <label
+                        class="form-label small text-body-secondary fw-semibold"
+                        for="componentImageZoom"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Scales past a normal Cover fit, anchored on Pan X/Y — above 1 zooms in on an oversized image, below 1 shrinks it further (may expose empty space around it)"
+                        >Zoom (×)</label
+                      >
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentImageZoom"
+                        type="number"
+                        min="0.1"
+                        max="5"
+                        step="0.1"
+                        placeholder="1"
+                        data-component-image-zoom
+                      />
+                    </div>
+                  </div>
+                  <div class="form-floating" data-inspector-layer-origin hidden>
+                    <select
+                      class="form-select"
+                      id="componentLayerOrigin"
+                      data-component-layer-origin
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Controls what box this layer (and therefore any 100%-sized placement inside it) sizes against"
+                    >
+                      <option value="safe">Safe area (inset from the card edge by Safe inset)</option>
+                      <option value="trim">Trim (fills the card exactly)</option>
+                      <option value="bleed">Bleed (extends past the card edge into bleed)</option>
+                    </select>
+                    <label class="fw-semibold" for="componentLayerOrigin">Layer sizes against</label>
                   </div>
                   <div class="form-floating" data-inspector-gap-field hidden>
                     <input
@@ -714,8 +867,148 @@
                     <label class="fw-semibold" for="componentColumns">Columns</label>
                   </div>
                   <div class="form-floating" data-inspector-template-columns hidden>
-                    <input class="form-control" placeholder="1fr 2fr" type="text" data-component-template-columns />
+                    <input
+                      class="form-control"
+                      placeholder="1fr 2fr"
+                      type="text"
+                      data-component-template-columns
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="CSS grid-template-columns value, overrides equal-width columns"
+                    />
                     <label class="fw-semibold">Column template</label>
+                  </div>
+                  <div class="form-floating" data-inspector-grid-rows hidden>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="componentGridRows"
+                      min="1"
+                      max="24"
+                      step="1"
+                      placeholder="2"
+                      data-component-grid-rows
+                    />
+                    <label class="fw-semibold" for="componentGridRows">Rows</label>
+                  </div>
+                  <div class="form-floating" data-inspector-template-rows hidden>
+                    <input
+                      class="form-control"
+                      placeholder="auto auto"
+                      type="text"
+                      data-component-template-rows
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="CSS grid-template-rows value, overrides content-sized rows"
+                    />
+                    <label class="fw-semibold">Row template</label>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-grid-align-x hidden>
+                    <label class="fw-semibold text-body-secondary">Horizontal alignment</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Horizontal alignment">
+                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXStart" value="start" data-component-align-x />
+                      <label class="btn btn-outline-secondary" for="componentAlignXStart" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align left">
+                        <span class="iconify" data-icon="tabler:align-left" aria-hidden="true"></span>
+                        <span class="template-radio-label">Left</span>
+                      </label>
+                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXCenter" value="center" data-component-align-x />
+                      <label class="btn btn-outline-secondary" for="componentAlignXCenter" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align center">
+                        <span class="iconify" data-icon="tabler:align-center" aria-hidden="true"></span>
+                        <span class="template-radio-label">Center</span>
+                      </label>
+                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXEnd" value="end" data-component-align-x />
+                      <label class="btn btn-outline-secondary" for="componentAlignXEnd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align right">
+                        <span class="iconify" data-icon="tabler:align-right" aria-hidden="true"></span>
+                        <span class="template-radio-label">Right</span>
+                      </label>
+                      <input type="radio" class="btn-check" name="componentAlignX" id="componentAlignXJustify" value="justify" data-component-align-x />
+                      <label class="btn btn-outline-secondary" for="componentAlignXJustify" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Stretch to fill">
+                        <span class="iconify" data-icon="tabler:align-justified" aria-hidden="true"></span>
+                        <span class="template-radio-label">Stretch</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-grid-align-y hidden>
+                    <label class="fw-semibold text-body-secondary">Vertical alignment</label>
+                    <div class="btn-group template-radio-group" role="group" aria-label="Vertical alignment">
+                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYStart" value="start" data-component-align-y />
+                      <label class="btn btn-outline-secondary" for="componentAlignYStart" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align top">
+                        <span class="iconify" data-icon="tabler:layout-align-top" aria-hidden="true"></span>
+                        <span class="template-radio-label">Top</span>
+                      </label>
+                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYCenter" value="center" data-component-align-y />
+                      <label class="btn btn-outline-secondary" for="componentAlignYCenter" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align middle">
+                        <span class="iconify" data-icon="tabler:layout-align-middle" aria-hidden="true"></span>
+                        <span class="template-radio-label">Middle</span>
+                      </label>
+                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYEnd" value="end" data-component-align-y />
+                      <label class="btn btn-outline-secondary" for="componentAlignYEnd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align bottom">
+                        <span class="iconify" data-icon="tabler:layout-align-bottom" aria-hidden="true"></span>
+                        <span class="template-radio-label">Bottom</span>
+                      </label>
+                      <input type="radio" class="btn-check" name="componentAlignY" id="componentAlignYJustify" value="justify" data-component-align-y />
+                      <label class="btn btn-outline-secondary" for="componentAlignYJustify" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Space evenly">
+                        <span class="iconify" data-icon="tabler:layout-distribute-vertical" aria-hidden="true"></span>
+                        <span class="template-radio-label">Justified</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="row g-2" data-inspector-position hidden>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionX">X (in)</label>
+                      <input class="form-control form-control-sm" id="componentPositionX" type="number" step="0.01" data-component-position-x />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionY">Y (in)</label>
+                      <input class="form-control form-control-sm" id="componentPositionY" type="number" step="0.01" data-component-position-y />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionWidth">Width (in or %)</label>
+                      <input class="form-control form-control-sm" id="componentPositionWidth" type="text" placeholder="auto" data-component-position-width />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionHeight">Height (in or %)</label>
+                      <input class="form-control form-control-sm" id="componentPositionHeight" type="text" placeholder="auto" data-component-position-height />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionZ">Z-order</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentPositionZ"
+                        type="number"
+                        step="1"
+                        data-component-position-z
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Stacking order — higher numbers render on top"
+                      />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-body-secondary fw-semibold" for="componentPositionRotate">Rotate (deg)</label>
+                      <input
+                        class="form-control form-control-sm"
+                        id="componentPositionRotate"
+                        type="number"
+                        step="1"
+                        data-component-position-rotate
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Rotation around the element's center"
+                      />
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-inspector-text-settings>
+                    <div class="form-floating">
+                      <input
+                        class="form-control"
+                        placeholder="Search fonts…"
+                        type="text"
+                        id="componentFontFamily"
+                        data-component-font-family
+                        autocomplete="off"
+                      />
+                      <label class="fw-semibold" for="componentFontFamily">Font</label>
+                    </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings>
                     <label class="fw-semibold text-body-secondary">Text size</label>
@@ -728,7 +1021,7 @@
                         value="xs"
                         data-component-text-size
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeXs">XS</label>
+                      <label class="btn btn-outline-secondary" for="componentTextSizeXs" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Extra small">XS</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -737,7 +1030,7 @@
                         value="sm"
                         data-component-text-size
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeSm">Sm</label>
+                      <label class="btn btn-outline-secondary" for="componentTextSizeSm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Small">Sm</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -746,7 +1039,7 @@
                         value="md"
                         data-component-text-size
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeMd">Md</label>
+                      <label class="btn btn-outline-secondary" for="componentTextSizeMd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Medium">Md</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -755,7 +1048,7 @@
                         value="lg"
                         data-component-text-size
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeLg">Lg</label>
+                      <label class="btn btn-outline-secondary" for="componentTextSizeLg" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Large">Lg</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -764,7 +1057,7 @@
                         value="xl"
                         data-component-text-size
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextSizeXl">XL</label>
+                      <label class="btn btn-outline-secondary" for="componentTextSizeXl" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Extra large">XL</label>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                       <label class="form-label small text-body-secondary mb-0" for="componentTextSizeCustom">Font size (pt)</label>
@@ -793,7 +1086,7 @@
                         value="horizontal"
                         data-component-text-orientation
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationHorizontal">Horizontal</label>
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationHorizontal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Reading left to right">Horizontal</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -802,7 +1095,7 @@
                         value="vertical"
                         data-component-text-orientation
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationVertical">Vertical</label>
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationVertical" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Rotated 90°">Vertical</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -811,7 +1104,7 @@
                         value="diagonal"
                         data-component-text-orientation
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationDiagonal">Diagonal</label>
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationDiagonal" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Rotated 45°">Diagonal</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -820,7 +1113,7 @@
                         value="curve-up"
                         data-component-text-orientation
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveUp">Curved up</label>
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveUp" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Arcs upward">Curved up</label>
                       <input
                         type="radio"
                         class="btn-check"
@@ -829,7 +1122,7 @@
                         value="curve-down"
                         data-component-text-orientation
                       />
-                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveDown">Curved down</label>
+                      <label class="btn btn-outline-secondary" for="componentTextOrientationCurveDown" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Arcs downward">Curved down</label>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-nowrap press-text-transform-row">
                       <label class="form-label small text-body-secondary mb-0" for="componentTextAngle">Angle</label>
@@ -840,6 +1133,9 @@
                         step="1"
                         placeholder="0"
                         data-component-text-angle
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Rotation in degrees"
                       />
                       <label class="form-label small text-body-secondary mb-0" for="componentTextCurve">Curve</label>
                       <input
@@ -849,6 +1145,9 @@
                         step="1"
                         placeholder="0"
                         data-component-text-curve
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Arc intensity for curved text"
                       />
                     </div>
                   </div>
@@ -856,17 +1155,17 @@
                     <label class="fw-semibold text-body-secondary">Text decoration</label>
                     <div class="btn-group template-radio-group" role="group" aria-label="Text decoration">
                       <input type="checkbox" class="btn-check" id="componentTextBold" data-component-text-style="bold" />
-                      <label class="btn btn-outline-secondary" for="componentTextBold">
+                      <label class="btn btn-outline-secondary" for="componentTextBold" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Bold">
                         <span class="iconify" data-icon="tabler:bold" aria-hidden="true"></span>
                         <span class="template-radio-label">Bold</span>
                       </label>
                       <input type="checkbox" class="btn-check" id="componentTextItalic" data-component-text-style="italic" />
-                      <label class="btn btn-outline-secondary" for="componentTextItalic">
+                      <label class="btn btn-outline-secondary" for="componentTextItalic" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Italic">
                         <span class="iconify" data-icon="tabler:italic" aria-hidden="true"></span>
                         <span class="template-radio-label">Italic</span>
                       </label>
                       <input type="checkbox" class="btn-check" id="componentTextUnderline" data-component-text-style="underline" />
-                      <label class="btn btn-outline-secondary" for="componentTextUnderline">
+                      <label class="btn btn-outline-secondary" for="componentTextUnderline" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Underline">
                         <span class="iconify" data-icon="tabler:underline" aria-hidden="true"></span>
                         <span class="template-radio-label">Underline</span>
                       </label>
@@ -891,6 +1190,9 @@
                             type="button"
                             data-component-color-clear="foreground"
                             aria-label="Reset foreground color"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Reset foreground color"
                           >
                             <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
                           </button>
@@ -912,6 +1214,9 @@
                             type="button"
                             data-component-color-clear="background"
                             aria-label="Reset background color"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Reset background color"
                           >
                             <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
                           </button>
@@ -933,6 +1238,9 @@
                             type="button"
                             data-component-color-clear="border"
                             aria-label="Reset border color"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Reset border color"
                           >
                             <span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>
                           </button>
@@ -999,7 +1307,7 @@
                         value="start"
                         data-component-align
                       />
-                      <label class="btn btn-outline-secondary" for="componentAlignStart">
+                      <label class="btn btn-outline-secondary" for="componentAlignStart" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align left">
                         <span class="iconify" data-icon="tabler:align-left" aria-hidden="true"></span>
                         <span class="template-radio-label" data-alignment-label="start">Left</span>
                       </label>
@@ -1011,7 +1319,7 @@
                         value="center"
                         data-component-align
                       />
-                      <label class="btn btn-outline-secondary" for="componentAlignCenter">
+                      <label class="btn btn-outline-secondary" for="componentAlignCenter" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align center">
                         <span class="iconify" data-icon="tabler:align-center" aria-hidden="true"></span>
                         <span class="template-radio-label" data-alignment-label="center">Center</span>
                       </label>
@@ -1023,7 +1331,7 @@
                         value="end"
                         data-component-align
                       />
-                      <label class="btn btn-outline-secondary" for="componentAlignEnd">
+                      <label class="btn btn-outline-secondary" for="componentAlignEnd" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Align right">
                         <span class="iconify" data-icon="tabler:align-right" aria-hidden="true"></span>
                         <span class="template-radio-label" data-alignment-label="end">Right</span>
                       </label>
@@ -1035,7 +1343,7 @@
                         value="justify"
                         data-component-align
                       />
-                      <label class="btn btn-outline-secondary" for="componentAlignJustify">
+                      <label class="btn btn-outline-secondary" for="componentAlignJustify" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Justify">
                         <span class="iconify" data-icon="tabler:align-justified" aria-hidden="true"></span>
                         <span class="template-radio-label" data-alignment-label="justify">Justify</span>
                       </label>
@@ -1054,10 +1362,18 @@
                       <label class="fw-semibold">Aria label</label>
                     </div>
                     <div class="form-floating" data-inspector-class-name-field>
-                      <input class="form-control" placeholder="Classes" type="text" data-component-class-name />
+                      <input class="form-control" placeholder="Classes" type="text" data-component-class-name autocomplete="off" />
                       <label class="fw-semibold">Classes</label>
                     </div>
                   </div>
+                  <button
+                    class="btn btn-outline-secondary w-100"
+                    type="button"
+                    data-component-duplicate
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Ctrl+D — also supports Copy (Ctrl+C) and Paste (Ctrl+V) next to any selected component"
+                  >Duplicate</button>
                   <button class="btn btn-outline-danger w-100" type="button" data-component-delete>Delete Component</button>
                 </div>
               </section>
@@ -1069,6 +1385,82 @@
     </div>
 
     <div class="d-none" id="printStack" aria-hidden="true"></div>
+
+    <div class="modal fade" id="press-pattern-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Insert Pattern or Shape</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <div class="btn-group template-radio-group" role="group" aria-label="Pattern category">
+              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryFills" value="fills" checked data-pattern-category />
+              <label class="btn btn-outline-secondary" for="patternCategoryFills">Fills</label>
+              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryPatterns" value="patterns" data-pattern-category />
+              <label class="btn btn-outline-secondary" for="patternCategoryPatterns">Patterns</label>
+              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryBanners" value="banners" data-pattern-category />
+              <label class="btn btn-outline-secondary" for="patternCategoryBanners">Banners</label>
+              <input type="radio" class="btn-check" name="patternCategory" id="patternCategoryShapes" value="shapes" data-pattern-category />
+              <label class="btn btn-outline-secondary" for="patternCategoryShapes">Shapes</label>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-7">
+                <div class="d-flex flex-wrap gap-2" data-pattern-thumbnails></div>
+              </div>
+              <div class="col-12 col-md-5 d-flex flex-column gap-3 border-start-md ps-md-3">
+                <div class="d-flex flex-column align-items-center gap-2 border rounded-3 bg-body-tertiary p-3">
+                  <img data-pattern-preview alt="" style="width: 140px; height: 140px; object-fit: contain" />
+                  <div class="fw-semibold small text-body-secondary" data-pattern-preview-label>Select a pattern</div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-pattern-controls></div>
+              </div>
+            </div>
+            <div class="text-body-secondary extra-small border-top pt-2">
+              Need something more elaborate? Paste a <code>data:image/svg+xml</code> URL from any online SVG editor
+              directly into the Image URL field.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-pattern-insert disabled>Insert</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="press-add-font-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Add a font</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-2">
+            <div class="form-floating">
+              <input
+                class="form-control"
+                placeholder="Encode Sans Expanded"
+                type="text"
+                id="addFontValue"
+                data-add-font-value
+              />
+              <label class="fw-semibold" for="addFontValue">Font name or CSS font-family value</label>
+            </div>
+            <div class="text-body-secondary extra-small">
+              A single name (e.g. <code>Roboto Condensed</code>) loads it from Google Fonts automatically and adds
+              it to the font list for everyone, from now on. Include a comma — a fallback font, like
+              <code>'My Font', sans-serif</code> — to use it as a raw CSS value instead, with nothing loaded.
+            </div>
+            <div class="small d-none" data-add-font-warning></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-add-font-submit disabled>Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>

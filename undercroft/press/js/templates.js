@@ -1,4 +1,4 @@
-import { renderLayout } from "./template-renderer.js";
+import { renderLayout, normalizeLegacyLayoutNode } from "./template-renderer.js";
 import { getSampleData } from "./sample-data.js";
 import { resolveBinding } from "../../common/js/lib/bindings.js";
 
@@ -230,13 +230,39 @@ function hasBleed(insets) {
   return insets.top > 0 || insets.right > 0 || insets.bottom > 0 || insets.left > 0;
 }
 
+// A root `layer` node can opt out of the default safe-inset padding via
+// `origin: "trim" | "bleed"` — "trim" fills the tile/circle exactly (no
+// padding), "bleed" extends past it using the same per-edge insets the
+// bleed color/image layer itself uses (computeBleedInsets). Flow-based root
+// layouts (stack/row, or a layer with no `origin`/`origin:"safe"`) are
+// unaffected — this only changes how the *root* layout is mounted; nested
+// layers (children of a stack, not the root) always size to their own
+// parent's content box regardless of this template-level setting.
+function applyRootLayoutOrigin(container, layout, { safeInset = 0, insets } = {}) {
+  const origin = layout?.type === "layer" ? layout.origin || "safe" : "safe";
+  if (origin === "bleed" && insets) {
+    container.style.position = "absolute";
+    container.style.top = `-${insets.top}in`;
+    container.style.right = `-${insets.right}in`;
+    container.style.bottom = `-${insets.bottom}in`;
+    container.style.left = `-${insets.left}in`;
+    container.style.width = "auto";
+    container.style.height = "auto";
+    container.style.padding = "0";
+  } else if (origin === "trim") {
+    container.style.padding = "0";
+  } else {
+    container.style.padding = `${safeInset}in`;
+  }
+}
+
 function renderCardGrid(template, side, context) {
   const { page, inner, resolvedSize } = createPageWrapper(template, side, context);
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
   const templateData = resolveTemplateData(template, context.data);
   const data = getRepeatData(template, pageConfig, templateData);
   const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
-  const { width, height, gutter = 0, safeInset = 0, bleed = 0, background, columns = 1, rows = 1 } = template.card ?? {};
+  const { width, height, gutter = 0, safeInset = 0, bleed = 0, cornerRadius = 0, background, columns = 1, rows = 1 } = template.card ?? {};
   const margin = resolvedSize.margin ?? 0;
   const grid = document.createElement("div");
   grid.className = "card-grid";
@@ -256,14 +282,21 @@ function renderCardGrid(template, side, context) {
     const insets = computeBleedInsets(bleed, { row, col, rows, columns, gutter, margin });
     const tile = document.createElement("article");
     tile.className = "card-tile";
+    tile.style.borderRadius = `${cornerRadius}in`;
     applyBackground(tile, background);
     if (hasBleed(insets)) {
       tile.appendChild(createBleedLayer(background, insets));
     }
     const contentWrapper = document.createElement("div");
     contentWrapper.className = "card-tile-content";
-    contentWrapper.style.padding = `${safeInset}in`;
+    // Clips content to the same real corner radius as the tile itself, so a
+    // full-bleed background/image visually matches what the die cut will
+    // actually leave rather than showing square corners under a rounded
+    // trim guide.
+    contentWrapper.style.borderRadius = `${cornerRadius}in`;
+    contentWrapper.style.overflow = cornerRadius > 0 ? "hidden" : "";
     const layout = pageConfig.layout ?? null;
+    applyRootLayoutOrigin(contentWrapper, layout, { safeInset, insets });
     const options = index === 0 && typeof onRootReady === "function"
       ? { ...renderOptions, onRootReady }
       : renderOptions;
@@ -317,9 +350,9 @@ function renderChipGrid(template, side, context) {
     circle.className = "chip-circle";
     circle.style.width = `${diameter}in`;
     circle.style.height = `${diameter}in`;
-    circle.style.padding = `${safeInset}in`;
     applyBackground(circle, background);
     const layout = pageConfig.layout ?? null;
+    applyRootLayoutOrigin(circle, layout, { safeInset, insets });
     const options = index === 0 && typeof onRootReady === "function"
       ? { ...renderOptions, onRootReady }
       : renderOptions;
@@ -378,20 +411,22 @@ function resolveLayoutBindings(node, context) {
 
   const resolved = resolveBindingsDeep(node, context);
 
-  if (node.type === "stack" && Array.isArray(node.children)) {
-    resolved.children = node.children.map((child) => resolveLayoutBindings(child, context));
+  if (node.type === "grid" && Array.isArray(node.cells)) {
+    resolved.cells = node.cells.map((rowCells) =>
+      asArray(rowCells).map((cellNodes) => asArray(cellNodes).map((cellNode) => resolveLayoutBindings(cellNode, context)))
+    );
   }
 
-  if (node.type === "row" && Array.isArray(node.columns)) {
-    resolved.columns = node.columns.map((column) => {
-      if (!column || typeof column !== "object") {
-        return column;
+  if (node.type === "layer" && Array.isArray(node.placements)) {
+    resolved.placements = node.placements.map((placement) => {
+      if (!placement || typeof placement !== "object") {
+        return placement;
       }
-      const resolvedColumn = resolveBindingsDeep(column, context);
-      if (column.node) {
-        resolvedColumn.node = resolveLayoutBindings(column.node, context);
+      const resolvedPlacement = resolveBindingsDeep(placement, context);
+      if (placement.node) {
+        resolvedPlacement.node = resolveLayoutBindings(placement.node, context);
       }
-      return resolvedColumn;
+      return resolvedPlacement;
     });
   }
 
@@ -479,12 +514,13 @@ export function buildTemplatePreview(template, data) {
 
   template.sides.forEach((side) => {
     const pageConfig = template.pages?.[side] ?? {};
+    const layout = pageConfig.layout ? normalizeLegacyLayoutNode(pageConfig.layout) : null;
     if (template.type === "sheet") {
       const pageData = resolveBinding(pageConfig.data ?? "@", templateData) ?? templateData ?? {};
       resolvedPages[side] = {
         ...pageConfig,
         data: pageData,
-        layout: pageConfig.layout ? resolveLayoutBindings(pageConfig.layout, pageData) : null,
+        layout: layout ? resolveLayoutBindings(layout, pageData) : null,
       };
       return;
     }
@@ -492,7 +528,7 @@ export function buildTemplatePreview(template, data) {
     const items = getRepeatData(template, pageConfig, templateData);
     resolvedPages[side] = {
       ...pageConfig,
-      items: items.map((item) => resolveLayoutBindings(pageConfig.layout, item)),
+      items: items.map((item) => resolveLayoutBindings(layout, item)),
     };
   });
 
