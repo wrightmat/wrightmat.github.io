@@ -226,7 +226,7 @@
       "details": [
         "Kind lists the entity kinds Loom saves (class, subclass, background, species, variant, character).",
         "Item lists every saved entry of that kind, or \"All\" to load every entry at once as a list — one card per entry, the same way a 5e API list endpoint expands.",
-        "These files live under undercroft/common/library/ and are only populated once you've saved something from Loom's Entities pane."
+        "These files live under undercroft/common/data/ and are only populated once you've saved something from Loom's Entities pane."
       ],
       "category": "Press",
       "href": "../press/index.html#press-selection"

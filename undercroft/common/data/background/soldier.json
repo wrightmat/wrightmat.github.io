@@ -1,0 +1,136 @@
+{
+  "kind": "background",
+  "index": "soldier",
+  "name": "Soldier",
+  "url": "https://www.dndbeyond.com/backgrounds/406488-soldier",
+  "image": "/undercroft/common/data/background/soldier.png",
+  "ability_scores": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "dex",
+      "name": "DEX"
+    },
+    {
+      "index": "con",
+      "name": "CON"
+    }
+  ],
+  "feat": {
+    "index": "savage-attacker",
+    "name": "Savage Attacker"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-athletics",
+      "name": "Skill: Athletics"
+    },
+    {
+      "index": "skill-intimidation",
+      "name": "Skill: Intimidation"
+    },
+    {
+      "index": "tool-choose-one-kind-of-gaming-set",
+      "name": "Tool: Choose one kind of Gaming Set"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler\u2019s Clothes, 14 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "spear",
+                  "name": "Spear"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "shortbow",
+                  "name": "Shortbow"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 20,
+                "of": {
+                  "index": "arrow",
+                  "name": "Arrow"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "gaming-set",
+                  "name": "Gaming Set",
+                  "note": "Same as above"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "healers-kit",
+                  "name": "Healer's Kit"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "quiver",
+                  "name": "Quiver"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "traveler-s-clothes",
+                  "name": "Traveler\u2019s Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 14,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You began training for war as soon as you reached adulthood and carry precious few memories of life before you took up arms. Battle is in your blood. Sometimes you catch yourself reflexively performing the basic fighting exercises you learned first. Eventually, you put that training to use on the battlefield, protecting the realm by waging war."
+  ],
+  "source": "Player\u2019s Handbook, pg. 185",
+  "traits": {
+    "abilityScores": "Strength, Dexterity, Constitution",
+    "feat": "Savage Attacker",
+    "skillProficiencies": "Athletics and Intimidation",
+    "toolProficiencies": "Choose one kind of Gaming Set",
+    "equipment": "Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler\u2019s Clothes, 14 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-19T14:55:04.923Z"
+}

@@ -3,6 +3,7 @@
   "index": "charlatan",
   "name": "Charlatan",
   "url": "https://www.dndbeyond.com/backgrounds/406477-charlatan",
+  "image": "/undercroft/common/data/background/charlatan.png",
   "ability_scores": [
     {
       "index": "dex",

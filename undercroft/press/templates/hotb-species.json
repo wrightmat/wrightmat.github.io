@@ -54,7 +54,7 @@
             },
             "x": 0,
             "y": 4.18,
-            "z": 1,
+            "z": 2,
             "width": "100%"
           },
           {
@@ -69,7 +69,70 @@
             "y": 4.15,
             "width": "100%",
             "height": 0.6,
-            "z": 0
+            "z": 1
+          },
+          {
+            "node": {
+              "type": "field",
+              "component": "text",
+              "text": "@name",
+              "textSize": "md",
+              "className": "card-body-text text-shadow-dark",
+              "label": "@name",
+              "align": "center",
+              "style": {
+                "fontSize": 26.666666666666664,
+                "fontFamily": "'Cinzel', sans-serif",
+                "color": "#ffffff"
+              },
+              "textSizeCustom": true,
+              "textStyles": {
+                "bold": true
+              }
+            },
+            "x": 0,
+            "y": 0.19,
+            "z": 2,
+            "width": "100%"
+          },
+          {
+            "node": {
+              "type": "field",
+              "component": "image",
+              "url": "@image",
+              "className": "press-image",
+              "zoom": 1,
+              "focalX": 58
+            },
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "width": "100%",
+            "height": "100%"
+          },
+          {
+            "x": 0,
+            "y": 4.5,
+            "z": 4,
+            "node": {
+              "type": "field",
+              "component": "text",
+              "text": "@tagline",
+              "textSize": "md",
+              "className": "card-body-text",
+              "label": "@tagline",
+              "style": {
+                "fontSize": 14.666666666666666,
+                "fontFamily": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif",
+                "color": "#ffffff"
+              },
+              "textSizeCustom": true,
+              "textStyles": {
+                "italic": false
+              },
+              "align": "center"
+            },
+            "width": "100%"
           }
         ],
         "origin": "trim"
@@ -78,11 +141,23 @@
     "back": {
       "data": "@",
       "layout": {
-        "gap": 4,
-        "type": "grid",
-        "columns": 1,
-        "alignX": "justify",
-        "cells": []
+        "type": "layer",
+        "placements": [
+          {
+            "node": {
+              "type": "field",
+              "component": "image",
+              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22solid-fill%22%2C%22values%22%3A%7B%22fill%22%3A%22%23fad700%22%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%20viewBox%3D'0%200%20200%20200'%20preserveAspectRatio%3D'none'%3E%3Crect%20width%3D'200'%20height%3D'200'%20fill%3D'%23fad700'%2F%3E%3C%2Fsvg%3E",
+              "className": "press-image"
+            },
+            "x": 0,
+            "y": 4.45,
+            "z": 0,
+            "width": "100%",
+            "height": 0.3
+          }
+        ],
+        "origin": "trim"
       }
     }
   },

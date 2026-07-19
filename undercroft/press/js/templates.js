@@ -275,7 +275,9 @@ function renderCardGrid(template, side, context) {
   grid.style.height = `${gridHeight}in`;
   grid.style.margin = "auto";
 
-  const cards = data.slice(0, columns * rows);
+  const pageSize = Math.max(1, columns * rows);
+  const cardPageIndex = Number.isInteger(context.cardPageIndex) && context.cardPageIndex > 0 ? context.cardPageIndex : 0;
+  const cards = data.slice(cardPageIndex * pageSize, cardPageIndex * pageSize + pageSize);
   cards.forEach((card, index) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
@@ -336,7 +338,9 @@ function renderChipGrid(template, side, context) {
   grid.style.marginTop = `${verticalOffset}in`;
   grid.style.alignSelf = "flex-start";
 
-  const chips = data.slice(0, columns * rows);
+  const pageSize = Math.max(1, columns * rows);
+  const cardPageIndex = Number.isInteger(context.cardPageIndex) && context.cardPageIndex > 0 ? context.cardPageIndex : 0;
+  const chips = data.slice(cardPageIndex * pageSize, cardPageIndex * pageSize + pageSize);
   chips.forEach((chip, index) => {
     const row = Math.floor(index / columns);
     const col = index % columns;
@@ -376,6 +380,23 @@ function renderSheet(template, side, context) {
     inner.appendChild(renderLayout(layout, data, context.renderOptions));
   }
   return page;
+}
+
+// How many physical pages a side needs to print every repeated item — 1 for
+// a sheet template (no per-item grid to overflow) or for a card/chip
+// template whose data already fits in one grid (columns*rows). `context` is
+// the same {data, page, ...} shape passed to template.createPage; the
+// cardPageIndex it may itself carry is irrelevant here (this counts total
+// pages, not which one), and getRepeatData's own resolution is reused
+// as-is so this always agrees with what createPage will actually render.
+export function getCardPageCount(template, side, context = {}) {
+  if (template.type !== "card" && template.type !== "chip") return 1;
+  const pageConfig = context.page ?? template.pages?.[side] ?? {};
+  const templateData = resolveTemplateData(template, context.data);
+  const data = getRepeatData(template, pageConfig, templateData);
+  const { columns = 1, rows = 1 } = template.card ?? {};
+  const pageSize = Math.max(1, columns * rows);
+  return Math.max(1, Math.ceil(data.length / pageSize));
 }
 
 function resolveBindingsDeep(value, context) {
@@ -490,12 +511,12 @@ function normalizeTemplate(raw) {
     supportedSources: raw.supportedSources ?? ["ddb", "srd", "json", "manual"],
   };
 
-  template.createPage = (side, { size, format, source, data, page, renderOptions } = {}) => {
+  template.createPage = (side, { size, format, source, data, page, renderOptions, cardPageIndex } = {}) => {
     if (template.type === "card") {
-      return renderCardGrid(template, side, { size, format, source, data, page, renderOptions });
+      return renderCardGrid(template, side, { size, format, source, data, page, renderOptions, cardPageIndex });
     }
     if (template.type === "chip") {
-      return renderChipGrid(template, side, { size, format, source, data, page, renderOptions });
+      return renderChipGrid(template, side, { size, format, source, data, page, renderOptions, cardPageIndex });
     }
     return renderSheet(template, side, { size, format, source, data, page, renderOptions });
   };

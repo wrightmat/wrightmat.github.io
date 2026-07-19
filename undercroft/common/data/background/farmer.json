@@ -1,0 +1,127 @@
+{
+  "kind": "background",
+  "index": "farmer",
+  "name": "Farmer",
+  "url": "https://www.dndbeyond.com/backgrounds/406479-farmer",
+  "image": "/undercroft/common/data/background/farmer.png",
+  "ability_scores": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "con",
+      "name": "CON"
+    },
+    {
+      "index": "wis",
+      "name": "WIS"
+    }
+  ],
+  "feat": {
+    "index": "tough",
+    "name": "Tough"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-animal-handling",
+      "name": "Skill: Animal Handling"
+    },
+    {
+      "index": "skill-nature",
+      "name": "Skill: Nature"
+    },
+    {
+      "index": "tool-carpenters-tools",
+      "name": "Tool: Carpenter's Tools"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler\u2019s Clothes, 30 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "sickle",
+                  "name": "Sickle"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "carpenters-tools",
+                  "name": "Carpenter's Tools"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "healers-kit",
+                  "name": "Healer's Kit"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "iron-pot",
+                  "name": "Iron Pot"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "shovel",
+                  "name": "Shovel"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "traveler-s-clothes",
+                  "name": "Traveler\u2019s Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 30,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature\u2019s bounty alongside a healthy respect for nature\u2019s wrath."
+  ],
+  "source": "Player\u2019s Handbook, pg. 180",
+  "traits": {
+    "abilityScores": "Strength, Constitution, Wisdom",
+    "feat": "Tough",
+    "skillProficiencies": "Animal Handling and Nature",
+    "toolProficiencies": "Carpenter's Tools",
+    "equipment": "Choose A or B: (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler\u2019s Clothes, 30 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-19T14:51:42.468Z"
+}

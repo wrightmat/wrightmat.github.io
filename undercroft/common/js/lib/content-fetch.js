@@ -209,8 +209,12 @@ export async function loadSrdData(value) {
 }
 
 // The set of kinds Loom's one-to-many save workflow writes to
-// undercroft/common/library/<kind>/ — the single source of truth both Loom's
+// undercroft/common/data/<kind>/ — the single source of truth both Loom's
 // entity picker and Press's Library source select from, so they can't drift.
+// Named LIBRARY_KINDS (not DATA_KINDS) because "library" is still the
+// user-facing concept — Loom's Entities pane, Press's Library source — even
+// though the files themselves live under common/data/ alongside
+// help-topics.json rather than a dedicated common/library/ directory.
 export const LIBRARY_KINDS = ["class", "subclass", "background", "species", "variant", "character"];
 
 // Library files are served as plain static files (like Loom's own mapping
@@ -218,7 +222,7 @@ export const LIBRARY_KINDS = ["class", "subclass", "background", "species", "var
 // powers directory-listing discovery, matching the press-templates/
 // loom-mappings pattern already established.
 async function fetchLibraryEntry(kind, id) {
-  const url = new URL(`../../library/${kind}/${id}.json`, import.meta.url);
+  const url = new URL(`../../data/${kind}/${id}.json`, import.meta.url);
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Failed to load ${kind}/${id} (${response.status}).`);

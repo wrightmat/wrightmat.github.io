@@ -1,0 +1,38 @@
+{
+  "kind": "species",
+  "name": "Khoravar",
+  "url": "https://www.dndbeyond.com/species/2048553-khoravar",
+  "image": "/undercroft/common/data/species/khoravar.png",
+  "tagline": "Bridge Between Two Worlds",
+  "description": [
+    "Over the course of centuries, those descended from both humans and elves have developed their own communities and traditions in Khorvaire. The rise of House Lyrandar and House Medani has strengthened this identity. Members of these communities call themselves Khoravar, an Elvish term meaning \u201cchildren of Khorvaire,\u201d as they dislike the term \u201chalf-elf.\u201d",
+    "Many Khoravar espouse the idea of being \u201cthe bridge between,\u201d believing they are called to facilitate communication and cooperation between members of diff erent cultures or species. Khoravar who follow this philosophy often become bards, diplomats, mediators, or translators. Others, fascinated by their distant connection to the Fey, seek to build bridges between the Material Plane and the Feywild of Thelanis. These Khoravar often become druids or warlocks with archfey patrons."
+  ],
+  "type": "Humanoid",
+  "size": "Medium (about 4\u20136 feet tall) or Small (about 2\u20134 feet tall), chosen when you select this species",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Darkvision",
+      "description": "You have Darkvision with a range of 60 feet."
+    },
+    {
+      "name": "Fey Ancestry",
+      "description": "You have Advantage on saving throws you make to avoid or end the Charmed condition."
+    },
+    {
+      "name": "Fey Gift",
+      "description": "You know the Friends cantrip. Whenever you finish a Long Rest, you can replace that cantrip with a different cantrip from the Cleric, Druid, or Wizard spell list. Intelligence, Wisdom, or Charisma is your spellcasting ability for it (choose the ability when you select this species)."
+    },
+    {
+      "name": "Lethargy Resilience",
+      "description": "When you fail a saving throw to avoid or end the Unconscious condition, you can succeed instead. Once you use this trait, you can\u2019t do so again until you finish 1d4 Long Rests."
+    },
+    {
+      "name": "Skill Versatility",
+      "description": "You gain proficiency in one skill or with one tool of your choice. Whenever you finish a Long Rest, you can replace it with another skill or tool proficiency."
+    }
+  ],
+  "variants": [],
+  "updated_at": "2026-07-19T16:31:26.109Z"
+}
