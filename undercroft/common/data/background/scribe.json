@@ -1,0 +1,119 @@
+{
+  "kind": "background",
+  "index": "scribe",
+  "name": "Scribe",
+  "url": "https://www.dndbeyond.com/backgrounds/406487-scribe",
+  "image": "/undercroft/common/data/background/scribe.png",
+  "ability_scores": [
+    {
+      "index": "dex",
+      "name": "DEX"
+    },
+    {
+      "index": "int",
+      "name": "INT"
+    },
+    {
+      "index": "wis",
+      "name": "WIS"
+    }
+  ],
+  "feat": {
+    "index": "skilled",
+    "name": "Skilled"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-investigation",
+      "name": "Skill: Investigation"
+    },
+    {
+      "index": "skill-perception",
+      "name": "Skill: Perception"
+    },
+    {
+      "index": "tool-calligraphers-supplies",
+      "name": "Tool: Calligrapher's Supplies"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Calligrapher's Supplies, Fine Clothes, Lamp, Oil, Parchment (12 sheets), 23 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "calligraphers-supplies",
+                  "name": "Calligrapher's Supplies"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "fine-clothes",
+                  "name": "Fine Clothes"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "lamp",
+                  "name": "Lamp"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "oil",
+                  "name": "Oil"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 12,
+                "of": {
+                  "index": "parchment",
+                  "name": "Parchment"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 23,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You spent formative years in a scriptorium, a monastery dedicated to the preservation of knowledge, or a government agency, where you learned to write with a clear hand and produce finely written texts. Perhaps you scribed government documents or copied tomes of literature. You might have some skill as a writer of poetry, narrative, or scholarly research. Above all, you have a careful attention to detail, helping you avoid introducing mistakes to the documents you copy and create."
+  ],
+  "source": "Player\u2019s Handbook, pg. 184",
+  "traits": {
+    "abilityScores": "Dexterity, Intelligence, Wisdom",
+    "feat": "Skilled",
+    "skillProficiencies": "Investigation and Perception",
+    "toolProficiencies": "Calligrapher's Supplies",
+    "equipment": "Choose A or B: (A) Calligrapher's Supplies, Fine Clothes, Lamp, Oil, Parchment (12 sheets), 23 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-19T14:54:52.236Z"
+}

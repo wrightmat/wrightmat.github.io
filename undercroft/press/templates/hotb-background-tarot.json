@@ -79,7 +79,7 @@
               "textSize": "md",
               "className": "card-body-text text-shadow-dark",
               "label": "@name",
-              "align": "end",
+              "align": "center",
               "style": {
                 "fontSize": 26.666666666666664,
                 "fontFamily": "'Cinzel', sans-serif",
@@ -93,7 +93,7 @@
             "x": 0,
             "y": 0.18,
             "z": 3,
-            "width": "90%"
+            "width": "100%"
           },
           {
             "node": {
@@ -105,10 +105,10 @@
               "focalX": 58
             },
             "x": 0,
-            "y": -0.13,
+            "y": 0,
             "z": 0,
             "width": "100%",
-            "height": "99%"
+            "height": "100%"
           }
         ],
         "origin": "trim"
@@ -151,7 +151,7 @@
               }
             },
             "x": 0,
-            "y": 0.18,
+            "y": 0.06,
             "z": 1,
             "width": "100%"
           },
@@ -164,54 +164,190 @@
               "className": "card-body-text",
               "label": "@description",
               "style": {
-                "fontSize": 13.333333333333332
+                "fontSize": 11.333333333333332
               },
               "textSizeCustom": true
             },
-            "x": 0.21,
-            "y": 0.67,
+            "x": 0.2,
+            "y": 0.4,
             "z": 2
           },
           {
             "node": {
-              "type": "field",
-              "component": "text",
-              "text": "Ability Scores",
-              "textSize": "md",
-              "className": "card-body-text",
-              "label": "Ability Scores",
-              "style": {
-                "fontSize": 14.666666666666666
-              },
-              "textSizeCustom": true,
-              "textOrientation": "vertical",
-              "textOrientationCustom": true,
-              "textCurve": 0,
-              "textAngle": 270,
-              "textStyles": {
-                "bold": true
-              }
+              "type": "grid",
+              "columns": 2,
+              "gap": 0,
+              "cells": [
+                [
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Ability Scores",
+                      "textSize": "lg",
+                      "textStyles": {
+                        "bold": true
+                      },
+                      "className": "card-title",
+                      "label": "Ability Scores",
+                      "style": {
+                        "fontSize": 12.666666666666666
+                      },
+                      "textSizeCustom": true
+                    }
+                  ],
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@traits.abilityScores",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "label": "@traits.abilityScores",
+                      "style": {
+                        "fontSize": 11.333333333333332
+                      },
+                      "textSizeCustom": true
+                    }
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Feat",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "label": "Feat",
+                      "textStyles": {
+                        "bold": true
+                      },
+                      "style": {
+                        "fontSize": 12.666666666666666
+                      },
+                      "textSizeCustom": true
+                    }
+                  ],
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@traits.feat",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "label": "@traits.feat",
+                      "style": {
+                        "fontSize": 11.333333333333332
+                      },
+                      "textSizeCustom": true
+                    }
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Skill Proficiencies",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "label": "Skill Proficiencies",
+                      "style": {
+                        "fontSize": 12.666666666666666
+                      },
+                      "textSizeCustom": true,
+                      "textStyles": {
+                        "bold": true
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@traits.skillProficiencies",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "style": {
+                        "fontSize": 11.333333333333332
+                      },
+                      "textSizeCustom": true,
+                      "label": "@traits.skillProficiencies"
+                    }
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Tool Proficiencies",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "label": "Tool Proficiencies",
+                      "style": {
+                        "fontSize": 12.666666666666666
+                      },
+                      "textSizeCustom": true,
+                      "textStyles": {
+                        "bold": true
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@traits.toolProficiencies",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "style": {
+                        "fontSize": 11.333333333333332
+                      },
+                      "textSizeCustom": true,
+                      "label": "@traits.toolProficiencies"
+                    }
+                  ]
+                ],
+                [
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "Equipment",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "label": "Equipment",
+                      "style": {
+                        "fontSize": 12.666666666666666
+                      },
+                      "textSizeCustom": true,
+                      "textStyles": {
+                        "bold": true
+                      }
+                    }
+                  ],
+                  [
+                    {
+                      "type": "field",
+                      "component": "text",
+                      "text": "@traits.equipment",
+                      "textSize": "md",
+                      "className": "mb-0",
+                      "style": {
+                        "fontSize": 9.333333333333332
+                      },
+                      "textSizeCustom": true,
+                      "label": "@traits.equipment"
+                    }
+                  ]
+                ]
+              ]
             },
-            "x": 0,
-            "y": 3.78,
+            "x": 0.17,
+            "y": 2.35,
             "z": 3
-          },
-          {
-            "node": {
-              "type": "field",
-              "component": "list",
-              "items": [],
-              "gap": 1,
-              "className": "mb-0 ps-3 d-flex flex-column",
-              "itemsBind": "@ability_scores",
-              "style": {
-                "fontSize": 13.333333333333332
-              },
-              "textSizeCustom": true
-            },
-            "x": 0.66,
-            "y": 3.47,
-            "z": 4
           }
         ],
         "origin": "trim"

@@ -1,0 +1,144 @@
+{
+  "kind": "background",
+  "index": "guard",
+  "name": "Guard",
+  "url": "https://www.dndbeyond.com/backgrounds/406480-guard",
+  "image": "/undercroft/common/data/background/guard.png",
+  "ability_scores": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "int",
+      "name": "INT"
+    },
+    {
+      "index": "wis",
+      "name": "WIS"
+    }
+  ],
+  "feat": {
+    "index": "alert",
+    "name": "Alert"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-athletics",
+      "name": "Skill: Athletics"
+    },
+    {
+      "index": "skill-perception",
+      "name": "Skill: Perception"
+    },
+    {
+      "index": "tool-choose-one-kind-of-gaming-set",
+      "name": "Tool: Choose one kind of Gaming Set"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Spear, Light Crossbow, 20 Bolts, Gaming Set (same as above), Hooded Lantern, Manacles, Quiver, Traveler\u2019s Clothes, 12 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "spear",
+                  "name": "Spear"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "light-crossbow",
+                  "name": "Light Crossbow"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 20,
+                "of": {
+                  "index": "bolt",
+                  "name": "Bolt"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "gaming-set",
+                  "name": "Gaming Set",
+                  "note": "Same as above"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "hooded-lantern",
+                  "name": "Hooded Lantern"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "manacles",
+                  "name": "Manacles"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "quiver",
+                  "name": "Quiver"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "traveler-s-clothes",
+                  "name": "Traveler\u2019s Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 12,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "Your feet ache when you remember the countless hours you spent at your post in the tower. You were trained to keep one eye looking outside the wall, watching for marauders sweeping from the nearby forest, and your other eye looking inside the wall, searching for cutpurses and troublemakers."
+  ],
+  "source": "Player\u2019s Handbook, pg. 181",
+  "traits": {
+    "abilityScores": "Strength, Intelligence, Wisdom",
+    "feat": "Alert",
+    "skillProficiencies": "Athletics and Perception",
+    "toolProficiencies": "Choose one kind of Gaming Set",
+    "equipment": "Choose A or B: (A) Spear, Light Crossbow, 20 Bolts, Gaming Set (same as above), Hooded Lantern, Manacles, Quiver, Traveler\u2019s Clothes, 12 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-19T14:52:18.886Z"
+}

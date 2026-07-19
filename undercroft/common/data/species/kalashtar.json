@@ -1,0 +1,34 @@
+{
+  "kind": "species",
+  "name": "Kalashtar",
+  "url": "https://www.dndbeyond.com/species/2048552-kalashtar",
+  "image": "/undercroft/common/data/species/kalashtar.png",
+  "tagline": "Dream-Touched Seeker of Harmony",
+  "description": [
+    "Kalashtar (pronounced kal-ASH-tar) are created from the union of humanity and renegade spirits called quori from the plane of dreams. Kalashtar appear human, but their spiritual connection affects them in a variety of ways. They have symmetrical, slightly angular features, and their eyes often glow when they are concentrating or expressing strong emotions.",
+    "Kalashtar can\u2019t communicate directly with their quori spirits. Rather, kalashtar might experience them as a source of instinct and inspiration, drawing on the spirits\u2019 memories when the kalashtar sleep. This connection grants kalashtar minor psionic abilities, as well as protection from psionic attacks."
+  ],
+  "type": "Aberration",
+  "size": "Medium (about 6\u20137 feet tall)",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Dual Mind",
+      "description": "You have Advantage on Wisdom and Charisma saving throws."
+    },
+    {
+      "name": "Mental Discipline",
+      "description": "You have Resistance to Psychic damage."
+    },
+    {
+      "name": "Mind Link",
+      "description": "You have telepathy with a range in feet equal to 10 times your level. When you\u2019re using this trait to speak telepathically to a creature, you can take a Magic action to give that creature the ability to speak telepathically with you for 1 hour or until you take another Magic action to end this effect."
+    },
+    {
+      "name": "Severed from Dreams",
+      "description": "You can\u2019t be the target of the Dream spell. In addition, when you finish a Long Rest, you gain proficiency in one skill of your choice. This proficiency lasts until you finish another Long Rest."
+    }
+  ],
+  "variants": [],
+  "updated_at": "2026-07-19T16:31:11.749Z"
+}

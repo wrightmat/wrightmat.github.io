@@ -1,0 +1,136 @@
+{
+  "kind": "background",
+  "index": "hermit",
+  "name": "Hermit",
+  "url": "https://www.dndbeyond.com/backgrounds/406482-hermit",
+  "image": "/undercroft/common/data/background/hermit.png",
+  "ability_scores": [
+    {
+      "index": "con",
+      "name": "CON"
+    },
+    {
+      "index": "wis",
+      "name": "WIS"
+    },
+    {
+      "index": "cha",
+      "name": "CHA"
+    }
+  ],
+  "feat": {
+    "index": "healer",
+    "name": "Healer"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-medicine",
+      "name": "Skill: Medicine"
+    },
+    {
+      "index": "skill-religion",
+      "name": "Skill: Religion"
+    },
+    {
+      "index": "tool-herbalism-kit",
+      "name": "Tool: Herbalism Kit"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Quarterstaff, Herbalism Kit, Bedroll, Book (philosophy), Lamp, Oil (3 flasks), Traveler\u2019s Clothes, 16 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "quarterstaff",
+                  "name": "Quarterstaff"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "herbalism-kit",
+                  "name": "Herbalism Kit"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "bedroll",
+                  "name": "Bedroll"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "book",
+                  "name": "Book",
+                  "note": "Philosophy"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "lamp",
+                  "name": "Lamp"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 3,
+                "of": {
+                  "index": "oil",
+                  "name": "Oil"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "traveler-s-clothes",
+                  "name": "Traveler\u2019s Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 16,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You spent your early years secluded in a hut or monastery located well beyond the outskirts of the nearest settlement. In those days, your only companions were the creatures of the forest and those who would occasionally visit to bring news of the outside world and supplies. The solitude allowed you to spend many hours pondering the mysteries of creation."
+  ],
+  "source": "Player\u2019s Handbook, pg. 182",
+  "traits": {
+    "abilityScores": "Constitution, Wisdom, Charisma",
+    "feat": "Healer",
+    "skillProficiencies": "Medicine and Religion",
+    "toolProficiencies": "Herbalism Kit",
+    "equipment": "Choose A or B: (A) Quarterstaff, Herbalism Kit, Bedroll, Book (philosophy), Lamp, Oil (3 flasks), Traveler\u2019s Clothes, 16 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-19T14:53:00.832Z"
+}

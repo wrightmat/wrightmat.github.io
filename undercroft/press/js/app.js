@@ -23,6 +23,7 @@ import {
   registerCustomPageSize,
   saveCustomPageSize,
   getRepeatData,
+  getCardPageCount,
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
@@ -61,6 +62,10 @@ const sourceInputContainer = document.getElementById("sourceInputContainer");
 const previewStage = document.getElementById("previewStage");
 const printStack = document.getElementById("printStack");
 const swapSideButton = document.getElementById("swapSide");
+const cardPageNav = document.querySelector("[data-card-page-nav]");
+const cardPagePrevButton = document.querySelector("[data-card-page-prev]");
+const cardPageNextButton = document.querySelector("[data-card-page-next]");
+const cardPageLabel = document.querySelector("[data-card-page-label]");
 const canvasZoomOutButton = document.querySelector("[data-canvas-zoom-out]");
 const canvasZoomInButton = document.querySelector("[data-canvas-zoom-in]");
 const canvasZoomResetButton = document.querySelector("[data-canvas-zoom-reset]");
@@ -257,6 +262,13 @@ const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
 const sourceValues = {};
 const sourcePayloads = {};
 let currentSide = "front";
+// 0-based index into a card/chip template's physical pages — how many
+// pages a side needs depends on its repeated data (getCardPageCount,
+// templates.js), so this only ever means anything for those template
+// types; renderPreview clamps it every render rather than trusting it to
+// always already be in range (switching to a template/side with less data
+// than the one currently being viewed, in particular).
+let cardPageIndex = 0;
 let selectedNodeId = null;
 let nodeCounter = 0;
 let editablePages = { front: null, back: null };
@@ -1417,6 +1429,42 @@ function cloneNodeWithFreshIds(node) {
   return assignNodeIds(stripNodeIds(copy));
 }
 
+// A node's style.fontFamily is already a fully-resolved CSS value (e.g.
+// "'Cinzel', serif") the moment it's loaded from a saved template — the
+// renderer just applies it directly, and the browser silently falls back
+// to the CSS fallback (generic sans-serif, usually) unless the actual
+// Google Fonts stylesheet has been injected via ensureFontLoaded. That
+// injection previously only ever happened as a side effect of the font
+// dropdown rendering its own rows (attachFontFamilyAutocomplete) — which
+// never runs just from loading a template, only from clicking into that
+// specific field — so any font never touched that way stayed on its
+// fallback until someone happened to open the dropdown for it. Walking the
+// whole tree here (same placements/cells shape as findNodeById) at every
+// template (re)hydration fixes it regardless of whether that field is ever
+// interacted with.
+function ensureTemplateFontsLoaded(node) {
+  if (!node) return;
+  if (node.style?.fontFamily) {
+    const option = findFontOptionByFamily(node.style.fontFamily);
+    if (option) ensureFontLoaded(option);
+  }
+  if (Array.isArray(node.placements)) {
+    node.placements.forEach((placement) => ensureTemplateFontsLoaded(placement?.node));
+  }
+  if (Array.isArray(node.cells)) {
+    node.cells.forEach((row) => {
+      if (!Array.isArray(row)) return;
+      row.forEach((cell) => {
+        if (Array.isArray(cell)) {
+          cell.forEach((nested) => ensureTemplateFontsLoaded(nested));
+        } else {
+          ensureTemplateFontsLoaded(cell);
+        }
+      });
+    });
+  }
+}
+
 function hydrateEditablePages(template) {
   nodeCounter = 0;
   const pages = template?.pages ?? {};
@@ -1424,9 +1472,15 @@ function hydrateEditablePages(template) {
   (template?.sides ?? ["front", "back"]).forEach((side) => {
     const pageConfig = pages[side] ?? {};
     bySide[side] = { ...pageConfig, layout: cloneLayoutWithIds(pageConfig.layout) };
+    ensureTemplateFontsLoaded(bySide[side].layout);
   });
   editablePages = bySide;
   selectedNodeId = null;
+  // Whatever page was being viewed almost certainly doesn't mean the same
+  // thing for whatever template/side just got (re)hydrated — always start
+  // back at the first page rather than clamping down to some page that
+  // just happens to still be in range.
+  cardPageIndex = 0;
 }
 
 function updateTemplateSelectOption(template, previousId) {
@@ -4097,6 +4151,23 @@ function updateSideButton() {
   swapSideButton.setAttribute("aria-pressed", viewingFront ? "false" : "true");
 }
 
+// Hidden entirely for sheet templates and any card/chip template whose data
+// fits on one page — cardPageIndex still exists in that case (always 0),
+// there's just nothing to navigate to.
+function updateCardPageNav(totalCardPages) {
+  if (!cardPageNav) return;
+  cardPageNav.hidden = totalCardPages <= 1;
+  if (cardPageLabel) {
+    cardPageLabel.textContent = `Page ${cardPageIndex + 1} of ${totalCardPages}`;
+  }
+  if (cardPagePrevButton) {
+    cardPagePrevButton.disabled = cardPageIndex <= 0;
+  }
+  if (cardPageNextButton) {
+    cardPageNextButton.disabled = cardPageIndex >= totalCardPages - 1;
+  }
+}
+
 function renderPreview() {
   destroyCanvasDnd();
   const context = getSelectionContext();
@@ -4106,6 +4177,10 @@ function renderPreview() {
   const pageOverride = getEditablePage(side);
   let layoutRoot = null;
 
+  const totalCardPages = getCardPageCount(template, side, { data: sourceData, page: pageOverride });
+  cardPageIndex = Math.min(Math.max(0, cardPageIndex), totalCardPages - 1);
+  updateCardPageNav(totalCardPages);
+
   previewStage.innerHTML = "";
   const sourceContext = { ...source, value: sourceValue, data: sourceData };
   const page = template.createPage(side, {
@@ -4114,6 +4189,7 @@ function renderPreview() {
     source: sourceContext,
     data: sourceData,
     page: pageOverride,
+    cardPageIndex,
     renderOptions: {
       editable: true,
       selectedId: selectedNodeId,
@@ -4156,18 +4232,33 @@ function buildPrintStack(template, { size, format, data, source }) {
   // synchronous pass.
   printStack.classList.remove("d-none");
   printStack.style.visibility = "hidden";
-  template.sides.forEach((side) => {
-    const page = template.createPage(side, {
-      size,
-      format,
-      source,
-      data,
-      page: getEditablePage(side),
+  // Each side can need a different number of physical pages (independent
+  // repeat bindings, unless the back uses repeat:"same" to mirror the
+  // front) — sidePageCounts is computed once per side up front so a
+  // shorter side just runs out early instead of guessing a shared count.
+  // Grouped page-by-page (front page 1, back page 1, front page 2, back
+  // page 2, ...) rather than all fronts then all backs, so each physical
+  // sheet's two sides land next to each other in print order — matches
+  // the existing single-page case's front-then-back order exactly when
+  // there's only one page.
+  const sidePageCounts = template.sides.map((side) => getCardPageCount(template, side, { data, page: getEditablePage(side) }));
+  const totalPrintPages = Math.max(1, ...sidePageCounts);
+  for (let pageIndex = 0; pageIndex < totalPrintPages; pageIndex += 1) {
+    template.sides.forEach((side, sideIndex) => {
+      if (pageIndex >= sidePageCounts[sideIndex]) return;
+      const page = template.createPage(side, {
+        size,
+        format,
+        source,
+        data,
+        page: getEditablePage(side),
+        cardPageIndex: pageIndex,
+      });
+      applyOverlays(page, template, size, { forPrint: true });
+      printStack.appendChild(page);
+      applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
     });
-    applyOverlays(page, template, size, { forPrint: true });
-    printStack.appendChild(page);
-    applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
-  });
+  }
   printStack.classList.add("d-none");
   printStack.style.visibility = "";
 }
@@ -4379,6 +4470,11 @@ async function handleGeneratePrint() {
       data,
       fetchedAt: new Date().toISOString(),
     });
+    // Freshly loaded data almost certainly has a different item count than
+    // whatever was being paged through before (sample data vs. a real,
+    // much larger dataset, in particular) — start back at page 1 rather
+    // than clamping to wherever cardPageIndex happened to be.
+    cardPageIndex = 0;
     renderPreview();
     bindingFieldCache.source = null;
     refreshBindingAutocomplete();
@@ -5815,6 +5911,19 @@ function wireEvents() {
     renderPreview();
   });
   swapSideButton.addEventListener("click", toggleSide);
+  if (cardPagePrevButton) {
+    cardPagePrevButton.addEventListener("click", () => {
+      if (cardPageIndex <= 0) return;
+      cardPageIndex -= 1;
+      renderPreview();
+    });
+  }
+  if (cardPageNextButton) {
+    cardPageNextButton.addEventListener("click", () => {
+      cardPageIndex += 1;
+      renderPreview();
+    });
+  }
   if (canvasZoomOutButton) {
     canvasZoomOutButton.addEventListener("click", () => setCanvasZoom(zoomLevel - ZOOM_STEP));
   }

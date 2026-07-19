@@ -423,7 +423,7 @@ def register_routes():
     def resolve_library_path(state: ServerState, kind: str, entry_id: str) -> Path:
         if kind not in LIBRARY_KINDS:
             raise AuthError(f"Unsupported library kind '{kind}'")
-        base_dir = state.root_dir / "undercroft" / "common" / "library" / kind
+        base_dir = state.root_dir / "undercroft" / "common" / "data" / kind
         candidate = (base_dir / f"{entry_id}.json").resolve()
         if not str(candidate).startswith(str(base_dir.resolve())):
             raise AuthError("Invalid library path")

@@ -87,42 +87,42 @@
     {
       "name": "library-class",
       "type": "static",
-      "root": "undercroft/common/library/class",
+      "root": "undercroft/common/data/class",
       "directory_listing": true,
       "directory_extensions": [".json"]
     },
     {
       "name": "library-subclass",
       "type": "static",
-      "root": "undercroft/common/library/subclass",
+      "root": "undercroft/common/data/subclass",
       "directory_listing": true,
       "directory_extensions": [".json"]
     },
     {
       "name": "library-background",
       "type": "static",
-      "root": "undercroft/common/library/background",
+      "root": "undercroft/common/data/background",
       "directory_listing": true,
       "directory_extensions": [".json"]
     },
     {
       "name": "library-species",
       "type": "static",
-      "root": "undercroft/common/library/species",
+      "root": "undercroft/common/data/species",
       "directory_listing": true,
       "directory_extensions": [".json"]
     },
     {
       "name": "library-variant",
       "type": "static",
-      "root": "undercroft/common/library/variant",
+      "root": "undercroft/common/data/variant",
       "directory_listing": true,
       "directory_extensions": [".json"]
     },
     {
       "name": "library-character",
       "type": "static",
-      "root": "undercroft/common/library/character",
+      "root": "undercroft/common/data/character",
       "directory_listing": true,
       "directory_extensions": [".json"]
     }

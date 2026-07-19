@@ -3,7 +3,7 @@
   "index": "artisan",
   "name": "Artisan",
   "url": "https://www.dndbeyond.com/backgrounds/406476-artisan",
-  "image": "https://i0.wp.com/nerdarchy.com/wp-content/uploads/2021/05/mtg-doomed-artisan.jpg",
+  "image": "/undercroft/common/data/background/artisan.png",
   "ability_scores": [
     {
       "index": "str",

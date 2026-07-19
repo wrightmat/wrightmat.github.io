@@ -1,0 +1,40 @@
+{
+  "kind": "species",
+  "name": "Elf",
+  "url": "https://www.dndbeyond.com/species/1751437-elf",
+  "image": "/undercroft/common/data/species/elf.png",
+  "tagline": "Graceful Child of the Fey",
+  "description": [
+    "Created by the god Corellon, the first elves could change their forms at will. They lost this ability when Corellon cursed them for plotting with the deity Lolth, who tried and failed to usurp Corellon\u2019s dominion. When Lolth was cast into the Abyss, most elves renounced her and earned Corellon\u2019s forgiveness, but that which Corellon had taken from them was lost forever.",
+    "No longer able to shape-shift at will, the elves retreated to the Feywild, where their sorrow was deepened by that plane\u2019s influence. Over time, curiosity led many of them to explore other planes of existence, including worlds in the Material Plane.",
+    "Elves have pointed ears and lack facial and body hair. They live for around 750 years, and they don\u2019t sleep but instead enter a trance when they need to rest. In that state, they remain aware of their surroundings while immersing themselves in memories and meditations.",
+    "An environment subtly transforms elves after they inhabit it for a millennium or more, and it grants them certain kinds of magic. Drow, high elves, and wood elves are examples of elves who have been transformed thus."
+  ],
+  "type": "Humanoid",
+  "size": "Medium (about 5\u20136 feet tall)",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Darkvision",
+      "description": "You have Darkvision with a range of 60 feet."
+    },
+    {
+      "name": "Elven Lineage",
+      "description": "You are part of a lineage that grants you supernatural abilities. Choose a lineage from the Elven Lineages table. You gain the level 1 benefit of that lineage.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage)."
+    },
+    {
+      "name": "Fey Ancestry",
+      "description": "You have Advantage on saving throws you make to avoid or end the Charmed condition."
+    },
+    {
+      "name": "Keen Senses",
+      "description": "You have proficiency in the Insight, Perception, or Survival skill."
+    },
+    {
+      "name": "Trance",
+      "description": "You don\u2019t need to sleep, and magic can\u2019t put you to sleep. You can finish a Long Rest in 4 hours if you spend those hours in a trancelike meditation, during which you retain consciousness."
+    }
+  ],
+  "variants": [],
+  "updated_at": "2026-07-19T16:29:24.407Z"
+}

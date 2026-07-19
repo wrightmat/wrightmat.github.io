@@ -1,0 +1,103 @@
+{
+  "kind": "background",
+  "index": "merchant",
+  "name": "Merchant",
+  "url": "https://www.dndbeyond.com/backgrounds/406483-merchant",
+  "image": "/undercroft/common/data/background/merchant.png",
+  "ability_scores": [
+    {
+      "index": "con",
+      "name": "CON"
+    },
+    {
+      "index": "int",
+      "name": "INT"
+    },
+    {
+      "index": "cha",
+      "name": "CHA"
+    }
+  ],
+  "feat": {
+    "index": "lucky",
+    "name": "Lucky"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-animal-handling",
+      "name": "Skill: Animal Handling"
+    },
+    {
+      "index": "skill-persuasion",
+      "name": "Skill: Persuasion"
+    },
+    {
+      "index": "tool-navigators-tools",
+      "name": "Tool: Navigator's Tools"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Navigator's Tools, 2 Pouches, Traveler\u2019s Clothes, 22 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "navigators-tools",
+                  "name": "Navigator's Tools"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 2,
+                "of": {
+                  "index": "pouche",
+                  "name": "Pouche"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "traveler-s-clothes",
+                  "name": "Traveler\u2019s Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 22,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You were apprenticed to a trader, caravan master, or shopkeeper, learning the fundamentals of commerce. You traveled broadly, and you earned a living by buying and selling the raw materials artisans need to practice their craft or finished works from such crafters. You might have transported goods from one place to another (by ship, wagon, or caravan) or bought them from traveling traders and sold them in your own shop."
+  ],
+  "source": "Player\u2019s Handbook, pg. 182",
+  "traits": {
+    "abilityScores": "Constitution, Intelligence, Charisma",
+    "feat": "Lucky",
+    "skillProficiencies": "Animal Handling and Persuasion",
+    "toolProficiencies": "Navigator's Tools",
+    "equipment": "Choose A or B: (A) Navigator's Tools, 2 Pouches, Traveler\u2019s Clothes, 22 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-19T14:53:13.894Z"
+}

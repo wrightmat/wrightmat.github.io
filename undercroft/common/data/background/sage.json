@@ -1,10 +1,14 @@
 {
   "kind": "background",
-  "index": "acolyte",
-  "name": "Acolyte",
-  "url": "https://www.dndbeyond.com/backgrounds/406475-acolyte",
-  "image": "https://files.d20.io/images/424065683/uYb7l2UCjljaYbmHrOv4WA/original.png",
+  "index": "sage",
+  "name": "Sage",
+  "url": "https://www.dndbeyond.com/backgrounds/406485-sage",
+  "image": "/undercroft/common/data/background/sage.png",
   "ability_scores": [
+    {
+      "index": "con",
+      "name": "CON"
+    },
     {
       "index": "int",
       "name": "INT"
@@ -12,25 +16,21 @@
     {
       "index": "wis",
       "name": "WIS"
-    },
-    {
-      "index": "cha",
-      "name": "CHA"
     }
   ],
   "feat": {
     "index": "magic-initiate",
     "name": "Magic Initiate",
-    "note": "Cleric"
+    "note": "Wizard"
   },
   "proficiencies": [
     {
-      "index": "skill-insight",
-      "name": "Skill: Insight"
+      "index": "skill-arcana",
+      "name": "Skill: Arcana"
     },
     {
-      "index": "skill-religion",
-      "name": "Skill: Religion"
+      "index": "skill-history",
+      "name": "Skill: History"
     },
     {
       "index": "tool-calligraphers-supplies",
@@ -40,7 +40,7 @@
   "proficiency_choices": [],
   "equipment_options": [
     {
-      "desc": "(A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP or (B) 50 GP",
+      "desc": "(A) Quarterstaff, Calligrapher's Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP or (B) 50 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -49,6 +49,14 @@
           {
             "option_type": "multiple",
             "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "quarterstaff",
+                  "name": "Quarterstaff"
+                }
+              },
               {
                 "option_type": "counted_reference",
                 "count": 1,
@@ -63,20 +71,12 @@
                 "of": {
                   "index": "book",
                   "name": "Book",
-                  "note": "Prayers"
+                  "note": "History"
                 }
               },
               {
                 "option_type": "counted_reference",
-                "count": 1,
-                "of": {
-                  "index": "holy-symbol",
-                  "name": "Holy Symbol"
-                }
-              },
-              {
-                "option_type": "counted_reference",
-                "count": 10,
+                "count": 8,
                 "of": {
                   "index": "parchment",
                   "name": "Parchment"
@@ -107,15 +107,15 @@
     }
   ],
   "description": [
-    "You devoted yourself to service in a temple, either nestled in a town or secluded in a sacred grove. There you performed rites in honor of a god or pantheon. You served under a priest and studied religion. Thanks to your priest\u2019s instruction and your own devotion, you also learned how to channel a modicum of divine power in service to your place of worship and the people who prayed there."
+    "You spent your formative years traveling between manors and monasteries, performing various odd jobs and services in exchange for access to their libraries. You whiled away many a long evening studying books and scrolls, learning the lore of the multiverse\u2014even the rudiments of magic\u2014and your mind yearns for more."
   ],
-  "source": "Player\u2019s Handbook, pg. 178",
+  "source": "Player\u2019s Handbook, pg. 183",
   "traits": {
-    "abilityScores": "Intelligence, Wisdom, Charisma",
-    "feat": "Magic Initiate (Cleric)",
-    "skillProficiencies": "Insight and Religion",
+    "abilityScores": "Constitution, Intelligence, Wisdom",
+    "feat": "Magic Initiate (Wizard)",
+    "skillProficiencies": "Arcana and History",
     "toolProficiencies": "Calligrapher's Supplies",
-    "equipment": "Choose A or B: (A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP"
+    "equipment": "Choose A or B: (A) Quarterstaff, Calligrapher's Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-17T23:06:04.767Z"
+  "updated_at": "2026-07-19T14:54:23.085Z"
 }
