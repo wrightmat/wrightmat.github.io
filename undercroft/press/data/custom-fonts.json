@@ -1,0 +1,51 @@
+{
+  "fonts": [
+    {
+      "id": "calibri",
+      "label": "Calibri (Windows/Office only)",
+      "family": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif"
+    },
+    {
+      "id": "georgia",
+      "label": "Georgia (serif)",
+      "family": "Georgia, 'Times New Roman', serif"
+    },
+    {
+      "id": "times",
+      "label": "Times New Roman (serif)",
+      "family": "'Times New Roman', Times, serif"
+    },
+    {
+      "id": "arial",
+      "label": "Arial (sans-serif)",
+      "family": "Arial, Helvetica, sans-serif"
+    },
+    {
+      "id": "verdana",
+      "label": "Verdana (sans-serif)",
+      "family": "Verdana, Geneva, sans-serif"
+    },
+    {
+      "id": "trebuchet",
+      "label": "Trebuchet MS (sans-serif)",
+      "family": "'Trebuchet MS', sans-serif"
+    },
+    {
+      "id": "courier",
+      "label": "Courier New (monospace)",
+      "family": "'Courier New', Courier, monospace"
+    },
+    {
+      "id": "ubuntu",
+      "label": "Ubuntu (Sans Serif)",
+      "family": "'Ubuntu', sans-serif",
+      "googleFont": "Ubuntu"
+    },
+    {
+      "id": "cinzel",
+      "label": "Cinzel (Serif)",
+      "family": "'Cinzel', sans-serif",
+      "googleFont": "Cinzel"
+    }
+  ]
+}

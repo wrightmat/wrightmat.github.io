@@ -39,11 +39,18 @@ function applyClassName(element, className) {
   }
 }
 
+// Callers do `resolveClassName(node, context) ?? "some-default-class"` to
+// fall back to a required base class (e.g. "press-image") when a node
+// doesn't specify its own — that only works if this returns null/undefined
+// for "nothing to apply", not "" (which resolveBinding("", ...) legitimately
+// returns for a className-less node), or the ?? never triggers and the
+// element silently ends up with no class — and therefore none of that base
+// class's CSS — at all.
 function resolveClassName(node, context) {
   const raw = node?.className ?? node?.classNameBind ?? "";
   if (typeof raw === "string") {
     const resolved = resolveBinding(raw, context);
-    return resolved ?? null;
+    return resolved || null;
   }
   return raw || null;
 }
@@ -66,6 +73,9 @@ function applyInlineStyles(element, styles = {}) {
   const borderEnabled = hasBorderStyles(styles);
   if (typeof styles.fontSize === "number") {
     element.style.fontSize = `${styles.fontSize}px`;
+  }
+  if (styles.fontFamily) {
+    element.style.fontFamily = styles.fontFamily;
   }
   if (typeof styles.lineHeight === "number") {
     element.style.lineHeight = `${styles.lineHeight}`;
@@ -161,20 +171,26 @@ function applyGap(element, gap) {
   }
 }
 
-function resolveLayoutAlignment(node) {
-  const alignment = node?.align || "start";
+// Horizontal (per-cell, CSS justify-items) and vertical (row distribution,
+// CSS align-content) axes for the unified grid node — same four-value
+// vocabulary (start/center/end/justify) and same per-axis defaults the old
+// row.align ("start") and stack.align ("justify") used, so a normalized
+// legacy stack/row keeps its exact prior look with no explicit alignX/alignY
+// set at all (see normalizeLegacyLayoutNode).
+function resolveGridAlignX(node) {
+  const alignment = node?.alignX || "start";
   if (alignment === "center") return "center";
   if (alignment === "end") return "end";
   if (alignment === "justify") return "stretch";
   return "start";
 }
 
-function resolveStackAlignment(node) {
-  const alignment = node?.align || "justify";
+function resolveGridAlignY(node) {
+  const alignment = node?.alignY || "justify";
   if (alignment === "center") return "center";
-  if (alignment === "end") return "flex-end";
+  if (alignment === "end") return "end";
   if (alignment === "justify") return "space-between";
-  return "flex-start";
+  return "start";
 }
 
 function createTextElement(tag, text, className) {
@@ -193,18 +209,25 @@ function resolveTextTransform(node) {
   };
 }
 
-function applyTextTransform(element, node) {
-  if (!element || !node) return;
-  const { rotation } = resolveTextTransform(node);
-  const transforms = [];
-  if (rotation) transforms.push(`rotate(${rotation}deg)`);
-  if (transforms.length) {
-    element.style.transform = transforms.join(" ");
+// Shared by text's textAngle and any layer child's rotate — a plain
+// rotate-degrees-around-center transform with no other node-specific
+// knowledge, so it works on any wrapper element regardless of node type.
+function applyRotate(element, degrees) {
+  if (!element) return;
+  const rotation = Number.isFinite(degrees) ? degrees : 0;
+  if (rotation) {
+    element.style.transform = `rotate(${rotation}deg)`;
     element.style.transformOrigin = "center";
   } else {
     element.style.removeProperty("transform");
     element.style.removeProperty("transform-origin");
   }
+}
+
+function applyTextTransform(element, node) {
+  if (!element || !node) return;
+  const { rotation } = resolveTextTransform(node);
+  applyRotate(element, rotation);
 }
 
 function applyTextFormatting(element, node) {
@@ -369,32 +392,24 @@ function renderField(node, context, options = {}) {
       applyTextTransform(el, node);
       return el;
     }
-    case "badge": {
-      const useCurved = node.textOrientation === "curve-up" || node.textOrientation === "curve-down";
-      if (useCurved) {
-        const el = createCurvedTextElement(
-          node,
-          value ?? node.label ?? "Badge",
-          resolveClassName(node, context) ?? "badge text-bg-primary",
-        );
-        if (isEmptyBindingResult) applyClassName(el, "press-binding-placeholder");
-        return el;
-      }
-      const el = createTextElement(
-        "span",
-        value ?? node.label ?? "Badge",
-        resolveClassName(node, context) ?? "badge text-bg-primary",
-      );
-      if (isEmptyBindingResult) {
-        applyClassName(el, "press-binding-placeholder");
-      }
-      applyInlineStyles(el, node.style);
-      applyTextFormatting(el, node);
-      applyTextTransform(el, node);
-      return el;
-    }
     case "list": {
-      const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
+      const itemsBindExpr = node.itemsBind;
+      const resolvedItems = resolveBinding(itemsBindExpr, context);
+      // Same "show the binding expression itself" fallback as text's
+      // isEmptyBindingResult above — an empty <ul> has no content and no
+      // height, which made the list collapse to nothing (and become
+      // unclickable/unselectable in the editor) whenever data isn't
+      // loaded yet, unlike text fields which already had this fallback.
+      // Only kicks in for a real, non-empty itemsBind string with nothing
+      // resolved AND no static node.items to fall back on instead — a
+      // genuinely empty static list is a real "no items" state, not an
+      // unbound one.
+      const isEmptyItemsBinding =
+        (resolvedItems === undefined || resolvedItems === null || (Array.isArray(resolvedItems) && resolvedItems.length === 0)) &&
+        typeof itemsBindExpr === "string" &&
+        itemsBindExpr.trim().length > 0 &&
+        !(Array.isArray(node.items) && node.items.length);
+      const items = isEmptyItemsBinding ? [] : resolvedItems ?? node.items ?? [];
       const listTag = node.listTag ?? "ul";
       const itemTag = node.itemTag ?? "li";
       const el = document.createElement(listTag);
@@ -403,6 +418,13 @@ function renderField(node, context, options = {}) {
         el.style.display = "flex";
         el.style.flexDirection = "column";
         applyGap(el, node.gap);
+      }
+      if (isEmptyItemsBinding) {
+        const placeholder = document.createElement(itemTag);
+        placeholder.textContent = itemsBindExpr;
+        applyClassName(placeholder, "press-binding-placeholder");
+        applyTextFormatting(placeholder, node);
+        el.appendChild(placeholder);
       }
       asArray(items).forEach((item, index) => {
         const li = document.createElement(itemTag);
@@ -477,36 +499,69 @@ function renderField(node, context, options = {}) {
       wrapper.append(label, val);
       return wrapper;
     }
-    case "noteLines": {
-      const el = document.createElement("div");
-      applyClassName(el, resolveClassName(node, context) ?? "note-lines");
-      applyInlineStyles(el, node.style);
-      return el;
-    }
     case "image": {
       const src = resolveBinding(node.url ?? node.src ?? node.text ?? node.value ?? node.bind, context);
       const el = document.createElement("div");
       applyClassName(el, resolveClassName(node, context) ?? "press-image");
       applyInlineStyles(el, node.style);
-      if (typeof node.width === "number") {
-        el.style.width = `${node.width}in`;
+      // Independent of the general border-color/width/style system (which
+      // would also draw a visible 1px border just from setting a radius) —
+      // this is purely a corner-rounding knob, defaulting to square corners
+      // (matching .press-image's own CSS default) unless set.
+      if (typeof node.cornerRadius === "number") {
+        el.style.borderRadius = `${node.cornerRadius}px`;
       }
-      if (typeof node.height === "number") {
-        el.style.height = `${node.height}in`;
+      // A layer child's box comes entirely from its placement wrapper (see
+      // renderLayer) — applying the field's own width/height here too would
+      // fix the image at a stale inch value no matter how the wrapper (and
+      // therefore the visibly resized container) gets sized.
+      if (!options?.insideLayer) {
+        if (typeof node.width === "number") {
+          el.style.width = `${node.width}in`;
+        }
+        if (typeof node.height === "number") {
+          el.style.height = `${node.height}in`;
+        }
       }
       if (src) {
         const img = document.createElement("img");
         img.src = src;
         img.alt = node.alt ?? "";
         img.className = "press-image__img";
-        if (typeof node.width === "number") {
-          img.style.width = "100%";
+        // .press-image__img already fills its wrapper (width/height:100% by
+        // default in CSS) — only object-fit needs an explicit override here,
+        // since "contain"/"fill" matter once an image is a positioned layer
+        // child with its own box (e.g. a frame image that shouldn't crop).
+        img.style.objectFit = ["cover", "contain", "fill"].includes(node.fit) ? node.fit : "cover";
+        // focalX/focalY ("Pan X/Y") pick which part of the source image
+        // object-fit anchors on — plain object-position, so "50 50"
+        // (unset) matches the previous always-centered behavior exactly.
+        // zoom scales past a normal Cover fit around that same point via
+        // transform: above 1 crops into a specific part of an oversized
+        // image instead of always seeing its center; below 1 deliberately
+        // shrinks it further, e.g. for an image that's still too big even
+        // after Cover — that can expose empty space around it, which is
+        // the point (not guarded against) rather than a mistake.
+        // .press-image's own overflow:hidden (styles.css) clips anything
+        // that still overflows on the zoomed-in side.
+        const hasFocalPoint = typeof node.focalX === "number" || typeof node.focalY === "number";
+        const focalX = typeof node.focalX === "number" ? node.focalX : 50;
+        const focalY = typeof node.focalY === "number" ? node.focalY : 50;
+        if (hasFocalPoint) {
+          img.style.objectPosition = `${focalX}% ${focalY}%`;
         }
-        if (typeof node.height === "number") {
-          img.style.height = "100%";
+        if (typeof node.zoom === "number" && node.zoom !== 1) {
+          img.style.transform = `scale(${node.zoom})`;
+          img.style.transformOrigin = `${focalX}% ${focalY}%`;
         }
         el.appendChild(img);
       } else {
+        // The empty-state placeholder tint (.press-image--empty in CSS)
+        // only belongs here, not on every image box unconditionally — a
+        // loaded image with transparent areas (e.g. a pattern-library SVG)
+        // would otherwise show that tint bleeding through, in both editor
+        // and print.
+        el.classList.add("press-image--empty");
         const placeholder = document.createElement("div");
         placeholder.className = "press-image__placeholder";
         placeholder.textContent = node.label ?? "Image";
@@ -515,7 +570,20 @@ function renderField(node, context, options = {}) {
       return el;
     }
     case "table": {
-      const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
+      const rowsBindExpr = node.rowsBind ?? node.itemsBind;
+      const resolvedRows = resolveBinding(rowsBindExpr, context);
+      // Same "show the binding expression itself" fallback as list's
+      // isEmptyItemsBinding above — an empty tbody left the table
+      // effectively invisible (no rows means no height beyond the
+      // header) whenever data isn't loaded yet. Only kicks in for a real,
+      // non-empty rowsBind/itemsBind string with nothing resolved AND no
+      // static node.rows to fall back on instead.
+      const isEmptyRowsBinding =
+        (resolvedRows === undefined || resolvedRows === null || (Array.isArray(resolvedRows) && resolvedRows.length === 0)) &&
+        typeof rowsBindExpr === "string" &&
+        rowsBindExpr.trim().length > 0 &&
+        !(Array.isArray(node.rows) && node.rows.length);
+      const rows = isEmptyRowsBinding ? [] : resolvedRows ?? node.rows ?? [];
       const columns = node.columns ?? [];
       const table = document.createElement("table");
       applyClassName(table, resolveClassName(node, context) ?? "press-table");
@@ -595,6 +663,15 @@ function renderField(node, context, options = {}) {
         table.appendChild(thead);
       }
       const tbody = document.createElement("tbody");
+      if (isEmptyRowsBinding) {
+        const placeholderRow = document.createElement("tr");
+        const placeholderCell = document.createElement("td");
+        placeholderCell.colSpan = Math.max(1, columns.length);
+        placeholderCell.textContent = rowsBindExpr;
+        applyClassName(placeholderCell, "press-binding-placeholder");
+        placeholderRow.appendChild(placeholderCell);
+        tbody.appendChild(placeholderRow);
+      }
       const tableCells = Array.isArray(node.cells) ? node.cells : [];
       const getCellNodeId = (rowIndex, colIndex) => (node.uid ? `${node.uid}-cell-${rowIndex}-${colIndex}` : null);
       const createCellNode = (rowIndex, column, columnIndex) => {
@@ -701,60 +778,219 @@ function renderField(node, context, options = {}) {
   }
 }
 
-function renderStack(node, context, options) {
+// Unifies the old `stack` (flex column) and `row` (single-row CSS grid)
+// container types into one N-rows x M-columns CSS Grid, with independent
+// horizontal (alignX -> justify-items) and vertical (alignY -> align-content)
+// alignment axes. `cells` is row-major: cells[row][col] is an array of raw
+// nodes (0, 1, or more) — the same convention the table field component
+// already uses for its own cell storage, which is why the editor's
+// tree-walking helpers (findNodeById, stripNodeIds, etc.) need no changes
+// to support this node type. A cell node may carry `colSpan` (> 1) to widen
+// its grid column, mirroring the old row column's `span` property.
+function renderGrid(node, context, options) {
   const container = document.createElement("div");
-  container.dataset.pressContainer = "stack";
-  applyClassName(container, "d-flex flex-column");
+  container.dataset.pressContainer = "grid";
+  applyClassName(container, "d-grid");
   applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
-  container.style.alignSelf = "stretch";
-  container.style.width = "100%";
-  container.style.justifyContent = resolveStackAlignment(node);
-  const hasAlignment = typeof node?.align === "string" && node.align.trim() !== "";
+  // A migrated stack/row's className may still carry a stray "d-flex" (or
+  // similar) left over from the old renderer's own base class — inline
+  // display always wins over any class regardless of source order, so it
+  // can't lose a cascade tie-break to a legacy class the template author
+  // never meant to conflict with grid.
+  container.style.display = "grid";
+  const columnCount = Number.isFinite(node.columns) && node.columns > 0 ? node.columns : 1;
+  container.style.gridTemplateColumns = node.templateColumns
+    ? node.templateColumns
+    : `repeat(${columnCount}, minmax(0, 1fr))`;
+  if (node.templateRows) {
+    container.style.gridTemplateRows = node.templateRows;
+  }
+  container.style.justifyItems = resolveGridAlignX(node);
+  container.style.alignContent = resolveGridAlignY(node);
   applyGap(container, node.gap ?? 4);
-  asArray(node.children).forEach((child) => {
-    const renderedChild = renderNode(child, context, options);
-    if (hasAlignment && renderedChild?.style) {
-      renderedChild.style.flex = "0 0 auto";
-    }
-    container.appendChild(renderedChild);
+  asArray(node.cells).forEach((rowCells, rowIndex) => {
+    asArray(rowCells).forEach((cellNodes, columnIndex) => {
+      const cell = document.createElement("div");
+      applyClassName(cell, "w-100");
+      // Grid items default to min-width:auto, which lets a cell's
+      // content-driven intrinsic width (e.g. a long word in bound text)
+      // override the track's minmax(0, 1fr) and push the cell — and
+      // whatever text is inside it — past the track's actual boundary
+      // instead of wrapping. Short static/placeholder text rarely hits
+      // this; real bound content (a description field, say) easily does.
+      cell.style.minWidth = "0";
+      const firstNode = Array.isArray(cellNodes) ? cellNodes[0] : cellNodes;
+      if (Number.isFinite(firstNode?.colSpan) && firstNode.colSpan > 1) {
+        cell.style.gridColumn = `span ${firstNode.colSpan}`;
+      }
+      if (options?.editable) {
+        const slot = document.createElement("div");
+        slot.className = "press-drop-slot d-flex flex-column h-100 w-100";
+        slot.dataset.pressSlot = "grid";
+        slot.dataset.parentNodeId = node.uid ?? "";
+        slot.dataset.rowIndex = String(rowIndex);
+        slot.dataset.columnIndex = String(columnIndex);
+        // slot is a flex column (for the editor's own drop-target sizing),
+        // so its children are flex items — same min-width:auto default as
+        // the grid cell above, same fix, one level deeper for the editable
+        // canvas specifically.
+        asArray(cellNodes).forEach((cellNode) => {
+          const rendered = renderNode(cellNode, context, options);
+          if (rendered?.style) rendered.style.minWidth = "0";
+          slot.appendChild(rendered);
+        });
+        cell.appendChild(slot);
+      } else {
+        asArray(cellNodes).forEach((cellNode) => {
+          cell.appendChild(renderNode(cellNode, context, options));
+        });
+      }
+      container.appendChild(cell);
+    });
   });
   return container;
 }
 
-function renderRow(node, context, options) {
+// Backward compatibility for pre-grid templates: converts a legacy `stack`
+// or `row` node into the equivalent `grid` shape, recursively, without
+// mutating the input. Non-container nodes (field, already-grid contents'
+// leaves) pass through by the same object reference — this matters because
+// the table field component mutates its own `node.cells` in place in
+// editable mode to persist newly-added cells back into the caller's
+// (editor-owned) tree, and that only keeps working if normalization never
+// clones nodes it doesn't need to convert. `align` becomes `alignX` (row) or
+// `alignY` (stack) only when explicitly set — left unset otherwise so
+// resolveGridAlignX/Y's own defaults reproduce the old per-type default.
+// The one exception is a converted stack's alignX: a flex column's children
+// stretch to fill the cross axis (CSS's flex default) unconditionally,
+// completely independent of the stack's own `align` property (which only
+// ever drove the main-axis justify-content) — grid's equivalent default
+// ("start", matching row) would instead shrink each child to its own content
+// width, silently breaking anything that relied on that full-width box (e.g.
+// a centered text-align with nothing to center within), so it has to be set
+// explicitly here rather than left to resolveGridAlignX's shared default.
+export function normalizeLegacyLayoutNode(node) {
+  if (!node || typeof node !== "object") return node;
+
+  if (node.type === "stack") {
+    const { children, align, type, ...rest } = node;
+    return {
+      ...rest,
+      type: "grid",
+      columns: 1,
+      alignX: "justify",
+      ...(align ? { alignY: align } : null),
+      cells: asArray(children).map((child) => [[normalizeLegacyLayoutNode(child)]]),
+    };
+  }
+
+  if (node.type === "row") {
+    const { columns, align, type, ...rest } = node;
+    const columnList = asArray(columns);
+    return {
+      ...rest,
+      type: "grid",
+      columns: columnList.length || 1,
+      ...(align ? { alignX: align } : null),
+      cells: [
+        columnList.map((column) => {
+          if (!column?.node) return [];
+          const normalizedChild = normalizeLegacyLayoutNode(column.node);
+          if (Number.isFinite(column.span) && column.span > 1) {
+            return [{ ...normalizedChild, colSpan: column.span }];
+          }
+          return [normalizedChild];
+        }),
+      ],
+    };
+  }
+
+  if (node.type === "grid" && Array.isArray(node.cells)) {
+    return {
+      ...node,
+      cells: node.cells.map((rowCells) =>
+        asArray(rowCells).map((cellNodes) => asArray(cellNodes).map((cellNode) => normalizeLegacyLayoutNode(cellNode)))
+      ),
+    };
+  }
+
+  if (node.type === "layer" && Array.isArray(node.placements)) {
+    return {
+      ...node,
+      placements: node.placements.map((placement) =>
+        placement?.node ? { ...placement, node: normalizeLegacyLayoutNode(placement.node) } : placement
+      ),
+    };
+  }
+
+  return node;
+}
+
+// Free/absolute positioning + z-stacking, additive alongside stack (flow
+// column) and row (grid flow) — every child is a {node, x, y, width, height,
+// z, rotate} wrapper (position metadata owned by the layer, mirroring row's
+// {node, span, className} column convention) rather than living on the
+// child node itself, so any node type — field, nested stack, nested layer —
+// can be positioned without needing to know it's positioned.
+function renderLayer(node, context, options) {
   const container = document.createElement("div");
-  applyClassName(container, "d-grid");
+  container.dataset.pressContainer = "layer";
+  // Only meaningful when this layer turns out to be the root (checked via
+  // data-press-root, set by renderLayout below) — applyAutoWidthCaps needs
+  // to know whether this box's own right edge already IS the safe line
+  // (origin "safe", the default — applyRootLayoutOrigin already padded the
+  // root by safeInset) or is the trim/bleed edge instead, which sits
+  // further out than the safe line and needs an explicit pull-in.
+  container.dataset.pressOrigin = node.origin || "safe";
+  applyClassName(container, "press-layer position-relative w-100 h-100");
   applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
-  const columnCount = (node.columns && node.columns.length) || 1;
-  if (node.templateColumns) {
-    container.style.gridTemplateColumns = node.templateColumns;
-  } else {
-    container.style.gridTemplateColumns = `repeat(${columnCount}, minmax(0, 1fr))`;
-  }
-  container.style.justifyItems = resolveLayoutAlignment(node);
-  applyGap(container, node.gap ?? 4);
-  (node.columns || []).forEach((column, columnIndex) => {
-    const col = document.createElement("div");
-    applyClassName(col, "w-100");
-    if (column.span) {
-      col.style.gridColumn = `span ${column.span}`;
+  asArray(node.placements).forEach((placement, index) => {
+    if (!placement?.node || shouldHide(placement.node)) return;
+    const wrapper = document.createElement("div");
+    applyClassName(wrapper, "position-absolute press-layer-item");
+    wrapper.style.left = typeof placement.x === "number" ? `${placement.x}in` : "0";
+    wrapper.style.top = typeof placement.y === "number" ? `${placement.y}in` : "0";
+    // width/height take a number (inches) or a raw CSS size string (e.g.
+    // "100%" to fill the layer, useful for a full-bleed background image
+    // whose exact box varies by origin/insets) — omit either for intrinsic,
+    // content-sized dimensions.
+    if (typeof placement.width === "number") {
+      wrapper.style.width = `${placement.width}in`;
+    } else if (typeof placement.width === "string" && placement.width) {
+      wrapper.style.width = placement.width;
+    } else {
+      // Auto width (no explicit size): flagged here so applyAutoWidthCaps
+      // (below) can cap it once this element is actually laid out. A
+      // percentage max-width (e.g. calc(100% - Xin)) looked right on paper
+      // but didn't reliably resolve against this wrapper's real containing
+      // block in practice, so the cap is computed from real measured
+      // geometry instead, after the DOM is attached — see
+      // applyAutoWidthCaps for why.
+      wrapper.dataset.autoWidth = "true";
     }
+    if (typeof placement.height === "number") {
+      wrapper.style.height = `${placement.height}in`;
+    } else if (typeof placement.height === "string" && placement.height) {
+      wrapper.style.height = placement.height;
+    }
+    wrapper.style.zIndex = String(Number.isFinite(placement.z) ? placement.z : index);
+    applyRotate(wrapper, placement.rotate);
+    // Sortable's draggable selector matches direct children of the
+    // press-layer container carrying [data-node-id] — the wrapper needs its
+    // own copy since the actual rendered node (which also carries this via
+    // attachEditorHooks) is nested one level deeper, inside this wrapper.
     if (options?.editable) {
-      const slot = document.createElement("div");
-      slot.className = "press-drop-slot d-flex flex-column h-100 w-100";
-      slot.dataset.pressSlot = "row";
-      slot.dataset.parentNodeId = node.uid ?? "";
-      slot.dataset.columnIndex = String(columnIndex);
-      if (column.node) {
-        slot.appendChild(renderNode(column.node, context, options));
-      }
-      col.appendChild(slot);
-    } else if (column.node) {
-      col.appendChild(renderNode(column.node, context, options));
+      wrapper.dataset.nodeId = placement.node.uid ?? "";
     }
-    container.appendChild(col);
+    // A layer child's box is owned by its placement wrapper (x/y/width/
+    // height above) — flagging this so the image field case below skips its
+    // own width/height inline override, which would otherwise fix the
+    // image's own box at a stale inch value regardless of how the wrapper
+    // (and therefore the visible container) gets resized.
+    wrapper.appendChild(renderNode(placement.node, context, { ...options, insideLayer: true }));
+    container.appendChild(wrapper);
   });
   return container;
 }
@@ -784,10 +1020,10 @@ function attachEditorHooks(element, node, options) {
 export function renderNode(node, context = {}, options = {}) {
   if (!node || shouldHide(node)) return document.createComment("empty");
   switch (node.type) {
-    case "stack":
-      return attachEditorHooks(renderStack(node, context, options), node, options);
-    case "row":
-      return attachEditorHooks(renderRow(node, context, options), node, options);
+    case "grid":
+      return attachEditorHooks(renderGrid(node, context, options), node, options);
+    case "layer":
+      return attachEditorHooks(renderLayer(node, context, options), node, options);
     case "field":
       return attachEditorHooks(renderField(node, context, options), node, options);
     default:
@@ -796,14 +1032,70 @@ export function renderNode(node, context = {}, options = {}) {
 }
 
 export function renderLayout(layout, context = {}, options = {}) {
-  const rendered = renderNode(layout, context, options);
-  if (layout?.type === "stack" && rendered?.style) {
+  const normalizedLayout = normalizeLegacyLayoutNode(layout);
+  const rendered = renderNode(normalizedLayout, context, options);
+  // The root layout is always a flex item of .card-tile-content
+  // (display:flex; flex-direction:column) — without an explicit
+  // flex-basis/min-height override, a root whose own content is all
+  // absolutely positioned (a root `layer`, whose placements contribute no
+  // intrinsic height) hits the classic flexbox `min-height:auto`
+  // content-collapse and renders far shorter than the card, even though
+  // its CSS class already declares height:100%. Applies to every root
+  // type, not just grid, since renderLayout only ever runs once per page
+  // for the outermost node (nested containers render via renderNode
+  // directly and never revisit this function).
+  if (rendered?.style) {
     rendered.style.flex = "1 1 auto";
     rendered.style.minHeight = "100%";
     rendered.style.height = "100%";
+  }
+  if (rendered?.dataset) {
+    rendered.dataset.pressRoot = "true";
   }
   if (typeof options?.onRootReady === "function") {
     options.onRootReady(rendered);
   }
   return rendered;
+}
+
+// Caps every auto-width layer placement (flagged with data-auto-width
+// during renderLayer, above) at the right edge of whichever layer box it
+// actually sits in — real measured geometry, not a CSS percentage, since a
+// percentage max-width on an absolutely positioned, width:auto box didn't
+// reliably resolve against the right containing block here in practice.
+// Must run after `rootElement` is attached somewhere in the document with
+// real layout (visible, or at least not display:none) — getBoundingClientRect
+// on a detached or display:none tree returns all zeros, which would clamp
+// every auto-width box down to nothing.
+//
+// safeInsetIn (inches) only applies to the ROOT layer (data-press-root) when
+// its origin isn't "safe": with origin "trim"/"bleed", applyRootLayoutOrigin
+// gives that box zero padding, so its own right edge is the trim (or bleed)
+// edge, not the safe line — sitting further out than where text should
+// actually stop. Pulling the cap in by safeInsetIn there is exact for
+// "trim". For "bleed" it's an approximation (the true safe line is also
+// past the per-edge bleed inset, which varies by row/col in a multi-card
+// sheet and isn't available here) — better than no correction at all, but
+// not pixel-exact for that origin. A root layer with origin "safe" (the
+// default) needs no adjustment: applyRootLayoutOrigin already padded that
+// box by safeInset, so its own edge already IS the safe line. Nested
+// (non-root) layers have no card-level safe/trim/bleed concept at all, so
+// they're always capped at their own box's edge, unadjusted.
+export function applyAutoWidthCaps(rootElement, { safeInsetIn = 0 } = {}) {
+  if (!rootElement?.querySelectorAll) return;
+  const safeInsetPx = safeInsetIn * 96;
+  rootElement.querySelectorAll('[data-press-container="layer"]').forEach((layerEl) => {
+    const layerRect = layerEl.getBoundingClientRect();
+    const needsSafeInsetPullIn =
+      layerEl.dataset.pressRoot === "true" &&
+      layerEl.dataset.pressOrigin !== "safe" &&
+      Boolean(layerEl.dataset.pressOrigin);
+    const rightEdge = layerRect.right - (needsSafeInsetPullIn ? safeInsetPx : 0);
+    Array.from(layerEl.children).forEach((item) => {
+      if (item.dataset.autoWidth !== "true") return;
+      const itemRect = item.getBoundingClientRect();
+      const maxWidthPx = rightEdge - itemRect.left;
+      item.style.maxWidth = `${Math.max(0, maxWidthPx)}px`;
+    });
+  });
 }

@@ -1,7 +1,7 @@
 {
-  "id": "hotb-species",
-  "title": "HotB Species (Tarot)",
-  "name": "HotB Species (Tarot)",
+  "id": "hotb-subclass-tarot",
+  "title": "HotB Subclass (Tarot)",
+  "name": "HotB Subclass (Tarot)",
   "description": "",
   "type": "card",
   "formats": [
@@ -37,10 +37,10 @@
             "node": {
               "type": "field",
               "component": "text",
-              "text": "Species",
+              "text": "Subclass",
               "textSize": "md",
               "className": "card-body-text",
-              "label": "Species",
+              "label": "Subclass",
               "style": {
                 "color": "#ffffff",
                 "fontFamily": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif",
@@ -61,7 +61,7 @@
             "node": {
               "type": "field",
               "component": "image",
-              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22swoop-banner%22%2C%22values%22%3A%7B%22fill%22%3A%22%23fad700%22%2C%22outline%22%3A%22%23d4af37%22%2C%22side%22%3A%22left%22%2C%22swoopStart%22%3A0%2C%22swoopExtent%22%3A10%2C%22swoopHeight%22%3A0.1%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'250'%20height%3D'105'%20viewBox%3D'0%200%20250%20105'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M%200%2C5%20L%200%2C5%20Q%208.75%2C5%2025%2C15%20L%20250%2C15%20L%20250%2C105%20L%200%2C105%20Z'%20fill%3D'%23fad700'%20stroke%3D'%23d4af37'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E",
+              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22swoop-banner%22%2C%22values%22%3A%7B%22fill%22%3A%22%23fa9200%22%2C%22outline%22%3A%22%23d47d35%22%2C%22side%22%3A%22left%22%2C%22swoopStart%22%3A0%2C%22swoopExtent%22%3A10%2C%22swoopHeight%22%3A0.1%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'250'%20height%3D'105'%20viewBox%3D'0%200%20250%20105'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M%200%2C5%20L%200%2C5%20Q%208.75%2C5%2025%2C15%20L%20250%2C15%20L%20250%2C105%20L%200%2C105%20Z'%20fill%3D'%23fa9200'%20stroke%3D'%23d47d35'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E",
               "className": "press-image",
               "fit": "fill"
             },

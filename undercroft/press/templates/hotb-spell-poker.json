@@ -1,0 +1,163 @@
+{
+  "id": "hotb-spell-poker",
+  "title": "HotB Spell (Poker)",
+  "name": "HotB Spell (Poker)",
+  "description": "",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "Letter",
+      "sizeId": "letter",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "supportedSources": [
+    "ddb",
+    "srd",
+    "library",
+    "json",
+    "manual"
+  ],
+  "sides": [
+    "front",
+    "back"
+  ],
+  "pages": {
+    "front": {
+      "data": "@",
+      "layout": {
+        "type": "layer",
+        "placements": [
+          {
+            "node": {
+              "type": "field",
+              "component": "text",
+              "text": "Spell",
+              "textSize": "md",
+              "className": "card-body-text",
+              "label": "Spell",
+              "style": {
+                "color": "#ffffff",
+                "fontFamily": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif",
+                "fontSize": 28
+              },
+              "textStyles": {
+                "bold": true
+              },
+              "textSizeCustom": true,
+              "align": "center"
+            },
+            "x": 0,
+            "y": 2.92,
+            "z": 1,
+            "width": "100%"
+          },
+          {
+            "node": {
+              "type": "field",
+              "component": "text",
+              "text": "Level",
+              "textSize": "md",
+              "className": "card-body-text",
+              "label": "Level",
+              "style": {
+                "fontSize": 14.666666666666666,
+                "fontFamily": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif",
+                "color": "#ffffff"
+              },
+              "textSizeCustom": true,
+              "textStyles": {
+                "italic": true
+              }
+            },
+            "x": 0.94,
+            "y": 3.25,
+            "z": 2
+          },
+          {
+            "x": 1.35,
+            "y": 3.25,
+            "z": 4,
+            "node": {
+              "type": "field",
+              "component": "text",
+              "text": "@level",
+              "textSize": "md",
+              "className": "card-body-text",
+              "label": "@level",
+              "style": {
+                "fontSize": 14.666666666666666,
+                "fontFamily": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif",
+                "color": "#ffffff"
+              },
+              "textSizeCustom": true,
+              "textStyles": {
+                "italic": true
+              }
+            }
+          },
+          {
+            "x": 1.42,
+            "y": 4.5,
+            "z": 3,
+            "node": {
+              "type": "field",
+              "component": "text",
+              "text": "@level",
+              "textSize": "md",
+              "className": "card-body-text",
+              "label": "@level",
+              "style": {
+                "fontSize": 14.666666666666666,
+                "fontFamily": "Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif",
+                "color": "#ffffff"
+              },
+              "textSizeCustom": true,
+              "textStyles": {
+                "italic": true
+              }
+            }
+          },
+          {
+            "node": {
+              "type": "field",
+              "component": "image",
+              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22swoop-banner%22%2C%22values%22%3A%7B%22fill%22%3A%22%23097390%22%2C%22outline%22%3A%22%23065c73%22%2C%22side%22%3A%22left%22%2C%22swoopStart%22%3A0%2C%22swoopExtent%22%3A10%2C%22swoopHeight%22%3A0.1%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'250'%20height%3D'105'%20viewBox%3D'0%200%20250%20105'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M%200%2C5%20L%200%2C5%20Q%208.75%2C5%2025%2C15%20L%20250%2C15%20L%20250%2C105%20L%200%2C105%20Z'%20fill%3D'%23097390'%20stroke%3D'%23065c73'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E",
+              "className": "press-image",
+              "fit": "fill"
+            },
+            "x": 0,
+            "y": 2.9,
+            "width": "100%",
+            "height": 0.6,
+            "z": 0
+          }
+        ],
+        "origin": "trim"
+      }
+    },
+    "back": {
+      "data": "@",
+      "layout": {
+        "gap": 4,
+        "type": "grid",
+        "columns": 1,
+        "alignX": "justify",
+        "cells": []
+      }
+    }
+  },
+  "card": {
+    "width": 2.5,
+    "height": 3.5,
+    "gutter": 0,
+    "safeInset": 0.125,
+    "columns": 3,
+    "rows": 3
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "kind": "background",
+  "index": "artisan",
+  "name": "Artisan",
+  "url": "https://www.dndbeyond.com/backgrounds/406476-artisan",
+  "image": "https://i0.wp.com/nerdarchy.com/wp-content/uploads/2021/05/mtg-doomed-artisan.jpg",
+  "ability_scores": [
+    {
+      "index": "str",
+      "name": "STR"
+    },
+    {
+      "index": "dex",
+      "name": "DEX"
+    },
+    {
+      "index": "int",
+      "name": "INT"
+    }
+  ],
+  "feat": {
+    "index": "crafter",
+    "name": "Crafter"
+  },
+  "proficiencies": [
+    {
+      "index": "skill-investigation",
+      "name": "Skill: Investigation"
+    },
+    {
+      "index": "skill-persuasion",
+      "name": "Skill: Persuasion"
+    },
+    {
+      "index": "tool-choose-one-kind-of-artisans-tools",
+      "name": "Tool: Choose one kind of Artisan's Tools"
+    }
+  ],
+  "proficiency_choices": [],
+  "equipment_options": [
+    {
+      "desc": "(A) Artisan's Tools (same as above), 2 Pouches, Traveler\u2019s Clothes, 32 GP or (B) 50 GP",
+      "choose": 1,
+      "type": "equipment",
+      "from": {
+        "option_set_type": "options_array",
+        "options": [
+          {
+            "option_type": "multiple",
+            "items": [
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "artisans-tools",
+                  "name": "Artisan's Tools",
+                  "note": "Same as above"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 2,
+                "of": {
+                  "index": "pouche",
+                  "name": "Pouche"
+                }
+              },
+              {
+                "option_type": "counted_reference",
+                "count": 1,
+                "of": {
+                  "index": "traveler-s-clothes",
+                  "name": "Traveler\u2019s Clothes"
+                }
+              },
+              {
+                "option_type": "money",
+                "count": 32,
+                "unit": "gp"
+              }
+            ]
+          },
+          {
+            "option_type": "money",
+            "count": 50,
+            "unit": "gp"
+          }
+        ]
+      }
+    }
+  ],
+  "description": [
+    "You began mopping floors and scrubbing counters in an artisan\u2019s workshop for a few coppers per day as soon as you were strong enough to carry a bucket. When you were old enough to apprentice, you learned to create basic crafts of your own, as well as how to sweet-talk the occasional demanding customer. Your trade has also given you a keen eye for detail."
+  ],
+  "source": "Player\u2019s Handbook, pg. 178",
+  "traits": {
+    "abilityScores": "Strength, Dexterity, Intelligence",
+    "feat": "Crafter",
+    "skillProficiencies": "Investigation and Persuasion",
+    "toolProficiencies": "Choose one kind of Artisan's Tools",
+    "equipment": "Choose A or B: (A) Artisan's Tools (same as above), 2 Pouches, Traveler\u2019s Clothes, 32 GP; or (B) 50 GP"
+  },
+  "updated_at": "2026-07-18T21:24:50.778Z"
+}
