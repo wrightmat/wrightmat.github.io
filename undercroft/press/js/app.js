@@ -6,7 +6,12 @@ import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
-import { normalizeLegacyLayoutNode, applyAutoWidthCaps } from "./template-renderer.js";
+import {
+  normalizeLegacyLayoutNode,
+  applyAutoWidthCaps,
+  applyAutoFontSizing,
+  applyOverflowIndicators,
+} from "./template-renderer.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import {
   createTemplate,
@@ -24,6 +29,8 @@ import {
   saveCustomPageSize,
   getRepeatData,
   getCardPageCount,
+  getRepeatItemCount,
+  resolveTemplateData,
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
@@ -66,6 +73,17 @@ const cardPageNav = document.querySelector("[data-card-page-nav]");
 const cardPagePrevButton = document.querySelector("[data-card-page-prev]");
 const cardPageNextButton = document.querySelector("[data-card-page-next]");
 const cardPageLabel = document.querySelector("[data-card-page-label]");
+const viewTabButtons = Array.from(document.querySelectorAll("[data-view-tab]"));
+const gridViewTabButton = document.querySelector('[data-view-tab="grid"]');
+const viewControlsPreview = document.querySelector('[data-view-controls="preview"]');
+const viewControlsGrid = document.querySelector('[data-view-controls="grid"]');
+const viewPanelPreview = document.querySelector('[data-view-panel="preview"]');
+const viewPanelGrid = document.querySelector('[data-view-panel="grid"]');
+const gridViewPrevButton = document.querySelector("[data-grid-view-prev]");
+const gridViewNextButton = document.querySelector("[data-grid-view-next]");
+const gridViewLabel = document.querySelector("[data-grid-view-label]");
+const gridViewStageFront = document.querySelector('[data-grid-view-stage="front"]');
+const gridViewStageBack = document.querySelector('[data-grid-view-stage="back"]');
 const canvasZoomOutButton = document.querySelector("[data-canvas-zoom-out]");
 const canvasZoomInButton = document.querySelector("[data-canvas-zoom-in]");
 const canvasZoomResetButton = document.querySelector("[data-canvas-zoom-reset]");
@@ -120,6 +138,7 @@ const pageBindingsToggleLabel = pageBindingsToggle?.querySelector("[data-page-bi
 const pageBindingsPanel = document.querySelector("[data-page-bindings-panel]");
 const templateSaveButton = document.querySelector("[data-template-save]");
 const templateDuplicateButton = document.querySelector("[data-template-duplicate]");
+const templateClearUniquenessButton = document.querySelector("[data-template-clear-uniqueness]");
 const templateDeleteButton = document.querySelector("[data-template-delete]");
 const cardToggle = document.querySelector("[data-card-toggle]");
 const cardToggleLabel = cardToggle?.querySelector("[data-card-toggle-label]");
@@ -137,7 +156,6 @@ const parentSelectButton = document.querySelector("[data-component-parent-select
 const iconField = document.querySelector("[data-inspector-icon-field]");
 const iconInput = document.querySelector("[data-component-icon-class]");
 const iconPreview = document.querySelector("[data-component-icon-preview]");
-const iconResult = document.querySelector("[data-component-icon-result]");
 const textEditor = document.querySelector("[data-component-text]");
 const textEditorLabel = document.querySelector("[data-component-text-label]");
 const ariaLabelField = document.querySelector("[data-inspector-aria-label-field]");
@@ -184,6 +202,8 @@ const layerOriginField = document.querySelector("[data-inspector-layer-origin]")
 const layerOriginInput = document.querySelector("[data-component-layer-origin]");
 const gapInput = document.querySelector("[data-component-gap]");
 const gapField = document.querySelector("[data-inspector-gap-field]");
+const spaceAfterInput = document.querySelector("[data-component-space-after]");
+const spaceAfterField = document.querySelector("[data-inspector-space-after-field]");
 const rowColumnsInput = document.querySelector("[data-component-columns]");
 const rowColumnsField = document.querySelector("[data-inspector-row-columns]");
 const templateColumnsInput = document.querySelector("[data-component-template-columns]");
@@ -204,11 +224,16 @@ const positionHeightInput = document.querySelector("[data-component-position-hei
 const positionZInput = document.querySelector("[data-component-position-z]");
 const positionRotateInput = document.querySelector("[data-component-position-rotate]");
 const textFieldGroup = document.querySelector("[data-inspector-text-field]");
-const tableFieldGroup = document.querySelector("[data-inspector-table-fields]");
+const repeaterFieldGroup = document.querySelector("[data-inspector-repeater-fields]");
 const textDecorationGroup = document.querySelector("[data-inspector-text-decoration]");
-const tableRowsInput = document.querySelector("[data-component-table-rows]");
-const tableColumnsList = document.querySelector("[data-component-table-columns-list]");
-const tableColumnsAddButton = document.querySelector("[data-component-table-columns-add]");
+const repeaterItemsInput = document.querySelector("[data-component-repeater-items]");
+const repeaterColumnsInput = document.querySelector("[data-component-repeater-columns]");
+const repeaterHeaderInput = document.querySelector("[data-component-repeater-header]");
+const repeaterTemplateColumnsInput = document.querySelector("[data-component-repeater-template-columns]");
+const repeaterTemplateColumnsGroup = document.querySelector("[data-inspector-repeater-template-columns]");
+const repeaterDecoratorTypeInput = document.querySelector("[data-component-repeater-decorator-type]");
+const repeaterDecoratorTextInput = document.querySelector("[data-component-repeater-decorator-text]");
+const repeaterDecoratorTextGroup = document.querySelector("[data-inspector-repeater-decorator-text]");
 const textSettingGroups = Array.from(document.querySelectorAll("[data-inspector-text-settings]"));
 const fontFamilyInput = document.querySelector("[data-component-font-family]");
 const addFontModalElement = document.getElementById("press-add-font-modal");
@@ -233,6 +258,8 @@ const colorGroup = document.querySelector("[data-inspector-color-group]");
 const alignmentGroup = document.querySelector("[data-inspector-alignment]");
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
 const textSizeCustomInput = document.querySelector("[data-component-text-size-custom]");
+const textInlineInput = document.querySelector("[data-component-text-inline]");
+const textLineHeightInput = document.querySelector("[data-component-text-line-height]");
 const textOrientationInputs = Array.from(document.querySelectorAll("[data-component-text-orientation]"));
 const textAngleInput = document.querySelector("[data-component-text-angle]");
 const textCurveInput = document.querySelector("[data-component-text-curve]");
@@ -247,7 +274,9 @@ const textStyleToggles = Array.from(document.querySelectorAll("[data-component-t
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = document.querySelector("[data-component-visible]");
 const deleteButton = document.querySelector("[data-component-delete]");
+const deleteButtonLabel = document.querySelector("[data-component-delete-label]");
 const duplicateButton = document.querySelector("[data-component-duplicate]");
+const makeUniqueButton = document.querySelector("[data-component-make-unique]");
 
 const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
 const MAX_AUTOCOMPLETE_ITEMS = 12;
@@ -269,13 +298,25 @@ let currentSide = "front";
 // always already be in range (switching to a template/side with less data
 // than the one currently being viewed, in particular).
 let cardPageIndex = 0;
+// 0-based index into the full repeat data array (not a physical page —
+// see cardPageIndex above for that) for the separate Grid View, which
+// always shows exactly one card at a time regardless of the template's
+// configured columns/rows. Independent state from cardPageIndex since the
+// two views serve different purposes (reviewing the print sheet layout vs.
+// targeting one specific card for a "Make Unique" override) and don't need
+// to stay in sync.
+let gridViewIndex = 0;
+// Which of the two Live Preview tabs is currently shown — "Make Unique" is
+// only meaningful (and only enabled) while viewing the Grid View, since
+// that's the only place a component selection maps unambiguously to one
+// specific card (the page-grid view can show several cards per page).
+let activeViewTab = "preview";
 let selectedNodeId = null;
 let nodeCounter = 0;
 let editablePages = { front: null, back: null };
 let paletteSortable = null;
 let layoutSortable = null;
 let canvasSortables = [];
-let tableColumnsSortable = null;
 let undoStack = null;
 let performUndo = null;
 let performRedo = null;
@@ -312,65 +353,153 @@ const TEXT_SIZE_PX = {
   lg: 20,
   xl: 24,
 };
-const PRESS_ICON_OPTIONS = [
-  { group: "Damage", label: "Bludgeoning", value: "ddb-bludgeoning" },
-  { group: "Damage", label: "Piercing", value: "ddb-piercing" },
-  { group: "Damage", label: "Slashing", value: "ddb-slashing" },
-  { group: "Damage", label: "Acid", value: "ddb-acid" },
-  { group: "Damage", label: "Cold", value: "ddb-cold" },
-  { group: "Damage", label: "Fire", value: "ddb-fire" },
-  { group: "Damage", label: "Force", value: "ddb-force" },
-  { group: "Damage", label: "Lightning", value: "ddb-lightning" },
-  { group: "Damage", label: "Necrotic", value: "ddb-necrotic" },
-  { group: "Damage", label: "Poison", value: "ddb-poison" },
-  { group: "Damage", label: "Psychic", value: "ddb-psychic" },
-  { group: "Damage", label: "Radiant", value: "ddb-radiant" },
-  { group: "Damage", label: "Thunder", value: "ddb-thunder" },
-  { group: "Magic School", label: "Abjuration", value: "ddb-abjuration" },
-  { group: "Magic School", label: "Conjuration", value: "ddb-conjuration" },
-  { group: "Magic School", label: "Divination", value: "ddb-divination" },
-  { group: "Magic School", label: "Enchantment", value: "ddb-enchantment" },
-  { group: "Magic School", label: "Evocation", value: "ddb-evocation" },
-  { group: "Magic School", label: "Illusion", value: "ddb-illusion" },
-  { group: "Magic School", label: "Necromancy", value: "ddb-necromancy" },
-  { group: "Magic School", label: "Transmutation", value: "ddb-transmutation" },
-  { group: "Inner Circle", label: "Artifice", value: "ddb-artifice" },
-  { group: "Inner Circle", label: "Dunamancy", value: "ddb-dunamancy" },
-  { group: "Inner Circle", label: "Psionics", value: "ddb-psionics" },
-  { group: "Inner Circle", label: "Entropomancy", value: "ddb-entropomancy" },
-  { group: "Inner Circle", label: "Sangromancy", value: "ddb-sangromancy" },
-  { group: "Attack", label: "Melee Attack", value: "ddb-melee-attack" },
-  { group: "Attack", label: "Melee Weapon", value: "ddb-melee-weapon" },
-  { group: "Attack", label: "Ranged Attack", value: "ddb-ranged-attack" },
-  { group: "Attack", label: "Ranged Weapon", value: "ddb-ranged-weapon" },
-  { group: "Defense", label: "Immunity", value: "ddb-immunity" },
-  { group: "Defense", label: "Resistance", value: "ddb-resistance" },
-  { group: "Defense", label: "Vulnerability", value: "ddb-vulnerability" },
-  { group: "Area", label: "Cone", value: "ddb-cone" },
-  { group: "Area", label: "Cube", value: "ddb-cube" },
-  { group: "Area", label: "Cylinder", value: "ddb-cylinder" },
-  { group: "Area", label: "Sphere", value: "ddb-sphere" },
-  { group: "Area", label: "Square", value: "ddb-square" },
-  { group: "Class", label: "Artificer", value: "ddb-artificer" },
-  { group: "Class", label: "Barbarian", value: "ddb-barbarian" },
-  { group: "Class", label: "Bard", value: "ddb-bard" },
-  { group: "Class", label: "Cleric", value: "ddb-cleric" },
-  { group: "Class", label: "Druid", value: "ddb-druid" },
-  { group: "Class", label: "Fighter", value: "ddb-fighter" },
-  { group: "Class", label: "Monk", value: "ddb-monk" },
-  { group: "Class", label: "Paladin", value: "ddb-paladin" },
-  { group: "Class", label: "Ranger", value: "ddb-ranger" },
-  { group: "Class", label: "Rogue", value: "ddb-rogue" },
-  { group: "Class", label: "Sorcerer", value: "ddb-sorcerer" },
-  { group: "Class", label: "Warlock", value: "ddb-warlock" },
-  { group: "Class", label: "Wizard", value: "ddb-wizard" },
-  { group: "Misc", label: "Advantage", value: "ddb-advantage" },
-  { group: "Misc", label: "Attunement", value: "ddb-attunement" },
-  { group: "Misc", label: "Concentration", value: "ddb-concentration" },
-  { group: "Misc", label: "Disadvantage", value: "ddb-disadvantage" },
-  { group: "Misc", label: "Healing", value: "ddb-healing" },
-  { group: "Misc", label: "Ritual", value: "ddb-ritual" },
-];
+// Cosmetic grouping only, for the small gray label on the right of each
+// autocomplete row — reused from the categories ddb-icons.css's own
+// existing icons happened to fall into. Anything not listed here (an icon
+// added to the stylesheet without also being added here) just falls under
+// a generic "DDB Icons" group instead of needing a registration step —
+// see ensureDdbIconOptionsLoaded below, which is what actually discovers
+// the icon names themselves, directly from the stylesheet.
+const DDB_ICON_GROUPS = {
+  bludgeoning: "Damage",
+  piercing: "Damage",
+  slashing: "Damage",
+  acid: "Damage",
+  cold: "Damage",
+  fire: "Damage",
+  force: "Damage",
+  lightning: "Damage",
+  necrotic: "Damage",
+  poison: "Damage",
+  psychic: "Damage",
+  radiant: "Damage",
+  thunder: "Damage",
+  abjuration: "Magic School",
+  conjuration: "Magic School",
+  divination: "Magic School",
+  enchantment: "Magic School",
+  evocation: "Magic School",
+  illusion: "Magic School",
+  necromancy: "Magic School",
+  transmutation: "Magic School",
+  artifice: "Inner Circle",
+  dunamancy: "Inner Circle",
+  psionics: "Inner Circle",
+  entropomancy: "Inner Circle",
+  sangromancy: "Inner Circle",
+  "melee-attack": "Attack",
+  "melee-weapon": "Attack",
+  "ranged-attack": "Attack",
+  "ranged-weapon": "Attack",
+  immunity: "Defense",
+  resistance: "Defense",
+  vulnerability: "Defense",
+  cone: "Area",
+  cube: "Area",
+  cylinder: "Area",
+  sphere: "Area",
+  square: "Area",
+  artificer: "Class",
+  barbarian: "Class",
+  bard: "Class",
+  cleric: "Class",
+  druid: "Class",
+  fighter: "Class",
+  monk: "Class",
+  paladin: "Class",
+  ranger: "Class",
+  rogue: "Class",
+  sorcerer: "Class",
+  warlock: "Class",
+  wizard: "Class",
+  advantage: "Misc",
+  attunement: "Misc",
+  concentration: "Misc",
+  disadvantage: "Misc",
+  healing: "Misc",
+  ritual: "Misc",
+};
+
+function titleCaseIconName(name) {
+  return name
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+// Discovered directly from css/ddb-icons.css (same-origin, no CORS concern
+// unlike the Bootstrap Icons CDN fetch below) rather than a hand-maintained
+// list — a new `.ddb-whatever { ... }` rule added to that stylesheet just
+// shows up here automatically, no separate registration step needed. Same
+// lazy-fetch-once-and-cache shape as ensureBootstrapIconNamesLoaded.
+let ddbIconOptions = [];
+let ddbIconOptionsPromise = null;
+function ensureDdbIconOptionsLoaded(onLoaded) {
+  if (!ddbIconOptionsPromise) {
+    ddbIconOptionsPromise = fetch("css/ddb-icons.css")
+      .then((response) =>
+        response.ok ? response.text() : Promise.reject(new Error(`ddb-icons.css unavailable (${response.status})`))
+      )
+      .then((text) => {
+        const names = new Set();
+        const pattern = /\.ddb-([a-zA-Z0-9-]+)\s*\{/g;
+        let match = pattern.exec(text);
+        while (match) {
+          names.add(match[1]);
+          match = pattern.exec(text);
+        }
+        ddbIconOptions = Array.from(names)
+          .sort()
+          .map((name) => ({
+            group: DDB_ICON_GROUPS[name] ?? "DDB Icons",
+            label: titleCaseIconName(name),
+            value: `ddb-${name}`,
+          }));
+      })
+      .catch((error) => {
+        console.warn("ddb-icons.css icon list unavailable:", error);
+      });
+  }
+  ddbIconOptionsPromise.then(onLoaded);
+}
+
+// Bootstrap Icons is already loaded (index.html's bootstrap-icons.css link)
+// and the icon field's own renderer already knows how to use a "bi-*"
+// class (template-renderer.js's icon case, prepending the required base
+// "bi" class) — but nothing ever suggested any of its ~2000 icons, so
+// there was no way to discover a valid name to type. Fetched once, lazily,
+// from the same CDN/version already used for the stylesheet (jsdelivr
+// serves it with permissive CORS, unlike the Google Fonts metadata case
+// that needed a server-side proxy) — best-effort, same as that font
+// metadata lookup: a failure here just means no Bootstrap Icons show up
+// as suggestions, never a hard error.
+const BOOTSTRAP_ICONS_VERSION = "1.11.3";
+const BOOTSTRAP_ICONS_JSON_URL = `https://cdn.jsdelivr.net/npm/bootstrap-icons@${BOOTSTRAP_ICONS_VERSION}/font/bootstrap-icons.json`;
+let bootstrapIconNames = [];
+let bootstrapIconNamesPromise = null;
+function ensureBootstrapIconNamesLoaded(onLoaded) {
+  if (!bootstrapIconNamesPromise) {
+    bootstrapIconNamesPromise = fetch(BOOTSTRAP_ICONS_JSON_URL)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`Bootstrap Icons list unavailable (${response.status})`))))
+      .then((data) => {
+        bootstrapIconNames = Object.keys(data ?? {}).sort();
+      })
+      .catch((error) => {
+        console.warn("Bootstrap Icons list unavailable:", error);
+      });
+  }
+  bootstrapIconNamesPromise.then(onLoaded);
+}
+
+function getAllIconOptions() {
+  const bootstrapOptions = bootstrapIconNames.map((name) => ({
+    group: "Bootstrap",
+    label: name,
+    value: `bi-${name}`,
+  }));
+  return [...ddbIconOptions, ...bootstrapOptions];
+}
 
 const paletteComponents = [
   {
@@ -484,32 +613,26 @@ const paletteComponents = [
     },
   },
   {
-    id: "list",
-    label: "List",
-    description: "Bulleted stacks of notes",
+    id: "repeater",
+    label: "Repeater",
+    description: "Repeating list, paragraphs, or table",
     icon: "tabler:list-details",
+    // A single, unopinionated starting point — one text field bound to
+    // @value (works immediately against the sample string array below) in
+    // one column, no header, no decorator. There are no other preset
+    // "kinds" of repeater: columns, header, decorator, and every cell's own
+    // content/binding are independent options the author sets afterward,
+    // exactly like grid/table cells already worked.
     node: {
       type: "field",
-      component: "list",
-      items: ["First entry", "Second entry", "Third entry"],
+      component: "repeater",
+      columns: 1,
+      showHeader: false,
+      decorator: { type: "bullet" },
       gap: 1,
-      className: "mb-0 ps-3 d-flex flex-column",
-    },
-  },
-  {
-    id: "table",
-    label: "Table",
-    description: "Column-based data tables",
-    icon: "tabler:table",
-    node: {
-      type: "field",
-      component: "table",
-      rowsBind: "@rows",
-      className: "press-table",
-      columns: [
-        { header: "Column 1", bind: "@value" },
-        { header: "Column 2", bind: "@detail" },
-      ],
+      className: "d-flex flex-column",
+      items: ["First entry", "Second entry", "Third entry"],
+      cells: [[[{ type: "field", component: "text", text: "@value" }]]],
     },
   },
   {
@@ -527,9 +650,17 @@ const paletteComponents = [
   },
 ];
 
+function createDefaultRepeaterHeaderRow(columns) {
+  const count = Number.isFinite(columns) && columns > 0 ? columns : 1;
+  return [
+    Array.from({ length: count }, (_, index) =>
+      assignNodeIds([{ type: "field", component: "text", text: `Column ${index + 1}`, textStyles: { bold: true } }])
+    ),
+  ];
+}
+
 const COMPONENT_REQUIRED_CLASS_MAP = {
   image: ["press-image"],
-  table: ["press-table"],
   stat: ["panel-box"],
 };
 
@@ -1005,23 +1136,40 @@ function resolveNodePreviewContext(node, targetId, context) {
       if (found) return found;
     }
   }
-  if (node.type === "field" && node.component === "table") {
-    const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
-    const rowContext = createItemContext(context, asArray(rows)[0], 0);
-    if (Array.isArray(node.cells)) {
-      const row = node.cells[0];
-      if (Array.isArray(row)) {
-        for (const cell of row) {
-          if (Array.isArray(cell)) {
-            for (const nested of cell) {
-              const found = resolveNodePreviewContext(nested, targetId, rowContext);
-              if (found) return found;
-            }
-            continue;
+  if (node.type === "field" && node.component === "repeater") {
+    // Unlike the old table, `cells[0]` is always THE item template — no
+    // per-row search needed, it's the only row there is — so this just
+    // resolves item index 0's context and walks that one row, plus
+    // headerCells[0] (if any) walked with the outer context since a header
+    // renders once, never per-item.
+    const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
+    const itemContext = createItemContext(context, asArray(items)[0], 0);
+    const templateRow = Array.isArray(node.cells) ? node.cells[0] : null;
+    if (Array.isArray(templateRow)) {
+      for (const cell of templateRow) {
+        if (Array.isArray(cell)) {
+          for (const nested of cell) {
+            const found = resolveNodePreviewContext(nested, targetId, itemContext);
+            if (found) return found;
           }
-          const found = resolveNodePreviewContext(cell, targetId, rowContext);
-          if (found) return found;
+          continue;
         }
+        const found = resolveNodePreviewContext(cell, targetId, itemContext);
+        if (found) return found;
+      }
+    }
+    const headerRow = Array.isArray(node.headerCells) ? node.headerCells[0] : null;
+    if (Array.isArray(headerRow)) {
+      for (const cell of headerRow) {
+        if (Array.isArray(cell)) {
+          for (const nested of cell) {
+            const found = resolveNodePreviewContext(nested, targetId, context);
+            if (found) return found;
+          }
+          continue;
+        }
+        const found = resolveNodePreviewContext(cell, targetId, context);
+        if (found) return found;
       }
     }
   }
@@ -1303,21 +1451,28 @@ function stripNodeIds(node) {
   if (Array.isArray(next.cells)) {
     next.cells = next.cells.map((row) => (Array.isArray(row) ? row.map((cell) => stripNodeIds(cell)) : row));
   }
+  // A repeater's headerCells (see renderRepeater/template-renderer.js) is a
+  // fully independent cells[row][col]-shaped array, sibling to `cells` —
+  // needs the exact same strip pass, or a duplicated repeater's header
+  // would keep sharing the original's node uids (and the same array
+  // reference) instead of getting its own.
+  if (Array.isArray(next.headerCells)) {
+    next.headerCells = next.headerCells.map((row) => (Array.isArray(row) ? row.map((cell) => stripNodeIds(cell)) : row));
+  }
   return next;
 }
 
 function buildTemplatePages() {
   const pages = {};
   Object.entries(editablePages ?? {}).forEach(([side, page]) => {
-    if (!page || typeof page !== "object") {
-      pages[side] = page;
-      return;
-    }
-    const { layout, ...rest } = page;
-    pages[side] = {
-      ...rest,
-      layout: layout ? stripNodeIds(layout) : layout,
-    };
+    // uids are saved as-is now (no stripNodeIds here) so they survive a
+    // reload as real persisted identity instead of being regenerated by
+    // tree-walk order every time — see hydrateEditablePages's nodeCounter
+    // initialization, which is what makes this safe (a freshly-added node
+    // can never collide with an already-persisted uid). serializeTemplate's
+    // own cloneState() deep-clones the result, so passing `page` through
+    // unmodified here doesn't risk the live editable state being mutated.
+    pages[side] = page;
   });
   return pages;
 }
@@ -1408,7 +1563,20 @@ function assignNodeIds(node) {
   if (Array.isArray(node.cells)) {
     clone.cells = node.cells.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
   }
+  // See stripNodeIds' matching comment — headerCells is a repeater's own
+  // independent cells[row][col] array and needs the same backfill pass.
+  if (Array.isArray(node.headerCells)) {
+    clone.headerCells = node.headerCells.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
+  }
   return clone;
+}
+
+// Standalone version of assignNodeIds' own `.cells` pass, for callers (like
+// the repeater Style selector) that build a fresh cells[row][col] array on
+// its own, not attached to a node yet.
+function assignCellsIds(cellsArray) {
+  if (!Array.isArray(cellsArray)) return cellsArray;
+  return cellsArray.map((row) => (Array.isArray(row) ? row.map((cell) => assignNodeIds(cell)) : row));
 }
 
 function cloneLayoutWithIds(layout) {
@@ -1451,8 +1619,9 @@ function ensureTemplateFontsLoaded(node) {
   if (Array.isArray(node.placements)) {
     node.placements.forEach((placement) => ensureTemplateFontsLoaded(placement?.node));
   }
-  if (Array.isArray(node.cells)) {
-    node.cells.forEach((row) => {
+  [node.cells, node.headerCells].forEach((cellRows) => {
+    if (!Array.isArray(cellRows)) return;
+    cellRows.forEach((row) => {
       if (!Array.isArray(row)) return;
       row.forEach((cell) => {
         if (Array.isArray(cell)) {
@@ -1462,12 +1631,47 @@ function ensureTemplateFontsLoaded(node) {
         }
       });
     });
+  });
+}
+
+// Now that saved templates actually persist node uids (buildTemplatePages
+// no longer strips them — see there for why), nodeCounter can no longer
+// just reset to 0 on every load: nextNodeId() would then be free to hand
+// out "node-1" again for a brand-new node even though a persisted node
+// already owns that uid from a previous save, colliding two nodes onto the
+// same id within one tree. Scanning for the highest existing "node-N"
+// suffix first (same placements/cells shape as assignNodeIds) and starting
+// nodeCounter beyond it guarantees every freshly-minted id is unique,
+// while assignNodeIds itself still leaves already-uid'd nodes untouched.
+function highestPersistedNodeCounter(node) {
+  if (!node || typeof node !== "object") return 0;
+  if (Array.isArray(node)) {
+    return node.reduce((max, entry) => Math.max(max, highestPersistedNodeCounter(entry)), 0);
   }
+  let max = 0;
+  const match = typeof node.uid === "string" ? /^node-(\d+)$/.exec(node.uid) : null;
+  if (match) max = Number(match[1]);
+  if (Array.isArray(node.placements)) {
+    max = node.placements.reduce((acc, placement) => Math.max(acc, highestPersistedNodeCounter(placement?.node)), max);
+  }
+  [node.cells, node.headerCells].forEach((cellRows) => {
+    if (!Array.isArray(cellRows)) return;
+    cellRows.forEach((row) => {
+      if (!Array.isArray(row)) return;
+      row.forEach((cell) => {
+        max = Math.max(max, highestPersistedNodeCounter(cell));
+      });
+    });
+  });
+  return max;
 }
 
 function hydrateEditablePages(template) {
-  nodeCounter = 0;
   const pages = template?.pages ?? {};
+  nodeCounter = (template?.sides ?? ["front", "back"]).reduce(
+    (max, side) => Math.max(max, highestPersistedNodeCounter(pages[side]?.layout)),
+    0
+  );
   const bySide = {};
   (template?.sides ?? ["front", "back"]).forEach((side) => {
     const pageConfig = pages[side] ?? {};
@@ -1481,6 +1685,7 @@ function hydrateEditablePages(template) {
   // back at the first page rather than clamping down to some page that
   // just happens to still be in range.
   cardPageIndex = 0;
+  gridViewIndex = 0;
 }
 
 function updateTemplateSelectOption(template, previousId) {
@@ -1936,8 +2141,9 @@ function findNodeById(node, uid) {
       if (found) return found;
     }
   }
-  if (Array.isArray(node.cells)) {
-    for (const row of node.cells) {
+  for (const cellRows of [node.cells, node.headerCells]) {
+    if (!Array.isArray(cellRows)) continue;
+    for (const row of cellRows) {
       if (!Array.isArray(row)) continue;
       for (const cell of row) {
         if (Array.isArray(cell)) {
@@ -1965,8 +2171,9 @@ function findParentNode(node, uid, parent = null) {
       if (found) return found;
     }
   }
-  if (Array.isArray(node.cells)) {
-    for (const row of node.cells) {
+  for (const cellRows of [node.cells, node.headerCells]) {
+    if (!Array.isArray(cellRows)) continue;
+    for (const row of cellRows) {
       if (!Array.isArray(row)) continue;
       for (const cell of row) {
         if (Array.isArray(cell)) {
@@ -1999,8 +2206,9 @@ function removeNodeById(node, uid) {
       if (removed) return removed;
     }
   }
-  if (Array.isArray(node.cells)) {
-    for (const row of node.cells) {
+  for (const cellRows of [node.cells, node.headerCells]) {
+    if (!Array.isArray(cellRows)) continue;
+    for (const row of cellRows) {
       if (!Array.isArray(row)) continue;
       const index = row.findIndex((cell) => cell?.uid === uid);
       if (index >= 0) {
@@ -2028,6 +2236,61 @@ function removeNodeById(node, uid) {
   return null;
 }
 
+// Same recursive shape as findNodeById/assignNodeIds — collects every uid
+// in a subtree (the node itself plus every descendant) so a deleted
+// component's cardOverrides entries can be swept regardless of how deep it
+// (or its own nested children) sat in the tree.
+function collectNodeUids(node, uids = new Set()) {
+  if (!node || typeof node !== "object") return uids;
+  if (Array.isArray(node)) {
+    node.forEach((entry) => collectNodeUids(entry, uids));
+    return uids;
+  }
+  if (node.uid) uids.add(node.uid);
+  if (Array.isArray(node.placements)) {
+    node.placements.forEach((placement) => collectNodeUids(placement?.node, uids));
+  }
+  [node.cells, node.headerCells].forEach((cellRows) => {
+    if (!Array.isArray(cellRows)) return;
+    cellRows.forEach((row) => {
+      if (!Array.isArray(row)) return;
+      row.forEach((cell) => collectNodeUids(cell, uids));
+    });
+  });
+  return uids;
+}
+
+// Otherwise-harmless but permanently orphaned cardOverrides entries would
+// pile up every time a component with an active override gets deleted —
+// this removes them for every card on the given side in one pass.
+function sweepCardOverridesForUids(side, uids) {
+  const cardOverrides = editablePages?.[side]?.cardOverrides;
+  if (!cardOverrides || !uids || uids.size === 0) return;
+  Object.keys(cardOverrides).forEach((cardKey) => {
+    uids.forEach((uid) => delete cardOverrides[cardKey][uid]);
+    if (Object.keys(cardOverrides[cardKey]).length === 0) {
+      delete cardOverrides[cardKey];
+    }
+  });
+}
+
+// Whether a node (or anything nested inside it, via collectNodeUids) has
+// been made unique for at least one card, on either side — used for the
+// Layout list's "this has been customized somewhere" badge, which needs to
+// know that at a glance while just browsing the template structure, not
+// only while looking at one specific card in Grid View.
+function nodeHasAnyCardOverride(node) {
+  const uids = collectNodeUids(node);
+  if (uids.size === 0) return false;
+  return ["front", "back"].some((side) => {
+    const cardOverrides = editablePages?.[side]?.cardOverrides;
+    if (!cardOverrides) return false;
+    return Object.values(cardOverrides).some((entriesForCard) =>
+      Object.keys(entriesForCard).some((uid) => uids.has(uid))
+    );
+  });
+}
+
 function removeSelectedNode() {
   const layout = getLayoutForSide(currentSide);
   if (!layout || !selectedNodeId) return;
@@ -2042,6 +2305,9 @@ function removeSelectedNode() {
     recordUndoableChange(() => {
       const page = getEditablePage(currentSide);
       if (!page) return;
+      // Every existing uid on this side is about to stop existing — no
+      // individual sweep needed, the whole map is meaningless now.
+      delete page.cardOverrides;
       page.layout = assignNodeIds(createEmptyLayout());
       selectedNodeId = null;
       renderLayoutList();
@@ -2053,6 +2319,7 @@ function removeSelectedNode() {
   recordUndoableChange(() => {
     const removed = removeNodeById(layout, selectedNodeId);
     if (!removed) return;
+    sweepCardOverridesForUids(currentSide, collectNodeUids(removed));
     selectedNodeId = getRootChildren(currentSide)[0]?.uid ?? null;
     renderLayoutList();
     updateInspector();
@@ -2065,15 +2332,26 @@ function removeSelectedNode() {
 // insertNodeAfter needs this to know which specific cell array to splice
 // the clone into.
 function findCellLocation(node, uid) {
-  if (!node || !Array.isArray(node.cells)) return null;
-  for (let row = 0; row < node.cells.length; row += 1) {
-    const rowCells = node.cells[row];
-    if (!Array.isArray(rowCells)) continue;
-    for (let col = 0; col < rowCells.length; col += 1) {
-      const cell = rowCells[col];
-      const entries = Array.isArray(cell) ? cell : cell ? [cell] : [];
-      if (entries.some((entry) => entry?.uid === uid)) {
-        return { row, col };
+  if (!node) return null;
+  // A repeater's headerCells is a second, independent cells[row][col] array
+  // (see stripNodeIds/assignNodeIds' matching comments) — searched after
+  // `cells` since it's the less common case, flagged via `isHeader` so
+  // insertNodeAfter below knows which accessor (getCellNodes vs
+  // getRepeaterHeaderCellNodes) owns the location.
+  for (const [cellRows, isHeader] of [
+    [node.cells, false],
+    [node.headerCells, true],
+  ]) {
+    if (!Array.isArray(cellRows)) continue;
+    for (let row = 0; row < cellRows.length; row += 1) {
+      const rowCells = cellRows[row];
+      if (!Array.isArray(rowCells)) continue;
+      for (let col = 0; col < rowCells.length; col += 1) {
+        const cell = rowCells[col];
+        const entries = Array.isArray(cell) ? cell : cell ? [cell] : [];
+        if (entries.some((entry) => entry?.uid === uid)) {
+          return { row, col, isHeader };
+        }
       }
     }
   }
@@ -2111,7 +2389,9 @@ function insertNodeAfter(layout, targetUid, newNode, placementMeta) {
   if (isCellGridNode(parent)) {
     const location = findCellLocation(parent, targetUid);
     if (!location) return false;
-    const cellNodes = getCellNodes(parent, location.row, location.col);
+    const cellNodes = location.isHeader
+      ? getRepeaterHeaderCellNodes(parent, location.col)
+      : getCellNodes(parent, location.row, location.col);
     const index = cellNodes.findIndex((entry) => entry?.uid === targetUid);
     if (index < 0) return false;
     cellNodes.splice(index + 1, 0, newNode);
@@ -2135,7 +2415,7 @@ function getPlacementMetaForSelection(layout, uid) {
 // operation.
 let clipboard = null;
 
-function copySelectedNode() {
+function copySelectedNode({ silent = false } = {}) {
   const layout = getLayoutForSide(currentSide);
   if (!layout || !selectedNodeId) return;
   const node = findNodeById(layout, selectedNodeId);
@@ -2144,7 +2424,26 @@ function copySelectedNode() {
     node: typeof structuredClone === "function" ? structuredClone(node) : JSON.parse(JSON.stringify(node)),
     placementMeta: getPlacementMetaForSelection(layout, selectedNodeId),
   };
-  status?.show("Copied.", { type: "info", timeout: 1200 });
+  if (!silent) {
+    status?.show("Copied.", { type: "info", timeout: 1200 });
+  }
+}
+
+// Copy then delete, as one keyboard gesture — reuses both functions
+// verbatim rather than duplicating their logic. Guarded the same way copy
+// itself is (root has no parent, so it's excluded) rather than falling
+// through to removeSelectedNode's own special "clear the whole layout"
+// root behavior, which would silently cut without anything usable ending
+// up on the clipboard. copySelectedNode's own toast is suppressed (silent)
+// since this shows its own "Cut." toast right after — otherwise both fire
+// in sequence ("Copied." then "Cut.") instead of just the one that
+// actually describes what happened.
+function cutSelectedNode() {
+  const layout = getLayoutForSide(currentSide);
+  if (!layout || !selectedNodeId || !findParentNode(layout, selectedNodeId)) return;
+  copySelectedNode({ silent: true });
+  removeSelectedNode();
+  status?.show("Cut.", { type: "info", timeout: 1200 });
 }
 
 function pasteClipboard() {
@@ -2326,12 +2625,13 @@ function findLayerPlacement(layerNode, uid) {
   return layerNode.placements.find((placement) => placement?.node?.uid === uid) ?? null;
 }
 
-// Shared 2D-cell-array storage for both `table` (component) and `grid`
+// Shared 2D-cell-array storage for both `repeater` (component) and `grid`
 // (type) nodes — same `cells[row][col]` = array-of-nodes convention for
-// both, so one set of get/insert/reorder helpers covers the table field's
-// per-(row,col) drop slots and the grid container's per-cell drop slots.
+// both, so one set of get/insert/reorder helpers covers the repeater's
+// per-(row,col) drop slots (its item template, always exactly one row —
+// see renderRepeater) and the grid container's per-cell drop slots.
 function isCellGridNode(node) {
-  return Boolean(node) && (node.component === "table" || node.type === "grid");
+  return Boolean(node) && (node.component === "repeater" || node.type === "grid");
 }
 
 function getCellNodes(node, rowIndex, columnIndex) {
@@ -2369,6 +2669,42 @@ function reorderCellNodes(node, rowIndex, columnIndex, fromIndex, toIndex) {
   cellNodes.splice(Math.max(0, toIndex), 0, moved);
 }
 
+// A repeater's headerCells is a fully independent cell-array from its own
+// `cells` (the item template) — see renderRepeater — so it needs its own
+// tiny parallel of getCellNodes/insertCellNode/reorderCellNodes rather than
+// reusing those (which always target `node.cells`). Only ever one row.
+function getRepeaterHeaderCellNodes(node, columnIndex) {
+  if (!node || node.component !== "repeater") return;
+  if (!Array.isArray(node.headerCells)) {
+    node.headerCells = [];
+  }
+  if (!Array.isArray(node.headerCells[0])) {
+    node.headerCells[0] = [];
+  }
+  while (node.headerCells[0].length <= columnIndex) {
+    node.headerCells[0].push(null);
+  }
+  const cellEntry = node.headerCells[0][columnIndex];
+  if (!Array.isArray(cellEntry)) {
+    node.headerCells[0][columnIndex] = cellEntry ? [cellEntry] : [];
+  }
+  return node.headerCells[0][columnIndex];
+}
+
+function insertRepeaterHeaderCellNode(node, columnIndex, cellNode, index) {
+  const cellNodes = getRepeaterHeaderCellNodes(node, columnIndex);
+  if (!Array.isArray(cellNodes)) return;
+  const targetIndex = Math.max(0, Math.min(index, cellNodes.length));
+  cellNodes.splice(targetIndex, 0, cellNode);
+}
+
+function reorderRepeaterHeaderCellNodes(node, columnIndex, fromIndex, toIndex) {
+  const cellNodes = getRepeaterHeaderCellNodes(node, columnIndex);
+  if (!Array.isArray(cellNodes) || !cellNodes[fromIndex]) return;
+  const [moved] = cellNodes.splice(fromIndex, 1);
+  cellNodes.splice(Math.max(0, toIndex), 0, moved);
+}
+
 function getDraggedNodeId(item) {
   if (!item) return null;
   if (item.dataset?.nodeId) return item.dataset.nodeId;
@@ -2395,15 +2731,6 @@ function removeColumnCells(node, index) {
   });
 }
 
-function moveColumnCells(node, fromIndex, toIndex) {
-  if (!isCellGridNode(node) || !Array.isArray(node.cells)) return;
-  node.cells.forEach((row) => {
-    if (!Array.isArray(row)) return;
-    const [moved] = row.splice(fromIndex, 1);
-    row.splice(toIndex, 0, moved ?? null);
-  });
-}
-
 function addColumnCells(node, index) {
   if (!isCellGridNode(node) || !Array.isArray(node.cells)) return;
   node.cells.forEach((row) => {
@@ -2419,8 +2746,7 @@ function describeNode(node) {
   if (node.component === "text") return node.text ? node.text.slice(0, 48) : "Text";
   if (node.component === "icon") return node.ariaLabel || "Icon";
   if (node.component === "image") return node.url || "Image";
-  if (node.component === "list") return "List";
-  if (node.component === "table") return "Table";
+  if (node.component === "repeater") return Number(node.columns) > 1 ? "Table" : "List";
   if (node.component === "stat") return node.label || "Block";
   return node.component || node.type || "Component";
 }
@@ -2437,284 +2763,6 @@ function getPaletteEntryForNode(node) {
     return paletteComponents.find((item) => item.id === node.component) ?? null;
   }
   return null;
-}
-
-function destroyTableColumnsSortable() {
-  if (tableColumnsSortable && typeof tableColumnsSortable.destroy === "function") {
-    tableColumnsSortable.destroy();
-  }
-  tableColumnsSortable = null;
-}
-
-function renderTableColumnsList(node) {
-  if (!tableColumnsList) return;
-  tableColumnsList.innerHTML = "";
-  destroyTableColumnsSortable();
-  if (!node || node.component !== "table") return;
-  const columns = Array.isArray(node.columns) ? node.columns : [];
-  columns.forEach((column, index) => {
-    const item = document.createElement("div");
-    item.className = "list-group-item d-flex flex-column gap-2";
-    item.dataset.columnIndex = String(index);
-
-    const header = document.createElement("div");
-    header.className = "d-flex align-items-center gap-2";
-
-    const handle = document.createElement("span");
-    handle.className = "iconify text-body-secondary";
-    handle.dataset.icon = "tabler:grip-vertical";
-    handle.setAttribute("data-sortable-handle", "");
-    handle.setAttribute("aria-hidden", "true");
-
-    const title = document.createElement("span");
-    title.className = "fw-semibold";
-    title.textContent = column?.header || `Column ${index + 1}`;
-
-    const removeButton = document.createElement("button");
-    removeButton.className = "btn btn-sm btn-outline-danger ms-auto";
-    removeButton.type = "button";
-    removeButton.textContent = "Remove";
-    removeButton.addEventListener("click", () => {
-      recordUndoableChange(() => {
-        updateSelectedNode((nodeToUpdate) => {
-          if (nodeToUpdate.component !== "table") return;
-          const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-          nextColumns.splice(index, 1);
-          nodeToUpdate.columns = nextColumns;
-          removeColumnCells(nodeToUpdate, index);
-        });
-        renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
-        renderPreview();
-      });
-      updateSaveState();
-    });
-
-    header.append(handle, title, removeButton);
-    item.appendChild(header);
-
-    const formRow = document.createElement("div");
-    formRow.className = "row g-2";
-
-    const headerField = document.createElement("div");
-    headerField.className = "col-12 col-md-4";
-    const headerInput = document.createElement("input");
-    headerInput.type = "text";
-    headerInput.className = "form-control form-control-sm";
-    headerInput.placeholder = "Header";
-    headerInput.value = column?.header ?? "";
-    headerInput.addEventListener("focus", () => beginPendingUndo(headerInput));
-    headerInput.addEventListener("blur", () => commitPendingUndo(headerInput));
-    headerInput.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        target.header = headerInput.value;
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-        updateTableHeaderCellText(nodeToUpdate, index, headerInput.value);
-      });
-      title.textContent = headerInput.value || `Column ${index + 1}`;
-      renderPreview();
-      updateSaveState();
-    });
-    headerField.appendChild(headerInput);
-
-    const bindField = document.createElement("div");
-    bindField.className = "col-12 col-md-4";
-    const bindInput = document.createElement("input");
-    bindInput.type = "text";
-    bindInput.className = "form-control form-control-sm";
-    bindInput.placeholder = "@value";
-    bindInput.value = column?.bind ?? "";
-    attachBindingAutocomplete(bindInput, { resolveContext: () => getInspectorPreviewContext(selectedNodeId) });
-    bindInput.addEventListener("focus", () => beginPendingUndo(bindInput));
-    bindInput.addEventListener("blur", () => commitPendingUndo(bindInput));
-    bindInput.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        target.bind = bindInput.value;
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-        updateTableColumnCells(nodeToUpdate, index, (cell) => {
-          cell.text = bindInput.value;
-        });
-      });
-      renderPreview();
-      updateSaveState();
-    });
-    bindField.appendChild(bindInput);
-
-    const widthField = document.createElement("div");
-    widthField.className = "col-12 col-md-4";
-    const widthInput = document.createElement("input");
-    widthInput.type = "text";
-    widthInput.className = "form-control form-control-sm";
-    widthInput.placeholder = "Width (%, in, etc.)";
-    widthInput.value = column?.width ?? "";
-    widthInput.addEventListener("focus", () => beginPendingUndo(widthInput));
-    widthInput.addEventListener("blur", () => commitPendingUndo(widthInput));
-    widthInput.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        target.width = widthInput.value;
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-      });
-      renderPreview();
-      updateSaveState();
-    });
-    widthField.appendChild(widthInput);
-
-    const textSizeField = document.createElement("div");
-    textSizeField.className = "col-12 col-md-4";
-    const textSizeSelect = document.createElement("select");
-    textSizeSelect.className = "form-select form-select-sm";
-    [
-      { label: "Text size (inherit)", value: "" },
-      { label: "XS", value: "xs" },
-      { label: "Sm", value: "sm" },
-      { label: "Md", value: "md" },
-      { label: "Lg", value: "lg" },
-      { label: "XL", value: "xl" },
-    ].forEach((option) => {
-      const entry = document.createElement("option");
-      entry.value = option.value;
-      entry.textContent = option.label;
-      textSizeSelect.appendChild(entry);
-    });
-    textSizeSelect.value = column?.textSize ?? "";
-    textSizeSelect.addEventListener("focus", () => beginPendingUndo(textSizeSelect));
-    textSizeSelect.addEventListener("blur", () => commitPendingUndo(textSizeSelect));
-    textSizeSelect.addEventListener("change", () => commitPendingUndo(textSizeSelect));
-    textSizeSelect.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        if (textSizeSelect.value) {
-          target.textSize = textSizeSelect.value;
-        } else {
-          delete target.textSize;
-        }
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-      });
-      renderPreview();
-      updateSaveState();
-    });
-    textSizeField.appendChild(textSizeSelect);
-
-    const textStyleField = document.createElement("div");
-    textStyleField.className = "col-12 col-md-4 d-flex align-items-center gap-2 flex-wrap";
-    const textStyleOptions = [
-      { key: "bold", label: "Bold" },
-      { key: "italic", label: "Italic" },
-      { key: "underline", label: "Underline" },
-    ];
-    const currentStyles = column?.textStyle ?? { bold: true };
-    textStyleOptions.forEach((styleOption) => {
-      const wrapper = document.createElement("label");
-      wrapper.className = "form-check form-check-inline small mb-0";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "form-check-input";
-      checkbox.checked =
-        styleOption.key === "bold" ? currentStyles?.bold !== false : Boolean(currentStyles?.[styleOption.key]);
-      checkbox.addEventListener("change", () => {
-        recordUndoableChange(() => {
-          updateSelectedNode((nodeToUpdate) => {
-            if (nodeToUpdate.component !== "table") return;
-            const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-            const target = { ...(nextColumns[index] ?? {}) };
-            const nextStyles = { ...(target.textStyle ?? {}) };
-            nextStyles[styleOption.key] = checkbox.checked;
-            if (Object.values(nextStyles).some((value) => value !== undefined)) {
-              target.textStyle = nextStyles;
-            } else {
-              delete target.textStyle;
-            }
-            nextColumns[index] = target;
-            nodeToUpdate.columns = nextColumns;
-          });
-          renderPreview();
-        });
-        updateSaveState();
-      });
-      const label = document.createElement("span");
-      label.className = "form-check-label";
-      label.textContent = styleOption.label;
-      wrapper.append(checkbox, label);
-      textStyleField.appendChild(wrapper);
-    });
-
-    const alignField = document.createElement("div");
-    alignField.className = "col-12 col-md-4";
-    const alignSelect = document.createElement("select");
-    alignSelect.className = "form-select form-select-sm";
-    [
-      { label: "Alignment (inherit)", value: "" },
-      { label: "Left", value: "start" },
-      { label: "Center", value: "center" },
-      { label: "Right", value: "end" },
-      { label: "Justify", value: "justify" },
-    ].forEach((option) => {
-      const entry = document.createElement("option");
-      entry.value = option.value;
-      entry.textContent = option.label;
-      alignSelect.appendChild(entry);
-    });
-    alignSelect.value = column?.align ?? "";
-    alignSelect.addEventListener("focus", () => beginPendingUndo(alignSelect));
-    alignSelect.addEventListener("blur", () => commitPendingUndo(alignSelect));
-    alignSelect.addEventListener("change", () => commitPendingUndo(alignSelect));
-    alignSelect.addEventListener("input", () => {
-      updateSelectedNode((nodeToUpdate) => {
-        if (nodeToUpdate.component !== "table") return;
-        const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-        const target = { ...(nextColumns[index] ?? {}) };
-        if (alignSelect.value) {
-          target.align = alignSelect.value;
-        } else {
-          delete target.align;
-        }
-        nextColumns[index] = target;
-        nodeToUpdate.columns = nextColumns;
-      });
-      renderPreview();
-      updateSaveState();
-    });
-    alignField.appendChild(alignSelect);
-
-    formRow.append(headerField, bindField, widthField, textSizeField, textStyleField, alignField);
-    item.appendChild(formRow);
-    tableColumnsList.appendChild(item);
-  });
-
-  tableColumnsSortable = createSortable(tableColumnsList, {
-    animation: 150,
-    handle: "[data-sortable-handle]",
-    draggable: ".list-group-item",
-    onUpdate: (event) => {
-      recordUndoableChange(() => {
-        updateSelectedNode((nodeToUpdate) => {
-          if (nodeToUpdate.component !== "table") return;
-          const nextColumns = Array.isArray(nodeToUpdate.columns) ? [...nodeToUpdate.columns] : [];
-          const [moved] = nextColumns.splice(event.oldIndex ?? 0, 1);
-          nextColumns.splice(event.newIndex ?? 0, 0, moved);
-          nodeToUpdate.columns = nextColumns;
-          moveColumnCells(nodeToUpdate, event.oldIndex ?? 0, event.newIndex ?? 0);
-        });
-        renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
-        renderPreview();
-      });
-      updateSaveState();
-    },
-  });
 }
 
 function replaceTypeIcon(icon) {
@@ -2823,24 +2871,31 @@ function getIconTokens(value) {
 function findIconMatch(value) {
   if (!value) return null;
   const normalized = value.toLowerCase();
+  const options = getAllIconOptions();
   return (
-    PRESS_ICON_OPTIONS.find((option) => option.value.toLowerCase() === normalized) ||
-    PRESS_ICON_OPTIONS.find((option) => option.label.toLowerCase() === normalized) ||
+    options.find((option) => option.value.toLowerCase() === normalized) ||
+    options.find((option) => option.label.toLowerCase() === normalized) ||
     null
   );
 }
 
-function updateIconResult(resolvedValue, hasIcon) {
-  if (!iconResult) return;
+// Troubleshooting info only (did this resolve to an actual icon or not) —
+// moved into the preview's own tooltip rather than an always-visible line
+// under the input, so it's there when you go looking but not up front.
+function updateIconTooltip(resolvedValue, hasIcon) {
+  if (!iconPreview) return;
+  let title;
   if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
-    iconResult.textContent = "Result: —";
-    return;
+    title = "Result: —";
+  } else if (hasIcon) {
+    title = `Result: ${resolvedValue}`;
+  } else {
+    title = `Result: ${resolvedValue} (no icon found)`;
   }
-  if (hasIcon) {
-    iconResult.textContent = `Result: ${resolvedValue}`;
-    return;
+  iconPreview.setAttribute("data-bs-title", title);
+  if (window.bootstrap?.Tooltip) {
+    window.bootstrap.Tooltip.getOrCreateInstance(iconPreview).setContent({ ".tooltip-inner": title });
   }
-  iconResult.textContent = `Result: ${resolvedValue} (no icon found)`;
 }
 
 function resolveIconPreviewValue(value, context) {
@@ -2883,7 +2938,7 @@ function updateIconPreview(value, context) {
   iconPreview.innerHTML = "";
   const resolvedValue = resolveIconPreviewValue(value, context);
   if (resolvedValue === undefined || resolvedValue === null || resolvedValue === "") {
-    updateIconResult("", false);
+    updateIconTooltip("", false);
     return;
   }
   const resolvedText = typeof resolvedValue === "string" ? resolvedValue : String(resolvedValue);
@@ -2902,7 +2957,7 @@ function updateIconPreview(value, context) {
       iconPreview.appendChild(icon);
     }
   }
-  updateIconResult(resolvedText, resolvedIconTokens.length > 0);
+  updateIconTooltip(resolvedText, resolvedIconTokens.length > 0);
 }
 
 function applyIconSelection(value) {
@@ -3016,7 +3071,12 @@ function renderIconAutocompleteOption(option) {
   const preview = document.createElement("span");
   preview.className = "press-icon-option__preview";
   const icon = document.createElement("span");
-  icon.className = option.value;
+  // Bootstrap Icons needs the shared "bi" base class alongside "bi-{name}"
+  // (the base class supplies the icon font/pseudo-element plumbing, the
+  // per-icon class only sets which glyph) — same rule template-renderer.js's
+  // own icon case already applies at render time; a ddb-* icon is a single
+  // self-contained class and needs nothing extra.
+  icon.className = option.value.startsWith("bi-") ? `bi ${option.value}` : option.value;
   preview.appendChild(icon);
   const label = document.createElement("span");
   label.className = "text-truncate";
@@ -3067,17 +3127,21 @@ function attachIconAutocomplete(input) {
 
   const update = () => {
     const value = input.value.trim();
-    if (!value || value.startsWith("@") || value.startsWith("=")) {
+    if (value.startsWith("@") || value.startsWith("=")) {
       close();
       return;
     }
     const normalized = value.toLowerCase();
-    const filtered = PRESS_ICON_OPTIONS.filter((option) => {
-      return (
-        option.label.toLowerCase().includes(normalized) ||
-        option.value.toLowerCase().includes(normalized)
-      );
-    }).slice(0, MAX_ITEMS);
+    // Empty shows the first MAX_ITEMS of everything (ddb icons first, so
+    // they're what actually appears by default) rather than closing —
+    // same "see the options right away on focus" behavior the font
+    // autocomplete already has.
+    const filtered = getAllIconOptions()
+      .filter((option) => {
+        if (!normalized) return true;
+        return option.label.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized);
+      })
+      .slice(0, MAX_ITEMS);
     render(filtered);
   };
 
@@ -3105,7 +3169,15 @@ function attachIconAutocomplete(input) {
   };
 
   input.addEventListener("input", update);
-  input.addEventListener("focus", update);
+  input.addEventListener("focus", () => {
+    update();
+    // Both lists are fetched lazily and may not have resolved yet the
+    // first time this field is used — re-run update() once each lands so
+    // the dropdown (if still open) picks up the fuller list instead of
+    // staying stuck showing whatever was available first.
+    ensureDdbIconOptionsLoaded(update);
+    ensureBootstrapIconNamesLoaded(update);
+  });
   input.addEventListener("click", update);
   input.addEventListener("keydown", onKeyDown);
   input.addEventListener("blur", () => setTimeout(close, 120));
@@ -3441,7 +3513,8 @@ function initBindingAutocompletes() {
   attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
   attachIconAutocomplete(iconInput);
-  attachBindingAutocomplete(tableRowsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(repeaterItemsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
+  attachBindingAutocomplete(repeaterDecoratorTextInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });
   attachClassNameAutocomplete(classNameInput);
@@ -3515,6 +3588,16 @@ function renderLayoutList() {
     label.append(title, subtitle);
 
     item.append(handle, label);
+
+    if (nodeHasAnyCardOverride(node)) {
+      const uniqueBadge = document.createElement("span");
+      uniqueBadge.className = "iconify text-warning flex-shrink-0";
+      uniqueBadge.dataset.icon = "tabler:fingerprint";
+      uniqueBadge.setAttribute("title", "Has per-card overrides (Make Unique)");
+      uniqueBadge.setAttribute("aria-label", "Has per-card overrides");
+      item.append(uniqueBadge);
+    }
+
     item.addEventListener("click", () => selectNode(node.uid));
     fragment.appendChild(item);
   });
@@ -3524,12 +3607,6 @@ function renderLayoutList() {
 
 function getNodeText(node) {
   if (!node) return "";
-  if (node.component === "list") {
-    if (node.itemsBind) {
-      return node.itemsBind;
-    }
-    return Array.isArray(node.items) ? node.items.join("\n") : "";
-  }
   if (node.component === "icon") {
     return node.ariaLabel ?? "";
   }
@@ -3545,7 +3622,7 @@ function updateInspector() {
   const hasSelection = Boolean(node);
   const parentNode = hasSelection ? findParentNode(layout, selectedNodeId) : null;
   const parentIsContainer = Boolean(
-    parentNode && (parentNode.type === "grid" || parentNode.type === "layer" || parentNode.component === "table")
+    parentNode && (parentNode.type === "grid" || parentNode.type === "layer" || parentNode.component === "repeater")
   );
   const parentIsLayer = Boolean(parentNode && parentNode.type === "layer");
   const placement = parentIsLayer ? findLayerPlacement(parentNode, selectedNodeId) : null;
@@ -3554,6 +3631,33 @@ function updateInspector() {
   inspectorSection.querySelectorAll("input, select, textarea, button").forEach((el) => {
     el.disabled = !hasSelection;
   });
+
+  if (makeUniqueButton) {
+    const uniqueAvailable = hasSelection && activeViewTab === "grid";
+    // Independent of the general hasSelection disable-sweep above — Make
+    // Unique also needs the Grid View tab active (its only unambiguous
+    // "which card" context), so it can be re-disabled even with a
+    // component selected.
+    makeUniqueButton.disabled = !uniqueAvailable;
+    const overrideEntry = uniqueAvailable ? getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId) : null;
+    const isActive = Boolean(overrideEntry);
+    makeUniqueButton.classList.toggle("active", isActive);
+    makeUniqueButton.setAttribute("aria-pressed", isActive ? "true" : "false");
+    const currentFingerprint = uniqueAvailable ? simpleHash(getGridViewData()) : null;
+    const isStale = Boolean(overrideEntry) && overrideEntry.dataFingerprint !== currentFingerprint;
+    makeUniqueButton.classList.toggle("btn-outline-warning", isStale);
+    makeUniqueButton.classList.toggle("btn-outline-secondary", !isStale);
+    if (window.bootstrap?.Tooltip) {
+      const tooltip = window.bootstrap.Tooltip.getOrCreateInstance(makeUniqueButton);
+      const title = isStale
+        ? "Make Unique — the data at this card/chip looks different than when this override was set"
+        : !activeViewTab || activeViewTab !== "grid"
+          ? "Make Unique — only available from the Grid View tab, where a component selection maps to one specific card/chip"
+          : "Make Unique — while on, edits to this component apply only to the card/chip shown in Grid View, not the shared template";
+      makeUniqueButton.setAttribute("data-bs-title", title);
+      tooltip.setContent({ ".tooltip-inner": title });
+    }
+  }
 
   if (typeSummary) {
     const entry = getPaletteEntryForNode(node);
@@ -3602,9 +3706,18 @@ function updateInspector() {
     deleteButton.disabled = !hasSelection;
     // The root layout has no parent to remove it from, so deleting it
     // means "reset to an empty layout" instead — label it accordingly so
-    // that's not a surprise.
+    // that's not a surprise. Now an icon button (no visible text of its
+    // own), so this updates the accessible label + tooltip instead of
+    // overwriting the button's whole content, which would otherwise wipe
+    // out its icon.
     const isRoot = hasSelection && !parentNode;
-    deleteButton.textContent = isRoot ? "Clear Layout" : "Delete Component";
+    const deleteLabel = isRoot ? "Clear Layout" : "Delete Component";
+    if (deleteButtonLabel) deleteButtonLabel.textContent = deleteLabel;
+    deleteButton.setAttribute("aria-label", deleteLabel);
+    deleteButton.setAttribute("data-bs-title", deleteLabel);
+    if (window.bootstrap?.Tooltip) {
+      window.bootstrap.Tooltip.getOrCreateInstance(deleteButton).setContent({ ".tooltip-inner": deleteLabel });
+    }
   }
   if (duplicateButton) {
     // Unlike delete, duplicating the root doesn't have a sensible meaning
@@ -3630,11 +3743,17 @@ function updateInspector() {
     if (imageCornerRadiusInput) imageCornerRadiusInput.value = "";
     if (layerOriginInput) layerOriginInput.value = "safe";
     if (gapInput) gapInput.value = "";
+    if (spaceAfterInput) spaceAfterInput.value = "";
     if (rowColumnsInput) rowColumnsInput.value = "";
     if (templateColumnsInput) templateColumnsInput.value = "";
     if (gridRowsInput) gridRowsInput.value = "";
     if (templateRowsInput) templateRowsInput.value = "";
-    if (tableRowsInput) tableRowsInput.value = "";
+    if (repeaterItemsInput) repeaterItemsInput.value = "";
+    if (repeaterColumnsInput) repeaterColumnsInput.value = "";
+    if (repeaterHeaderInput) repeaterHeaderInput.checked = false;
+    if (repeaterTemplateColumnsInput) repeaterTemplateColumnsInput.value = "";
+    if (repeaterDecoratorTypeInput) repeaterDecoratorTypeInput.value = "none";
+    if (repeaterDecoratorTextInput) repeaterDecoratorTextInput.value = "";
     if (ariaLabelInput) ariaLabelInput.value = "";
     if (classNameInput) classNameInput.value = "";
     if (positionXInput) positionXInput.value = "";
@@ -3643,11 +3762,10 @@ function updateInspector() {
     if (positionHeightInput) positionHeightInput.value = "";
     if (positionZInput) positionZInput.value = "";
     if (positionRotateInput) positionRotateInput.value = "";
-    renderTableColumnsList(null);
     positionFieldGroups.forEach((group) => setGroupVisibility(group, false));
     setGroupVisibility(textFieldGroup, true);
     setGroupVisibility(iconField, false);
-    setGroupVisibility(tableFieldGroup, false);
+    setGroupVisibility(repeaterFieldGroup, false);
     setGroupVisibility(textDecorationGroup, true);
     setGroupVisibility(ariaLabelField, false);
     setGroupVisibility(classNameField, true);
@@ -3665,6 +3783,9 @@ function updateInspector() {
     setGroupVisibility(gridAlignYGroup, false);
     if (gapField) {
       gapField.hidden = true;
+    }
+    if (spaceAfterField) {
+      spaceAfterField.hidden = true;
     }
     if (rowColumnsField) {
       rowColumnsField.hidden = true;
@@ -3694,7 +3815,12 @@ function updateInspector() {
     textSizeInputs.forEach((input) => {
       input.checked = input.value === "md";
     });
-    if (textSizeCustomInput) textSizeCustomInput.value = pxToPt(TEXT_SIZE_PX.md);
+    if (textSizeCustomInput) {
+      textSizeCustomInput.value = pxToPt(TEXT_SIZE_PX.md);
+      textSizeCustomInput.disabled = false;
+    }
+    if (textInlineInput) textInlineInput.checked = false;
+    if (textLineHeightInput) textLineHeightInput.value = "";
     if (fontFamilyInput) fontFamilyInput.value = "";
     textOrientationInputs.forEach((input) => {
       input.checked = input.value === "horizontal";
@@ -3721,9 +3847,9 @@ function updateInspector() {
   const isGridNode = node?.type === "grid";
   const isLayerNode = node?.type === "layer";
   const isLayoutNode = isGridNode || isLayerNode;
-  const isGapNode = isGridNode || ["list", "stat", "table"].includes(node?.component);
+  const isGapNode = isGridNode || ["repeater", "stat"].includes(node?.component);
   const isImageNode = node?.component === "image";
-  const isTableNode = node?.component === "table";
+  const isRepeaterNode = node?.component === "repeater";
   const isIconNode = node?.component === "icon";
   const borderVisible = hasBorderStyles(node?.style ?? {});
   positionFieldGroups.forEach((group) => setGroupVisibility(group, parentIsLayer));
@@ -3735,9 +3861,9 @@ function updateInspector() {
     if (positionZInput) positionZInput.value = Number.isFinite(placement?.z) ? String(placement.z) : "";
     if (positionRotateInput) positionRotateInput.value = Number.isFinite(placement?.rotate) ? String(placement.rotate) : "";
   }
-  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
+  setGroupVisibility(textFieldGroup, !isLayoutNode && !isImageNode && !isRepeaterNode && !isIconNode);
   setGroupVisibility(iconField, isIconNode);
-  setGroupVisibility(tableFieldGroup, isTableNode);
+  setGroupVisibility(repeaterFieldGroup, isRepeaterNode);
   setGroupVisibility(ariaLabelField, isIconNode);
   setGroupVisibility(classNameField, true);
   imageFieldGroups.forEach((group) => setGroupVisibility(group, isImageNode));
@@ -3752,9 +3878,9 @@ function updateInspector() {
   }
   textSettingGroups.forEach((group) => {
     if (group === textDecorationGroup) return;
-    setGroupVisibility(group, !isLayoutNode && !isImageNode && !isTableNode);
+    setGroupVisibility(group, !isLayoutNode && !isImageNode && !isRepeaterNode);
   });
-  setGroupVisibility(textDecorationGroup, !isLayoutNode && !isImageNode && !isTableNode && !isIconNode);
+  setGroupVisibility(textDecorationGroup, !isLayoutNode && !isImageNode && !isRepeaterNode && !isIconNode);
   setGroupVisibility(colorGroup, true);
   setGroupVisibility(borderGroup, borderVisible);
   setGroupVisibility(alignmentGroup, node?.type !== "layer" && !isGridNode && !isImageNode && !isIconNode);
@@ -3765,6 +3891,9 @@ function updateInspector() {
   });
   if (gapField) {
     gapField.hidden = !isGapNode;
+  }
+  if (spaceAfterField) {
+    spaceAfterField.hidden = !isGapNode;
   }
   if (rowColumnsField) {
     rowColumnsField.hidden = !isGridNode;
@@ -3783,6 +3912,11 @@ function updateInspector() {
     const defaultGap = node?.component === "stat" ? 2 : 4;
     const gapValue = Number.isFinite(node?.gap) ? node.gap : defaultGap;
     gapInput.value = isGapNode ? String(gapValue) : "";
+  }
+  if (spaceAfterInput) {
+    // No default fallback like Gap's — unset genuinely means "no extra
+    // space," not "assume some component-specific starting value."
+    spaceAfterInput.value = isGapNode && Number.isFinite(node?.spaceAfter) ? String(node.spaceAfter) : "";
   }
   if (rowColumnsInput) {
     rowColumnsInput.value = isGridNode ? String(node.columns ?? 1) : "";
@@ -3815,25 +3949,46 @@ function updateInspector() {
       textEditor.value = "";
       textEditor.placeholder = "";
     } else {
-      textEditor.value = isImageNode ? "" : getNodeText(node);
-      if (node.component === "list") {
-        textEditor.placeholder = node.itemsBind ? "Binding (@path)" : "One entry per line";
-      } else {
-        textEditor.placeholder = "Binding / Text";
-      }
+      textEditor.value = isImageNode || isRepeaterNode ? "" : getNodeText(node);
+      textEditor.placeholder = "Binding / Text";
     }
   }
   if (textEditorLabel) {
-    if (node.component === "list") {
-      textEditorLabel.textContent = node.itemsBind ? "List binding" : "List items";
-    } else {
-      textEditorLabel.textContent = "Binding / Text";
-    }
+    textEditorLabel.textContent = "Binding / Text";
   }
-  if (tableRowsInput) {
-    tableRowsInput.value = isTableNode ? node.rowsBind ?? node.itemsBind ?? "" : "";
+  if (repeaterItemsInput) {
+    repeaterItemsInput.value = isRepeaterNode
+      ? node.itemsBind
+        ? node.itemsBind
+        : Array.isArray(node.items)
+          ? node.items.join("\n")
+          : ""
+      : "";
+    repeaterItemsInput.placeholder =
+      isRepeaterNode && node.itemsBind ? "Binding (@path)" : "One entry per line, or an @path binding";
   }
-  renderTableColumnsList(isTableNode ? node : null);
+  if (repeaterColumnsInput) {
+    repeaterColumnsInput.value = isRepeaterNode ? String(node.columns ?? 1) : "";
+  }
+  if (repeaterHeaderInput) {
+    repeaterHeaderInput.checked = isRepeaterNode ? Boolean(node.showHeader) : false;
+  }
+  if (repeaterTemplateColumnsInput) {
+    repeaterTemplateColumnsInput.value = isRepeaterNode ? node.templateColumns ?? "" : "";
+  }
+  if (repeaterTemplateColumnsGroup) {
+    setGroupVisibility(repeaterTemplateColumnsGroup, isRepeaterNode && Number(node.columns) > 1);
+  }
+  const repeaterDecoratorType = isRepeaterNode ? node.decorator?.type ?? "none" : "none";
+  if (repeaterDecoratorTypeInput) {
+    repeaterDecoratorTypeInput.value = repeaterDecoratorType;
+  }
+  if (repeaterDecoratorTextInput) {
+    repeaterDecoratorTextInput.value = isRepeaterNode ? node.decorator?.text ?? "" : "";
+  }
+  if (repeaterDecoratorTextGroup) {
+    setGroupVisibility(repeaterDecoratorTextGroup, isRepeaterNode && repeaterDecoratorType === "custom");
+  }
 
   if (imageUrlInput) {
     imageUrlInput.value = isImageNode ? node.url ?? "" : "";
@@ -3881,6 +4036,14 @@ function updateInspector() {
   if (textSizeCustomInput) {
     const fontSizePx = Number.isFinite(node?.style?.fontSize) ? node.style.fontSize : TEXT_SIZE_PX[textSize] ?? TEXT_SIZE_PX.md;
     textSizeCustomInput.value = pxToPt(fontSizePx);
+    // Auto shrink-to-fit and a fixed pt size are mutually exclusive.
+    textSizeCustomInput.disabled = textSize === "auto";
+  }
+  if (textInlineInput) {
+    textInlineInput.checked = node?.textStyle === "span";
+  }
+  if (textLineHeightInput && document.activeElement !== textLineHeightInput) {
+    textLineHeightInput.value = typeof node?.style?.lineHeight === "number" ? String(node.style.lineHeight) : "";
   }
 
   if (fontFamilyInput && document.activeElement !== fontFamilyInput) {
@@ -3986,11 +4149,190 @@ function selectNode(uid, { fromPreview = false } = {}) {
   setInspectorMode("component");
 }
 
+// Not cryptographic — just enough to notice "the data at this card index
+// doesn't look like what it did when this override was set" (dataFingerprint,
+// stamped on override creation below). A plain string hash is plenty.
+function simpleHash(value) {
+  const str = typeof value === "string" ? value : JSON.stringify(value);
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return hash.toString(36);
+}
+
+function valuesEqual(a, b) {
+  if (a === b) return true;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch (error) {
+    return false;
+  }
+}
+
+// Union of both objects' keys, not just `working`'s — a mutator that
+// deletes a property (several existing ones do, e.g. clearing image fit
+// back to its default) needs that absence to show up as a real diff
+// against `base`, not silently vanish because Object.keys(working) never
+// had it to begin with.
+function diffTopLevelKeys(working, base) {
+  const patch = {};
+  const keys = new Set([...Object.keys(working ?? {}), ...Object.keys(base ?? {})]);
+  keys.forEach((key) => {
+    if (!valuesEqual(working?.[key], base?.[key])) {
+      patch[key] = working?.[key];
+    }
+  });
+  return patch;
+}
+
+// The data item currently shown at gridViewIndex in the Grid View — same
+// resolution templates.js's own renderCardGrid/renderChipGrid use
+// (resolveTemplateData + getRepeatData), reused here purely to compute a
+// dataFingerprint when an override is first created.
+function getGridViewData() {
+  const template = getActiveTemplate();
+  if (!template) return null;
+  const { sourceData } = getSelectionContext();
+  const pageConfig = getEditablePage(currentSide) ?? template.pages?.[currentSide] ?? {};
+  const templateData = resolveTemplateData(template, sourceData);
+  const items = getRepeatData(template, pageConfig, templateData);
+  return Array.isArray(items) ? items[gridViewIndex] : null;
+}
+
+// Looks up (or, with create:true, lazily creates) the override entry for a
+// single (side, card, node) triple. Creating one stamps it with a
+// dataFingerprint of whatever's currently at that card index — a
+// best-effort "does this still look like the same data" signal for the
+// Make Unique button's warning state, not a correctness mechanism (see the
+// plan's card-index-is-positional-not-a-stable-key note).
+function getCardOverrideEntry(side, cardIndex, nodeUid, { create = false } = {}) {
+  const page = editablePages?.[side];
+  if (!page || !nodeUid) return null;
+  if (!page.cardOverrides) {
+    if (!create) return null;
+    page.cardOverrides = {};
+  }
+  const cardKey = String(cardIndex);
+  if (!page.cardOverrides[cardKey]) {
+    if (!create) return null;
+    page.cardOverrides[cardKey] = {};
+  }
+  if (!page.cardOverrides[cardKey][nodeUid]) {
+    if (!create) return null;
+    page.cardOverrides[cardKey][nodeUid] = { dataFingerprint: simpleHash(getGridViewData()) };
+  }
+  return page.cardOverrides[cardKey][nodeUid];
+}
+
+// Drops an override entry once neither its node nor placement patch has
+// anything left in it (every field was dialed back to match the template
+// value one at a time, without an explicit "turn Make Unique off") — same
+// end state as toggling off, just reached incrementally.
+function pruneEmptyCardOverrideEntry(side, cardIndex, nodeUid) {
+  const page = editablePages?.[side];
+  const cardKey = String(cardIndex);
+  const entry = page?.cardOverrides?.[cardKey]?.[nodeUid];
+  if (!entry) return;
+  const hasNodePatch = entry.node && Object.keys(entry.node).length > 0;
+  const hasPlacementPatch = entry.placement && Object.keys(entry.placement).length > 0;
+  if (hasNodePatch || hasPlacementPatch) return;
+  delete page.cardOverrides[cardKey][nodeUid];
+  if (Object.keys(page.cardOverrides[cardKey]).length === 0) {
+    delete page.cardOverrides[cardKey];
+  }
+}
+
+// Unconditional delete (unlike pruneEmptyCardOverrideEntry, which only
+// removes an entry once its patches are already empty) — this is the
+// explicit "undo uniqueness" action, whether from the Make Unique toggle
+// itself or the template-wide Clear all uniqueness button.
+function deleteCardOverrideEntry(side, cardIndex, nodeUid) {
+  const page = editablePages?.[side];
+  const cardKey = String(cardIndex);
+  if (!page?.cardOverrides?.[cardKey]) return;
+  delete page.cardOverrides[cardKey][nodeUid];
+  if (Object.keys(page.cardOverrides[cardKey]).length === 0) {
+    delete page.cardOverrides[cardKey];
+  }
+}
+
+// Make Unique only ever targets the Grid View's one unambiguous card — the
+// page-grid Live Preview and the Layout list have no such context (a page
+// can show several cards at once), so unique-mode is only active while
+// that tab is the one currently shown, and only for a node that already
+// has an override entry for the card currently in view there.
+function isUniqueEditActive() {
+  return activeViewTab === "grid" && Boolean(selectedNodeId) && Boolean(getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId));
+}
+
+// The Make Unique button itself: toggling the override entry's mere
+// existence is the on/off state (see isUniqueEditActive) — turning it on
+// creates an empty entry ready for the next property edit to populate (via
+// updateSelectedNode/updateSelectedPlacement's unique-mode branch); turning
+// it off deletes it outright, immediately reverting this one component on
+// this one card back to the shared template.
+function toggleMakeUnique() {
+  if (activeViewTab !== "grid" || !selectedNodeId) return;
+  recordUndoableChange(() => {
+    if (getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId)) {
+      deleteCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId);
+    } else {
+      getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId, { create: true });
+    }
+    renderPreview();
+    updateInspector();
+  });
+}
+
+// Template-wide "undo everything" for uniqueness — wipes cardOverrides on
+// both sides outright. Broader blast radius than any other single undo-able
+// edit in this app (every card's uniqueness at once, not just the current
+// selection), so it still gets a confirmation despite being on the undo
+// stack like everything else here — unlike Delete Template, this genuinely
+// can be undone with Ctrl+Z, so the prompt doesn't claim otherwise.
+function clearAllUniqueness() {
+  const template = getActiveTemplate();
+  if (!template) return;
+  const hasAnyOverrides = ["front", "back"].some(
+    (side) => editablePages?.[side]?.cardOverrides && Object.keys(editablePages[side].cardOverrides).length > 0
+  );
+  if (!hasAnyOverrides) {
+    status?.show("No per-card uniqueness to clear.", { type: "info", timeout: 2000 });
+    return;
+  }
+  const confirmed = window.confirm("Clear all per-card uniqueness on this template?");
+  if (!confirmed) return;
+  recordUndoableChange(() => {
+    ["front", "back"].forEach((side) => {
+      if (editablePages?.[side]) {
+        delete editablePages[side].cardOverrides;
+      }
+    });
+    renderPreview();
+    updateInspector();
+  });
+  status?.show("Cleared all per-card uniqueness.", { type: "success", timeout: 2000 });
+}
+
 function updateSelectedNode(updater) {
   if (typeof updater !== "function") return;
   const layout = getLayoutForSide(currentSide);
   const node = findNodeById(layout, selectedNodeId);
   if (!node) return;
+  if (isUniqueEditActive()) {
+    const entry = getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId, { create: true });
+    const working = { ...node, ...(entry.node ?? {}) };
+    updater(working);
+    const patch = diffTopLevelKeys(working, node);
+    if (Object.keys(patch).length) {
+      entry.node = patch;
+    } else {
+      delete entry.node;
+    }
+    pruneEmptyCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId);
+    return;
+  }
   updater(node);
 }
 
@@ -4001,17 +4343,40 @@ function updateSelectedPlacement(updater) {
   if (!parentNode || parentNode.type !== "layer") return;
   const placement = findLayerPlacement(parentNode, selectedNodeId);
   if (!placement) return;
+  if (isUniqueEditActive()) {
+    const entry = getCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId, { create: true });
+    const working = { ...placement, ...(entry.placement ?? {}) };
+    updater(working);
+    const patch = diffTopLevelKeys(working, placement);
+    // `node` is the child node reference living on the placement object —
+    // never something a placement-field mutator legitimately touches, but
+    // excluded defensively so a full node object can never end up
+    // duplicated into the override.
+    delete patch.node;
+    if (Object.keys(patch).length) {
+      entry.placement = patch;
+    } else {
+      delete entry.placement;
+    }
+    pruneEmptyCardOverrideEntry(currentSide, gridViewIndex, selectedNodeId);
+    return;
+  }
   updater(placement);
 }
 
-function applyOverlays(page, template, size, { forPrint = false } = {}) {
+function applyOverlays(page, template, size, { forPrint = false, singleCard = false, updateLegend = true } = {}) {
   const legendItems = [];
   const isCardOrChip = template.type === "card" || template.type === "chip";
 
   if (isCardOrChip) {
     const { card } = template;
-    const columns = card.columns ?? 3;
-    const rows = card.rows ?? 3;
+    // Grid View forces a single-tile render (see renderGridView/
+    // singleCardIndex) regardless of the template's real columns/rows —
+    // the guides need the same 1x1 treatment, or they'd keep drawing the
+    // full multi-card sheet layout (cut/safe lines for cards that aren't
+    // even on screen) around the one card actually shown.
+    const columns = singleCard ? 1 : card.columns ?? 3;
+    const rows = singleCard ? 1 : card.rows ?? 3;
     const cellWidth = card.width ?? 2.5;
     const cellHeight = template.type === "chip" ? cellWidth : card.height ?? 3.5;
     // Chips are always circular (matches .chip-circle's border-radius:50%)
@@ -4126,10 +4491,18 @@ function applyOverlays(page, template, size, { forPrint = false } = {}) {
   // so it never sits on top of card content and isn't affected by canvas
   // zoom/scroll. Only ever touched for the editable canvas's own
   // applyOverlays call (forPrint: false) — the print stack's calls skip
-  // this branch entirely, so they can't stomp on it.
-  if (!forPrint && guideLegendElement) {
+  // this branch entirely, so they can't stomp on it. updateLegend further
+  // restricts this to whichever view (Live Preview vs. Grid View) is
+  // actually the one currently visible — both call applyOverlays now, and
+  // without this the last one to run would silently win regardless of
+  // which is on screen.
+  if (!forPrint && updateLegend && guideLegendElement) {
     guideLegendElement.innerHTML = "";
-    guideLegendElement.hidden = legendItems.length === 0;
+    // Plain `.hidden` doesn't reliably work here — .press-guide-legend has
+    // its own `display: flex` (styles.css), which as an author-origin rule
+    // beats the `[hidden]` UA rule regardless of !important. See
+    // setElementVisible.
+    setElementVisible(guideLegendElement, legendItems.length > 0);
     legendItems.forEach(({ modifier, label }) => {
       const item = document.createElement("div");
       item.className = "press-guide-legend__item";
@@ -4168,6 +4541,234 @@ function updateCardPageNav(totalCardPages) {
   }
 }
 
+// Unlike updateCardPageNav, this never hides itself even when there's only
+// one card — the Grid View's whole point is targeting one specific card
+// for Make Unique, and that's just as true (if less useful to navigate)
+// when there's only one.
+function updateGridViewNav(totalCards, templateType) {
+  if (gridViewLabel) {
+    const noun = templateType === "chip" ? "Chip" : templateType === "card" ? "Card" : "Item";
+    gridViewLabel.textContent = `${noun} ${gridViewIndex + 1} of ${totalCards}`;
+  }
+  if (gridViewPrevButton) {
+    gridViewPrevButton.disabled = gridViewIndex <= 0;
+  }
+  if (gridViewNextButton) {
+    gridViewNextButton.disabled = gridViewIndex >= totalCards - 1;
+  }
+}
+
+// template.createPage always builds a full physical-page-sized element
+// (the printed sheet a card would actually sit on), even in singleCardIndex
+// mode — there's no separate "just render the tile" path, since the guide
+// overlays (applyOverlays) position themselves in page-relative coordinates
+// that assume that full page exists. Rather than teach the render pipeline
+// a second output shape, this crops the already-correct full page down to
+// just its one card/chip tile after the fact: shift the page by a negative
+// offset so the tile's own top-left lands at the wrapper's origin, then let
+// the wrapper's own overflow:hidden (.press-grid-tile, styles.css) clip
+// away everything else. Needs real layout to measure, so it's a no-op
+// while Grid View isn't actually the visible tab — see setActiveViewTab,
+// which re-renders once it just became visible specifically to make this
+// measurement valid.
+function cropPageToSingleTile(page, stage) {
+  if (!page || !stage) return;
+  const tile = page.querySelector(".card-tile, .chip-tile");
+  if (!tile) return;
+  // Offset must be computed against the STAGE's rect, not the page's own
+  // rect, and applied as an increment on top of whatever left/top this page
+  // already has (rather than a flat replacement) — page itself carries the
+  // zoom transform (see renderGridView/setCanvasZoom), and transform-origin
+  // "top center" means the page's own rendered left edge shifts inward as
+  // it scales, so it stops being a valid stand-in for "the reference point
+  // that should land at 0". Using the page's own rect as that reference
+  // worked by coincidence at 100% zoom (no scaling → no shift) but produced
+  // an increasingly wrong offset at any other zoom level, since the
+  // required correction is a straight function of the *current* left/top
+  // (each px of left moves the rendered tile by exactly one px, regardless
+  // of scale) rather than of the page's own scaled position.
+  const stageRect = stage.getBoundingClientRect();
+  const tileRect = tile.getBoundingClientRect();
+  const currentLeft = parseFloat(page.style.left) || 0;
+  const currentTop = parseFloat(page.style.top) || 0;
+  page.style.position = "absolute";
+  page.style.left = `${currentLeft - (tileRect.left - stageRect.left)}px`;
+  page.style.top = `${currentTop - (tileRect.top - stageRect.top)}px`;
+  stage.style.width = `${tileRect.width}px`;
+  stage.style.height = `${tileRect.height}px`;
+}
+
+// Renders exactly one card's front and back side by side (singleCardIndex
+// forces renderCardGrid/renderChipGrid to a 1x1 layout regardless of the
+// template's real columns/rows — see templates.js). Reuses the same
+// editable/selection wiring as the main Live Preview so click-to-select
+// already just works here; the only new behavior is that onSelect also
+// fixes up currentSide to whichever side was actually clicked, since a
+// selection made here can come from either front or back independent of
+// which one previewStage/currentSide currently shows.
+function renderGridView() {
+  if (!gridViewStageFront && !gridViewStageBack) return;
+  const context = getSelectionContext();
+  const { template, source, format, size, sourceValue, sourceData } = context;
+  if (!template || !size) {
+    if (gridViewStageFront) gridViewStageFront.innerHTML = "";
+    if (gridViewStageBack) gridViewStageBack.innerHTML = "";
+    return;
+  }
+  const sourceContext = { ...source, value: sourceValue, data: sourceData };
+
+  const frontCount = getRepeatItemCount(template, "front", { data: sourceData, page: getEditablePage("front") });
+  const backCount = getRepeatItemCount(template, "back", { data: sourceData, page: getEditablePage("back") });
+  const totalCards = Math.max(frontCount, backCount);
+  gridViewIndex = Math.min(Math.max(0, gridViewIndex), totalCards - 1);
+  updateGridViewNav(totalCards, template.type);
+
+  [
+    { side: "front", stage: gridViewStageFront },
+    { side: "back", stage: gridViewStageBack },
+  ].forEach(({ side, stage }) => {
+    if (!stage) return;
+    stage.innerHTML = "";
+    const page = template.createPage(side, {
+      size,
+      format,
+      source: sourceContext,
+      data: sourceData,
+      page: getEditablePage(side),
+      singleCardIndex: gridViewIndex,
+      renderOptions: {
+        editable: true,
+        selectedId: selectedNodeId,
+        onSelect: (uid) => {
+          currentSide = side;
+          selectNode(uid, { fromPreview: true });
+        },
+      },
+    });
+    // singleCard forces the trim/bleed/safe guides to the same 1x1
+    // treatment the render itself got — otherwise they'd keep drawing the
+    // full multi-card sheet layout around the one card actually shown.
+    // updateLegend is always false here — the legend is Live-Preview-only
+    // by design (it explains the trim/bleed/safe guide colors, which only
+    // Live Preview's own overlay actually needs decoding at a glance);
+    // Grid View never shows it regardless of which tab is active.
+    applyOverlays(page, template, size, { forPrint: false, singleCard: true, updateLegend: false });
+    stage.appendChild(page);
+    withPanelVisibleForMeasurement(viewPanelGrid, activeViewTab === "grid", () => {
+      // Same ordering constraint as renderPreview's own call: caps must be
+      // measured before the zoom transform (unscaled CSS-pixel space), and
+      // the crop (below) must measure the tile AFTER zoom is applied, since
+      // it needs the tile's actual on-screen (scaled) size to crop the
+      // stage to — otherwise zooming in Grid View would resize the visible
+      // content but leave the surrounding tile box at its old, unscaled size.
+      applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
+      applyAutoFontSizing(page);
+      applyOverflowIndicators(page);
+      applyCanvasZoom(page);
+      cropPageToSingleTile(page, stage);
+    });
+  });
+}
+
+// Plain `element.hidden = true` silently does nothing on an element that
+// also carries an explicit CSS `display` (Bootstrap's `.d-flex` — declared
+// `!important` — or even a plain, non-important custom class like
+// `.press-guide-legend`'s own `display: flex`): the `[hidden]` UA rule is
+// either out-`!important`-ed or simply loses to any author-origin rule
+// regardless of `!important`, so it never actually collapses. Setting
+// `display` inline with `!important` is the one thing guaranteed to win
+// over both cases.
+function setElementVisible(element, visible, displayValue = "flex") {
+  if (!element) return;
+  element.style.setProperty("display", visible ? displayValue : "none", "important");
+}
+
+// applyAutoWidthCaps (template-renderer.js) measures real layout via
+// getBoundingClientRect(), which returns all zeros for anything inside a
+// display:none subtree — and Live Preview / Grid View each keep re-rendering
+// the other's panel in the background to stay in sync (renderPreview() always
+// calls renderGridView(), see below) even while that other panel is hidden
+// behind setElementVisible. Left unguarded, that corrupts the hidden panel's
+// auto-width caps (visible as components cut off / misplaced) until
+// something re-renders it again while actually visible. Force the panel
+// visible for the duration of the synchronous measure-and-cap pass, then put
+// it back exactly as setActiveViewTab last left it.
+function withPanelVisibleForMeasurement(panel, wasVisible, fn) {
+  if (!panel || wasVisible) {
+    fn();
+    return;
+  }
+  setElementVisible(panel, true, "block");
+  fn();
+  setElementVisible(panel, false);
+}
+
+// Grid View's whole point is paging through individual grid slots and
+// pairing Make Unique to one of them — with columns=1/rows=1 (or no card/
+// chip grid at all, e.g. a sheet template) there's no actual grid to view
+// items of individually beyond what Live Preview's own page navigator
+// already does, so the tab is disabled rather than offering a view that's
+// redundant at best.
+function templateHasGrid(template) {
+  if (!template || (template.type !== "card" && template.type !== "chip")) return false;
+  const columns = template.card?.columns ?? 1;
+  const rows = template.card?.rows ?? 1;
+  return columns > 1 || rows > 1;
+}
+
+function updateGridViewAvailability(template) {
+  if (!gridViewTabButton) return;
+  const available = templateHasGrid(template);
+  gridViewTabButton.disabled = !available;
+  gridViewTabButton.classList.toggle("disabled", !available);
+  gridViewTabButton.setAttribute("aria-disabled", available ? "false" : "true");
+  const title = available
+    ? "Front and back of one specific card/chip at a time — where Make Unique targets a per-item override"
+    : "Not available — this template's grid is 1×1 (Template Properties → Columns/Rows), so there's nothing to page through beyond a single card/chip";
+  gridViewTabButton.setAttribute("data-bs-title", title);
+  if (window.bootstrap?.Tooltip) {
+    window.bootstrap.Tooltip.getOrCreateInstance(gridViewTabButton).setContent({ ".tooltip-inner": title });
+  }
+  // Don't strand the user on a view that just became unavailable (e.g.
+  // columns/rows edited down to 1x1 while Grid View was already open).
+  if (!available && activeViewTab === "grid") {
+    setActiveViewTab("preview");
+  }
+}
+
+function setActiveViewTab(tab) {
+  if (tab === "grid" && gridViewTabButton?.disabled) return;
+  activeViewTab = tab === "grid" ? "grid" : "preview";
+  viewTabButtons.forEach((button) => {
+    const isActive = button.dataset.viewTab === activeViewTab;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+  setElementVisible(viewControlsPreview, activeViewTab === "preview");
+  setElementVisible(viewControlsGrid, activeViewTab === "grid");
+  setElementVisible(viewPanelPreview, activeViewTab === "preview", "block");
+  setElementVisible(viewPanelGrid, activeViewTab === "grid", "block");
+  // The guide legend only ever gets (re)populated by a Live Preview render
+  // (applyOverlays's updateLegend is gated the same way) — force it out of
+  // view immediately on switching away rather than leaving whatever it last
+  // showed on screen until the next unrelated re-render happens to touch it.
+  if (guideLegendElement && activeViewTab !== "preview") {
+    setElementVisible(guideLegendElement, false);
+  }
+  // Grid View's page-cropping (see renderGridView) needs real layout
+  // geometry, which getBoundingClientRect() can't provide while the panel
+  // itself was just display:none — re-render now that it's actually on
+  // screen so the crop measurement is correct immediately, not just after
+  // some unrelated future re-render.
+  if (activeViewTab === "grid") {
+    renderGridView();
+  }
+  // Make Unique's availability depends on which tab is active (see
+  // isUniqueEditActive) — the inspector needs to reflect that immediately
+  // on switching, not just on the next unrelated re-render.
+  updateInspector();
+}
+
 function renderPreview() {
   destroyCanvasDnd();
   const context = getSelectionContext();
@@ -4180,6 +4781,7 @@ function renderPreview() {
   const totalCardPages = getCardPageCount(template, side, { data: sourceData, page: pageOverride });
   cardPageIndex = Math.min(Math.max(0, cardPageIndex), totalCardPages - 1);
   updateCardPageNav(totalCardPages);
+  updateGridViewAvailability(template);
 
   previewStage.innerHTML = "";
   const sourceContext = { ...source, value: sourceValue, data: sourceData };
@@ -4203,18 +4805,30 @@ function renderPreview() {
       },
     },
   });
-  applyOverlays(page, template, size, { forPrint: false });
+  // updateLegend gated the same way as Grid View's own calls — whichever
+  // tab is actually visible owns the shared legend element.
+  applyOverlays(page, template, size, { forPrint: false, updateLegend: activeViewTab === "preview" });
   previewStage.appendChild(page);
   // Measured before the zoom transform below — getBoundingClientRect()
   // would otherwise return scaled (visual) pixels while max-width is set in
   // the page's own untransformed CSS pixel space, throwing the cap off by
   // whatever the current zoom level is.
-  applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
+  withPanelVisibleForMeasurement(viewPanelPreview, activeViewTab === "preview", () => {
+    applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
+    applyAutoFontSizing(page);
+    applyOverflowIndicators(page);
+  });
   applyCanvasZoom(page);
   initCanvasDnd(layoutRoot);
   initLayerPlacementDrag(layoutRoot);
 
   buildPrintStack(template, { size, format, data: sourceData, source: sourceContext });
+  // Kept in sync on every renderPreview() call regardless of which tab is
+  // currently visible, rather than hunting down every renderPreview() call
+  // site to also call this — cheap enough (one extra single-card render)
+  // and guarantees the Grid View is never stale by the time someone
+  // switches to it.
+  renderGridView();
   updateSideButton();
   renderSampleDataSection();
   renderJsonPreview();
@@ -4257,6 +4871,7 @@ function buildPrintStack(template, { size, format, data, source }) {
       applyOverlays(page, template, size, { forPrint: true });
       printStack.appendChild(page);
       applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
+      applyAutoFontSizing(page);
     });
   }
   printStack.classList.add("d-none");
@@ -4473,8 +5088,9 @@ async function handleGeneratePrint() {
     // Freshly loaded data almost certainly has a different item count than
     // whatever was being paged through before (sample data vs. a real,
     // much larger dataset, in particular) — start back at page 1 rather
-    // than clamping to wherever cardPageIndex happened to be.
+    // than clamping to wherever cardPageIndex/gridViewIndex happened to be.
     cardPageIndex = 0;
+    gridViewIndex = 0;
     renderPreview();
     bindingFieldCache.source = null;
     refreshBindingAutocomplete();
@@ -4637,6 +5253,7 @@ function handleLayerAdd(event, layerId) {
     insertNodeIntoLayer(layerNode, node, index);
     selectedNodeId = node.uid ?? selectedNodeId;
     renderLayoutList();
+    setInspectorMode("component");
     updateInspector();
     renderPreview();
   });
@@ -4666,8 +5283,21 @@ function applyCanvasZoom(page) {
 
 function setCanvasZoom(nextZoom) {
   zoomLevel = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(nextZoom * 100) / 100));
-  const page = previewStage.firstElementChild;
-  applyCanvasZoom(page);
+  applyCanvasZoom(previewStage.firstElementChild);
+  // Zoom is a single shared control now (visible in both tabs, see index.html),
+  // so a zoom click needs to update whichever view isn't currently on screen
+  // too, not just the visible one — otherwise switching tabs would show a
+  // stale zoom level until the next unrelated re-render. Grid View's crop
+  // also depends on the post-zoom tile size (see renderGridView), so it has
+  // to be recomputed here, not just re-scaled.
+  withPanelVisibleForMeasurement(viewPanelGrid, activeViewTab === "grid", () => {
+    [gridViewStageFront, gridViewStageBack].forEach((stage) => {
+      const page = stage?.firstElementChild;
+      if (!page) return;
+      applyCanvasZoom(page);
+      cropPageToSingleTile(page, stage);
+    });
+  });
 }
 
 function initLayerPlacementDrag(rootElement) {
@@ -4843,6 +5473,7 @@ function handleGridAdd(event, gridId) {
       selectedNodeId = node.uid ?? selectedNodeId;
     }
     renderLayoutList();
+    setInspectorMode("component");
     updateInspector();
     renderPreview();
   });
@@ -4886,14 +5517,19 @@ function handleSlotAdd(event, slotElement) {
       node = removeNodeById(layout, draggedId);
     }
     if (!node) return;
-    if (slotType === "table" || slotType === "grid") {
-      const rowIndex = Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
+    if (slotType === "repeater" || slotType === "grid") {
       const columnIndex = Number.parseInt(slotElement.dataset.columnIndex ?? "0", 10);
       const targetIndex = typeof event.newIndex === "number" ? event.newIndex : Number.MAX_SAFE_INTEGER;
-      insertCellNode(parentNode, rowIndex, columnIndex, node, targetIndex);
+      if (slotType === "repeater" && slotElement.dataset.slotRow === "header") {
+        insertRepeaterHeaderCellNode(parentNode, columnIndex, node, targetIndex);
+      } else {
+        const rowIndex = slotType === "repeater" ? 0 : Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
+        insertCellNode(parentNode, rowIndex, columnIndex, node, targetIndex);
+      }
     }
     selectedNodeId = node.uid ?? selectedNodeId;
     renderLayoutList();
+    setInspectorMode("component");
     updateInspector();
     renderPreview();
   });
@@ -4902,17 +5538,21 @@ function handleSlotAdd(event, slotElement) {
 
 function handleSlotReorder(event, slotElement) {
   const slotType = slotElement?.dataset?.pressSlot;
-  if (slotType !== "table" && slotType !== "grid") return;
+  if (slotType !== "repeater" && slotType !== "grid") return;
   const layout = getLayoutForSide(currentSide);
   if (!layout || !slotElement) return;
   const parentId = slotElement.dataset.parentNodeId;
   if (!parentId) return;
   const parentNode = findNodeById(layout, parentId);
   if (!parentNode) return;
-  const rowIndex = Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
   const columnIndex = Number.parseInt(slotElement.dataset.columnIndex ?? "0", 10);
   recordUndoableChange(() => {
-    reorderCellNodes(parentNode, rowIndex, columnIndex, event.oldIndex ?? 0, event.newIndex ?? 0);
+    if (slotType === "repeater" && slotElement.dataset.slotRow === "header") {
+      reorderRepeaterHeaderCellNodes(parentNode, columnIndex, event.oldIndex ?? 0, event.newIndex ?? 0);
+    } else {
+      const rowIndex = slotType === "repeater" ? 0 : Number.parseInt(slotElement.dataset.rowIndex ?? "0", 10);
+      reorderCellNodes(parentNode, rowIndex, columnIndex, event.oldIndex ?? 0, event.newIndex ?? 0);
+    }
     renderLayoutList();
     renderPreview();
   });
@@ -4981,7 +5621,7 @@ function initCanvasDnd(rootElement) {
 
   const slotTargets = Array.from(rootElement.querySelectorAll("[data-press-slot]"));
   slotTargets.forEach((slot) => {
-    const isCellSlot = slot.dataset.pressSlot === "table" || slot.dataset.pressSlot === "grid";
+    const isCellSlot = slot.dataset.pressSlot === "repeater" || slot.dataset.pressSlot === "grid";
     const sortable = createSortable(slot, {
       group: { name: "press-layout", pull: true, put: true },
       animation: 150,
@@ -5016,43 +5656,149 @@ function bindInspectorControls() {
     textEditor.addEventListener("blur", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("change", () => commitPendingUndo(textEditor));
     textEditor.addEventListener("input", () => {
-      const listBinding = textEditor.value.trim().startsWith("@");
-      let isListNode = false;
       updateSelectedNode((node) => {
-        if (node.component === "image") {
+        if (node.component === "image" || node.component === "repeater") {
           return;
         }
-        if (node.component === "table") {
-          return;
-        }
-        if (node.component === "list") {
-          isListNode = true;
-          const trimmed = textEditor.value.trim();
-          if (trimmed.startsWith("@")) {
-            node.itemsBind = trimmed;
-            node.items = [];
-          } else {
-            node.items = textEditor.value
-              .split("\n")
-              .map((entry) => entry.trim())
-              .filter(Boolean);
-            delete node.itemsBind;
-          }
-        } else {
-          node.text = textEditor.value;
-          node.label = textEditor.value;
-        }
+        node.text = textEditor.value;
+        node.label = textEditor.value;
       });
-      if (isListNode) {
-        if (textEditorLabel) {
-          textEditorLabel.textContent = listBinding ? "List binding" : "List items";
-        }
-        if (textEditor) {
-          textEditor.placeholder = listBinding ? "Binding (@path)" : "One entry per line";
-        }
-      }
       renderPreview();
       renderLayoutList();
+      updateSaveState();
+    });
+  }
+
+  if (repeaterDecoratorTypeInput) {
+    repeaterDecoratorTypeInput.addEventListener("focus", () => beginPendingUndo(repeaterDecoratorTypeInput));
+    repeaterDecoratorTypeInput.addEventListener("blur", () => commitPendingUndo(repeaterDecoratorTypeInput));
+    repeaterDecoratorTypeInput.addEventListener("change", () => commitPendingUndo(repeaterDecoratorTypeInput));
+    repeaterDecoratorTypeInput.addEventListener("input", () => {
+      const type = repeaterDecoratorTypeInput.value || "none";
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component !== "repeater") return;
+          node.decorator = type === "none" ? null : { ...(node.decorator ?? {}), type };
+        });
+        updateInspector();
+        renderPreview();
+      });
+      updateSaveState();
+    });
+  }
+
+  if (repeaterDecoratorTextInput) {
+    repeaterDecoratorTextInput.addEventListener("focus", () => beginPendingUndo(repeaterDecoratorTextInput));
+    repeaterDecoratorTextInput.addEventListener("blur", () => commitPendingUndo(repeaterDecoratorTextInput));
+    repeaterDecoratorTextInput.addEventListener("change", () => commitPendingUndo(repeaterDecoratorTextInput));
+    repeaterDecoratorTextInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "repeater" || node.decorator?.type !== "custom") return;
+        node.decorator = { ...node.decorator, text: repeaterDecoratorTextInput.value };
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (repeaterItemsInput) {
+    repeaterItemsInput.addEventListener("focus", () => beginPendingUndo(repeaterItemsInput));
+    repeaterItemsInput.addEventListener("blur", () => commitPendingUndo(repeaterItemsInput));
+    repeaterItemsInput.addEventListener("change", () => commitPendingUndo(repeaterItemsInput));
+    repeaterItemsInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "repeater") return;
+        const trimmed = repeaterItemsInput.value.trim();
+        if (trimmed.startsWith("@")) {
+          node.itemsBind = trimmed;
+          node.items = [];
+        } else {
+          node.items = repeaterItemsInput.value
+            .split("\n")
+            .map((entry) => entry.trim())
+            .filter(Boolean);
+          delete node.itemsBind;
+        }
+      });
+      renderPreview();
+      renderLayoutList();
+      updateSaveState();
+    });
+  }
+
+  if (repeaterColumnsInput) {
+    repeaterColumnsInput.addEventListener("focus", () => beginPendingUndo(repeaterColumnsInput));
+    repeaterColumnsInput.addEventListener("blur", () => commitPendingUndo(repeaterColumnsInput));
+    repeaterColumnsInput.addEventListener("change", () => commitPendingUndo(repeaterColumnsInput));
+    repeaterColumnsInput.addEventListener("input", () => {
+      const nextColumns = Math.max(1, Math.min(8, Number.parseInt(repeaterColumnsInput.value, 10) || 1));
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component !== "repeater") return;
+          const currentColumns = Array.isArray(node.cells?.[0]) ? node.cells[0].length : node.columns ?? 1;
+          node.columns = nextColumns;
+          if (nextColumns > currentColumns) {
+            for (let index = currentColumns; index < nextColumns; index += 1) {
+              addColumnCells(node, index);
+              if (node.showHeader) {
+                const headerCell = assignNodeIds({
+                  type: "field",
+                  component: "text",
+                  text: `Column ${index + 1}`,
+                  textStyles: { bold: true },
+                });
+                insertRepeaterHeaderCellNode(node, index, headerCell, 0);
+              }
+            }
+          } else if (nextColumns < currentColumns) {
+            for (let index = currentColumns - 1; index >= nextColumns; index -= 1) {
+              removeColumnCells(node, index);
+              if (Array.isArray(node.headerCells?.[0])) {
+                node.headerCells[0].splice(index, 1);
+              }
+            }
+          }
+        });
+        renderLayoutList();
+        updateInspector();
+        renderPreview();
+      });
+      updateSaveState();
+    });
+  }
+
+  if (repeaterHeaderInput) {
+    repeaterHeaderInput.addEventListener("change", () => {
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component !== "repeater") return;
+          node.showHeader = repeaterHeaderInput.checked;
+          if (node.showHeader && !Array.isArray(node.headerCells?.[0])) {
+            node.headerCells = createDefaultRepeaterHeaderRow(node.columns ?? 1);
+          }
+        });
+        renderLayoutList();
+        updateInspector();
+        renderPreview();
+      });
+      updateSaveState();
+    });
+  }
+
+  if (repeaterTemplateColumnsInput) {
+    repeaterTemplateColumnsInput.addEventListener("focus", () => beginPendingUndo(repeaterTemplateColumnsInput));
+    repeaterTemplateColumnsInput.addEventListener("blur", () => commitPendingUndo(repeaterTemplateColumnsInput));
+    repeaterTemplateColumnsInput.addEventListener("change", () => commitPendingUndo(repeaterTemplateColumnsInput));
+    repeaterTemplateColumnsInput.addEventListener("input", () => {
+      updateSelectedNode((node) => {
+        if (node.component !== "repeater") return;
+        if (repeaterTemplateColumnsInput.value.trim()) {
+          node.templateColumns = repeaterTemplateColumnsInput.value.trim();
+        } else {
+          delete node.templateColumns;
+        }
+      });
+      renderPreview();
       updateSaveState();
     });
   }
@@ -5218,9 +5964,30 @@ function bindInspectorControls() {
       const parsed = Number(gapInput.value);
       const next = Number.isFinite(parsed) ? Math.max(0, Math.min(parsed, 12)) : 0;
       updateSelectedNode((node) => {
-        const isGapComponent = ["list", "stat", "table"].includes(node.component);
+        const isGapComponent = ["repeater", "stat"].includes(node.component);
         if (node.type !== "grid" && !isGapComponent) return;
         node.gap = next;
+      });
+      renderPreview();
+      updateSaveState();
+    });
+  }
+
+  if (spaceAfterInput) {
+    spaceAfterInput.addEventListener("focus", () => beginPendingUndo(spaceAfterInput));
+    spaceAfterInput.addEventListener("blur", () => commitPendingUndo(spaceAfterInput));
+    spaceAfterInput.addEventListener("change", () => commitPendingUndo(spaceAfterInput));
+    spaceAfterInput.addEventListener("input", () => {
+      const raw = spaceAfterInput.value;
+      updateSelectedNode((node) => {
+        const isGapComponent = ["repeater", "stat"].includes(node.component);
+        if (node.type !== "grid" && !isGapComponent) return;
+        if (raw === "") {
+          delete node.spaceAfter;
+          return;
+        }
+        const parsed = Number(raw);
+        node.spaceAfter = Number.isFinite(parsed) ? Math.max(0, Math.min(parsed, 12)) : 0;
       });
       renderPreview();
       updateSaveState();
@@ -5385,42 +6152,6 @@ function bindInspectorControls() {
     });
   }
 
-  if (tableRowsInput) {
-    tableRowsInput.addEventListener("focus", () => beginPendingUndo(tableRowsInput));
-    tableRowsInput.addEventListener("blur", () => commitPendingUndo(tableRowsInput));
-    tableRowsInput.addEventListener("change", () => commitPendingUndo(tableRowsInput));
-    tableRowsInput.addEventListener("input", () => {
-      updateSelectedNode((node) => {
-        if (node.component !== "table") return;
-        const value = tableRowsInput.value.trim();
-        if (value) {
-          node.rowsBind = value;
-        } else {
-          delete node.rowsBind;
-        }
-      });
-      renderPreview();
-      updateSaveState();
-    });
-  }
-
-  if (tableColumnsAddButton) {
-    tableColumnsAddButton.addEventListener("click", () => {
-      recordUndoableChange(() => {
-        updateSelectedNode((node) => {
-          if (node.component !== "table") return;
-          const nextColumns = Array.isArray(node.columns) ? [...node.columns] : [];
-          nextColumns.push({ header: "New Column", bind: "@value", width: "" });
-          node.columns = nextColumns;
-          addColumnCells(node, nextColumns.length - 1);
-        });
-        renderTableColumnsList(findNodeById(getLayoutForSide(currentSide), selectedNodeId));
-        renderPreview();
-      });
-      updateSaveState();
-    });
-  }
-
   if (addFontValueInput) {
     // Validation (format + Google Fonts existence + category lookup)
     // happens once, here, on blur — not at submit time — so the Add
@@ -5496,10 +6227,53 @@ function bindInspectorControls() {
           });
           if (textSizeCustomInput) {
             textSizeCustomInput.value = pxToPt(TEXT_SIZE_PX[input.value] ?? TEXT_SIZE_PX.md);
+            textSizeCustomInput.disabled = input.value === "auto";
           }
           renderPreview();
         });
       });
+    });
+  }
+
+  if (textInlineInput) {
+    textInlineInput.addEventListener("change", () => {
+      recordUndoableChange(() => {
+        updateSelectedNode((node) => {
+          if (node.component !== "text") return;
+          if (textInlineInput.checked) {
+            node.textStyle = "span";
+          } else {
+            delete node.textStyle;
+          }
+        });
+        renderPreview();
+      });
+      updateSaveState();
+    });
+  }
+
+  if (textLineHeightInput) {
+    textLineHeightInput.addEventListener("focus", () => beginPendingUndo(textLineHeightInput));
+    textLineHeightInput.addEventListener("blur", () => commitPendingUndo(textLineHeightInput));
+    textLineHeightInput.addEventListener("change", () => commitPendingUndo(textLineHeightInput));
+    textLineHeightInput.addEventListener("input", () => {
+      const rawValue = textLineHeightInput.value;
+      updateSelectedNode((node) => {
+        const parsed = rawValue === "" ? null : parseFloat(rawValue);
+        if (!Number.isNaN(parsed) && parsed !== null) {
+          node.style = { ...(node.style ?? {}), lineHeight: parsed };
+        } else if (node.style?.lineHeight !== undefined) {
+          const styles = { ...node.style };
+          delete styles.lineHeight;
+          if (Object.keys(styles).length) {
+            node.style = styles;
+          } else {
+            delete node.style;
+          }
+        }
+      });
+      renderPreview();
+      updateSaveState();
     });
   }
 
@@ -5799,6 +6573,12 @@ function bindInspectorControls() {
       duplicateSelectedNode();
     });
   }
+
+  if (makeUniqueButton) {
+    makeUniqueButton.addEventListener("click", () => {
+      toggleMakeUnique();
+    });
+  }
 }
 
 function wireEvents() {
@@ -5810,6 +6590,11 @@ function wireEvents() {
   if (templateDuplicateButton) {
     templateDuplicateButton.addEventListener("click", () => {
       duplicateActiveTemplate();
+    });
+  }
+  if (templateClearUniquenessButton) {
+    templateClearUniquenessButton.addEventListener("click", () => {
+      clearAllUniqueness();
     });
   }
   if (templateDeleteButton) {
@@ -5840,7 +6625,7 @@ function wireEvents() {
     const isShortcutModifier = event.ctrlKey || event.metaKey;
     if (!isShortcutModifier) return;
     const key = event.key.toLowerCase();
-    if (key !== "c" && key !== "v" && key !== "d") return;
+    if (key !== "c" && key !== "v" && key !== "d" && key !== "x") return;
     // Copy/duplicate act on the current selection, so they need one — but
     // paste doesn't: it's meant to work even after switching side/template
     // with nothing selected there yet (pasteClipboard falls back to
@@ -5851,6 +6636,7 @@ function wireEvents() {
     if (key === "c") copySelectedNode();
     else if (key === "v") pasteClipboard();
     else if (key === "d") duplicateSelectedNode();
+    else if (key === "x") cutSelectedNode();
   });
 
   templateSelect.addEventListener("change", async () => {
@@ -5922,6 +6708,22 @@ function wireEvents() {
     cardPageNextButton.addEventListener("click", () => {
       cardPageIndex += 1;
       renderPreview();
+    });
+  }
+  viewTabButtons.forEach((button) => {
+    button.addEventListener("click", () => setActiveViewTab(button.dataset.viewTab));
+  });
+  if (gridViewPrevButton) {
+    gridViewPrevButton.addEventListener("click", () => {
+      if (gridViewIndex <= 0) return;
+      gridViewIndex -= 1;
+      renderGridView();
+    });
+  }
+  if (gridViewNextButton) {
+    gridViewNextButton.addEventListener("click", () => {
+      gridViewIndex += 1;
+      renderGridView();
     });
   }
   if (canvasZoomOutButton) {
@@ -6221,6 +7023,12 @@ async function initPress() {
     await loadTemplates();
   } catch (error) {
     console.error("Unable to load templates", error);
+    // Previously silent beyond the console — the whole app is unusable
+    // from here (no templates loaded at all), so this needs to actually
+    // tell the person looking at the page, not just whoever happens to
+    // have devtools open. loadJson (templates.js) already prefixes the
+    // error with which file failed to parse.
+    status?.show(error?.message || "Unable to load templates.", { type: "error", timeout: 0 });
     return;
   }
 
@@ -6243,6 +7051,12 @@ async function initPress() {
   renderLayoutList();
   selectedNodeId = null;
   updateInspector();
+  // Establishes the correct inline-style visibility state for the two view
+  // panels/control groups up front (see setElementVisible) — the HTML's
+  // static `hidden` attributes on the Grid View elements aren't reliable on
+  // their own, since those elements also carry a competing `display`
+  // utility class.
+  setActiveViewTab("preview");
   renderPreview();
   markLayoutSaved();
   updateGenerateButtonState();

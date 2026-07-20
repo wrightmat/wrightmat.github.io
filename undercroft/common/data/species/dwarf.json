@@ -4,13 +4,14 @@
   "url": "https://www.dndbeyond.com/species/1751436-dwarf",
   "image": "/undercroft/common/data/species/dwarf.png",
   "tagline": "Stalwart Keeper of Tradition",
+  "icon": "ddb-creature-humanoid",
   "description": [
     "Dwarves were raised from the earth in the elder days by a deity of the forge. Called by various names on different worlds\u2014Moradin, Reorx, and others\u2014that god gave dwarves an affinity for stone and metal and for living underground. The god also made them resilient like the mountains, with a life span of about 350 years.",
     "Squat and often bearded, the original dwarves carved cities and strongholds into mountainsides and under the earth. Their oldest legends tell of conflicts with the monsters of mountaintops and the Underdark, whether those monsters were towering giants or subterranean horrors. Inspired by those tales, dwarves of any culture often sing of valorous deeds\u2014especially of the little overcoming the mighty.",
     "On some worlds in the multiverse, the first settlements of dwarves were built in hills or mountains, and the families who trace their ancestry to those settlements call themselves hill dwarves or mountain dwarves, respectively. The Greyhawk and Dragonlance settings have such communities."
   ],
   "type": "Humanoid",
-  "size": "Medium (about 4\u20135 feet tall)",
+  "size": "Medium",
   "speed": 30,
   "traits": [
     {

@@ -78,7 +78,18 @@ async function loadJson(url) {
   if (!response.ok) {
     throw new Error(`Unable to load ${url}: ${response.status}`);
   }
-  return response.json();
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    // The browser's own SyntaxError message (position/line/column only)
+    // never says which of potentially a dozen fetched files it's actually
+    // about — loadTemplates() alone can load a whole directory of them in
+    // parallel. Re-thrown with the URL prefixed so whatever eventually
+    // shows this to the user (a status toast, console) can actually say
+    // which file needs fixing.
+    throw new Error(`${url}: ${error.message}`);
+  }
 }
 
 export function registerCustomPageSize({ id, label, width, height, margin, orientations } = {}) {
@@ -112,7 +123,7 @@ export async function saveCustomPageSize(size) {
   return response.json();
 }
 
-function resolveTemplateData(template, data) {
+export function resolveTemplateData(template, data) {
   if (data && typeof data === "object") {
     return data;
   }
@@ -262,7 +273,24 @@ function renderCardGrid(template, side, context) {
   const templateData = resolveTemplateData(template, context.data);
   const data = getRepeatData(template, pageConfig, templateData);
   const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
-  const { width, height, gutter = 0, safeInset = 0, bleed = 0, cornerRadius = 0, background, columns = 1, rows = 1 } = template.card ?? {};
+  // singleCardIndex (the Grid View) forces a 1x1 render of exactly one
+  // absolute data index regardless of the template's own configured
+  // columns/rows — a tightly-cropped single-card page instead of one tiny
+  // card lost inside the full multi-card sheet layout.
+  const isSingleCard = Number.isInteger(context.singleCardIndex) && context.singleCardIndex >= 0;
+  const {
+    width,
+    height,
+    gutter = 0,
+    safeInset = 0,
+    bleed = 0,
+    cornerRadius = 0,
+    background,
+    columns: templateColumns = 1,
+    rows: templateRows = 1,
+  } = template.card ?? {};
+  const columns = isSingleCard ? 1 : templateColumns;
+  const rows = isSingleCard ? 1 : templateRows;
   const margin = resolvedSize.margin ?? 0;
   const grid = document.createElement("div");
   grid.className = "card-grid";
@@ -277,8 +305,14 @@ function renderCardGrid(template, side, context) {
 
   const pageSize = Math.max(1, columns * rows);
   const cardPageIndex = Number.isInteger(context.cardPageIndex) && context.cardPageIndex > 0 ? context.cardPageIndex : 0;
-  const cards = data.slice(cardPageIndex * pageSize, cardPageIndex * pageSize + pageSize);
+  const startIndex = isSingleCard ? context.singleCardIndex : cardPageIndex * pageSize;
+  const cards = data.slice(startIndex, startIndex + pageSize);
   cards.forEach((card, index) => {
+    // The absolute index into the repeat data array this specific tile is
+    // bound against — the key cardOverrides (per-card "Make Unique"
+    // patches) are looked up by, regardless of which page/pagination
+    // window or single-card render produced this tile.
+    const absoluteCardIndex = startIndex + index;
     const row = Math.floor(index / columns);
     const col = index % columns;
     const insets = computeBleedInsets(bleed, { row, col, rows, columns, gutter, margin });
@@ -296,12 +330,24 @@ function renderCardGrid(template, side, context) {
     // actually leave rather than showing square corners under a rounded
     // trim guide.
     contentWrapper.style.borderRadius = `${cornerRadius}in`;
-    contentWrapper.style.overflow = cornerRadius > 0 ? "hidden" : "";
+    // Always clipped, not just when the card has rounded corners — content
+    // that overflows a card's own box (usually a long bound text field)
+    // otherwise spills visually into whichever card sits below it in the
+    // print grid. Safe unconditionally: intentional bleed content is a
+    // sibling (createBleedLayer, appended to `tile` not `contentWrapper`)
+    // or, for a root layer with origin:"bleed", this element's own box is
+    // what gets enlarged via negative insets (applyRootLayoutOrigin below)
+    // — either way nothing that's SUPPOSED to extend past the trim line is
+    // a descendant overflowing contentWrapper's own box, so clipping here
+    // only ever catches genuine overflow.
+    contentWrapper.style.overflow = "hidden";
     const layout = pageConfig.layout ?? null;
     applyRootLayoutOrigin(contentWrapper, layout, { safeInset, insets });
+    const nodeOverrides = pageConfig.cardOverrides?.[String(absoluteCardIndex)];
+    const optionsWithOverrides = nodeOverrides ? { ...renderOptions, nodeOverrides } : renderOptions;
     const options = index === 0 && typeof onRootReady === "function"
-      ? { ...renderOptions, onRootReady }
-      : renderOptions;
+      ? { ...optionsWithOverrides, onRootReady }
+      : optionsWithOverrides;
     const content = layout ? renderLayout(layout, card, options) : document.createTextNode(card?.title ?? "Card");
     contentWrapper.append(content);
     tile.append(contentWrapper);
@@ -318,7 +364,19 @@ function renderChipGrid(template, side, context) {
   const templateData = resolveTemplateData(template, context.data);
   const data = getRepeatData(template, pageConfig, templateData);
   const { onRootReady, ...renderOptions } = context.renderOptions ?? {};
-  const { width = 1, height = 1, gutter = 0, safeInset = 0, bleed = 0, background, columns = 1, rows = 1 } = template.card ?? {};
+  const isSingleCard = Number.isInteger(context.singleCardIndex) && context.singleCardIndex >= 0;
+  const {
+    width = 1,
+    height = 1,
+    gutter = 0,
+    safeInset = 0,
+    bleed = 0,
+    background,
+    columns: templateColumns = 1,
+    rows: templateRows = 1,
+  } = template.card ?? {};
+  const columns = isSingleCard ? 1 : templateColumns;
+  const rows = isSingleCard ? 1 : templateRows;
   const diameter = width || height || 1;
   const margin = resolvedSize.margin ?? 0;
   const grid = document.createElement("div");
@@ -340,8 +398,10 @@ function renderChipGrid(template, side, context) {
 
   const pageSize = Math.max(1, columns * rows);
   const cardPageIndex = Number.isInteger(context.cardPageIndex) && context.cardPageIndex > 0 ? context.cardPageIndex : 0;
-  const chips = data.slice(cardPageIndex * pageSize, cardPageIndex * pageSize + pageSize);
+  const startIndex = isSingleCard ? context.singleCardIndex : cardPageIndex * pageSize;
+  const chips = data.slice(startIndex, startIndex + pageSize);
   chips.forEach((chip, index) => {
+    const absoluteCardIndex = startIndex + index;
     const row = Math.floor(index / columns);
     const col = index % columns;
     const insets = computeBleedInsets(bleed, { row, col, rows, columns, gutter, margin });
@@ -357,9 +417,11 @@ function renderChipGrid(template, side, context) {
     applyBackground(circle, background);
     const layout = pageConfig.layout ?? null;
     applyRootLayoutOrigin(circle, layout, { safeInset, insets });
+    const nodeOverrides = pageConfig.cardOverrides?.[String(absoluteCardIndex)];
+    const optionsWithOverrides = nodeOverrides ? { ...renderOptions, nodeOverrides } : renderOptions;
     const options = index === 0 && typeof onRootReady === "function"
-      ? { ...renderOptions, onRootReady }
-      : renderOptions;
+      ? { ...optionsWithOverrides, onRootReady }
+      : optionsWithOverrides;
     const content = layout ? renderLayout(layout, chip, options) : document.createTextNode(chip?.title ?? "Chip");
     circle.append(content);
     tile.appendChild(circle);
@@ -397,6 +459,18 @@ export function getCardPageCount(template, side, context = {}) {
   const { columns = 1, rows = 1 } = template.card ?? {};
   const pageSize = Math.max(1, columns * rows);
   return Math.max(1, Math.ceil(data.length / pageSize));
+}
+
+// The Grid View's own navigator counts individual repeated items, not
+// physical pages (unlike getCardPageCount above) — same data resolution,
+// reused so it always agrees with what a singleCardIndex render will
+// actually show.
+export function getRepeatItemCount(template, side, context = {}) {
+  if (template.type !== "card" && template.type !== "chip") return 1;
+  const pageConfig = context.page ?? template.pages?.[side] ?? {};
+  const templateData = resolveTemplateData(template, context.data);
+  const data = getRepeatData(template, pageConfig, templateData);
+  return Math.max(1, data.length);
 }
 
 function resolveBindingsDeep(value, context) {
@@ -451,32 +525,28 @@ function resolveLayoutBindings(node, context) {
     });
   }
 
-  if (node.type === "field" && node.component === "list") {
-    const items = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
-    resolved.items = asArray(items).map((item) => resolveBindingsDeep(item, context));
-  }
-
-  if (node.type === "field" && node.component === "table") {
-    const rows = resolveBinding(node.rowsBind ?? node.itemsBind, context) ?? node.rows ?? [];
-    const columns = Array.isArray(node.columns) ? node.columns : [];
-    const cells = Array.isArray(node.cells) ? node.cells : [];
-    resolved.rows = asArray(rows).map((row, rowIndex) => {
-      const rowContext = typeof row === "object" && row !== null ? { ...context, ...row } : { ...context, value: row };
-      rowContext.item = row;
-      rowContext.index = rowIndex;
-      return columns.map((column, columnIndex) => {
-        const cellNodes = Array.isArray(cells[rowIndex]?.[columnIndex]) ? cells[rowIndex][columnIndex] : null;
-        if (cellNodes) {
-          return cellNodes.map((cellNode) => resolveLayoutBindings(cellNode, rowContext));
-        }
-        const fallbackNode = {
-          type: "field",
-          component: column.component ?? "text",
-          text: column.bind ?? column.text ?? column.value ?? "",
-        };
-        return [resolveLayoutBindings(fallbackNode, rowContext)];
-      });
+  if (node.type === "field" && node.component === "repeater") {
+    // Legacy list/table nodes are already normalized to `repeater` by
+    // normalizeLegacyLayoutNode before this function ever sees them (see
+    // buildTemplatePreview below), so this is the only branch needed here.
+    // `cells` is always exactly the one item template row — cloned/resolved
+    // once per resolved array item — and `headerCells`, when present, is a
+    // fully independent literal row resolved once against the outer
+    // context, never per-item. See template-renderer.js's renderRepeater
+    // for the render-time counterpart of this same shape.
+    const rawItems = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
+    const items = asArray(rawItems);
+    const templateRow = Array.isArray(node.cells) && Array.isArray(node.cells[0]) ? node.cells[0] : [];
+    resolved.items = items.map((item, index) => {
+      const itemContext =
+        item && typeof item === "object" ? { ...context, ...item, item, index } : { ...context, value: item, item, index };
+      return templateRow.map((cellNodes) => asArray(cellNodes).map((cellNode) => resolveLayoutBindings(cellNode, itemContext)));
     });
+    if (node.showHeader && Array.isArray(node.headerCells) && Array.isArray(node.headerCells[0])) {
+      resolved.header = node.headerCells[0].map((cellNodes) =>
+        asArray(cellNodes).map((cellNode) => resolveLayoutBindings(cellNode, context))
+      );
+    }
   }
 
   return resolved;
@@ -511,12 +581,12 @@ function normalizeTemplate(raw) {
     supportedSources: raw.supportedSources ?? ["ddb", "srd", "json", "manual"],
   };
 
-  template.createPage = (side, { size, format, source, data, page, renderOptions, cardPageIndex } = {}) => {
+  template.createPage = (side, { size, format, source, data, page, renderOptions, cardPageIndex, singleCardIndex } = {}) => {
     if (template.type === "card") {
-      return renderCardGrid(template, side, { size, format, source, data, page, renderOptions, cardPageIndex });
+      return renderCardGrid(template, side, { size, format, source, data, page, renderOptions, cardPageIndex, singleCardIndex });
     }
     if (template.type === "chip") {
-      return renderChipGrid(template, side, { size, format, source, data, page, renderOptions, cardPageIndex });
+      return renderChipGrid(template, side, { size, format, source, data, page, renderOptions, cardPageIndex, singleCardIndex });
     }
     return renderSheet(template, side, { size, format, source, data, page, renderOptions });
   };

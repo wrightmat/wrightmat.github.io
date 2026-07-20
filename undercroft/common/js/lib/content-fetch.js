@@ -12,6 +12,22 @@ const SRD_BASE_URL = "https://www.dnd5eapi.co";
 const DDB_CHARACTER_URL = "https://character-service.dndbeyond.com/character/v5/character/";
 const CORS_PROXY = "https://corsproxy.io/?url=";
 
+// The browser's own SyntaxError for malformed JSON only ever gives a
+// position/line/column — never which fetch it came from. Every
+// response.json() call in this
+// file goes through here instead so that context (a URL, or a
+// kind/id.json label for library entries — the ones most likely to be
+// hand-edited and actually break) gets attached to the error every
+// consumer (Press's status toasts, Loom, console) ultimately shows.
+async function parseJsonResponse(response, sourceLabel) {
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${sourceLabel}: ${error.message}`);
+  }
+}
+
 export async function readJsonFile(file) {
   if (!file) return null;
   if (typeof file === "string") {
@@ -40,7 +56,7 @@ export async function fetchDdbCharacter(id) {
   if (!response.ok) {
     throw new Error(`D&D Beyond fetch failed (${response.status}).`);
   }
-  const payload = await response.json();
+  const payload = await parseJsonResponse(response, url);
   return payload?.data ?? payload;
 }
 
@@ -137,7 +153,7 @@ function loadCharacterMappingDefinition() {
       if (!response.ok) {
         throw new Error(`Failed to load the character mapping definition (${response.status}).`);
       }
-      return response.json();
+      return parseJsonResponse(response, "ddb-character.json mapping");
     });
   }
   return characterMappingPromise;
@@ -166,7 +182,7 @@ export async function fetchSrdJson(url) {
   if (!response.ok) {
     throw new Error(`5e API request failed (${response.status}).`);
   }
-  return response.json();
+  return parseJsonResponse(response, url);
 }
 
 const LIST_FETCH_CONCURRENCY = 6;
@@ -227,7 +243,7 @@ async function fetchLibraryEntry(kind, id) {
   if (!response.ok) {
     throw new Error(`Failed to load ${kind}/${id} (${response.status}).`);
   }
-  return response.json();
+  return parseJsonResponse(response, `${kind}/${id}.json`);
 }
 
 // `value` is "kind/id" for a single saved entry, or "kind/*" (or bare "kind")
@@ -245,7 +261,7 @@ export async function loadLibraryData(value) {
     if (!response.ok) {
       throw new Error(`Failed to list library-${kind} (${response.status}).`);
     }
-    const payload = await response.json();
+    const payload = await parseJsonResponse(response, `library-${kind} listing`);
     const names = (payload.files || []).map((entry) => entry.filename).filter(Boolean);
     if (!names.length) {
       throw new Error(`No saved ${kind} entries to load.`);

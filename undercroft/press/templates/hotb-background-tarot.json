@@ -50,7 +50,8 @@
                 "bold": true
               },
               "textSizeCustom": true,
-              "align": "center"
+              "align": "center",
+              "uid": "node-2"
             },
             "x": 0,
             "y": 4.18,
@@ -63,7 +64,8 @@
               "component": "image",
               "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22swoop-banner%22%2C%22values%22%3A%7B%22fill%22%3A%22%23b400b4%22%2C%22outline%22%3A%22%23a500a8%22%2C%22side%22%3A%22left%22%2C%22swoopStart%22%3A0%2C%22swoopExtent%22%3A10%2C%22swoopHeight%22%3A0.1%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'250'%20height%3D'105'%20viewBox%3D'0%200%20250%20105'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M%200%2C5%20L%200%2C5%20Q%208.75%2C5%2025%2C15%20L%20250%2C15%20L%20250%2C105%20L%200%2C105%20Z'%20fill%3D'%23b400b4'%20stroke%3D'%23a500a8'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E",
               "className": "press-image",
-              "fit": "fill"
+              "fit": "fill",
+              "uid": "node-3"
             },
             "x": 0,
             "y": 4.15,
@@ -88,7 +90,8 @@
               "textSizeCustom": true,
               "textStyles": {
                 "bold": true
-              }
+              },
+              "uid": "node-4"
             },
             "x": 0,
             "y": 0.18,
@@ -102,7 +105,8 @@
               "url": "@image",
               "className": "press-image",
               "zoom": 1,
-              "focalX": 58
+              "focalX": 58,
+              "uid": "node-5"
             },
             "x": 0,
             "y": 0,
@@ -111,7 +115,8 @@
             "height": "100%"
           }
         ],
-        "origin": "trim"
+        "origin": "trim",
+        "uid": "node-1"
       }
     },
     "back": {
@@ -124,7 +129,8 @@
               "type": "field",
               "component": "image",
               "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22solid-fill%22%2C%22values%22%3A%7B%22fill%22%3A%22%23b400b4%22%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%20viewBox%3D'0%200%20200%20200'%20preserveAspectRatio%3D'none'%3E%3Crect%20width%3D'200'%20height%3D'200'%20fill%3D'%23b400b4'%2F%3E%3C%2Fsvg%3E",
-              "className": "press-image"
+              "className": "press-image",
+              "uid": "node-7"
             },
             "x": 0,
             "y": 4.45,
@@ -148,7 +154,8 @@
               "textSizeCustom": true,
               "textStyles": {
                 "bold": true
-              }
+              },
+              "uid": "node-8"
             },
             "x": 0,
             "y": 0.06,
@@ -166,7 +173,8 @@
               "style": {
                 "fontSize": 11.333333333333332
               },
-              "textSizeCustom": true
+              "textSizeCustom": true,
+              "uid": "node-9"
             },
             "x": 0.2,
             "y": 0.4,
@@ -193,7 +201,8 @@
                       "style": {
                         "fontSize": 12.666666666666666
                       },
-                      "textSizeCustom": true
+                      "textSizeCustom": true,
+                      "uid": "node-11"
                     }
                   ],
                   [
@@ -207,7 +216,8 @@
                       "style": {
                         "fontSize": 11.333333333333332
                       },
-                      "textSizeCustom": true
+                      "textSizeCustom": true,
+                      "uid": "node-12"
                     }
                   ]
                 ],
@@ -226,7 +236,8 @@
                       "style": {
                         "fontSize": 12.666666666666666
                       },
-                      "textSizeCustom": true
+                      "textSizeCustom": true,
+                      "uid": "node-13"
                     }
                   ],
                   [
@@ -240,7 +251,8 @@
                       "style": {
                         "fontSize": 11.333333333333332
                       },
-                      "textSizeCustom": true
+                      "textSizeCustom": true,
+                      "uid": "node-14"
                     }
                   ]
                 ],
@@ -259,7 +271,8 @@
                       "textSizeCustom": true,
                       "textStyles": {
                         "bold": true
-                      }
+                      },
+                      "uid": "node-15"
                     }
                   ],
                   [
@@ -273,7 +286,8 @@
                         "fontSize": 11.333333333333332
                       },
                       "textSizeCustom": true,
-                      "label": "@traits.skillProficiencies"
+                      "label": "@traits.skillProficiencies",
+                      "uid": "node-16"
                     }
                   ]
                 ],
@@ -292,7 +306,8 @@
                       "textSizeCustom": true,
                       "textStyles": {
                         "bold": true
-                      }
+                      },
+                      "uid": "node-17"
                     }
                   ],
                   [
@@ -306,7 +321,8 @@
                         "fontSize": 11.333333333333332
                       },
                       "textSizeCustom": true,
-                      "label": "@traits.toolProficiencies"
+                      "label": "@traits.toolProficiencies",
+                      "uid": "node-18"
                     }
                   ]
                 ],
@@ -325,7 +341,8 @@
                       "textSizeCustom": true,
                       "textStyles": {
                         "bold": true
-                      }
+                      },
+                      "uid": "node-19"
                     }
                   ],
                   [
@@ -339,18 +356,47 @@
                         "fontSize": 9.333333333333332
                       },
                       "textSizeCustom": true,
-                      "label": "@traits.equipment"
+                      "label": "@traits.equipment",
+                      "uid": "node-20"
                     }
                   ]
                 ]
-              ]
+              ],
+              "uid": "node-10"
             },
             "x": 0.17,
             "y": 2.35,
             "z": 3
           }
         ],
-        "origin": "trim"
+        "origin": "trim",
+        "uid": "node-6"
+      },
+      "cardOverrides": {
+        "6": {
+          "node-10": {
+            "dataFingerprint": "w4j6j8",
+            "placement": {
+              "y": 2.25
+            }
+          }
+        },
+        "13": {
+          "node-10": {
+            "dataFingerprint": "nblgv4",
+            "placement": {
+              "y": 2.5
+            }
+          }
+        },
+        "14": {
+          "node-10": {
+            "dataFingerprint": "-tyol0z",
+            "placement": {
+              "y": 2.2
+            }
+          }
+        }
       }
     }
   },

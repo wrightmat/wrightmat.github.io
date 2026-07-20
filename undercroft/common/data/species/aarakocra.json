@@ -1,0 +1,38 @@
+{
+  "kind": "species",
+  "name": "Aarakocra",
+  "url": "https://www.dndbeyond.com/species/1026377-aarakocra",
+  "image": "/undercroft/common/data/species/aarakocra.png",
+  "tagline": "Sky-Born Master of Flight",
+  "icon": "ddb-creature-humanoid",
+  "description": [
+    "A winged people who originated on the Elemental Plane of Air, aarakocra soar through the sky wherever they wander. The first aarakocra served the Wind Dukes of Aaqa\u2014mighty beings of air\u2014and were imbued with a measure of their masters\u2019 power over winds. Their descendants still command echoes of that power.",
+    "From below, aarakocra look like large birds and thus are sometimes called birdfolk. Only when they roost on a branch or walk across the ground is their Humanoid nature clear. Standing upright, aarakocra are typically about 5 feet tall, and they have long, narrow legs that taper to sharp talons. Feathers cover their bodies\u2014usually red, orange, yellow, brown, or gray. Their heads are also avian, often resembling those of parrots or eagles.",
+    "At 1st level, you choose whether your character is a member of the human race or of a fantastical race. If you select a fantastical race, follow these additional rules during character creation.",
+    "When determining your character\u2019s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The \u201cQuick Build\u201d section for your character\u2019s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can\u2019t raise any of your scores above 20.",
+    "Your character can speak, read, and write Common and one other language that you and your DM agree is appropriate for the character. The Player\u2019s Handbook offers a list of languages to choose from. The DM is free to modify that list for a campaign.",
+    "Every creature in D&D, including each player character, has a special tag in the rules that identifies the type of creature they are. Most player characters are of the Humanoid type. A race tells you what your character\u2019s creature type is.",
+    "Here\u2019s a list of the game\u2019s creature types in alphabetical order: Aberration, Beast, Celestial, Construct, Dragon, Elemental, Fey, Fiend, Giant, Humanoid, Monstrosity, Ooze, Plant, Undead. These types don\u2019t have rules themselves, but some rules in the game affect creatures of certain types in different ways. For example, the cure wounds spell doesn\u2019t work on a Construct or an Undead.",
+    "The typical life span of a player character in the D&D multiverse is about a century, assuming the character doesn\u2019t meet a violent end on an adventure. Members of some races, such as dwarves and elves, can live for centuries. If typical members of a race can live longer than a century, that fact is mentioned in the race\u2019s description.",
+    "Player characters, regardless of race, typically fall into the same ranges of height and weight that humans have in our world. If you\u2019d like to determine your character\u2019s height or weight randomly, consult the Random Height and Weight table in the Player\u2019s Handbook, and choose the row in the table that best represents the build you imagine for your character."
+  ],
+  "type": "Humanoid",
+  "size": "Medium",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Flight",
+      "description": "Because of your wings, you have a flying speed equal to your walking speed. You can\u2019t use this flying speed if you\u2019re wearing medium or heavy armor."
+    },
+    {
+      "name": "Talons",
+      "description": "You have talons that you can use to make unarmed strikes. When you hit with them, the strike deals 1d6 + your Strength modifier slashing damage, instead of the bludgeoning damage normal for an unarmed strike."
+    },
+    {
+      "name": "Wind Caller",
+      "description": "Starting at 3rd level, you can cast the gust of wind spell with this trait, without requiring a material component. Once you cast the spell with this trait, you can\u2019t do so again until you finish a long rest. You can also cast the spell using any spell slots you have of 2nd level or higher.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for it when you cast gust of wind with this trait (choose when you select this race)."
+    }
+  ],
+  "variants": [],
+  "updated_at": "2026-07-19T19:50:39.331Z"
+}

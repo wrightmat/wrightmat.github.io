@@ -334,12 +334,64 @@
               </div>
             </div>
             <div class="card shadow-theme">
-              <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between">
-                <div class="d-flex flex-column gap-1">
-                  <h2 class="h6 mb-0 text-uppercase fw-semibold text-body-secondary">Live Preview</h2>
+              <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-3">
+                  <ul class="nav nav-pills nav-sm" role="tablist" data-view-tabs>
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link active py-1 px-2"
+                        type="button"
+                        role="tab"
+                        aria-selected="true"
+                        data-view-tab="preview"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-title="The full sheet as it will print, one physical page at a time"
+                      >Live Preview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link py-1 px-2"
+                        type="button"
+                        role="tab"
+                        aria-selected="false"
+                        data-view-tab="grid"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        data-bs-title="Front and back of one specific card/chip at a time — where Make Unique targets a per-item override"
+                      >Grid View</button>
+                    </li>
+                  </ul>
                   <div class="press-guide-legend" data-canvas-guide-legend hidden></div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Canvas zoom">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    data-canvas-zoom-out
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Zoom out"
+                  >−</button>
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    data-canvas-zoom-reset
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Reset to 100%"
+                  ><span data-canvas-zoom-level>100%</span></button>
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    data-canvas-zoom-in
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Zoom in"
+                  >+</button>
+                </div>
+                <div class="d-flex align-items-center gap-2" data-view-controls="preview">
+                  <button class="btn btn-outline-secondary btn-sm" id="swapSide">Show Back Side</button>
                   <div class="btn-group btn-group-sm" role="group" aria-label="Card page" data-card-page-nav hidden>
                     <button
                       class="btn btn-outline-secondary"
@@ -361,37 +413,41 @@
                       data-bs-title="Next page"
                     >+</button>
                   </div>
-                  <div class="btn-group btn-group-sm" role="group" aria-label="Canvas zoom">
+                </div>
+                <div class="d-flex align-items-center gap-2" data-view-controls="grid" hidden>
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Element">
                     <button
                       class="btn btn-outline-secondary"
                       type="button"
-                      data-canvas-zoom-out
+                      data-grid-view-prev
                       data-bs-toggle="tooltip"
                       data-bs-placement="top"
-                      data-bs-title="Zoom out"
+                      data-bs-title="Previous"
                     >−</button>
+                    <button class="btn btn-outline-secondary disabled" type="button" tabindex="-1">
+                      <span data-grid-view-label>1 of 1</span>
+                    </button>
                     <button
                       class="btn btn-outline-secondary"
                       type="button"
-                      data-canvas-zoom-reset
+                      data-grid-view-next
                       data-bs-toggle="tooltip"
                       data-bs-placement="top"
-                      data-bs-title="Reset to 100%"
-                    ><span data-canvas-zoom-level>100%</span></button>
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      data-canvas-zoom-in
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      data-bs-title="Zoom in"
+                      data-bs-title="Next"
                     >+</button>
                   </div>
-                  <button class="btn btn-outline-secondary btn-sm" id="swapSide">Show Back Side</button>
                 </div>
               </div>
               <div class="card-body bg-body-secondary">
-                <div class="preview-stage" id="previewStage" aria-live="polite"></div>
+                <div data-view-panel="preview">
+                  <div class="preview-stage" id="previewStage" aria-live="polite"></div>
+                </div>
+                <div data-view-panel="grid" hidden>
+                  <div class="d-flex justify-content-center align-items-start gap-3 overflow-x-auto p-3">
+                    <div class="press-grid-tile" data-grid-view-stage="front" aria-live="polite"></div>
+                    <div class="press-grid-tile" data-grid-view-stage="back" aria-live="polite"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -421,6 +477,46 @@
               </div>
             </div>
             <div class="d-flex flex-column gap-4" data-template-panel data-template-inspector>
+              <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template actions">
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-outline-secondary p-2"
+                    type="button"
+                    data-template-duplicate
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Duplicate Template"
+                    aria-label="Duplicate Template"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
+                    <span class="visually-hidden">Duplicate Template</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary p-2"
+                    type="button"
+                    data-template-clear-uniqueness
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Clear all per-card uniqueness on this template"
+                    aria-label="Clear all uniqueness"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:eraser" aria-hidden="true"></span>
+                    <span class="visually-hidden">Clear all uniqueness</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-danger p-2"
+                    type="button"
+                    data-template-delete
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Delete Template"
+                    aria-label="Delete Template"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                    <span class="visually-hidden">Delete Template</span>
+                  </button>
+                </div>
+              </div>
               <div class="row g-3">
                 <div class="col-12">
                   <label class="form-label small text-body-secondary fw-semibold" for="templateId">ID</label>
@@ -645,12 +741,6 @@
                   </div>
                 </div>
               </section>
-              <button class="btn btn-outline-secondary w-100" type="button" data-template-duplicate>
-                Duplicate Template
-              </button>
-              <button class="btn btn-outline-danger w-100" type="button" data-template-delete>
-                Delete Template
-              </button>
             </div>
           </section>
           <hr class="border-body-tertiary opacity-50 my-2" />
@@ -672,6 +762,47 @@
             </div>
             <div class="d-flex flex-column gap-3" data-component-panel>
               <section class="d-flex flex-column gap-3" id="press-inspector" data-component-inspector>
+                <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Component actions">
+                  <div class="btn-group" role="group">
+                    <button
+                      class="btn btn-outline-secondary p-2"
+                      type="button"
+                      data-component-make-unique
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Make Unique — while on, edits to this component apply only to the card/chip shown in Grid View, not the shared template (only available from the Grid View tab)"
+                      aria-label="Make Unique"
+                      aria-pressed="false"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:fingerprint" aria-hidden="true"></span>
+                      <span class="visually-hidden">Make Unique</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary p-2"
+                      type="button"
+                      data-component-duplicate
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Duplicate — Ctrl+D (also Copy/Cut/Paste with Ctrl+C/Ctrl+X/Ctrl+V on any selected component)"
+                      aria-label="Duplicate Component"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
+                      <span class="visually-hidden">Duplicate Component</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-danger p-2"
+                      type="button"
+                      data-component-delete
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Delete Component"
+                      aria-label="Delete Component"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-component-delete-label>Delete Component</span>
+                    </button>
+                  </div>
+                </div>
                 <div class="d-flex flex-column gap-3">
                   <div
                     class="border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 p-3"
@@ -705,7 +836,14 @@
                     <label class="form-label fw-semibold mb-0">Icon</label>
                     <div class="input-group">
                       <span class="input-group-text">
-                        <span class="press-icon-preview" data-component-icon-preview aria-hidden="true"></span>
+                        <span
+                          class="press-icon-preview"
+                          data-component-icon-preview
+                          aria-hidden="true"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          data-bs-title="Result: —"
+                        ></span>
                       </span>
                       <input
                         class="form-control"
@@ -714,27 +852,83 @@
                         data-component-icon-class
                       />
                     </div>
-                    <div class="press-icon-result small text-body-secondary" data-component-icon-result>
-                      Result: —
-                    </div>
                   </div>
                   <div class="form-floating" data-inspector-text-field>
                     <textarea class="form-control" placeholder="Edit text" style="min-height: 72px" data-component-text></textarea>
                     <label class="fw-semibold" data-component-text-label>Binding / Text</label>
                   </div>
-                  <div class="d-flex flex-column gap-2" data-inspector-table-fields hidden>
+                  <div class="d-flex flex-column gap-2" data-inspector-repeater-fields hidden>
                     <div class="form-floating">
-                      <input class="form-control" placeholder="@rows" type="text" data-component-table-rows />
-                      <label class="fw-semibold">Table rows binding</label>
+                      <textarea
+                        class="form-control"
+                        placeholder="One entry per line, or an @path binding"
+                        style="min-height: 72px"
+                        data-component-repeater-items
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Which array repeats — not what each item shows. Select the actual text/icon/etc. on the canvas and set its own Binding to a key from the item (e.g. @name), same as any other component."
+                      ></textarea>
+                      <label class="fw-semibold">Items</label>
                     </div>
-                    <div class="d-flex flex-column gap-2">
-                      <div class="d-flex align-items-center justify-content-between">
-                        <span class="fw-semibold">Table columns</span>
-                        <button class="btn btn-sm btn-outline-primary" type="button" data-component-table-columns-add>
-                          Add column
-                        </button>
-                      </div>
-                      <div class="list-group" data-component-table-columns-list></div>
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="componentRepeaterColumns"
+                        min="1"
+                        max="8"
+                        step="1"
+                        placeholder="1"
+                        data-component-repeater-columns
+                      />
+                      <label class="fw-semibold" for="componentRepeaterColumns">Columns</label>
+                    </div>
+                    <div class="form-floating" data-inspector-repeater-template-columns hidden>
+                      <input
+                        class="form-control"
+                        placeholder="30% 70%"
+                        type="text"
+                        data-component-repeater-template-columns
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="CSS grid-template-columns-style value for column widths, e.g. 30% 70%"
+                      />
+                      <label class="fw-semibold">Column widths</label>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="componentRepeaterHeader"
+                        data-component-repeater-header
+                      />
+                      <label class="form-check-label" for="componentRepeaterHeader">Header row</label>
+                    </div>
+                    <div class="form-floating">
+                      <select
+                        class="form-select"
+                        id="componentRepeaterDecoratorType"
+                        data-component-repeater-decorator-type
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="An optional marker shown before each item — bullet, auto number, or a custom symbol/binding. Doesn't affect what the item itself shows; that's set by binding the item's own content on the canvas."
+                      >
+                        <option value="none">None</option>
+                        <option value="bullet">Bullet (•)</option>
+                        <option value="number">Number (1. 2. 3.)</option>
+                        <option value="custom">Custom symbol or binding</option>
+                      </select>
+                      <label class="fw-semibold" for="componentRepeaterDecoratorType">Item decorator</label>
+                    </div>
+                    <div class="form-floating" data-inspector-repeater-decorator-text hidden>
+                      <input
+                        class="form-control"
+                        placeholder="→ or @icon"
+                        type="text"
+                        data-component-repeater-decorator-text
+                      />
+                      <label class="fw-semibold">Decorator symbol / binding</label>
                     </div>
                   </div>
                   <div class="input-group" data-inspector-image-field hidden>
@@ -873,6 +1067,22 @@
                       data-component-gap
                     />
                     <label class="fw-semibold" for="componentGap">Gap</label>
+                  </div>
+                  <div class="form-floating" data-inspector-space-after-field hidden>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="componentSpaceAfter"
+                      min="0"
+                      max="12"
+                      step="1"
+                      placeholder="0"
+                      data-component-space-after
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Space after this whole component, before whatever comes next — same scale as Gap, but Gap only affects spacing between this component's own internal items, not its next sibling."
+                    />
+                    <label class="fw-semibold" for="componentSpaceAfter">Space after</label>
                   </div>
                   <div class="form-floating" data-inspector-row-columns hidden>
                     <input
@@ -1079,6 +1289,21 @@
                         data-component-text-size
                       />
                       <label class="btn btn-outline-secondary" for="componentTextSizeXl" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Extra large">XL</label>
+                      <input
+                        type="radio"
+                        class="btn-check"
+                        name="componentTextSize"
+                        id="componentTextSizeAuto"
+                        value="auto"
+                        data-component-text-size
+                      />
+                      <label
+                        class="btn btn-outline-secondary"
+                        for="componentTextSizeAuto"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Shrinks the text to fit its container instead of using a fixed size — only has an effect where the container is actually size-constrained, e.g. a Layer placement with a set width/height."
+                      >Auto</label>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                       <label class="form-label small text-body-secondary mb-0" for="componentTextSizeCustom">Font size (pt)</label>
@@ -1090,6 +1315,39 @@
                         placeholder="12"
                         data-component-text-size-custom
                       />
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <label class="form-label small text-body-secondary mb-0" for="componentTextLineHeight">Line height</label>
+                      <input
+                        class="form-control form-control-sm press-inline-input"
+                        id="componentTextLineHeight"
+                        type="number"
+                        min="0.5"
+                        max="3"
+                        step="0.05"
+                        placeholder="1.3"
+                        data-component-text-line-height
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Multiplier of the font size, same for every text field by default (1.3) — set explicitly here if you want this one tighter or looser, e.g. to match spacing between inline and non-inline text."
+                      />
+                    </div>
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="componentTextInline"
+                        data-component-text-inline
+                      />
+                      <label
+                        class="form-check-label"
+                        for="componentTextInline"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-title="Flows this text inline with whatever comes right after it in the same cell (e.g. a bold heading immediately followed by a plain description) instead of stacking as its own block/line."
+                        >Inline (flows with the next component)</label
+                      >
                     </div>
                   </div>
                   <div class="d-flex flex-column gap-2" data-inspector-text-settings data-inspector-text-decoration>
@@ -1387,15 +1645,6 @@
                       <label class="fw-semibold">Classes</label>
                     </div>
                   </div>
-                  <button
-                    class="btn btn-outline-secondary w-100"
-                    type="button"
-                    data-component-duplicate
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Ctrl+D — also supports Copy (Ctrl+C) and Paste (Ctrl+V) next to any selected component"
-                  >Duplicate</button>
-                  <button class="btn btn-outline-danger w-100" type="button" data-component-delete>Delete Component</button>
                 </div>
               </section>
             </div>

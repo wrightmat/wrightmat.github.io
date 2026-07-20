@@ -1,0 +1,45 @@
+{
+  "kind": "species",
+  "name": "Shadar-kai",
+  "url": "https://www.dndbeyond.com/species/1026401-shadar-kai",
+  "image": "/undercroft/common/data/species/shadar-kai.png",
+  "tagline": "Shadow-Touched Fey Wanderer",
+  "icon": "ddb-creature-humanoid",
+  "description": [
+    "Shadar-kai are the elves of the Shadowfell, originally drawn to that dread realm by the Raven Queen. Over the centuries, some of them have continued to serve her, while others have ventured into the Material Plane to forge their own destinies.",
+    "Once shadar-kai were Fey like the rest of their elven kin; now they exist in a state between life and death, thanks to being transformed by the Shadowfell\u2019s grim energy.",
+    "Shadar-kai have ashen skin tones, and while they\u2019re in the Shadowfell, they also become wizened, reflecting the somber nature of that gloomy plane.",
+    "Like other elves, shadar-kai can live to be over 750 years old."
+  ],
+  "type": "Humanoid",
+  "size": "Medium",
+  "speed": 30,
+  "traits": [
+    {
+      "name": "Blessing of the Raven Queen",
+      "description": "As a bonus action, you can magically teleport up to 30 feet to an unoccupied space you can see, up to PB times per long rest.\n\nYou also gain resistance to all damage when you teleport using this trait. The resistance lasts until the start of your next turn. During that time, you appear ghostly and translucent."
+    },
+    {
+      "name": "Darkvision",
+      "description": "You have Darkvision with a range of 60 feet."
+    },
+    {
+      "name": "Fey Ancestry",
+      "description": "You have advantage on saving throws you make to avoid or end the charmed condition on yourself."
+    },
+    {
+      "name": "Keen Senses",
+      "description": "You have proficiency in the Perception skill."
+    },
+    {
+      "name": "Necrotic Resistance",
+      "description": "You have resistance to necrotic damage."
+    },
+    {
+      "name": "Trance",
+      "description": "You don\u2019t need to sleep, and magic can\u2019t put you to sleep. You can finish a Long Rest in 4 hours if you spend those hours in a trancelike meditation, during which you retain consciousness."
+    }
+  ],
+  "variants": [],
+  "updated_at": "2026-07-19T20:16:30.253Z"
+}

@@ -4,6 +4,7 @@
   "url": "https://www.dndbeyond.com/species/2048551-changeling",
   "image": "/undercroft/common/data/species/changeling.png",
   "tagline": "Ever-Changing Master of Disguise",
+  "icon": "ddb-creature-fey",
   "description": [
     "With ever-changing appearances, changelings reside in many societies undetected. Each changeling can supernaturally adopt any face they like. For some changelings, a new face may reveal an aspect of their soul.",
     "The first changelings in the multiverse appeared in the Feywild, and the wondrous, mutable essence of that plane lingers in changelings today\u2014even in those who have never set foot in the fey realm.",
@@ -11,7 +12,7 @@
     "Multiple changelings can share a persona. Personas can even pass down through a family, allowing a younger changeling to take advantage of contacts established by the persona\u2019s previous users."
   ],
   "type": "Fey",
-  "size": "Medium (about 4\u20137 feet tall) or Small (about 2\u20134 feet tall), chosen when you select this species",
+  "size": "Medium or Small",
   "speed": 30,
   "traits": [
     {
