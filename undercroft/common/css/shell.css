@@ -152,92 +152,190 @@ body[data-theme="dark"] .hover-lift:hover {
   gap: 0.5rem;
 }
 
-.undercroft-tool-panel {
+.undercroft-tool-switcher {
+  position: relative;
+  z-index: 1300;
+  flex-shrink: 0;
+}
+
+.undercroft-tool-switcher .dropdown-menu {
+  z-index: 1310;
+}
+
+/* Now doubling as the page's own title (it sits where "Undercroft {Tool}"
+   used to be, replacing that link) — sized to match the h5 title text it
+   replaced, styled like the other outline-secondary controls in this
+   header (theme toggle, auth button, pane toggles) rather than the
+   plain-link look the old title had. */
+.undercroft-tool-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  flex-wrap: nowrap;
-  border-radius: var(--bs-border-radius);
+  gap: 0.5rem;
   border: 1px solid var(--bs-border-color);
-  overflow: hidden;
   background-color: var(--bs-body-bg);
-  padding: 0;
-  flex-shrink: 0;
-  margin-right: 0.75rem;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  color: var(--undercroft-tool-accent, var(--bs-body-color));
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
 }
 
-.undercroft-tool-button {
-  width: 2.5rem;
-  height: 2.5rem;
-  display: grid;
-  place-items: center;
-  border-radius: 0;
-  border: 0;
-  border-left: 1px solid var(--bs-border-color);
-  background-color: transparent;
-  text-decoration: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  font-weight: 700;
-}
-
-.undercroft-tool-button:first-child {
-  border-left: 0;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.undercroft-tool-button:hover {
-  border-color: var(--bs-primary);
+/* Bootstrap's own .btn hover/focus/active states would otherwise swap this
+   to white (and its default focus ring is primary blue) and leave it stuck
+   until blur; pin color to the tool's own accent in every interactive
+   state, and keep the hover/focus treatment itself neutral gray so the
+   accent color (the thing that's supposed to stand out) never competes
+   with a colored highlight. */
+.undercroft-tool-trigger:hover,
+.undercroft-tool-trigger:focus,
+.undercroft-tool-trigger:focus-visible,
+.undercroft-tool-trigger.show,
+.undercroft-tool-trigger[aria-expanded="true"] {
+  color: var(--undercroft-tool-accent, var(--bs-body-color));
+  border-color: var(--bs-secondary-color);
   background-color: var(--bs-tertiary-bg);
+  box-shadow: 0 0 0 0.2rem var(--bs-border-color-translucent);
 }
 
-.undercroft-tool-button:focus-visible {
+.undercroft-tool-trigger .iconify {
+  font-size: 1.4rem;
+}
+
+.undercroft-tool-trigger-label {
+  font-size: 1.25rem;
+}
+
+.undercroft-tool-dropdown {
+  min-width: 26rem;
+  max-width: min(32rem, calc(100vw - 2rem));
+  /* Bootstrap's default dropdown-spacer leaves a sliver of dead space
+     between the trigger and the menu — enough for the cursor to leave
+     both elements while crossing it and trigger an unwanted hide. */
+  margin-top: 0;
+}
+
+/* Overrides Bootstrap's own `.dropdown-menu.show { display: block; }` (same
+   specificity, later in source wins) so the built and muted grids stack
+   with one consistent gap between them — no group-count-dependent margin,
+   since how many tools are built vs. not will keep changing. */
+.undercroft-tool-dropdown.show {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* A fixed 2-column grid, not flex-wrap: with only 3 "other" tools (4 built
+   minus whichever one is current), flex-wrap left a lone leftover card
+   stretching to fill the whole second row — a real grid just leaves that
+   second cell blank instead. */
+.undercroft-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+
+.undercroft-tool-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--bs-border-radius);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+a.undercroft-tool-card:hover,
+a.undercroft-tool-card:focus-visible {
+  border-color: var(--bs-secondary-color);
+  background-color: var(--bs-tertiary-bg);
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.35);
 }
 
-.undercroft-tool-button.is-active {
-  border-color: var(--bs-primary);
-  background-color: var(--bs-primary-bg-subtle);
+.undercroft-tool-card-icon {
+  flex-shrink: 0;
+  font-size: 1.3rem;
+  color: var(--undercroft-tool-accent, var(--bs-body-color));
+  margin-top: 0.1rem;
+}
+
+.undercroft-tool-card-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.undercroft-tool-card-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.undercroft-tool-card-summary {
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.undercroft-tool-grid--muted .undercroft-tool-card {
   cursor: default;
 }
 
-.undercroft-tool-button.tool-workbench {
+/* Disabled ("coming soon") cards keep each tool's real accent color on the
+   icon — only the name/summary text goes gray — so every tool's color is
+   visible at a glance regardless of build status. */
+.undercroft-tool-card.is-disabled .undercroft-tool-card-name,
+.undercroft-tool-card.is-disabled .undercroft-tool-card-summary {
+  color: var(--bs-secondary-color);
+}
+
+/* The active tool's own card: full color like any built tool (it's not
+   unavailable, just not something you can navigate to from here), given a
+   quiet "you are here" tint instead of a hover affordance since it's a
+   <span>, not a link. */
+.undercroft-tool-card.is-current {
+  cursor: default;
+  border-color: var(--bs-border-color);
+  background-color: var(--bs-tertiary-bg);
+}
+
+.undercroft-tool-trigger.tool-workbench,
+.undercroft-tool-card.tool-workbench .undercroft-tool-card-icon {
   --undercroft-tool-accent: var(--bs-indigo);
 }
 
-.undercroft-tool-button.tool-press {
+.undercroft-tool-trigger.tool-press,
+.undercroft-tool-card.tool-press .undercroft-tool-card-icon {
   --undercroft-tool-accent: var(--bs-danger);
 }
 
-.undercroft-tool-button.tool-orrery {
+.undercroft-tool-trigger.tool-orrery,
+.undercroft-tool-card.tool-orrery .undercroft-tool-card-icon {
   --undercroft-tool-accent: var(--bs-info);
 }
 
-.undercroft-tool-button.tool-forge {
+.undercroft-tool-trigger.tool-loom,
+.undercroft-tool-card.tool-loom .undercroft-tool-card-icon {
+  --undercroft-tool-accent: var(--bs-yellow);
+}
+
+.undercroft-tool-trigger.tool-forge,
+.undercroft-tool-card.tool-forge .undercroft-tool-card-icon {
   --undercroft-tool-accent: var(--bs-warning);
 }
 
-.undercroft-tool-button.tool-crucible {
-  --undercroft-tool-accent: var(--bs-primary);
+.undercroft-tool-trigger.tool-crucible,
+.undercroft-tool-card.tool-crucible .undercroft-tool-card-icon {
+  --undercroft-tool-accent: var(--bs-pink);
 }
 
-.undercroft-tool-button.tool-vault {
-  --undercroft-tool-accent: var(--bs-teal);
+.undercroft-tool-trigger.tool-vault,
+.undercroft-tool-card.tool-vault .undercroft-tool-card-icon {
+  --undercroft-tool-accent: var(--bs-purple);
 }
 
-.undercroft-tool-button.tool-sanctum {
+.undercroft-tool-trigger.tool-sanctum,
+.undercroft-tool-card.tool-sanctum .undercroft-tool-card-icon {
   --undercroft-tool-accent: var(--bs-success);
-}
-
-.undercroft-tool-letter {
-  display: block;
-  color: var(--undercroft-tool-accent, var(--bs-body-color));
-  font-size: 1.2rem;
-  font-family: "Segoe UI", "Inter", system-ui, sans-serif;
-  line-height: 1;
 }
 
 .tooltip {
