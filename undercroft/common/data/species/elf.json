@@ -4,6 +4,7 @@
   "url": "https://www.dndbeyond.com/species/1751437-elf",
   "image": "/undercroft/common/data/species/elf.png",
   "tagline": "Graceful Child of the Fey",
+  "icon": "ddb-creature-humanoid",
   "description": [
     "Created by the god Corellon, the first elves could change their forms at will. They lost this ability when Corellon cursed them for plotting with the deity Lolth, who tried and failed to usurp Corellon\u2019s dominion. When Lolth was cast into the Abyss, most elves renounced her and earned Corellon\u2019s forgiveness, but that which Corellon had taken from them was lost forever.",
     "No longer able to shape-shift at will, the elves retreated to the Feywild, where their sorrow was deepened by that plane\u2019s influence. Over time, curiosity led many of them to explore other planes of existence, including worlds in the Material Plane.",
@@ -11,7 +12,7 @@
     "An environment subtly transforms elves after they inhabit it for a millennium or more, and it grants them certain kinds of magic. Drow, high elves, and wood elves are examples of elves who have been transformed thus."
   ],
   "type": "Humanoid",
-  "size": "Medium (about 5\u20136 feet tall)",
+  "size": "Medium",
   "speed": 30,
   "traits": [
     {

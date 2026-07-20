@@ -13,7 +13,13 @@ export class StatusManager {
 
   show(message, { type = "info", timeout = DEFAULT_TIMEOUT } = {}) {
     const id = `status-${counter++}`;
-    const item = { id, message, type, timeout };
+    // Errors always persist until manually dismissed (see the close button
+    // in _render), regardless of whatever timeout a caller passed —
+    // callers shouldn't have to remember to opt into that for every error
+    // call site individually, and a caller-provided timeout would defeat
+    // the whole point of an error staying visible.
+    const resolvedTimeout = type === "error" ? 0 : timeout;
+    const item = { id, message, type, timeout: resolvedTimeout };
     this.queue.push(item);
     if (!this.active) {
       this._dequeue();
@@ -62,22 +68,59 @@ export class StatusManager {
     text.textContent = item.message;
     wrapper.appendChild(text);
 
+    // Iconify only renders icons for elements at the moment they're added
+    // to the DOM — it doesn't watch for data-icon attribute changes on an
+    // element already rendered, so swapping copy -> check has to replace
+    // the whole <span>, not mutate the existing one's attribute (same
+    // pattern app.js's own replaceTypeIcon already uses for this reason).
+    const setCopyIcon = (iconName) => {
+      const fresh = document.createElement("span");
+      fresh.className = "iconify";
+      fresh.dataset.icon = iconName;
+      fresh.setAttribute("aria-hidden", "true");
+      const existing = copyButton.querySelector(".iconify");
+      if (existing) {
+        copyButton.replaceChild(fresh, existing);
+      } else {
+        copyButton.appendChild(fresh);
+      }
+    };
     const copyButton = document.createElement("button");
     copyButton.type = "button";
-    copyButton.className = "btn btn-sm btn-link status-toast-copy p-0 ms-2 align-baseline";
-    copyButton.textContent = "Copy";
+    copyButton.className = "btn btn-sm btn-link status-toast-copy p-0 ms-2 align-baseline lh-1";
+    setCopyIcon("tabler:copy");
     copyButton.setAttribute("aria-label", "Copy message text");
     copyButton.addEventListener("click", (event) => {
       event.stopPropagation();
       if (!navigator.clipboard?.writeText) return;
       navigator.clipboard.writeText(item.message).then(() => {
-        copyButton.textContent = "Copied";
+        setCopyIcon("tabler:check");
         window.setTimeout(() => {
-          copyButton.textContent = "Copy";
+          setCopyIcon("tabler:copy");
         }, 1200);
       }, () => {});
     });
     wrapper.appendChild(copyButton);
+
+    // Errors don't auto-dismiss (see show()'s resolvedTimeout) — they need
+    // an explicit way to close instead. Everything else keeps the existing
+    // timed dismissal with no close button, unchanged.
+    if (item.type === "error") {
+      const closeButton = document.createElement("button");
+      closeButton.type = "button";
+      closeButton.className = "btn btn-sm btn-link status-toast-close p-0 ms-2 align-baseline lh-1";
+      const closeIcon = document.createElement("span");
+      closeIcon.className = "iconify";
+      closeIcon.dataset.icon = "tabler:x";
+      closeIcon.setAttribute("aria-hidden", "true");
+      closeButton.appendChild(closeIcon);
+      closeButton.setAttribute("aria-label", "Dismiss");
+      closeButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        this.remove(item.id);
+      });
+      wrapper.appendChild(closeButton);
+    }
 
     return wrapper;
   }

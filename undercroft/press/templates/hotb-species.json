@@ -50,7 +50,8 @@
                 "bold": true
               },
               "textSizeCustom": true,
-              "align": "center"
+              "align": "center",
+              "uid": "node-2"
             },
             "x": 0,
             "y": 4.18,
@@ -61,9 +62,10 @@
             "node": {
               "type": "field",
               "component": "image",
-              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22swoop-banner%22%2C%22values%22%3A%7B%22fill%22%3A%22%23fad700%22%2C%22outline%22%3A%22%23d4af37%22%2C%22side%22%3A%22left%22%2C%22swoopStart%22%3A0%2C%22swoopExtent%22%3A10%2C%22swoopHeight%22%3A0.1%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'250'%20height%3D'105'%20viewBox%3D'0%200%20250%20105'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M%200%2C5%20L%200%2C5%20Q%208.75%2C5%2025%2C15%20L%20250%2C15%20L%20250%2C105%20L%200%2C105%20Z'%20fill%3D'%23fad700'%20stroke%3D'%23d4af37'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E",
+              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22swoop-banner%22%2C%22values%22%3A%7B%22fill%22%3A%22%23fad700%22%2C%22outline%22%3A%22%23e9b50c%22%2C%22side%22%3A%22left%22%2C%22swoopStart%22%3A0%2C%22swoopExtent%22%3A10%2C%22swoopHeight%22%3A0.1%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'250'%20height%3D'105'%20viewBox%3D'0%200%20250%20105'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M%200%2C5%20L%200%2C5%20Q%208.75%2C5%2025%2C15%20L%20250%2C15%20L%20250%2C105%20L%200%2C105%20Z'%20fill%3D'%23fad700'%20stroke%3D'%23e9b50c'%20stroke-width%3D'3'%2F%3E%3C%2Fsvg%3E",
               "className": "press-image",
-              "fit": "fill"
+              "fit": "fill",
+              "uid": "node-3"
             },
             "x": 0,
             "y": 4.15,
@@ -88,7 +90,8 @@
               "textSizeCustom": true,
               "textStyles": {
                 "bold": true
-              }
+              },
+              "uid": "node-4"
             },
             "x": 0,
             "y": 0.19,
@@ -102,7 +105,8 @@
               "url": "@image",
               "className": "press-image",
               "zoom": 1,
-              "focalX": 58
+              "focalX": 58,
+              "uid": "node-5"
             },
             "x": 0,
             "y": 0,
@@ -130,34 +134,237 @@
               "textStyles": {
                 "italic": false
               },
-              "align": "center"
+              "align": "center",
+              "uid": "node-6"
             },
             "width": "100%"
           }
         ],
-        "origin": "trim"
+        "origin": "trim",
+        "uid": "node-1"
       }
     },
     "back": {
       "data": "@",
       "layout": {
-        "type": "layer",
-        "placements": [
-          {
-            "node": {
-              "type": "field",
-              "component": "image",
-              "url": "data:image/svg+xml,%3Csvg%20data-press-pattern%3D'%7B%22id%22%3A%22solid-fill%22%2C%22values%22%3A%7B%22fill%22%3A%22%23fad700%22%7D%7D'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%20viewBox%3D'0%200%20200%20200'%20preserveAspectRatio%3D'none'%3E%3Crect%20width%3D'200'%20height%3D'200'%20fill%3D'%23fad700'%2F%3E%3C%2Fsvg%3E",
-              "className": "press-image"
-            },
-            "x": 0,
-            "y": 4.45,
-            "z": 0,
-            "width": "100%",
-            "height": 0.3
-          }
+        "type": "grid",
+        "columns": 1,
+        "gap": 0,
+        "cells": [
+          [
+            [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@name",
+                "textSize": "md",
+                "className": "card-body-text",
+                "uid": "node-15",
+                "label": "@name",
+                "align": "center",
+                "style": {
+                  "fontFamily": "'Cinzel', sans-serif",
+                  "fontSize": 26.666666666666664
+                },
+                "textSizeCustom": true,
+                "textStyles": {
+                  "bold": true
+                }
+              },
+              {
+                "type": "grid",
+                "columns": 3,
+                "gap": 1,
+                "cells": [
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "icon",
+                        "iconClass": "@icon",
+                        "ariaLabel": "Status icon",
+                        "uid": "node-29"
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "Size: ",
+                        "textSize": "lg",
+                        "textStyles": {
+                          "bold": true
+                        },
+                        "className": "card-title",
+                        "uid": "node-21",
+                        "style": {
+                          "fontSize": 12
+                        },
+                        "textSizeCustom": true,
+                        "label": "Size: ",
+                        "textStyle": "span"
+                      },
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@size",
+                        "textSize": "md",
+                        "className": "mb-0",
+                        "uid": "node-23",
+                        "label": "@size",
+                        "style": {
+                          "fontSize": 12
+                        },
+                        "textSizeCustom": true,
+                        "textStyle": "span"
+                      }
+                    ],
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "Speed (ft): ",
+                        "textSize": "md",
+                        "className": "mb-0",
+                        "uid": "node-24",
+                        "label": "Speed (ft): ",
+                        "style": {
+                          "fontSize": 12
+                        },
+                        "textSizeCustom": true,
+                        "textStyles": {
+                          "bold": true
+                        },
+                        "textStyle": "span"
+                      },
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@speed",
+                        "textSize": "md",
+                        "className": "mb-0",
+                        "uid": "node-26",
+                        "style": {
+                          "fontSize": 12
+                        },
+                        "textSizeCustom": true,
+                        "label": "@speed",
+                        "textStyle": "span"
+                      }
+                    ]
+                  ]
+                ],
+                "uid": "node-20",
+                "alignX": "start",
+                "alignY": "justify",
+                "templateColumns": "1fr 5fr 3fr",
+                "spaceAfter": 2
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "type": "field",
+                "component": "repeater",
+                "columns": 1,
+                "showHeader": false,
+                "decorator": null,
+                "gap": 1,
+                "className": "d-flex flex-column",
+                "items": [],
+                "cells": [
+                  [
+                    [
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@name",
+                        "label": "@name",
+                        "style": {
+                          "fontSize": 10.666666666666666
+                        },
+                        "textSizeCustom": true,
+                        "textStyles": {
+                          "bold": true
+                        },
+                        "textStyle": "span",
+                        "uid": "node-17"
+                      },
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": ". ",
+                        "textSize": "md",
+                        "className": "card-body-text",
+                        "label": ". ",
+                        "textStyle": "span",
+                        "style": {
+                          "fontSize": 9.333333333333332
+                        },
+                        "textSizeCustom": true,
+                        "uid": "node-18"
+                      },
+                      {
+                        "type": "field",
+                        "component": "text",
+                        "text": "@description",
+                        "textSize": "md",
+                        "className": "card-body-text",
+                        "label": "@description",
+                        "textSizeCustom": true,
+                        "style": {
+                          "fontSize": 10
+                        },
+                        "textStyle": "span",
+                        "uid": "node-19"
+                      }
+                    ]
+                  ]
+                ],
+                "itemsBind": "@traits",
+                "uid": "node-16"
+              }
+            ]
+          ]
         ],
-        "origin": "trim"
+        "uid": "node-14",
+        "alignY": "start"
+      },
+      "cardOverrides": {
+        "1": {
+          "node-19": {
+            "dataFingerprint": "d0q893",
+            "node": {
+              "style": {
+                "fontSize": 10
+              }
+            }
+          }
+        },
+        "3": {
+          "node-19": {
+            "dataFingerprint": "-vbku6d",
+            "node": {
+              "style": {
+                "fontSize": 10
+              }
+            }
+          },
+          "node-17": {
+            "dataFingerprint": "-vbku6d",
+            "node": {
+              "style": {
+                "fontSize": 10
+              }
+            }
+          }
+        },
+        "18": {
+          "node-14": {
+            "dataFingerprint": "u9hoe"
+          }
+        }
       }
     }
   },

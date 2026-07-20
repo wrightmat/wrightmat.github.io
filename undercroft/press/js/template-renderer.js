@@ -8,6 +8,10 @@ const TEXT_SIZE_MAP = {
   lg: 20,
   xl: 24,
 };
+// Explicit fallback line-height for every text-bearing element (see
+// applyTextFormatting) — a unitless multiplier of the element's own
+// font-size, same convention CSS itself uses for line-height.
+const DEFAULT_LINE_HEIGHT = 1.3;
 
 function shouldHide(node) {
   return Boolean(node?.hidden);
@@ -17,20 +21,6 @@ function asArray(value) {
   if (Array.isArray(value)) return value;
   if (value === undefined || value === null) return [];
   return [value];
-}
-
-function resolveListItemText(item) {
-  if (item && typeof item === "object") {
-    if (Object.hasOwn(item, "name") && item.name !== undefined && item.name !== null) {
-      return item.name;
-    }
-    const [firstKey] = Object.keys(item);
-    if (firstKey) {
-      return item[firstKey];
-    }
-    return "";
-  }
-  return item ?? "";
 }
 
 function applyClassName(element, className) {
@@ -56,6 +46,9 @@ function resolveClassName(node, context) {
 }
 
 function resolveTextSizePx(node) {
+  if (node?.textSize === "auto") {
+    return null;
+  }
   if (typeof node?.style?.fontSize === "number") {
     return node.style.fontSize;
   }
@@ -171,6 +164,20 @@ function applyGap(element, gap) {
   }
 }
 
+// Same numeric spacer scale as Gap (node.gap), but for the space AFTER the
+// whole component instead of the space it puts between its own internal
+// items — Gap doesn't affect a sibling that comes next in normal flow at
+// all, which is exactly the gap (no pun intended) this fills, the same
+// role node.style.lineHeight fills for a single text field's own vertical
+// rhythm, just one level up (between components, not between lines).
+function applySpaceAfter(element, node) {
+  if (Number.isFinite(node?.spaceAfter)) {
+    element.style.marginBottom = `${node.spaceAfter * GAP_UNIT_REM}rem`;
+  } else {
+    element.style.removeProperty("margin-bottom");
+  }
+}
+
 // Horizontal (per-cell, CSS justify-items) and vertical (row distribution,
 // CSS align-content) axes for the unified grid node — same four-value
 // vocabulary (start/center/end/justify) and same per-axis defaults the old
@@ -232,11 +239,42 @@ function applyTextTransform(element, node) {
 
 function applyTextFormatting(element, node) {
   if (!element || !node) return;
-  const size = resolveTextSizePx(node);
-  if (size) {
-    element.style.fontSize = `${size}px`;
+  if (node?.textSize === "auto") {
+    // Flagged for applyAutoFontSizing (a post-render measurement pass, same
+    // pattern as applyAutoWidthCaps) to shrink-to-fit once real layout
+    // exists — nothing meaningful can be measured yet at build time. height
+    // 100%/overflow hidden only actually constrains anything when a real
+    // ancestor (e.g. a Layer placement's sized wrapper) bounds this
+    // element; against an ordinary auto-height parent, height:100%
+    // resolves to auto per CSS and this is a no-op, so it's always safe to
+    // set unconditionally.
+    element.dataset.pressAutofit = "true";
+    element.style.height = "100%";
+    element.style.overflow = "hidden";
+    element.style.removeProperty("font-size");
+  } else {
+    delete element.dataset.pressAutofit;
+    element.style.removeProperty("height");
+    element.style.removeProperty("overflow");
+    const size = resolveTextSizePx(node);
+    if (size) {
+      element.style.fontSize = `${size}px`;
+    }
   }
   if (node?.component !== "icon") {
+    // Explicit on every text-bearing element, block or inline alike,
+    // rather than left to the inherited cascade — a <span> (Inline toggle
+    // on) and a <p> (off) otherwise compute line-height from whatever
+    // ancestor context each happens to inherit through, which don't
+    // necessarily match depth-for-depth (e.g. the first repeater item's
+    // extra drop-slot wrapper vs later items with none). Setting it here
+    // unconditionally, on every node.component !== "icon" text formatting
+    // pass, guarantees inline and block text always compute the exact same
+    // way. DEFAULT_LINE_HEIGHT is only the fallback — node.style.lineHeight
+    // (the inspector's "Line height" field) always wins when set.
+    element.style.lineHeight = String(
+      typeof node?.style?.lineHeight === "number" ? node.style.lineHeight : DEFAULT_LINE_HEIGHT
+    );
     const isBold = typeof node?.textStyles?.bold === "boolean" ? node.textStyles.bold : false;
     if (isBold) {
       element.style.fontWeight = "600";
@@ -268,6 +306,7 @@ function applyTextFormatting(element, node) {
     element.style.removeProperty("font-style");
     element.style.removeProperty("text-decoration");
     element.style.removeProperty("text-align");
+    element.style.removeProperty("line-height");
   }
 }
 
@@ -356,6 +395,253 @@ function applyTextColor(element, styles = {}) {
   }
 }
 
+// Renders a `repeater` field: a fully author-built "item template"
+// (node.cells, always exactly one row, one node[] per column — populated by
+// dragging ordinary components into it and binding each one individually,
+// exactly like grid/table cells already work) cloned once per item
+// resolved from node.itemsBind/node.items, plus a fully independent,
+// literal header row (node.headerCells — never inferred from cells'
+// position). columns<=1 stacks items vertically; columns>1 renders a real
+// <table>. The only built-in convenience beyond that is an optional
+// per-item `decorator` (bullet/number/custom symbol-or-binding) — there is
+// no other preset "kind" of repeater; everything else about what an item
+// shows is ordinary cell content the author builds and binds themselves.
+function renderRepeaterCells(cellNodes, itemContext, options, container) {
+  asArray(cellNodes).forEach((cellNode) => {
+    container.appendChild(renderNode(cellNode, itemContext, options));
+  });
+}
+
+function renderRepeaterDecorator(node, itemContext, index) {
+  const decorator = node?.decorator;
+  if (!decorator || !decorator.type || decorator.type === "none") return null;
+  const el = document.createElement("span");
+  applyClassName(el, "press-repeater-decorator");
+  if (decorator.type === "bullet") {
+    el.textContent = "•";
+  } else if (decorator.type === "number") {
+    el.textContent = `${index + 1}.`;
+  } else {
+    // "custom" — same literal-or-@binding duality every other text-ish
+    // field in Press already uses, resolved per-item so it can pull from
+    // the item's own data (e.g. an icon/rank field) just as easily as a
+    // fixed symbol like "→".
+    const raw = decorator.text ?? "";
+    const resolved = typeof raw === "string" && raw.trim().startsWith("@") ? resolveBinding(raw, itemContext) : raw;
+    el.textContent = resolved ?? "";
+  }
+  return el;
+}
+
+function renderRepeater(node, context, options) {
+  const itemsBindExpr = node.itemsBind;
+  const resolvedItems = resolveBinding(itemsBindExpr, context);
+  // Same "show the binding expression itself" fallback list/table used —
+  // an unresolved binding renders as a visible placeholder row rather than
+  // silently collapsing to nothing when no data is loaded yet. A genuinely
+  // empty static array (no binding at all) is a real "no items" state, not
+  // an unbound one, so it does NOT get this placeholder treatment.
+  const isEmptyItemsBinding =
+    (resolvedItems === undefined || resolvedItems === null || (Array.isArray(resolvedItems) && resolvedItems.length === 0)) &&
+    typeof itemsBindExpr === "string" &&
+    itemsBindExpr.trim().length > 0 &&
+    !(Array.isArray(node.items) && node.items.length);
+  const items = isEmptyItemsBinding ? [] : resolvedItems ?? node.items ?? [];
+  const columns = Number.isFinite(node.columns) && node.columns > 0 ? node.columns : 1;
+  const templateRow = Array.isArray(node.cells) && Array.isArray(node.cells[0]) ? node.cells[0] : [];
+  const headerRow =
+    node.showHeader && Array.isArray(node.headerCells) && Array.isArray(node.headerCells[0]) ? node.headerCells[0] : null;
+  const hasDecorator = Boolean(node.decorator?.type && node.decorator.type !== "none");
+  // Editable mode always shows at least one representative item, even with
+  // nothing resolved — items now render as real node trees (not flattened
+  // text), so there's no separate placeholder string to attach to the way
+  // list/table used to; item 0 of the template itself, rendered unbound
+  // (each field falling back to its own binding-expression placeholder), IS
+  // the visible placeholder that keeps the template editable on an empty
+  // canvas.
+  const resolvedList = items.length ? asArray(items) : options?.editable ? [undefined] : [];
+  const itemContextFor = (item, index) =>
+    item && typeof item === "object" ? { ...context, ...item, item, index } : { ...context, value: item, item, index };
+  const buildSlot = (rowLabel, columnIndex) => {
+    const slot = document.createElement("div");
+    // Plain block flow, not d-flex/flex-column: grid/table cell slots use
+    // flex-column so stacked children default to a vertical stack, but
+    // that forces every child onto its own flex "row" regardless of the
+    // child's own display — which silently overrides an inline text
+    // field's span back into block-like stacking. Ordinary block flow
+    // already stacks block-level children vertically on its own (that's
+    // just what block layout does), while still letting inline children
+    // (text fields with the Inline toggle on) flow together on one line —
+    // exactly the behavior an item's cell content needs.
+    slot.className = "press-drop-slot w-100";
+    // A block element wrapping inline content contributes its own
+    // inherited line-height as an invisible "strut" that the line box's
+    // actual height can never fall below (CSS2.1 §10.8) — since this slot
+    // just inherits Bootstrap's ~1.5 default from its ancestors, that strut
+    // silently won over any SMALLER line-height set on an inline (span)
+    // text child, making the Line height field look like it did nothing.
+    // Zeroing it here means the strut never competes; the actual text
+    // element's own line-height (set in applyTextFormatting) is always
+    // what governs, same as it already does for a plain block <p> (which
+    // has no separate wrapper contributing a competing strut at all).
+    slot.style.lineHeight = "0";
+    slot.dataset.pressSlot = "repeater";
+    slot.dataset.slotRow = rowLabel;
+    slot.dataset.parentNodeId = node.uid ?? "";
+    slot.dataset.columnIndex = String(columnIndex);
+    return slot;
+  };
+
+  if (columns <= 1) {
+    const listEl = document.createElement("div");
+    applyClassName(listEl, headerRow ? "d-flex flex-column" : resolveClassName(node, context) ?? "d-flex flex-column");
+    if (Number.isFinite(node?.gap)) {
+      applyGap(listEl, node.gap);
+    } else {
+      listEl.style.gap = "0.25rem";
+    }
+    if (isEmptyItemsBinding && !options?.editable) {
+      const placeholder = document.createElement("div");
+      placeholder.textContent = itemsBindExpr;
+      applyClassName(placeholder, "press-binding-placeholder");
+      listEl.appendChild(placeholder);
+    }
+    resolvedList.forEach((item, index) => {
+      const itemContext = itemContextFor(item, index);
+      const row = document.createElement("div");
+      applyClassName(row, "d-flex align-items-start gap-2");
+      const itemClassRaw = node.itemClassNameBind ?? node.itemClassName ?? "";
+      const resolvedClass = typeof itemClassRaw === "string" ? resolveBinding(itemClassRaw, itemContext) : itemClassRaw;
+      applyClassName(row, resolvedClass ?? "");
+      const decoratorEl = renderRepeaterDecorator(node, itemContext, index);
+      if (decoratorEl) row.appendChild(decoratorEl);
+      const content = document.createElement("div");
+      applyClassName(content, "flex-grow-1");
+      // Same strut-neutralizing reason as buildSlot's own line-height:0 —
+      // this is the direct wrapper for non-first items' cell content (no
+      // slot in between for those), so it's the one contributing a
+      // competing strut in that case.
+      content.style.lineHeight = "0";
+      if (options?.editable && index === 0) {
+        const slot = buildSlot("item", 0);
+        renderRepeaterCells(templateRow.flat(), itemContext, options, slot);
+        content.appendChild(slot);
+      } else {
+        renderRepeaterCells(templateRow.flat(), itemContext, options, content);
+      }
+      row.appendChild(content);
+      listEl.appendChild(row);
+    });
+    applyInlineStyles(listEl, node.style);
+    applyTextTransform(listEl, node);
+    if (!headerRow) {
+      applySpaceAfter(listEl, node);
+      return listEl;
+    }
+    const wrapper = document.createElement("div");
+    applyClassName(wrapper, resolveClassName(node, context) ?? "d-flex flex-column gap-1");
+    applySpaceAfter(wrapper, node);
+    const headerBlock = document.createElement("div");
+    applyClassName(headerBlock, "press-repeater-header fw-semibold");
+    if (options?.editable) {
+      const slot = buildSlot("header", 0);
+      renderRepeaterCells(headerRow.flat(), context, options, slot);
+      headerBlock.appendChild(slot);
+    } else {
+      // Not editable mode -> no buildSlot wrapper in between, so this is
+      // the direct wrapper here too — same strut fix.
+      headerBlock.style.lineHeight = "0";
+      renderRepeaterCells(headerRow.flat(), context, options, headerBlock);
+    }
+    wrapper.append(headerBlock, listEl);
+    return wrapper;
+  }
+
+  // columns > 1: a real <table>. An active decorator adds one extra
+  // leading column (its own <td>/<th>) ahead of the author's own columns;
+  // the header row's leading cell is always empty since headers aren't
+  // items and don't get a decorator.
+  const table = document.createElement("table");
+  applyClassName(table, resolveClassName(node, context) ?? "press-table");
+  if (Number.isFinite(node?.gap) && node.gap > 0) {
+    table.style.borderCollapse = "separate";
+    table.style.borderSpacing = `0 ${node.gap * GAP_UNIT_REM}rem`;
+  }
+  if (node.templateColumns) {
+    const colgroup = document.createElement("colgroup");
+    if (hasDecorator) colgroup.appendChild(document.createElement("col"));
+    node.templateColumns
+      .split(/\s+/)
+      .filter(Boolean)
+      .forEach((width) => {
+        const col = document.createElement("col");
+        col.style.width = width;
+        colgroup.appendChild(col);
+      });
+    table.appendChild(colgroup);
+  }
+  if (headerRow) {
+    const thead = document.createElement("thead");
+    const headerTr = document.createElement("tr");
+    applyClassName(headerTr, "table-header");
+    if (hasDecorator) headerTr.appendChild(document.createElement("th"));
+    for (let columnIndex = 0; columnIndex < columns; columnIndex += 1) {
+      const th = document.createElement("th");
+      const cellNodes = headerRow[columnIndex];
+      if (options?.editable) {
+        const slot = buildSlot("header", columnIndex);
+        renderRepeaterCells(cellNodes, context, options, slot);
+        th.appendChild(slot);
+      } else {
+        th.style.lineHeight = "0";
+        renderRepeaterCells(cellNodes, context, options, th);
+      }
+      headerTr.appendChild(th);
+    }
+    thead.appendChild(headerTr);
+    table.appendChild(thead);
+  }
+  const tbody = document.createElement("tbody");
+  if (isEmptyItemsBinding && !options?.editable) {
+    const placeholderRow = document.createElement("tr");
+    const placeholderCell = document.createElement("td");
+    placeholderCell.colSpan = Math.max(1, columns + (hasDecorator ? 1 : 0));
+    placeholderCell.textContent = itemsBindExpr;
+    applyClassName(placeholderCell, "press-binding-placeholder");
+    placeholderRow.appendChild(placeholderCell);
+    tbody.appendChild(placeholderRow);
+  }
+  resolvedList.forEach((item, index) => {
+    const itemContext = itemContextFor(item, index);
+    const tr = document.createElement("tr");
+    applyClassName(tr, node.rowClassName ?? "table-item");
+    if (hasDecorator) {
+      const decoratorCell = document.createElement("td");
+      const decoratorEl = renderRepeaterDecorator(node, itemContext, index);
+      if (decoratorEl) decoratorCell.appendChild(decoratorEl);
+      tr.appendChild(decoratorCell);
+    }
+    for (let columnIndex = 0; columnIndex < columns; columnIndex += 1) {
+      const td = document.createElement("td");
+      const cellNodes = templateRow[columnIndex];
+      if (options?.editable && index === 0) {
+        const slot = buildSlot("item", columnIndex);
+        renderRepeaterCells(cellNodes, itemContext, options, slot);
+        td.appendChild(slot);
+      } else {
+        td.style.lineHeight = "0";
+        renderRepeaterCells(cellNodes, itemContext, options, td);
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  applyInlineStyles(table, node.style);
+  applySpaceAfter(table, node);
+  return table;
+}
+
 function renderField(node, context, options = {}) {
   const bindingExpr = node.text ?? node.value ?? node.bind;
   const resolved = resolveBinding(bindingExpr, context);
@@ -392,59 +678,8 @@ function renderField(node, context, options = {}) {
       applyTextTransform(el, node);
       return el;
     }
-    case "list": {
-      const itemsBindExpr = node.itemsBind;
-      const resolvedItems = resolveBinding(itemsBindExpr, context);
-      // Same "show the binding expression itself" fallback as text's
-      // isEmptyBindingResult above — an empty <ul> has no content and no
-      // height, which made the list collapse to nothing (and become
-      // unclickable/unselectable in the editor) whenever data isn't
-      // loaded yet, unlike text fields which already had this fallback.
-      // Only kicks in for a real, non-empty itemsBind string with nothing
-      // resolved AND no static node.items to fall back on instead — a
-      // genuinely empty static list is a real "no items" state, not an
-      // unbound one.
-      const isEmptyItemsBinding =
-        (resolvedItems === undefined || resolvedItems === null || (Array.isArray(resolvedItems) && resolvedItems.length === 0)) &&
-        typeof itemsBindExpr === "string" &&
-        itemsBindExpr.trim().length > 0 &&
-        !(Array.isArray(node.items) && node.items.length);
-      const items = isEmptyItemsBinding ? [] : resolvedItems ?? node.items ?? [];
-      const listTag = node.listTag ?? "ul";
-      const itemTag = node.itemTag ?? "li";
-      const el = document.createElement(listTag);
-      applyClassName(el, resolveClassName(node, context) ?? "mb-0 ps-3 d-flex flex-column");
-      if (Number.isFinite(node?.gap)) {
-        el.style.display = "flex";
-        el.style.flexDirection = "column";
-        applyGap(el, node.gap);
-      }
-      if (isEmptyItemsBinding) {
-        const placeholder = document.createElement(itemTag);
-        placeholder.textContent = itemsBindExpr;
-        applyClassName(placeholder, "press-binding-placeholder");
-        applyTextFormatting(placeholder, node);
-        el.appendChild(placeholder);
-      }
-      asArray(items).forEach((item, index) => {
-        const li = document.createElement(itemTag);
-        const itemContext = typeof item === "object" && item !== null ? { ...context, ...item } : { ...context, value: item };
-        itemContext.item = item;
-        itemContext.index = index;
-        const itemClassRaw = node.itemClassNameBind ?? node.itemClassName ?? "";
-        const resolvedClass =
-          typeof itemClassRaw === "string" ? resolveBinding(itemClassRaw, itemContext) : itemClassRaw;
-        const itemClass = resolvedClass ?? "";
-        applyClassName(li, itemClass);
-        applyTextFormatting(li, node);
-        li.textContent = resolveListItemText(item);
-        el.appendChild(li);
-      });
-      applyInlineStyles(el, node.style);
-      applyTextFormatting(el, node);
-      applyTextTransform(el, node);
-      return el;
-    }
+    case "repeater":
+      return renderRepeater(node, context, options);
     case "icon": {
       const resolvedClass = resolveClassName(node, context) ?? "";
       const classTokens = resolvedClass.split(/\s+/).filter(Boolean);
@@ -459,6 +694,7 @@ function renderField(node, context, options = {}) {
       applyInlineStyles(wrapper, node.style);
       applyTextFormatting(wrapper, node);
       applyTextTransform(wrapper, node);
+      const ariaLabel = resolveBinding(node.ariaLabel, context) ?? node.ariaLabel ?? node.label;
       if (resolvedIconTokens.length) {
         const icon = document.createElement("span");
         const needsBootstrapBase = resolvedIconTokens.some((token) => token.startsWith("bi-"));
@@ -468,8 +704,19 @@ function renderField(node, context, options = {}) {
           icon.style.color = node.style.color;
         }
         wrapper.appendChild(icon);
+      } else {
+        // Same reasoning as the image field's own empty state: with no
+        // glyph at all, a bare inline <span> has zero content and
+        // collapses to nothing, making it permanently unselectable on
+        // canvas the moment its icon class gets cleared — there's no
+        // other handle left to click. This keeps a visible, clickable box
+        // regardless of whether an icon is actually set.
+        applyClassName(wrapper, "press-icon--empty");
+        const placeholder = document.createElement("span");
+        placeholder.className = "press-icon__placeholder";
+        placeholder.textContent = node.label ?? "Icon";
+        wrapper.appendChild(placeholder);
       }
-      const ariaLabel = resolveBinding(node.ariaLabel, context) ?? node.ariaLabel ?? node.label;
       if (ariaLabel) {
         wrapper.setAttribute("role", "img");
         wrapper.setAttribute("aria-label", ariaLabel);
@@ -496,6 +743,7 @@ function renderField(node, context, options = {}) {
       applyTextFormatting(label, node);
       applyTextFormatting(val, node);
       applyTextTransform(wrapper, node);
+      applySpaceAfter(wrapper, node);
       wrapper.append(label, val);
       return wrapper;
     }
@@ -569,206 +817,6 @@ function renderField(node, context, options = {}) {
       }
       return el;
     }
-    case "table": {
-      const rowsBindExpr = node.rowsBind ?? node.itemsBind;
-      const resolvedRows = resolveBinding(rowsBindExpr, context);
-      // Same "show the binding expression itself" fallback as list's
-      // isEmptyItemsBinding above — an empty tbody left the table
-      // effectively invisible (no rows means no height beyond the
-      // header) whenever data isn't loaded yet. Only kicks in for a real,
-      // non-empty rowsBind/itemsBind string with nothing resolved AND no
-      // static node.rows to fall back on instead.
-      const isEmptyRowsBinding =
-        (resolvedRows === undefined || resolvedRows === null || (Array.isArray(resolvedRows) && resolvedRows.length === 0)) &&
-        typeof rowsBindExpr === "string" &&
-        rowsBindExpr.trim().length > 0 &&
-        !(Array.isArray(node.rows) && node.rows.length);
-      const rows = isEmptyRowsBinding ? [] : resolvedRows ?? node.rows ?? [];
-      const columns = node.columns ?? [];
-      const table = document.createElement("table");
-      applyClassName(table, resolveClassName(node, context) ?? "press-table");
-      if (Number.isFinite(node?.gap) && node.gap > 0) {
-        table.style.borderCollapse = "separate";
-        table.style.borderSpacing = `0 ${node.gap * GAP_UNIT_REM}rem`;
-      }
-      const baseText = {
-        textSize: node.textSize,
-        textSizeCustom: node.textSizeCustom,
-        textStyles: node.textStyles,
-        textOrientation: node.textOrientation,
-        textAngle: node.textAngle,
-        textCurve: node.textCurve,
-        align: node.align,
-        style: node.style ? { ...node.style } : undefined,
-      };
-      const headerCells = Array.isArray(node.headerCells) ? node.headerCells : [];
-      if (node.showHeadings !== false && columns.length) {
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        applyClassName(headerRow, node.headerRowClassName ?? "table-header");
-        if (options?.editable) {
-          headerCells.length = columns.length;
-          headerCells.forEach((headerCell, index) => {
-            const fallbackText = columns[index]?.header ?? columns[index]?.label ?? "";
-            if (!headerCell) {
-              headerCells[index] = {
-                type: "field",
-                component: "text",
-                text: fallbackText,
-                ...baseText,
-                textStyles: { ...(baseText.textStyles ?? {}), bold: true },
-                uid: node.uid ? `${node.uid}-header-${index}` : undefined,
-              };
-              return;
-            }
-            headerCell.type = "field";
-            headerCell.component = "text";
-            if (headerCell.text === undefined || headerCell.text === null || headerCell.text === "") {
-              headerCell.text = fallbackText;
-            }
-            headerCell.textStyles = { ...(baseText.textStyles ?? {}), ...(headerCell.textStyles ?? {}), bold: true };
-            if (!headerCell.uid) {
-              headerCell.uid = node.uid ? `${node.uid}-header-${index}` : headerCell.uid;
-            }
-          });
-        }
-        columns.forEach((column, columnIndex) => {
-          const th = document.createElement("th");
-          if (column.width) {
-            th.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
-          }
-          applyClassName(th, column.className);
-          const headerStyles = column.textStyle ?? {};
-          const headerNode = {
-            type: "field",
-            component: "text",
-            text: column.header ?? column.label ?? "",
-            ...baseText,
-            textStyles: {
-              bold: typeof headerStyles.bold === "boolean" ? headerStyles.bold : true,
-              italic: Boolean(headerStyles.italic),
-              underline: Boolean(headerStyles.underline),
-            },
-            ...(column.textSize ? { textSize: column.textSize } : null),
-            ...(column.textOrientation ? { textOrientation: column.textOrientation } : null),
-            ...(column.textAngle ? { textAngle: column.textAngle } : null),
-            ...(column.textCurve ? { textCurve: column.textCurve } : null),
-            ...(column.align ? { align: column.align } : null),
-            ...(column.style ? { style: { ...(baseText.style ?? {}), ...column.style } } : null),
-          };
-          th.appendChild(renderField(headerNode, context, options));
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-      }
-      const tbody = document.createElement("tbody");
-      if (isEmptyRowsBinding) {
-        const placeholderRow = document.createElement("tr");
-        const placeholderCell = document.createElement("td");
-        placeholderCell.colSpan = Math.max(1, columns.length);
-        placeholderCell.textContent = rowsBindExpr;
-        applyClassName(placeholderCell, "press-binding-placeholder");
-        placeholderRow.appendChild(placeholderCell);
-        tbody.appendChild(placeholderRow);
-      }
-      const tableCells = Array.isArray(node.cells) ? node.cells : [];
-      const getCellNodeId = (rowIndex, colIndex) => (node.uid ? `${node.uid}-cell-${rowIndex}-${colIndex}` : null);
-      const createCellNode = (rowIndex, column, columnIndex) => {
-        const textBinding = column.bind ?? column.text ?? column.value ?? "";
-        const cellNode = {
-          type: "field",
-          component: column.component ?? "text",
-          text: textBinding,
-          ...baseText,
-        };
-        const uid = getCellNodeId(rowIndex, columnIndex);
-        if (uid) {
-          cellNode.uid = uid;
-        }
-        if (cellNode.component === "icon") {
-          cellNode.iconClass = textBinding;
-          cellNode.text = "";
-          const ariaLabel = resolveBinding(column.ariaLabel, context) ?? column.ariaLabel ?? context?.name;
-          cellNode.ariaLabel = ariaLabel;
-        }
-        return cellNode;
-      };
-      if (options?.editable) {
-        const rowCount = asArray(rows).length;
-        tableCells.length = rowCount;
-        tableCells.forEach((rowCells, rowIndex) => {
-          if (!Array.isArray(rowCells)) {
-            tableCells[rowIndex] = [];
-          }
-        });
-      }
-      asArray(rows).forEach((row, index) => {
-        const rowContext = typeof row === "object" && row !== null ? { ...context, ...row } : { ...context, value: row };
-        rowContext.item = row;
-        rowContext.index = index;
-        const tr = document.createElement("tr");
-        applyClassName(tr, node.rowClassName ?? "table-item");
-        columns.forEach((column, columnIndex) => {
-          const td = document.createElement("td");
-          const cellContext = { ...rowContext };
-          if (column.className) {
-            const rawClass = column.className;
-            const resolved =
-              typeof rawClass === "string" && rawClass.startsWith("@")
-                ? resolveBinding(rawClass, cellContext) ?? ""
-                : rawClass;
-            applyClassName(td, resolved);
-          }
-          const rowCells = Array.isArray(tableCells[index]) ? tableCells[index] : [];
-          if (options?.editable && !Array.isArray(tableCells[index])) {
-            tableCells[index] = rowCells;
-          }
-          let cellNodes = rowCells[columnIndex];
-          if (!Array.isArray(cellNodes)) {
-            const baseNode = cellNodes || createCellNode(index, column, columnIndex);
-            cellNodes = baseNode ? [baseNode] : [];
-            if (options?.editable) {
-              rowCells[columnIndex] = cellNodes;
-            }
-          }
-          if (options?.editable) {
-            rowCells.length = columns.length;
-          }
-          if (options?.editable) {
-            const slot = document.createElement("div");
-            slot.className = "press-drop-slot d-flex flex-column h-100 w-100";
-            slot.dataset.pressSlot = "table";
-            slot.dataset.parentNodeId = node.uid ?? "";
-            slot.dataset.rowIndex = String(index);
-            slot.dataset.columnIndex = String(columnIndex);
-            cellNodes.forEach((cellNode) => {
-              slot.appendChild(renderNode(cellNode, cellContext, options));
-            });
-            td.appendChild(slot);
-          } else {
-            if (Array.isArray(cellNodes)) {
-              cellNodes.forEach((cellNode) => {
-                td.appendChild(renderNode(cellNode, cellContext, options));
-              });
-            } else {
-              td.appendChild(renderNode(cellNodes, cellContext, options));
-            }
-          }
-          if (column.width) {
-            td.style.width = typeof column.width === "number" ? `${column.width}%` : column.width;
-          }
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-      if (options?.editable) {
-        node.cells = tableCells;
-      }
-      table.appendChild(tbody);
-      applyInlineStyles(table, node.style);
-      return table;
-    }
     default: {
       const el = document.createElement("div");
       el.className = "border border-dashed rounded-3 p-3 fs-6 text-body-secondary";
@@ -809,6 +857,7 @@ function renderGrid(node, context, options) {
   container.style.justifyItems = resolveGridAlignX(node);
   container.style.alignContent = resolveGridAlignY(node);
   applyGap(container, node.gap ?? 4);
+  applySpaceAfter(container, node);
   asArray(node.cells).forEach((rowCells, rowIndex) => {
     asArray(rowCells).forEach((cellNodes, columnIndex) => {
       const cell = document.createElement("div");
@@ -820,21 +869,37 @@ function renderGrid(node, context, options) {
       // instead of wrapping. Short static/placeholder text rarely hits
       // this; real bound content (a description field, say) easily does.
       cell.style.minWidth = "0";
+      // A block element wrapping inline content contributes its own
+      // inherited line-height as an invisible "strut" the line box's
+      // actual height can never fall below (CSS2.1 §10.8) — cell/slot just
+      // inherit Bootstrap's ~1.5 default from their ancestors, which
+      // otherwise wins over anything smaller set on an inline (Inline
+      // toggle on) text child and makes cells with the same explicit
+      // line-height still render with subtly different spacing depending
+      // on exactly what's nested how deep inside them. Zeroing it here
+      // means each text node's own line-height is always what governs.
+      cell.style.lineHeight = "0";
       const firstNode = Array.isArray(cellNodes) ? cellNodes[0] : cellNodes;
       if (Number.isFinite(firstNode?.colSpan) && firstNode.colSpan > 1) {
         cell.style.gridColumn = `span ${firstNode.colSpan}`;
       }
       if (options?.editable) {
         const slot = document.createElement("div");
-        slot.className = "press-drop-slot d-flex flex-column h-100 w-100";
+        // Plain block flow, not d-flex/flex-column: that forced every
+        // child onto its own flex "row" regardless of the child's own
+        // display, silently overriding an inline text field's span back
+        // into block-like stacking. Ordinary block flow already stacks
+        // block-level children vertically on its own — that's just what
+        // block layout does — while still letting inline children (Inline
+        // toggle on) flow together on one line.
+        slot.className = "press-drop-slot h-100 w-100";
+        slot.style.lineHeight = "0";
         slot.dataset.pressSlot = "grid";
         slot.dataset.parentNodeId = node.uid ?? "";
         slot.dataset.rowIndex = String(rowIndex);
         slot.dataset.columnIndex = String(columnIndex);
-        // slot is a flex column (for the editor's own drop-target sizing),
-        // so its children are flex items — same min-width:auto default as
-        // the grid cell above, same fix, one level deeper for the editable
-        // canvas specifically.
+        // Same min-width:auto default as the grid cell above, same fix,
+        // one level deeper for the editable canvas specifically.
         asArray(cellNodes).forEach((cellNode) => {
           const rendered = renderNode(cellNode, context, options);
           if (rendered?.style) rendered.style.minWidth = "0";
@@ -924,6 +989,98 @@ export function normalizeLegacyLayoutNode(node) {
     };
   }
 
+  // Legacy `list`/`table` field components -> the unified `repeater`
+  // component (see renderRepeater above). Both collapse onto the same
+  // cells[row][col]/headerCells[row][col] convention grid already uses, so
+  // this is a data reshape, not a new rendering concept.
+  if (node.type === "field" && node.component === "list") {
+    const { component, items, itemsBind, listTag, itemTag, itemClassNameBind, itemClassName, ...rest } = node;
+    // Old list markers came from the HTML tag (<ul> default = bulleted,
+    // <ol> = numbered, anything else — e.g. templates that used "div" to
+    // strip markers entirely — meant no marker). The new repeater has no
+    // list-tag concept at all; a `decorator` carries the same visual
+    // forward instead, as an independent per-item convenience rather than
+    // a tag choice baked into the whole component.
+    const decoratorType = !listTag || listTag === "ul" ? "bullet" : listTag === "ol" ? "number" : "none";
+    return {
+      ...rest,
+      type: "field",
+      component: "repeater",
+      columns: 1,
+      showHeader: false,
+      decorator: { type: decoratorType },
+      ...(itemsBind ? { itemsBind } : null),
+      ...(Array.isArray(items) ? { items } : null),
+      ...(itemClassNameBind ? { itemClassNameBind } : null),
+      ...(itemClassName ? { itemClassName } : null),
+      // Old list items were flattened via a "show item.name for objects,
+      // the raw value otherwise" rule. The new per-item binding context
+      // already distinguishes these the same way (primitives land at
+      // @value, objects get their own keys spread directly into scope),
+      // but one binding string can't express both — @value is the default
+      // here since every palette default (and the overwhelmingly common
+      // real case) is a plain string array; a list that was bound to an
+      // array of objects needs its migrated cell binding changed to
+      // whichever key it wants (e.g. @name) once opened.
+      cells: [[[{ type: "field", component: "text", text: "@value" }]]],
+    };
+  }
+
+  if (node.type === "field" && node.component === "table") {
+    const {
+      component,
+      rowsBind,
+      itemsBind,
+      rows,
+      columns: columnDefs,
+      cells,
+      showHeadings,
+      headerCells: legacyHeaderCells,
+      rowClassName,
+      ...rest
+    } = node;
+    const columnList = Array.isArray(columnDefs) ? columnDefs : [];
+    return {
+      ...rest,
+      type: "field",
+      component: "repeater",
+      columns: columnList.length || 1,
+      showHeader: showHeadings !== false,
+      ...(rowsBind ?? itemsBind ? { itemsBind: rowsBind ?? itemsBind } : null),
+      ...(Array.isArray(rows) ? { items: rows } : null),
+      ...(rowClassName ? { rowClassName } : null),
+      headerCells: [
+        columnList.map((column) => [
+          {
+            type: "field",
+            component: "text",
+            text: column?.header ?? column?.label ?? "",
+            textStyles: { bold: true },
+          },
+        ]),
+      ],
+      // The item template is a single row, built from column 0's already-
+      // materialized cell content when present (row-major cells[0][col]),
+      // falling back to a fresh node synthesized from the column's own
+      // bind/text/value alias otherwise. Any per-row divergence a user may
+      // have built up in the old table (independently customizing row 3's
+      // cell but not row 1's, since old table materialized a real node per
+      // (row, col) pair the first time the editor rendered it) collapses
+      // to this single shared template — the new model has exactly one
+      // item template for every row, by design.
+      cells: [
+        columnList.map((column, columnIndex) => {
+          const existing = Array.isArray(cells) && Array.isArray(cells[0]) ? cells[0][columnIndex] : null;
+          if (Array.isArray(existing) && existing.length) {
+            return existing.map((cellNode) => normalizeLegacyLayoutNode(cellNode));
+          }
+          const textBinding = column?.bind ?? column?.text ?? column?.value ?? "";
+          return [{ type: "field", component: column?.component ?? "text", text: textBinding }];
+        }),
+      ],
+    };
+  }
+
   return node;
 }
 
@@ -947,19 +1104,31 @@ function renderLayer(node, context, options) {
   applyClassName(container, resolveClassName(node, context));
   applyInlineStyles(container, node.style);
   asArray(node.placements).forEach((placement, index) => {
-    if (!placement?.node || shouldHide(placement.node)) return;
+    if (!placement?.node) return;
+    // Same per-card override merge as renderNode's node-level one, one
+    // level up: a placement's own x/y/width/height/rotate/z can be
+    // overridden independently of (and in addition to) its node's
+    // properties. shouldHide is checked against the *node* override here
+    // (not just the base node) so "hide this on just this card" — a
+    // node-level override — also skips creating the wrapper entirely,
+    // matching renderNode's own hidden check for the non-layer case.
+    const nodeOverride = options?.nodeOverrides?.[placement.node.uid]?.node;
+    const effectiveChildNode = nodeOverride ? { ...placement.node, ...nodeOverride } : placement.node;
+    if (shouldHide(effectiveChildNode)) return;
+    const placementOverride = options?.nodeOverrides?.[placement.node.uid]?.placement;
+    const effectivePlacement = placementOverride ? { ...placement, ...placementOverride } : placement;
     const wrapper = document.createElement("div");
     applyClassName(wrapper, "position-absolute press-layer-item");
-    wrapper.style.left = typeof placement.x === "number" ? `${placement.x}in` : "0";
-    wrapper.style.top = typeof placement.y === "number" ? `${placement.y}in` : "0";
+    wrapper.style.left = typeof effectivePlacement.x === "number" ? `${effectivePlacement.x}in` : "0";
+    wrapper.style.top = typeof effectivePlacement.y === "number" ? `${effectivePlacement.y}in` : "0";
     // width/height take a number (inches) or a raw CSS size string (e.g.
     // "100%" to fill the layer, useful for a full-bleed background image
     // whose exact box varies by origin/insets) — omit either for intrinsic,
     // content-sized dimensions.
-    if (typeof placement.width === "number") {
-      wrapper.style.width = `${placement.width}in`;
-    } else if (typeof placement.width === "string" && placement.width) {
-      wrapper.style.width = placement.width;
+    if (typeof effectivePlacement.width === "number") {
+      wrapper.style.width = `${effectivePlacement.width}in`;
+    } else if (typeof effectivePlacement.width === "string" && effectivePlacement.width) {
+      wrapper.style.width = effectivePlacement.width;
     } else {
       // Auto width (no explicit size): flagged here so applyAutoWidthCaps
       // (below) can cap it once this element is actually laid out. A
@@ -970,13 +1139,13 @@ function renderLayer(node, context, options) {
       // applyAutoWidthCaps for why.
       wrapper.dataset.autoWidth = "true";
     }
-    if (typeof placement.height === "number") {
-      wrapper.style.height = `${placement.height}in`;
-    } else if (typeof placement.height === "string" && placement.height) {
-      wrapper.style.height = placement.height;
+    if (typeof effectivePlacement.height === "number") {
+      wrapper.style.height = `${effectivePlacement.height}in`;
+    } else if (typeof effectivePlacement.height === "string" && effectivePlacement.height) {
+      wrapper.style.height = effectivePlacement.height;
     }
-    wrapper.style.zIndex = String(Number.isFinite(placement.z) ? placement.z : index);
-    applyRotate(wrapper, placement.rotate);
+    wrapper.style.zIndex = String(Number.isFinite(effectivePlacement.z) ? effectivePlacement.z : index);
+    applyRotate(wrapper, effectivePlacement.rotate);
     // Sortable's draggable selector matches direct children of the
     // press-layer container carrying [data-node-id] — the wrapper needs its
     // own copy since the actual rendered node (which also carries this via
@@ -1008,6 +1177,9 @@ function attachEditorHooks(element, node, options) {
   if (options.selectedId && options.selectedId === node.uid) {
     element.classList.add("press-component--selected");
   }
+  if (options.nodeOverrides?.[node.uid]) {
+    element.classList.add("press-component--unique");
+  }
   if (typeof options.onSelect === "function") {
     element.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1018,14 +1190,26 @@ function attachEditorHooks(element, node, options) {
 }
 
 export function renderNode(node, context = {}, options = {}) {
-  if (!node || shouldHide(node)) return document.createComment("empty");
+  if (!node) return document.createComment("empty");
+  // Single merge point for a per-card "Make Unique" override (options.
+  // nodeOverrides, threaded down from renderCardGrid/renderChipGrid) — any
+  // node property (text, style, className, fit, hidden, ...) can be
+  // overridden here without the type-specific renderers below needing to
+  // know overrides exist at all; they just receive `effective` in place
+  // of `node`. Dispatch itself (the switch below) and attachEditorHooks'
+  // identity attributes (uid/type/component) always use the real `node`,
+  // never the merged one — overriding what KIND of thing a component is
+  // isn't a real use case, only its properties.
+  const override = options?.nodeOverrides?.[node.uid]?.node;
+  const effective = override ? { ...node, ...override } : node;
+  if (shouldHide(effective)) return document.createComment("empty");
   switch (node.type) {
     case "grid":
-      return attachEditorHooks(renderGrid(node, context, options), node, options);
+      return attachEditorHooks(renderGrid(effective, context, options), node, options);
     case "layer":
-      return attachEditorHooks(renderLayer(node, context, options), node, options);
+      return attachEditorHooks(renderLayer(effective, context, options), node, options);
     case "field":
-      return attachEditorHooks(renderField(node, context, options), node, options);
+      return attachEditorHooks(renderField(effective, context, options), node, options);
     default:
       return document.createComment(`unsupported node: ${node.type}`);
   }
@@ -1097,5 +1281,67 @@ export function applyAutoWidthCaps(rootElement, { safeInsetIn = 0 } = {}) {
       const maxWidthPx = rightEdge - itemRect.left;
       item.style.maxWidth = `${Math.max(0, maxWidthPx)}px`;
     });
+  });
+}
+
+const AUTO_FIT_MIN_PX = 6;
+const AUTO_FIT_MAX_PX = 72;
+
+// Post-render measurement pass (same pattern as applyAutoWidthCaps above,
+// called right after it — a text field's width needs to already be final
+// before shrink-to-fit measures against it) for any text field with
+// textSize:"auto" (flagged data-press-autofit by applyTextFormatting).
+// Binary-searches the largest font size that doesn't overflow the
+// element's own box — which only bounds anything when a real ancestor
+// (typically a Layer placement's sized wrapper) constrains it; run
+// unconditionally otherwise, it's a no-op against an auto-height parent.
+export function applyAutoFontSizing(rootElement) {
+  if (!rootElement?.querySelectorAll) return;
+  rootElement.querySelectorAll('[data-press-autofit="true"]').forEach((el) => {
+    const fits = (sizePx) => {
+      el.style.fontSize = `${sizePx}px`;
+      return el.scrollHeight <= el.clientHeight + 1 && el.scrollWidth <= el.clientWidth + 1;
+    };
+    if (!fits(AUTO_FIT_MIN_PX)) {
+      el.style.fontSize = `${AUTO_FIT_MIN_PX}px`;
+      return;
+    }
+    let low = AUTO_FIT_MIN_PX;
+    let high = AUTO_FIT_MAX_PX;
+    while (high - low > 1) {
+      const mid = Math.floor((low + high) / 2);
+      if (fits(mid)) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+    el.style.fontSize = `${low}px`;
+  });
+}
+
+// Editor-only warning badge (never called for the print stack — clipping
+// itself is unconditional, from card-tile-content's own overflow:hidden in
+// templates.js, and applies regardless of whether this ever runs) for a
+// card/chip whose content overflows its own box, usually a bound text
+// field that's too long for the space. Run after applyAutoWidthCaps/
+// applyAutoFontSizing so it measures against their already-finalized
+// layout, not pre-shrink/pre-cap sizes. scrollHeight/scrollWidth report
+// the true (untruncated) content size regardless of the element's own
+// overflow:hidden, so this still detects overflow even though it's
+// already being visually clipped.
+export function applyOverflowIndicators(rootElement) {
+  if (!rootElement?.querySelectorAll) return;
+  rootElement.querySelectorAll(".card-tile, .chip-tile").forEach((tile) => {
+    const content = tile.querySelector(".card-tile-content, .chip-circle");
+    const isOverflowing = Boolean(
+      content && (content.scrollHeight > content.clientHeight + 1 || content.scrollWidth > content.clientWidth + 1)
+    );
+    tile.classList.toggle("press-tile--overflowing", isOverflowing);
+    if (isOverflowing) {
+      tile.title = "Content overflows this card — some of it is clipped and won't print.";
+    } else {
+      tile.removeAttribute("title");
+    }
   });
 }
