@@ -1,0 +1,38 @@
+{
+  "id": "npc_1848c908-98f9-4a7a-8beb-68e32b62fd93",
+  "locationId": "sharn",
+  "identity": {
+    "name": "Berosalia Hart",
+    "species": "Human",
+    "archetype": "Guard",
+    "alignment": "Neutral Evil",
+    "gender": "Female",
+    "age": "Elderly",
+    "relationship": "Widowed, Heterosexual",
+    "attitude": 5
+  },
+  "fourD": {
+    "description": "Compact",
+    "demeanor": "Melancholy",
+    "drive": "Wealth",
+    "direction": "Ascending"
+  },
+  "stats": {
+    "abilities": {
+      "str": 13,
+      "dex": 12,
+      "con": 12,
+      "int": 10,
+      "wis": 11,
+      "cha": 10
+    },
+    "ac": 16,
+    "hp": 11
+  },
+  "note": "Berosalia Hart (Neutral Evil Female Human Guard). Once a devoted soldier's wife, this compact elderly woman has grown melancholy in widowhood, her grief hardened into cold pragmatism as she leverages her guard position to accumulate hidden wealth through bribes and extortion. Her demeanor is distant and sorrowful on the surface, but she's ascending through deliberate corruption, viewing her final years as a final chance to build the fortune her lost husband never provided.",
+  "createdAt": "2026-07-21T16:24:52.365Z",
+  "updated_at": "2026-07-21T16:26:00.341Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.confounding-trick",
+  "name": "Confounding Trick",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack can force the target to make its next attack against a random creature within its reach, including itself.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack can force the target to make its next attack against a random creature within its reach, including itself."
+  },
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "trick"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

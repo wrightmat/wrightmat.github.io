@@ -1,0 +1,18 @@
+{
+  "id": "parasite",
+  "name": "Parasite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Sustains itself by weakening or consuming others.",
+  "recipe": {
+    "signatureSlot": "drain",
+    "requiredSlots": [
+      "spread",
+      "sustain",
+      "escape"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

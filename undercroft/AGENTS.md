@@ -2,11 +2,12 @@
 
 ## Project Overview
 - The 'workbench' directory hosts the Universal TTRPG Character Sheet prototype (Undercroft: Workbench). Key folders:
-  - Entry points: `index.html`, `template.html`, `system.html`, `character.html`.
+  - Entry point: `index.html` — a single unified page with a Template/Play/Edit view switcher (`js/pages/workbench.js` orchestrates; `js/pages/workbench-template-view.js`/`workbench-character-view.js` hold each view's logic). The old separate `template.html`/`character.html`/`system.html` pages were retired; System authoring now lives in Undercroft Loom, not Workbench.
   - `js/`: vanilla JavaScript ES modules (no frameworks) for runtime, editors, data access, and utilities.
   - `css/`: contains a single stylesheet (`styles.css`) for any custom rules that Bootstrap cannot express (kept to bare minimum).
   - `data/`: schemas, templates, and characters data consumed by the editors.
   - `docs/`, `ROADMAP.md`, and `COLLABORATION.md`: planning and collaboration artifacts.
+- The 'admin' directory is its own suite-wide tool (not part of Workbench, despite having lived at `workbench/admin.html` early on) — account tier management, content ownership transfer, sharing, and groups. Reachable from any tool's user-menu dropdown ("Admin controls", wired via `common/js/lib/auth-ui.js`) and from the cross-tool switcher like any other built tool.
 - The 'server' directory hosts the shared Python server used for all projects, including this one.
 - Other directories to be added later as additional tools are developed under this suite.
 

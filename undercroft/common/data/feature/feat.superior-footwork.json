@@ -1,0 +1,24 @@
+{
+  "id": "feat.superior-footwork",
+  "name": "Superior Footwork",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature ignores difficult terrain and doesn't provoke opportunity attacks when it moves.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature ignores difficult terrain and doesn't provoke opportunity attacks when it moves."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "outmaneuver"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

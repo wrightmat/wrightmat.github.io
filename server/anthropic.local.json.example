@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy this file to anthropic.local.json (same folder, keep this one as-is) and fill in 'api_key'. That filename is gitignored — never commit your actual API key.",
+  "_how_to_get_it": "Sign in at https://console.anthropic.com, open Settings > API Keys, and create a new key.",
+  "api_key": ""
+}

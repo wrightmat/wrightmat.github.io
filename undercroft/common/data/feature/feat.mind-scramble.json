@@ -1,0 +1,28 @@
+{
+  "id": "feat.mind-scramble",
+  "name": "Mind Scramble",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack can stun or confuse the target until the end of its next turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack can stun or confuse the target until the end of its next turn."
+  },
+  "tags": {
+    "behaviors": [
+      "control",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "disable",
+      "trick"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "aberration"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

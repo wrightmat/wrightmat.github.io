@@ -220,7 +220,14 @@ export function buildSystemPreviewData(definition) {
     const key = typeof node.key === "string" ? node.key.trim() : "";
     const nextPrefix = key ? [...prefix, key] : prefix;
     if (nextPrefix.length) {
-      const candidateValues = [node.values, node.examples, node.example, node.sample, node.preview, node.default];
+      // A values entry can be a bare display string (legacy) or a
+      // {name, entityId} object linking straight to a Library entity (Loom's
+      // System editor) — either way, rendering only ever needs the display
+      // name, so normalize before it's used as dropdown option data.
+      const normalizedValues = Array.isArray(node.values)
+        ? node.values.map((entry) => (entry && typeof entry === "object" ? entry.name : entry))
+        : node.values;
+      const candidateValues = [normalizedValues, node.examples, node.example, node.sample, node.preview, node.default];
       const sample = candidateValues.find((candidate) => {
         if (Array.isArray(candidate)) {
           return candidate.length > 0;

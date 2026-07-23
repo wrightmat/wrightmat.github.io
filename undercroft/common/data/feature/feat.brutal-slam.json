@@ -1,0 +1,32 @@
+{
+  "id": "feat.brutal-slam",
+  "name": "Brutal Slam",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful melee attack can push the target 10 feet and knock it prone.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful melee attack can push the target 10 feet and knock it prone."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage",
+      "dominate"
+    ],
+    "roles": [
+      "brute"
+    ],
+    "creatureTypes": [
+      "giant",
+      "construct"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [
+    "feat.ambush-camouflage"
+  ]
+}

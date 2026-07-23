@@ -1,0 +1,25 @@
+{
+  "id": "feat.unstoppable-advance",
+  "name": "Unstoppable Advance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on saves against being knocked prone or having its speed reduced.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has advantage on saves against being knocked prone or having its speed reduced."
+  },
+  "tags": {
+    "behaviors": [
+      "defense",
+      "mobility"
+    ],
+    "recipeSlots": [
+      "persist"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

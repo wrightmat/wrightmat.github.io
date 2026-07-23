@@ -290,7 +290,7 @@
   },
   "background": {
     "name": "Farmer",
-    "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Constitution, Wisdom<br /><strong>Feat:</strong>&nbsp;Tough<br /><strong>Skill Proficiencies:</strong> Animal Handling and Nature<br /><strong>Tool Proficiency:</strong>&nbsp;Carpenter's Tools<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler's Clothes, 30 GP; or (B) 50 GP</p>\r\n<p>You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature\u2019s bounty alongside a healthy respect for nature\u2019s wrath.</p>",
+    "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Constitution, Wisdom<br /><strong>Feat:</strong>&nbsp;Tough<br /><strong>Skill Proficiencies:</strong> Animal Handling and Nature<br /><strong>Tool Proficiency:</strong>&nbsp;Carpenter's Tools<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler's Clothes, 30 GP; or (B) 50 GP</p>\r\n<p>You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature’s bounty alongside a healthy respect for nature’s wrath.</p>",
     "feature": "Feat: Tough"
   },
   "deathSaves": {
@@ -312,7 +312,7 @@
     "height": "6'",
     "weight": 170,
     "faith": null,
-    "appearance": "White skin (farmer\u2019s tan)",
+    "appearance": "White skin (farmer’s tan)",
     "bonds": "Family",
     "flaws": null,
     "ideals": null,
@@ -541,5 +541,12 @@
       }
     ]
   },
-  "updated_at": "2026-07-17T23:33:33.958Z"
+  "updated_at": "2026-07-17T23:33:33.958Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "template": "tpl.5e.flex-basic",
+  "system": "sys.dnd5e",
+  "id": "octavian-hoff",
+  "data": {}
 }

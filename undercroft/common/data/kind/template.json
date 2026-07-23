@@ -1,0 +1,8 @@
+{
+  "id": "template",
+  "label": "Template",
+  "plural": "Templates",
+  "icon": "tabler:layout",
+  "readTier": "free",
+  "writeTier": "gm"
+}

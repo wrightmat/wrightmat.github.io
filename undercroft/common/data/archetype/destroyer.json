@@ -1,0 +1,18 @@
+{
+  "id": "destroyer",
+  "name": "Destroyer",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Creates chaos through overwhelming force or environmental impact.",
+  "recipe": {
+    "signatureSlot": "damage",
+    "requiredSlots": [
+      "disrupt",
+      "escalate",
+      "persist"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

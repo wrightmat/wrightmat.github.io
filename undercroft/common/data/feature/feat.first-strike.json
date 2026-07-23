@@ -1,0 +1,24 @@
+{
+  "id": "feat.first-strike",
+  "name": "First Strike",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on initiative rolls and wins all ties.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has advantage on initiative rolls and wins all ties."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "initiate"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

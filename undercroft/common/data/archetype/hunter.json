@@ -1,0 +1,18 @@
+{
+  "id": "hunter",
+  "name": "Hunter",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Tracks, pursues, and wears down a target over time.",
+  "recipe": {
+    "signatureSlot": "pursue",
+    "requiredSlots": [
+      "harass",
+      "mark",
+      "finish"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

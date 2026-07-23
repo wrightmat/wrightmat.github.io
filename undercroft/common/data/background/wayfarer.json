@@ -33,13 +33,13 @@
     },
     {
       "index": "tool-thieves-tools",
-      "name": "Tool: Thieves\u2019 Tools"
+      "name": "Tool: Thieves’ Tools"
     }
   ],
   "proficiency_choices": [],
   "equipment_options": [
     {
-      "desc": "(A) 2 Daggers, Thieves' Tools, Gaming Set (any), Bedroll, 2 Pouches, Traveler\u2019s Clothes, 16 GP or (B) 50 GP",
+      "desc": "(A) 2 Daggers, Thieves' Tools, Gaming Set (any), Bedroll, 2 Pouches, Traveler’s Clothes, 16 GP or (B) 50 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -94,7 +94,7 @@
                 "count": 1,
                 "of": {
                   "index": "traveler-s-clothes",
-                  "name": "Traveler\u2019s Clothes"
+                  "name": "Traveler’s Clothes"
                 }
               },
               {
@@ -116,13 +116,16 @@
   "description": [
     "You grew up on the streets surrounded by similarly ill-fated castoffs, a few of them friends and a few of them rivals. You slept where you could and did odd jobs for food. At times, when the hunger became unbearable, you resorted to theft. Still, you never lost your pride and never abandoned hope. Fate is not yet finished with you."
   ],
-  "source": "Player\u2019s Handbook, pg. 185",
+  "source": "Player’s Handbook, pg. 185",
   "traits": {
     "abilityScores": "Dexterity, Wisdom, Charisma",
     "feat": "Lucky",
     "skillProficiencies": "Insight and Stealth",
-    "toolProficiencies": "Thieves\u2019 Tools",
-    "equipment": "Choose A or B: (A) 2 Daggers, Thieves' Tools, Gaming Set (any), Bedroll, 2 Pouches, Traveler\u2019s Clothes, 16 GP; or (B) 50 GP"
+    "toolProficiencies": "Thieves’ Tools",
+    "equipment": "Choose A or B: (A) 2 Daggers, Thieves' Tools, Gaming Set (any), Bedroll, 2 Pouches, Traveler’s Clothes, 16 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:55:21.570Z"
+  "updated_at": "2026-07-19T14:55:21.570Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

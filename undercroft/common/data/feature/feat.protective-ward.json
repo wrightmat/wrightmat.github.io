@@ -1,0 +1,27 @@
+{
+  "id": "feat.protective-ward",
+  "name": "Protective Ward",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a reaction, the creature can grant an ally within 30 feet resistance to the damage of an incoming attack.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a reaction, the creature can grant an ally within 30 feet resistance to the damage of an incoming attack."
+  },
+  "tags": {
+    "behaviors": [
+      "defense",
+      "utility"
+    ],
+    "recipeSlots": [
+      "enhance"
+    ],
+    "roles": [
+      "support"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

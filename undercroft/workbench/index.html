@@ -52,10 +52,11 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="../common/css/shell.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="workbench">
-    <div class="d-flex flex-column min-vh-100">
+    <div class="workbench-app d-flex flex-column">
       <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="workbench-header-grid pe-2 py-3">
           <div></div>
@@ -65,10 +66,10 @@
                 class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
                 type="button"
                 data-pane-toggle="left"
-                aria-label="Toggle navigation pane"
+                aria-label="Toggle left pane"
               >
                 <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle navigation pane</span>
+                <span class="visually-hidden">Toggle left pane</span>
               </button>
               <h1 class="h5 mb-0 d-flex align-items-center gap-2">
                 <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
@@ -93,177 +94,657 @@
                 class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
                 type="button"
                 data-pane-toggle="right"
-                aria-label="Toggle details pane"
+                aria-label="Toggle right pane"
               >
                 <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
-                <span class="visually-hidden">Toggle details pane</span>
+                <span class="visually-hidden">Toggle right pane</span>
               </button>
             </div>
           </div>
           <div></div>
         </div>
       </header>
-      <div class="d-flex flex-grow-1 overflow-hidden">
+      <div class="workbench-shell d-flex">
         <aside
-          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
+          class="workbench-pane border-end border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar"
           data-pane="left"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
-          data-pane-initial="collapsed"
+          data-pane-initial="expanded"
         >
-          <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Quick Links</h2>
-          <nav class="nav nav-pills flex-column gap-2">
-            <a
-              class="nav-link text-start link-body-emphasis d-flex justify-content-between align-items-center"
-              href="system.html"
-              data-requires-tier="creator"
-              data-access-behavior="disable"
-            >
-              <span>System Editor</span>
-              <span class="badge text-bg-warning ms-2 d-none" data-access-label>Requires Creator</span>
-            </a>
-            <a
-              class="nav-link text-start link-body-emphasis d-flex justify-content-between align-items-center"
-              href="template.html"
-              data-requires-tier="gm"
-              data-access-behavior="disable"
-            >
-              <span>Template Builder</span>
-              <span class="badge text-bg-warning ms-2 d-none" data-access-label>Requires GM</span>
-            </a>
-            <a class="nav-link text-start link-body-emphasis" href="character.html">Character Sheet</a>
-          </nav>
-          <div>
-            <h3 class="fs-6 fw-semibold text-body-secondary mb-2">Recent Characters</h3>
-            <ul class="list-unstyled d-flex flex-column gap-2" data-recent-characters>
-              <li class="border border-dashed rounded-3 px-3 py-3 text-body-secondary">No recent characters yet.</li>
-            </ul>
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Workbench actions">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="undo"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Undo"
+                  aria-label="Undo"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:arrow-back-up" aria-hidden="true"></span>
+                  <span class="visually-hidden">Undo</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="redo"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Redo"
+                  aria-label="Redo"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:arrow-forward-up" aria-hidden="true"></span>
+                  <span class="visually-hidden">Redo</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2 d-none"
+                  type="button"
+                  data-action="export-template"
+                  data-workbench-view-panel="template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Export JSON"
+                  aria-label="Export JSON"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
+                  <span class="visually-hidden">Export JSON</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2 d-none"
+                  type="button"
+                  data-action="clear-canvas"
+                  data-workbench-view-panel="template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Clear canvas"
+                  aria-label="Clear canvas"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Clear canvas</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2 d-none"
+                  type="button"
+                  data-action="save-template"
+                  data-workbench-view-panel="template"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
+                </button>
+
+                <button
+                  class="btn btn-outline-success p-2"
+                  type="button"
+                  data-action="new-character"
+                  data-workbench-view-panel="edit"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="New Character"
+                  aria-label="New Character"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New Character</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="export-character"
+                  data-workbench-view-panel="play edit"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Export JSON"
+                  aria-label="Export JSON"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
+                  <span class="visually-hidden">Export JSON</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2 d-none"
+                  type="button"
+                  data-action="save-character"
+                  data-workbench-view-panel="edit"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
+                </button>
+                <button
+                  class="btn btn-outline-danger p-2 d-none"
+                  type="button"
+                  data-action="delete-character"
+                  data-delete-character
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Delete Character"
+                  aria-label="Delete Character"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete Character</span>
+                </button>
+              </div>
+            </div>
+
+            <section class="d-flex flex-column gap-3 d-none" data-workbench-view-panel="template">
+              <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Palette</span>
+                  <span class="align-middle" data-help-topic="template.library" data-help-insert="replace" data-help-placement="right"></span>
+                </h2>
+                <span class="fs-6 text-body-secondary">Drag into canvas</span>
+              </div>
+              <div class="d-grid gap-2" data-palette>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="input" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Input</div>
+                    <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="array" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">List</div>
+                    <div class="text-body-secondary extra-small text-truncate">Inventory lists and repeaters</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="divider" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:separator-horizontal" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Divider</div>
+                    <div class="text-body-secondary extra-small text-truncate">Break up sections</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="image" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Image</div>
+                    <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or maps</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="label" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Label</div>
+                    <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="container" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Container</div>
+                    <div class="text-body-secondary extra-small text-truncate">Tabs, grids, columns, rows</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="linear-track" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Linear Track</div>
+                    <div class="text-body-secondary extra-small text-truncate">Segmented progress bars</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="circular-track" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:gauge" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Circular Track</div>
+                    <div class="text-body-secondary extra-small text-truncate">Dial-style clocks</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="select-group" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Select Group</div>
+                    <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="toggle" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Toggle</div>
+                    <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
+                  </div>
+                </div>
+              </div>
+              <section class="pane-card mt-auto">
+                <button
+                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#template-json-preview"
+                  aria-expanded="false"
+                  aria-controls="template-json-preview"
+                >
+                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
+                  <span class="badge text-bg-secondary" data-preview-bytes>0 B</span>
+                </button>
+                <div class="collapse" id="template-json-preview">
+                  <div class="bg-body p-2 mt-2">
+                    <pre class="text-body-secondary small overflow-auto mb-0 workbench-json-preview" style="max-height: 16rem" data-json-preview>{}</pre>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-notes-section>
+              <div class="d-flex align-items-center justify-content-between">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Notes</h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-notes-toggle
+                  aria-expanded="false"
+                >
+                  <span class="iconify" data-notes-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-notes-toggle-label>Expand notes</span>
+                </button>
+              </div>
+              <div class="d-flex flex-column gap-3" data-notes-panel hidden>
+                <textarea
+                  class="form-control form-control-sm character-notes"
+                  data-note-editor
+                  rows="8"
+                  placeholder="Capture quick notes for this session (local only)…"
+                ></textarea>
+              </div>
+            </section>
+            <section class="pane-card d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-json-section>
+              <div class="d-flex align-items-center justify-content-between">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">JSON Preview</h2>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge text-bg-secondary" data-character-preview-bytes>0 B</span>
+                  <button
+                    class="btn btn-link btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle text-decoration-none p-0"
+                    type="button"
+                    data-json-toggle
+                    aria-expanded="false"
+                  >
+                    <span class="iconify" data-json-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                    <span class="visually-hidden" data-json-toggle-label>Expand JSON preview</span>
+                  </button>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-3" data-json-panel hidden>
+                <div class="bg-body p-2">
+                  <pre class="text-body-secondary small overflow-auto mb-0 workbench-json-preview" style="max-height: 16rem" data-character-json-preview>{}</pre>
+                </div>
+              </div>
+            </section>
+            <section class="d-flex flex-column gap-3 mt-auto" data-workbench-view-panel="play edit" hidden data-group-share-section>
+              <div class="d-flex align-items-center justify-content-between">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Group characters</h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-group-share-toggle
+                  aria-expanded="true"
+                >
+                  <span class="iconify" data-group-share-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-group-share-toggle-label>Collapse group characters</span>
+                </button>
+              </div>
+              <div class="d-flex flex-column gap-3" data-group-share-panel></div>
+              <div class="text-body-secondary small" data-group-share-status hidden></div>
+            </section>
           </div>
         </aside>
         <main class="workbench-main flex-grow-1 bg-body-secondary py-4">
-          <section class="container-xl d-flex flex-column gap-4">
-            <div class="card border-0 shadow-theme">
-              <div class="card-body">
-                <h2 class="card-title h3 d-flex align-items-center gap-2">
-                  <span>Welcome to the Workbench</span>
-                  <span class="align-middle" data-help-topic="workspace.overview" data-help-insert="replace"></span>
-                </h2>
-                <p class="card-text">
-                  Start by exploring the editors below. Systems define fields, templates design layouts, and characters bring everything to life. All tools share the same responsive workspace.
-                </p>
-              </div>
-            </div>
-            <div class="row g-4 row-cols-1 row-cols-md-2">
-              <div class="col d-flex">
-                <a
-                  href="system.html"
-                  class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift"
-                  data-requires-tier="creator"
-                  data-access-behavior="disable"
-                >
-                  <div class="card-body d-flex flex-column gap-2">
-                    <div>
-                      <h3 class="card-title h5 mb-0">System Editor</h3>
-                      <p class="card-text fs-6 text-body-secondary mb-0">
-                        Define attributes, validations, and computed fields for any tabletop RPG. Drag-and-drop field ordering keeps everything organised.
-                      </p>
-                    </div>
-                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
-                      Configure systems
-                      <span class="badge text-bg-warning text-uppercase small d-none" data-access-label>Requires Creator</span>
-                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                    </span>
-                  </div>
-                </a>
-              </div>
-              <div class="col d-flex">
-                <a
-                  href="template.html"
-                  class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift"
+          <div class="container-xl d-flex flex-column gap-4">
+            <ul class="nav nav-pills mb-0" role="tablist" data-workbench-view-tabs>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  type="button"
+                  data-workbench-view-tab="template"
                   data-requires-tier="gm"
                   data-access-behavior="disable"
+                  role="tab"
                 >
-                  <div class="card-body d-flex flex-column gap-2">
-                    <div>
-                      <h3 class="card-title h5 mb-0">Template Builder</h3>
-                      <p class="card-text fs-6 text-body-secondary mb-0">
-                        Arrange inputs, tracks, media, and repeaters into reusable sheets that match your system requirements.
-                      </p>
-                    </div>
-                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
-                      Design layouts
-                      <span class="badge text-bg-warning text-uppercase small d-none" data-access-label>Requires GM</span>
-                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                    </span>
+                  Template
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" type="button" data-workbench-view-tab="edit" role="tab">Edit</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" type="button" data-workbench-view-tab="play" role="tab">Play</button>
+              </li>
+            </ul>
+            <section class="d-flex flex-column gap-4 d-none" data-workbench-view-panel="template">
+              <div class="card border-0 shadow-theme">
+                <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Selections</h2>
+                  <div class="d-flex align-items-center gap-2">
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#template-selections"
+                      aria-expanded="true"
+                      aria-controls="template-selections"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                      <span class="visually-hidden">Toggle selections</span>
+                    </button>
                   </div>
-                </a>
-              </div>
-              <div class="col d-flex">
-                <a href="character.html" class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift">
-                  <div class="card-body d-flex flex-column gap-2">
-                    <div>
-                      <h3 class="card-title h5 mb-0 d-flex align-items-center gap-2">
-                        <span>Character Sheets</span>
-                        <span class="align-middle" data-help-topic="character.records" data-help-insert="replace"></span>
-                      </h3>
-                      <p class="card-text fs-6 text-body-secondary mb-0">
-                        Load a template, fill in values, and keep track of adventures with offline-friendly drafts that can sync later.
-                      </p>
+                </div>
+                <div class="collapse show" id="template-selections">
+                  <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                      <div class="col-12 col-md-4 col-lg-3">
+                        <label class="form-label fw-semibold text-body-secondary" for="template-select">Active template</label>
+                        <select class="form-select" id="template-select" data-template-select></select>
+                      </div>
+                      <div class="col-12 col-md text-md-end">
+                        <div class="small text-body-secondary" data-template-meta>No template selected</div>
+                      </div>
                     </div>
-                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
-                      Manage characters
-                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                    </span>
                   </div>
-                </a>
+                </div>
               </div>
-              <div class="col d-flex">
-                <a
-                  href="docs/index.html"
-                  class="card border-0 shadow-theme flex-grow-1 text-decoration-none text-reset hover-lift"
-                >
-                  <div class="card-body d-flex flex-column gap-2">
-                    <div>
-                      <h3 class="card-title h5 mb-0">Documentation</h3>
-                      <p class="card-text fs-6 text-body-secondary mb-0">
-                        Read in-depth guides for every editor, shared services, and workflows. Updated from a single JSON help catalog.
-                      </p>
+              <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
+                <div class="card-body d-flex flex-column gap-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
+                    <span class="fs-6 text-body-secondary">Layout preview</span>
+                  </div>
+                  <div class="flex-grow-1 d-flex flex-column gap-3" data-canvas-root data-sortable-id="canvas"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="d-flex flex-column gap-4" data-workbench-view-panel="play edit">
+              <div class="card border-0 shadow-theme" data-character-toolbar>
+                <div class="card-body">
+                  <div class="row g-3 align-items-end">
+                    <div class="col-12 col-lg-4 col-xl-3">
+                      <label class="form-label fw-semibold text-body-secondary d-flex align-items-center gap-2" for="character-select">
+                        <span>Character</span>
+                        <span class="align-middle" data-help-topic="character.records" data-help-insert="replace" data-help-placement="right"></span>
+                      </label>
+                      <select class="form-select" id="character-select" data-character-select></select>
                     </div>
-                    <span class="mt-auto d-inline-flex align-items-center gap-2 text-primary fw-medium">
-                      Browse the docs
-                      <span class="iconify" data-icon="tabler:arrow-right" aria-hidden="true"></span>
-                    </span>
                   </div>
-                </a>
+                </div>
               </div>
-            </div>
-          </section>
+              <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
+                <div class="card-body d-flex flex-column gap-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sheet</h2>
+                    <span class="fs-6 text-body-secondary" data-mode-indicator>Viewing</span>
+                  </div>
+                  <div class="flex-grow-1 d-flex flex-column gap-3" data-character-canvas-root></div>
+                </div>
+              </div>
+            </section>
+          </div>
         </main>
         <aside
-          class="d-none flex-column gap-4 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg"
+          class="workbench-pane border-start border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar-lg"
           data-pane="right"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
-          data-pane-initial="collapsed"
+          data-pane-initial="expanded"
         >
-          <div>
-            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary">Status</h2>
-            <p class="fs-6 text-body-secondary mb-0">
-              Keep an eye on sync notifications, undo history, and collaboration tips here.
-            </p>
-          </div>
-          <div>
-            <h3 class="fs-6 fw-semibold text-body-secondary mb-2">Getting Started</h3>
-            <ul class="fs-6 text-body-secondary mb-0 ps-3">
-              <li class="mb-1">Import the demo D&amp;D 5e system to explore structure.</li>
-              <li class="mb-1">Try the template builder to arrange sections.</li>
-              <li>Create a character draft and test offline mode.</li>
-            </ul>
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-3 d-none" data-workbench-view-panel="template">
+              <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#template-properties-collapse"
+                  aria-expanded="true"
+                  aria-controls="template-properties-collapse"
+                >
+                  <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                  <span class="visually-hidden">Toggle template properties</span>
+                </button>
+              </div>
+              <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template management">
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-outline-success p-2"
+                    type="button"
+                    data-action="new-template"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="New Template"
+                    aria-label="New Template"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                    <span class="visually-hidden">New Template</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-primary p-2 d-none"
+                    type="button"
+                    data-action="duplicate-template"
+                    data-duplicate-template
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Duplicate Template"
+                    aria-label="Duplicate Template"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
+                    <span class="visually-hidden">Duplicate Template</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-danger p-2 d-none"
+                    type="button"
+                    data-delete-template
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Delete Template"
+                    aria-label="Delete Template"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                    <span class="visually-hidden">Delete Template</span>
+                  </button>
+                </div>
+              </div>
+              <div class="collapse show" id="template-properties-collapse">
+                <div class="d-flex flex-column gap-3 fs-6" data-template-properties>
+                  <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select or create a template to edit its properties.</p>
+                </div>
+              </div>
+              <hr class="border-body-tertiary opacity-50 my-2" />
+              <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2 mb-0">
+                  <span>Component Properties</span>
+                  <span class="align-middle" data-help-topic="template.properties" data-help-insert="replace"></span>
+                </h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#component-properties-collapse"
+                  aria-expanded="false"
+                  aria-controls="component-properties-collapse"
+                >
+                  <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                  <span class="visually-hidden">Toggle component properties</span>
+                </button>
+              </div>
+              <div class="collapse" id="component-properties-collapse">
+                <div class="d-flex flex-column gap-3 fs-6" data-inspector>
+                  <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a component on the canvas to edit its settings.</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-dice-section>
+              <div class="d-flex align-items-center justify-content-between">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Dice Roller</span>
+                  <span class="align-middle" data-help-topic="character.dice" data-help-insert="replace"></span>
+                </h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-dice-toggle
+                  aria-expanded="true"
+                >
+                  <span class="iconify" data-dice-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-dice-toggle-label>Collapse dice roller</span>
+                </button>
+              </div>
+              <div class="d-flex flex-column gap-3" data-dice-panel></div>
+            </section>
+            <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-game-log-section>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex flex-column">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                    <span>Game Log</span>
+                    <span class="align-middle" data-help-topic="collaboration.shares" data-help-insert="replace"></span>
+                  </h2>
+                  <span class="text-body-secondary small" data-game-log-group></span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Game log tools">
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      data-game-log-refresh
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="left"
+                      data-bs-title="Refresh log"
+                      aria-label="Refresh game log"
+                    >
+                      <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                      <span class="visually-hidden">Refresh game log</span>
+                    </button>
+                  </div>
+                  <button
+                    class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                    type="button"
+                    data-game-log-toggle
+                    aria-expanded="true"
+                  >
+                    <span class="iconify" data-game-log-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                    <span class="visually-hidden" data-game-log-toggle-label>Collapse game log</span>
+                  </button>
+                </div>
+              </div>
+              <div class="d-flex flex-column gap-3" data-game-log-panel>
+                <div class="border rounded-3 bg-body p-3 game-log-entries d-flex flex-column" data-game-log-entries aria-live="polite"></div>
+                <div class="text-body-secondary small" data-game-log-status hidden></div>
+                <form class="input-group input-group-sm" data-game-log-form novalidate>
+                  <label class="visually-hidden" for="game-log-message">Message</label>
+                  <input
+                    class="form-control"
+                    id="game-log-message"
+                    type="text"
+                    data-game-log-input
+                    placeholder="Share a note with your group…"
+                    autocomplete="off"
+                  />
+                  <button class="btn btn-primary" type="submit">Send</button>
+                </form>
+              </div>
+            </section>
           </div>
         </aside>
       </div>
     </div>
     <div class="status-root" data-status-root></div>
+    <div class="modal fade" id="new-template-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" data-new-template-modal-title>Create New Template</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form class="needs-validation" novalidate data-new-template-form>
+            <div class="modal-body d-flex flex-column gap-3">
+              <div>
+                <label class="form-label" for="new-template-id">Template ID</label>
+                <input id="new-template-id" class="form-control" type="text" name="id" required data-new-template-id placeholder="e.g. tpl.custom" />
+                <div class="invalid-feedback">Please provide a unique template ID.</div>
+              </div>
+              <div>
+                <label class="form-label" for="new-template-title">Template Title</label>
+                <input id="new-template-title" class="form-control" type="text" name="title" required data-new-template-title placeholder="e.g. Hero Sheet" />
+                <div class="invalid-feedback">Please provide a readable title.</div>
+              </div>
+              <div>
+                <label class="form-label" for="new-template-version">Starting Version</label>
+                <input id="new-template-version" class="form-control" type="text" name="version" value="0.1" data-new-template-version />
+              </div>
+              <div>
+                <label class="form-label" for="new-template-system">System</label>
+                <select id="new-template-system" class="form-select" name="schema" required data-new-template-system></select>
+                <div class="invalid-feedback">Select a system for this template.</div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create Template</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="new-character-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Create New Character</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form class="needs-validation" novalidate data-new-character-form>
+            <div class="modal-body d-flex flex-column gap-3">
+              <div>
+                <label class="form-label" for="new-character-id">Character ID</label>
+                <input id="new-character-id" class="form-control" type="text" name="id" required data-new-character-id placeholder="e.g. cha.my-hero" />
+                <div class="invalid-feedback">Please provide a character ID.</div>
+              </div>
+              <div>
+                <label class="form-label" for="new-character-name">Character Name</label>
+                <input id="new-character-name" class="form-control" type="text" name="name" required data-new-character-name placeholder="e.g. Elandra" />
+                <div class="invalid-feedback">Please provide a character name.</div>
+              </div>
+              <div>
+                <label class="form-label" for="new-character-template">Template</label>
+                <select id="new-character-template" class="form-select" name="template" required data-new-character-template></select>
+                <div class="invalid-feedback">Select a template for this character.</div>
+              </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="group-select-modal" tabindex="-1" aria-hidden="true" data-group-select-modal>
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5 mb-0" data-group-select-title>Select a character</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex flex-column gap-3" data-group-select-body>
+              <div class="text-center text-body-secondary" data-group-select-loading>Loading available characters…</div>
+            </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between align-items-center">
+            <div class="text-body-secondary small" data-group-select-status></div>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script
@@ -271,6 +752,7 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <script type="module" src="js/pages/index.js"></script>
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script type="module" src="js/pages/workbench.js"></script>
   </body>
 </html>

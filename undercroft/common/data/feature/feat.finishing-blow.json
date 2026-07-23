@@ -1,0 +1,24 @@
+{
+  "id": "feat.finishing-blow",
+  "name": "Finishing Blow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Against a target at or below half its hit point maximum, the creature's attacks score a critical hit on a roll of 19 or 20.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Against a target at or below half its hit point maximum, the creature's attacks score a critical hit on a roll of 19 or 20."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "finish"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

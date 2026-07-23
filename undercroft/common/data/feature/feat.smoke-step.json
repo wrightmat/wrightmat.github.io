@@ -1,0 +1,28 @@
+{
+  "id": "feat.smoke-step",
+  "name": "Smoke Step",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can teleport up to 30 feet to an unoccupied space it can see.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature can teleport up to 30 feet to an unoccupied space it can see."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "utility"
+    ],
+    "recipeSlots": [
+      "reposition",
+      "escape"
+    ],
+    "roles": [
+      "skirmisher"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

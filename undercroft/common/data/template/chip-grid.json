@@ -1,0 +1,96 @@
+{
+  "id": "chip-grid",
+  "title": "Chip Grid (1 in circles)",
+  "category": "print",
+  "description": "Print-ready grid of 1-inch circular chips with adjustable spacing and safe inset.",
+  "type": "chip",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    },
+    {
+      "id": "a4",
+      "label": "A4",
+      "sizeId": "a4",
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "supportedSources": [
+    "ddb",
+    "srd",
+    "json",
+    "manual"
+  ],
+  "card": {
+    "width": 1,
+    "height": 1,
+    "gutter": 0.1,
+    "safeInset": 0.05,
+    "bleed": 0.04,
+    "columns": 7,
+    "rows": 9
+  },
+  "pages": {
+    "front": {
+      "repeat": "@skills",
+      "layout": {
+        "type": "grid",
+        "columns": 1,
+        "gap": 1,
+        "alignX": "center",
+        "alignY": "center",
+        "className": "text-center",
+        "cells": [
+          [
+            [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@friendlyName",
+                "textSize": "sm",
+                "className": "chip-meta mb-0"
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@ability",
+                "textSize": "sm",
+                "className": "chip-meta mb-0"
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "type": "field",
+                "component": "text",
+                "text": "@value",
+                "textSize": "sm",
+                "className": "chip-meta mb-0"
+              }
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "name": "Chip Grid (1 in circles)",
+  "sides": [
+    "front"
+  ]
+}

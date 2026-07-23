@@ -1,0 +1,18 @@
+{
+  "id": "duelist",
+  "name": "Duelist",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Focuses on defeating a single worthy opponent, one on one.",
+  "recipe": {
+    "signatureSlot": "challenge",
+    "requiredSlots": [
+      "counter",
+      "outmaneuver",
+      "finish"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

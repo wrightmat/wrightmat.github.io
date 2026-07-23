@@ -1,5 +1,6 @@
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
+import { resolveToolHref, resolveToolContextPath } from "./app-shell.js";
 
 const MODAL_ID = "undercroft-auth-modal";
 const AUTH_CHANGED_EVENT = "undercroft:auth-changed";
@@ -127,7 +128,12 @@ export function initAuthControls({
   root = document,
   status = null,
   dataManager = null,
-  settingsHref = "admin.html",
+  // Admin used to be nested under Workbench (workbench/admin.html), which
+  // is why every OTHER tool had to hardcode a relative "../workbench/
+  // admin.html" override just to link to it. Now that Admin is its own
+  // tool (undercroft/admin/index.html), resolveToolHref gives every caller
+  // the correct relative path automatically — no per-tool override needed.
+  settingsHref = resolveToolHref("admin", resolveToolContextPath()),
   adminHref = null,
 } = {}) {
   const manager = dataManager || new DataManager({ baseUrl: resolveApiBase() });

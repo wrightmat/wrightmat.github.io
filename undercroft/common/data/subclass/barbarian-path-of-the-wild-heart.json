@@ -1,6 +1,6 @@
 {
   "name": "Path of the Wild Heart",
-  "source": "Player\u2019s Handbook",
+  "source": "Player’s Handbook",
   "description": [
     "Walk in Community with the Animal World",
     "Barbarians who follow the Path of the Wild Heart view themselves as kin to animals. These Barbarians learn magical means to communicate with animals, and their Rage heightens their connection to animals as it fills them with supernatural might."
@@ -40,10 +40,13 @@
       "name": "Level 14: Power of the Wilds",
       "description": [
         "Whenever you activate your Rage, you gain one of the following options of your choice.",
-        "Falcon. While your Rage is active, you have a Fly Speed equal to your Speed if you aren\u2019t wearing any armor.",
+        "Falcon. While your Rage is active, you have a Fly Speed equal to your Speed if you aren’t wearing any armor.",
         "Lion. While your Rage is active, any of your enemies within 5 feet of you have Disadvantage on attack rolls against targets other than you or another Barbarian who has this option active.",
         "Ram. While your Rage is active, you can cause a Large or smaller creature to have the Prone condition when you hit it with a melee attack."
       ]
     }
+  ],
+  "systemIds": [
+    "sys.dnd5e"
   ]
 }

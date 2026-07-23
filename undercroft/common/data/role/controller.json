@@ -1,0 +1,14 @@
+{
+  "id": "controller",
+  "name": "Controller",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Magic-users or monsters with psionic abilities that manipulate the battlefield, impose conditions (like stunned or paralyzed), or alter terrain.",
+  "mechanicalTendencies": {
+    "hpBand": "moderate",
+    "acBand": "moderate",
+    "damageProfile": "low-direct",
+    "actionEconomy": "utility-heavy"
+  }
+}

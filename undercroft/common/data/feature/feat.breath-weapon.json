@@ -1,0 +1,28 @@
+{
+  "id": "feat.breath-weapon",
+  "name": "Breath Weapon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per short rest, the creature can exhale energy in an area, dealing heavy damage to everyone caught in it.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Once per short rest, the creature can exhale energy in an area, dealing heavy damage to everyone caught in it."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage",
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "dragon",
+      "elemental"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -635,52 +635,41 @@ export function buildTemplatePreview(template, data) {
   };
 }
 
-function templateNameFromFile(file) {
-  return file.replace(/^\.\//, "").replace(/\.json$/, "");
+// Templates are now Library-backed data shared with Workbench (a Loom "template"
+// kind, DB-indexed by category so Press only ever loads its own "print" templates,
+// never a Workbench character template). The bucket listing only carries metadata
+// (id/title/category/etc, not the full layout), so each print template still needs
+// its own follow-up fetch for the actual body.
+async function listPrintTemplateEntries(dataManager) {
+  const listing = await dataManager.list("templates", { refresh: true });
+  const entries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
+  return entries.filter((entry) => (entry.category || "character") === "print");
 }
 
-// Prefers server-side directory listing (so templates saved via the /press/templates
-// endpoint are discovered without hand-editing index.json), falling back to the
-// static manifest for non-server hosting. When both are available, the manifest's
-// order is kept for files it already lists (so the default/first template doesn't
-// change), and newly discovered files are appended after it.
-async function listTemplateFiles(manifestUrl) {
-  let discovered = null;
-  try {
-    const response = await fetch("/list/press-templates");
-    if (response.ok) {
-      const payload = await response.json();
-      const names = new Set(
-        (payload.files || [])
-          .map((entry) => entry.filename)
-          .filter((name) => Boolean(name) && name !== "index"),
-      );
-      if (names.size) {
-        discovered = names;
-      }
-    }
-  } catch (error) {
-    // No shared server available — fall back to the static manifest below.
-  }
-
-  const manifest = await loadJson(manifestUrl).catch(() => ({ templates: [] }));
-  const manifestFiles = manifest.templates || [];
-  if (!discovered) {
-    return manifestFiles;
-  }
-
-  const manifestNames = new Set(manifestFiles.map(templateNameFromFile));
-  const ordered = manifestFiles.filter((file) => discovered.has(templateNameFromFile(file)));
-  const extra = [...discovered].filter((name) => !manifestNames.has(name)).sort();
-  return [...ordered, ...extra.map((name) => `./${name}.json`)];
-}
-
-export async function loadTemplates() {
+export async function loadTemplates(dataManager) {
   if (templates.length) return templates;
-  const manifestUrl = new URL("../templates/index.json", import.meta.url);
-  const files = await listTemplateFiles(manifestUrl);
-  const loaded = await Promise.all(files.map((file) => loadJson(new URL(file, manifestUrl))));
-  templates = loaded.map(normalizeTemplate);
+  const entries = await listPrintTemplateEntries(dataManager);
+  const loaded = await Promise.all(
+    entries.map(async (entry) => {
+      try {
+        const { payload } = await dataManager.get("templates", entry.id, { preferLocal: false });
+        // get_item() only ever returns the raw file body — ownership lives on
+        // the list row, not the file — so it's carried over here rather than
+        // lost. Delete-button gating (app.js) needs it to tell "yours" from
+        // "someone else's public template" apart.
+        return {
+          ...payload,
+          ownerId: entry.owner_id ?? entry.ownerId ?? null,
+          ownerUsername: entry.owner_username || entry.ownerUsername || "",
+          permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
+        };
+      } catch (error) {
+        console.warn(`Unable to load template ${entry.id}`, error);
+        return null;
+      }
+    }),
+  );
+  templates = loaded.filter(Boolean).map(normalizeTemplate);
   return templates;
 }
 

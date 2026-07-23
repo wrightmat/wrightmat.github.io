@@ -1,0 +1,8 @@
+{
+  "id": "class",
+  "label": "Class",
+  "plural": "Classes",
+  "icon": "tabler:sword",
+  "readTier": "free",
+  "writeTier": "creator"
+}

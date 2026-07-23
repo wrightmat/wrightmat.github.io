@@ -1,0 +1,25 @@
+{
+  "id": "feat.overpowering-grapple",
+  "name": "Overpowering Grapple",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on checks made to grapple or shove, and a creature it is grappling takes damage at the start of its turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has advantage on checks made to grapple or shove, and a creature it is grappling takes damage at the start of its turn."
+  },
+  "tags": {
+    "behaviors": [
+      "control",
+      "damage"
+    ],
+    "recipeSlots": [
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

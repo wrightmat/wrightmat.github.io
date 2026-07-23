@@ -1,0 +1,24 @@
+{
+  "id": "feat.adaptive-defense",
+  "name": "Adaptive Defense",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has resistance to the first damage type that hits it in each combat.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has resistance to the first damage type that hits it in each combat."
+  },
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

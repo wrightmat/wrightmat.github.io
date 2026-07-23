@@ -1,0 +1,24 @@
+{
+  "id": "feat.slip-away",
+  "name": "Slip Away",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can take the Disengage action and move up to half its speed.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature can take the Disengage action and move up to half its speed."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

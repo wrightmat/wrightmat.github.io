@@ -1,0 +1,24 @@
+{
+  "id": "feat.false-opening",
+  "name": "False Opening",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can feint, gaining advantage on its next attack roll this turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature can feint, gaining advantage on its next attack roll this turn."
+  },
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "mislead"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

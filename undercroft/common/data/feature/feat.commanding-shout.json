@@ -1,0 +1,29 @@
+{
+  "id": "feat.commanding-shout",
+  "name": "Commanding Shout",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature grants all allies within 30 feet advantage on their next attack roll before the start of its next turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature grants all allies within 30 feet advantage on their next attack roll before the start of its next turn."
+  },
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "command",
+      "enhance"
+    ],
+    "roles": [
+      "leader"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [
+    "feat.empowering-aura"
+  ],
+  "conflictsWith": []
+}

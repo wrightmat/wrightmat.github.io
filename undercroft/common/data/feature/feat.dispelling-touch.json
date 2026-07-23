@@ -1,0 +1,29 @@
+{
+  "id": "feat.dispelling-touch",
+  "name": "Dispelling Touch",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack can end one spell effect currently active on the target.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack can end one spell effect currently active on the target."
+  },
+  "tags": {
+    "behaviors": [
+      "utility",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "disrupt"
+    ],
+    "roles": [
+      "controller"
+    ],
+    "creatureTypes": [
+      "fiend"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

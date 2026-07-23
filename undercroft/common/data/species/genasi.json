@@ -1,0 +1,33 @@
+{
+  "kind": "species",
+  "name": "Genasi",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Aquiline",
+      "Bahar",
+      "Basir",
+      "Cira",
+      "Corvi",
+      "Ghaji",
+      "Havilon",
+      "Jaru",
+      "Kai",
+      "Marid",
+      "Rai",
+      "Sabra",
+      "Sable",
+      "Serena",
+      "Sikara",
+      "Tarik",
+      "Vess",
+      "Xanthe",
+      "Zephyr",
+      "Zali"
+    ]
+  }
+}

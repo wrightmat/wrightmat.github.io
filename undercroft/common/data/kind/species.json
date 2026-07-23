@@ -1,0 +1,8 @@
+{
+  "id": "species",
+  "label": "Species",
+  "plural": "Species",
+  "icon": "tabler:paw",
+  "readTier": "free",
+  "writeTier": "creator"
+}

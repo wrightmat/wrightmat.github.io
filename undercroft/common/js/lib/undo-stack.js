@@ -88,6 +88,18 @@ export class UndoRedoStack {
     this._persist();
   }
 
+  // Drops only the entries a predicate matches, leaving the rest of the
+  // stack intact — for a consumer sharing one stack across several
+  // independent editors (tagging each entry with its own `type`, say), so
+  // resetting one editor's history doesn't wipe every other editor's undo
+  // history too.
+  removeWhere(predicate) {
+    if (typeof predicate !== "function") return;
+    this.undo = this.undo.filter((entry) => !predicate(entry));
+    this.redo = this.redo.filter((entry) => !predicate(entry));
+    this._persist();
+  }
+
   _persist() {
     if (!this.storageKey) {
       return;

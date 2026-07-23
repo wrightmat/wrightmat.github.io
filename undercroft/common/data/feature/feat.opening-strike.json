@@ -1,0 +1,25 @@
+{
+  "id": "feat.opening-strike",
+  "name": "Opening Strike",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "On its first turn in combat, the creature can move up to its speed and make one attack as a bonus action.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "On its first turn in combat, the creature can move up to its speed and make one attack as a bonus action."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "damage"
+    ],
+    "recipeSlots": [
+      "engage"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

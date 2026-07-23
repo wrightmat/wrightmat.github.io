@@ -1,0 +1,18 @@
+{
+  "id": "predator",
+  "name": "Predator",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Identifies vulnerable prey and creates opportunities to exploit it.",
+  "recipe": {
+    "signatureSlot": "engage",
+    "requiredSlots": [
+      "isolate",
+      "exploit",
+      "pursue"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

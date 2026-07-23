@@ -1,0 +1,28 @@
+{
+  "id": "feat.villain-action",
+  "name": "Villain Action",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per round on a fixed initiative count, the creature can take a powerful action available to it alone.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Once per round on a fixed initiative count, the creature can take a powerful action available to it alone."
+  },
+  "tags": {
+    "behaviors": [
+      "damage",
+      "utility"
+    ],
+    "recipeSlots": [
+      "escalate",
+      "persist"
+    ],
+    "roles": [
+      "solo"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

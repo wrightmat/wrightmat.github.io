@@ -1,0 +1,30 @@
+{
+  "kind": "location",
+  "systemId": "sys.dnd5e",
+  "settingId": "forgotten-realms",
+  "name": "Sword Coast",
+  "mixingCoefficient": 0.2,
+  "speciesWeights": [
+    { "entityId": "human", "weight": 40 },
+    { "entityId": "elf", "weight": 11 },
+    { "entityId": "half-elf", "weight": 10 },
+    { "entityId": "dwarf", "weight": 10 },
+    { "entityId": "halfling", "weight": 8 },
+    { "entityId": "gnome", "weight": 5 },
+    { "entityId": "half-orc", "weight": 5 },
+    { "entityId": "tiefling", "weight": 4 },
+    { "entityId": "dragonborn", "weight": 3 },
+    { "entityId": "genasi", "weight": 2 },
+    { "entityId": "orc", "weight": 1 },
+    { "entityId": "other", "weight": 1 }
+  ],
+  "archetypeOverrides": {
+    "22": { "name": "City Watch Officer" },
+    "23": { "name": "Zhentarim Agent" }
+  },
+  "genericNameFallback": [
+    "Aris", "Bren", "Coda", "Dair", "Ellin", "Fenwick", "Gara", "Halden",
+    "Ione", "Joran", "Kessa", "Lomm", "Maren", "Nix", "Oro", "Perrin",
+    "Quen", "Riel", "Soren", "Tavi", "Ushka", "Vell", "Wrenna", "Yael"
+  ]
+}

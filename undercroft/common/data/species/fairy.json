@@ -7,7 +7,7 @@
   "icon": "ddb-creature-fey",
   "description": [
     "The Feywild is home to many fantastic peoples, including fairies. Fairies are a wee folk, but not nearly as much so as their pixie and sprite friends. The first fairies spoke Elvish, Goblin, or Sylvan, and encounters with human visitors prompted many of them to learn Common as well.",
-    "Infused with the magic of the Feywild, most fairies look like Small elves with insectile wings, but each fairy has a special physical characteristic that sets the fairy apart. For your fairy, roll on the Fey Characteristics table or choose an option from it. You\u2019re also free to come up with your own characteristic if none of the suggestions below fit your character."
+    "Infused with the magic of the Feywild, most fairies look like Small elves with insectile wings, but each fairy has a special physical characteristic that sets the fairy apart. For your fairy, roll on the Fey Characteristics table or choose an option from it. You’re also free to come up with your own characteristic if none of the suggestions below fit your character."
   ],
   "type": "Fey",
   "size": "Small",
@@ -15,13 +15,16 @@
   "traits": [
     {
       "name": "Fairy Magic",
-      "description": "You know the druidcraft cantrip.\n\nStarting at 3rd level, you can cast the faerie fire spell with this trait. Starting at 5th level, you can also cast the enlarge/reduce spell with this trait. Once you cast faerie fire or enlarge/reduce with this trait, you can\u2019t cast that spell with it again until you finish a long rest. You can also cast either of those spells using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for these spells when you cast them with this trait (choose when you select this race)."
+      "description": "You know the druidcraft cantrip.\n\nStarting at 3rd level, you can cast the faerie fire spell with this trait. Starting at 5th level, you can also cast the enlarge/reduce spell with this trait. Once you cast faerie fire or enlarge/reduce with this trait, you can’t cast that spell with it again until you finish a long rest. You can also cast either of those spells using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for these spells when you cast them with this trait (choose when you select this race)."
     },
     {
       "name": "Flight",
-      "description": "Because of your wings, you have a flying speed equal to your walking speed. You can\u2019t use this flying speed if you\u2019re wearing medium or heavy armor."
+      "description": "Because of your wings, you have a flying speed equal to your walking speed. You can’t use this flying speed if you’re wearing medium or heavy armor."
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T20:16:55.579Z"
+  "updated_at": "2026-07-19T20:16:55.579Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

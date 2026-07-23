@@ -1,0 +1,8 @@
+{
+  "id": "location",
+  "label": "Location",
+  "plural": "Locations",
+  "icon": "tabler:map-pin",
+  "readTier": "free",
+  "writeTier": "creator"
+}

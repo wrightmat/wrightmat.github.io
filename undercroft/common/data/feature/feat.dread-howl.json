@@ -1,0 +1,27 @@
+{
+  "id": "feat.dread-howl",
+  "name": "Dread Howl",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per short rest, the creature can force all creatures within 20 feet to make a fear save.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Once per short rest, the creature can force all creatures within 20 feet to make a fear save."
+  },
+  "tags": {
+    "behaviors": [
+      "fear"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "beast",
+      "fiend"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

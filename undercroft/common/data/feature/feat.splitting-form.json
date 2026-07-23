@@ -1,0 +1,24 @@
+{
+  "id": "feat.splitting-form",
+  "name": "Splitting Form",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per combat, when reduced to half its hit points or fewer, the creature splits into two weaker copies of itself.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Once per combat, when reduced to half its hit points or fewer, the creature splits into two weaker copies of itself."
+  },
+  "tags": {
+    "behaviors": [
+      "swarm-tactics"
+    ],
+    "recipeSlots": [
+      "multiply"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,8 @@
+{
+  "id": "system",
+  "label": "System",
+  "plural": "Systems",
+  "icon": "tabler:settings",
+  "readTier": "free",
+  "writeTier": "creator"
+}

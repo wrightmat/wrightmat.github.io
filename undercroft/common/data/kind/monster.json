@@ -1,0 +1,8 @@
+{
+  "id": "monster",
+  "label": "Monster",
+  "plural": "Monsters",
+  "icon": "tabler:skull",
+  "readTier": "free",
+  "writeTier": "free"
+}

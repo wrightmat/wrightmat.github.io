@@ -1,0 +1,18 @@
+{
+  "id": "trickster",
+  "name": "Trickster",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Wins through deception, confusion, and unpredictability.",
+  "recipe": {
+    "signatureSlot": "mislead",
+    "requiredSlots": [
+      "trick",
+      "reposition",
+      "escape"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

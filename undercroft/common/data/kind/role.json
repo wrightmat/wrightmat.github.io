@@ -1,0 +1,8 @@
+{
+  "id": "role",
+  "label": "Role",
+  "plural": "Roles",
+  "icon": "tabler:sword",
+  "readTier": "free",
+  "writeTier": "creator"
+}

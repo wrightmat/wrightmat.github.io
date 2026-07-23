@@ -1,0 +1,8 @@
+{
+  "id": "variant",
+  "label": "Variant",
+  "plural": "Variants",
+  "icon": "tabler:copy",
+  "readTier": "free",
+  "writeTier": "creator"
+}

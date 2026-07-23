@@ -965,6 +965,11 @@ function createBlankTemplate() {
     title: name,
     name,
     description: "",
+    category: "print",
+    // Not on the server yet — deleteActiveTemplate needs this to refuse a
+    // delete attempt instead of asking the server to delete a row that
+    // doesn't exist. Cleared once saveTemplateChanges actually persists it.
+    origin: "draft",
     type: "sheet",
     formats,
     supportedSources: ["ddb", "srd", "json", "manual"],
@@ -1428,6 +1433,44 @@ function updateSaveState() {
       templateSaveButton.removeAttribute("title");
     }
   }
+  updateTemplateDeleteState();
+}
+
+// Owner-or-admin, same rule used everywhere else templates/characters/systems
+// are deleted from: an admin can delete any template regardless of
+// ownership, a non-admin only their own. A "draft" template (created or
+// duplicated locally, never saved) has no server-side row to delete at all.
+function templateAllowsDelete(template) {
+  if (!template || template.origin === "draft") return false;
+  if (dataManager?.getUserTier() === "admin") return true;
+  if (template.permissions === "edit") return true;
+  const user = dataManager?.session?.user;
+  if (!user || !dataManager.isAuthenticated()) return false;
+  if (template.ownerId !== null && template.ownerId !== undefined && user.id !== undefined && user.id !== null) {
+    if (String(template.ownerId) === String(user.id)) return true;
+  }
+  if (template.ownerUsername && user.username) {
+    return template.ownerUsername.toLowerCase() === user.username.toLowerCase();
+  }
+  return false;
+}
+
+function updateTemplateDeleteState() {
+  if (!templateDeleteButton) return;
+  const template = getActiveTemplate();
+  const allowed = Boolean(template) && templateAllowsDelete(template);
+  templateDeleteButton.classList.toggle("d-none", !allowed);
+  templateDeleteButton.disabled = !allowed;
+  templateDeleteButton.setAttribute("aria-disabled", allowed ? "false" : "true");
+  if (!template) {
+    templateDeleteButton.title = "Select a template before deleting.";
+  } else if (template.origin === "draft") {
+    templateDeleteButton.title = "Save the template before deleting it.";
+  } else if (!allowed) {
+    templateDeleteButton.title = "You don't have permission to delete this template.";
+  } else {
+    templateDeleteButton.removeAttribute("title");
+  }
 }
 
 function markLayoutSaved(snapshot) {
@@ -1488,24 +1531,10 @@ async function saveTemplateToServer(payload) {
   if (!id) {
     throw new Error("Missing template id");
   }
-  const response = await fetch(`/press/templates/${encodeURIComponent(id)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    let message = `Unable to save template (${response.status})`;
-    try {
-      const data = await response.json();
-      if (data?.error) {
-        message = data.error;
-      }
-    } catch (error) {
-      console.warn("Unable to parse save response", error);
-    }
-    throw new Error(message);
+  if (!dataManager) {
+    throw new Error("Not connected");
   }
-  return response.json();
+  return dataManager.save("templates", id, { ...payload, category: payload.category || "print" });
 }
 
 async function handleSaveTemplate() {
@@ -1529,6 +1558,15 @@ async function saveTemplateChanges({ template = getActiveTemplate() } = {}) {
   try {
     await saveTemplateToServer(payload);
     template.pages = payload.pages;
+    // Now genuinely exists server-side — clear the draft guard and attribute
+    // it to whoever just saved it, so deleteActiveTemplate's owner-or-admin
+    // check passes immediately without waiting on a reload.
+    template.origin = "";
+    const sessionUser = dataManager?.session?.user;
+    if (sessionUser) {
+      template.ownerId = sessionUser.id ?? null;
+      template.ownerUsername = sessionUser.username || "";
+    }
     markLayoutSaved(createLayoutSnapshot(template));
     if (status) {
       status.show("Template saved", { type: "success", timeout: 2000 });
@@ -1730,13 +1768,29 @@ function removeTemplateOption(id) {
   }
 }
 
-function deleteActiveTemplate() {
+async function deleteActiveTemplate() {
   const template = getActiveTemplate();
   if (!template) return;
+  if (template.origin === "draft") {
+    status?.show("Save the template before deleting it.", { type: "info", timeout: 2200 });
+    return;
+  }
+  if (!templateAllowsDelete(template)) {
+    status?.show("You don't have permission to delete this template.", { type: "error", timeout: 3000 });
+    return;
+  }
   const confirmed = window.confirm(`Delete ${template.name || template.id}? This action cannot be undone.`);
   if (!confirmed) {
     return;
   }
+  try {
+    await dataManager.delete("templates", template.id, { mode: "remote" });
+  } catch (error) {
+    console.error("Failed to delete template", error);
+    status?.show(error.message || "Unable to delete template", { type: "error", timeout: 3000 });
+    return;
+  }
+  status?.show(`Deleted ${template.name || template.id}`, { type: "success", timeout: 2200 });
   const templates = getTemplates();
   const index = templates.findIndex((entry) => entry.id === template.id);
   if (index >= 0) {
@@ -1786,7 +1840,20 @@ function duplicateActiveTemplate() {
   if (!serialized) return;
   const name = `${serialized.name || serialized.id} Copy`;
   const id = deriveTemplateId(name);
-  const duplicate = createTemplate({ ...serialized, id, title: name, name });
+  // origin/ownerId/ownerUsername/permissions are the original's, not this
+  // unsaved copy's — clearing them keeps deleteActiveTemplate's draft guard
+  // and owner-or-admin check correct for the duplicate rather than
+  // inheriting the source template's server state.
+  const duplicate = createTemplate({
+    ...serialized,
+    id,
+    title: name,
+    name,
+    origin: "draft",
+    ownerId: null,
+    ownerUsername: "",
+    permissions: "",
+  });
   getTemplates().push(duplicate);
   appendTemplateOption(duplicate);
   activeTemplateId = duplicate.id;
@@ -4980,7 +5047,7 @@ async function renderLibrarySourceInput(source, labelRow) {
   LIBRARY_KINDS.forEach((kind) => {
     const option = document.createElement("option");
     option.value = kind;
-    option.textContent = kind.charAt(0).toUpperCase() + kind.slice(1);
+    option.textContent = kind === "npc" ? "NPC" : kind.charAt(0).toUpperCase() + kind.slice(1);
     kindSelect.appendChild(option);
   });
 
@@ -5003,11 +5070,19 @@ async function renderLibrarySourceInput(source, labelRow) {
     itemSelect.innerHTML = "";
     let names = [];
     try {
-      const response = await fetch(`/list/library-${kindSelect.value}`);
-      if (response.ok) {
-        const payload = await response.json();
-        names = (payload.files || []).map((entry) => entry.filename).filter(Boolean).sort();
-      }
+      // Every Library kind is DB-backed now (ownership/is_public — see
+      // server/storage.py's library_items table), served via the same
+      // /list/{kind} route the characters/templates/systems buckets already
+      // used, instead of a hand-declared library-{kind} static mount per
+      // kind (which never covered every kind — setting/location/kind itself
+      // had none). An anonymous fetch here only ever sees public entries,
+      // which is exactly what Press's read-only print-data picker needs.
+      const { remote } = await dataManager.list(kindSelect.value, { refresh: true, includeLocal: false });
+      names = dataManager
+        .collectListEntries(remote, ["owned", "shared", "public"])
+        .map((entry) => entry.id)
+        .filter(Boolean)
+        .sort();
     } catch (error) {
       // Leave names empty — the "All (0)" option below makes the empty
       // result visible rather than silently offering nothing.
@@ -5079,7 +5154,7 @@ async function handleGeneratePrint() {
   }
   updateGenerateButtonState();
   try {
-    const data = await loadSourceData(source, sourceValue);
+    const data = await loadSourceData(source, sourceValue, dataManager);
     setSourcePayload(source, {
       value: sourceValue,
       data,
@@ -7015,12 +7090,12 @@ function initPatternModal() {
 async function initPress() {
   initShell();
   dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.press" });
-  initAuthControls({ root: document, status, dataManager, settingsHref: "../workbench/admin.html" });
+  initAuthControls({ root: document, status, dataManager });
   initPressCollapsibles();
   removeDuplicateSampleDataSections();
   await initSampleDataEditor();
   try {
-    await loadTemplates();
+    await loadTemplates(dataManager);
   } catch (error) {
     console.error("Unable to load templates", error);
     // Previously silent beyond the console — the whole app is unusable

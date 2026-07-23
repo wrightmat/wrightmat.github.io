@@ -1,0 +1,25 @@
+{
+  "id": "feat.overrun",
+  "name": "Overrun",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on attacks against a target that has two or more of the creature's allies adjacent to it.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has advantage on attacks against a target that has two or more of the creature's allies adjacent to it."
+  },
+  "tags": {
+    "behaviors": [
+      "swarm-tactics",
+      "damage"
+    ],
+    "recipeSlots": [
+      "surround"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

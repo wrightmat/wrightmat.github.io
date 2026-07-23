@@ -7,7 +7,7 @@
   "icon": "ddb-creature-humanoid",
   "description": [
     "Found throughout the multiverse, humans are as varied as they are numerous, and they endeavor to achieve as much as they can in the years they are given. Their ambition and resourcefulness are commended, respected, and feared on many worlds.",
-    "Humans are as diverse in appearance as the people of Earth, and they have many gods. Scholars dispute the origin of humanity, but one of the earliest known human gatherings is said to have occurred in Sigil, the torus-shaped city at the center of the multiverse and the place where the Common language was born. From there, humans could have spread to every part of the multiverse, bringing the City of Doors\u2019 cosmopolitanism with them."
+    "Humans are as diverse in appearance as the people of Earth, and they have many gods. Scholars dispute the origin of humanity, but one of the earliest known human gatherings is said to have occurred in Sigil, the torus-shaped city at the center of the multiverse and the place where the Common language was born. From there, humans could have spread to every part of the multiverse, bringing the City of Doors’ cosmopolitanism with them."
   ],
   "type": "Humanoid",
   "size": "Medium or Small",
@@ -27,5 +27,60 @@
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-17T22:51:20.794Z"
+  "updated_at": "2026-07-17T22:51:20.794Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Aldric",
+      "Branwen",
+      "Cedric",
+      "Dara",
+      "Edmund",
+      "Fiora",
+      "Garrick",
+      "Helena",
+      "Ivo",
+      "Joslyn",
+      "Kaelan",
+      "Lior",
+      "Marcus",
+      "Nadia",
+      "Osric",
+      "Petra",
+      "Quinlan",
+      "Rosalind",
+      "Stefan",
+      "Talia",
+      "Ulric",
+      "Vera",
+      "Willem",
+      "Ysolde"
+    ],
+    "lastNames": [
+      "Ashford",
+      "Blackwood",
+      "Carver",
+      "Dunmore",
+      "Everhart",
+      "Fairweather",
+      "Grayson",
+      "Hartley",
+      "Ironside",
+      "Kestrel",
+      "Lockwood",
+      "Marsh",
+      "Norwick",
+      "Osgood",
+      "Pemberton",
+      "Ravenscroft",
+      "Stonebridge",
+      "Thorne",
+      "Wexford",
+      "Yarrow"
+    ]
+  }
 }

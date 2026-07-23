@@ -1,0 +1,29 @@
+{
+  "id": "feat.armor-plating",
+  "name": "Armor Plating",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature's AC increases by 2 and it is immune to critical hits.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature's AC increases by 2 and it is immune to critical hits."
+  },
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "defend",
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "construct"
+    ]
+  },
+  "synergizesWith": [
+    "feat.brutal-slam"
+  ],
+  "conflictsWith": []
+}

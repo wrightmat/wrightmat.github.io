@@ -1,0 +1,24 @@
+{
+  "id": "feat.challenge-to-duel",
+  "name": "Challenge to Duel",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per short rest, the creature can force one creature it can see to have disadvantage on attacks against anyone but the monster until the end of the monster's next turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Once per short rest, the creature can force one creature it can see to have disadvantage on attacks against anyone but the monster until the end of the monster's next turn."
+  },
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "challenge"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

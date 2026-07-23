@@ -1,0 +1,24 @@
+{
+  "id": "feat.unyielding",
+  "name": "Unyielding",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has resistance to one damage type of its choice, chosen at the start of combat.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has resistance to one damage type of its choice, chosen at the start of combat."
+  },
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "endure"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
