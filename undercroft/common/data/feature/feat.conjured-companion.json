@@ -1,0 +1,18 @@
+{
+  "id": "feat.conjured-companion",
+  "name": "Conjured Companion",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A spectral ally is called forth to fight alongside the wielder for a time.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, summons a spectral companion that fights on the wielder's behalf until the effect ends."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["summon"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

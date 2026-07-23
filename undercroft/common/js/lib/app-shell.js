@@ -15,7 +15,7 @@ const TOOL_DEFINITIONS = [
     id: "workbench",
     label: "Workbench",
     icon: "tabler:layout-dashboard",
-    summary: "Character Sheet, Template, and System Editor.",
+    summary: "Character sheet, template, and system editor.",
     built: true,
   },
   {
@@ -43,36 +43,36 @@ const TOOL_DEFINITIONS = [
     id: "forge",
     label: "Forge",
     icon: "tabler:hammer",
-    summary: "Rolls NPCs with Identity and 4D traits.",
+    summary: "NPC generator.",
     built: true,
   },
   {
     id: "admin",
     label: "Admin",
     icon: "tabler:shield-cog",
-    summary: "Account tiers, ownership, sharing, and groups.",
+    summary: "Account and content management.",
     built: true,
   },
   {
     id: "crucible",
     label: "Crucible",
     icon: "tabler:flask",
-    summary: "Generates monster concepts from Creature Type, Archetype, and Role.",
+    summary: "Monster and adversary creator.",
     built: true,
   },
   {
     id: "vault",
     label: "Vault",
     icon: "tabler:lock",
-    summary: "Item and spell creator (not yet built).",
-    built: false,
+    summary: "Spell and magic item generator.",
+    built: true,
   },
   {
     id: "sanctum",
     label: "Sanctum",
     icon: "tabler:building-castle",
-    summary: "Dungeon and location creator (not yet built).",
-    built: false,
+    summary: "Location and dungeon generator.",
+    built: true,
   },
 ];
 
@@ -94,7 +94,7 @@ export function resolveToolContextPath() {
 // Workbench/Press/Loom/Forge, so it follows this exact same rule instead of
 // needing a special case.
 export function resolveToolHref(toolId, currentSection) {
-  const builtToolIds = ["workbench", "press", "orrery", "loom", "forge", "admin", "crucible"];
+  const builtToolIds = ["workbench", "press", "orrery", "loom", "forge", "admin", "crucible", "vault", "sanctum"];
   if (!builtToolIds.includes(toolId)) {
     return "#";
   }
@@ -159,12 +159,21 @@ function initToolNavigation(root = document) {
     return;
   }
   const currentSection = resolveToolContextPath();
+  // Admin is reachable only from the user-info pane's "Admin controls" link
+  // (auth-ui.js, via this same resolveToolHref) — it's deliberately excluded
+  // from the tool switcher grid entirely, even when Admin is the active
+  // page. activeDefinition is still looked up against the full, unfiltered
+  // TOOL_DEFINITIONS above, so the trigger button in the header keeps
+  // showing "Admin" correctly; only the switchable grid omits it.
+  const navigableDefinitions = TOOL_DEFINITIONS.filter((tool) => tool.id !== "admin");
   // Current tool leads the grid (top-left), then the other built tools in
   // their definition order — with 4 built tools total this fills the 2x2
   // grid exactly, no blank cell.
-  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false);
-  const orderedBuilt = [activeDefinition, ...builtTools.filter((tool) => tool.id !== activeTool)];
-  const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
+  const builtTools = navigableDefinitions.filter((tool) => tool.built !== false);
+  const orderedBuilt = navigableDefinitions.some((tool) => tool.id === activeTool)
+    ? [activeDefinition, ...builtTools.filter((tool) => tool.id !== activeTool)]
+    : builtTools;
+  const unbuiltOthers = navigableDefinitions.filter((tool) => tool.built === false);
 
   primaryNav.innerHTML = "";
 

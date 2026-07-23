@@ -1,0 +1,18 @@
+{
+  "id": "feat.mending-pulse",
+  "name": "Mending Pulse",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A wave of restorative energy closes wounds and steadies the body.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, restores a moderate amount of lost hit points to one creature touched or within short range."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["healing"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

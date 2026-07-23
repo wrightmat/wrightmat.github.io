@@ -1,0 +1,18 @@
+{
+  "id": "feat.called-shot",
+  "name": "Called Shot",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Once a weakness is exposed, the wielder can strike it precisely for greater effect.",
+  "mechanics": {
+    "type": "active",
+    "text": "Against a target whose weaknesses have been revealed, this effect deals additional damage or applies an extra condition."
+  },
+  "budgetCost": 3,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["damage", "precision"]
+  },
+  "synergizesWith": ["feat.arcane-sight"],
+  "dependsOn": ["feat.arcane-sight"],
+  "conflictsWith": []
+}

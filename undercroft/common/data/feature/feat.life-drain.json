@@ -18,7 +18,10 @@
       "drain"
     ],
     "roles": [],
-    "creatureTypes": []
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
   },
   "synergizesWith": [],
   "conflictsWith": []

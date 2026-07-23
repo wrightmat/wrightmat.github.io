@@ -1,0 +1,8 @@
+{
+  "id": "location-purpose",
+  "label": "Location Purpose",
+  "plural": "Location Purposes",
+  "icon": "tabler:target-arrow",
+  "readTier": "free",
+  "writeTier": "creator"
+}

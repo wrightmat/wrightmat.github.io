@@ -21,6 +21,9 @@
     "creatureTypes": [
       "dragon",
       "elemental"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

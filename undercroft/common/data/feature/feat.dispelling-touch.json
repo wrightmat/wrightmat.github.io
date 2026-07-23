@@ -22,6 +22,9 @@
     ],
     "creatureTypes": [
       "fiend"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

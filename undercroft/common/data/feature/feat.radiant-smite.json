@@ -20,6 +20,9 @@
     "roles": [],
     "creatureTypes": [
       "celestial"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

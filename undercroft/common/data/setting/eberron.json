@@ -1,7 +1,6 @@
 {
   "kind": "setting",
-  "systemId": "sys.dnd5e",
+  "systemIds": ["sys.dnd5e"],
   "name": "Eberron",
-  "description": "",
-  "updated_at": "2026-07-21T20:29:18.160Z"
+  "description": "Eberron is a Dungeons & Dragons campaign setting created by Keith Baker that blends traditional fantasy with pulp-noir, industrial magic, and political intrigue. Set on the war-torn continent of Khorvaire, it features magitek like elemental-powered airships and lightning trains, and explores a world recovering from a devastating century-long conflict."
 }

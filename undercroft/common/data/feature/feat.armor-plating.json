@@ -20,6 +20,9 @@
     "roles": [],
     "creatureTypes": [
       "construct"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [

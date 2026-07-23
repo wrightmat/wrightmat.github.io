@@ -1,0 +1,19 @@
+{
+  "id": "feat.black-market",
+  "name": "Black Market",
+  "systemIds": ["sys.dnd5e"],
+  "description": "An illicit trade network operates here, openly or otherwise, dealing in goods no legitimate merchant would touch.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Illegal or restricted goods and services can be found here by those who know where to look."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "complex"],
+    "locationPurposes": ["commerce"],
+    "environments": ["urban"]
+  },
+  "synergizesWith": ["feat.smugglers-tunnels"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

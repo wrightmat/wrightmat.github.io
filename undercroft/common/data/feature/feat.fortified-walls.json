@@ -1,0 +1,19 @@
+{
+  "id": "feat.fortified-walls",
+  "name": "Fortified Walls",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Thick walls, gatehouses, and watch-points ring this place, built to withstand a real assault.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Attackers besieging this location face significant fortifications: high walls, murder holes, and defensible gates."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "structure"],
+    "locationPurposes": ["protection"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.under-siege"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,11 @@
+{
+  "id": "res.timber",
+  "name": "Timber",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Good milling wood, felled and stacked — construction material and fuel alike.",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["resource", "industry"],
+    "environments": ["forest"]
+  }
+}

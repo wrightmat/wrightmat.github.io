@@ -24,6 +24,7 @@ const elements = {
   ownedSummary: document.querySelector("[data-admin-owned-summary]"),
   ownedUserSelect: document.querySelector("[data-admin-owned-user]"),
   ownedFilter: document.querySelector("[data-admin-owned-filter]"),
+  ownedTypeSelect: document.querySelector("[data-admin-owned-type]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
   groupsPanel: document.querySelector("[data-admin-tab-panel='groups']"),
   groupsMessage: document.querySelector("[data-admin-groups-message]"),
@@ -75,8 +76,8 @@ const OWNED_TYPE_LABELS = {
 };
 
 const OWNER_ROLE_REQUIREMENTS = {
-  character: ["player", "gm", "master", "creator", "admin"],
-  template: ["gm", "master", "creator", "admin"],
+  character: ["player", "gm", "creator", "admin"],
+  template: ["gm", "creator", "admin"],
   system: ["creator", "admin"],
 };
 
@@ -84,9 +85,8 @@ const ROLE_RANKS = {
   free: 0,
   player: 1,
   gm: 2,
-  master: 3,
-  creator: 4,
-  admin: 5,
+  creator: 3,
+  admin: 4,
 };
 
 const TAB_SETTINGS = "settings";
@@ -107,6 +107,7 @@ const viewState = {
     owner: null,
     items: [],
     selectedUsername: "",
+    selectedType: "",
     loading: false,
     stale: true,
     sort: { key: "last_accessed_at", direction: "desc" },
@@ -566,6 +567,36 @@ function populateOwnedUserFilter() {
   select.replaceChildren(fragment);
   select.value = selected;
   viewState.owned.selectedUsername = selected;
+}
+
+// Options come from whichever kinds are actually present in the current
+// owned-content result set (not a hardcoded kind list) — the suite's set of
+// Library kinds is open-ended and keeps growing, and there's no point
+// offering a filter option that would just show an empty table.
+function populateOwnedTypeFilter() {
+  const select = elements.ownedTypeSelect;
+  if (!select) {
+    return;
+  }
+  const previous = viewState.owned.selectedType;
+  const buckets = Array.from(new Set(viewState.owned.items.map((item) => item.bucket).filter(Boolean))).sort((a, b) =>
+    (OWNED_TYPE_LABELS[a] || a).localeCompare(OWNED_TYPE_LABELS[b] || b)
+  );
+  const fragment = document.createDocumentFragment();
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = "All types";
+  fragment.appendChild(allOption);
+  buckets.forEach((bucket) => {
+    const option = document.createElement("option");
+    option.value = bucket;
+    option.textContent = OWNED_TYPE_LABELS[bucket] || bucket;
+    fragment.appendChild(option);
+  });
+  select.replaceChildren(fragment);
+  const stillValid = previous && buckets.includes(previous);
+  select.value = stillValid ? previous : "";
+  viewState.owned.selectedType = stillValid ? previous : "";
 }
 
 function setOwnedLoading(message = "Loading content…") {
@@ -1219,13 +1250,19 @@ function setOwnedSort(key) {
   renderOwnedItems(viewState.owned.items, viewState.owned.owner);
 }
 
-function renderOwnedItems(items, owner) {
+function renderOwnedItems(rawItems, owner) {
   if (!elements.ownedBody) {
     return;
   }
+  const selectedType = viewState.owned.selectedType;
+  const items = selectedType ? (rawItems || []).filter((item) => item.bucket === selectedType) : rawItems;
   if (!Array.isArray(items) || !items.length) {
     const viewingEveryone = viewState.owned.selectedUsername === "__all__";
-    const message = viewingEveryone ? "No content available." : "No saved content yet.";
+    const message = viewingEveryone
+      ? "No content available."
+      : selectedType
+        ? "No saved content of this type yet."
+        : "No saved content yet.";
     showOwnedEmpty(message);
     updateOwnedSummary(owner, 0);
     updateOwnedSortIndicators();
@@ -1875,6 +1912,7 @@ async function loadOwnedContent({ refresh = false } = {}) {
     viewState.owned.owner = owner;
     viewState.owned.items = items;
     viewState.owned.stale = false;
+    populateOwnedTypeFilter();
     renderOwnedItems(items, owner);
     void loadGroups({ refresh: shouldRefresh });
   } catch (error) {
@@ -2197,6 +2235,13 @@ if (elements.ownedUserSelect) {
     viewState.owned.selectedUsername = elements.ownedUserSelect.value || "";
     viewState.owned.stale = true;
     loadOwnedContent({ refresh: true });
+  });
+}
+
+if (elements.ownedTypeSelect) {
+  elements.ownedTypeSelect.addEventListener("change", () => {
+    viewState.owned.selectedType = elements.ownedTypeSelect.value || "";
+    renderOwnedItems(viewState.owned.items, viewState.owned.owner);
   });
 }
 

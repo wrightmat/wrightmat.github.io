@@ -1,0 +1,18 @@
+{
+  "id": "feat.exposed-casting",
+  "name": "Exposed Casting",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Channeling the effect leaves the wielder open to attack.",
+  "mechanics": {
+    "type": "drawback",
+    "text": "While activating this effect, the wielder grants advantage to attacks made against them until the start of their next turn."
+  },
+  "budgetCost": -2,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["drawback"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

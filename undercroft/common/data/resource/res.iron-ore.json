@@ -1,0 +1,11 @@
+{
+  "id": "res.iron-ore",
+  "name": "Iron Ore",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Raw ore ready for smelting — the backbone of any serious smithing operation.",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["resource", "industry"],
+    "environments": ["mountain", "hill", "underdark"]
+  }
+}

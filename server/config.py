@@ -16,7 +16,7 @@ class MountConfig:
     table: Optional[str] = None
     default_visibility: str = "private"
     read_roles: List[str] = field(default_factory=lambda: ["free"])
-    write_roles: List[str] = field(default_factory=lambda: ["master"])
+    write_roles: List[str] = field(default_factory=lambda: ["gm"])
     directory_listing: bool = False
     directory_extensions: List[str] = field(default_factory=list)
 
@@ -142,7 +142,7 @@ class ConfigLoader:
                 table=mount.get("table"),
                 default_visibility=mount.get("default_visibility", "private"),
                 read_roles=list(mount.get("read_roles", ["free"])),
-                write_roles=list(mount.get("write_roles", ["master"])),
+                write_roles=list(mount.get("write_roles", ["gm"])),
                 directory_listing=bool(mount.get("directory_listing", False)),
                 directory_extensions=list(mount.get("directory_extensions", [])),
             )

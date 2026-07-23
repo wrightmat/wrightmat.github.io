@@ -60,7 +60,7 @@ class ServerSmokeTests(unittest.TestCase):
                     "root": str(cls._content_root / "templates"),
                     "table": "templates",
                     "read_roles": ["free"],
-                    "write_roles": ["gm", "master", "creator", "admin"],
+                    "write_roles": ["gm", "creator", "admin"],
                 },
                 {
                     "name": "systems",

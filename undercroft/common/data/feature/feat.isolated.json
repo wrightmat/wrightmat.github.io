@@ -1,0 +1,19 @@
+{
+  "id": "feat.isolated",
+  "name": "Isolated",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Far from any well-traveled road, this place sees few visitors and relies almost entirely on itself.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Outside news, goods, and help are slow to arrive here, if they arrive at all."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "region"],
+    "locationPurposes": ["habitation", "exploration"],
+    "environments": []
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": ["feat.bustling-market"]
+}

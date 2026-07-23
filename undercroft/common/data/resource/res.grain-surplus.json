@@ -1,0 +1,12 @@
+{
+  "id": "res.grain-surplus",
+  "name": "Grain Surplus",
+  "systemIds": ["sys.dnd5e"],
+  "description": "More harvest than the local population can use — a lever for trade or a target for raiders.",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["habitation", "commerce"],
+    "environments": ["grassland"]
+  },
+  "conflictsWith": ["feat.corrupted", "feat.polluted-waters", "feat.under-siege"]
+}

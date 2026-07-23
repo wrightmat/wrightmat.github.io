@@ -19,6 +19,9 @@
     "roles": [],
     "creatureTypes": [
       "undead"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [

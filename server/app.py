@@ -626,6 +626,224 @@ def register_routes():
 
     router.add("POST", r"^/crucible/generate-note$", handle_crucible_generate_note)
 
+    # POST /vault/generate-note
+    #
+    # Same optional LLM synthesis step as Crucible's monster note, applied to
+    # a generated spell/item effect instead — Vault's own structured output
+    # (properties + selected features) stands on its own with no LLM
+    # involvement; this just turns it into a short flavor note for a GM who
+    # wants one. Reuses resolve_anthropic_api_key above.
+    VAULT_NOTE_SYSTEM_PROMPT = (
+        "You suggest a name (when one isn't already given) and write a single, "
+        "tightly-formatted magic effect note for a tabletop RPG GM.\n"
+        "Respond with EXACTLY two lines and nothing else — no preamble, no markdown, "
+        "no extra commentary:\n\n"
+        "Line 1: just the effect's name, nothing else. If a Name is already given "
+        "below, repeat it verbatim. If Name is blank, invent one that fits the given "
+        "Properties and Signature Effect.\n"
+        "Line 2: Name (comma-separated Properties). [2-3 sentences describing what "
+        "this effect does and how it feels to use, weaving in its Signature Effect "
+        "and its other features into a vivid but concise flavor note.]\n\n"
+        "Use the exact Properties and Signature Effect values given verbatim, and "
+        "use the same name on both lines. Do not invent new features or mechanics, do "
+        "not restate these instructions, and do not add anything before, between, or "
+        "after these two lines."
+    )
+
+    def handle_vault_generate_note(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        api_key = resolve_anthropic_api_key(request.state)
+        if not api_key:
+            return json_response(
+                {
+                    "error": (
+                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
+                        "server/anthropic.local.json and fill in api_key."
+                    )
+                },
+                status=HTTPStatus.BAD_REQUEST,
+            )
+        payload = require_json(request)
+        effect = payload.get("effect") or {}
+        # Name is optional now — Vault's Name field is blank by default, and
+        # this endpoint is the one place that can fill it in, so an empty name
+        # is a normal request, not an error: the prompt asks Claude to invent
+        # one fitting the Properties/Signature Effect when it's blank.
+        name = str(effect.get("name") or "").strip()
+        properties = effect.get("properties") or {}
+        property_lines = ", ".join(f"{label}: {value}" for label, value in properties.items() if value)
+        features = effect.get("features") or []
+        feature_lines = "\n".join(
+            f"- {feature.get('name', '')}: {feature.get('description', '')}"
+            for feature in features
+            if isinstance(feature, dict)
+        )
+        user_content = (
+            f"Name: {name}\n"
+            f"Properties: {property_lines}\n"
+            f"Signature Effect: {effect.get('signatureFeature', '')}\n"
+            f"Features:\n{feature_lines}\n"
+        )
+        request_body = json.dumps(
+            {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 300,
+                "system": VAULT_NOTE_SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_content}],
+            }
+        ).encode("utf-8")
+        proxy_request = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=request_body,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
+                response_body = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+        except urllib.error.URLError as exc:
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.reason})"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+
+        content_blocks = response_body.get("content") or []
+        raw_text = "".join(
+            block.get("text", "") for block in content_blocks if isinstance(block, dict)
+        ).strip()
+        if not raw_text:
+            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
+        # First line is the (possibly Claude-suggested) name; everything after
+        # is the flavor note. Falls back to the original name/full text if the
+        # model doesn't follow the two-line format exactly.
+        first_line, _, rest = raw_text.partition("\n")
+        suggested_name = first_line.strip() or name
+        note = rest.strip() or raw_text
+        return json_response({"name": suggested_name, "note": note})
+
+    router.add("POST", r"^/vault/generate-note$", handle_vault_generate_note)
+
+    # POST /sanctum/generate-note
+    #
+    # Same optional LLM synthesis step as Crucible's/Vault's notes, applied to a
+    # generated Location instead — Sanctum's own structured output (Type/Purpose/
+    # Environment/Features/Assets/Needs) stands on its own with no LLM involvement;
+    # this just turns it into a short flavor note for a GM who wants one. Reuses
+    # resolve_anthropic_api_key above.
+    SANCTUM_NOTE_SYSTEM_PROMPT = (
+        "You suggest a name (when one isn't already given) and write a single, "
+        "tightly-formatted location note for a tabletop RPG GM.\n"
+        "Respond with EXACTLY two lines and nothing else — no preamble, no markdown, "
+        "no extra commentary:\n\n"
+        "Line 1: just the location's name, nothing else. If a Name is already given "
+        "below, repeat it verbatim. If Name is blank, invent one that fits the given "
+        "Type, Purpose, and Environment.\n"
+        "Line 2: Name (Type, Purpose, Environment). [2-3 sentences describing what "
+        "this place is like and why it matters, weaving in its Features and any "
+        "notable Assets/Needs into a vivid but concise sketch.]\n\n"
+        "Use the exact Type, Purpose, and Environment values given verbatim, and use "
+        "the same name on both lines. Do not invent new features or mechanics, do "
+        "not restate these instructions, and do not add anything before, between, or "
+        "after these two lines."
+    )
+
+    def handle_sanctum_generate_note(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        api_key = resolve_anthropic_api_key(request.state)
+        if not api_key:
+            return json_response(
+                {
+                    "error": (
+                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
+                        "server/anthropic.local.json and fill in api_key."
+                    )
+                },
+                status=HTTPStatus.BAD_REQUEST,
+            )
+        payload = require_json(request)
+        location = payload.get("location") or {}
+        # Name is optional now — Sanctum's Name field is blank by default, and this
+        # endpoint is the one place that can fill it in, so an empty name is a
+        # normal request, not an error: the prompt asks Claude to invent one fitting
+        # the Type/Purpose/Environment when it's blank.
+        name = str(location.get("name") or "").strip()
+        features = location.get("features") or []
+        feature_lines = "\n".join(
+            f"- {feature.get('name', '')}: {feature.get('description', '')}"
+            for feature in features
+            if isinstance(feature, dict)
+        )
+        assets = location.get("assets") or []
+        needs = location.get("needs") or []
+        user_content = (
+            f"Name: {name}\n"
+            f"Type: {location.get('typeLabel', '')}\n"
+            f"Purpose: {location.get('purposeLabel', '')}\n"
+            f"Environment: {location.get('environmentLabel', '')}\n"
+            f"Features:\n{feature_lines}\n"
+            f"Assets: {', '.join(str(a) for a in assets)}\n"
+            f"Needs: {', '.join(str(n) for n in needs)}\n"
+        )
+        request_body = json.dumps(
+            {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 300,
+                "system": SANCTUM_NOTE_SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_content}],
+            }
+        ).encode("utf-8")
+        proxy_request = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=request_body,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
+                response_body = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+        except urllib.error.URLError as exc:
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.reason})"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+
+        content_blocks = response_body.get("content") or []
+        raw_text = "".join(
+            block.get("text", "") for block in content_blocks if isinstance(block, dict)
+        ).strip()
+        if not raw_text:
+            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
+        first_line, _, rest = raw_text.partition("\n")
+        suggested_name = first_line.strip() or name
+        note = rest.strip() or raw_text
+        return json_response({"name": suggested_name, "note": note})
+
+    router.add("POST", r"^/sanctum/generate-note$", handle_sanctum_generate_note)
+
     # /library/{kind}/... (POST save/delete, GET list) is retired — every
     # Library kind (including the 9 that used to be plain, unauthenticated
     # flat files under this route) is now served by the same DB-backed
@@ -636,15 +854,18 @@ def register_routes():
 
     # GET /ddb-proxy?url=...
     #
-    # Fetches a dndbeyond.com page server-side and attaches a session cookie
-    # read from a LOCAL, gitignored file (server/ddb-session.local.json) —
-    # never from the request, never from a third party. This exists because
-    # some D&D Beyond content (e.g. non-free subclasses) is only served in
-    # full to a logged-in session; routing that session cookie through a
-    # public third-party CORS proxy would hand full account access to that
-    # proxy, which this deliberately avoids by keeping the cookie server-side
-    # and talking directly to dndbeyond.com.
-    DDB_PROXY_ALLOWED_HOSTS = {"www.dndbeyond.com", "dndbeyond.com"}
+    # Fetches a dndbeyond.com (or monster-service.dndbeyond.com) resource
+    # server-side and attaches a session cookie read from a LOCAL, gitignored
+    # file (server/ddb-session.local.json) — never from the request, never
+    # from a third party. This exists because some D&D Beyond content (e.g.
+    # non-free subclasses, or non-SRD monsters via monster-service) is only
+    # served in full to a logged-in session; routing that session cookie
+    # through a public third-party CORS proxy would hand full account access
+    # to that proxy, which this deliberately avoids by keeping the cookie
+    # server-side and talking directly to dndbeyond.com. Response body is
+    # passed through byte-for-byte regardless of host — works for both
+    # scraped HTML pages and monster-service's JSON.
+    DDB_PROXY_ALLOWED_HOSTS = {"www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com"}
 
     def load_ddb_session_cookie(state: ServerState) -> str:
         path = state.root_dir / "server" / "ddb-session.local.json"
@@ -690,12 +911,13 @@ def register_routes():
         try:
             with urllib.request.urlopen(proxy_request, timeout=15) as upstream:
                 body = upstream.read()
+                content_type = upstream.headers.get_content_type() or "text/html"
         except urllib.error.HTTPError as exc:
             return json_response({"error": f"D&D Beyond fetch failed ({exc.code})"}, status=HTTPStatus.BAD_GATEWAY)
         except urllib.error.URLError as exc:
             return json_response({"error": f"D&D Beyond fetch failed ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
 
-        return Response(status=200, body=body, headers={"Content-Type": "text/html; charset=utf-8"})
+        return Response(status=200, body=body, headers={"Content-Type": f"{content_type}; charset=utf-8"})
 
     router.add("GET", r"^/ddb-proxy$", handle_ddb_proxy)
 

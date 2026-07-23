@@ -312,7 +312,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     templateProperties: document.querySelector("[data-template-properties]"),
     templatePropertiesCollapse: document.getElementById("template-properties-collapse"),
     componentPropertiesCollapse: document.getElementById("component-properties-collapse"),
-    templateDeleteButton: null,
   });
 
   const insertComponentAtCanvasRoot = createRootInsertionHandler({
@@ -1719,7 +1718,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (elements.saveButton) {
       const canWrite = dataManager.hasWriteAccess("templates");
       const metadata = getTemplateMetadata(state.template?.id);
-      const canEditRecord = templateAllowsEdits(metadata);
+      // Same admin bypass resolveDeleteTemplateState already applies to the
+      // toolbar Delete button — an admin can edit/save any template
+      // regardless of ownership, not just delete it.
+      const canEditRecord = dataManager.getUserTier() === "admin" || templateAllowsEdits(metadata);
       const hasChanges = hasTemplate && hasUnsavedTemplateChanges();
       const enabled = hasTemplate && hasChanges && canWrite && canEditRecord;
       elements.saveButton.disabled = !enabled;
@@ -1764,9 +1766,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
 
     if (elements.deleteTemplateButton) {
       applyDeleteTemplateButtonState(elements.deleteTemplateButton);
-    }
-    if (elements.templateDeleteButton) {
-      applyDeleteTemplateButtonState(elements.templateDeleteButton);
     }
   }
 
@@ -3813,7 +3812,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     }
     const focusSnapshot = captureTemplatePropertiesFocus();
     elements.templateProperties.innerHTML = "";
-    elements.templateDeleteButton = null;
     if (!state.template) {
       const placeholder = document.createElement("p");
       placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
@@ -3823,7 +3821,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     }
 
     const metadata = getTemplateMetadata(state.template.id);
-    const canEdit = templateAllowsEdits(metadata);
+    // Same admin bypass resolveDeleteTemplateState already applies to the
+    // toolbar Delete button — an admin can edit any template regardless of
+    // ownership, not just delete it.
+    const canEdit = dataManager.getUserTier() === "admin" || templateAllowsEdits(metadata);
     const form = document.createElement("form");
     form.className = "d-flex flex-column gap-3";
     form.addEventListener("submit", (event) => event.preventDefault());
@@ -3916,18 +3917,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
     form.appendChild(createTemplateField({ labelText: "System", control: systemSelect, id: "template-system" }));
 
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.className = "btn btn-outline-danger w-100";
-    deleteButton.textContent = "Delete Template";
-    deleteButton.addEventListener("click", () => {
-      handleDeleteTemplateRequest();
-    });
-    applyDeleteTemplateButtonState(deleteButton);
-
     elements.templateProperties.appendChild(form);
-    elements.templateProperties.appendChild(deleteButton);
-    elements.templateDeleteButton = deleteButton;
     restoreTemplatePropertiesFocus(focusSnapshot);
   }
 

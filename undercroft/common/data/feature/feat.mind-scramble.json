@@ -21,6 +21,9 @@
     "roles": [],
     "creatureTypes": [
       "aberration"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

@@ -1,0 +1,12 @@
+{
+  "id": "res.skilled-labor",
+  "name": "Skilled Labor",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Trained hands — artisans, engineers, and specialists willing to work for the right price.",
+  "tags": {
+    "locationTypes": ["settlement"],
+    "locationPurposes": ["industry", "commerce", "governance"],
+    "environments": ["urban"]
+  },
+  "conflictsWith": ["feat.isolated"]
+}

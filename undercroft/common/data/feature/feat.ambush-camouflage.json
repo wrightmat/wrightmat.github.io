@@ -17,7 +17,10 @@
       "hide"
     ],
     "roles": [],
-    "creatureTypes": []
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
   },
   "synergizesWith": [],
   "conflictsWith": []

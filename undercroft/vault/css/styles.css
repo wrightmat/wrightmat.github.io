@@ -1,0 +1,29 @@
+/*
+ * Vault-specific styles. Kept minimal — the generator UI is built almost
+ * entirely from Bootstrap utilities; these are the handful of things
+ * Bootstrap can't express directly.
+ */
+
+[data-effect-json-preview],
+[data-inspector-json] {
+  min-height: 6rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Feature rows are selectable (click one to inspect its full detail in the
+   right pane) — the same select-then-inspect convention Crucible/Forge use. */
+[data-feature-row] {
+  cursor: pointer;
+}
+
+[data-feature-row].vault-feature-selected {
+  border-color: var(--bs-primary) !important;
+  background-color: var(--bs-tertiary-bg);
+}
+
+/* Going over budget is allowed (creative freedom) but should read as a
+   clear warning rather than being silently hidden. */
+[data-budget-remaining].vault-budget-over {
+  color: var(--bs-danger);
+}

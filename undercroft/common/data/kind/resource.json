@@ -1,0 +1,8 @@
+{
+  "id": "resource",
+  "label": "Resource",
+  "plural": "Resources",
+  "icon": "tabler:package",
+  "readTier": "free",
+  "writeTier": "creator"
+}

@@ -23,6 +23,9 @@
     "creatureTypes": [
       "giant",
       "construct"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

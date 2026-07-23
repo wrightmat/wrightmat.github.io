@@ -1,0 +1,6 @@
+{
+  "id": "habitation",
+  "name": "Habitation",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Exists so people can live here — homes, shelter, and daily life."
+}

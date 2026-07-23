@@ -1,0 +1,6 @@
+{
+  "id": "protection",
+  "name": "Protection",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Exists to defend something or someone — walls, garrisons, wards, and chokepoints."
+}

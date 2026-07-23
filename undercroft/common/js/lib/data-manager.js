@@ -2,13 +2,12 @@ const DEFAULT_STORAGE_PREFIX = "undercroft";
 const DEFAULT_SESSION_KEY = "undercroft.session";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
-const ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"];
+const ROLE_ORDER = ["free", "player", "gm", "creator", "admin"];
 const ANONYMOUS_SCOPE = "anonymous";
 const ROLE_LABELS = {
   free: "Free",
   player: "Player",
   gm: "GM",
-  master: "Master",
   creator: "Creator",
   admin: "Admin",
 };

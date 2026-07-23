@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Undercroft Sanctum</title>
+    <script>
+      (function () {
+        const storageKey = "undercroft.workbench.theme";
+        const THEMES = ["light", "system", "dark"];
+        const prefersDark = () =>
+          typeof window !== "undefined" &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolveTheme = (preference) => {
+          if (preference === "dark") return "dark";
+          if (preference === "light") return "light";
+          return prefersDark() ? "dark" : "light";
+        };
+        const apply = (value) => {
+          const preference = THEMES.includes(value) ? value : "system";
+          const resolved = resolveTheme(preference);
+          const root = document.documentElement;
+          const body = document.body;
+          if (root) {
+            root.dataset.themePreference = preference;
+            root.dataset.theme = resolved;
+            root.dataset.bsTheme = resolved;
+            root.style.colorScheme = resolved;
+          }
+          if (body) {
+            body.dataset.themePreference = preference;
+            body.dataset.theme = resolved;
+            body.dataset.bsTheme = resolved;
+            body.style.colorScheme = resolved;
+          }
+          return preference;
+        };
+        try {
+          const stored = localStorage.getItem(storageKey);
+          apply(stored);
+        } catch (error) {
+          apply("system");
+          console.warn("Unable to read theme preference", error);
+        }
+      })();
+    </script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="../common/css/shell.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body class="bg-body text-body" data-undercroft-tool="sanctum">
+    <div class="d-flex flex-column min-vh-100 workbench-app">
+      <header class="workbench-header border-bottom bg-body-tertiary">
+        <div class="workbench-header-grid pe-2 py-3">
+          <div></div>
+          <div class="d-flex align-items-center gap-3 w-100">
+            <div class="d-flex align-items-center gap-3">
+              <button
+                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                type="button"
+                data-pane-toggle="left"
+                aria-label="Toggle navigation pane"
+              >
+                <span class="iconify fs-5" data-icon="tabler:layout-sidebar-right" aria-hidden="true"></span>
+                <span class="visually-hidden">Toggle navigation pane</span>
+              </button>
+              <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+                <nav data-undercroft-tool-nav aria-label="Undercroft tools"></nav>
+              </h1>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+              <div class="btn-group" role="group" aria-label="Theme toggle">
+                <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
+                  <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
+                  <span class="visually-hidden">Light theme</span>
+                </button>
+                <button class="btn btn-outline-primary" type="button" data-theme-option="system">System</button>
+                <button class="btn btn-outline-primary" type="button" data-theme-option="dark" aria-label="Use dark theme">
+                  <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Dark theme</span>
+                </button>
+              </div>
+              <div data-auth-control class="d-flex">
+                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+              </div>
+              <button
+                class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+                type="button"
+                data-pane-toggle="right"
+                aria-label="Toggle details pane"
+              >
+                <span class="iconify fs-5" data-icon="tabler:adjustments-horizontal" aria-hidden="true"></span>
+                <span class="visually-hidden">Toggle details pane</span>
+              </button>
+            </div>
+          </div>
+          <div></div>
+        </div>
+      </header>
+
+      <div class="d-flex flex-grow-1 workbench-shell">
+        <aside
+          class="border-end border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
+          data-pane="left"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="expanded"
+        >
+          <div class="workbench-pane-content d-flex flex-column gap-4 p-3 workbench-sticky-pane">
+            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Location actions">
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-outline-danger p-2"
+                  type="button"
+                  data-delete-location
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Delete Location"
+                  aria-label="Delete Location"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete Location</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-save-location
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-export-location
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Export JSON"
+                  aria-label="Export JSON"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:file-export" aria-hidden="true"></span>
+                  <span class="visually-hidden">Export JSON</span>
+                </button>
+                <button
+                  class="btn btn-primary p-2"
+                  type="button"
+                  data-generate-location
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Generate Location"
+                  aria-label="Generate Location"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:map-2" aria-hidden="true"></span>
+                  <span class="visually-hidden">Generate Location</span>
+                </button>
+              </div>
+            </div>
+
+            <section class="d-flex flex-column gap-2" id="sanctum-system">
+              <label class="form-label fw-semibold mb-0" for="sanctumSystemSelect">System</label>
+              <select class="form-select" id="sanctumSystemSelect" data-system-select></select>
+            </section>
+
+            <section class="d-flex flex-column gap-2" id="sanctum-setting-picker">
+              <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="sanctumSettingSelect">
+                <span>Setting</span>
+                <span class="align-middle" data-help-topic="sanctum.setting" data-help-insert="replace"></span>
+              </label>
+              <select class="form-select" id="sanctumSettingSelect" data-setting-select></select>
+            </section>
+
+            <section class="d-flex flex-column gap-2" id="sanctum-location-picker">
+              <label class="form-label fw-semibold mb-0" for="sanctumLocationSelect">Location</label>
+              <select class="form-select" id="sanctumLocationSelect" data-location-select></select>
+            </section>
+
+            <section class="d-flex flex-column gap-2" id="sanctum-overrides">
+              <label class="form-label fw-semibold mb-0" for="sanctumTypeOverride">Type</label>
+              <select class="form-select" id="sanctumTypeOverride" data-type-override></select>
+
+              <label class="form-label fw-semibold mb-0" for="sanctumPurposeOverride">Purpose</label>
+              <select class="form-select" id="sanctumPurposeOverride" data-purpose-override></select>
+
+              <label class="form-label fw-semibold mb-0" for="sanctumEnvironmentOverride">Environment</label>
+              <select class="form-select" id="sanctumEnvironmentOverride" data-environment-override></select>
+
+              <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="sanctumLockedFeatures">
+                <span>Locked Features</span>
+                <span class="align-middle" data-help-topic="sanctum.lockedFeatures" data-help-insert="replace"></span>
+              </label>
+              <select class="form-select" id="sanctumLockedFeatures" data-locked-features multiple size="4"></select>
+            </section>
+
+            <section class="pane-card mt-auto" id="sanctum-json">
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">JSON Preview</h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-json-toggle
+                  aria-expanded="false"
+                >
+                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-json-toggle-label>Expand JSON preview</span>
+                </button>
+              </div>
+              <div class="d-flex flex-column gap-2" data-json-panel hidden>
+                <span class="badge text-bg-secondary align-self-start" data-location-json-bytes>0 B</span>
+                <pre class="border rounded-3 p-2 bg-body small mb-0" data-location-json-preview></pre>
+              </div>
+            </section>
+          </div>
+        </aside>
+
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto">
+          <div class="d-flex flex-column gap-3" data-location-empty-state>
+            <div class="card shadow-theme">
+              <div class="card-body text-center text-body-secondary py-5">
+                <span class="iconify fs-1 d-block mb-2" data-icon="tabler:map-2" aria-hidden="true"></span>
+                No Location loaded yet. Pick a Setting, optionally pin a Type,
+                Purpose, or Environment, then click Generate Location — or pick an
+                existing Location above to revisit and expand it.
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-3 d-none" data-location-display>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" id="sanctum-identity">
+                  <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                    <span>Identity</span>
+                    <span class="align-middle" data-help-topic="sanctum.identity" data-help-insert="replace"></span>
+                  </h2>
+                  <div>
+                    <label class="form-label fw-semibold mb-1" for="sanctumLocationName">Name</label>
+                    <input type="text" class="form-control" id="sanctumLocationName" data-location-name placeholder="Unnamed" />
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-6 col-md-4">
+                      <label class="form-label small text-body-secondary fw-semibold mb-1" for="sanctumIdentityType">Type</label>
+                      <select class="form-select form-select-sm" id="sanctumIdentityType" data-identity-type></select>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <label class="form-label small text-body-secondary fw-semibold mb-1" for="sanctumIdentityPurpose">Purpose</label>
+                      <select class="form-select form-select-sm" id="sanctumIdentityPurpose" data-identity-purpose></select>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <label class="form-label small text-body-secondary fw-semibold mb-1" for="sanctumIdentityEnvironment">Environment</label>
+                      <select class="form-select form-select-sm" id="sanctumIdentityEnvironment" data-identity-environment></select>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" id="sanctum-features">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>Features</span>
+                      <span class="align-middle" data-help-topic="sanctum.features" data-help-insert="replace"></span>
+                    </h2>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-features-toggle
+                      aria-expanded="true"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-features-toggle-label>Collapse features</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-features-panel>
+                    <div class="d-flex flex-column gap-2" data-feature-list></div>
+                    <div class="d-flex gap-2 align-items-center">
+                      <select class="form-select" data-add-feature-select></select>
+                      <button class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1" type="button" data-add-feature-button>
+                        <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" id="sanctum-assets-needs">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>Assets &amp; Needs</span>
+                      <span class="align-middle" data-help-topic="sanctum.assets" data-help-insert="replace"></span>
+                    </h2>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-assets-needs-toggle
+                      aria-expanded="true"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-assets-needs-toggle-label>Collapse assets and needs</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-assets-needs-panel>
+                    <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Assets</h3>
+                    <div class="d-flex flex-column gap-2" data-asset-list></div>
+                    <div class="d-flex gap-2 align-items-center">
+                      <select class="form-select flex-shrink-0" style="max-width: 8rem" data-add-asset-kind-select></select>
+                      <select class="form-select" data-add-asset-entity-select></select>
+                      <button class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1" type="button" data-add-asset-button>
+                        <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        Add
+                      </button>
+                    </div>
+
+                    <h3 class="fs-6 fw-semibold text-body-secondary mb-0 mt-3">Needs</h3>
+                    <div class="d-flex flex-column gap-2" data-need-list></div>
+                    <div class="d-flex gap-2 align-items-center">
+                      <select class="form-select flex-shrink-0" style="max-width: 8rem" data-add-need-kind-select></select>
+                      <select class="form-select" data-add-need-entity-select></select>
+                      <button class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1" type="button" data-add-need-button>
+                        <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" id="sanctum-relationships">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>Relationships</span>
+                      <span class="align-middle" data-help-topic="sanctum.relationships" data-help-insert="replace"></span>
+                    </h2>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-relationships-toggle
+                      aria-expanded="false"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-relationships-toggle-label>Expand relationships</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-relationships-panel hidden>
+                    <div>
+                      <label class="form-label fw-semibold mb-1" for="sanctumParentSelect">Parent</label>
+                      <select class="form-select" id="sanctumParentSelect" data-parent-select></select>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                      <label class="form-label fw-semibold mb-0">Connected To</label>
+                      <div class="d-flex flex-column gap-2" data-connected-to-list></div>
+                      <div class="d-flex gap-2 align-items-center">
+                        <select class="form-select" data-add-connection-select></select>
+                        <button class="btn btn-outline-secondary flex-shrink-0 d-flex align-items-center gap-1" type="button" data-add-connection-button>
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label fw-semibold mb-0">Children</label>
+                      <div class="small text-body-secondary" data-children-list></div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" id="sanctum-npc-config">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>NPC Generation Config (optional)</span>
+                      <span class="align-middle" data-help-topic="sanctum.npcConfig" data-help-insert="replace"></span>
+                    </h2>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-npc-config-toggle
+                      aria-expanded="false"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-npc-config-toggle-label>Expand NPC Generation Config</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-3" data-npc-config-panel hidden>
+                    <p class="small text-body-secondary mb-0">
+                      Only needed if Forge should be able to generate NPCs at this
+                      Location — not every place needs a population.
+                    </p>
+                    <section class="d-flex flex-column gap-2" id="sanctum-species-weights">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Species Weights</h3>
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="small text-body-secondary" data-species-weight-total>Total: 0</span>
+                          <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-species-weight aria-label="Add Species">
+                            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto" style="max-height: 16rem" data-species-weight-rows></div>
+                    </section>
+
+                    <section class="d-flex flex-column gap-2" id="sanctum-mixing-coefficient">
+                      <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Mixing Coefficient</h3>
+                      <div class="d-flex align-items-center gap-2">
+                        <input class="form-range" type="range" min="0" max="1" step="0.05" data-mixing-coefficient />
+                        <span class="small text-body-secondary" style="min-width: 3rem" data-mixing-coefficient-value>0.00</span>
+                      </div>
+                    </section>
+
+                    <section class="d-flex flex-column gap-2" id="sanctum-archetype-overrides">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Setting-Specific Archetypes</h3>
+                        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-archetype-override aria-label="Add Override">
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                      <div class="d-flex flex-column gap-2" data-archetype-override-rows></div>
+                    </section>
+
+                    <section class="d-flex flex-column gap-2" id="sanctum-generic-name-fallback">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Generic Name Fallback</h3>
+                        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-fallback-name aria-label="Add Name">
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                      <div class="d-flex flex-column gap-2" data-fallback-name-rows></div>
+                    </section>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-2" id="sanctum-notes">
+                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>Notes (optional)</span>
+                      <span class="align-middle" data-help-topic="sanctum.notes" data-help-insert="replace"></span>
+                    </h2>
+                    <div class="d-flex align-items-center gap-2">
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-note>
+                        <span class="iconify" data-icon="tabler:sparkles" aria-hidden="true"></span>
+                        Generate Note
+                      </button>
+                      <button
+                        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                        type="button"
+                        data-notes-toggle
+                        aria-expanded="true"
+                      >
+                        <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                        <span class="visually-hidden" data-notes-toggle-label>Collapse notes</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2" data-notes-panel>
+                    <textarea class="form-control" rows="3" data-notes-text placeholder="Type a note, or Generate Note to have Claude write one."></textarea>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <aside
+          class="border-start border-body-tertiary bg-body-tertiary shadow-theme flex-shrink-0 workbench-sidebar workbench-pane"
+          data-pane="right"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="expanded"
+        >
+          <div class="workbench-pane-content d-flex flex-column gap-3 p-3 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-3" data-setting-properties>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Setting Properties</h2>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-setting-toggle
+                  aria-expanded="true"
+                >
+                  <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-setting-toggle-label>Collapse setting properties</span>
+                </button>
+              </div>
+              <div class="d-flex flex-column gap-3" data-setting-panel>
+                <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Setting actions">
+                  <div class="btn-group" role="group">
+                    <button
+                      class="btn btn-outline-secondary p-2"
+                      type="button"
+                      data-new-setting
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="New Setting"
+                      aria-label="New Setting"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:map-plus" aria-hidden="true"></span>
+                      <span class="visually-hidden">New Setting</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary p-2"
+                      type="button"
+                      data-save-setting
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Save Setting"
+                      aria-label="Save Setting"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                      <span class="visually-hidden">Save Setting</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-danger p-2"
+                      type="button"
+                      data-delete-setting
+                      disabled
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-title="Delete Setting"
+                      aria-label="Delete Setting"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                      <span class="visually-hidden">Delete Setting</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label small text-body-secondary fw-semibold" for="sanctumSettingName">Name</label>
+                    <input class="form-control form-control-sm" id="sanctumSettingName" data-setting-name />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small text-body-secondary fw-semibold" for="sanctumSettingDescription">Description</label>
+                    <textarea class="form-control form-control-sm" id="sanctumSettingDescription" rows="2" data-setting-description></textarea>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Inspector</h2>
+            <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
+              Select a Feature, Asset, or Need to see its full detail here.
+            </div>
+            <div data-inspector-detail class="d-none">
+              <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="status-root" data-status-root></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
