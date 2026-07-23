@@ -92,7 +92,7 @@
   "description": [
     "You were raised in a castle, surrounded by wealth, power, and privilege. Your family of minor aristocrats ensured that you received a first-class education, some of which you appreciated and some of which you resented. Your time in the castle, especially the many hours you spent observing your family at court, also taught you a great deal about leadership."
   ],
-  "source": "Player\u2019s Handbook, pg. 183",
+  "source": "Player’s Handbook, pg. 183",
   "traits": {
     "abilityScores": "Strength, Intelligence, Charisma",
     "feat": "Skilled",
@@ -100,5 +100,8 @@
     "toolProficiencies": "Choose one kind of Gaming Set",
     "equipment": "Choose A or B: (A) Gaming Set (same as above), Fine Clothes, Perfume, 29 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:54:10.392Z"
+  "updated_at": "2026-07-19T14:54:10.392Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

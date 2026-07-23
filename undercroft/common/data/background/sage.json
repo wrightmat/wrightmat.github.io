@@ -107,9 +107,9 @@
     }
   ],
   "description": [
-    "You spent your formative years traveling between manors and monasteries, performing various odd jobs and services in exchange for access to their libraries. You whiled away many a long evening studying books and scrolls, learning the lore of the multiverse\u2014even the rudiments of magic\u2014and your mind yearns for more."
+    "You spent your formative years traveling between manors and monasteries, performing various odd jobs and services in exchange for access to their libraries. You whiled away many a long evening studying books and scrolls, learning the lore of the multiverse—even the rudiments of magic—and your mind yearns for more."
   ],
-  "source": "Player\u2019s Handbook, pg. 183",
+  "source": "Player’s Handbook, pg. 183",
   "traits": {
     "abilityScores": "Constitution, Intelligence, Wisdom",
     "feat": "Magic Initiate (Wizard)",
@@ -117,5 +117,8 @@
     "toolProficiencies": "Calligrapher's Supplies",
     "equipment": "Choose A or B: (A) Quarterstaff, Calligrapher's Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:54:23.085Z"
+  "updated_at": "2026-07-19T14:54:23.085Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

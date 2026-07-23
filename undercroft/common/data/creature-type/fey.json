@@ -1,0 +1,24 @@
+{
+  "id": "fey",
+  "name": "Fey",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature tied to the vitality of nature and bound (whether it admits it or not) by old, strange rules of bargain and trickery.",
+  "vocabulary": {
+    "namePatterns": [
+      "{name} of the Old Wood",
+      "The {name}-Touched"
+    ]
+  },
+  "traitTags": [
+    "fey-nature",
+    "trickery",
+    "bound-by-bargain"
+  ],
+  "defaultSenses": [
+    "darkvision 60 ft."
+  ],
+  "defaultResistances": [],
+  "defaultImmunities": []
+}

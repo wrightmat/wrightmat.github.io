@@ -1,0 +1,25 @@
+{
+  "id": "feat.contagious-affliction",
+  "name": "Contagious Affliction",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack can inflict a condition on the target that spreads to another creature that touches or damages it.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack can inflict a condition on the target that spreads to another creature that touches or damages it."
+  },
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "spread"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

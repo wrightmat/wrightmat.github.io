@@ -224,26 +224,104 @@ export async function loadSrdData(value) {
   return data;
 }
 
-// The set of kinds Loom's one-to-many save workflow writes to
-// undercroft/common/data/<kind>/ — the single source of truth both Loom's
-// entity picker and Press's Library source select from, so they can't drift.
-// Named LIBRARY_KINDS (not DATA_KINDS) because "library" is still the
-// user-facing concept — Loom's Entities pane, Press's Library source — even
-// though the files themselves live under common/data/ alongside
-// help-topics.json rather than a dedicated common/library/ directory.
-export const LIBRARY_KINDS = ["class", "subclass", "background", "species", "variant", "character"];
+// The original, fixed set of kinds Loom's one-to-many save workflow wrote to
+// undercroft/common/data/<kind>/ — kept as Press's synchronous default for
+// its Library source picker (building that list can't wait on a fetch at
+// page load). Loom itself no longer treats this as the authoritative kind
+// list: see loadLibraryKinds() below, which reads the real, extensible
+// registry (undercroft/common/data/kind/*.json — a kind is just another
+// library entity, editable the same way as everything else). Named
+// LIBRARY_KINDS (not DATA_KINDS) because "library" is still the user-facing
+// concept — Loom's Entities pane, Press's Library source — even though the
+// files themselves live under common/data/ alongside help-topics.json rather
+// than a dedicated common/library/ directory. Kept in sync with every kind
+// registered under undercroft/common/data/kind/*.json as of this writing —
+// a creator-defined 13th kind still needs loadLibraryKinds() to actually
+// resolve for its picker to appear, same as before.
+export const LIBRARY_KINDS = [
+  "class",
+  "subclass",
+  "background",
+  "species",
+  "variant",
+  "character",
+  "npc",
+  "setting",
+  "location",
+  "monster",
+];
 
-// Library files are served as plain static files (like Loom's own mapping
-// definitions), not through the /list/library-* mount name — that mount only
-// powers directory-listing discovery, matching the press-templates/
-// loom-mappings pattern already established.
-async function fetchLibraryEntry(kind, id) {
-  const url = new URL(`../../data/${kind}/${id}.json`, import.meta.url);
-  const response = await fetch(url, { cache: "no-store" });
+// Every Library kind is DB-backed now (ownership, sharing, is_public — see
+// server/storage.py's library_items table) via the same /content/{kind}/{id}
+// and /list/{kind} routes the characters/templates/systems buckets already
+// used, instead of the old wide-open, unauthenticated /library/{kind}
+// routes. These two helpers stay deliberately anonymous (no session token) —
+// callers needing to see their own private/shared entries too (Loom, which
+// is always signed in behind its own creator-tier gate) should go through
+// their own DataManager instance instead; Forge and Press's read-only
+// reference-data consumption is exactly "public content only," which is
+// what an unauthenticated fetch naturally returns.
+export async function fetchLibraryEntry(kind, id) {
+  const response = await fetch(`/content/${kind}/${encodeURIComponent(id)}`, { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Failed to load ${kind}/${id} (${response.status}).`);
   }
   return parseJsonResponse(response, `${kind}/${id}.json`);
+}
+
+// Generic listing for any library kind. Exported (not just used internally
+// by loadLibraryData) so Loom's Library/Places editors and Forge/Press can
+// populate a kind's entry picker with just ids, without fetching every
+// entry's full body.
+export async function listLibraryKind(kind) {
+  const response = await fetch(`/list/${kind}`);
+  if (!response.ok) {
+    throw new Error(`Failed to list ${kind} (${response.status}).`);
+  }
+  const payload = await parseJsonResponse(response, `${kind} listing`);
+  const entries = [...(payload.owned || []), ...(payload.shared || []), ...(payload.public || [])];
+  const seen = new Set();
+  const ids = [];
+  entries.forEach((entry) => {
+    const id = entry?.id;
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    ids.push(id);
+  });
+  return ids;
+}
+
+// List-then-fetch-each-entry-by-id — pairs a kind's ids (the generic listing
+// route only returns ids/filenames, not full bodies) with each entry's full
+// JSON body. Promoted here after being independently duplicated in both
+// Forge's tables.js and Loom's app.js's Places panel; Crucible needed the
+// exact same helper a third time, which is what surfaced the duplication.
+//
+// Takes `dataManager` rather than using the anonymous fetchLibraryEntry/
+// listLibraryKind above: Loom's original copy of this helper deliberately
+// used DataManager so a signed-in creator sees their own private/shared
+// entries while building out Places, not just published ones — collapsing
+// onto the anonymous-only path would have been a real regression for Loom.
+// DataManager degrades gracefully for an unauthenticated caller (Forge has
+// no whole-tool login gate) — list()/get() just return public-only content
+// when there's no session, so this one implementation is correct for every
+// caller regardless of whether they're signed in.
+export async function fetchKindEntriesWithIds(dataManager, kind) {
+  if (!dataManager) return [];
+  const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
+  const ids = dataManager
+    .collectListEntries(remote, ["owned", "shared", "public", "items"])
+    .map((entry) => entry.id);
+  const entries = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        return { id, entity: (await dataManager.get(kind, id))?.payload };
+      } catch (error) {
+        return null;
+      }
+    })
+  );
+  return entries.filter(Boolean);
 }
 
 // `value` is "kind/id" for a single saved entry, or "kind/*" (or bare "kind")
@@ -251,27 +329,58 @@ async function fetchLibraryEntry(kind, id) {
 // expansion so a "whole directory" selection produces one array, letting
 // Press's existing repeat-template handling print one card per entry exactly
 // like it already does for a 5e API list endpoint.
-export async function loadLibraryData(value) {
+//
+// `dataManager` is optional: when given (Press always has one), listing/
+// fetching goes through it instead of the anonymous listLibraryKind/
+// fetchLibraryEntry pair above, so a signed-in user's own private/shared
+// entries are included, not just public ones — the same "an owned but
+// not-yet-public record shouldn't just vanish from this exact same tool"
+// reasoning that fetchKindEntriesWithIds already applies elsewhere. Falls
+// back to the anonymous path when no dataManager is passed, so this stays a
+// non-breaking addition for any other caller.
+export async function loadLibraryData(value, dataManager) {
   const [kind, id] = String(value || "").split("/");
   if (!kind) {
     throw new Error("Select a library kind.");
   }
   if (!id || id === "*") {
-    const response = await fetch(`/list/library-${kind}`);
-    if (!response.ok) {
-      throw new Error(`Failed to list library-${kind} (${response.status}).`);
+    let ids;
+    if (dataManager) {
+      const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
+      ids = dataManager.collectListEntries(remote, ["owned", "shared", "public", "items"]).map((entry) => entry.id);
+    } else {
+      ids = await listLibraryKind(kind);
     }
-    const payload = await parseJsonResponse(response, `library-${kind} listing`);
-    const names = (payload.files || []).map((entry) => entry.filename).filter(Boolean);
-    if (!names.length) {
+    if (!ids.length) {
       throw new Error(`No saved ${kind} entries to load.`);
     }
-    return mapWithConcurrency(names, LIST_FETCH_CONCURRENCY, (name) => fetchLibraryEntry(kind, name));
+    return mapWithConcurrency(ids, LIST_FETCH_CONCURRENCY, (id_) =>
+      dataManager ? dataManager.get(kind, id_).then((result) => result.payload) : fetchLibraryEntry(kind, id_)
+    );
+  }
+  if (dataManager) {
+    return (await dataManager.get(kind, id)).payload;
   }
   return fetchLibraryEntry(kind, id);
 }
 
-export async function loadSourceData(source, value) {
+// The live, extensible kind registry — every undercroft/common/data/kind/*
+// entity, each {id, label, plural, icon}. Falls back to synthesizing entries
+// from LIBRARY_KINDS if the registry can't be read (e.g. before it's been
+// seeded), so Loom's Entities/Systems UI always has something to show.
+export async function loadLibraryKinds() {
+  try {
+    const kinds = await loadLibraryData("kind/*");
+    if (Array.isArray(kinds) && kinds.length) {
+      return kinds;
+    }
+  } catch (error) {
+    // fall through to the static fallback below
+  }
+  return LIBRARY_KINDS.map((id) => ({ id, label: id, plural: id }));
+}
+
+export async function loadSourceData(source, value, dataManager) {
   if (!source) {
     throw new Error("No source selected.");
   }
@@ -281,7 +390,7 @@ export async function loadSourceData(source, value) {
     case "srd":
       return loadSrdData(value);
     case "library":
-      return loadLibraryData(value);
+      return loadLibraryData(value, dataManager);
     case "json": {
       if (!value) {
         throw new Error("Select a JSON file to load.");
@@ -306,12 +415,12 @@ export async function loadSourceData(source, value) {
 // Loom's variant of loadSourceData: identical except a "ddb" source resolves
 // through loadDdbRawData instead of loadDdbData, so a character fetch stays
 // raw for Loom's own mapping to transform, instead of arriving pre-parsed.
-export async function loadSourceDataRaw(source, value) {
+export async function loadSourceDataRaw(source, value, dataManager) {
   if (!source) {
     throw new Error("No source selected.");
   }
   if (source.id === "ddb") {
     return loadDdbRawData(value);
   }
-  return loadSourceData(source, value);
+  return loadSourceData(source, value, dataManager);
 }

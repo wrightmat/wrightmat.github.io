@@ -1,0 +1,18 @@
+{
+  "id": "guardian",
+  "name": "Guardian",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Protects a place, creature, or objective by controlling access to it.",
+  "recipe": {
+    "signatureSlot": "defend",
+    "requiredSlots": [
+      "deny",
+      "punish",
+      "endure"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

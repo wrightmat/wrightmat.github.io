@@ -1,0 +1,8 @@
+{
+  "id": "kind",
+  "label": "Kind",
+  "plural": "Kinds",
+  "icon": "tabler:category",
+  "readTier": "free",
+  "writeTier": "admin"
+}

@@ -6,7 +6,7 @@
   "tagline": "Fiend-Touched Defier of Fate",
   "icon": "ddb-creature-humanoid",
   "description": [
-    "Tieflings are either born in the Lower Planes or have fiendish ancestors who originated there. A tiefling (pronounced TEE-fling) is linked by blood to a devil, a demon, or some other Fiend. This connection to the Lower Planes is the tiefling\u2019s fiendish legacy, which comes with the promise of power yet has no effect on the tiefling\u2019s moral outlook.",
+    "Tieflings are either born in the Lower Planes or have fiendish ancestors who originated there. A tiefling (pronounced TEE-fling) is linked by blood to a devil, a demon, or some other Fiend. This connection to the Lower Planes is the tiefling’s fiendish legacy, which comes with the promise of power yet has no effect on the tiefling’s moral outlook.",
     "A tiefling chooses whether to embrace or lament their fiendish legacy. The three legacies are described below.",
     "The entropy of the Abyss, the chaos of Pandemonium, and the despair of Carceri call to tieflings who have the abyssal legacy. Horns, fur, tusks, and peculiar scents are common physical features of such tieflings, most of whom have the blood of demons coursing through their veins.",
     "Tieflings who have the chthonic legacy feel not only the tug of Carceri but also the greed of Gehenna and the gloom of Hades. Some of these tieflings look cadaverous. Others possess the unearthly beauty of a succubus, or they have physical features in common, with a night hag, a yugoloth, or some other Neutral Evil fiendish ancestor.",
@@ -30,5 +30,36 @@
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T16:30:32.542Z"
+  "updated_at": "2026-07-19T16:30:32.542Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Akmenos",
+      "Amnon",
+      "Barakas",
+      "Damaia",
+      "Ekemon",
+      "Iados",
+      "Kairon",
+      "Leucis",
+      "Melech",
+      "Mordai",
+      "Morthos",
+      "Pelaios",
+      "Skamos",
+      "Therai",
+      "Akta",
+      "Bryseis",
+      "Criella",
+      "Damakos",
+      "Ea",
+      "Kallista",
+      "Lerissa",
+      "Nemeia"
+    ]
+  }
 }

@@ -1,0 +1,24 @@
+{
+  "id": "feat.relentless-pursuit",
+  "name": "Relentless Pursuit",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature's speed increases by 10 feet against a target that damaged it since the end of its last turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature's speed increases by 10 feet against a target that damaged it since the end of its last turn."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "pursue"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

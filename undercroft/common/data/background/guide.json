@@ -40,7 +40,7 @@
   "proficiency_choices": [],
   "equipment_options": [
     {
-      "desc": "(A) Shortbow, 20 Arrows, Cartographer's Tools, Bedroll, Quiver, Tent, Traveler\u2019s Clothes, 3 GP or (B) 50 GP",
+      "desc": "(A) Shortbow, 20 Arrows, Cartographer's Tools, Bedroll, Quiver, Tent, Traveler’s Clothes, 3 GP or (B) 50 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -102,7 +102,7 @@
                 "count": 1,
                 "of": {
                   "index": "traveler-s-clothes",
-                  "name": "Traveler\u2019s Clothes"
+                  "name": "Traveler’s Clothes"
                 }
               },
               {
@@ -122,15 +122,18 @@
     }
   ],
   "description": [
-    "You came of age outdoors, far from settled lands. Your home was anywhere you chose to spread your bedroll. There are wonders in the wilderness\u2014 strange monsters, pristine forests and streams, overgrown ruins of great halls once trod by giants\u2014 and you learned to fend for yourself as you explored them. From time to time, you guided friendly nature priests who instructed you in the fundamentals of channeling the magic of the wild."
+    "You came of age outdoors, far from settled lands. Your home was anywhere you chose to spread your bedroll. There are wonders in the wilderness— strange monsters, pristine forests and streams, overgrown ruins of great halls once trod by giants— and you learned to fend for yourself as you explored them. From time to time, you guided friendly nature priests who instructed you in the fundamentals of channeling the magic of the wild."
   ],
-  "source": "Player\u2019s Handbook, pg. 181",
+  "source": "Player’s Handbook, pg. 181",
   "traits": {
     "abilityScores": "Dexterity, Constitution, Wisdom",
     "feat": "Magic Initiate (Druid)",
     "skillProficiencies": "Stealth and Survival",
     "toolProficiencies": "Cartographer's Tools",
-    "equipment": "Choose A or B: (A) Shortbow, 20 Arrows, Cartographer's Tools, Bedroll, Quiver, Tent, Traveler\u2019s Clothes, 3 GP; or (B) 50 GP"
+    "equipment": "Choose A or B: (A) Shortbow, 20 Arrows, Cartographer's Tools, Bedroll, Quiver, Tent, Traveler’s Clothes, 3 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:52:41.946Z"
+  "updated_at": "2026-07-19T14:52:41.946Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

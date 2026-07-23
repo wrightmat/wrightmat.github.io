@@ -1,0 +1,24 @@
+{
+  "id": "feat.explosive-opening",
+  "name": "Explosive Opening",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The first attack the creature makes in a combat deals extra damage.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The first attack the creature makes in a combat deals extra damage."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "burst"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

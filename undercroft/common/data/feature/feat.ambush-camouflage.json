@@ -1,0 +1,24 @@
+{
+  "id": "feat.ambush-camouflage",
+  "name": "Ambush Camouflage",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can take the Hide action even while only lightly obscured.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature can take the Hide action even while only lightly obscured."
+  },
+  "tags": {
+    "behaviors": [
+      "stealth"
+    ],
+    "recipeSlots": [
+      "hide"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

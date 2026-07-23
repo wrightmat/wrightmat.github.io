@@ -39,7 +39,7 @@
   "proficiency_choices": [],
   "equipment_options": [
     {
-      "desc": "(A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler\u2019s Clothes, 14 GP or (B) 50 GP",
+      "desc": "(A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler’s Clothes, 14 GP or (B) 50 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -102,7 +102,7 @@
                 "count": 1,
                 "of": {
                   "index": "traveler-s-clothes",
-                  "name": "Traveler\u2019s Clothes"
+                  "name": "Traveler’s Clothes"
                 }
               },
               {
@@ -124,13 +124,16 @@
   "description": [
     "You began training for war as soon as you reached adulthood and carry precious few memories of life before you took up arms. Battle is in your blood. Sometimes you catch yourself reflexively performing the basic fighting exercises you learned first. Eventually, you put that training to use on the battlefield, protecting the realm by waging war."
   ],
-  "source": "Player\u2019s Handbook, pg. 185",
+  "source": "Player’s Handbook, pg. 185",
   "traits": {
     "abilityScores": "Strength, Dexterity, Constitution",
     "feat": "Savage Attacker",
     "skillProficiencies": "Athletics and Intimidation",
     "toolProficiencies": "Choose one kind of Gaming Set",
-    "equipment": "Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler\u2019s Clothes, 14 GP; or (B) 50 GP"
+    "equipment": "Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler’s Clothes, 14 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:55:04.923Z"
+  "updated_at": "2026-07-19T14:55:04.923Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

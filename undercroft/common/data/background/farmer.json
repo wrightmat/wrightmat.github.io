@@ -39,7 +39,7 @@
   "proficiency_choices": [],
   "equipment_options": [
     {
-      "desc": "(A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler\u2019s Clothes, 30 GP or (B) 50 GP",
+      "desc": "(A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler’s Clothes, 30 GP or (B) 50 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -93,7 +93,7 @@
                 "count": 1,
                 "of": {
                   "index": "traveler-s-clothes",
-                  "name": "Traveler\u2019s Clothes"
+                  "name": "Traveler’s Clothes"
                 }
               },
               {
@@ -113,15 +113,18 @@
     }
   ],
   "description": [
-    "You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature\u2019s bounty alongside a healthy respect for nature\u2019s wrath."
+    "You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature’s bounty alongside a healthy respect for nature’s wrath."
   ],
-  "source": "Player\u2019s Handbook, pg. 180",
+  "source": "Player’s Handbook, pg. 180",
   "traits": {
     "abilityScores": "Strength, Constitution, Wisdom",
     "feat": "Tough",
     "skillProficiencies": "Animal Handling and Nature",
     "toolProficiencies": "Carpenter's Tools",
-    "equipment": "Choose A or B: (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler\u2019s Clothes, 30 GP; or (B) 50 GP"
+    "equipment": "Choose A or B: (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler’s Clothes, 30 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:51:42.468Z"
+  "updated_at": "2026-07-19T14:51:42.468Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

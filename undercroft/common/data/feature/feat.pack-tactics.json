@@ -1,0 +1,30 @@
+{
+  "id": "feat.pack-tactics",
+  "name": "Pack Tactics",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature has advantage on an attack roll against a target if at least one ally is within 5 feet of the target and isn't incapacitated.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature has advantage on an attack roll against a target if at least one ally is within 5 feet of the target and isn't incapacitated."
+  },
+  "tags": {
+    "behaviors": [
+      "swarm-tactics"
+    ],
+    "recipeSlots": [
+      "surround",
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "beast"
+    ]
+  },
+  "synergizesWith": [
+    "feat.overrun",
+    "feat.swarm-regrowth"
+  ],
+  "conflictsWith": []
+}

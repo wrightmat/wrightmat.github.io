@@ -7,7 +7,7 @@
   "icon": "ddb-creature-aberration",
   "description": [
     "Kalashtar (pronounced kal-ASH-tar) are created from the union of humanity and renegade spirits called quori from the plane of dreams. Kalashtar appear human, but their spiritual connection affects them in a variety of ways. They have symmetrical, slightly angular features, and their eyes often glow when they are concentrating or expressing strong emotions.",
-    "Kalashtar can\u2019t communicate directly with their quori spirits. Rather, kalashtar might experience them as a source of instinct and inspiration, drawing on the spirits\u2019 memories when the kalashtar sleep. This connection grants kalashtar minor psionic abilities, as well as protection from psionic attacks."
+    "Kalashtar can’t communicate directly with their quori spirits. Rather, kalashtar might experience them as a source of instinct and inspiration, drawing on the spirits’ memories when the kalashtar sleep. This connection grants kalashtar minor psionic abilities, as well as protection from psionic attacks."
   ],
   "type": "Aberration",
   "size": "Medium",
@@ -23,13 +23,42 @@
     },
     {
       "name": "Mind Link",
-      "description": "You have telepathy with a range in feet equal to 10 times your level. When you\u2019re using this trait to speak telepathically to a creature, you can take a Magic action to give that creature the ability to speak telepathically with you for 1 hour or until you take another Magic action to end this effect."
+      "description": "You have telepathy with a range in feet equal to 10 times your level. When you’re using this trait to speak telepathically to a creature, you can take a Magic action to give that creature the ability to speak telepathically with you for 1 hour or until you take another Magic action to end this effect."
     },
     {
       "name": "Severed from Dreams",
-      "description": "You can\u2019t be the target of the Dream spell. In addition, when you finish a Long Rest, you gain proficiency in one skill of your choice. This proficiency lasts until you finish another Long Rest."
+      "description": "You can’t be the target of the Dream spell. In addition, when you finish a Long Rest, you gain proficiency in one skill of your choice. This proficiency lasts until you finish another Long Rest."
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T16:31:11.749Z"
+  "updated_at": "2026-07-19T16:31:11.749Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Ashi",
+      "Dela",
+      "Erim",
+      "Ilyra",
+      "Jenna",
+      "Khyven",
+      "Lai",
+      "Meira",
+      "Nesa",
+      "Ohran",
+      "Rashmi",
+      "Selu",
+      "Tashana",
+      "Vesha",
+      "Aelin",
+      "Corvath",
+      "Dessia",
+      "Kiral",
+      "Nerith",
+      "Suvashi"
+    ]
+  }
 }

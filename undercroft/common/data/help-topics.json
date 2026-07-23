@@ -222,11 +222,11 @@
     {
       "id": "press.source.library",
       "title": "Library Entries",
-      "summary": "Pick a kind and item saved locally by Loom, instead of typing a URL or endpoint.",
+      "summary": "Pick a kind and item saved to the shared Library, instead of typing a URL or endpoint.",
       "details": [
-        "Kind lists the entity kinds Loom saves (class, subclass, background, species, variant, character).",
+        "Kind lists the entity kinds saved to the Library (class, subclass, background, species, variant, character, npc).",
         "Item lists every saved entry of that kind, or \"All\" to load every entry at once as a list — one card per entry, the same way a 5e API list endpoint expands.",
-        "These files live under undercroft/common/data/ and are only populated once you've saved something from Loom's Entities pane."
+        "These files live under undercroft/common/data/ — most kinds are populated by saving from Loom's Entities pane, but npc entries come from saving a generated character in Forge instead."
       ],
       "category": "Press",
       "href": "../press/index.html#press-selection"
@@ -253,6 +253,92 @@
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-selection"
+    },
+    {
+      "id": "loom.library",
+      "title": "Library",
+      "summary": "Browse, edit, and assign every saved entity — Species, Classes, and any kind a creator defines, including Kind itself.",
+      "details": [
+        "Pick a Kind, then an Entity, to load its full JSON into the text box below for direct editing — this is the only place saved entities can be re-opened and changed; the Entities panel above only ever shows the current mapping's fresh output.",
+        "A new Kind is just another entity: pick \"Kind\" from the Kind select, New, and fill in id/label/plural/icon the same way you would for a Species.",
+        "Assigned Systems controls which System(s) can see this entity — an empty list means it isn't attached to any System yet."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-library"
+    },
+    {
+      "id": "loom.libraryTemplate",
+      "title": "Assigned Template",
+      "summary": "Which Workbench Template a Character entity opens with — only entities of the Character kind that have one assigned show up in Workbench at all.",
+      "details": [
+        "Narrowed to Templates built for one of this entity's Assigned Systems above — pick a System first if the list looks empty.",
+        "Characters are the one Library kind backed by the same ownership/sharing data Workbench uses, so this is also the only place a raw imported character becomes usable in Workbench: assign it a Template here.",
+        "The Template's own field bindings still need to match this entity's actual data shape to render correctly — assigning a Template doesn't transform the data, it just tells Workbench which layout to use."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-library"
+    },
+    {
+      "id": "loom.systems",
+      "title": "Systems",
+      "summary": "A System is a set of Properties plus whichever Library entities are assigned to it — the same System concept Workbench's Template and Character pages already consume.",
+      "details": [
+        "Systems are stored the same way Workbench already stores them (creator-tier gated, shareable) — Loom is a second editor for the exact same data, not a separate copy.",
+        "Workbench's own System Editor now points here for authoring; Template and Character keep working unchanged against whatever's saved.",
+        "Assigning entities to a System happens from the Library panel above (each entity's Assigned Systems list), not from here."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemPreview",
+      "title": "Preview Data (JSON)",
+      "summary": "Sample data used to preview array/object bindings in Workbench's Template editor — it isn't part of any real character's data.",
+      "details": [
+        "Keyed by field path, e.g. {\"inventory\": [...]}, matching whatever Array/Object Properties this System defines.",
+        "Properties above are the main way to define a System's shape — this is just a backup/reference, not something most edits touch."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemProperties",
+      "title": "System Properties",
+      "summary": "Each property is one field a Workbench Template can bind to.",
+      "details": [
+        "Default is applied when a new record is created; Category is just a display grouping label.",
+        "Minimum/Maximum only apply to Number properties.",
+        "Object properties can have Sub-fields (their own nested properties, e.g. an Abilities object containing Strength/Dexterity/etc.).",
+        "Array properties are either a fixed list of Enum values, or an Item schema — a repeating set of sub-fields (e.g. an Inventory of Name/Quantity/Weight rows) with a Display field marking which sub-field represents each row.",
+        "Enum values can set a Library kind (e.g. \"class\") — each value then links directly to a real Library entity of that kind instead of just being a display string, so the System stays the roster (names, order, what's expected to exist) while showing exactly which entries already have real Library data behind them and which don't yet.",
+        "Saving a Library entity assigned to this System auto-links it into a matching, still-unlinked value by name — no need to link it by hand unless the match is ambiguous.",
+        "Preview Data is sample data shown when previewing bindings in Workbench's Template editor — it isn't part of any real character's data."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.places",
+      "title": "Places",
+      "summary": "System > Setting > Location — the hierarchy Forge uses to pick where an NPC comes from.",
+      "details": [
+        "A Setting belongs to one System (e.g. Forgotten Realms under D&D 5E); a Location belongs to one Setting (e.g. Sword Coast under Forgotten Realms).",
+        "Species Weights picks from whichever species are assigned to the selected System in the Library panel above — assign a species there first if it isn't showing up here.",
+        "Setting-Specific Archetypes is a free-form roll-number to archetype-name list, for tables (like D&D 5E's) that reserve certain rolls for local flavor."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-places"
+    },
+    {
+      "id": "loom.genericNameFallback",
+      "title": "Generic Name Fallback",
+      "summary": "Names to draw from when a rolled species is \"Other\" or otherwise can't be resolved to a real Species entity.",
+      "details": [
+        "Each entry is a name and an optional weight (defaults to 1 if left blank) — higher weight means more likely to be picked.",
+        "This replaces having to hardcode a fallback name pool in Forge's own code — every Location can define its own."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-places"
     },
     {
       "id": "press.templates",
@@ -355,6 +441,142 @@
         "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."],
       "category": "Press",
       "href": "../press/index.html#press-printing"
+    },
+    {
+      "id": "forge.generate",
+      "title": "Generating an NPC",
+      "summary": "Pick a Location, then Generate NPC to roll a full Identity + 4D set for it.",
+      "details": [
+        "The Location determines Species weights and the two setting-specific Archetype entries (rolls 22-23) — everything else (Alignment, Gender, Attitude, and the 4D tables) is the same everywhere.",
+        "Generate NPC rolls every attribute at once. Once generated, each Identity/4D value in the main pane has its own reroll button if you just want to redo one thing.",
+        "Species, Archetype, Alignment, and Gender can each be fixed to a specific value instead of rolled — see the help on those selects below.",
+        "The character note is optional and separate — generate one afterward from the main pane if you want it."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-generate"
+    },
+    {
+      "id": "forge.overrides",
+      "title": "Fixing Specific Attributes",
+      "summary": "Pick a Species, Archetype, Alignment, or Gender to use that exact value instead of rolling it — leave any of them on \"Random\" to roll as usual.",
+      "details": [
+        "Each select defaults to \"Random\". Choosing a value there locks that one attribute for the next Generate NPC click — everything you didn't pick still rolls normally.",
+        "Species and Archetype options come from the selected Location, since both are location-configured; Alignment and Gender are the same everywhere and don't change with Location.",
+        "These only affect the initial Generate NPC roll — the per-attribute reroll buttons on an already-generated NPC always roll fresh, ignoring whatever's picked here."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-overrides"
+    },
+    {
+      "id": "forge.mixingCoefficient",
+      "title": "Mixing Coefficient",
+      "summary": "One 0-1 dial that controls how much this Location's species blend together when generating a Name — 0 is culturally isolated, 1 is fully cosmopolitan.",
+      "details": [
+        "At 0, names never blend — every NPC gets a plain name from its own species. As the coefficient rises, blended names (a name shaped by two species at once) start happening, more often and more deeply the higher it goes.",
+        "The same number also decides who a name blends with: at low values the blend partner is always this Location's single most common species; at high values it's a weighted-random pick from the whole population, so blending gets more varied as well as more frequent.",
+        "It also decides how deep a blend goes: low values favor a light surface borrow (one species' name with a short flourish from another); high values favor a deeper blend where the name itself is genuinely shaped by both species.",
+        "At 1, blending always happens, the partner is always randomly drawn, and the deepest blend mode is always used — nothing here is ever a hard on/off switch, just more or less likely."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-mixing-coefficient"
+    },
+    {
+      "id": "forge.speciesProfileEditor",
+      "title": "Species Name Profiles",
+      "summary": "One name per line, per pool — a Species' own list of example names Forge draws from, generated fresh (Blended mode) or picked as-is (Synonyms mode) depending on Name Mode.",
+      "details": [
+        "In Blended mode, First Names (and Last Names, if this species has them) are example pools Forge studies the patterns of, producing new names that sound like they belong without ever handing back an exact line verbatim — more and more varied examples produce more varied results, so a pool of 20-30 real names per list works well.",
+        "In Synonyms mode, the pool is drawn from directly instead — see the Name Mode help below for when to use it and why.",
+        "Last Name Form only controls the label shown (Family, Clan, Patronymic) and whether a last name is generated at all — set it to None for species that only ever use a single name.",
+        "A profile saved here is reusable across every Location, not just the one you were editing from — Species Weights rows in any Location can select it."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-manage-species"
+    },
+    {
+      "id": "forge.nameMode",
+      "title": "Name Mode: Blended vs. Synonyms",
+      "summary": "Blended generates novel invented names by statistically recombining the pool's phonetic patterns; Synonyms just draws a name from the pool as-is, unmodified.",
+      "details": [
+        "Use Blended for species whose names are an invented phonetic language (Elf, Dwarf, Tiefling, most humanoid species) — the shared sub-word patterns across the pool (endings, syllable clusters) are what make recombination sound plausible.",
+        "Use Synonyms for species whose names are recognizable whole words in a shared thematic register instead (Changeling's Ashen/Doubt/Mirage, Warforged's Rivet/Piston/Bastion, Shifter's Wren/Briar/Talon) — recombining letters across words like that just produces garbage, since there's no shared phonetic pattern to learn. Synonyms mode instead treats the pool as a curated, closed vocabulary and draws directly from it.",
+        "Synonyms-mode species never take part in cultural mixing, in either direction — a curated whole word can't be sensibly blended with another species' name, so a Synonyms-mode species is skipped both as a blend primary and as a possible blend partner, regardless of the Location's Mixing Coefficient.",
+        "This is a per-species setting, not per-Location — a species is either invented-phonetic or curated-vocabulary everywhere it's used."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-manage-species"
+    },
+    {
+      "id": "forge.identity",
+      "title": "Identity Attributes",
+      "summary": "System- and setting-specific categorical attributes shaped by the selected Location — who this NPC is in the world.",
+      "details": [
+        "Species, Archetype, Alignment, Gender, Age, Relationship, and Attitude all describe concrete facts about this specific NPC.",
+        "Species and Archetype are location-configured, coming straight from the selected Location's own tables; Alignment, Gender, Age, Relationship, and Attitude are the same everywhere and never change with Location.",
+        "This is what changes most between locations and settings — the 4D attributes below never do."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-identity"
+    },
+    {
+      "id": "forge.fourD",
+      "title": "4D Attributes",
+      "summary": "System-agnostic personality and situation prompts — improv material, not prescriptions, and identical no matter the Location or game system.",
+      "details": [
+        "Description, Demeanor, Drive, and Direction are single-word improv prompts designed to stack: rolling the same table twice can produce interesting tension rather than a contradiction.",
+        "Unlike Identity, these never vary by Location or game system — they're meant to work for any NPC in any setting.",
+        "Treat them as a starting point for roleplay, not a fixed personality description."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-fourd"
+    },
+    {
+      "id": "forge.stats",
+      "title": "Stats",
+      "summary": "Ability scores, AC, and HP come straight from the D&D5e Monster Manual NPC stat block matching this NPC's Archetype — nothing here is rolled.",
+      "details": [
+        "These aren't independent rolls: they're looked up by Archetype, so they update automatically whenever Archetype is generated or rerolled.",
+        "Setting-specific archetypes (rolls 22-23) and Wildcard (roll 24) have no fixed identity, so no stat block exists for them — you'll see a note instead of numbers.",
+        "Only D&D5e is supported right now, matching the rest of Forge's Archetype table."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-stats"
+    },
+    {
+      "id": "forge.note",
+      "title": "Character Note",
+      "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from the rolled attributes — either way you can freely edit it afterward.",
+      "details": [
+        "An NPC is complete without a note — every rolled value already stands on its own as the character record.",
+        "Generate Note sends the rolled Identity (minus Name) and 4D values to Claude and fills this box with its response in a fixed format: Name (Alignment Gender Species Archetype). [2-3 sentences].",
+        "Whatever's in the box when you Save is what gets saved — write your own from scratch, or generate one and edit it."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-note"
+    },
+    {
+      "id": "forge.speciesWeights",
+      "title": "Species Weights",
+      "summary": "Each row picks a saved Species Name Profile and its relative weight for this location — this is what Forge draws from to roll a new NPC's Species and Name.",
+      "details": [
+        "Each row's select lists every species profile saved via Manage Species — create one there first if the species you want isn't listed yet, then it'll show up here.",
+        "Weights are relative to each other, not percentages — they don't need to sum to 100 or any other fixed total, only to reflect roughly how common each species is here.",
+        "This population (combined with the Mixing Coefficient below) is what makes two locations both sound and feel different even though every other Identity/4D table is shared."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-species-weights"
+    },
+    {
+      "id": "forge.archetypeOverrides",
+      "title": "Setting-Specific Archetypes",
+      "summary": "Fills the D&D5e archetype table's two location-overridable rolls (22 and 23) with entries specific to this location.",
+      "details": [
+        "The archetype table is 2d12: rolls 2-21 and 24 (Wildcard) are fixed and never change regardless of location.",
+        "Rolls 22 and 23 are reserved for setting-specific archetypes — enter whatever fits this location (a local guard title, a regional faction agent, etc.).",
+        "Leaving either blank falls back to a generic \"Setting Specific\" placeholder when that roll comes up."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-archetype-overrides"
+    },
+    {
+      "id": "forge.inspector",
+      "title": "Component Properties",
+      "summary": "Select any box in Identity to inspect it here — Species and Location open their full editors, everything else shows the JSON data driving that roll.",
+      "details": [
+        "Species and Location are reusable configuration (a Species Name Profile, a saved Location), so selecting either opens the same full editor as Manage Species / Manage Location.",
+        "Every other Identity box (Name, Archetype, Alignment, Gender, Age, Relationship, Attitude) shows the complete table or profile data behind that roll, alongside this NPC's current rolled value.",
+        "Nothing shows here until something in Identity is selected."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-identity"
     }
   ]
 }

@@ -1,0 +1,24 @@
+{
+  "id": "aberration",
+  "name": "Aberration",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature whose form and thought are alien to the natural world \u2014 unsettling to look at and often incomprehensible in motive.",
+  "vocabulary": {
+    "namePatterns": [
+      "The {name} That Should Not Be",
+      "{name}-Thing"
+    ]
+  },
+  "traitTags": [
+    "alien",
+    "psionic",
+    "unnatural"
+  ],
+  "defaultSenses": [
+    "darkvision 60 ft."
+  ],
+  "defaultResistances": [],
+  "defaultImmunities": []
+}

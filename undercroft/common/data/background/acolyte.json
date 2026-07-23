@@ -107,9 +107,9 @@
     }
   ],
   "description": [
-    "You devoted yourself to service in a temple, either nestled in a town or secluded in a sacred grove. There you performed rites in honor of a god or pantheon. You served under a priest and studied religion. Thanks to your priest\u2019s instruction and your own devotion, you also learned how to channel a modicum of divine power in service to your place of worship and the people who prayed there."
+    "You devoted yourself to service in a temple, either nestled in a town or secluded in a sacred grove. There you performed rites in honor of a god or pantheon. You served under a priest and studied religion. Thanks to your priest’s instruction and your own devotion, you also learned how to channel a modicum of divine power in service to your place of worship and the people who prayed there."
   ],
-  "source": "Player\u2019s Handbook, pg. 178",
+  "source": "Player’s Handbook, pg. 178",
   "traits": {
     "abilityScores": "Intelligence, Wisdom, Charisma",
     "feat": "Magic Initiate (Cleric)",
@@ -117,5 +117,8 @@
     "toolProficiencies": "Calligrapher's Supplies",
     "equipment": "Choose A or B: (A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-17T23:06:04.767Z"
+  "updated_at": "2026-07-17T23:06:04.767Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

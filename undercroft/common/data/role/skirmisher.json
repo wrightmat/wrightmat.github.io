@@ -1,0 +1,14 @@
+{
+  "id": "skirmisher",
+  "name": "Skirmisher",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Highly mobile combatants that use special movement to run circles around the party and target weaker spellcasters.",
+  "mechanicalTendencies": {
+    "hpBand": "low-moderate",
+    "acBand": "moderate",
+    "damageProfile": "burst",
+    "actionEconomy": "extra-movement"
+  }
+}

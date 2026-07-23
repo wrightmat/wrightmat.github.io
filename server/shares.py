@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from .auth import AuthError, User
+from .kinds import load_kind_policy
 from .state import ServerState
 from .roles import role_rank
 
@@ -12,16 +13,9 @@ from .roles import role_rank
 ALL_USERS_DISPLAY = "All Users"
 ALL_USERS_SPECIAL = "all-users"
 ALL_USERS_ALIASES = {alias.lower(): ALL_USERS_SPECIAL for alias in ["all users", "all-users", "allusers"]}
-ALL_USERS_CONTENT_TYPES = {"template", "system"}
-CONTENT_TABLES = {"character": "characters", "template": "templates", "system": "systems"}
 
 
 ALLOWED_PERMISSIONS = {"view", "edit"}
-SHARE_ROLE_THRESHOLDS = {
-    "character": "free",
-    "template": "gm",
-    "system": "creator",
-}
 
 
 def _normalize_permissions(value: str) -> str:
@@ -29,27 +23,21 @@ def _normalize_permissions(value: str) -> str:
     return normalized if normalized in ALLOWED_PERMISSIONS else "view"
 
 
-def _supports_all_users(content_type: str) -> bool:
-    return content_type in ALL_USERS_CONTENT_TYPES
-
-
+# "Share with All Users" is really just "make it public" — every Library kind
+# supports is_public now (library_items), so there's no fixed allowlist of
+# which content types this shortcut works for anymore.
 def _is_all_users_username(username: str) -> bool:
     if not username:
         return False
     return username.strip().lower() in ALL_USERS_ALIASES
 
 
-def _content_table(content_type: str) -> Optional[str]:
-    return CONTENT_TABLES.get(content_type)
-
-
 def _record_is_public(state: ServerState, content_type: str, content_id: str) -> bool:
-    table = _content_table(content_type)
-    if not table or not content_id:
+    if not content_id:
         return False
     row = state.db.execute(
-        f"SELECT is_public FROM {table} WHERE id = ?",
-        (content_id,),
+        "SELECT is_public FROM library_items WHERE kind = ? AND id = ?",
+        (content_type, content_id),
     ).fetchone()
     if not row:
         return False
@@ -57,12 +45,11 @@ def _record_is_public(state: ServerState, content_type: str, content_id: str) ->
 
 
 def _set_record_public(state: ServerState, content_type: str, content_id: str, is_public: bool) -> None:
-    table = _content_table(content_type)
-    if not table or not content_id:
+    if not content_id:
         raise AuthError("Invalid content type")
     cursor = state.db.execute(
-        f"UPDATE {table} SET is_public = ? WHERE id = ?",
-        (1 if is_public else 0, content_id),
+        "UPDATE library_items SET is_public = ? WHERE kind = ? AND id = ?",
+        (1 if is_public else 0, content_type, content_id),
     )
     if cursor.rowcount == 0:
         raise AuthError("Content not found")
@@ -80,7 +67,7 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
         (content_type, content_id),
     ).fetchall()
     shares = [dict(row) for row in rows]
-    if _supports_all_users(content_type) and _record_is_public(state, content_type, content_id):
+    if _record_is_public(state, content_type, content_id):
         shares.append({
             "username": ALL_USERS_DISPLAY,
             "permissions": "view",
@@ -90,7 +77,10 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
 
 
 def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str, str]]:
-    threshold = SHARE_ROLE_THRESHOLDS.get(content_type, "free")
+    # The bar for "can this user usefully receive this content" is the same
+    # bar as reading it, so this reuses the kind's readTier rather than a
+    # separate, easy-to-drift policy dimension.
+    threshold = load_kind_policy(state, content_type)["readTier"]
     min_rank = role_rank(threshold) if threshold else -1
     rows = state.db.execute(
         """
@@ -101,26 +91,20 @@ def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str
         """,
     ).fetchall()
     eligible: List[Dict[str, str]] = []
-    all_users_entry: Optional[Dict[str, str]] = None
     for row in rows:
         username = row["username"]
         tier = (row["tier"] or "free").strip().lower()
         if min_rank >= 0 and role_rank(tier) < min_rank:
             continue
         eligible.append({"username": username, "tier": tier})
-    if _supports_all_users(content_type):
-        all_users_entry = {"username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL}
-    if all_users_entry:
-        return [all_users_entry, *eligible]
-    return eligible
+    all_users_entry = {"username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL}
+    return [all_users_entry, *eligible]
 
 
 def share_with_user(
     state: ServerState, content_type: str, content_id: str, username: str, permissions: str
 ) -> Dict[str, str]:
     if _is_all_users_username(username):
-        if not _supports_all_users(content_type):
-            raise AuthError("This content cannot be shared with all users")
         _set_record_public(state, content_type, content_id, True)
         return {
             "content_type": content_type,
@@ -153,8 +137,6 @@ def share_with_user(
 
 def revoke_share(state: ServerState, content_type: str, content_id: str, username: str) -> None:
     if _is_all_users_username(username):
-        if not _supports_all_users(content_type):
-            raise AuthError("This content cannot be shared with all users")
         _set_record_public(state, content_type, content_id, False)
         return
     user_row = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()

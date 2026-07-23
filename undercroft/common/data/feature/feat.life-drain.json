@@ -1,0 +1,25 @@
+{
+  "id": "feat.life-drain",
+  "name": "Life Drain",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack deals extra necrotic damage, and the creature regains hit points equal to the necrotic damage dealt.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack deals extra necrotic damage, and the creature regains hit points equal to the necrotic damage dealt."
+  },
+  "tags": {
+    "behaviors": [
+      "damage",
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "drain"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

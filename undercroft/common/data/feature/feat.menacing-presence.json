@@ -1,0 +1,25 @@
+{
+  "id": "feat.menacing-presence",
+  "name": "Menacing Presence",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Creatures that start their turn within 10 feet of the monster must succeed on a save or have disadvantage on attacks against anyone but it.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Creatures that start their turn within 10 feet of the monster must succeed on a save or have disadvantage on attacks against anyone but it."
+  },
+  "tags": {
+    "behaviors": [
+      "fear",
+      "control"
+    ],
+    "recipeSlots": [
+      "threaten"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.guarded-stance",
+  "name": "Guarded Stance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature imposes disadvantage on the next attack roll made against it before the start of its next turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature imposes disadvantage on the next attack roll made against it before the start of its next turn."
+  },
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "defend"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

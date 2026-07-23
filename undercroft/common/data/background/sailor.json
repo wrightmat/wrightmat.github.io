@@ -39,7 +39,7 @@
   "proficiency_choices": [],
   "equipment_options": [
     {
-      "desc": "(A) Dagger, Navigator's Tools, Rope, Traveler\u2019s Clothes, 20 GP or (B) 50 GP",
+      "desc": "(A) Dagger, Navigator's Tools, Rope, Traveler’s Clothes, 20 GP or (B) 50 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -77,7 +77,7 @@
                 "count": 1,
                 "of": {
                   "index": "traveler-s-clothes",
-                  "name": "Traveler\u2019s Clothes"
+                  "name": "Traveler’s Clothes"
                 }
               },
               {
@@ -97,15 +97,18 @@
     }
   ],
   "description": [
-    "You lived as a seafarer, wind at your back and decks swaying beneath your feet. You\u2019ve perched on barstools in more ports of call than you can remember, faced mighty storms, and swapped stories with folk who live beneath the waves."
+    "You lived as a seafarer, wind at your back and decks swaying beneath your feet. You’ve perched on barstools in more ports of call than you can remember, faced mighty storms, and swapped stories with folk who live beneath the waves."
   ],
-  "source": "Player\u2019s Handbook, pg. 184",
+  "source": "Player’s Handbook, pg. 184",
   "traits": {
     "abilityScores": "Strength, Dexterity, Wisdom",
     "feat": "Tavern Brawler",
     "skillProficiencies": "Acrobatics and Perception",
     "toolProficiencies": "Navigator's Tools",
-    "equipment": "Choose A or B: (A) Dagger, Navigator's Tools, Rope, Traveler\u2019s Clothes, 20 GP; or (B) 50 GP"
+    "equipment": "Choose A or B: (A) Dagger, Navigator's Tools, Rope, Traveler’s Clothes, 20 GP; or (B) 50 GP"
   },
-  "updated_at": "2026-07-19T14:54:36.965Z"
+  "updated_at": "2026-07-19T14:54:36.965Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

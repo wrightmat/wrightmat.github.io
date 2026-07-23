@@ -1,0 +1,24 @@
+{
+  "id": "feat.empowering-aura",
+  "name": "Empowering Aura",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Allies within 10 feet of the creature add a bonus to their damage rolls.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Allies within 10 feet of the creature add a bonus to their damage rolls."
+  },
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "enhance"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

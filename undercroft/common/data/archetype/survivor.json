@@ -1,0 +1,18 @@
+{
+  "id": "survivor",
+  "name": "Survivor",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Wins by refusing to die and adapting to whatever threat it's facing.",
+  "recipe": {
+    "signatureSlot": "resist",
+    "requiredSlots": [
+      "recover",
+      "adapt",
+      "endure"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

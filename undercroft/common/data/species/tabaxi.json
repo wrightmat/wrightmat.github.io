@@ -6,19 +6,19 @@
   "tagline": "Curious Wanderer of Distant Lands",
   "icon": "ddb-creature-humanoid",
   "description": [
-    "Created by the Cat Lord\u2014a divine being of the Upper Planes\u2014to blend the qualities of humanoids and cats, tabaxi are a varied people in both attitude and appearance. In some lands, tabaxi live like the cats they resemble, naturally curious and at home in playful environments. In other places, tabaxi live as other folk do, not exhibiting the feline behavior the Cat Lord intended.",
-    "Tabaxi\u2019s appearance is as varied as their attitudes. Some tabaxi have features or patterning in their fur like tigers, jaguars, or other big cats, while others have appearances more like a house cat. Still others have unique patterns or might style their fur to their preferences\u2014or might even be hairless!"
+    "Created by the Cat Lord—a divine being of the Upper Planes—to blend the qualities of humanoids and cats, tabaxi are a varied people in both attitude and appearance. In some lands, tabaxi live like the cats they resemble, naturally curious and at home in playful environments. In other places, tabaxi live as other folk do, not exhibiting the feline behavior the Cat Lord intended.",
+    "Tabaxi’s appearance is as varied as their attitudes. Some tabaxi have features or patterning in their fur like tigers, jaguars, or other big cats, while others have appearances more like a house cat. Still others have unique patterns or might style their fur to their preferences—or might even be hairless!"
   ],
   "type": "Humanoid",
   "size": "Medium or Small",
   "speed": 30,
   "traits": [
     {
-      "name": "Cat\u2019s Claws",
+      "name": "Cat’s Claws",
       "description": "You can use your claws to make unarmed strikes. When you hit with them, the strike deals 1d6 + your Strength modifier slashing damage, instead of the bludgeoning damage normal for an unarmed strike."
     },
     {
-      "name": "Cat\u2019s Talent",
+      "name": "Cat’s Talent",
       "description": "You have proficiency in the Perception and Stealth skills."
     },
     {
@@ -27,9 +27,12 @@
     },
     {
       "name": "Feline Agility",
-      "description": "Your reflexes and agility allow you to move with a burst of speed. When you move on your turn in combat, you can double your speed until the end of the turn. Once you use this trait, you can\u2019t use it again until you move 0 feet on one of your turns."
+      "description": "Your reflexes and agility allow you to move with a burst of speed. When you move on your turn in combat, you can double your speed until the end of the turn. Once you use this trait, you can’t use it again until you move 0 feet on one of your turns."
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T20:00:42.302Z"
+  "updated_at": "2026-07-19T20:00:42.302Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

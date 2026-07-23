@@ -1,0 +1,29 @@
+{
+  "id": "feat.healing-touch",
+  "name": "Healing Touch",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As an action, the creature can restore a moderate number of hit points to one creature it touches.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As an action, the creature can restore a moderate number of hit points to one creature it touches."
+  },
+  "tags": {
+    "behaviors": [
+      "regeneration",
+      "utility"
+    ],
+    "recipeSlots": [
+      "sustain",
+      "recover"
+    ],
+    "roles": [
+      "leader",
+      "support"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

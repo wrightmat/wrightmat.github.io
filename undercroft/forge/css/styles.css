@@ -1,0 +1,49 @@
+/*
+ * Forge-specific styles. Kept minimal — the generator/location-builder UI
+ * is built almost entirely from Bootstrap utilities; these are the handful
+ * of things Bootstrap can't express directly.
+ */
+
+[data-npc-json-preview] {
+  min-height: 8rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Looks like the plain-text value it replaces until hovered/focused, so an
+   editable field (currently just Name) doesn't visually stand out from the
+   read-only ones next to it until you actually interact with it. */
+.forge-inline-edit {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background-color: transparent;
+  padding: 0.05rem 0.25rem;
+  margin: -0.05rem -0.25rem;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+}
+
+.forge-inline-edit:hover {
+  border-color: var(--bs-border-color);
+}
+
+.forge-inline-edit:focus {
+  outline: none;
+  border-color: var(--bs-primary);
+  background-color: var(--bs-body-bg);
+}
+
+/* Identity boxes are selectable (click one to inspect it in the right pane,
+   the standard Undercroft select-then-inspect convention) — this is the
+   visual state for whichever one is currently selected. */
+[data-select-field] {
+  cursor: pointer;
+}
+
+[data-select-field].forge-field-selected {
+  border-color: var(--bs-primary) !important;
+  background-color: var(--bs-tertiary-bg);
+}

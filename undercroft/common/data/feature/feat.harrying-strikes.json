@@ -1,0 +1,25 @@
+{
+  "id": "feat.harrying-strikes",
+  "name": "Harrying Strikes",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack reduces the target's speed by 10 feet until the start of the monster's next turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack reduces the target's speed by 10 feet until the start of the monster's next turn."
+  },
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "harass"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

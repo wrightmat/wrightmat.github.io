@@ -1,0 +1,21 @@
+{
+  "id": "plant",
+  "name": "Plant",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A creature of vegetable rather than animal nature, ranging from barely mobile to aggressively territorial.",
+  "vocabulary": {
+    "namePatterns": [
+      "{name} Bloom",
+      "Elder {name}"
+    ]
+  },
+  "traitTags": [
+    "vegetal",
+    "territorial"
+  ],
+  "defaultSenses": [],
+  "defaultResistances": [],
+  "defaultImmunities": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.disruptive-blow",
+  "name": "Disruptive Blow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack forces the target to make its next concentration save with disadvantage.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack forces the target to make its next concentration save with disadvantage."
+  },
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "disrupt"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

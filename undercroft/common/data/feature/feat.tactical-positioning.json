@@ -1,0 +1,25 @@
+{
+  "id": "feat.tactical-positioning",
+  "name": "Tactical Positioning",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature can swap places with a willing ally within 5 feet of it.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature can swap places with a willing ally within 5 feet of it."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "utility"
+    ],
+    "recipeSlots": [
+      "position"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

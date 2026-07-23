@@ -1,0 +1,35 @@
+{
+  "kind": "species",
+  "name": "Half-Orc",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Dutch",
+      "Feng",
+      "Gell",
+      "Henk",
+      "Holg",
+      "Imsh",
+      "Keth",
+      "Krusk",
+      "Mhurren",
+      "Ront",
+      "Shump",
+      "Thokk",
+      "Baggi",
+      "Emen",
+      "Engong",
+      "Kansif",
+      "Myev",
+      "Neega",
+      "Ovak",
+      "Shautha",
+      "Vola",
+      "Yevelda"
+    ]
+  }
+}

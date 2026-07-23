@@ -1,0 +1,18 @@
+{
+  "id": "commander",
+  "name": "Commander",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Coordinates its allies' actions and improves their effectiveness.",
+  "recipe": {
+    "signatureSlot": "command",
+    "requiredSlots": [
+      "enhance",
+      "position",
+      "adapt"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

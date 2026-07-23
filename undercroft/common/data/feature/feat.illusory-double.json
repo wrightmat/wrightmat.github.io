@@ -1,0 +1,28 @@
+{
+  "id": "feat.illusory-double",
+  "name": "Illusory Double",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Once per short rest, the creature can create an illusory duplicate of itself that lasts one minute.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Once per short rest, the creature can create an illusory duplicate of itself that lasts one minute."
+  },
+  "tags": {
+    "behaviors": [
+      "utility"
+    ],
+    "recipeSlots": [
+      "mislead",
+      "escape"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "fey",
+      "fiend"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

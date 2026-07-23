@@ -6,8 +6,8 @@
   "tagline": "Born of Draconic Ancestry",
   "icon": "ddb-creature-humanoid",
   "description": [
-    "The ancestors of dragonborn hatched from the eggs of chromatic and metallic dragons. One story holds that these eggs were blessed by the dragon gods Bahamut and Tiamat, who wanted to populate the multiverse with people created in their image. Another story claims that dragons created the first dragonborn without the gods\u2019 blessings. Whatever their origin, dragonborn have made homes for themselves on the Material Plane.",
-    "Dragonborn look like wingless, bipedal dragons\u2014 scaly, bright-eyed, and thick-boned with horns on their heads\u2014and their coloration and other features are reminiscent of their draconic ancestors."
+    "The ancestors of dragonborn hatched from the eggs of chromatic and metallic dragons. One story holds that these eggs were blessed by the dragon gods Bahamut and Tiamat, who wanted to populate the multiverse with people created in their image. Another story claims that dragons created the first dragonborn without the gods’ blessings. Whatever their origin, dragonborn have made homes for themselves on the Material Plane.",
+    "Dragonborn look like wingless, bipedal dragons— scaly, bright-eyed, and thick-boned with horns on their heads—and their coloration and other features are reminiscent of their draconic ancestors."
   ],
   "type": "Humanoid",
   "size": "Medium",
@@ -33,9 +33,54 @@
     {
       "name": "Draconic Flight",
       "description": "You can channel draconic magic to give yourself temporary flight (1/LR). As a Bonus Action, you sprout spectral wings on your back that last for 10 minutes or until you retract the wings (no action required) or have the Incapacitated condition. During that time, you have a Fly Speed equal to your Speed. Your wings appear to be made of the same energy as your Breath Weapon.",
-      "description_full": "When you reach character level 5, you can channel draconic magic to give yourself temporary flight. As a Bonus Action, you sprout spectral wings on your back that last for 10 minutes or until you retract the wings (no action required) or have the Incapacitated condition. During that time, you have a Fly Speed equal to your Speed. Your wings appear to be made of the same energy as your Breath Weapon. Once you use this trait, you can\u2019t use it again until you finish a Long Rest."
+      "description_full": "When you reach character level 5, you can channel draconic magic to give yourself temporary flight. As a Bonus Action, you sprout spectral wings on your back that last for 10 minutes or until you retract the wings (no action required) or have the Incapacitated condition. During that time, you have a Fly Speed equal to your Speed. Your wings appear to be made of the same energy as your Breath Weapon. Once you use this trait, you can’t use it again until you finish a Long Rest."
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T16:28:54.865Z"
+  "updated_at": "2026-07-19T16:28:54.865Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Arjhan",
+      "Balasar",
+      "Bharash",
+      "Donaar",
+      "Ghesh",
+      "Heskan",
+      "Kriv",
+      "Medrash",
+      "Nadarr",
+      "Pandjed",
+      "Patrin",
+      "Rhogar",
+      "Shamash",
+      "Tarhun",
+      "Torinn",
+      "Akra",
+      "Biri",
+      "Daar",
+      "Farideh",
+      "Harann"
+    ],
+    "lastNames": [
+      "Clethtinthiallor",
+      "Daardendrian",
+      "Delmirev",
+      "Drachedandion",
+      "Fenkenkabradon",
+      "Kepeshkmolik",
+      "Kerrhylon",
+      "Kimbatuul",
+      "Linxakasendalor",
+      "Myastan",
+      "Nemmonis",
+      "Norixius",
+      "Ophinshtalajiir",
+      "Prexijandilin"
+    ]
+  }
 }

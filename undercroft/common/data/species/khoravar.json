@@ -6,8 +6,8 @@
   "tagline": "Bridge Between Two Worlds",
   "icon": "ddb-creature-humanoid",
   "description": [
-    "Over the course of centuries, those descended from both humans and elves have developed their own communities and traditions in Khorvaire. The rise of House Lyrandar and House Medani has strengthened this identity. Members of these communities call themselves Khoravar, an Elvish term meaning \u201cchildren of Khorvaire,\u201d as they dislike the term \u201chalf-elf.\u201d",
-    "Many Khoravar espouse the idea of being \u201cthe bridge between,\u201d believing they are called to facilitate communication and cooperation between members of diff erent cultures or species. Khoravar who follow this philosophy often become bards, diplomats, mediators, or translators. Others, fascinated by their distant connection to the Fey, seek to build bridges between the Material Plane and the Feywild of Thelanis. These Khoravar often become druids or warlocks with archfey patrons."
+    "Over the course of centuries, those descended from both humans and elves have developed their own communities and traditions in Khorvaire. The rise of House Lyrandar and House Medani has strengthened this identity. Members of these communities call themselves Khoravar, an Elvish term meaning “children of Khorvaire,” as they dislike the term “half-elf.”",
+    "Many Khoravar espouse the idea of being “the bridge between,” believing they are called to facilitate communication and cooperation between members of diff erent cultures or species. Khoravar who follow this philosophy often become bards, diplomats, mediators, or translators. Others, fascinated by their distant connection to the Fey, seek to build bridges between the Material Plane and the Feywild of Thelanis. These Khoravar often become druids or warlocks with archfey patrons."
   ],
   "type": "Humanoid",
   "size": "Medium or Small",
@@ -27,7 +27,7 @@
     },
     {
       "name": "Lethargy Resilience",
-      "description": "When you fail a saving throw to avoid or end the Unconscious condition, you can succeed instead. Once you use this trait, you can\u2019t do so again until you finish 1d4 Long Rests."
+      "description": "When you fail a saving throw to avoid or end the Unconscious condition, you can succeed instead. Once you use this trait, you can’t do so again until you finish 1d4 Long Rests."
     },
     {
       "name": "Skill Versatility",
@@ -35,5 +35,8 @@
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T16:31:26.109Z"
+  "updated_at": "2026-07-19T16:31:26.109Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

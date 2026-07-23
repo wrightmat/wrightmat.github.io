@@ -108,7 +108,7 @@
   ],
   "starting_equipment_options": [
     {
-      "desc": "(A) Greataxe, 4 Handaxes, Explorer\u2019s Pack, and 15 GP or (B) 75 GP",
+      "desc": "(A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP or (B) 75 GP",
       "choose": 1,
       "type": "equipment",
       "from": {
@@ -138,7 +138,7 @@
                 "count": 1,
                 "of": {
                   "index": "explorer-s-pack",
-                  "name": "Explorer\u2019s Pack"
+                  "name": "Explorer’s Pack"
                 }
               },
               {
@@ -187,7 +187,10 @@
     "skillProficiencies": "Choose 2: Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival",
     "weaponProficiencies": "Simple and Martial weapons",
     "armorTraining": "Light and Medium armor and Shields",
-    "startingEquipment": "Choose A or B: (A) Greataxe, 4 Handaxes, Explorer\u2019s Pack, and 15 GP; or (B) 75 GP"
+    "startingEquipment": "Choose A or B: (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP"
   },
-  "updated_at": "2026-07-17T22:31:34.692Z"
+  "updated_at": "2026-07-17T22:31:34.692Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

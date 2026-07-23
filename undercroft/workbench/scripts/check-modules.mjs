@@ -8,8 +8,9 @@ const __dirname = dirname(__filename);
 
 const args = process.argv.slice(2);
 const defaultTargets = [
-  "../js/pages/template.js",
-  "../js/pages/system.js",
+  "../js/pages/workbench.js",
+  "../js/pages/workbench-template-view.js",
+  "../js/pages/workbench-character-view.js",
   "../js/lib/root-inserter.js",
   "../js/lib/json-preview.js",
   "../js/lib/editor-canvas.js",

@@ -1,0 +1,24 @@
+{
+  "id": "feat.punishing-riposte",
+  "name": "Punishing Riposte",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature misses the monster with a melee attack, the monster can make one melee attack against it as a reaction.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "When a creature misses the monster with a melee attack, the monster can make one melee attack against it as a reaction."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "punish"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.entangling-roots",
+  "name": "Entangling Roots",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can cause difficult terrain or restrain a creature within 10 feet as a bonus action.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature can cause difficult terrain or restrain a creature within 10 feet as a bonus action."
+  },
+  "tags": {
+    "behaviors": [
+      "control"
+    ],
+    "recipeSlots": [
+      "deny",
+      "dominate"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "plant"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

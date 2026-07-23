@@ -1,0 +1,33 @@
+{
+  "kind": "species",
+  "name": "Goblinoid",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Grix",
+      "Nabber",
+      "Snik",
+      "Vurg",
+      "Zog",
+      "Fenk",
+      "Grubb",
+      "Krent",
+      "Molg",
+      "Ratch",
+      "Skrit",
+      "Torg",
+      "Yeek",
+      "Blot",
+      "Draz",
+      "Gnash",
+      "Krunch",
+      "Muck",
+      "Shiv",
+      "Wretch"
+    ]
+  }
+}

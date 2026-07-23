@@ -1,0 +1,25 @@
+{
+  "id": "feat.hunters-mark-innate",
+  "name": "Marked for the Hunt",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a bonus action, the creature marks a target it can see; its attacks against the marked target deal extra damage.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a bonus action, the creature marks a target it can see; its attacks against the marked target deal extra damage."
+  },
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "mark"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

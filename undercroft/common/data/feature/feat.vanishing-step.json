@@ -1,0 +1,24 @@
+{
+  "id": "feat.vanishing-step",
+  "name": "Vanishing Step",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a reaction to being hit by an attack, the creature can teleport up to 15 feet to an unoccupied space it can see.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a reaction to being hit by an attack, the creature can teleport up to 15 feet to an unoccupied space it can see."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility"
+    ],
+    "recipeSlots": [
+      "reposition"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

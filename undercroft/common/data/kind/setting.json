@@ -1,0 +1,8 @@
+{
+  "id": "setting",
+  "label": "Setting",
+  "plural": "Settings",
+  "icon": "tabler:map",
+  "readTier": "free",
+  "writeTier": "creator"
+}

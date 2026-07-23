@@ -1,0 +1,199 @@
+{
+  "id": "sys.dnd5e",
+  "title": "D&D 5E",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "class",
+      "label": "Class"
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Classes",
+      "entityKind": "class",
+      "values": [
+        { "name": "Barbarian", "entityId": "barbarian" },
+        { "name": "Bard" },
+        { "name": "Cleric" },
+        { "name": "Druid" },
+        { "name": "Fighter" },
+        { "name": "Monk" },
+        { "name": "Paladin" },
+        { "name": "Ranger" },
+        { "name": "Rogue" },
+        { "name": "Sorcerer" },
+        { "name": "Warlock" },
+        { "name": "Wizard" }
+      ]
+    },
+    {
+      "type": "string",
+      "key": "species",
+      "label": "Species"
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Abilities",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "minimum": 1,
+          "maximum": 20
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saving Throws",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.strength",
+          "label": "Strength Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.dexterity",
+          "label": "Dexterity Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.constitution",
+          "label": "Constitution Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.intelligence",
+          "label": "Intelligence Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.wisdom",
+          "label": "Wisdom Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        },
+        {
+          "type": "number",
+          "key": "saves.charisma",
+          "label": "Charisma Saving Throw",
+          "minimum": 1,
+          "maximum": 20
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "item": {
+        "type": "object",
+        "label": "Item",
+        "displayField": "inventory[].name",
+        "children": [
+          {
+            "type": "string",
+            "key": "inventory[].name",
+            "label": "Item Name",
+            "required": true
+          },
+          {
+            "type": "number",
+            "key": "inventory[].quantity",
+            "label": "Quantity",
+            "minimum": 0
+          },
+          {
+            "type": "number",
+            "key": "inventory[].weight",
+            "label": "Weight (lb)",
+            "minimum": 0
+          },
+          {
+            "type": "string",
+            "key": "inventory[].notes",
+            "label": "Notes"
+          }
+        ]
+      }
+    }
+  ],
+  "preview": {
+    "inventory": [
+      {
+        "name": "Longsword",
+        "quantity": 1,
+        "weight": 3,
+        "notes": "Trusted martial weapon"
+      },
+      {
+        "name": "Explorer's Pack",
+        "quantity": 1,
+        "weight": 10,
+        "notes": "Bedroll, rations, tinderbox, and more"
+      },
+      {
+        "name": "Potion of Healing",
+        "quantity": 2,
+        "weight": 0.5,
+        "notes": "Restores 2d4+2 hit points"
+      }
+    ]
+  },
+  "importers": []
+}

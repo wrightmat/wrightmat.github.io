@@ -1,0 +1,25 @@
+{
+  "id": "feat.cutting-off-retreat",
+  "name": "Cutting Off Retreat",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a reaction, the creature can move up to half its speed toward a creature that moves away from it, without provoking opportunity attacks.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a reaction, the creature can move up to half its speed toward a creature that moves away from it, without provoking opportunity attacks."
+  },
+  "tags": {
+    "behaviors": [
+      "mobility",
+      "control"
+    ],
+    "recipeSlots": [
+      "isolate"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

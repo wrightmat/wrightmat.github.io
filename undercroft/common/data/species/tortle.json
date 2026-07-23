@@ -6,7 +6,7 @@
   "tagline": "Steadfast Traveler with Ancient Wisdom",
   "icon": "ddb-creature-humanoid",
   "description": [
-    "Tortles have a saying: \u201cWe wear our homes on our backs.\u201d These turtle folk live on many worlds, most often journeying up and down coasts, along waterways, and across the sea. Tortles don\u2019t have a unified story of how they were created, but they all have a sense of being mystically connected to the natural world. Carrying their shelter on their backs gives tortles a special feeling of security wherever they go, for even if they visit a far, unknown country, they have a place to lay their heads.",
+    "Tortles have a saying: “We wear our homes on our backs.” These turtle folk live on many worlds, most often journeying up and down coasts, along waterways, and across the sea. Tortles don’t have a unified story of how they were created, but they all have a sense of being mystically connected to the natural world. Carrying their shelter on their backs gives tortles a special feeling of security wherever they go, for even if they visit a far, unknown country, they have a place to lay their heads.",
     "Tortles exhibit the same range of coloration and patterns found among turtles, and many tortles enjoy adorning their shells in distinctive ways."
   ],
   "type": "Humanoid",
@@ -23,17 +23,20 @@
     },
     {
       "name": "Natural Armor",
-      "description": "Your shell provides you a base AC of 17 (your Dexterity modifier doesn\u2019t affect this number). You can\u2019t wear light, medium, or heavy armor, but if you are using a shield, you can apply the shield\u2019s bonus as normal."
+      "description": "Your shell provides you a base AC of 17 (your Dexterity modifier doesn’t affect this number). You can’t wear light, medium, or heavy armor, but if you are using a shield, you can apply the shield’s bonus as normal."
     },
     {
-      "name": "Nature\u2019s Intuition",
+      "name": "Nature’s Intuition",
       "description": "Thanks to your mystical connection to nature, you gain proficiency with one of the following skills of your choice: Animal Handling, Medicine, Nature, Perception, Stealth, or Survival."
     },
     {
       "name": "Shell Defense",
-      "description": "You can withdraw into your shell as an action. Until you emerge, you gain a +4 bonus to your AC, and you have advantage on Strength and Constitution saving throws. While in your shell, you are prone, your speed is 0 and can\u2019t increase, you have disadvantage on Dexterity saving throws, you can\u2019t take reactions, and the only action you can take is a bonus action to emerge from your shell."
+      "description": "You can withdraw into your shell as an action. Until you emerge, you gain a +4 bonus to your AC, and you have advantage on Strength and Constitution saving throws. While in your shell, you are prone, your speed is 0 and can’t increase, you have disadvantage on Dexterity saving throws, you can’t take reactions, and the only action you can take is a bonus action to emerge from your shell."
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T20:00:59.847Z"
+  "updated_at": "2026-07-19T20:00:59.847Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ]
 }

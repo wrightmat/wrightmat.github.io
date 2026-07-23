@@ -1,0 +1,49 @@
+{
+  "kind": "species",
+  "name": "Half-Elf",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "Aramil",
+      "Berris",
+      "Corran",
+      "Dara",
+      "Elenion",
+      "Fenna",
+      "Galla",
+      "Halric",
+      "Ithil",
+      "Jalara",
+      "Kellen",
+      "Lyra",
+      "Maren",
+      "Nissa",
+      "Orlin",
+      "Pallis",
+      "Quenna",
+      "Ravi",
+      "Selene",
+      "Talvar"
+    ],
+    "lastNames": [
+      "Ashwind",
+      "Brightwood",
+      "Corvin",
+      "Dawnstar",
+      "Ellowyn",
+      "Fenwick",
+      "Greymoor",
+      "Hartwood",
+      "Lorehaven",
+      "Moonwhisper",
+      "Nightshade",
+      "Silversong",
+      "Thistledown",
+      "Windrider"
+    ]
+  }
+}

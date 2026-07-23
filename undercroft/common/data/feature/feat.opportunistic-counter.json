@@ -1,0 +1,24 @@
+{
+  "id": "feat.opportunistic-counter",
+  "name": "Opportunistic Counter",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "When a creature misses the monster with an attack, the monster can immediately make one weapon attack against it.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "When a creature misses the monster with an attack, the monster can immediately make one weapon attack against it."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "counter"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

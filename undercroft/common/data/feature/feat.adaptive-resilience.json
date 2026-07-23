@@ -1,0 +1,24 @@
+{
+  "id": "feat.adaptive-resilience",
+  "name": "Adaptive Resilience",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "At the start of each of its turns, the creature gains resistance to the last damage type that hit it since its last turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "At the start of each of its turns, the creature gains resistance to the last damage type that hit it since its last turn."
+  },
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "adapt"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

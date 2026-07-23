@@ -1,0 +1,25 @@
+{
+  "id": "feat.swarm-regrowth",
+  "name": "Swarm Regrowth",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "At the start of its turn, the creature regains a small number of hit points if at least one ally of the same kind is within 30 feet.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "At the start of its turn, the creature regains a small number of hit points if at least one ally of the same kind is within 30 feet."
+  },
+  "tags": {
+    "behaviors": [
+      "regeneration",
+      "swarm-tactics"
+    ],
+    "recipeSlots": [
+      "recover"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

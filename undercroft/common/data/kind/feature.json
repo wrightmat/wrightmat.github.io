@@ -1,0 +1,8 @@
+{
+  "id": "feature",
+  "label": "Feature",
+  "plural": "Features",
+  "icon": "tabler:puzzle",
+  "readTier": "free",
+  "writeTier": "creator"
+}

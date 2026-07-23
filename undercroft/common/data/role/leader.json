@@ -1,0 +1,14 @@
+{
+  "id": "leader",
+  "name": "Leader",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Monsters that buff their allies, heal, or provide tactical advantages to the rest of the enemy group.",
+  "mechanicalTendencies": {
+    "hpBand": "moderate",
+    "acBand": "moderate",
+    "damageProfile": "low-direct",
+    "actionEconomy": "ally-focused"
+  }
+}

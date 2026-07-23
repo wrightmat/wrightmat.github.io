@@ -1,0 +1,25 @@
+{
+  "id": "feat.crippling-blow",
+  "name": "Crippling Blow",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack imposes disadvantage on the target's next attack roll before the end of its next turn.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack imposes disadvantage on the target's next attack roll before the end of its next turn."
+  },
+  "tags": {
+    "behaviors": [
+      "debuff",
+      "control"
+    ],
+    "recipeSlots": [
+      "disable"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

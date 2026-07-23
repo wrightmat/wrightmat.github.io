@@ -36,22 +36,29 @@ const TOOL_DEFINITIONS = [
     id: "loom",
     label: "Loom",
     icon: "tabler:cloud-download",
-    summary: "Fetches and normalizes external content into standardized local data.",
+    summary: "Fetches and normalizes external content.",
     built: true,
   },
   {
     id: "forge",
     label: "Forge",
     icon: "tabler:hammer",
-    summary: "NPC creator (not yet built).",
-    built: false,
+    summary: "Rolls NPCs with Identity and 4D traits.",
+    built: true,
+  },
+  {
+    id: "admin",
+    label: "Admin",
+    icon: "tabler:shield-cog",
+    summary: "Account tiers, ownership, sharing, and groups.",
+    built: true,
   },
   {
     id: "crucible",
     label: "Crucible",
     icon: "tabler:flask",
-    summary: "Monster and adversary creator (not yet built).",
-    built: false,
+    summary: "Generates monster concepts from Creature Type, Archetype, and Role.",
+    built: true,
   },
   {
     id: "vault",
@@ -69,7 +76,7 @@ const TOOL_DEFINITIONS = [
   },
 ];
 
-function resolveToolContextPath() {
+export function resolveToolContextPath() {
   if (typeof window === "undefined") {
     return "workbench";
   }
@@ -80,33 +87,18 @@ function resolveToolContextPath() {
   return segments[segments.length - 2];
 }
 
-function resolveToolHref(toolId, currentSection) {
-  const workbenchPages = {
-    workbench: "index.html",
-    system: "system.html",
-    template: "template.html",
-    character: "character.html",
-    admin: "admin.html",
-  };
-
-  if (toolId === "workbench") {
-    const prefix = currentSection === "workbench" ? "" : "../workbench/";
-    return `${prefix}${workbenchPages.workbench}`;
+// Every built tool lives at undercroft/{id}/index.html — same page linking
+// to itself resolves as a bare "index.html", any other tool reaches across
+// via "../{id}/index.html". Admin used to be nested under Workbench
+// (workbench/admin.html); it's its own tool now, at the same level as
+// Workbench/Press/Loom/Forge, so it follows this exact same rule instead of
+// needing a special case.
+export function resolveToolHref(toolId, currentSection) {
+  const builtToolIds = ["workbench", "press", "orrery", "loom", "forge", "admin", "crucible"];
+  if (!builtToolIds.includes(toolId)) {
+    return "#";
   }
-
-  if (toolId === "orrery") {
-    return currentSection === "orrery" ? "index.html" : "../orrery/index.html";
-  }
-
-  if (toolId === "press") {
-    return currentSection === "press" ? "index.html" : "../press/index.html";
-  }
-
-  if (toolId === "loom") {
-    return currentSection === "loom" ? "index.html" : "../loom/index.html";
-  }
-
-  return "#";
+  return currentSection === toolId ? "index.html" : `../${toolId}/index.html`;
 }
 
 // A card for one tool inside the dropdown — a real <a> (built, and not the

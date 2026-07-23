@@ -1,0 +1,25 @@
+{
+  "system": "dnd5e",
+  "archetypes": {
+    "Commoner": { "abilities": { "str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10 }, "ac": 10, "hp": 4 },
+    "Guard": { "abilities": { "str": 13, "dex": 12, "con": 12, "int": 10, "wis": 11, "cha": 10 }, "ac": 16, "hp": 11 },
+    "Scout": { "abilities": { "str": 11, "dex": 14, "con": 12, "int": 11, "wis": 13, "cha": 11 }, "ac": 13, "hp": 16 },
+    "Thug": { "abilities": { "str": 15, "dex": 11, "con": 14, "int": 10, "wis": 10, "cha": 11 }, "ac": 11, "hp": 32 },
+    "Spy": { "abilities": { "str": 10, "dex": 15, "con": 10, "int": 12, "wis": 14, "cha": 16 }, "ac": 12, "hp": 27 },
+    "Bandit": { "abilities": { "str": 11, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 10 }, "ac": 12, "hp": 11 },
+    "Bandit Captain": { "abilities": { "str": 15, "dex": 16, "con": 14, "int": 14, "wis": 11, "cha": 14 }, "ac": 15, "hp": 65 },
+    "Cultist": { "abilities": { "str": 11, "dex": 12, "con": 10, "int": 10, "wis": 11, "cha": 10 }, "ac": 12, "hp": 9 },
+    "Cult Fanatic": { "abilities": { "str": 11, "dex": 14, "con": 12, "int": 10, "wis": 13, "cha": 14 }, "ac": 13, "hp": 33 },
+    "Acolyte": { "abilities": { "str": 10, "dex": 10, "con": 10, "int": 10, "wis": 14, "cha": 11 }, "ac": 10, "hp": 9 },
+    "Priest": { "abilities": { "str": 10, "dex": 10, "con": 10, "int": 13, "wis": 16, "cha": 13 }, "ac": 13, "hp": 27 },
+    "Noble": { "abilities": { "str": 11, "dex": 12, "con": 11, "int": 12, "wis": 14, "cha": 16 }, "ac": 15, "hp": 9 },
+    "Knight": { "abilities": { "str": 16, "dex": 11, "con": 14, "int": 9, "wis": 11, "cha": 15 }, "ac": 18, "hp": 52 },
+    "Veteran": { "abilities": { "str": 16, "dex": 13, "con": 14, "int": 10, "wis": 11, "cha": 10 }, "ac": 17, "hp": 58 },
+    "Tribal Warrior": { "abilities": { "str": 13, "dex": 11, "con": 12, "int": 8, "wis": 11, "cha": 8 }, "ac": 12, "hp": 11 },
+    "Berserker": { "abilities": { "str": 16, "dex": 13, "con": 16, "int": 9, "wis": 11, "cha": 9 }, "ac": 13, "hp": 67 },
+    "Gladiator": { "abilities": { "str": 18, "dex": 15, "con": 16, "int": 10, "wis": 12, "cha": 15 }, "ac": 16, "hp": 112 },
+    "Druid": { "abilities": { "str": 11, "dex": 12, "con": 12, "int": 12, "wis": 15, "cha": 11 }, "ac": 11, "hp": 27 },
+    "Mage": { "abilities": { "str": 9, "dex": 14, "con": 11, "int": 17, "wis": 12, "cha": 11 }, "ac": 12, "hp": 40 },
+    "Archmage": { "abilities": { "str": 10, "dex": 14, "con": 12, "int": 20, "wis": 15, "cha": 16 }, "ac": 12, "hp": 99 }
+  }
+}

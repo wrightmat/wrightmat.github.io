@@ -1,0 +1,27 @@
+{
+  "id": "feat.legendary-resistance",
+  "name": "Legendary Resistance",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A limited number of times per day, the creature can choose to succeed on a failed saving throw instead.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A limited number of times per day, the creature can choose to succeed on a failed saving throw instead."
+  },
+  "tags": {
+    "behaviors": [
+      "defense"
+    ],
+    "recipeSlots": [
+      "resist",
+      "endure"
+    ],
+    "roles": [
+      "solo"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

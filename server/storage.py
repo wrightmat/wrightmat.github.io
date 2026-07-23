@@ -12,7 +12,8 @@ from typing import Any, Dict, List, Optional
 import re
 
 from .auth import AuthError, User
-from .roles import ROLE_ORDER, role_rank
+from .kinds import load_kind_policy
+from .roles import role_rank
 from .shares import resolve_share_token, touch_share_link
 from .state import ServerState
 
@@ -42,53 +43,37 @@ else:  # pragma: no cover
 
 _METADATA_PATTERN = re.compile(r"@([\w-]+):\s*(.+)")
 
+# Every Library kind (character/template/system, and every kind that used to be
+# a plain unauthenticated flat file — class/subclass/species/background/
+# variant/npc/setting/location/kind itself) now shares ONE ownership/sharing
+# mechanism instead of three hand-written tables plus nine ungated ones. A
+# creator-defined kind (undercroft/common/data/kind/{id}.json, itself just
+# another Library kind) gets full ownership/sharing with zero server code
+# changes, ever — that's the whole point of keying this table by `kind`
+# instead of giving every kind its own table.
+_LEGACY_BUCKET_SPECS = {
+    "characters": ("character", "name", ["system", "template"]),
+    "templates": ("template", "title", ["schema", "category"]),
+    "systems": ("system", "title", ["index"]),
+}
 
-def init_storage_db(conn: sqlite3.Connection) -> None:
+
+def init_storage_db(state: ServerState) -> None:
+    conn = state.db
     conn.execute(
         """
-        CREATE TABLE IF NOT EXISTS characters (
-            id TEXT PRIMARY KEY,
-            owner_id INTEGER,
-            name TEXT,
-            system TEXT,
-            template TEXT,
-            filename TEXT,
-            is_public INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            last_accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
-        )
-        """
-    )
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS templates (
-            id TEXT PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS library_items (
+            kind TEXT NOT NULL,
+            id TEXT NOT NULL,
             owner_id INTEGER,
             title TEXT,
-            schema TEXT,
-            filename TEXT,
             is_public INTEGER DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            last_accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
-        )
-        """
-    )
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS systems (
-            id TEXT PRIMARY KEY,
-            owner_id INTEGER,
-            title TEXT,
-            "index" TEXT,
+            metadata TEXT,
             filename TEXT,
-            is_public INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             last_accessed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (kind, id),
             FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
         )
         """
@@ -184,32 +169,110 @@ def init_storage_db(conn: sqlite3.Connection) -> None:
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_group_logs_created ON group_logs(group_id, created_at)"
     )
-    # Ensure legacy databases pick up the last_accessed_at columns
-    _ensure_column(conn, "templates", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
-    _ensure_column(conn, "systems", "last_accessed_at", "DATETIME", "CURRENT_TIMESTAMP")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_owner ON library_items(kind, owner_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_public ON library_items(kind, is_public)")
+    _migrate_legacy_buckets_to_library_items(conn)
+    _backfill_flat_library_kinds(state)
     conn.commit()
 
 
-def _ensure_column(conn: sqlite3.Connection, table: str, column: str, type_: str, default: Optional[str] = None) -> None:
-    info = conn.execute(f"PRAGMA table_info({table})").fetchall()
-    if any(row[1] == column for row in info):
+def _migrate_legacy_buckets_to_library_items(conn: sqlite3.Connection) -> None:
+    # One-time (but idempotent — safe to run on every startup) migration from
+    # the old per-bucket tables onto the unified library_items table. A fresh
+    # install never has these tables at all; an upgraded install has them
+    # renamed to _legacy_{table} after their first successful migration, so
+    # this is a no-op on every later startup.
+    existing_tables = {
+        row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    for table, (kind, title_col, metadata_cols) in _LEGACY_BUCKET_SPECS.items():
+        if table not in existing_tables:
+            continue
+        rows = conn.execute(f"SELECT * FROM {table}").fetchall()
+        for row in rows:
+            metadata = {col: row[col] for col in metadata_cols if row[col] is not None}
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO library_items
+                    (kind, id, owner_id, title, is_public, metadata, filename,
+                     created_at, modified_at, last_accessed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    kind,
+                    row["id"],
+                    row["owner_id"],
+                    row[title_col],
+                    row["is_public"],
+                    json.dumps(metadata) if metadata else None,
+                    row["filename"],
+                    row["created_at"],
+                    row["modified_at"],
+                    row["last_accessed_at"],
+                ),
+            )
+        conn.execute(f"ALTER TABLE {table} RENAME TO _legacy_{table}")
+
+
+def _backfill_flat_library_kinds(state: ServerState) -> None:
+    # Every Library kind's file root is a fixed, uniform path now — no more
+    # per-kind server.config.json mount. Any file with no library_items row
+    # yet (every pre-existing entry from before its kind ever had ownership
+    # tracking) gets backfilled to an admin account, public, so existing
+    # content stays visible/usable exactly as before, just with a real owner
+    # of record. Idempotent — already-tracked files are skipped every run.
+    data_root = state.root_dir / "undercroft" / "common" / "data"
+    if not data_root.exists():
         return
-    default_clause = f" DEFAULT {default}" if default else ""
-    conn.execute(
-        f"ALTER TABLE {table} ADD COLUMN {column} {type_}{default_clause}"
-    )
+    admin_row = state.db.execute(
+        "SELECT id FROM users WHERE tier = 'admin' ORDER BY id LIMIT 1"
+    ).fetchone()
+    admin_id = admin_row["id"] if admin_row else None
+    for kind_dir in sorted(data_root.iterdir()):
+        if not kind_dir.is_dir():
+            continue
+        kind = kind_dir.name
+        for entry in sorted(kind_dir.glob("*.json")):
+            entry_id = entry.stem
+            existing = state.db.execute(
+                "SELECT 1 FROM library_items WHERE kind = ? AND id = ?",
+                (kind, entry_id),
+            ).fetchone()
+            if existing:
+                continue
+            try:
+                payload = json.loads(entry.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                payload = {}
+            title = (payload.get("title") or payload.get("name") or entry_id) if isinstance(payload, dict) else entry_id
+            # Each file's own on-disk mtime, not one shared "now" for the
+            # whole batch — list_bucket() orders by modified_at DESC, so a
+            # shared timestamp across an entire backfill makes the resulting
+            # order an arbitrary tie-break (confirmed to cause a real bug:
+            # Press's default template ended up being whichever one happened
+            # to sort first among ties, not a meaningful "most recent" one).
+            # File mtimes at least reflect real, distinct history.
+            file_ts = datetime.utcfromtimestamp(entry.stat().st_mtime).isoformat()
+            state.db.execute(
+                """
+                INSERT INTO library_items
+                    (kind, id, owner_id, title, is_public, filename, created_at, modified_at, last_accessed_at)
+                VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?)
+                """,
+                (kind, entry_id, admin_id, title, entry.name, file_ts, file_ts, file_ts),
+            )
 
 
-def bucket_root(state: ServerState, bucket: str) -> Path:
-    return state.get_mount(bucket).root
+def library_kind_root(state: ServerState, kind: str) -> Path:
+    return state.root_dir / "undercroft" / "common" / "data" / kind
 
 
 def _record_filename(id_: str) -> str:
     return id_ if id_.endswith(".json") else f"{id_}.json"
 
 
-def _record_path(state: ServerState, bucket: str, id_: str) -> Path:
-    return bucket_root(state, bucket) / _record_filename(id_)
+def _record_path(state: ServerState, kind: str, id_: str) -> Path:
+    return library_kind_root(state, kind) / _record_filename(id_)
 
 
 def load_json(path: Path) -> Any:
@@ -243,9 +306,39 @@ def _parse_metadata(path: Path, line_limit: int = 20) -> Dict[str, str]:
     return metadata
 
 
-def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[str, Any]:
-    mount = state.get_mount(bucket)
-    if mount.type == "static":
+def _flatten_metadata_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    # metadata is stored as a JSON blob (see _extract_metadata) so a new kind
+    # never needs a schema change, but every existing consumer of a list
+    # response reads fields like `category`/`schema`/`system`/`template`
+    # directly off the entry (e.g. Loom's Assigned Template picker, Workbench
+    # and Press's template category filters) — flattening here once, instead
+    # of teaching every one of those call sites about the metadata wrapper,
+    # matches what list_owned_content() already does for Admin's Owned
+    # Content tab.
+    for row in rows:
+        raw = row.get("metadata")
+        if not raw:
+            continue
+        try:
+            parsed = json.loads(raw)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if isinstance(parsed, dict):
+            row.update(parsed)
+    return rows
+
+
+def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str, Any]:
+    # `kind` here covers two unrelated things sharing one route: legitimately
+    # static, non-Library asset mounts (sheets, codex, loom-mappings — still
+    # declared in server.config.json) fall through to the old directory-
+    # listing behavior; everything else is a Library kind backed by
+    # library_items, whether or not it has a server.config.json entry at all.
+    try:
+        mount = state.get_mount(kind)
+    except KeyError:
+        mount = None
+    if mount is not None and mount.type == "static":
         if not mount.directory_listing:
             return {"files": []}
         allowed = {ext.lower() for ext in mount.directory_extensions if ext}
@@ -261,107 +354,104 @@ def list_bucket(state: ServerState, bucket: str, user: Optional[User]) -> Dict[s
             item.update(_parse_metadata(entry))
             files.append(item)
         return {"files": files}
-    if mount.type != "json":
-        return {"items": []}
-    table = mount.table
-    supports_public = bucket in ("templates", "systems")
-    public: List[Dict[str, Any]] = []
-    if supports_public:
-        public = [
+
+    ensure_read_role(state, kind, user)
+    public = _flatten_metadata_rows(
+        [
             dict(row)
             for row in state.db.execute(
-                f"""
-                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier
-                FROM {table} m
-                LEFT JOIN users u ON u.id = m.owner_id
-                WHERE m.is_public = 1
-                ORDER BY m.modified_at DESC
                 """
+                SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
+                FROM library_items li
+                LEFT JOIN users u ON u.id = li.owner_id
+                WHERE li.kind = ? AND li.is_public = 1
+                ORDER BY li.modified_at DESC
+                """,
+                (kind,),
             )
         ]
-    if bucket in ("characters", "templates", "systems"):
-        if not user:
-            return {"owned": [], "shared": [], "public": public}
-        if bucket == "characters":
-            owned_query = f"""
-                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier, t.title AS template_title
-                FROM {table} m
-                LEFT JOIN users u ON u.id = m.owner_id
-                LEFT JOIN templates t ON t.id = m.template
-                WHERE m.owner_id = ?
-                ORDER BY m.modified_at DESC
-            """
-            shared_query = f"""
-                SELECT m.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier, t.title AS template_title
-                FROM {table} m
-                JOIN shares s ON s.content_id = m.id AND s.content_type = ?
-                LEFT JOIN users u ON u.id = m.owner_id
-                LEFT JOIN templates t ON t.id = m.template
-                WHERE s.shared_with_user_id = ?
-                ORDER BY m.modified_at DESC
-            """
-        else:
-            owned_query = f"""
-                SELECT m.*, u.username AS owner_username, u.tier AS owner_tier
-                FROM {table} m
-                LEFT JOIN users u ON u.id = m.owner_id
-                WHERE m.owner_id = ?
-                ORDER BY m.modified_at DESC
-            """
-            shared_query = f"""
-                SELECT m.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
-                FROM {table} m
-                JOIN shares s ON s.content_id = m.id AND s.content_type = ?
-                LEFT JOIN users u ON u.id = m.owner_id
-                WHERE s.shared_with_user_id = ?
-                ORDER BY m.modified_at DESC
-            """
-        owned = [
-            dict(row)
-            for row in state.db.execute(
-                owned_query,
-                (user.id,),
-            )
-        ]
-        shared = [
-            dict(row)
-            for row in state.db.execute(
-                shared_query,
-                (bucket[:-1], user.id),
-            )
-        ]
-        return {"owned": owned, "shared": shared, "public": public}
-    rows = [dict(r) for r in state.db.execute(f"SELECT * FROM {table} ORDER BY modified_at DESC")]
-    return {"items": rows}
+    )
+    if not user:
+        return {"owned": [], "shared": [], "public": public}
+    # Admin-only "see everything" bypass, for every kind uniformly (matches
+    # is_owner()'s existing admin bypass for single-record reads/writes).
+    # Non-admin tiers — including creator, Loom's own access floor — only
+    # ever see items they own or that are shared with them.
+    if str(user.tier).lower() == "admin":
+        owned = _flatten_metadata_rows(
+            [
+                dict(row)
+                for row in state.db.execute(
+                    """
+                    SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
+                    FROM library_items li
+                    LEFT JOIN users u ON u.id = li.owner_id
+                    WHERE li.kind = ?
+                    ORDER BY li.modified_at DESC
+                    """,
+                    (kind,),
+                )
+            ]
+        )
+        shared: List[Dict[str, Any]] = []
+    else:
+        owned = _flatten_metadata_rows(
+            [
+                dict(row)
+                for row in state.db.execute(
+                    """
+                    SELECT li.*, u.username AS owner_username, u.tier AS owner_tier
+                    FROM library_items li
+                    LEFT JOIN users u ON u.id = li.owner_id
+                    WHERE li.kind = ? AND li.owner_id = ?
+                    ORDER BY li.modified_at DESC
+                    """,
+                    (kind, user.id),
+                )
+            ]
+        )
+        shared = _flatten_metadata_rows(
+            [
+                dict(row)
+                for row in state.db.execute(
+                    """
+                    SELECT li.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
+                    FROM library_items li
+                    JOIN shares s ON s.content_id = li.id AND s.content_type = li.kind
+                    LEFT JOIN users u ON u.id = li.owner_id
+                    WHERE li.kind = ? AND s.shared_with_user_id = ?
+                    ORDER BY li.modified_at DESC
+                    """,
+                    (kind, user.id),
+                )
+            ]
+        )
+    return {"owned": owned, "shared": shared, "public": public}
 
 
-def is_owner(state: ServerState, bucket: str, id_: str, user: Optional[User]) -> bool:
+def is_owner(state: ServerState, kind: str, id_: str, user: Optional[User]) -> bool:
     if not user:
         return False
     if str(getattr(user, "tier", "")).lower() == "admin":
         return True
-    mount = state.get_mount(bucket)
-    if mount.type != "json" or not mount.table:
-        return False
     row = state.db.execute(
-        f"SELECT owner_id FROM {mount.table} WHERE id = ?",
-        (id_.replace(".json", ""),),
+        "SELECT owner_id FROM library_items WHERE kind = ? AND id = ?",
+        (kind, id_.replace(".json", "")),
     ).fetchone()
     if not row:
         return False
-    return row["owner_id"] == user.id or user.tier == "admin"
+    return row["owner_id"] == user.id
 
 
-def is_shared(state: ServerState, bucket: str, id_: str, user: Optional[User], require_edit: bool = False) -> bool:
+def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], require_edit: bool = False) -> bool:
     if not user:
         return False
-    content_type = bucket[:-1]
     row = state.db.execute(
         """
         SELECT permissions FROM shares
         WHERE content_type = ? AND content_id = ? AND shared_with_user_id = ?
         """,
-        (content_type, id_.replace(".json", ""), user.id),
+        (kind, id_.replace(".json", ""), user.id),
     ).fetchone()
     if not row:
         return False
@@ -370,36 +460,30 @@ def is_shared(state: ServerState, bucket: str, id_: str, user: Optional[User], r
     return row["permissions"] == "edit"
 
 
-def is_public(state: ServerState, bucket: str, id_: str) -> bool:
-    mount = state.get_mount(bucket)
-    if mount.type != "json" or not mount.table:
-        return True
+def is_public(state: ServerState, kind: str, id_: str) -> bool:
     row = state.db.execute(
-        f"SELECT is_public FROM {mount.table} WHERE id = ?",
-        (id_.replace(".json", ""),),
+        "SELECT is_public FROM library_items WHERE kind = ? AND id = ?",
+        (kind, id_.replace(".json", "")),
     ).fetchone()
     if not row:
         return True
     return bool(row["is_public"])
 
 
-def ensure_write_role(state: ServerState, bucket: str, user: Optional[User]) -> None:
-    mount = state.get_mount(bucket)
-    required_roles = mount.write_roles or ["creator"]
+def ensure_write_role(state: ServerState, kind: str, user: Optional[User]) -> None:
     if not user:
         raise AuthError("Authentication required")
-    user_rank = role_rank(user.tier)
-    min_rank = min(role_rank(role) for role in required_roles if role_rank(role) >= 0)
-    if user_rank < min_rank:
+    policy = load_kind_policy(state, kind)
+    min_rank = role_rank(policy["writeTier"])
+    if min_rank < 0:
+        return
+    if role_rank(user.tier) < min_rank:
         raise AuthError("Insufficient role")
 
 
-def ensure_read_role(state: ServerState, bucket: str, user: Optional[User]) -> None:
-    mount = state.get_mount(bucket)
-    required_roles = mount.read_roles or ["free"]
-    if not required_roles:
-        return
-    min_rank = min(role_rank(role) for role in required_roles if role_rank(role) >= 0)
+def ensure_read_role(state: ServerState, kind: str, user: Optional[User]) -> None:
+    policy = load_kind_policy(state, kind)
+    min_rank = role_rank(policy["readTier"])
     if min_rank < 0:
         return
     user_rank = role_rank(user.tier) if user else role_rank("free")
@@ -409,32 +493,29 @@ def ensure_read_role(state: ServerState, bucket: str, user: Optional[User]) -> N
 
 def get_item(
     state: ServerState,
-    bucket: str,
+    kind: str,
     id_: str,
     user: Optional[User],
     share_token: Optional[str] = None,
 ) -> Dict[str, Any]:
-    mount = state.get_mount(bucket)
-    if mount.type != "json":
-        raise AuthError("Bucket does not support content read")
-    ensure_read_role(state, bucket, user)
+    ensure_read_role(state, kind, user)
     base_id = id_.replace(".json", "")
     token_info = resolve_share_token(state, share_token or "") if share_token else None
     share_granted = False
     if token_info:
         token_type = token_info.get("content_type")
         token_target = token_info.get("content_id")
-        if token_type == bucket[:-1] and token_target == base_id:
+        if token_type == kind and token_target == base_id:
             share_granted = True
             touch_share_link(state, token_info.get("token", ""))
-        elif token_type == "group" and bucket == "characters" and token_target:
+        elif token_type == "group" and kind == "character" and token_target:
             row = state.db.execute(
                 """
                 SELECT g.owner_id AS group_owner_id,
-                       c.owner_id AS character_owner_id
+                       li.owner_id AS character_owner_id
                 FROM groups AS g
                 JOIN group_members AS gm ON gm.group_id = g.id
-                LEFT JOIN characters AS c ON c.id = gm.content_id
+                LEFT JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
                 WHERE g.id = ?
                   AND gm.content_type = 'character'
                   AND gm.content_id = ?
@@ -448,176 +529,134 @@ def get_item(
                     touch_share_link(state, token_info.get("token", ""))
     if not (
         share_granted
-        or is_owner(state, bucket, id_, user)
-        or is_shared(state, bucket, id_, user)
-        or is_public(state, bucket, id_)
+        or is_owner(state, kind, id_, user)
+        or is_shared(state, kind, id_, user)
+        or is_public(state, kind, id_)
     ):
         raise AuthError("Access denied")
-    payload = load_json(_record_path(state, bucket, id_))
-    if bucket in {"characters", "templates", "systems"}:
-        table = state.get_mount(bucket).table
-        if table:
-            state.db.execute(
-                f"UPDATE {table} SET last_accessed_at = ? WHERE id = ?",
-                (datetime.utcnow().isoformat(), base_id),
-            )
-            state.db.commit()
+    payload = load_json(_record_path(state, kind, id_))
+    state.db.execute(
+        "UPDATE library_items SET last_accessed_at = ? WHERE kind = ? AND id = ?",
+        (datetime.utcnow().isoformat(), kind, base_id),
+    )
+    state.db.commit()
     return payload
 
 
-def save_item(state: ServerState, bucket: str, id_: str, body: Dict[str, Any], user: Optional[User]) -> Dict[str, Any]:
-    mount = state.get_mount(bucket)
-    if mount.type != "json":
-        raise AuthError("Bucket does not support writes")
+def _extract_title(kind: str, body: Dict[str, Any], existing_row: Optional[sqlite3.Row]) -> str:
+    if kind == "character":
+        name = body.get("name") or (body.get("data") or {}).get("name")
+    else:
+        name = body.get("title") or body.get("name")
+    if name:
+        return name
+    if existing_row is not None and existing_row["title"]:
+        return existing_row["title"]
+    return "Unnamed"
+
+
+def _extract_metadata(kind: str, body: Dict[str, Any]) -> Optional[str]:
+    # Small, kind-specific fields worth surfacing in list responses without an
+    # N+1 fetch per entry (e.g. Loom's Assigned Template picker filtering by
+    # template.category, or a character's system/template for display) — see
+    # templates' `category` field, added deliberately for exactly this reason
+    # earlier this session.
+    if kind == "character":
+        fields = {"system": body.get("system"), "template": body.get("template")}
+    elif kind == "template":
+        fields = {"schema": body.get("schema"), "category": body.get("category")}
+    elif kind == "system":
+        fields = {"index": body.get("index")}
+    else:
+        return None
+    fields = {key: value for key, value in fields.items() if value is not None}
+    return json.dumps(fields) if fields else None
+
+
+def save_item(state: ServerState, kind: str, id_: str, body: Dict[str, Any], user: Optional[User]) -> Dict[str, Any]:
     try:
-        ensure_write_role(state, bucket, user)
+        ensure_write_role(state, kind, user)
     except AuthError as exc:
-        if bucket == "templates":
-            raise AuthError("Your tier cannot create templates") from exc
-        if bucket == "systems":
-            raise AuthError("Your tier cannot create systems") from exc
-        raise
+        raise AuthError(f"Your tier cannot create {kind} entries") from exc
     base_id = id_.replace(".json", "")
     existing_row = state.db.execute(
-        f"SELECT * FROM {mount.table} WHERE id = ?",
-        (base_id,),
+        "SELECT * FROM library_items WHERE kind = ? AND id = ?",
+        (kind, base_id),
     ).fetchone()
     is_new_record = existing_row is None
-    if not (is_owner(state, bucket, id_, user) or is_shared(state, bucket, id_, user, require_edit=True)):
+    if not (is_owner(state, kind, id_, user) or is_shared(state, kind, id_, user, require_edit=True)):
         # creation allowed if record missing
-        path = _record_path(state, bucket, id_)
+        path = _record_path(state, kind, id_)
         if path.exists():
             raise AuthError("Edit not permitted")
     if is_new_record:
-        _enforce_creation_limits(state, bucket, user)
-    write_json(_record_path(state, bucket, id_), body)
+        _enforce_creation_limits(state, kind, user)
+    write_json(_record_path(state, kind, id_), body)
     now_ts = datetime.utcnow().isoformat()
     filename = _record_filename(id_)
     owner_id = user.id if user else None
-    if bucket == "characters":
-        char_name = body.get("name") or body.get("data", {}).get("name", "Unnamed")
-        existing = existing_row
-        system = body.get("system") or (existing["system"] if existing else None)
-        template = body.get("template") or (existing["template"] if existing else None)
-        state.db.execute(
-            """
-            INSERT INTO characters (id, owner_id, name, system, template, filename, modified_at, last_accessed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                owner_id = excluded.owner_id,
-                name = excluded.name,
-                system = excluded.system,
-                template = excluded.template,
-                filename = excluded.filename,
-                modified_at = excluded.modified_at,
-                last_accessed_at = excluded.last_accessed_at
-            """,
-            (base_id, owner_id, char_name or "Unnamed", system, template, filename, now_ts, now_ts),
-        )
-    elif bucket == "templates":
-        state.db.execute(
-            """
-            INSERT INTO templates (id, owner_id, title, schema, filename, modified_at, last_accessed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                owner_id = excluded.owner_id,
-                title = excluded.title,
-                schema = excluded.schema,
-                filename = excluded.filename,
-                modified_at = excluded.modified_at,
-                last_accessed_at = excluded.last_accessed_at
-            """,
-            (base_id, owner_id, body.get("title", "Unnamed"), body.get("schema"), filename, now_ts, now_ts),
-        )
-    elif bucket == "systems":
-        state.db.execute(
-            """
-            INSERT INTO systems (id, owner_id, title, "index", filename, modified_at, last_accessed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                owner_id = excluded.owner_id,
-                title = excluded.title,
-                "index" = excluded."index",
-                filename = excluded.filename,
-                modified_at = excluded.modified_at,
-                last_accessed_at = excluded.last_accessed_at
-            """,
-            (base_id, owner_id, body.get("title", "Unnamed"), body.get("index"), filename, now_ts, now_ts),
-        )
-    else:
-        state.db.execute(
-            f"INSERT OR REPLACE INTO {mount.table} (id, owner_id, filename, modified_at) VALUES (?, ?, ?, ?)",
-            (base_id, owner_id, filename, now_ts),
-        )
+    title = _extract_title(kind, body, existing_row)
+    metadata = _extract_metadata(kind, body)
+    is_public_value = existing_row["is_public"] if existing_row is not None else 0
+    state.db.execute(
+        """
+        INSERT INTO library_items (kind, id, owner_id, title, is_public, metadata, filename, modified_at, last_accessed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(kind, id) DO UPDATE SET
+            owner_id = excluded.owner_id,
+            title = excluded.title,
+            metadata = excluded.metadata,
+            filename = excluded.filename,
+            modified_at = excluded.modified_at,
+            last_accessed_at = excluded.last_accessed_at
+        """,
+        (kind, base_id, owner_id, title, is_public_value, metadata, filename, now_ts, now_ts),
+    )
     state.db.commit()
-    return {"ok": True, "bucket": bucket, "id": id_}
+    return {"ok": True, "bucket": kind, "id": id_}
 
 
-def delete_item(state: ServerState, bucket: str, id_: str, user: Optional[User]) -> None:
-    mount = state.get_mount(bucket)
-    if mount.type != "json":
-        raise AuthError("Bucket does not support deletes")
-    ensure_write_role(state, bucket, user)
-    if not (is_owner(state, bucket, id_, user) or is_shared(state, bucket, id_, user, require_edit=True)):
+def delete_item(state: ServerState, kind: str, id_: str, user: Optional[User]) -> None:
+    ensure_write_role(state, kind, user)
+    if not (is_owner(state, kind, id_, user) or is_shared(state, kind, id_, user, require_edit=True)):
         raise AuthError("Delete not permitted")
-    path = _record_path(state, bucket, id_)
+    path = _record_path(state, kind, id_)
     if path.exists():
         path.unlink()
     base_id = id_.replace(".json", "")
-    state.db.execute(f"DELETE FROM {mount.table} WHERE id = ?", (base_id,))
-    if bucket in ("characters", "templates", "systems"):
-        content_type = bucket[:-1]
-        state.db.execute(
-            "DELETE FROM shares WHERE content_type = ? AND content_id = ?",
-            (content_type, base_id),
-        )
-        state.db.execute(
-            "DELETE FROM share_links WHERE content_type = ? AND content_id = ?",
-            (content_type, base_id),
-        )
+    state.db.execute("DELETE FROM library_items WHERE kind = ? AND id = ?", (kind, base_id))
+    state.db.execute("DELETE FROM shares WHERE content_type = ? AND content_id = ?", (kind, base_id))
+    state.db.execute("DELETE FROM share_links WHERE content_type = ? AND content_id = ?", (kind, base_id))
     state.db.commit()
-
-
-def _minimum_owner_role(bucket: str) -> str:
-    if bucket == "characters":
-        return "player"
-    if bucket == "templates":
-        return "gm"
-    if bucket == "systems":
-        return "creator"
-    return "free"
 
 
 def update_owner(
     state: ServerState,
-    bucket: str,
+    kind: str,
     id_: str,
     acting_user: Optional[User],
     new_owner: User,
 ) -> Dict[str, Any]:
     if not acting_user or acting_user.tier != "admin":
         raise AuthError("Admin only")
-    mount = state.get_mount(bucket)
-    if mount.type != "json" or not mount.table:
-        raise AuthError("Bucket does not support owner updates")
-    required = _minimum_owner_role(bucket)
-    if role_rank(new_owner.tier) < role_rank(required):
+    policy = load_kind_policy(state, kind)
+    if role_rank(new_owner.tier) < role_rank(policy["writeTier"]):
         raise AuthError("Owner tier too low for this content type")
     base_id = id_.replace(".json", "")
     row = state.db.execute(
-        f"SELECT id FROM {mount.table} WHERE id = ?",
-        (base_id,),
+        "SELECT id FROM library_items WHERE kind = ? AND id = ?",
+        (kind, base_id),
     ).fetchone()
     if not row:
         raise AuthError("Content not found")
     state.db.execute(
-        f"UPDATE {mount.table} SET owner_id = ? WHERE id = ?",
-        (new_owner.id, base_id),
+        "UPDATE library_items SET owner_id = ? WHERE kind = ? AND id = ?",
+        (new_owner.id, kind, base_id),
     )
     state.db.commit()
     return {
         "ok": True,
-        "bucket": bucket,
+        "bucket": kind,
         "id": id_,
         "owner": {
             "id": new_owner.id,
@@ -627,131 +666,75 @@ def update_owner(
     }
 
 
-def _enforce_creation_limits(state: ServerState, bucket: str, user: Optional[User]) -> None:
+def _enforce_creation_limits(state: ServerState, kind: str, user: Optional[User]) -> None:
     if not user or user.tier == "admin":
         return
+    policy = load_kind_policy(state, kind)
+    max_per_owner = policy.get("maxPerOwner")
+    if not isinstance(max_per_owner, dict):
+        return
     tier = (user.tier or "").lower()
-    if bucket == "characters":
-        if tier == "free":
-            count = state.db.execute(
-                "SELECT COUNT(*) AS count FROM characters WHERE owner_id = ?",
-                (user.id,),
-            ).fetchone()["count"]
-            if count >= 5:
-                raise AuthError("Free accounts can only create up to 5 characters")
+    limit = max_per_owner.get(tier)
+    if not isinstance(limit, int):
         return
-    if bucket == "templates":
-        if tier not in {"gm", "master", "creator"}:
-            raise AuthError("Your tier cannot create templates")
-        return
-    if bucket == "systems":
-        if tier not in {"creator"}:
-            raise AuthError("Your tier cannot create systems")
+    count = state.db.execute(
+        "SELECT COUNT(*) AS count FROM library_items WHERE kind = ? AND owner_id = ?",
+        (kind, user.id),
+    ).fetchone()["count"]
+    if count >= limit:
+        raise AuthError(f"{tier.capitalize()} accounts can only create up to {limit} {kind} entries")
 
 
 def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "user") -> Dict[str, Any]:
-    items: List[Dict[str, Any]] = []
     if scope != "all" and owner is None:
         raise AuthError("Owner required")
-    mappings = [
-        ("characters", "characters", "name"),
-        ("templates", "templates", "title"),
-        ("systems", "systems", "title"),
-    ]
-    for bucket, table, label_field in mappings:
-        if bucket == "characters":
-            if scope == "all":
-                rows = state.db.execute(
-                    """
-                    SELECT c.id AS id,
-                           c.name AS label,
-                           c.template AS template_id,
-                           t.title AS template_title,
-                           c.created_at AS created_at,
-                           c.modified_at AS modified_at,
-                           c.last_accessed_at AS last_accessed_at,
-                           u.username AS owner_username,
-                           u.tier AS owner_tier
-                    FROM characters AS c
-                    JOIN users AS u ON u.id = c.owner_id
-                    LEFT JOIN templates AS t ON t.id = c.template
-                    ORDER BY c.modified_at DESC
-                    """
-                ).fetchall()
-            else:
-                rows = state.db.execute(
-                    """
-                    SELECT c.id AS id,
-                           c.name AS label,
-                           c.template AS template_id,
-                           t.title AS template_title,
-                           c.created_at AS created_at,
-                           c.modified_at AS modified_at,
-                           c.last_accessed_at AS last_accessed_at,
-                           u.username AS owner_username,
-                           u.tier AS owner_tier
-                    FROM characters AS c
-                    JOIN users AS u ON u.id = c.owner_id
-                    LEFT JOIN templates AS t ON t.id = c.template
-                    WHERE c.owner_id = ?
-                    ORDER BY c.modified_at DESC
-                    """,
-                    (owner.id,),
-                ).fetchall()
-        else:
-            if scope == "all":
-                rows = state.db.execute(
-                    f"""
-                    SELECT t.id AS id,
-                           t.{label_field} AS label,
-                           t.created_at AS created_at,
-                           t.modified_at AS modified_at,
-                           t.last_accessed_at AS last_accessed_at,
-                           u.username AS owner_username,
-                           u.tier AS owner_tier
-                    FROM {table} AS t
-                    JOIN users AS u ON u.id = t.owner_id
-                    ORDER BY t.modified_at DESC
-                    """
-                ).fetchall()
-            else:
-                rows = state.db.execute(
-                    f"""
-                    SELECT t.id AS id,
-                           t.{label_field} AS label,
-                           t.created_at AS created_at,
-                           t.modified_at AS modified_at,
-                           t.last_accessed_at AS last_accessed_at,
-                           u.username AS owner_username,
-                           u.tier AS owner_tier
-                    FROM {table} AS t
-                    JOIN users AS u ON u.id = t.owner_id
-                    WHERE t.owner_id = ?
-                    ORDER BY t.modified_at DESC
-                    """,
-                    (owner.id,),
-                ).fetchall()
-        for row in rows:
-            keys = row.keys() if hasattr(row, "keys") else []
-            owner_username = row["owner_username"] if "owner_username" in keys else (owner.username if owner else "")
-            owner_tier = row["owner_tier"] if "owner_tier" in keys else (owner.tier if owner else "")
-            items.append(
-                {
-                    "bucket": bucket,
-                    "id": row["id"],
-                    "label": row["label"] or row["id"],
-                    "created_at": row["created_at"],
-                    "modified_at": row["modified_at"],
-                    "last_accessed_at": row["last_accessed_at"],
-                    "owner_username": owner_username,
-                    "owner_tier": owner_tier,
-                }
-            )
-            if bucket == "characters":
-                entry = items[-1]
-                entry["template"] = row["template_id"] if "template_id" in keys else ""
-                entry["template_title"] = row["template_title"] if "template_title" in keys else ""
-    items.sort(key=lambda item: item.get("modified_at") or "", reverse=True)
+    if scope == "all":
+        rows = state.db.execute(
+            """
+            SELECT li.kind AS kind, li.id AS id, li.title AS label, li.metadata AS metadata,
+                   li.is_public AS is_public, li.created_at AS created_at,
+                   li.modified_at AS modified_at, li.last_accessed_at AS last_accessed_at,
+                   u.username AS owner_username, u.tier AS owner_tier
+            FROM library_items li
+            JOIN users u ON u.id = li.owner_id
+            ORDER BY li.modified_at DESC
+            """
+        ).fetchall()
+    else:
+        rows = state.db.execute(
+            """
+            SELECT li.kind AS kind, li.id AS id, li.title AS label, li.metadata AS metadata,
+                   li.is_public AS is_public, li.created_at AS created_at,
+                   li.modified_at AS modified_at, li.last_accessed_at AS last_accessed_at,
+                   u.username AS owner_username, u.tier AS owner_tier
+            FROM library_items li
+            JOIN users u ON u.id = li.owner_id
+            WHERE li.owner_id = ?
+            ORDER BY li.modified_at DESC
+            """,
+            (owner.id,),
+        ).fetchall()
+    items: List[Dict[str, Any]] = []
+    for row in rows:
+        metadata: Dict[str, Any] = {}
+        if row["metadata"]:
+            try:
+                metadata = json.loads(row["metadata"])
+            except json.JSONDecodeError:
+                metadata = {}
+        item = {
+            "bucket": row["kind"],
+            "id": row["id"],
+            "label": row["label"] or row["id"],
+            "is_public": bool(row["is_public"]),
+            "created_at": row["created_at"],
+            "modified_at": row["modified_at"],
+            "last_accessed_at": row["last_accessed_at"],
+            "owner_username": row["owner_username"],
+            "owner_tier": row["owner_tier"],
+        }
+        item.update(metadata)
+        items.append(item)
     if scope == "all":
         owner_info = {
             "id": None,

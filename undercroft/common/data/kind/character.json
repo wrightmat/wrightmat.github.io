@@ -1,0 +1,11 @@
+{
+  "id": "character",
+  "label": "Character",
+  "plural": "Characters",
+  "icon": "tabler:user",
+  "readTier": "free",
+  "writeTier": "free",
+  "maxPerOwner": {
+    "free": 5
+  }
+}

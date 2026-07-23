@@ -1,0 +1,14 @@
+{
+  "id": "brute",
+  "name": "Brute",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Heavy-hitting melee enemies with massive health pools that deal huge damage but have weaker defenses.",
+  "mechanicalTendencies": {
+    "hpBand": "high",
+    "acBand": "low-moderate",
+    "damageProfile": "heavy-melee",
+    "actionEconomy": "standard"
+  }
+}

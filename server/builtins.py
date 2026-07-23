@@ -25,10 +25,15 @@ class BuiltinEntry:
 # Keeping the catalog server-side lets us verify availability without forcing the
 # client to attempt loading missing static files (which would surface as 404s in
 # the console).
-_BUILTIN_ENTRIES: List[BuiltinEntry] = [
-    BuiltinEntry("systems", "sys.dnd5e", "D&D 5e (Basic)", "data/systems/sys.dnd5e.json"),
-    BuiltinEntry("templates", "tpl.5e.flex-basic", "5e — Flex Basic", "data/templates/tpl.5e.flex-basic.json"),
-]
+# sys.dnd5e (a "systems" builtin) and tpl.5e.flex-basic (a "templates"
+# builtin) both used to live only here, resolved as static files under
+# undercroft/workbench/ — both are now real, DB-backed Library entities
+# (undercroft/common/data/system/sys.dnd5e.json,
+# undercroft/common/data/template/tpl.5e.flex-basic.json), discoverable via
+# the normal systems/templates bucket listing instead of this separate
+# mechanism. Left empty (rather than removed) so a future genuinely-bundled
+# starter asset still has somewhere to register.
+_BUILTIN_ENTRIES: List[BuiltinEntry] = []
 
 
 def builtin_catalog(state: ServerState) -> Dict[str, List[Dict[str, object]]]:

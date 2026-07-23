@@ -1,0 +1,27 @@
+{
+  "id": "feat.radiant-smite",
+  "name": "Radiant Smite",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack can expend a use to deal extra radiant damage.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack can expend a use to deal extra radiant damage."
+  },
+  "tags": {
+    "behaviors": [
+      "damage"
+    ],
+    "recipeSlots": [
+      "damage",
+      "exploit"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "celestial"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

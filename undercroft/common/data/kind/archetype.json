@@ -1,0 +1,8 @@
+{
+  "id": "archetype",
+  "label": "Archetype",
+  "plural": "Archetypes",
+  "icon": "tabler:chess-knight",
+  "readTier": "free",
+  "writeTier": "creator"
+}

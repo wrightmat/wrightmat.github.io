@@ -1,0 +1,25 @@
+{
+  "id": "feat.bulwark-of-bodies",
+  "name": "Bulwark of Bodies",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "As a reaction, the creature can intercept an attack targeting an ally within 5 feet, redirecting it to itself instead.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "As a reaction, the creature can intercept an attack targeting an ally within 5 feet, redirecting it to itself instead."
+  },
+  "tags": {
+    "behaviors": [
+      "defense",
+      "swarm-tactics"
+    ],
+    "recipeSlots": [
+      "sacrifice"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

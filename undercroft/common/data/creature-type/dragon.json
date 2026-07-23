@@ -1,0 +1,25 @@
+{
+  "id": "dragon",
+  "name": "Dragon",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A reptilian creature of ancient, often magical lineage \u2014 proud, territorial, and rarely anyone's servant by choice.",
+  "vocabulary": {
+    "namePatterns": [
+      "{name} the Ancient",
+      "{name}wing"
+    ]
+  },
+  "traitTags": [
+    "draconic",
+    "territorial",
+    "elemental-breath"
+  ],
+  "defaultSenses": [
+    "blindsight 30 ft.",
+    "darkvision 120 ft."
+  ],
+  "defaultResistances": [],
+  "defaultImmunities": []
+}

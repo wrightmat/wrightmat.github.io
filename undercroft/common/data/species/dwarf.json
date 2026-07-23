@@ -6,8 +6,8 @@
   "tagline": "Stalwart Keeper of Tradition",
   "icon": "ddb-creature-humanoid",
   "description": [
-    "Dwarves were raised from the earth in the elder days by a deity of the forge. Called by various names on different worlds\u2014Moradin, Reorx, and others\u2014that god gave dwarves an affinity for stone and metal and for living underground. The god also made them resilient like the mountains, with a life span of about 350 years.",
-    "Squat and often bearded, the original dwarves carved cities and strongholds into mountainsides and under the earth. Their oldest legends tell of conflicts with the monsters of mountaintops and the Underdark, whether those monsters were towering giants or subterranean horrors. Inspired by those tales, dwarves of any culture often sing of valorous deeds\u2014especially of the little overcoming the mighty.",
+    "Dwarves were raised from the earth in the elder days by a deity of the forge. Called by various names on different worlds—Moradin, Reorx, and others—that god gave dwarves an affinity for stone and metal and for living underground. The god also made them resilient like the mountains, with a life span of about 350 years.",
+    "Squat and often bearded, the original dwarves carved cities and strongholds into mountainsides and under the earth. Their oldest legends tell of conflicts with the monsters of mountaintops and the Underdark, whether those monsters were towering giants or subterranean horrors. Inspired by those tales, dwarves of any culture often sing of valorous deeds—especially of the little overcoming the mighty.",
     "On some worlds in the multiverse, the first settlements of dwarves were built in hills or mountains, and the families who trace their ancestry to those settlements call themselves hill dwarves or mountain dwarves, respectively. The Greyhawk and Dragonlance settings have such communities."
   ],
   "type": "Humanoid",
@@ -32,5 +32,54 @@
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T16:29:07.789Z"
+  "updated_at": "2026-07-19T16:29:07.789Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "clan",
+    "firstNames": [
+      "Adrik",
+      "Baern",
+      "Darrak",
+      "Eberk",
+      "Fargrim",
+      "Gardain",
+      "Harbek",
+      "Kildrak",
+      "Morgran",
+      "Nordak",
+      "Orsik",
+      "Rurik",
+      "Thoradin",
+      "Ulfgar",
+      "Vondal",
+      "Bardryn",
+      "Dagnal",
+      "Eldeth",
+      "Falkrunn",
+      "Gunnloda",
+      "Hlin",
+      "Kathra"
+    ],
+    "lastNames": [
+      "Balderk",
+      "Battlehammer",
+      "Brawnanvil",
+      "Dankil",
+      "Fireforge",
+      "Frostbeard",
+      "Gorunn",
+      "Holderhek",
+      "Ironfist",
+      "Loderr",
+      "Lutgehr",
+      "Rumnaheim",
+      "Strakeln",
+      "Torunn",
+      "Ungart",
+      "Whorgen"
+    ]
+  }
 }

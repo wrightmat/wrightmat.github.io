@@ -1,0 +1,18 @@
+{
+  "id": "bully",
+  "name": "Bully",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Overwhelms weaker targets through intimidation and relentless pressure.",
+  "recipe": {
+    "signatureSlot": "threaten",
+    "requiredSlots": [
+      "disable",
+      "punish",
+      "dominate"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

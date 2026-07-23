@@ -46,6 +46,7 @@ from .shares import (
 )
 from .state import ServerState, configure_logging
 from .static import serve_from_root
+from .kinds import normalize_kind
 from .storage import (
     AuthError as StorageAuthError,
     delete_item,
@@ -122,7 +123,18 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             route, params = match
             request.params = params  # type: ignore[attr-defined]
             try:
-                result = route.handler(request)
+                # ThreadingHTTPServer runs each request on its own thread, but
+                # every route shares one sqlite3.Connection (check_same_thread
+                # =False only disables Python's same-thread check — it does
+                # not make concurrent statement execution on that connection
+                # safe). Every Library-kind read now touches the DB too (the
+                # last_accessed_at stamp in get_item), so a page firing several
+                # concurrent GETs (e.g. Press loading "all backgrounds") could
+                # crash with a sqlite threading error. This lock serializes
+                # request handling — coarse-grained, but this is a small dev
+                # server, not something needing real read concurrency.
+                with self.server.state.lock:
+                    result = route.handler(request)
                 self.respond(result)
                 return
             except AuthError as exc:
@@ -155,7 +167,10 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             route, params = match
             request.params = params  # type: ignore[attr-defined]
             try:
-                result = route.handler(request)
+                # See do_GET's comment — same shared-connection concurrency
+                # concern applies to writes.
+                with self.server.state.lock:
+                    result = route.handler(request)
                 self.respond(result)
                 return
             except AuthError as exc:
@@ -191,17 +206,13 @@ def register_routes():
         return user
 
     def bucket_from_content_type(content_type: str) -> str:
-        mapping = {"character": "characters", "template": "templates", "system": "systems", "schema": "systems"}
-        if content_type not in mapping:
+        # content_type and Library `kind` are the same string now — every kind
+        # is DB-backed via library_items, so there's no fixed allowlist to
+        # check, just the legacy plural-bucket-name normalization every other
+        # route also applies (see normalize_kind).
+        if not content_type:
             raise AuthError("Invalid content type")
-        return mapping[content_type]
-
-    def resolve_press_template_path(state: ServerState, template_id: str) -> Path:
-        base_dir = state.root_dir / "undercroft" / "press" / "templates"
-        candidate = (base_dir / f"{template_id}.json").resolve()
-        if not str(candidate).startswith(str(base_dir.resolve())):
-            raise AuthError("Invalid template path")
-        return candidate
+        return normalize_kind(content_type)
 
     # GET /healthz
     def handle_healthz(request: Request) -> Response:
@@ -212,7 +223,7 @@ def register_routes():
     # GET /list/{bucket}
     def handle_list(request: Request) -> Response:
         params = getattr(request, "params")
-        bucket = params["bucket"]
+        bucket = normalize_kind(params["bucket"])
         user = request.handler.current_user()
         payload = list_bucket(request.state, bucket, user)
         return json_response(payload)
@@ -222,7 +233,7 @@ def register_routes():
     # GET /content/{bucket}/{id}
     def handle_get_content(request: Request) -> Response:
         params = getattr(request, "params")
-        bucket = params["bucket"]
+        bucket = normalize_kind(params["bucket"])
         id_ = params["id"]
         user = request.handler.current_user()
         share_token = ""
@@ -244,23 +255,6 @@ def register_routes():
         return json_response(catalog)
 
     router.add("GET", r"^/content/builtins$", handle_content_builtins)
-
-    # POST /press/templates/{id}
-    def handle_press_template_save(request: Request) -> Response:
-        params = getattr(request, "params")
-        template_id = params["id"]
-        payload = require_json(request)
-        template = payload.get("template", payload)
-        if not template or not isinstance(template, dict):
-            return json_response({"error": "Invalid template payload"}, status=HTTPStatus.BAD_REQUEST)
-        if template.get("id") != template_id:
-            return json_response({"error": "Template id mismatch"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_press_template_path(request.state, template_id)
-        serialized = json.dumps(template, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
-
-    router.add("POST", r"^/press/templates/(?P<id>[^/]+)$", handle_press_template_save)
 
     # POST /press/custom-sizes
     def resolve_press_custom_sizes_path(state: ServerState) -> Path:
@@ -410,46 +404,235 @@ def register_routes():
 
     router.add("POST", r"^/loom/mappings/(?P<id>[^/]+)/rename$", handle_loom_mapping_rename)
 
-    # POST /library/{kind}/{id}
+    # Locations and Species Name Profiles used to be Forge-only flat files
+    # here (POST /forge/locations/{id}, POST /forge/species/{id}) — both are
+    # now managed in Loom as generic Library kinds ("location"/"setting", and
+    # a `names` section merged into the shared "species" kind) via the
+    # generic POST /content/{kind}/{id} route, so these Forge-specific routes
+    # are retired.
+
+    # POST /forge/generate-note
     #
-    # Loom's per-entity save target: plain JSON files, one directory per kind,
-    # discoverable via the library-* static mounts in server.config.json (same
-    # pattern as press-templates/loom-mappings — no database bucket). Characters
-    # are included: saving one is an explicit archival snapshot, not something
-    # this endpoint conflates with live use — Press/Workbench keep fetching
-    # characters fresh via the live parser regardless of what's archived here.
-    LIBRARY_KINDS = {"class", "subclass", "background", "species", "variant", "character"}
+    # Optional LLM synthesis step (CLAUDE.md: "entirely optional... all
+    # rolled values stand on their own as the character record"). Proxies
+    # Anthropic's Messages API the same no-extra-dependency way as
+    # handle_press_google_fonts_metadata/handle_ddb_proxy above (urllib
+    # only), reading the API key from a local, gitignored file mirroring
+    # server/ddb-session.local.json's own convention.
+    FORGE_NOTE_SYSTEM_PROMPT = (
+        "You write a single, tightly-formatted NPC character note for a tabletop RPG GM.\n"
+        "Respond with EXACTLY this format and nothing else — no preamble, no markdown, no extra commentary:\n\n"
+        "Name (Alignment Gender Species Archetype). [2-3 sentences weaving the given Description, Demeanor, "
+        "Drive, and Direction traits into a vivid but concise character note.]\n\n"
+        "Use the exact Name, Alignment, Gender, Species, and Archetype values given verbatim. Do not invent "
+        "new attributes, do not restate these instructions, and do not add anything before or after the "
+        "single formatted line."
+    )
 
-    def resolve_library_path(state: ServerState, kind: str, entry_id: str) -> Path:
-        if kind not in LIBRARY_KINDS:
-            raise AuthError(f"Unsupported library kind '{kind}'")
-        base_dir = state.root_dir / "undercroft" / "common" / "data" / kind
-        candidate = (base_dir / f"{entry_id}.json").resolve()
-        if not str(candidate).startswith(str(base_dir.resolve())):
-            raise AuthError("Invalid library path")
-        return candidate
+    def resolve_anthropic_api_key(state: ServerState) -> str:
+        path = state.root_dir / "server" / "anthropic.local.json"
+        if not path.exists():
+            return ""
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return ""
+        return str(data.get("api_key") or "").strip()
 
-    def handle_library_save(request: Request) -> Response:
-        params = getattr(request, "params")
-        kind = params["kind"]
-        entry_id = params["id"]
+    def handle_forge_generate_note(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        api_key = resolve_anthropic_api_key(request.state)
+        if not api_key:
+            return json_response(
+                {
+                    "error": (
+                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
+                        "server/anthropic.local.json and fill in api_key."
+                    )
+                },
+                status=HTTPStatus.BAD_REQUEST,
+            )
         payload = require_json(request)
-        data = payload.get("data", payload)
-        if not data or not isinstance(data, dict):
-            return json_response({"error": "Invalid library entry payload"}, status=HTTPStatus.BAD_REQUEST)
-        # updated_at reflects when this save happened, not anything from the
-        # source (D&D Beyond/5e API) — the mapping never sets it, so this is
-        # the one and only place it comes from, always overwritten on save.
-        now = datetime.now(timezone.utc)
-        data = dict(data)
-        data["updated_at"] = now.strftime("%Y-%m-%dT%H:%M:%S.") + f"{now.microsecond // 1000:03d}Z"
-        path = resolve_library_path(request.state, kind, entry_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        serialized = json.dumps(data, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
+        identity = payload.get("identity") or {}
+        four_d = payload.get("fourD") or {}
+        name = str(identity.get("name") or "").strip()
+        if not name:
+            return json_response({"error": "identity.name is required"}, status=HTTPStatus.BAD_REQUEST)
+        user_content = (
+            f"Name: {name}\n"
+            f"Alignment: {identity.get('alignment', '')}\n"
+            f"Gender: {identity.get('gender', '')}\n"
+            f"Species: {identity.get('species', '')}\n"
+            f"Archetype: {identity.get('archetype', '')}\n"
+            f"Age: {identity.get('age', '')}\n"
+            f"Relationship: {identity.get('relationship', '')}\n"
+            f"Attitude: {identity.get('attitude', '')}\n"
+            f"Description: {four_d.get('description', '')}\n"
+            f"Demeanor: {four_d.get('demeanor', '')}\n"
+            f"Drive: {four_d.get('drive', '')}\n"
+            f"Direction: {four_d.get('direction', '')}\n"
+        )
+        request_body = json.dumps(
+            {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 300,
+                "system": FORGE_NOTE_SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_content}],
+            }
+        ).encode("utf-8")
+        proxy_request = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=request_body,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
+                response_body = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+        except urllib.error.URLError as exc:
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.reason})"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
 
-    router.add("POST", r"^/library/(?P<kind>[^/]+)/(?P<id>[^/]+)$", handle_library_save)
+        content_blocks = response_body.get("content") or []
+        note = "".join(
+            block.get("text", "") for block in content_blocks if isinstance(block, dict)
+        ).strip()
+        if not note:
+            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
+        return json_response({"note": note})
+
+    router.add("POST", r"^/forge/generate-note$", handle_forge_generate_note)
+
+    # POST /crucible/generate-note
+    #
+    # Same optional LLM synthesis step as Forge's NPC note, applied to a
+    # generated monster concept instead of a rolled NPC — Crucible's own
+    # structured output (Creature Type/Archetype/Role/features) stands on its
+    # own with no LLM involvement; this just turns it into a short prose
+    # sketch for a GM who wants one. Reuses resolve_anthropic_api_key above.
+    CRUCIBLE_NOTE_SYSTEM_PROMPT = (
+        "You suggest a name (when one isn't already given) and write a single, "
+        "tightly-formatted monster concept note for a tabletop RPG GM.\n"
+        "Respond with EXACTLY two lines and nothing else — no preamble, no markdown, "
+        "no extra commentary:\n\n"
+        "Line 1: just the creature's name, nothing else. If a Name is already given "
+        "below, repeat it verbatim. If Name is blank, invent one that fits the given "
+        "Creature Type, Archetype, and Role.\n"
+        "Line 2: Name (Creature Type, Archetype, Role). [2-3 sentences describing how "
+        "this creature behaves in and around a fight, weaving in its Signature Feature "
+        "and its other features into a vivid but concise tactical sketch.]\n\n"
+        "Use the exact Creature Type, Archetype, and Role values given verbatim, and "
+        "use the same name on both lines. Do not invent new features or mechanics, do "
+        "not restate these instructions, and do not add anything before, between, or "
+        "after these two lines."
+    )
+
+    def handle_crucible_generate_note(request: Request) -> Response:
+        import urllib.error
+        import urllib.request
+
+        api_key = resolve_anthropic_api_key(request.state)
+        if not api_key:
+            return json_response(
+                {
+                    "error": (
+                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
+                        "server/anthropic.local.json and fill in api_key."
+                    )
+                },
+                status=HTTPStatus.BAD_REQUEST,
+            )
+        payload = require_json(request)
+        monster = payload.get("monster") or {}
+        # Name is optional now — Crucible's Name field is blank by default, and
+        # this endpoint is the one place that can fill it in, so an empty name
+        # is a normal request, not an error: the prompt asks Claude to invent
+        # one fitting the Creature Type/Archetype/Role when it's blank.
+        name = str(monster.get("name") or "").strip()
+        features = monster.get("features") or []
+        feature_lines = "\n".join(
+            f"- {feature.get('name', '')}: {feature.get('description', '')}"
+            for feature in features
+            if isinstance(feature, dict)
+        )
+        user_content = (
+            f"Name: {name}\n"
+            f"Creature Type: {monster.get('creatureType', '')}\n"
+            f"Archetype: {monster.get('archetype', '')}\n"
+            f"Role: {monster.get('role', '')}\n"
+            f"Signature Feature: {monster.get('signatureFeature', '')}\n"
+            f"Features:\n{feature_lines}\n"
+        )
+        request_body = json.dumps(
+            {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 300,
+                "system": CRUCIBLE_NOTE_SYSTEM_PROMPT,
+                "messages": [{"role": "user", "content": user_content}],
+            }
+        ).encode("utf-8")
+        proxy_request = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=request_body,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
+                response_body = json.loads(upstream.read())
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+        except urllib.error.URLError as exc:
+            return json_response(
+                {"error": f"Anthropic API request failed ({exc.reason})"},
+                status=HTTPStatus.BAD_GATEWAY,
+            )
+
+        content_blocks = response_body.get("content") or []
+        raw_text = "".join(
+            block.get("text", "") for block in content_blocks if isinstance(block, dict)
+        ).strip()
+        if not raw_text:
+            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
+        # First line is the (possibly Claude-suggested) name; everything after
+        # is the tactical note. Falls back to the original name/full text if
+        # the model doesn't follow the two-line format exactly.
+        first_line, _, rest = raw_text.partition("\n")
+        suggested_name = first_line.strip() or name
+        note = rest.strip() or raw_text
+        return json_response({"name": suggested_name, "note": note})
+
+    router.add("POST", r"^/crucible/generate-note$", handle_crucible_generate_note)
+
+    # /library/{kind}/... (POST save/delete, GET list) is retired — every
+    # Library kind (including the 9 that used to be plain, unauthenticated
+    # flat files under this route) is now served by the same DB-backed
+    # /content/{bucket}/{id} and /list/{bucket} routes above, keyed by `kind`
+    # instead of a fixed 3-bucket set. See server/storage.py's library_items
+    # table and load_kind_policy() for how ownership/tier policy now works
+    # for every kind uniformly.
 
     # GET /ddb-proxy?url=...
     #
@@ -572,9 +755,9 @@ def register_routes():
         params = getattr(request, "params")
         content_type = params["bucket"]
         content_id = params["content_id"]
-        user, _ = ensure_share_permission(request, content_type, content_id, "view shares")
-        shares = list_shares(request.state, content_type, content_id, user)
-        link = get_share_link(request.state, content_type, content_id)
+        user, bucket_name = ensure_share_permission(request, content_type, content_id, "view shares")
+        shares = list_shares(request.state, bucket_name, content_id, user)
+        link = get_share_link(request.state, bucket_name, content_id)
         return json_response({"shares": shares, "link": link})
 
     router.add("GET", r"^/shares/(?P<bucket>[^/]+)/(?P<content_id>[^/]+)$", handle_list_shares)
@@ -586,8 +769,8 @@ def register_routes():
         query = parse_qs(urlsplit(request.handler.path).query)
         content_type = query.get("content_type", [""])[0]
         content_id = query.get("content_id", [""])[0]
-        ensure_share_permission(request, content_type, content_id, "manage shares")
-        users = list_shareable_users(request.state, content_type)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "manage shares")
+        users = list_shareable_users(request.state, bucket_name)
         return json_response({"users": users})
 
     router.add("GET", r"^/shares/eligible$", handle_share_eligible)
@@ -597,8 +780,8 @@ def register_routes():
         params = getattr(request, "params")
         content_type = params["bucket"]
         content_id = params["content_id"]
-        ensure_share_permission(request, content_type, content_id, "manage shares")
-        users = list_shareable_users(request.state, content_type)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "manage shares")
+        users = list_shareable_users(request.state, bucket_name)
         return json_response({"users": users})
 
     router.add(
@@ -910,7 +1093,7 @@ def register_routes():
     # POST /content/{bucket}/{id}
     def handle_save_content(request: Request) -> Response:
         params = getattr(request, "params")
-        bucket = params["bucket"]
+        bucket = normalize_kind(params["bucket"])
         id_ = params["id"]
         user = request.handler.current_user()
         if not user:
@@ -924,7 +1107,7 @@ def register_routes():
     # POST /content/{bucket}/{id}/delete
     def handle_delete_content(request: Request) -> Response:
         params = getattr(request, "params")
-        bucket = params["bucket"]
+        bucket = normalize_kind(params["bucket"])
         id_ = params["id"]
         user = request.handler.current_user()
         if not user:
@@ -937,7 +1120,7 @@ def register_routes():
     # POST /content/{bucket}/{id}/owner
     def handle_owner_update(request: Request) -> Response:
         params = getattr(request, "params")
-        bucket = params["bucket"]
+        bucket = normalize_kind(params["bucket"])
         id_ = params["id"]
         user = request.handler.current_user()
         if not user:
@@ -965,8 +1148,8 @@ def register_routes():
             raise AuthError("Missing fields")
         if permissions not in {"view", "edit"}:
             raise AuthError("Invalid permissions")
-        ensure_share_permission(request, content_type, content_id, "share content")
-        result = share_with_user(request.state, content_type, content_id, username, permissions)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "share content")
+        result = share_with_user(request.state, bucket_name, content_id, username, permissions)
         return json_response(result)
 
     router.add("POST", r"^/shares$", handle_share)
@@ -979,8 +1162,8 @@ def register_routes():
         username = data.get("username")
         if not username:
             raise AuthError("Missing fields")
-        ensure_share_permission(request, content_type, content_id, "revoke shares")
-        revoke_share(request.state, content_type, content_id, username)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "revoke shares")
+        revoke_share(request.state, bucket_name, content_id, username)
         return json_response({"ok": True})
 
     router.add("POST", r"^/shares/revoke$", handle_revoke_share)
@@ -991,8 +1174,8 @@ def register_routes():
         content_type = data.get("content_type")
         content_id = data.get("content_id")
         permissions = data.get("permissions", "view")
-        ensure_share_permission(request, content_type, content_id, "create links")
-        link = create_share_link(request.state, content_type, content_id, permissions)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "create links")
+        link = create_share_link(request.state, bucket_name, content_id, permissions)
         return json_response({"link": link})
 
     router.add("POST", r"^/shares/link$", handle_share_link)
@@ -1004,8 +1187,8 @@ def register_routes():
         content_id = params["content_id"]
         data = require_json(request) or {}
         permissions = data.get("permissions", "view")
-        ensure_share_permission(request, content_type, content_id, "create links")
-        link = create_share_link(request.state, content_type, content_id, permissions)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "create links")
+        link = create_share_link(request.state, bucket_name, content_id, permissions)
         return json_response({"link": link})
 
     router.add(
@@ -1019,8 +1202,8 @@ def register_routes():
         data = require_json(request)
         content_type = data.get("content_type")
         content_id = data.get("content_id")
-        ensure_share_permission(request, content_type, content_id, "revoke links")
-        revoke_share_link(request.state, content_type, content_id)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "revoke links")
+        revoke_share_link(request.state, bucket_name, content_id)
         return json_response({"ok": True})
 
     router.add("POST", r"^/shares/link/revoke$", handle_share_link_revoke)
@@ -1030,8 +1213,8 @@ def register_routes():
         params = getattr(request, "params")
         content_type = params["bucket"]
         content_id = params["content_id"]
-        ensure_share_permission(request, content_type, content_id, "revoke links")
-        revoke_share_link(request.state, content_type, content_id)
+        _, bucket_name = ensure_share_permission(request, content_type, content_id, "revoke links")
+        revoke_share_link(request.state, bucket_name, content_id)
         return json_response({"ok": True})
 
     router.add(
@@ -1066,7 +1249,7 @@ def create_server(config_path: str) -> SheetsHTTPServer:
     init_auth_db(state.db)
     ensure_default_admin(state)
     ensure_default_test_users(state)
-    init_storage_db(state.db)
+    init_storage_db(state)
     cleanup_sessions(state)
     server = SheetsHTTPServer((state.config.options.host, state.config.options.port), RequestHandler, state)
     logging.info("Server listening on %s:%s", state.config.options.host, state.config.options.port)

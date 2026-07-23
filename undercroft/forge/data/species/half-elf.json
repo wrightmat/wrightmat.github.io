@@ -1,0 +1,15 @@
+{
+  "id": "half-elf",
+  "label": "Half-Elf",
+  "firstNames": [
+    "Aramil", "Berris", "Corran", "Dara", "Elenion", "Fenna", "Galla", "Halric",
+    "Ithil", "Jalara", "Kellen", "Lyra", "Maren", "Nissa", "Orlin", "Pallis",
+    "Quenna", "Ravi", "Selene", "Talvar"
+  ],
+  "lastNameForm": "family",
+  "lastNames": [
+    "Ashwind", "Brightwood", "Corvin", "Dawnstar", "Ellowyn", "Fenwick",
+    "Greymoor", "Hartwood", "Lorehaven", "Moonwhisper", "Nightshade",
+    "Silversong", "Thistledown", "Windrider"
+  ]
+}

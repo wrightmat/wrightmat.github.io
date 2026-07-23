@@ -1,0 +1,28 @@
+{
+  "id": "mon_3e8000d1-8757-42f9-bb89-d692f75d1beb",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "creatureTypeId": "monstrosity",
+  "archetypeId": "trickster",
+  "roleId": "solo",
+  "signatureFeatureId": "feat.false-opening",
+  "featureIds": [
+    "feat.false-opening",
+    "feat.confounding-trick",
+    "feat.vanishing-step",
+    "feat.slip-away"
+  ],
+  "recipeFulfillment": {
+    "signatureSlot": "filled",
+    "requiredSlots": {
+      "trick": "feat.confounding-trick",
+      "reposition": "feat.vanishing-step",
+      "escape": "feat.slip-away"
+    },
+    "optionalSlots": {}
+  },
+  "notes": "Glimmerwraith (Monstrosity, Trickster, Solo). This deceptive creature manipulates positioning and perception, using False Opening to set up devastating attacks with advantage while its Confounding Trick turns enemies' own allies into weapons—forcing chaotic misdirected strikes. Between feints and attacks, it weaponizes Vanishing Step to dodge incoming blows and Slip Away to maintain distance, dancing around the battlefield in a dizzying display of evasion that leaves foes frustrated and disoriented.",
+  "createdAt": "2026-07-23T03:30:55.369Z",
+  "name": "Glimmerwraith"
+}

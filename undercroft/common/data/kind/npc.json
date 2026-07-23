@@ -1,0 +1,8 @@
+{
+  "id": "npc",
+  "label": "NPC",
+  "plural": "NPCs",
+  "icon": "tabler:users",
+  "readTier": "free",
+  "writeTier": "free"
+}

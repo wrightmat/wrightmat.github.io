@@ -1,0 +1,16 @@
+{
+  "id": "elf",
+  "label": "Elf",
+  "firstNames": [
+    "Aelar", "Berrian", "Carric", "Dayereth", "Enna", "Faelar", "Galinndan",
+    "Hadarai", "Immeral", "Jarsali", "Keyleth", "Larel", "Meriele", "Naal",
+    "Orivel", "Paelynn", "Quarion", "Rael", "Silaqui", "Thamior", "Uthiel",
+    "Vanuath", "Ymmaneth", "Zaqrael"
+  ],
+  "lastNameForm": "family",
+  "lastNames": [
+    "Amakiir", "Galanodel", "Holimion", "Ilphelkiir", "Liadon", "Meliamne",
+    "Naïlo", "Siannodel", "Xiloscient", "Aerol", "Beryllon", "Cithreth",
+    "Duskryn", "Elorfindar", "Falconhurst", "Grelnaris", "Haelthorne", "Ivellios"
+  ]
+}

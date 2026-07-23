@@ -1,0 +1,24 @@
+{
+  "id": "feat.sustaining-feed",
+  "name": "Sustaining Feed",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature regains a small number of hit points whenever it deals damage with an attack.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature regains a small number of hit points whenever it deals damage with an attack."
+  },
+  "tags": {
+    "behaviors": [
+      "regeneration"
+    ],
+    "recipeSlots": [
+      "sustain"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

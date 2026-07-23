@@ -19,11 +19,11 @@
     },
     {
       "name": "Integrated Protection",
-      "description": "You gain a +1 bonus to your Armor Class. In addition, armor you have donned can\u2019t be removed against your will while you\u2019re alive."
+      "description": "You gain a +1 bonus to your Armor Class. In addition, armor you have donned can’t be removed against your will while you’re alive."
     },
     {
       "name": "Sentry's Rest",
-      "description": "You don\u2019t need to sleep, and magic can\u2019t put you to sleep. You can finish a Long Rest in 6 hours if you spend those hours in an inactive, motionless state. During this time, you appear inert but remain conscious."
+      "description": "You don’t need to sleep, and magic can’t put you to sleep. You can finish a Long Rest in 6 hours if you spend those hours in an inactive, motionless state. During this time, you appear inert but remain conscious."
     },
     {
       "name": "Specialized Design",
@@ -31,9 +31,58 @@
     },
     {
       "name": "Tireless",
-      "description": "You don\u2019t gain Exhaustion levels from dehydration, malnutrition, or suffocation."
+      "description": "You don’t gain Exhaustion levels from dehydration, malnutrition, or suffocation."
     }
   ],
   "variants": [],
-  "updated_at": "2026-07-19T16:31:52.155Z"
+  "updated_at": "2026-07-19T16:31:52.155Z",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "names": {
+    "nameMode": "synonym",
+    "lastNameForm": "none",
+    "firstNames": [
+      "Five",
+      "Rivet",
+      "Trench",
+      "Ratchet",
+      "Bastion",
+      "Sentinel",
+      "Cinder",
+      "Forge",
+      "Gauge",
+      "Harrow",
+      "Ironclad",
+      "Justice",
+      "Ledger",
+      "Magnet",
+      "Node",
+      "Piston",
+      "Quell",
+      "Rampart",
+      "Steelclaim",
+      "Warden",
+      "Anvil",
+      "Bolt",
+      "Chassis",
+      "Drum",
+      "Engine",
+      "Flux",
+      "Girder",
+      "Hinge",
+      "Ingot",
+      "Joint",
+      "Kiln",
+      "Lever",
+      "Mantle",
+      "Nail",
+      "Ordnance",
+      "Plate",
+      "Rod",
+      "Socket",
+      "Turbine",
+      "Vise"
+    ]
+  }
 }

@@ -28,30 +28,6 @@
   },
   "mounts": [
     {
-      "name": "characters",
-      "type": "json",
-      "root": "undercroft/workbench/data/characters",
-      "table": "characters",
-      "read_roles": ["free"],
-      "write_roles": ["free"]
-    },
-    {
-      "name": "templates",
-      "type": "json",
-      "root": "undercroft/workbench/data/templates",
-      "table": "templates",
-      "read_roles": ["free"],
-      "write_roles": ["gm", "master", "creator", "admin"]
-    },
-    {
-      "name": "systems",
-      "type": "json",
-      "root": "undercroft/workbench/data/systems",
-      "table": "systems",
-      "read_roles": ["free"],
-      "write_roles": ["creator", "admin"]
-    },
-    {
       "name": "sheets",
       "type": "static",
       "root": "sheets",
@@ -71,58 +47,9 @@
       "directory_extensions": [".htm", ".html"]
     },
     {
-      "name": "press-templates",
-      "type": "static",
-      "root": "undercroft/press/templates",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
       "name": "loom-mappings",
       "type": "static",
       "root": "undercroft/loom/mappings",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
-      "name": "library-class",
-      "type": "static",
-      "root": "undercroft/common/data/class",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
-      "name": "library-subclass",
-      "type": "static",
-      "root": "undercroft/common/data/subclass",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
-      "name": "library-background",
-      "type": "static",
-      "root": "undercroft/common/data/background",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
-      "name": "library-species",
-      "type": "static",
-      "root": "undercroft/common/data/species",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
-      "name": "library-variant",
-      "type": "static",
-      "root": "undercroft/common/data/variant",
-      "directory_listing": true,
-      "directory_extensions": [".json"]
-    },
-    {
-      "name": "library-character",
-      "type": "static",
-      "root": "undercroft/common/data/character",
       "directory_listing": true,
       "directory_extensions": [".json"]
     }

@@ -1,0 +1,28 @@
+{
+  "id": "feat.silence-aura",
+  "name": "Silence Aura",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Spellcasting fails automatically for other creatures within 20 feet unless they succeed on a save.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Spellcasting fails automatically for other creatures within 20 feet unless they succeed on a save."
+  },
+  "tags": {
+    "behaviors": [
+      "utility",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "disrupt",
+      "deny"
+    ],
+    "roles": [
+      "controller"
+    ],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

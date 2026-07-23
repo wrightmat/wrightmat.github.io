@@ -33,15 +33,15 @@ Build a Universal TTRPG Character Sheet platform with a lightweight, maintainabl
     - Render both read-only (template editor) and interactive (character sheet) using as much of the same code as possible
   - Other managers: Undo/Redo, Keyboard Shortcuts
 - User Interface:
-  - index.html - Landing page with links to other pages, ability to log in, see and share characters, etc. Include three-part theme toggle for dark mode, light mode, and system default (system default selected by default).
-  - system.html - Visual system editor with drag-and-drop reordering of components, and ability to define strings, enums/arrays, nested elements, etc. (everything needed to define all aspects of a TTRPG system).
-  - template.html - Visual template builder with drag-and-drop editing of all components based on a defined system (supporting comprehensive form elements that cover all TTRPG needs):
+  - index.html - A single unified page (log in, see and share characters, etc.) with a Template/Play/Edit view switcher (pill tabs, same convention as Loom/Press) instead of separate pages per mode. Include three-part theme toggle for dark mode, light mode, and system default (system default selected by default). Play view is the default landing view.
+  - (System editing has moved to Undercroft Loom's Systems tab — a form-based list editor, not a drag-and-drop canvas — covering strings, enums/arrays, nested object/array elements, etc.; `system.html` was retired.)
+  - Template view (`js/pages/workbench-template-view.js`, tier-gated to GM+ access) - Visual template builder with drag-and-drop editing of all components based on a defined system (supporting comprehensive form elements that cover all TTRPG needs):
     - Basic Inputs: text, number, checkbox, select, textarea
     - Advanced Widgets: LinearTrack (progress bars), CircularTrack (clocks), MultiStateToggle (pills/buttons for various things like conditions)
     - Layout Containers: Group/Container (fieldsets, columns, grids), Tabs
     - Complex Data: Arrays with multiple display styles (cards, compact lists, tables)
     - Media: Image upload with custom styling and shape options
-  - character.html - Main character sheet interface for players. Ability to both view and edit a character based on a defined system and template.
+  - Play/Edit views (`js/pages/workbench-character-view.js`) - Main character sheet interface for players, one view for read-only play (dice rolling, interaction) and one for editing the underlying character data, based on a defined system and template.
   - SortableJS integration for intuitive element reordering. Toast UI for any rich text needs. Consistent UI elements thoughout the tools.
 
 ## Epics

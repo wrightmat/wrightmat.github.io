@@ -1,0 +1,25 @@
+{
+  "id": "feat.zone-control",
+  "name": "Zone Control",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Whenever a creature ends its turn within 10 feet of the monster, the monster can make one attack against it as a reaction.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "Whenever a creature ends its turn within 10 feet of the monster, the monster can make one attack against it as a reaction."
+  },
+  "tags": {
+    "behaviors": [
+      "control",
+      "damage"
+    ],
+    "recipeSlots": [
+      "deny"
+    ],
+    "roles": [],
+    "creatureTypes": []
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

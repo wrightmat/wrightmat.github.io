@@ -1,0 +1,26 @@
+{
+  "description": [
+    "Wiry", "Heavyset", "Frail", "Compact", "Looming",
+    "Scarred", "Tattooed", "Weathered", "Ashen", "Stylish",
+    "Disheveled", "Adorned", "Striking", "Forgettable", "Soft",
+    "Maimed", "Imposing", "Graceful", "Rough-hewn", "Immaculate"
+  ],
+  "demeanor": [
+    "Guarded", "Warm", "Jovial", "Melancholy", "Nervous",
+    "Confident", "Suspicious", "Distracted", "Intense", "Aloof",
+    "Eager", "Weary", "Bitter", "Serene", "Erratic",
+    "Calculating", "Gregarious", "Haunted", "Lazy", "Detached"
+  ],
+  "drive": [
+    "Survival", "Wealth", "Power", "Revenge", "Love",
+    "Duty", "Faith", "Knowledge", "Recognition", "Redemption",
+    "Protection", "Freedom", "Belonging", "Ambition", "Pleasure",
+    "Justice", "Grief", "Fear", "Curiosity", "Legacy"
+  ],
+  "direction": [
+    "Hunted", "Searching", "Hiding", "Grieving", "Indebted",
+    "Sworn", "Exiled", "Deceiving", "Protecting", "Pursuing",
+    "Recovering", "Betrayed", "Recruited", "Blackmailed", "Ascending",
+    "Falling", "Escaping", "Waiting", "Lost", "Chosen"
+  ]
+}

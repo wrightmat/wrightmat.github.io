@@ -50,28 +50,56 @@ def _require_owner(state: ServerState, group_id: str, owner: Optional[User]):
 
 
 def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, Any]]:
+    # Characters/systems/templates all live in the one generic library_items
+    # table now (see server/storage.py) — system/template are id references
+    # tucked inside a character's own `metadata` JSON, not a joinable column,
+    # so their titles are resolved in a second pass here rather than via a
+    # brittle multi-table SQL JOIN keyed off a JSON blob's contents.
     rows = state.db.execute(
         """
         SELECT gm.content_type,
                gm.content_id,
                gm.added_at,
-               c.name AS character_name,
-               c.system AS character_system,
-               c.template AS character_template,
-               s.title AS system_title,
-               t.title AS template_title,
-               c.owner_id AS character_owner_id,
+               li.title AS character_title,
+               li.metadata AS character_metadata,
+               li.owner_id AS character_owner_id,
                u.username AS owner_username
         FROM group_members AS gm
-        LEFT JOIN characters AS c ON gm.content_type = 'character' AND c.id = gm.content_id
-        LEFT JOIN systems AS s ON c.system = s.id
-        LEFT JOIN templates AS t ON c.template = t.id
-        LEFT JOIN users AS u ON u.id = c.owner_id
+        LEFT JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
+        LEFT JOIN users AS u ON u.id = li.owner_id
         WHERE gm.group_id = ?
-        ORDER BY COALESCE(c.name, gm.content_id) COLLATE NOCASE
+        ORDER BY COALESCE(li.title, gm.content_id) COLLATE NOCASE
         """,
         (group_id,),
     ).fetchall()
+
+    parsed_metadata: Dict[str, Dict[str, Any]] = {}
+    referenced_ids: Dict[str, set] = {"system": set(), "template": set()}
+    for row in rows:
+        raw_metadata = row["character_metadata"]
+        metadata: Dict[str, Any] = {}
+        if raw_metadata:
+            try:
+                metadata = json.loads(raw_metadata)
+            except json.JSONDecodeError:
+                metadata = {}
+        parsed_metadata[row["content_id"]] = metadata
+        if metadata.get("system"):
+            referenced_ids["system"].add(metadata["system"])
+        if metadata.get("template"):
+            referenced_ids["template"].add(metadata["template"])
+
+    titles: Dict[Tuple[str, str], str] = {}
+    for kind, ids in referenced_ids.items():
+        if not ids:
+            continue
+        placeholders = ",".join("?" for _ in ids)
+        for title_row in state.db.execute(
+            f"SELECT id, title FROM library_items WHERE kind = ? AND id IN ({placeholders})",
+            (kind, *ids),
+        ):
+            titles[(kind, title_row["id"])] = title_row["title"]
+
     members: List[Dict[str, Any]] = []
     for row in rows:
         content_type = row["content_type"]
@@ -84,16 +112,19 @@ def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, An
             "added_at": row["added_at"],
         }
         if content_type == "character":
+            metadata = parsed_metadata.get(content_id, {})
+            system_id = metadata.get("system") or ""
+            template_id = metadata.get("template") or ""
             entry.update(
                 {
-                    "label": row["character_name"] or content_id,
-                    "system": row["character_system"] or "",
-                    "system_name": row["system_title"] or row["character_system"] or "",
-                    "template": row["character_template"] or "",
-                    "template_title": row["template_title"] or "",
+                    "label": row["character_title"] or content_id,
+                    "system": system_id,
+                    "system_name": titles.get(("system", system_id), system_id),
+                    "template": template_id,
+                    "template_title": titles.get(("template", template_id), ""),
                     "owner_id": row["character_owner_id"],
                     "owner_username": row["owner_username"] or "",
-                    "missing": row["character_name"] is None,
+                    "missing": row["character_title"] is None,
                 }
             )
         members.append(entry)
@@ -202,10 +233,10 @@ def _resolve_group_access(
         """
         SELECT 1
         FROM group_members AS gm
-        JOIN characters AS c
-          ON gm.content_type = 'character' AND gm.content_id = c.id
+        JOIN library_items AS li
+          ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
         WHERE gm.group_id = ?
-          AND c.owner_id = ?
+          AND li.owner_id = ?
         LIMIT 1
         """,
         (resolved_id, user.id),
@@ -315,7 +346,7 @@ def list_character_groups(state: ServerState, user: Optional[User], character_id
     if not character_id:
         raise AuthError("Character id is required")
     character_row = state.db.execute(
-        "SELECT id, owner_id FROM characters WHERE id = ?",
+        "SELECT id, owner_id FROM library_items WHERE kind = 'character' AND id = ?",
         (character_id,),
     ).fetchone()
     if not character_row:
@@ -451,7 +482,7 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
         normalized_ids.append(value)
     if normalized_ids:
         placeholders = ",".join("?" for _ in normalized_ids)
-        query = f"SELECT id, owner_id FROM characters WHERE id IN ({placeholders})"
+        query = f"SELECT id, owner_id FROM library_items WHERE kind = 'character' AND id IN ({placeholders})"
         rows = state.db.execute(query, normalized_ids).fetchall()
         existing = {row["id"] for row in rows}
         missing = [value for value in normalized_ids if value not in existing]
@@ -539,9 +570,9 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
         raise AuthError("Character is not part of this group")
     character_row = state.db.execute(
         """
-        SELECT id, name, owner_id, system
-        FROM characters
-        WHERE id = ?
+        SELECT id, title, owner_id, metadata
+        FROM library_items
+        WHERE kind = 'character' AND id = ?
         """,
         (character_id,),
     ).fetchone()
@@ -549,12 +580,18 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
         raise AuthError("Character not found")
     if character_row["owner_id"] != group_row["owner_id"]:
         raise AuthError("This character has already been claimed")
+    metadata: Dict[str, Any] = {}
+    if character_row["metadata"]:
+        try:
+            metadata = json.loads(character_row["metadata"])
+        except json.JSONDecodeError:
+            metadata = {}
     timestamp = datetime.utcnow().isoformat()
     state.db.execute(
         """
-        UPDATE characters
+        UPDATE library_items
         SET owner_id = ?, modified_at = ?, last_accessed_at = ?
-        WHERE id = ?
+        WHERE kind = 'character' AND id = ?
         """,
         (user.id, timestamp, timestamp, character_id),
     )
@@ -563,8 +600,8 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
     return {
         "character": {
             "id": character_row["id"],
-            "name": character_row["name"],
-            "system": character_row["system"],
+            "name": character_row["title"],
+            "system": metadata.get("system", ""),
         },
         "group": {
             "id": group_row["id"],

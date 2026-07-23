@@ -1,0 +1,16 @@
+{
+  "id": "human",
+  "label": "Human",
+  "firstNames": [
+    "Aldric", "Branwen", "Cedric", "Dara", "Edmund", "Fiora", "Garrick", "Helena",
+    "Ivo", "Joslyn", "Kaelan", "Lior", "Marcus", "Nadia", "Osric", "Petra",
+    "Quinlan", "Rosalind", "Stefan", "Talia", "Ulric", "Vera", "Willem", "Ysolde"
+  ],
+  "lastNameForm": "family",
+  "lastNames": [
+    "Ashford", "Blackwood", "Carver", "Dunmore", "Everhart", "Fairweather",
+    "Grayson", "Hartley", "Ironside", "Kestrel", "Lockwood", "Marsh",
+    "Norwick", "Osgood", "Pemberton", "Ravenscroft", "Stonebridge", "Thorne",
+    "Wexford", "Yarrow"
+  ]
+}

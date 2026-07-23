@@ -1,0 +1,18 @@
+{
+  "id": "swarm",
+  "name": "Swarm",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "Overwhelms through numbers or collective behavior.",
+  "recipe": {
+    "signatureSlot": "multiply",
+    "requiredSlots": [
+      "surround",
+      "sacrifice",
+      "recover"
+    ],
+    "optionalSlots": [],
+    "avoidTags": []
+  }
+}

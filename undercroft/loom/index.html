@@ -55,7 +55,7 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="loom">
-    <div class="d-flex flex-column min-vh-100 workbench-app">
+    <div class="d-flex flex-column min-vh-100 workbench-app" data-tier-content>
       <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="workbench-header-grid pe-2 py-3">
           <div></div>
@@ -113,8 +113,8 @@
           data-pane-initial="expanded"
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-3 workbench-sticky-pane">
-            <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Mapping actions">
-              <div class="btn-group" role="group">
+            <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Loom actions">
+              <div class="btn-group" role="group" aria-label="Loom actions">
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
@@ -139,22 +139,174 @@
                   <span class="iconify fs-5" data-icon="tabler:arrow-forward-up" aria-hidden="true"></span>
                   <span class="visually-hidden">Redo</span>
                 </button>
+
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
                   data-action="new-mapping"
+                  data-loom-view-panel="import"
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="New mapping"
-                  aria-label="New mapping"
+                  data-bs-title="New Mapping"
+                  aria-label="New Mapping"
                 >
                   <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
-                  <span class="visually-hidden">New mapping</span>
+                  <span class="visually-hidden">New Mapping</span>
                 </button>
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
                   data-action="save-mapping"
+                  data-loom-view-panel="import"
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save Mapping"
+                  aria-label="Save Mapping"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save Mapping</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-action="rename-mapping"
+                  data-loom-view-panel="import"
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Rename Mapping"
+                  aria-label="Rename Mapping"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:pencil" aria-hidden="true"></span>
+                  <span class="visually-hidden">Rename Mapping</span>
+                </button>
+
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-library-new
+                  data-loom-view-panel="library"
+                  hidden
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="New Entity"
+                  aria-label="New Entity"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New Entity</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-library-save
+                  data-loom-view-panel="library"
+                  hidden
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save Entity"
+                  aria-label="Save Entity"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save Entity</span>
+                </button>
+                <button
+                  class="btn btn-outline-danger p-2"
+                  type="button"
+                  data-library-delete
+                  data-loom-view-panel="library"
+                  hidden
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Delete Entity"
+                  aria-label="Delete Entity"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete Entity</span>
+                </button>
+
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-system-new
+                  data-loom-view-panel="systems"
+                  hidden
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="New System"
+                  aria-label="New System"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New System</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-system-save
+                  data-loom-view-panel="systems"
+                  hidden
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save System"
+                  aria-label="Save System"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save System</span>
+                </button>
+                <button
+                  class="btn btn-outline-danger p-2"
+                  type="button"
+                  data-system-delete
+                  data-loom-view-panel="systems"
+                  hidden
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Delete System"
+                  aria-label="Delete System"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete System</span>
+                </button>
+
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-places-new-setting
+                  data-loom-view-panel="places"
+                  hidden
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="New Setting"
+                  aria-label="New Setting"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:map-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New Setting</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-places-new-location
+                  data-loom-view-panel="places"
+                  hidden
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="New Location"
+                  aria-label="New Location"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New Location</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-places-save
+                  data-loom-view-panel="places"
+                  hidden
+                  disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
                   data-bs-title="Save"
@@ -164,56 +316,102 @@
                   <span class="visually-hidden">Save</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-danger p-2"
                   type="button"
-                  data-action="rename-mapping"
+                  data-places-delete-location
+                  data-loom-view-panel="places"
+                  hidden
+                  disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Rename"
-                  aria-label="Rename"
+                  data-bs-title="Delete Location"
+                  aria-label="Delete Location"
                 >
-                  <span class="iconify fs-5" data-icon="tabler:pencil" aria-hidden="true"></span>
-                  <span class="visually-hidden">Rename</span>
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete Location</span>
                 </button>
               </div>
             </div>
 
-            <section class="d-flex flex-column gap-2">
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Node Palette</h2>
-              <div class="d-flex flex-column gap-1" data-node-palette>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="object">Object</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="field">Field</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="pipeline">Pipeline</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="with">With</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="custom">Custom</button>
-              </div>
-              <p class="small text-body-secondary mb-0">Select a node in the tree, then click a palette entry to add it as a child (object fields) or step (pipelines).</p>
-            </section>
+            <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
+              <section class="d-flex flex-column gap-2">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Node Palette</h2>
+                <div class="d-flex flex-column gap-1" data-node-palette>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="object">Object</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="field">Field</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="pipeline">Pipeline</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="with">With</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="custom">Custom</button>
+                </div>
+                <p class="small text-body-secondary mb-0">Select a node in the tree, then click a palette entry to add it as a child (object fields) or step (pipelines).</p>
+              </section>
 
-            <section class="d-flex flex-column gap-2" data-step-palette-section hidden>
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Pipeline Steps</h2>
-              <div class="d-flex flex-column gap-1" data-step-palette>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="map">Map</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="filter">Filter</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="flatten">Flatten</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="group-by">Group By</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="sort">Sort</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="dedup">Dedup</button>
-                <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="custom">Custom</button>
-              </div>
-            </section>
+              <section class="d-flex flex-column gap-2" data-step-palette-section hidden>
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Pipeline Steps</h2>
+                <div class="d-flex flex-column gap-1" data-step-palette>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="map">Map</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="filter">Filter</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="flatten">Flatten</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="group-by">Group By</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="sort">Sort</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="dedup">Dedup</button>
+                  <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-step-type="custom">Custom</button>
+                </div>
+              </section>
 
-            <section class="d-flex flex-column gap-2">
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sample Raw Data</h2>
-              <label class="form-label small text-body-secondary fw-semibold mb-0">Paste JSON</label>
-              <textarea class="form-control form-control-sm font-monospace" rows="8" data-sample-data-input spellcheck="false"></textarea>
-              <button class="btn btn-outline-secondary btn-sm" type="button" data-sample-data-apply>Apply</button>
-            </section>
+              <section class="d-flex flex-column gap-2">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sample Raw Data</h2>
+                <label class="form-label small text-body-secondary fw-semibold mb-0">Paste JSON</label>
+                <textarea class="form-control form-control-sm font-monospace" rows="8" data-sample-data-input spellcheck="false"></textarea>
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-sample-data-apply>Apply</button>
+              </section>
+            </div>
+
+            <div class="d-flex flex-column gap-4" data-loom-view-panel="systems" hidden>
+              <section class="pane-card mt-auto">
+                <button
+                  class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#system-preview-collapse"
+                  aria-expanded="false"
+                  aria-controls="system-preview-collapse"
+                >
+                  <span class="text-uppercase fs-6 fw-semibold text-body-secondary">Preview Data (JSON)</span>
+                  <span class="badge text-bg-secondary" data-system-preview-bytes>0 B</span>
+                </button>
+                <div class="collapse" id="system-preview-collapse">
+                  <div class="d-flex flex-column gap-2 mt-2">
+                    <textarea
+                      class="form-control form-control-sm font-monospace"
+                      rows="6"
+                      placeholder="{}"
+                      data-system-preview
+                    ></textarea>
+                    <span class="align-middle" data-help-topic="loom.systemPreview" data-help-insert="replace"></span>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         </aside>
 
         <main class="workbench-main flex-grow-1 p-4 overflow-auto">
-          <div class="d-flex flex-column gap-4">
+          <ul class="nav nav-pills mb-3" role="tablist" data-loom-view-tabs>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" type="button" role="tab" data-loom-view-tab="import" aria-selected="true">Import</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="library" aria-selected="false">Library</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="systems" aria-selected="false">Systems</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="places" aria-selected="false">Places</button>
+            </li>
+          </ul>
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
             <div class="card shadow-theme">
               <div class="card-body">
                 <section class="d-flex flex-column gap-3" data-selection-section>
@@ -327,6 +525,260 @@
               </div>
             </div>
           </div>
+
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="library" hidden>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-library-section>
+                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div class="d-flex align-items-center gap-2">
+                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Library</h2>
+                      <span class="align-middle" data-help-topic="loom.library" data-help-insert="replace"></span>
+                    </div>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-library-toggle
+                      aria-expanded="true"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-library-toggle-label>Collapse library</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-3" data-library-panel>
+                    <div class="row g-3 align-items-end">
+                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0" for="loomLibraryKind">Kind</label>
+                        <select class="form-select" id="loomLibraryKind" data-library-kind-select></select>
+                      </div>
+                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0" for="loomLibraryEntry">Entity</label>
+                        <select class="form-select" id="loomLibraryEntry" data-library-entry-select></select>
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label fw-semibold mb-0" for="loomLibraryId">Id</label>
+                      <input class="form-control" type="text" id="loomLibraryId" data-library-id />
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label fw-semibold mb-0">Assigned Systems</label>
+                      <div class="d-flex flex-column gap-1 border rounded-3 p-2" data-library-system-list></div>
+                    </div>
+                    <div class="d-flex flex-column gap-1" data-library-template-section hidden>
+                      <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="loomLibraryTemplate">
+                        <span>Assigned Template</span>
+                        <span class="align-middle" data-help-topic="loom.libraryTemplate" data-help-insert="replace"></span>
+                      </label>
+                      <select class="form-select" id="loomLibraryTemplate" data-library-template-select></select>
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label fw-semibold mb-0" for="loomLibraryJson">Entity JSON</label>
+                      <textarea
+                        class="form-control form-control-sm font-monospace"
+                        rows="16"
+                        spellcheck="false"
+                        id="loomLibraryJson"
+                        data-library-json
+                      ></textarea>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="systems" hidden>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-systems-section>
+                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div class="d-flex align-items-center gap-2">
+                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Systems</h2>
+                      <span class="align-middle" data-help-topic="loom.systems" data-help-insert="replace"></span>
+                    </div>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-systems-toggle
+                      aria-expanded="true"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-systems-toggle-label>Collapse systems</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-3" data-systems-panel>
+                    <div class="d-flex flex-column gap-2">
+                      <label class="form-label fw-semibold mb-0" for="loomSystemSelect">System</label>
+                      <select class="form-select" id="loomSystemSelect" data-system-select></select>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-12 col-md-4 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0">Id</label>
+                        <input class="form-control" type="text" data-system-id />
+                      </div>
+                      <div class="col-12 col-md-4 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0">Title</label>
+                        <input class="form-control" type="text" data-system-title />
+                      </div>
+                      <div class="col-12 col-md-4 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0">Version</label>
+                        <input class="form-control" type="text" data-system-version />
+                      </div>
+                    </div>
+                    <section class="d-flex flex-column gap-2">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                          <span>Properties</span>
+                          <span class="align-middle" data-help-topic="loom.systemProperties" data-help-insert="replace"></span>
+                        </h3>
+                        <button
+                          class="btn btn-outline-secondary btn-sm p-1"
+                          type="button"
+                          data-system-add-property
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          data-bs-title="Add Property"
+                          aria-label="Add Property"
+                        >
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                      <div
+                        class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto"
+                        style="max-height: 28rem"
+                        data-system-property-rows
+                      ></div>
+                    </section>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="places" hidden>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-places-section>
+                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div class="d-flex align-items-center gap-2">
+                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Places</h2>
+                      <span class="align-middle" data-help-topic="loom.places" data-help-insert="replace"></span>
+                    </div>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-places-toggle
+                      aria-expanded="true"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-places-toggle-label>Collapse places</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-3" data-places-panel>
+                    <div class="row g-3">
+                      <div class="col-12 col-md-4 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0">System</label>
+                        <select class="form-select" data-places-system-select></select>
+                      </div>
+                      <div class="col-12 col-md-4 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0">Setting</label>
+                        <select class="form-select" data-places-setting-select></select>
+                      </div>
+                      <div class="col-12 col-md-4 d-flex flex-column gap-2">
+                        <label class="form-label fw-semibold mb-0">Location</label>
+                        <select class="form-select" data-places-location-select></select>
+                      </div>
+                    </div>
+                    <section class="d-flex flex-column gap-2" data-places-setting-fields>
+                      <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Setting</h3>
+                      <label class="form-label fw-semibold mb-0">Name</label>
+                      <input class="form-control" type="text" data-setting-name />
+                      <label class="form-label fw-semibold mb-0">Description</label>
+                      <textarea class="form-control form-control-sm" rows="2" data-setting-description></textarea>
+                    </section>
+
+                    <section class="d-flex flex-column gap-3" data-places-location-fields>
+                      <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Location</h3>
+                      <label class="form-label fw-semibold mb-0">Name</label>
+                      <input class="form-control" type="text" data-location-name />
+
+                      <section class="d-flex flex-column gap-2" id="loom-species-weights">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Species Weights</h3>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="small text-body-secondary" data-location-weight-total>Total: 0</span>
+                            <button
+                              class="btn btn-outline-secondary btn-sm p-1"
+                              type="button"
+                              data-location-add-species
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="Add Species"
+                              aria-label="Add Species"
+                            >
+                              <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </div>
+                        <div
+                          class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto"
+                          style="max-height: 20rem"
+                          data-location-weight-rows
+                        ></div>
+                      </section>
+
+                      <section class="d-flex flex-column gap-2" id="loom-mixing-coefficient">
+                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Mixing Coefficient</h3>
+                        <div class="d-flex align-items-center gap-2">
+                          <input class="form-range" type="range" min="0" max="1" step="0.05" data-location-mixing-coefficient />
+                          <span class="small text-body-secondary" style="min-width: 3rem" data-location-mixing-coefficient-value>0.00</span>
+                        </div>
+                      </section>
+
+                      <section class="d-flex flex-column gap-2" id="loom-archetype-overrides">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Setting-Specific Archetypes</h3>
+                          <button
+                            class="btn btn-outline-secondary btn-sm p-1"
+                            type="button"
+                            data-location-add-archetype-override
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Add Override"
+                            aria-label="Add Override"
+                          >
+                            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                        <div class="d-flex flex-column gap-2" data-location-archetype-rows></div>
+                      </section>
+
+                      <section class="d-flex flex-column gap-2" id="loom-generic-name-fallback">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                            <span>Generic Name Fallback</span>
+                            <span class="align-middle" data-help-topic="loom.genericNameFallback" data-help-insert="replace"></span>
+                          </h3>
+                          <button
+                            class="btn btn-outline-secondary btn-sm p-1"
+                            type="button"
+                            data-location-add-fallback-name
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-title="Add Name"
+                            aria-label="Add Name"
+                          >
+                            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                        <div class="d-flex flex-column gap-2" data-location-fallback-rows></div>
+                      </section>
+                    </section>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
         </main>
 
         <aside
@@ -337,11 +789,13 @@
           data-pane-initial="expanded"
         >
           <div class="workbench-pane-content d-flex flex-column gap-3 p-3 workbench-sticky-pane">
-            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Inspector</h2>
-            <div data-inspector>
-              <p class="small text-body-secondary">Select a node in the tree to edit its properties.</p>
+            <div class="d-flex flex-column gap-3" data-loom-view-panel="import">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Inspector</h2>
+              <div data-inspector>
+                <p class="small text-body-secondary">Select a node in the tree to edit its properties.</p>
+              </div>
+              <hr class="border-body-tertiary opacity-50 my-2" />
             </div>
-            <hr class="border-body-tertiary opacity-50 my-2" />
             <div class="d-flex align-items-center justify-content-between">
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Recent Saves</h2>
               <button
@@ -359,6 +813,22 @@
             </div>
           </div>
         </aside>
+      </div>
+    </div>
+
+    <div class="container-lg py-5 my-5 d-none" data-tier-gate>
+      <div class="card border-0 shadow-theme mx-auto" style="max-width: 40rem;">
+        <div class="card-body d-flex flex-column gap-3">
+          <h2 class="card-title h4 mb-0">Access required</h2>
+          <p class="text-body-secondary mb-0">
+            Loom requires <span class="fw-semibold" data-tier-required-label>Creator</span> access or higher. Sign in
+            with an eligible account or upgrade your tier to continue.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" type="button" data-tier-open-login>Sign in</button>
+            <a class="btn btn-outline-secondary" href="../workbench/index.html">Return home</a>
+          </div>
+        </div>
       </div>
     </div>
 

@@ -1,0 +1,28 @@
+{
+  "id": "feat.spectral-fade",
+  "name": "Spectral Fade",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The creature can become invisible until it attacks or is dealt damage.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "The creature can become invisible until it attacks or is dealt damage."
+  },
+  "tags": {
+    "behaviors": [
+      "stealth"
+    ],
+    "recipeSlots": [
+      "hide"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "undead"
+    ]
+  },
+  "synergizesWith": [
+    "feat.explosive-opening"
+  ],
+  "conflictsWith": []
+}

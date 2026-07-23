@@ -1,0 +1,28 @@
+{
+  "id": "feat.acid-corrosion",
+  "name": "Acid Corrosion",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A successful attack deals extra acid damage and can degrade the target's armor or weapon.",
+  "mechanics": {
+    "type": "passive-or-triggered",
+    "text": "A successful attack deals extra acid damage and can degrade the target's armor or weapon."
+  },
+  "tags": {
+    "behaviors": [
+      "damage",
+      "debuff"
+    ],
+    "recipeSlots": [
+      "damage",
+      "disrupt"
+    ],
+    "roles": [],
+    "creatureTypes": [
+      "ooze"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

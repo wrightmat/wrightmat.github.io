@@ -1,0 +1,23 @@
+{
+  "id": "beast",
+  "name": "Beast",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "A natural, non-magical animal, though often larger, fiercer, or stranger than its mundane cousins.",
+  "vocabulary": {
+    "namePatterns": [
+      "Giant {name}",
+      "{name} Stalker"
+    ]
+  },
+  "traitTags": [
+    "natural",
+    "instinctive"
+  ],
+  "defaultSenses": [
+    "keen smell or hearing"
+  ],
+  "defaultResistances": [],
+  "defaultImmunities": []
+}

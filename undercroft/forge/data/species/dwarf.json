@@ -1,0 +1,15 @@
+{
+  "id": "dwarf",
+  "label": "Dwarf",
+  "firstNames": [
+    "Adrik", "Baern", "Darrak", "Eberk", "Fargrim", "Gardain", "Harbek",
+    "Kildrak", "Morgran", "Nordak", "Orsik", "Rurik", "Thoradin", "Ulfgar",
+    "Vondal", "Bardryn", "Dagnal", "Eldeth", "Falkrunn", "Gunnloda", "Hlin", "Kathra"
+  ],
+  "lastNameForm": "clan",
+  "lastNames": [
+    "Balderk", "Battlehammer", "Brawnanvil", "Dankil", "Fireforge", "Frostbeard",
+    "Gorunn", "Holderhek", "Ironfist", "Loderr", "Lutgehr", "Rumnaheim",
+    "Strakeln", "Torunn", "Ungart", "Whorgen"
+  ]
+}
