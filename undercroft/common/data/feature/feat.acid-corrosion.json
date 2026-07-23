@@ -21,6 +21,9 @@
     "roles": [],
     "creatureTypes": [
       "ooze"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

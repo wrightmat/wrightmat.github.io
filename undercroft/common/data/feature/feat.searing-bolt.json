@@ -1,0 +1,18 @@
+{
+  "id": "feat.searing-bolt",
+  "name": "Searing Bolt",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A bolt of fire streaks toward a target, dealing damage and igniting anything flammable it touches.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, deals fire damage to one target within range and ignites flammable materials it touches."
+  },
+  "budgetCost": 5,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["damage", "fire"]
+  },
+  "synergizesWith": ["feat.extra-range", "feat.piercing-edge", "feat.area-burst"],
+  "dependsOn": [],
+  "conflictsWith": ["feat.frost-lance"]
+}

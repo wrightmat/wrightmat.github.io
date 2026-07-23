@@ -18,7 +18,10 @@
       "mark"
     ],
     "roles": [],
-    "creatureTypes": []
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
   },
   "synergizesWith": [],
   "conflictsWith": []

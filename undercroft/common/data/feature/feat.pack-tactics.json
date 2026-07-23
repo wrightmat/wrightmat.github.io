@@ -20,6 +20,9 @@
     "roles": [],
     "creatureTypes": [
       "beast"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [

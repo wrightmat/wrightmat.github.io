@@ -1,0 +1,19 @@
+{
+  "id": "feat.smugglers-tunnels",
+  "name": "Smuggler's Tunnels",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A hidden network of passages lets goods and people move in and out unseen by any official gate or checkpoint.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Provides a secret, unmonitored route into and out of this location."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "complex", "structure"],
+    "locationPurposes": ["commerce", "confinement"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.black-market"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

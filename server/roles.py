@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-ROLE_ORDER = ["free", "player", "gm", "master", "creator", "admin"]
+ROLE_ORDER = ["free", "player", "gm", "creator", "admin"]
 
 
 def role_rank(role: str) -> int:

@@ -1,0 +1,19 @@
+{
+  "id": "feat.ancient-ruins-beneath",
+  "name": "Ancient Ruins Beneath",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Older ruins lie buried beneath this place — forgotten foundations, sealed vaults, or the remains of a civilization no one here remembers.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Excavation or exploration beneath this location can uncover older, unrelated structures and their secrets."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "region", "complex"],
+    "locationPurposes": ["exploration", "knowledge"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.haunted"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,18 @@
+{
+  "id": "feat.piercing-edge",
+  "name": "Piercing Edge",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The effect cuts through defenses that would normally blunt it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The paired damaging effect ignores resistance to its damage type."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["modifier", "damage"]
+  },
+  "synergizesWith": ["feat.searing-bolt", "feat.frost-lance"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

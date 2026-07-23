@@ -1,0 +1,18 @@
+{
+  "id": "feat.frost-lance",
+  "name": "Frost Lance",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A shard of ice pierces a target, dealing cold damage and slowing its movement briefly.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, deals cold damage to one target within range and reduces its speed until the start of its next turn."
+  },
+  "budgetCost": 6,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["damage", "cold", "control"]
+  },
+  "synergizesWith": ["feat.extra-range", "feat.piercing-edge", "feat.area-burst"],
+  "dependsOn": [],
+  "conflictsWith": ["feat.searing-bolt"]
+}

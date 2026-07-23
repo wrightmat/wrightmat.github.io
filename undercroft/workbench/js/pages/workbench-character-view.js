@@ -1480,8 +1480,10 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         });
       });
       const shared = Array.isArray(remote?.shared) ? remote.shared : [];
+      const sharedIds = [];
       shared.forEach((entry) => {
         if (!entry || !entry.id) return;
+        sharedIds.push(entry.id);
         registerCharacterRecord({
           id: entry.id,
           title: entry.name || entry.title || entry.id,
@@ -1495,6 +1497,31 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           sharePermissions: entry.permissions || "",
         });
       });
+
+      // Local storage mirrors every remote save (see DataManager.save), so a
+      // character deleted elsewhere (e.g. via Loom, a separate DataManager
+      // instance/tab) leaves a stale local copy behind that would otherwise
+      // linger in this dropdown forever. This fresh, authoritative owned/
+      // shared listing is the source of truth for what this account still
+      // has — any catalog entry previously believed owned/shared but now
+      // missing from it is confirmed gone, so it's pruned the same way
+      // handleCharacterLoadFailure does for a 404'd load. Builtin/local-only
+      // (anonymous) entries are never touched here.
+      const confirmedOwnedIds = new Set(ownedIds);
+      const confirmedSharedIds = new Set(sharedIds);
+      Array.from(characterCatalog.entries()).forEach(([id, metadata]) => {
+        if (metadata.source === "builtin") return;
+        const isStaleOwned = metadata.ownership === "owned" && !confirmedOwnedIds.has(id);
+        const isStaleShared = metadata.ownership === "shared" && !confirmedSharedIds.has(id);
+        if (!isStaleOwned && !isStaleShared) return;
+        try {
+          dataManager.removeLocal("characters", id);
+        } catch (storageError) {
+          console.warn("Character editor: unable to clear local cache for", id, storageError);
+        }
+        removeCharacterRecord(id);
+      });
+
       syncCharacterOptions();
     } catch (error) {
       console.warn("Character editor: unable to refresh remote characters", error);

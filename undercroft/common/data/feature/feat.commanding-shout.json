@@ -20,7 +20,10 @@
     "roles": [
       "leader"
     ],
-    "creatureTypes": []
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
   },
   "synergizesWith": [
     "feat.empowering-aura"

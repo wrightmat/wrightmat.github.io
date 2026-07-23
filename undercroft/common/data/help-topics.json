@@ -255,6 +255,17 @@
       "href": "../loom/index.html#loom-selection"
     },
     {
+      "id": "loom.source.ddb-monster",
+      "title": "D&D Beyond Monster ID or URL",
+      "summary": "A monster ID or monster-service URL fetches a live monster stat block (undocumented endpoint, separate from the character source above).",
+      "details": [
+        "A plain number, or a URL like https://monster-service.dndbeyond.com/v1/Monster/16909, fetches that monster's stat block.",
+        "This is a different D&D Beyond endpoint from the Character source above. SRD monsters resolve with no login; a local server with server/ddb-session.local.json configured (same session-cookie mechanism as content-page fetches) may also resolve non-SRD monsters if your account has access."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-selection"
+    },
+    {
       "id": "loom.library",
       "title": "Library",
       "summary": "Browse, edit, and assign every saved entity — Species, Classes, and any kind a creator defines, including Kind itself.",
@@ -318,27 +329,27 @@
       "href": "../loom/index.html#loom-systems"
     },
     {
-      "id": "loom.places",
-      "title": "Places",
-      "summary": "System > Setting > Location — the hierarchy Forge uses to pick where an NPC comes from.",
+      "id": "sanctum.setting",
+      "title": "Setting",
+      "summary": "Choose which Setting this Location belongs to — its Name and Description are edited under Setting Properties in the right pane.",
       "details": [
-        "A Setting belongs to one System (e.g. Forgotten Realms under D&D 5E); a Location belongs to one Setting (e.g. Sword Coast under Forgotten Realms).",
-        "Species Weights picks from whichever species are assigned to the selected System in the Library panel above — assign a species there first if it isn't showing up here.",
-        "Setting-Specific Archetypes is a free-form roll-number to archetype-name list, for tables (like D&D 5E's) that reserve certain rolls for local flavor."
+        "A Setting belongs to one System (e.g. Forgotten Realms under D&D 5E); every Location belongs to one Setting (e.g. Sword Coast under Forgotten Realms).",
+        "Leave this blank to start a new Setting (New in Setting Properties), or pick an existing one here to edit it or add Locations to it."
       ],
-      "category": "Loom",
-      "href": "../loom/index.html#loom-places"
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-setting-picker"
     },
     {
-      "id": "loom.genericNameFallback",
-      "title": "Generic Name Fallback",
-      "summary": "Names to draw from when a rolled species is \"Other\" or otherwise can't be resolved to a real Species entity.",
+      "id": "sanctum.npcConfig",
+      "title": "NPC Generation Config",
+      "summary": "Optional per-Location settings Forge uses to generate NPCs here — not every place needs one.",
       "details": [
-        "Each entry is a name and an optional weight (defaults to 1 if left blank) — higher weight means more likely to be picked.",
-        "This replaces having to hardcode a fallback name pool in Forge's own code — every Location can define its own."
+        "Species Weights, Mixing Coefficient, and Setting-Specific Archetypes drive Forge's weighted species roll and name blending for this Location specifically.",
+        "Generic Name Fallback: names to draw from when a rolled species is \"Other\" or otherwise can't be resolved to a real Species entity. Each entry is a name and an optional weight (defaults to 1 if left blank) — higher weight means more likely to be picked.",
+        "Leave this whole section empty for a Location that will never be used to generate NPCs (a Room, a Structure with no population)."
       ],
-      "category": "Loom",
-      "href": "../loom/index.html#loom-places"
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-npc-config"
     },
     {
       "id": "press.templates",

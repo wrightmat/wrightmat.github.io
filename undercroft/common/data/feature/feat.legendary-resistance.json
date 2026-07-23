@@ -20,7 +20,10 @@
     "roles": [
       "solo"
     ],
-    "creatureTypes": []
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
   },
   "synergizesWith": [],
   "conflictsWith": []

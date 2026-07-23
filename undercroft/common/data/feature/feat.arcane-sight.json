@@ -1,0 +1,18 @@
+{
+  "id": "feat.arcane-sight",
+  "name": "Arcane Sight",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The wielder's eyes flare with insight, revealing a target's weaknesses and hidden nature.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, reveals one target's resistances, immunities, and any hidden or illusory nature for a short duration."
+  },
+  "budgetCost": 2,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["utility", "detection"]
+  },
+  "synergizesWith": ["feat.called-shot", "feat.binding-grasp"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

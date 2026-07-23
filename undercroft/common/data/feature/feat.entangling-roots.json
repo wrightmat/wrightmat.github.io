@@ -20,6 +20,9 @@
     "roles": [],
     "creatureTypes": [
       "plant"
+    ],
+    "categories": [
+      "monster"
     ]
   },
   "synergizesWith": [],

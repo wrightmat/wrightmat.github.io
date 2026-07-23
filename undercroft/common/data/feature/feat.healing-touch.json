@@ -22,7 +22,10 @@
       "leader",
       "support"
     ],
-    "creatureTypes": []
+    "creatureTypes": [],
+    "categories": [
+      "monster"
+    ]
   },
   "synergizesWith": [],
   "conflictsWith": []

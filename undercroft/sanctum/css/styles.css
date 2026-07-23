@@ -1,0 +1,24 @@
+/*
+ * Sanctum-specific styles. Kept minimal — the generator UI is built almost
+ * entirely from Bootstrap utilities; these are the handful of things
+ * Bootstrap can't express directly.
+ */
+
+[data-location-json-preview],
+[data-inspector-json] {
+  min-height: 6rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Feature/Asset/Need rows are all selectable (click one to inspect its full
+   detail in the right pane) — the same select-then-inspect convention
+   Crucible/Forge/Vault use, applied consistently across all three lists. */
+.sanctum-clickable-row {
+  cursor: pointer;
+}
+
+.sanctum-clickable-row.sanctum-row-selected {
+  border-color: var(--bs-primary) !important;
+  background-color: var(--bs-tertiary-bg);
+}

@@ -1,0 +1,18 @@
+{
+  "id": "feat.binding-grasp",
+  "name": "Binding Grasp",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Ethereal tendrils lash out and restrain a target, holding it in place.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, restrains one target within range until it breaks free or the effect ends."
+  },
+  "budgetCost": 4,
+  "tags": {
+    "categories": ["spell", "item"],
+    "propertyHints": ["control"]
+  },
+  "synergizesWith": ["feat.arcane-sight"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

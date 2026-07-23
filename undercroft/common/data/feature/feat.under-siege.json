@@ -1,0 +1,19 @@
+{
+  "id": "feat.under-siege",
+  "name": "Under Siege",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A hostile force currently surrounds or threatens this place, cutting off easy movement in or out.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Travel to and from this location is dangerous or blockaded; supplies and reinforcements are hard to come by."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["settlement", "region"],
+    "locationPurposes": ["protection"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.fortified-walls"],
+  "dependsOn": [],
+  "conflictsWith": ["feat.bustling-market"]
+}

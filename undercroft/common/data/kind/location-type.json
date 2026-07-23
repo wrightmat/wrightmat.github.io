@@ -1,0 +1,8 @@
+{
+  "id": "location-type",
+  "label": "Location Type",
+  "plural": "Location Types",
+  "icon": "tabler:category",
+  "readTier": "free",
+  "writeTier": "creator"
+}

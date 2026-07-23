@@ -269,7 +269,7 @@ def get_user_by_username(state: ServerState, username: str) -> Optional[User]:
 
 
 def require_role(user: Optional[User], role: str) -> None:
-    tiers = ["free", "player", "gm", "master", "creator", "admin"]
+    tiers = ["free", "player", "gm", "creator", "admin"]
     if user is None:
         raise AuthError("Authentication required")
     if role not in tiers:

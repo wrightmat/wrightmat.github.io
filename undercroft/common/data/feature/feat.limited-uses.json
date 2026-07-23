@@ -1,0 +1,18 @@
+{
+  "id": "feat.limited-uses",
+  "name": "Limited Uses (3/day)",
+  "systemIds": ["sys.dnd5e"],
+  "description": "The item can only channel its effect a limited number of times before needing to recharge.",
+  "mechanics": {
+    "type": "drawback",
+    "text": "This effect can only be triggered 3 times per day; it regains all uses at dawn."
+  },
+  "budgetCost": -3,
+  "tags": {
+    "categories": ["item"],
+    "propertyHints": ["drawback"]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

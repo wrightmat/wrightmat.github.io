@@ -1,0 +1,12 @@
+{
+  "id": "res.livestock",
+  "name": "Livestock",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Herds and flocks — a steady source of food, labor, and trade goods.",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["habitation", "resource", "commerce"],
+    "environments": ["grassland", "hill"]
+  },
+  "conflictsWith": ["feat.corrupted", "feat.polluted-waters"]
+}

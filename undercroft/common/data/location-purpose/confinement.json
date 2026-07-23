@@ -1,0 +1,6 @@
+{
+  "id": "confinement",
+  "name": "Confinement",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Exists to hold something or someone in — prisons, vaults, wards, and places built to keep things from leaving."
+}

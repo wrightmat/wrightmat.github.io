@@ -1,0 +1,19 @@
+{
+  "id": "feat.ley-line-confluence",
+  "name": "Ley Line Confluence",
+  "systemIds": ["sys.dnd5e"],
+  "description": "Currents of raw magical energy converge here, subtly warping the way spells and rituals behave.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Magic performed at this location behaves unpredictably or with amplified effect."
+  },
+  "tags": {
+    "categories": ["location"],
+    "locationTypes": ["region", "structure", "environment"],
+    "locationPurposes": ["worship", "knowledge"],
+    "environments": []
+  },
+  "synergizesWith": ["feat.sacred-ground"],
+  "dependsOn": [],
+  "conflictsWith": []
+}

@@ -20,18 +20,43 @@
       "label": "Classes",
       "entityKind": "class",
       "values": [
-        { "name": "Barbarian", "entityId": "barbarian" },
-        { "name": "Bard" },
-        { "name": "Cleric" },
-        { "name": "Druid" },
-        { "name": "Fighter" },
-        { "name": "Monk" },
-        { "name": "Paladin" },
-        { "name": "Ranger" },
-        { "name": "Rogue" },
-        { "name": "Sorcerer" },
-        { "name": "Warlock" },
-        { "name": "Wizard" }
+        {
+          "name": "Barbarian",
+          "entityId": "barbarian"
+        },
+        {
+          "name": "Bard"
+        },
+        {
+          "name": "Cleric"
+        },
+        {
+          "name": "Druid"
+        },
+        {
+          "name": "Fighter"
+        },
+        {
+          "name": "Monk"
+        },
+        {
+          "name": "Paladin"
+        },
+        {
+          "name": "Ranger"
+        },
+        {
+          "name": "Rogue"
+        },
+        {
+          "name": "Sorcerer"
+        },
+        {
+          "name": "Warlock"
+        },
+        {
+          "name": "Wizard"
+        }
       ]
     },
     {
@@ -171,6 +196,177 @@
           }
         ]
       }
+    },
+    {
+      "type": "array",
+      "key": "rarity",
+      "label": "Rarity",
+      "setsBudgetCeiling": true,
+      "values": [
+        {
+          "name": "Common",
+          "targetBudget": 4
+        },
+        {
+          "name": "Uncommon",
+          "targetBudget": 8
+        },
+        {
+          "name": "Rare",
+          "targetBudget": 12
+        },
+        {
+          "name": "Very Rare",
+          "targetBudget": 18
+        },
+        {
+          "name": "Legendary",
+          "targetBudget": 26
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "activation",
+      "label": "Activation",
+      "values": [
+        {
+          "name": "Action",
+          "cost": 0
+        },
+        {
+          "name": "Bonus Action",
+          "cost": 2
+        },
+        {
+          "name": "Reaction",
+          "cost": 1
+        },
+        {
+          "name": "Ritual (10 min, no slot)",
+          "cost": -2
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "form",
+      "label": "Item Form",
+      "values": [
+        {
+          "name": "Spell",
+          "cost": 0
+        },
+        {
+          "name": "Wand",
+          "cost": 1
+        },
+        {
+          "name": "Potion (single use)",
+          "cost": -2
+        },
+        {
+          "name": "Imbued Weapon",
+          "cost": 2
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Arctic"
+        },
+        {
+          "name": "Coast"
+        },
+        {
+          "name": "Desert"
+        },
+        {
+          "name": "Forest"
+        },
+        {
+          "name": "Grassland"
+        },
+        {
+          "name": "Hill"
+        },
+        {
+          "name": "Mountain"
+        },
+        {
+          "name": "Swamp"
+        },
+        {
+          "name": "Underdark"
+        },
+        {
+          "name": "Underwater"
+        },
+        {
+          "name": "Urban"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "alignments",
+      "label": "Alignments",
+      "values": [
+        {
+          "name": "Lawful Good",
+          "shortName": "LG",
+          "sourceId": 1
+        },
+        {
+          "name": "Neutral Good",
+          "shortName": "NG",
+          "sourceId": 2
+        },
+        {
+          "name": "Chaotic Good",
+          "shortName": "CG",
+          "sourceId": 3
+        },
+        {
+          "name": "Lawful Neutral",
+          "shortName": "LN",
+          "sourceId": 4
+        },
+        {
+          "name": "True Neutral",
+          "shortName": "N",
+          "sourceId": 5
+        },
+        {
+          "name": "Chaotic Neutral",
+          "shortName": "CN",
+          "sourceId": 6
+        },
+        {
+          "name": "Lawful Evil",
+          "shortName": "LE",
+          "sourceId": 7
+        },
+        {
+          "name": "Neutral Evil",
+          "shortName": "NE",
+          "sourceId": 8
+        },
+        {
+          "name": "Chaotic Evil",
+          "shortName": "CE",
+          "sourceId": 9
+        },
+        {
+          "name": "Unaligned",
+          "shortName": "U",
+          "sourceId": 10
+        }
+      ]
     }
   ],
   "preview": {

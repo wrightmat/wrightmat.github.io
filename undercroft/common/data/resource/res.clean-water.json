@@ -1,0 +1,12 @@
+{
+  "id": "res.clean-water",
+  "name": "Clean Water",
+  "systemIds": ["sys.dnd5e"],
+  "description": "A reliable source of potable water — easy to take for granted until it's gone.",
+  "tags": {
+    "locationTypes": [],
+    "locationPurposes": ["habitation", "resource"],
+    "environments": []
+  },
+  "conflictsWith": ["feat.polluted-waters", "feat.corrupted"]
+}
