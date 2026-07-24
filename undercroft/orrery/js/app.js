@@ -3,11 +3,13 @@ import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
 import {
   createGroup,
   createGridCell,
   createLayer,
   createMapModel,
+  createMarkerElement,
   createView,
   updateBaseMapType,
   updateMapTimestamp,
@@ -46,7 +48,13 @@ const { status, undoStack, undo, redo } = initAppShell({
   },
 });
 
-initAuthControls({ status });
+const auth = initAuthControls({ status });
+const dataManager = auth.dataManager;
+
+// Ownership metadata for saved Maps, used only for the Delete button's
+// access gate (owner-or-admin, or a local/anonymous entry) — same
+// rule and shape as Sanctum's settingCatalog/locationCatalog.
+let mapCatalog = new Map();
 
 const mapContainer = document.querySelector("#orrery-map");
 const baseMapManager = new BaseMapManager({
@@ -61,6 +69,11 @@ const baseMapManager = new BaseMapManager({
 });
 
 const elements = {
+  mapSelect: document.querySelector("[data-map-select]"),
+  mapNameInput: document.querySelector("[data-map-name]"),
+  newMapButton: document.querySelector('[data-action="new-map"]'),
+  saveMapButton: document.querySelector('[data-action="save-layout"]'),
+  deleteMapButton: document.querySelector('[data-action="delete-map"]'),
   mapMain: document.querySelector("[data-map-main]"),
   baseMapRadios: Array.from(document.querySelectorAll("[data-base-map-option]")),
   baseMapSettings: Array.from(document.querySelectorAll("[data-base-map-settings]")),
@@ -203,8 +216,150 @@ function applyMapSnapshot(snapshot) {
   );
   state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
+  if (elements.mapNameInput) {
+    elements.mapNameInput.value = state.map.name || "";
+  }
   renderAll();
   setSelectionCollapsed(true);
+}
+
+// Owner-or-admin, or a local/anonymous entry — same rule as Sanctum's
+// settingAllowsDelete/locationAllowsDelete and Loom's systemAllowsDelete.
+function mapAllowsDelete(id) {
+  if (!id) return false;
+  if (dataManager?.getUserTier() === "admin") return true;
+  const metadata = mapCatalog.get(id);
+  if (!metadata) return false;
+  if (metadata.ownership === "local") return true;
+  if (metadata.permissions === "edit") return true;
+  const user = dataManager?.session?.user;
+  if (!user || !dataManager.isAuthenticated()) return false;
+  if (metadata.ownerId !== null && metadata.ownerId !== undefined && user.id !== undefined && user.id !== null) {
+    if (String(metadata.ownerId) === String(user.id)) return true;
+  }
+  if (metadata.ownerUsername && user.username) {
+    return metadata.ownerUsername.toLowerCase() === user.username.toLowerCase();
+  }
+  return false;
+}
+
+// Same shape/reasoning as Sanctum's refreshSettingCatalog: ownership
+// metadata comes from a dedicated dataManager.list() call (not the full
+// fetched body), and local-only entries are always deletable.
+async function refreshMapCatalog(ids) {
+  mapCatalog = new Map();
+  if (!dataManager || !ids.length) return;
+  const idSet = new Set(ids);
+  try {
+    const listing = await dataManager.list("map", { refresh: true });
+    const remoteEntries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
+    remoteEntries.forEach((entry) => {
+      if (!idSet.has(entry.id)) return;
+      mapCatalog.set(entry.id, {
+        ownerId: entry.owner_id ?? entry.ownerId ?? null,
+        ownerUsername: entry.owner_username || entry.ownerUsername || "",
+        permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
+      });
+    });
+    (listing.local || []).forEach((entry) => {
+      if (!idSet.has(entry.id) || mapCatalog.has(entry.id)) return;
+      mapCatalog.set(entry.id, { ownership: "local" });
+    });
+  } catch (error) {
+    // leave mapCatalog empty — Delete stays gated off defensively
+  }
+}
+
+// Tiered Views (state.map.views) only ever filter what a non-owner sees —
+// the map's own owner/editor always gets full, unfiltered access (they're
+// authoring it; Views are a presentation concern for viewers, same framing
+// as readTier/writeTier elsewhere). mapAllowsDelete already captures exactly
+// this "does the current user have full access to this map" check
+// (owner/admin/local/edit-shared), so it doubles as the edit-access gate
+// here too — this codebase already treats "edit" share permission as
+// full-access, same as every other kind's Delete-button gating.
+function currentUserHasFullMapAccess() {
+  return mapAllowsDelete(state.map.id);
+}
+
+// The tier a non-owner viewer's Views filtering resolves against. Currently
+// just the signed-in account's own tier — the architecture plan's other
+// resolution path (a campaign group's share-link visitor counting as the
+// owner's top tier, everyone else as "player") depends on Orrery gaining a
+// share-link surface of its own, which doesn't exist yet; that bridge is a
+// documented follow-up, not faked here.
+function getEffectiveViewerTier() {
+  return dataManager?.getUserTier() || "free";
+}
+
+// Returns null when nothing should be filtered (the current user has full
+// access, or the map has no authored Views at all — matches the "no Views
+// configured yet" case defaulting to unfiltered, same instinct as every
+// other kind's "empty array means unrestricted" tag convention elsewhere in
+// this codebase). Otherwise returns the Set of layer ids visible to the
+// current viewer's effective tier — the union of every View whose `tiers`
+// is empty (applies to everyone, same "empty means universal" convention as
+// Sanctum's/Vault's/Crucible's tag arrays) or includes their tier. An empty
+// Set is a legitimate result: Views exist, but none match this viewer, so
+// nothing is visible.
+function getVisibleLayerIds() {
+  if (currentUserHasFullMapAccess()) {
+    return null;
+  }
+  const views = state.map.views || [];
+  if (!views.length) {
+    return null;
+  }
+  const tier = getEffectiveViewerTier();
+  const applicableViews = views.filter((view) => !view.tiers?.length || view.tiers.includes(tier));
+  const visible = new Set();
+  applicableViews.forEach((view) => (view.layerIds || []).forEach((id) => visible.add(id)));
+  return visible;
+}
+
+function updateMapToolbarState() {
+  if (elements.deleteMapButton) {
+    elements.deleteMapButton.disabled = !mapAllowsDelete(state.map.id);
+  }
+}
+
+// Lists every Map this user can see (owned/shared/public, plus local/
+// anonymous saves) in the picker, mirroring Sanctum's populateSettingSelect.
+// Uses fetchKindEntriesWithIds (common/js/lib/content-fetch.js) for remote
+// entries so each option's label can show the map's real name, not just its
+// id — the same list-then-fetch-each helper Forge/Loom/Crucible already share.
+async function populateMapSelect() {
+  if (!elements.mapSelect || !dataManager) return;
+  const previousId = state.map.id;
+  let remoteEntries = [];
+  try {
+    remoteEntries = await fetchKindEntriesWithIds(dataManager, "map");
+  } catch (error) {
+    remoteEntries = [];
+  }
+  const remoteIds = new Set(remoteEntries.map((entry) => entry.id));
+  const localEntries = dataManager.listLocalEntries("map").filter((entry) => !remoteIds.has(entry.id));
+  const combined = [
+    ...remoteEntries.map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id })),
+    ...localEntries.map((entry) => ({ id: entry.id, name: entry.payload?.name || entry.id })),
+  ];
+  elements.mapSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "New / unsaved";
+  elements.mapSelect.appendChild(blank);
+  combined
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.id;
+      option.textContent = entry.name;
+      elements.mapSelect.appendChild(option);
+    });
+  elements.mapSelect.value = combined.some((entry) => entry.id === previousId) ? previousId : "";
+  await refreshMapCatalog(combined.map((entry) => entry.id));
+  updateMapToolbarState();
 }
 
 function recordHistory(label, applyChange) {
@@ -233,7 +388,8 @@ function setSelection(kind, id = null, extra = {}) {
   renderSelection();
   renderLayerOverlays();
   syncOverlayInteractivity();
-  const shouldExpand = kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view";
+  const shouldExpand =
+    kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view" || kind === "marker-element";
   setSelectionCollapsed(!shouldExpand);
 }
 
@@ -266,7 +422,11 @@ function renderBaseMapSettings() {
 
 function renderLayers() {
   elements.layerList.innerHTML = "";
+  const visibleLayerIds = getVisibleLayerIds();
   state.map.layers.forEach((layer) => {
+    if (visibleLayerIds && !visibleLayerIds.has(layer.id)) {
+      return;
+    }
     const item = document.createElement("div");
     item.className = "list-group-item d-flex justify-content-between align-items-center";
 
@@ -421,10 +581,26 @@ function renderSelection() {
     }
   }
 
+  if (selection.kind === "marker-element") {
+    const layer = map.layers.find((entry) => entry.id === selection.layerId);
+    const markerElement = layer?.elements?.find((entry) => entry.id === selection.id);
+    if (layer && markerElement) {
+      elements.selectionTitle.textContent = markerElement.label || "Marker";
+      elements.selectionType.textContent = "Marker";
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = markerElement.refKind
+          ? `${layer.name} · references ${markerElement.refKind}/${markerElement.refId || "(none picked)"}`
+          : `${layer.name} · no reference set`;
+      }
+      void renderMarkerElementSelectionEditor(layer, markerElement);
+      return;
+    }
+  }
+
   elements.selectionTitle.textContent = "No selection";
   elements.selectionType.textContent = "None";
   if (elements.selectionDetails) {
-    elements.selectionDetails.textContent = "Select a layer, group, view, or grid cell to inspect it.";
+    elements.selectionDetails.textContent = "Select a layer, group, view, grid cell, or marker to inspect it.";
   }
   clearSelectionEditor();
 }
@@ -434,7 +610,7 @@ function clearSelectionEditor() {
     elements.selectionEditor.innerHTML = "";
     const placeholder = document.createElement("p");
     placeholder.className = "text-body-secondary small mb-0";
-    placeholder.textContent = "Select a layer, view, group, or grid cell to edit its properties.";
+    placeholder.textContent = "Select a layer, view, group, grid cell, or marker to edit its properties.";
     elements.selectionEditor.appendChild(placeholder);
   }
 }
@@ -447,11 +623,11 @@ function syncOverlayInteractivity() {
   const selectedLayerId =
     state.selection.kind === "layer"
       ? state.selection.id
-      : state.selection.kind === "grid-cells"
+      : state.selection.kind === "grid-cells" || state.selection.kind === "marker-element"
         ? state.selection.layerId
         : null;
   const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
-  const isInteractive = Boolean(layer && layer.type === "grid");
+  const isInteractive = Boolean(layer && (layer.type === "grid" || layer.type === "marker"));
   overlay.classList.toggle("is-interactive", isInteractive);
   if (overlay.parentElement && overlay.parentElement.classList.contains("leaflet-pane")) {
     overlay.parentElement.style.pointerEvents = isInteractive ? "auto" : "none";
@@ -925,19 +1101,172 @@ function createGridSelectionOverlay(layer, selectedCells, options = {}) {
   return overlay;
 }
 
-function createMarkerLayerElement(layer, renderState = {}) {
-  const marker = document.createElement("div");
-  marker.className = "orrery-layer-marker-overlay";
-  const scale = renderState.sizeScale ?? 1;
-  const size = (layer.settings?.size || 24) * scale;
-  marker.style.width = `${size}px`;
-  marker.style.height = `${size}px`;
-  marker.style.backgroundColor = layer.settings?.color || "#0ea5e9";
-  if (renderState.position) {
-    marker.style.left = `${renderState.position.x}px`;
-    marker.style.top = `${renderState.position.y}px`;
+// Layer position is a whole-layer pan offset applied on top of each marker
+// element's own coordinate — the exact convention grid layers already use
+// via getGridOffset (layer.position + each cell's own coord).
+function getMarkerLayerOffset(layer) {
+  const scale = getLayerPositionScale();
+  return {
+    x: (layer.position?.x || 0) * scale,
+    y: (layer.position?.y || 0) * scale,
+  };
+}
+
+function getMarkerElementPixelPosition(layer, markerElement) {
+  const offset = getMarkerLayerOffset(layer);
+  return {
+    x: offset.x + (markerElement.position?.x || 0),
+    y: offset.y + (markerElement.position?.y || 0),
+  };
+}
+
+let activeMarkerDrag = null;
+
+function startMarkerElementDrag(event, layer, markerElement, dotEl) {
+  dotEl.setPointerCapture(event.pointerId);
+  activeMarkerDrag = {
+    elementId: markerElement.id,
+    startX: event.clientX,
+    startY: event.clientY,
+    originX: markerElement.position?.x || 0,
+    originY: markerElement.position?.y || 0,
+    before: JSON.stringify(state.map),
+  };
+  baseMapManager.setInteractionEnabled(false);
+
+  const onMove = (moveEvent) => {
+    if (!activeMarkerDrag || activeMarkerDrag.elementId !== markerElement.id) {
+      return;
+    }
+    const dx = moveEvent.clientX - activeMarkerDrag.startX;
+    const dy = moveEvent.clientY - activeMarkerDrag.startY;
+    markerElement.position = { x: activeMarkerDrag.originX + dx, y: activeMarkerDrag.originY + dy };
+    const pixelPosition = getMarkerElementPixelPosition(layer, markerElement);
+    dotEl.style.left = `${pixelPosition.x}px`;
+    dotEl.style.top = `${pixelPosition.y}px`;
+  };
+  const onUp = (upEvent) => {
+    if (!activeMarkerDrag || activeMarkerDrag.elementId !== markerElement.id) {
+      return;
+    }
+    dotEl.releasePointerCapture(upEvent.pointerId);
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    baseMapManager.setInteractionEnabled(true);
+    updateMapTimestamp(state.map);
+    const after = JSON.stringify(state.map);
+    if (activeMarkerDrag.before !== after) {
+      undoStack.push({ label: "move marker", before: activeMarkerDrag.before, after });
+    }
+    activeMarkerDrag = null;
+    // Deferred until drag-end, same as bindLayerDrag's whole-layer drag: a
+    // full renderLayerOverlays() mid-drag would replace dotEl in the DOM out
+    // from under the pointer capture that's driving onMove/onUp.
+    renderLayerOverlays();
+    syncOverlayInteractivity();
+    renderJson();
+  };
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+}
+
+// A lightweight selection update for the moment a marker drag begins: updates
+// state.selection and the inspector panel, but deliberately skips
+// renderLayerOverlays() — that would tear down and replace the very dot
+// element (dotEl) the drag is about to setPointerCapture on and drive via
+// onMove/onUp, silently ending the gesture the instant the DOM node it
+// targets gets swapped out.
+function selectMarkerElementForDrag(layer, markerElement, dotEl) {
+  state.selection = { kind: "marker-element", id: markerElement.id, layerId: layer.id, cells: [], anchor: null };
+  renderSelection();
+  setSelectionCollapsed(false);
+  const container = dotEl.parentElement;
+  if (container) {
+    container
+      .querySelectorAll(".orrery-layer-marker-overlay.is-selected")
+      .forEach((node) => node.classList.remove("is-selected"));
   }
-  return marker;
+  dotEl.classList.add("is-selected");
+}
+
+function createMarkerDot(layer, markerElement, options = {}) {
+  const dot = document.createElement("div");
+  dot.className = "orrery-layer-marker-overlay";
+  if (options.selected) {
+    dot.classList.add("is-selected");
+  }
+  dot.dataset.elementId = markerElement.id;
+  const size = layer.settings?.size || 24;
+  dot.style.width = `${size}px`;
+  dot.style.height = `${size}px`;
+  // Centering (top/left 50% + translate(-50%,-50%)) already comes from the
+  // .orrery-layer-marker-overlay CSS rule — dot.style.left/top below just
+  // overrides that 50%/50% anchor with this element's own pixel position;
+  // the transform still applies on top, so the dot's center (not its
+  // top-left corner) lands on that pixel.
+  dot.style.backgroundColor = layer.settings?.color || "#0ea5e9";
+  dot.style.pointerEvents = "auto";
+  dot.style.cursor = "pointer";
+  const pixelPosition = getMarkerElementPixelPosition(layer, markerElement);
+  dot.style.left = `${pixelPosition.x}px`;
+  dot.style.top = `${pixelPosition.y}px`;
+  if (markerElement.label) {
+    dot.title = markerElement.label;
+  }
+  dot.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    selectMarkerElementForDrag(layer, markerElement, dot);
+    startMarkerElementDrag(event, layer, markerElement, dot);
+  });
+  return dot;
+}
+
+// Marker layers render a full-size, absolutely-positioned container (not a
+// single centered dot) so each placed pin can carry its own position — the
+// per-element authoring Orrery's marker layers never had before (previously
+// just one schema-only, layer-level `position` with no way to drop
+// individual pins at all). When the layer (or one of its own markers) is the
+// active selection, clicking empty space inside the container drops a new
+// pin there — the same "select the layer, then click the canvas to act on
+// it" convention grid layers already use for cell selection.
+function createMarkerLayerElement(layer, options = {}) {
+  const container = document.createElement("div");
+  container.className = "orrery-layer-marker-container";
+  container.style.position = "absolute";
+  container.style.inset = "0";
+  container.style.pointerEvents = options.isInteractive ? "auto" : "none";
+  if (options.isInteractive) {
+    container.classList.add("is-interactive");
+    container.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || event.target !== container) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const rect = container.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+      const offset = getMarkerLayerOffset(layer);
+      const newElement = createMarkerElement({
+        position: { x: Math.round(clickX - offset.x), y: Math.round(clickY - offset.y) },
+      });
+      recordHistory("place marker", () => {
+        layer.elements = layer.elements || [];
+        layer.elements.push(newElement);
+        updateMapTimestamp(state.map);
+      });
+      setSelection("marker-element", newElement.id, { layerId: layer.id });
+      renderJson();
+    });
+  }
+  (layer.elements || []).forEach((markerElement) => {
+    container.appendChild(createMarkerDot(layer, markerElement, { selected: options.selectedElementId === markerElement.id }));
+  });
+  return container;
 }
 
 function createVectorLayerElement(layer, renderState = {}) {
@@ -977,7 +1306,13 @@ function createLayerWrapper(layer, isSelected) {
   }
   const offsetX = layer.position?.x || 0;
   const offsetY = layer.position?.y || 0;
-  if (state.map.baseMap.type !== "tile") {
+  // Marker layers fold layer.position into each element's own pixel position
+  // instead (see getMarkerLayerOffset/getMarkerElementPixelPosition) — same
+  // "layer position is a pan offset added on top of each element's own
+  // coordinate" convention grid cells already use via getGridOffset — so the
+  // wrapper itself must stay untransformed, or a marker layer's pan would be
+  // applied twice.
+  if (state.map.baseMap.type !== "tile" && layer.type !== "marker") {
     wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
   }
   wrapper.dataset.layerId = layer.id;
@@ -1073,13 +1408,18 @@ function renderLayerOverlays() {
   overlay.innerHTML = "";
   const activeGroup =
     state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
+  const visibleLayerIds = getVisibleLayerIds();
   state.map.layers.forEach((layer) => {
     if (!layer.visible) {
       return;
     }
+    if (visibleLayerIds && !visibleLayerIds.has(layer.id)) {
+      return;
+    }
     const isLayerSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
     const isGridCellsSelected = state.selection.kind === "grid-cells" && state.selection.layerId === layer.id;
-    const isSelected = isLayerSelected || isGridCellsSelected;
+    const isMarkerElementSelected = state.selection.kind === "marker-element" && state.selection.layerId === layer.id;
+    const isSelected = isLayerSelected || isGridCellsSelected || isMarkerElementSelected;
     const groupCells = activeGroup ? getGroupCellsForLayer(activeGroup, layer) : [];
     const wrapper = createLayerWrapper(layer, isSelected);
     let element = null;
@@ -1099,7 +1439,10 @@ function renderLayerOverlays() {
     } else if (layer.type === "raster") {
       element = createRasterLayerElement(layer, renderState);
     } else if (layer.type === "marker") {
-      element = createMarkerLayerElement(layer, renderState);
+      element = createMarkerLayerElement(layer, {
+        isInteractive: isSelected,
+        selectedElementId: isMarkerElementSelected ? state.selection.id : null,
+      });
     } else {
       element = createVectorLayerElement(layer, renderState);
     }
@@ -1623,6 +1966,208 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
   row.appendChild(valueInput);
   row.appendChild(removeButton);
   return row;
+}
+
+// The live, extensible kind registry (undercroft/common/data/kind/*.json) —
+// fetched once and cached, same reasoning as content-fetch.js's own
+// characterMappingPromise cache: it doesn't change mid-session, and every
+// marker selection would otherwise re-fetch it.
+let libraryKindsPromise = null;
+function getLibraryKinds() {
+  if (!libraryKindsPromise) {
+    libraryKindsPromise = loadLibraryKinds();
+  }
+  return libraryKindsPromise;
+}
+
+// A marker element optionally references a real Library entity of any kind
+// — the {refKind, refId, label} shape the architecture plan settled on so
+// Orrery maps can point at Sanctum Locations, Forge/Crucible NPCs and
+// Monsters, Vault Effects, etc. without either tool needing to know about
+// the other. Mirrors Sanctum's Assets/Needs "kind + entity" picker.
+async function renderMarkerElementSelectionEditor(layer, markerElement) {
+  if (!elements.selectionEditor) {
+    return;
+  }
+  const container = elements.selectionEditor;
+  container.innerHTML = "";
+  container.appendChild(createSelectionSectionTitle("Marker Properties"));
+
+  // Same shape as applyLayerChange/applyLayerSettingsChange: snapshot for
+  // undo, then refresh the inspector (title/details reflect the new label
+  // or reference), the overlay (dot tooltip), and the JSON preview.
+  function applyMarkerElementChange(label, apply) {
+    recordHistory(label, () => {
+      apply();
+      updateMapTimestamp(state.map);
+    });
+    renderSelection();
+    renderLayerOverlays();
+    renderJson();
+  }
+
+  const labelInput = document.createElement("input");
+  labelInput.type = "text";
+  labelInput.className = "form-control form-control-sm";
+  labelInput.value = markerElement.label || "";
+  labelInput.placeholder = "Label";
+  labelInput.addEventListener("change", () => {
+    const value = labelInput.value.trim();
+    applyMarkerElementChange("marker label", () => {
+      markerElement.label = value;
+    });
+  });
+  container.appendChild(createFieldWrapper("Label", labelInput));
+
+  const kindSelect = document.createElement("select");
+  kindSelect.className = "form-select form-select-sm";
+  const noReferenceOption = document.createElement("option");
+  noReferenceOption.value = "";
+  noReferenceOption.textContent = "No reference";
+  kindSelect.appendChild(noReferenceOption);
+  container.appendChild(createFieldWrapper("References", kindSelect));
+
+  const entitySelect = document.createElement("select");
+  entitySelect.className = "form-select form-select-sm";
+  entitySelect.disabled = true;
+  container.appendChild(createFieldWrapper("Entity", entitySelect));
+
+  const previewBox = document.createElement("div");
+  previewBox.className = "small text-body-secondary border rounded p-2";
+  previewBox.textContent = "No entity selected.";
+  container.appendChild(previewBox);
+
+  async function refreshPreview() {
+    if (!markerElement.refKind || !markerElement.refId || !dataManager) {
+      previewBox.textContent = "No entity selected.";
+      return;
+    }
+    try {
+      const result = await dataManager.get(markerElement.refKind, markerElement.refId);
+      const name = result?.payload?.name || markerElement.refId;
+      const description = result?.payload?.description || "";
+      previewBox.textContent = description ? `${name} — ${description}` : name;
+    } catch (error) {
+      previewBox.textContent = "Unable to load entity.";
+    }
+  }
+
+  async function populateEntitySelect(kind, selectedId) {
+    entitySelect.innerHTML = "";
+    if (!kind || !dataManager) {
+      entitySelect.disabled = true;
+      return;
+    }
+    entitySelect.disabled = false;
+    const blank = document.createElement("option");
+    blank.value = "";
+    blank.textContent = "Select...";
+    entitySelect.appendChild(blank);
+    let entries = [];
+    try {
+      entries = await fetchKindEntriesWithIds(dataManager, kind);
+    } catch (error) {
+      entries = [];
+    }
+    entries
+      .slice()
+      .sort((a, b) => (a.entity?.name || a.id).localeCompare(b.entity?.name || b.id))
+      .forEach((entry) => {
+        const option = document.createElement("option");
+        option.value = entry.id;
+        option.textContent = entry.entity?.name || entry.id;
+        entitySelect.appendChild(option);
+      });
+    if (selectedId && entries.some((entry) => entry.id === selectedId)) {
+      entitySelect.value = selectedId;
+    }
+  }
+
+  const kinds = await getLibraryKinds();
+  kinds.forEach((kind) => {
+    const option = document.createElement("option");
+    option.value = kind.id;
+    option.textContent = kind.label || kind.id;
+    kindSelect.appendChild(option);
+  });
+  kindSelect.value = markerElement.refKind || "";
+  await populateEntitySelect(markerElement.refKind, markerElement.refId);
+  await refreshPreview();
+
+  // Both handlers call renderSelection() (via applyMarkerElementChange)
+  // rather than manually re-running populateEntitySelect/refreshPreview —
+  // renderSelection() re-invokes this whole function fresh, which already
+  // does exactly that at the top using the just-updated refKind/refId. Safe
+  // to tear this DOM down here (unlike the marker-drag case): a plain
+  // <select> "change" event has no pointer capture depending on the element
+  // surviving the handler.
+  kindSelect.addEventListener("change", () => {
+    const kind = kindSelect.value;
+    applyMarkerElementChange("marker reference kind", () => {
+      markerElement.refKind = kind;
+      markerElement.refId = "";
+    });
+  });
+
+  entitySelect.addEventListener("change", () => {
+    const refId = entitySelect.value;
+    const option = entitySelect.selectedOptions[0];
+    applyMarkerElementChange("marker reference entity", () => {
+      markerElement.refId = refId;
+      if (!markerElement.label && option && option.value) {
+        markerElement.label = option.textContent;
+      }
+    });
+  });
+
+  const positionGrid = document.createElement("div");
+  positionGrid.className = "d-grid gap-2";
+  positionGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+
+  const positionX = document.createElement("input");
+  positionX.type = "number";
+  positionX.className = "form-control form-control-sm";
+  positionX.value = markerElement.position?.x ?? 0;
+  positionX.addEventListener("change", () => {
+    const value = Number(positionX.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyMarkerElementChange("marker position x", () => {
+      markerElement.position = { ...(markerElement.position || { x: 0, y: 0 }), x: value };
+    });
+  });
+
+  const positionY = document.createElement("input");
+  positionY.type = "number";
+  positionY.className = "form-control form-control-sm";
+  positionY.value = markerElement.position?.y ?? 0;
+  positionY.addEventListener("change", () => {
+    const value = Number(positionY.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    applyMarkerElementChange("marker position y", () => {
+      markerElement.position = { ...(markerElement.position || { x: 0, y: 0 }), y: value };
+    });
+  });
+
+  positionGrid.appendChild(createFieldWrapper("Position X", positionX));
+  positionGrid.appendChild(createFieldWrapper("Position Y", positionY));
+  container.appendChild(positionGrid);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "btn btn-outline-danger btn-sm";
+  deleteButton.textContent = "Delete Marker";
+  deleteButton.addEventListener("click", () => {
+    recordHistory("delete marker", () => {
+      layer.elements = (layer.elements || []).filter((entry) => entry.id !== markerElement.id);
+      updateMapTimestamp(state.map);
+    });
+    setSelection("layer", layer.id);
+  });
+  container.appendChild(deleteButton);
 }
 
 function renderGridCellSelectionEditor(layer, selectedCells) {
@@ -2561,6 +3106,79 @@ function setupActionEvents() {
   }
 }
 
+function setupMapEvents() {
+  if (elements.mapNameInput) {
+    elements.mapNameInput.addEventListener("change", () => {
+      const name = elements.mapNameInput.value.trim() || "New Orrery Map";
+      recordHistory("map name", () => {
+        state.map.name = name;
+        updateMapTimestamp(state.map);
+      });
+      elements.mapNameInput.value = name;
+      renderJson();
+    });
+  }
+
+  if (elements.newMapButton) {
+    elements.newMapButton.addEventListener("click", () => {
+      applyMapSnapshot(JSON.stringify(createMapModel()));
+      if (elements.mapSelect) elements.mapSelect.value = "";
+      updateMapToolbarState();
+      status.show("Started a new map.", { type: "info", timeout: 1500 });
+    });
+  }
+
+  if (elements.saveMapButton) {
+    elements.saveMapButton.addEventListener("click", async () => {
+      if (!dataManager) return;
+      const name = elements.mapNameInput?.value.trim() || state.map.name || "New Orrery Map";
+      state.map.name = name;
+      updateMapTimestamp(state.map);
+      try {
+        await dataManager.save("map", state.map.id, state.map);
+        status.show(`Saved "${name}".`, { type: "success", timeout: 2000 });
+        await populateMapSelect();
+      } catch (error) {
+        status.show(`Unable to save map: ${error.message}`, { type: "error", timeout: 4000 });
+      }
+    });
+  }
+
+  if (elements.deleteMapButton) {
+    elements.deleteMapButton.addEventListener("click", async () => {
+      if (!dataManager || !mapAllowsDelete(state.map.id)) return;
+      if (!window.confirm(`Delete map "${state.map.name}"? This can't be undone.`)) return;
+      try {
+        await dataManager.delete("map", state.map.id);
+        status.show("Deleted.", { type: "success", timeout: 2000 });
+        applyMapSnapshot(JSON.stringify(createMapModel()));
+        await populateMapSelect();
+      } catch (error) {
+        status.show(`Unable to delete map: ${error.message}`, { type: "error", timeout: 4000 });
+      }
+    });
+  }
+
+  if (elements.mapSelect) {
+    elements.mapSelect.addEventListener("change", async () => {
+      const id = elements.mapSelect.value;
+      if (!id) {
+        applyMapSnapshot(JSON.stringify(createMapModel()));
+        updateMapToolbarState();
+        return;
+      }
+      if (!dataManager) return;
+      try {
+        const result = await dataManager.get("map", id);
+        applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
+        updateMapToolbarState();
+      } catch (error) {
+        status.show(`Unable to load map: ${error.message}`, { type: "error", timeout: 4000 });
+      }
+    });
+  }
+}
+
 function setupViewPanelToggle() {
   if (!elements.viewToggle || !elements.viewDetails) {
     return;
@@ -2635,13 +3253,18 @@ function setupViewPanelDrag() {
 }
 
 baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
+if (elements.mapNameInput) {
+  elements.mapNameInput.value = state.map.name || "";
+}
 setupBaseMapEvents();
 setupLayerEvents();
 setupGroupEvents();
 setupViewsListEvents();
 setupViewEvents();
 setupActionEvents();
+setupMapEvents();
 setupViewPanelToggle();
 setupViewPanelDrag();
 renderAll();
 refreshTooltips();
+void populateMapSelect();

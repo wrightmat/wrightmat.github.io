@@ -121,9 +121,32 @@
           data-pane-initial="expanded"
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
+            <section class="d-flex flex-column gap-2">
+              <label class="form-label fw-semibold mb-0" for="orreryMapSelect">Map</label>
+              <select class="form-select" id="orreryMapSelect" data-map-select></select>
+              <input
+                class="form-control form-control-sm"
+                id="orreryMapName"
+                data-map-name
+                placeholder="Map name"
+              />
+            </section>
+
             <section class="d-flex flex-column gap-3">
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Orrery actions">
                 <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-outline-secondary p-2"
+                    type="button"
+                    data-action="new-map"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="New Map"
+                    aria-label="New Map"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:map-plus" aria-hidden="true"></span>
+                    <span class="visually-hidden">New Map</span>
+                  </button>
                   <button
                     class="btn btn-outline-secondary p-2"
                     type="button"
@@ -178,11 +201,24 @@
                     data-action="save-layout"
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
-                    data-bs-title="Save"
-                    aria-label="Save"
+                    data-bs-title="Save Map"
+                    aria-label="Save Map"
                   >
                     <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                    <span class="visually-hidden">Save</span>
+                    <span class="visually-hidden">Save Map</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-danger p-2"
+                    type="button"
+                    data-action="delete-map"
+                    disabled
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Delete Map"
+                    aria-label="Delete Map"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                    <span class="visually-hidden">Delete Map</span>
                   </button>
                 </div>
               </div>

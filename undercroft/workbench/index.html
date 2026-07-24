@@ -53,6 +53,11 @@
     />
     <link rel="stylesheet" href="../common/css/shell.css" />
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <!-- Press's own card/chip rendering styles (.card-tile, .card-tile-content,
+         etc.) — reused as-is for the "Now Showing" spotlight card so Press's
+         existing template.createPage() output looks right here without any
+         separate rendering code (see workbench-character-view.js). -->
+    <link rel="stylesheet" href="../press/css/styles.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="workbench">
@@ -598,6 +603,14 @@
                 </button>
               </div>
               <div class="d-flex flex-column gap-3" data-dice-panel></div>
+            </section>
+            <section
+              class="d-none flex-column gap-3"
+              data-workbench-view-panel="play edit"
+              data-now-showing-section
+            >
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Now Showing</h2>
+              <div class="d-flex justify-content-center" data-now-showing-content></div>
             </section>
             <section class="d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-game-log-section>
               <div class="d-flex align-items-center justify-content-between">

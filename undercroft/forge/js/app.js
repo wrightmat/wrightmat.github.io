@@ -1,5 +1,6 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
+import { initSpotlightButton } from "../../common/js/lib/spotlight.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
@@ -45,6 +46,7 @@ const noteText = document.querySelector("[data-note-text]");
 
 const saveButton = document.querySelector("[data-save-npc]");
 const exportButton = document.querySelector("[data-export-npc]");
+const spotlightButton = document.querySelector("[data-spotlight-npc]");
 const npcJsonPreview = document.querySelector("[data-npc-json-preview]");
 const npcJsonBytes = document.querySelector("[data-npc-json-bytes]");
 
@@ -84,6 +86,10 @@ let currentLocation = null;
 let currentRecord = null;
 let selectedFieldKey = null;
 let dataManager = null;
+// Handle returned by initSpotlightButton — its refresh() is the single
+// source of truth for the button's disabled state (has a record AND an
+// active campaign group), called alongside every other action-button gate.
+let spotlightControl = null;
 
 const IDENTITY_FIELD_DEFS = [
   { key: "name", label: "Name" },
@@ -263,6 +269,7 @@ function renderNpc(record) {
   npcDisplay.classList.toggle("d-none", !record);
   saveButton.disabled = !record;
   exportButton.disabled = !record;
+  spotlightControl?.refresh();
 
   if (!record) {
     updateJsonPreview(npcJsonPreview, npcJsonBytes, {});
@@ -811,6 +818,14 @@ async function init() {
   status = shell.status;
   const auth = initAuthControls({ status });
   dataManager = auth.dataManager;
+  spotlightControl = initSpotlightButton({
+    button: spotlightButton,
+    dataManager,
+    status,
+    getKind: () => "npc",
+    getId: () => currentRecord?.id,
+    getLabel: () => currentRecord?.identity?.name,
+  });
 
   bindCollapsibleToggle(inspectorToggle, inspectorPanel, {
     collapsed: false,

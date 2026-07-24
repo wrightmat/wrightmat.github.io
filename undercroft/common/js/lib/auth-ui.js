@@ -124,6 +124,10 @@ function formatTierLabel(tier) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
 export function initAuthControls({
   root = document,
   status = null,
@@ -138,6 +142,17 @@ export function initAuthControls({
 } = {}) {
   const manager = dataManager || new DataManager({ baseUrl: resolveApiBase() });
   const container = root.querySelector("[data-auth-control]");
+  // A GM opens a campaign once (any tool, any page) and every tool should
+  // reflect the same selection without re-picking it — this lives right
+  // next to the user-info control since both are "who/what context am I in"
+  // chrome, but is a wholly separate dropdown (own DOM lifecycle) since it
+  // only exists when authenticated, unlike the login-button/user-menu swap.
+  const campaignContainer =
+    root.querySelector("[data-campaign-control]") || document.createElement("div");
+  campaignContainer.setAttribute("data-campaign-control", "");
+  if (!campaignContainer.isConnected && container && container.parentElement) {
+    container.parentElement.insertBefore(campaignContainer, container);
+  }
   const modalElement = ensureModal();
   const modal = window.bootstrap && typeof window.bootstrap.Modal === "function"
     ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
@@ -281,6 +296,90 @@ export function initAuthControls({
     }
   }
 
+  function renderCampaignControl(groups) {
+    campaignContainer.innerHTML = "";
+    if (!manager.isAuthenticated()) {
+      return;
+    }
+    const active = manager.getActiveGroup();
+    const activeStillExists = active && groups.some((group) => group.id === active.groupId);
+    const label = activeStillExists ? active.name : "No campaign";
+    const dropdown = document.createElement("div");
+    dropdown.className = "dropdown undercroft-campaign-menu";
+    const groupItems = groups
+      .map(
+        (group) => `
+          <li>
+            <button class="dropdown-item${activeStillExists && group.id === active.groupId ? " active" : ""}" type="button" data-campaign-select="${escapeHtml(group.id)}">
+              ${escapeHtml(group.name)}
+            </button>
+          </li>
+        `
+      )
+      .join("");
+    dropdown.innerHTML = `
+      <button
+        class="btn btn-outline-secondary dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        data-campaign-menu-toggle
+      >
+        Campaign: ${escapeHtml(label)}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end undercroft-campaign-dropdown">
+        ${
+          groups.length
+            ? groupItems
+            : `<li><span class="dropdown-item-text text-body-secondary">No campaign groups yet</span></li>`
+        }
+        <li><hr class="dropdown-divider" /></li>
+        <li><button class="dropdown-item" type="button" data-campaign-select="">No campaign (solo)</button></li>
+      </ul>
+    `;
+    campaignContainer.appendChild(dropdown);
+    dropdown.querySelectorAll("[data-campaign-select]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const groupId = button.getAttribute("data-campaign-select");
+        if (!groupId) {
+          manager.setActiveGroup(null);
+        } else {
+          const group = groups.find((entry) => entry.id === groupId);
+          manager.setActiveGroup(groupId, group ? group.name : "");
+        }
+        renderCampaignControl(groups);
+      });
+    });
+    const toggle = dropdown.querySelector("[data-campaign-menu-toggle]");
+    if (toggle && window.bootstrap && typeof window.bootstrap.Dropdown === "function") {
+      const instance = window.bootstrap.Dropdown.getOrCreateInstance(toggle);
+      const showMenu = () => instance.show();
+      const hideMenu = () => instance.hide();
+      dropdown.addEventListener("mouseenter", showMenu);
+      dropdown.addEventListener("mouseleave", hideMenu);
+      toggle.addEventListener("focus", showMenu);
+      dropdown.addEventListener("focusout", (event) => {
+        if (!dropdown.contains(event.relatedTarget)) {
+          hideMenu();
+        }
+      });
+    }
+  }
+
+  async function refreshCampaignControl() {
+    campaignContainer.innerHTML = "";
+    if (!manager.isAuthenticated()) {
+      return;
+    }
+    try {
+      const result = await manager.listGroups();
+      const groups = Array.isArray(result?.groups) ? result.groups : [];
+      renderCampaignControl(groups);
+    } catch (error) {
+      console.warn("Unable to load campaign groups", error);
+    }
+  }
+
   function updateAuthDisplay() {
     if (!container) {
       return;
@@ -291,6 +390,7 @@ export function initAuthControls({
     } else {
       renderLoginButton();
     }
+    void refreshCampaignControl();
   }
 
   updateAuthDisplay();
@@ -399,6 +499,13 @@ export function initAuthControls({
 
   window.addEventListener(OPEN_LOGIN_EVENT, () => {
     openModal("login");
+  });
+
+  // Keep the header in sync if something else on the page changes the
+  // active campaign (e.g. a "Share with [active campaign]" flow elsewhere)
+  // rather than only reacting to this control's own click handlers.
+  window.addEventListener("workbench:active-group-changed", () => {
+    void refreshCampaignControl();
   });
 
   return {

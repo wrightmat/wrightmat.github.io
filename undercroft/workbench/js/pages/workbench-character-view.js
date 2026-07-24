@@ -27,6 +27,13 @@ import {
   resolveBindingFromContexts,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
+import { loadLibraryData } from "../../../common/js/lib/content-fetch.js";
+import { createTemplate, getFormatById, getPageSize } from "../../../press/js/templates.js";
+import {
+  applyAutoWidthCaps,
+  applyAutoFontSizing,
+  applyOverflowIndicators,
+} from "../../../press/js/template-renderer.js";
 
 // Relocated from the old standalone character.html/character.js — now one of
 // three views on Workbench's unified page (see js/pages/workbench.js), which
@@ -78,6 +85,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     access: "none",
     pollTimer: 0,
   };
+
+  // Tracks the last spotlight log entry actually rendered, so the 30s game
+  // log poll (refreshGameLog) doesn't re-fetch and re-render the same
+  // entity/template on every tick — only when a genuinely new spotlight
+  // entry shows up.
+  let lastRenderedSpotlightEntryId = null;
 
   function escapeHtml(value) {
     if (value === undefined || value === null) {
@@ -385,6 +398,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     gameLogTitle: document.querySelector("[data-game-log-group]"),
     gameLogToggle: document.querySelector("[data-game-log-toggle]"),
     gameLogToggleLabel: document.querySelector("[data-game-log-toggle-label]"),
+    nowShowingSection: document.querySelector("[data-now-showing-section]"),
+    nowShowingContent: document.querySelector("[data-now-showing-content]"),
   };
 
   assignSectionAriaConnections();
@@ -1905,6 +1920,147 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     startGameLogPolling();
   }
 
+  // "Now showing" — renders the latest `spotlight` game log entry (posted by
+  // common/js/lib/spotlight.js's "Show to table" modal, from Sanctum/Forge/
+  // Crucible/Vault) via Press's own template.createPage rendering, reused
+  // as-is rather than reimplemented here. Runs after every refreshGameLog
+  // poll (same 30s cadence the game log itself uses) since spotlight entries
+  // are just another entry type in the same log.
+  // Bootstrap's .d-flex/.d-none utility classes are both declared
+  // `!important`, so toggling between them (never the plain `hidden`
+  // attribute, which a `!important` `display` class silently defeats — the
+  // same landmine Press's own app.js documents for setElementVisible)
+  // avoids any display-property specificity conflict.
+  function setNowShowingVisible(visible) {
+    if (!elements.nowShowingSection) {
+      return;
+    }
+    elements.nowShowingSection.classList.toggle("d-none", !visible);
+    elements.nowShowingSection.classList.toggle("d-flex", visible);
+  }
+
+  function hideNowShowing() {
+    setNowShowingVisible(false);
+    if (elements.nowShowingContent) {
+      elements.nowShowingContent.innerHTML = "";
+    }
+  }
+
+  function renderNowShowingPlain(entity, label) {
+    if (!elements.nowShowingContent) {
+      return;
+    }
+    const card = document.createElement("div");
+    card.className = "border rounded-3 bg-body p-3 w-100";
+    const name = document.createElement("div");
+    name.className = "fw-semibold";
+    name.textContent = entity?.name || label || "Untitled";
+    card.appendChild(name);
+    if (entity?.description) {
+      const description = document.createElement("p");
+      description.className = "small text-body-secondary mb-0 mt-2";
+      description.textContent = entity.description;
+      card.appendChild(description);
+    }
+    elements.nowShowingContent.innerHTML = "";
+    elements.nowShowingContent.appendChild(card);
+  }
+
+  // Renders one card through Press's real template.createPage — the exact
+  // function Press's own Grid View uses for a single-card render
+  // (singleCardIndex), so this gets identical output to what the GM sees in
+  // Press, not a second reimplementation. Card dimensions are authored in
+  // real inches (a print concept), so the result is wrapped and scaled down
+  // to fit this sidebar rather than shown at literal print size.
+  function renderNowShowingCard(templateRecord, entity) {
+    if (!elements.nowShowingContent) {
+      return;
+    }
+    const template = createTemplate(templateRecord);
+    const format = getFormatById(template);
+    const orientation = format?.defaultOrientation || "portrait";
+    const size = getPageSize(template, format?.id, orientation);
+    const side = template.sides?.[0] || "front";
+    const page = template.createPage(side, {
+      size,
+      format,
+      data: entity,
+      page: template.pages?.[side] || {},
+      singleCardIndex: 0,
+    });
+    const scaleWrapper = document.createElement("div");
+    scaleWrapper.style.transformOrigin = "top center";
+    scaleWrapper.style.overflow = "hidden";
+    scaleWrapper.appendChild(page);
+    elements.nowShowingContent.innerHTML = "";
+    elements.nowShowingContent.appendChild(scaleWrapper);
+    // Auto-width/font-size/overflow passes need real measured layout, so
+    // they only run once the page is actually attached and visible — same
+    // ordering constraint Press's own renderPreview/renderGridView follow.
+    applyAutoWidthCaps(page, { safeInsetIn: template.card?.safeInset ?? 0 });
+    applyAutoFontSizing(page);
+    applyOverflowIndicators(page);
+    const cardWidthPx = page.getBoundingClientRect().width;
+    const cardHeightPx = page.getBoundingClientRect().height;
+    const availableWidth = elements.nowShowingContent.clientWidth || cardWidthPx;
+    const scale = cardWidthPx > 0 ? Math.min(1, availableWidth / cardWidthPx) : 1;
+    if (scale < 1) {
+      scaleWrapper.style.transform = `scale(${scale})`;
+      scaleWrapper.style.width = `${cardWidthPx}px`;
+      scaleWrapper.style.height = `${cardHeightPx * scale}px`;
+    }
+  }
+
+  async function refreshNowShowing() {
+    if (!elements.nowShowingSection) {
+      return;
+    }
+    const latest = gameLogState.entries.find((entry) => entry?.type === "spotlight");
+    if (!latest) {
+      lastRenderedSpotlightEntryId = null;
+      hideNowShowing();
+      return;
+    }
+    if (latest.id === lastRenderedSpotlightEntryId) {
+      return;
+    }
+    lastRenderedSpotlightEntryId = latest.id;
+    const spotlight = latest.payload || {};
+    const kind = String(spotlight.kind || "").trim();
+    const id = String(spotlight.id || "").trim();
+    const templateId = String(spotlight.templateId || "").trim();
+    if (!kind || !id) {
+      hideNowShowing();
+      return;
+    }
+    setNowShowingVisible(true);
+    if (elements.nowShowingContent) {
+      elements.nowShowingContent.innerHTML = '<p class="text-body-secondary small mb-0">Loading…</p>';
+    }
+    let entity = null;
+    try {
+      entity = await loadLibraryData(`${kind}/${id}`, dataManager);
+    } catch (error) {
+      if (elements.nowShowingContent) {
+        elements.nowShowingContent.innerHTML =
+          '<p class="text-body-secondary small mb-0">Unable to load the spotlighted card.</p>';
+      }
+      return;
+    }
+    if (!templateId) {
+      renderNowShowingPlain(entity, spotlight.label);
+      return;
+    }
+    try {
+      const { payload: templateRecord } = await dataManager.get("templates", templateId);
+      renderNowShowingCard(templateRecord, entity);
+    } catch (error) {
+      // A private/unshared template (or one that's since been deleted)
+      // shouldn't block showing the entity itself — fall back to plain.
+      renderNowShowingPlain(entity, spotlight.label);
+    }
+  }
+
   async function refreshGameLog({ silent = false, force = false } = {}) {
     if (!gameLogState.enabled || (!gameLogState.groupId && !gameLogState.shareToken)) {
       return;
@@ -1934,6 +2090,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       gameLogState.entries.sort(sortGameLogEntriesDescending);
       gameLogState.error = "";
       renderGameLogEntries();
+      void refreshNowShowing();
     } catch (error) {
       console.error("Character editor: failed to load game log", error);
       if (!silent) {

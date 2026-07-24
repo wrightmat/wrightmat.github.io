@@ -104,6 +104,24 @@ export function createGridCell({ key, coord, gridType = "square" } = {}) {
   };
 }
 
+// A single placed pin on a marker layer. `refKind`/`refId` optionally point at
+// a real Library entity (any kind — location, npc, monster, ...); `label`
+// stands alone if there's no reference yet, or defaults to the entity's own
+// name once one is picked. Mirrors Sanctum's Assets/Needs reference shape
+// ({ kind, refId, label }) but keyed refKind/refId to avoid colliding with
+// this element's own `kind: "marker"` discriminator (the same convention
+// createGridCell's `kind: "cell"` already establishes for layer elements).
+export function createMarkerElement({ refKind = "", refId = "", label = "", position } = {}) {
+  return {
+    id: randomId(),
+    kind: "marker",
+    refKind,
+    refId,
+    label,
+    position: position || { x: 0, y: 0 },
+  };
+}
+
 export function createGroup({ name } = {}) {
   return {
     id: randomId(),

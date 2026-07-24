@@ -1,0 +1,8 @@
+{
+  "id": "map",
+  "label": "Map",
+  "plural": "Maps",
+  "icon": "tabler:map-2",
+  "readTier": "free",
+  "writeTier": "creator"
+}

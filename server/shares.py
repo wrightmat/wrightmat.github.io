@@ -57,7 +57,7 @@ def _set_record_public(state: ServerState, content_type: str, content_id: str, i
 
 
 def list_shares(state: ServerState, content_type: str, content_id: str, user: User) -> List[Dict[str, str]]:
-    rows = state.db.execute(
+    user_rows = state.db.execute(
         """
         SELECT shares.id, users.username, shares.permissions
         FROM shares JOIN users ON users.id = shares.shared_with_user_id
@@ -66,7 +66,17 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
         """,
         (content_type, content_id),
     ).fetchall()
-    shares = [dict(row) for row in rows]
+    group_rows = state.db.execute(
+        """
+        SELECT shares.id, groups.id AS group_id, groups.name AS group_name, shares.permissions
+        FROM shares JOIN groups ON groups.id = shares.shared_with_group_id
+        WHERE shares.content_type = ? AND shares.content_id = ?
+        ORDER BY groups.name COLLATE NOCASE
+        """,
+        (content_type, content_id),
+    ).fetchall()
+    shares = [dict(row) for row in user_rows]
+    shares.extend({**dict(row), "type": "group"} for row in group_rows)
     if _record_is_public(state, content_type, content_id):
         shares.append({
             "username": ALL_USERS_DISPLAY,
@@ -76,10 +86,15 @@ def list_shares(state: ServerState, content_type: str, content_id: str, user: Us
     return shares
 
 
-def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str, str]]:
+def list_shareable_targets(state: ServerState, content_type: str, user: Optional[User]) -> List[Dict[str, str]]:
     # The bar for "can this user usefully receive this content" is the same
     # bar as reading it, so this reuses the kind's readTier rather than a
-    # separate, easy-to-drift policy dimension.
+    # separate, easy-to-drift policy dimension. Groups are listed alongside
+    # users in one merged list (a `type` field distinguishes them) so every
+    # tool's existing "share with..." picker can offer both without a
+    # separate UI surface — sharing "with a group" grants every member's
+    # owning user access at once via the group-membership resolution in
+    # storage.py's is_shared()/list_bucket().
     threshold = load_kind_policy(state, content_type)["readTier"]
     min_rank = role_rank(threshold) if threshold else -1
     rows = state.db.execute(
@@ -96,9 +111,16 @@ def list_shareable_users(state: ServerState, content_type: str) -> List[Dict[str
         tier = (row["tier"] or "free").strip().lower()
         if min_rank >= 0 and role_rank(tier) < min_rank:
             continue
-        eligible.append({"username": username, "tier": tier})
-    all_users_entry = {"username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL}
-    return [all_users_entry, *eligible]
+        eligible.append({"type": "user", "username": username, "tier": tier})
+    all_users_entry = {"type": "user", "username": ALL_USERS_DISPLAY, "tier": "", "special": ALL_USERS_SPECIAL}
+    groups: List[Dict[str, str]] = []
+    if user:
+        group_rows = state.db.execute(
+            "SELECT id, name FROM groups WHERE owner_id = ? ORDER BY name COLLATE NOCASE",
+            (user.id,),
+        ).fetchall()
+        groups = [{"type": "group", "id": row["id"], "name": row["name"]} for row in group_rows]
+    return [all_users_entry, *eligible, *groups]
 
 
 def share_with_user(
@@ -121,7 +143,7 @@ def share_with_user(
         """
         INSERT INTO shares (content_type, content_id, shared_with_user_id, permissions)
         VALUES (?, ?, ?, ?)
-        ON CONFLICT(content_type, content_id, shared_with_user_id)
+        ON CONFLICT(content_type, content_id, shared_with_user_id) WHERE shared_with_user_id IS NOT NULL
         DO UPDATE SET permissions=excluded.permissions
         """,
         (content_type, content_id, user_row["id"], normalized_permissions),
@@ -145,6 +167,52 @@ def revoke_share(state: ServerState, content_type: str, content_id: str, usernam
     state.db.execute(
         "DELETE FROM shares WHERE content_type = ? AND content_id = ? AND shared_with_user_id = ?",
         (content_type, content_id, user_row["id"]),
+    )
+    state.db.commit()
+
+
+def _group_belongs_to(state: ServerState, group_id: str, user: User) -> bool:
+    # Only a group's own owner (or admin) can use it as a share target —
+    # sharing "with a group" grants every member's owner access, which should
+    # only ever be the acting GM's own call for their own campaign, not
+    # something any user can do to an arbitrary group they merely know the
+    # id of.
+    if user.tier == "admin":
+        return True
+    row = state.db.execute("SELECT owner_id FROM groups WHERE id = ?", (group_id,)).fetchone()
+    return bool(row) and row["owner_id"] == user.id
+
+
+def share_with_group(
+    state: ServerState, content_type: str, content_id: str, group_id: str, permissions: str, user: User
+) -> Dict[str, str]:
+    group_row = state.db.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
+    if not group_row or not _group_belongs_to(state, group_id, user):
+        raise AuthError("Group not found")
+    normalized_permissions = _normalize_permissions(permissions)
+    state.db.execute(
+        """
+        INSERT INTO shares (content_type, content_id, shared_with_group_id, permissions)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(content_type, content_id, shared_with_group_id) WHERE shared_with_group_id IS NOT NULL
+        DO UPDATE SET permissions=excluded.permissions
+        """,
+        (content_type, content_id, group_id, normalized_permissions),
+    )
+    state.db.commit()
+    return {
+        "content_type": content_type,
+        "content_id": content_id,
+        "group_id": group_id,
+        "group_name": group_row["name"],
+        "permissions": normalized_permissions,
+    }
+
+
+def revoke_group_share(state: ServerState, content_type: str, content_id: str, group_id: str) -> None:
+    state.db.execute(
+        "DELETE FROM shares WHERE content_type = ? AND content_id = ? AND shared_with_group_id = ?",
+        (content_type, content_id, group_id),
     )
     state.db.commit()
 

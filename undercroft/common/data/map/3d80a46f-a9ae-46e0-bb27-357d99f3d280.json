@@ -1,0 +1,65 @@
+{
+  "id": "3d80a46f-a9ae-46e0-bb27-357d99f3d280",
+  "name": "Test Map",
+  "baseMap": {
+    "type": "tile",
+    "settings": {
+      "tile": {
+        "provider": "OpenStreetMap Standard",
+        "urlTemplate": "https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg",
+        "attribution": "© OpenStreetMap contributors",
+        "minZoom": 1,
+        "maxZoom": 7,
+        "initialZoom": 2.75
+      },
+      "image": {
+        "src": "data/sample-map.svg",
+        "width": 1200,
+        "height": 800
+      },
+      "canvas": {
+        "width": 1600,
+        "height": 1000,
+        "background": "#f8f9fa"
+      }
+    },
+    "properties": {}
+  },
+  "view": {
+    "mode": "geo",
+    "zoom": 2.75,
+    "center": {
+      "lat": -4.36931515670833,
+      "lng": 56.842674837553645
+    },
+    "pan": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "layers": [
+    {
+      "id": "8329f29c-d06e-4855-81e6-bb9b72b014e9",
+      "type": "grid",
+      "name": "Primary Grid Layer",
+      "visible": true,
+      "opacity": 0.35,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "elements": [],
+      "settings": {
+        "gridType": "square",
+        "cellSize": 50,
+        "lineColor": "#0f172a"
+      },
+      "properties": {}
+    }
+  ],
+  "groups": [],
+  "views": [],
+  "properties": {},
+  "createdAt": "2026-07-24T01:04:48.683Z",
+  "updatedAt": "2026-07-24T01:05:23.943Z"
+}
