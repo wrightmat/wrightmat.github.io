@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .auth import AuthError, User
+from .roles import role_rank
 from .shares import (
     create_share_link,
     get_share_link,
@@ -16,6 +17,13 @@ from .shares import (
 from .state import ServerState
 
 _GROUP_ID_PREFIX = "grp_"
+# Groups aren't a Library kind (no kind-registry file, no readTier/writeTier
+# entry — see server/storage.py's library_items/load_kind_policy system),
+# but "start a campaign" is squarely an authoring action, so it gets the same
+# bar every other authoring action in the suite uses (System, Location Type,
+# etc.): creator tier or higher. Unlike every Library kind, this was
+# previously not gated at all.
+_CREATE_GROUP_MIN_TIER = "creator"
 
 
 def _generate_group_id(state: ServerState) -> str:
@@ -246,6 +254,60 @@ def _resolve_group_access(
     raise AuthError("Access denied")
 
 
+def user_can_access_group(state: ServerState, group_id: str, user: Optional[User]) -> bool:
+    """Owner-or-member-via-character-ownership check — the same access rule
+    _resolve_group_access enforces for the game log, extracted standalone
+    (no share-token handling, no campaign-type restriction, returns a bool
+    instead of raising) so shares.py can reuse it to resolve "does this user
+    have access via this group" for a share that targets the group itself.
+    """
+    if not user or not group_id:
+        return False
+    row = state.db.execute("SELECT owner_id FROM groups WHERE id = ?", (group_id,)).fetchone()
+    if not row:
+        return False
+    if user.tier == "admin" or row["owner_id"] == user.id:
+        return True
+    membership = state.db.execute(
+        """
+        SELECT 1
+        FROM group_members AS gm
+        JOIN library_items AS li
+          ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
+        WHERE gm.group_id = ?
+          AND li.owner_id = ?
+        LIMIT 1
+        """,
+        (group_id, user.id),
+    ).fetchone()
+    return bool(membership)
+
+
+def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
+    """Every group id `user` can access — owns it, or owns a character that's
+    a member of it. Used by storage.py's list_bucket to resolve the "shared"
+    bucket for group-targeted shares (a SQL-side per-row access check isn't
+    practical there, so this precomputes the accessible set once instead).
+    """
+    if not user:
+        return []
+    owned = [row["id"] for row in state.db.execute("SELECT id FROM groups WHERE owner_id = ?", (user.id,))]
+    member_of = [
+        row["group_id"]
+        for row in state.db.execute(
+            """
+            SELECT DISTINCT gm.group_id
+            FROM group_members AS gm
+            JOIN library_items AS li
+              ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
+            WHERE li.owner_id = ?
+            """,
+            (user.id,),
+        )
+    ]
+    return list({*owned, *member_of})
+
+
 def _fetch_group_log_entries(state: ServerState, group_id: str, limit: int) -> List[Dict[str, Any]]:
     rows = state.db.execute(
         """
@@ -260,6 +322,32 @@ def _fetch_group_log_entries(state: ServerState, group_id: str, limit: int) -> L
     ordered = list(rows)
     ordered.reverse()
     return _serialize_log_entries(ordered)
+
+
+def get_latest_spotlight(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
+    """The group's most recent `spotlight` log entry's payload ({kind, id,
+    templateId}), or None. No access check here by design — this is only
+    ever called from a context that has already resolved group access
+    (storage.py's get_item, for the share-token special case that lets an
+    anonymous share-link visitor read exactly whatever's currently spotlighted,
+    and nothing else)."""
+    row = state.db.execute(
+        """
+        SELECT payload
+        FROM group_logs
+        WHERE group_id = ? AND entry_type = 'spotlight'
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (group_id,),
+    ).fetchone()
+    if not row or not row["payload"]:
+        return None
+    try:
+        payload = json.loads(row["payload"])
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
 
 
 def list_group_log(
@@ -296,7 +384,7 @@ def create_group_log_entry(
         raise AuthError("Sign in to post to the game log")
     row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
     normalized_type = (entry_type or "").strip().lower() or "message"
-    if normalized_type not in {"message", "roll"}:
+    if normalized_type not in {"message", "roll", "spotlight"}:
         raise AuthError("Unsupported log entry type")
     text = (message or "").strip()
     if text:
@@ -309,6 +397,12 @@ def create_group_log_entry(
     if normalized_type == "roll":
         if not payload_value:
             raise AuthError("Roll payload is required")
+    if normalized_type == "spotlight":
+        # {kind, id, templateId} — templateId is optional (the "Now showing"
+        # viewer can fall back to a generic display if the GM didn't pick a
+        # print template), but kind/id are required to know what to fetch.
+        if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
+            raise AuthError("Spotlight payload requires kind and id")
     payload_data = None
     if payload_value is not None:
         try:
@@ -412,6 +506,8 @@ def list_groups(state: ServerState, owner: Optional[User]) -> Dict[str, Any]:
 def create_group(state: ServerState, owner: Optional[User], name: str, type_: Optional[str] = None) -> Dict[str, Any]:
     if not owner:
         raise AuthError("Authentication required")
+    if role_rank(owner.tier) < role_rank(_CREATE_GROUP_MIN_TIER):
+        raise AuthError("Creator tier or higher required to create a campaign group")
     label = (name or "").strip()
     if not label:
         raise AuthError("Group name is required")

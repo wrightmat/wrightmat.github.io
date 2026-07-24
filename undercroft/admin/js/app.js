@@ -47,6 +47,8 @@ const elements = {
   shareLinkDisable: document.querySelector("[data-admin-share-disable]"),
   shareLinkStatus: document.querySelector("[data-admin-share-link-status]"),
   shareLinkHelp: document.querySelector("[data-admin-share-link-help]"),
+  shareQuick: document.querySelector("[data-admin-share-quick]"),
+  shareQuickButton: document.querySelector("[data-admin-share-quick-button]"),
   shareAddForm: document.querySelector("[data-admin-share-add-form]"),
   shareUsername: document.querySelector("[data-admin-share-username]"),
   shareUsernameOptions: document.querySelector("[data-admin-share-username-options]"),
@@ -762,6 +764,12 @@ function resetShareModal() {
   renderShareModal();
 }
 
+// The datalist-driven text input holds one merged namespace of typeable
+// values — usernames and campaign group names — since a group is just
+// another kind of share target (see decision in the campaign-enabler plan:
+// one target picker, not a separate UI surface per target kind). Group
+// options are visually distinguished by a "(Campaign Group)" label suffix;
+// findEligibleShareEntry below resolves whichever matched by checking `type`.
 function updateShareUsernameOptions() {
   if (!elements.shareUsernameOptions) {
     return;
@@ -769,37 +777,40 @@ function updateShareUsernameOptions() {
   const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
   const ordered = [];
   let allUsersOption = null;
-  options.forEach((user) => {
-    if (user && user.special === SHARE_SPECIAL_ALL_USERS && !allUsersOption) {
-      allUsersOption = user;
+  options.forEach((entry) => {
+    if (entry && entry.special === SHARE_SPECIAL_ALL_USERS && !allUsersOption) {
+      allUsersOption = entry;
       return;
     }
-    ordered.push(user);
+    ordered.push(entry);
   });
   const finalOptions = allUsersOption ? [allUsersOption, ...ordered] : ordered;
   const fragment = document.createDocumentFragment();
   const seen = new Set();
   finalOptions
-    .filter((user) => user && user.username)
-    .forEach((user) => {
-      const username = user.username;
-      const key = username.toLowerCase();
+    .filter((entry) => entry && (entry.type === "group" ? entry.name : entry.username))
+    .forEach((entry) => {
+      const isGroup = entry.type === "group";
+      const value = isGroup ? entry.name : entry.username;
+      const key = `${entry.type || "user"}:${value.toLowerCase()}`;
       if (seen.has(key)) {
         return;
       }
       seen.add(key);
       const option = document.createElement("option");
-      option.value = username;
-      if (user.special) {
-        option.dataset.special = user.special;
+      option.value = value;
+      if (entry.special) {
+        option.dataset.special = entry.special;
       }
       let label;
-      if (user.special === SHARE_SPECIAL_ALL_USERS) {
+      if (isGroup) {
+        label = `${value} (Campaign Group)`;
+      } else if (entry.special === SHARE_SPECIAL_ALL_USERS) {
         label = `${SHARE_ALL_USERS_LABEL} (View only)`;
         option.value = SHARE_ALL_USERS_LABEL;
       } else {
-        const tier = formatTier(normalizeTier(user.tier));
-        label = tier ? `${username} (${tier})` : username;
+        const tier = formatTier(normalizeTier(entry.tier));
+        label = tier ? `${value} (${tier})` : value;
       }
       option.label = label;
       option.textContent = label;
@@ -808,14 +819,17 @@ function updateShareUsernameOptions() {
   elements.shareUsernameOptions.replaceChildren(fragment);
 }
 
-function findEligibleShareEntry(username = "") {
-  const value = typeof username === "string" ? username.trim().toLowerCase() : "";
-  if (!value) {
+function findEligibleShareEntry(value = "") {
+  const normalized = typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (!normalized) {
     return null;
   }
   const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
   return (
-    options.find((user) => (user?.username || "").toLowerCase() === value) || null
+    options.find((entry) => {
+      const entryValue = entry?.type === "group" ? entry?.name : entry?.username;
+      return (entryValue || "").toLowerCase() === normalized;
+    }) || null
   );
 }
 
@@ -839,10 +853,27 @@ function enforceSharePermissionConstraints() {
   }
 }
 
+// One click instead of picking the same campaign from the full list every
+// time — only shown once a GM has opened a campaign (auth-ui.js's header
+// control) and only makes sense once a record is actually selected here.
+function renderShareQuickButton() {
+  if (!elements.shareQuick || !elements.shareQuickButton) {
+    return;
+  }
+  const active = dataManager.getActiveGroup();
+  const show = Boolean(shareState.record && active && active.groupId);
+  elements.shareQuick.hidden = !show;
+  if (show) {
+    elements.shareQuickButton.textContent = `Share with ${active.name || "active campaign"}`;
+    elements.shareQuickButton.disabled = shareState.loading;
+  }
+}
+
 function renderShareModal() {
   const record = shareState.record;
   const hasRecord = Boolean(record);
   updateShareUsernameOptions();
+  renderShareQuickButton();
   if (elements.shareModalTitle) {
     if (hasRecord) {
       const typeLabel = OWNED_TYPE_LABELS[record.bucket] || "Content";
@@ -944,8 +975,9 @@ function renderShareModal() {
       const userCell = document.createElement("td");
       const special = entry?.special || "";
       const isAllUsers = special === SHARE_SPECIAL_ALL_USERS;
-      const displayUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : entry.username;
-      userCell.textContent = displayUsername;
+      const isGroup = entry?.type === "group";
+      const displayName = isGroup ? `${entry.group_name} (Campaign Group)` : isAllUsers ? SHARE_ALL_USERS_LABEL : entry.username;
+      userCell.textContent = displayName;
       const actionCell = document.createElement("td");
       actionCell.className = "text-end";
 
@@ -985,14 +1017,23 @@ function renderShareModal() {
         permissionSelect.disabled = true;
         removeButton.disabled = true;
         try {
-          await dataManager.shareWithUser({
-            contentType,
-            contentId: record.id,
-            username: entry.username,
-            permissions: selected,
-          });
+          if (isGroup) {
+            await dataManager.shareWithGroup({
+              contentType,
+              contentId: record.id,
+              groupId: entry.group_id,
+              permissions: selected,
+            });
+          } else {
+            await dataManager.shareWithUser({
+              contentType,
+              contentId: record.id,
+              username: entry.username,
+              permissions: selected,
+            });
+          }
           if (status) {
-            status.show(`Updated access for ${entry.username}.`, { type: "success", timeout: 1800 });
+            status.show(`Updated access for ${displayName}.`, { type: "success", timeout: 1800 });
           }
           await refreshShareModal();
         } catch (error) {
@@ -1006,20 +1047,28 @@ function renderShareModal() {
       });
 
       removeButton.addEventListener("click", async () => {
-        const confirmed = window.confirm(`Remove access for ${entry.username}?`);
+        const confirmed = window.confirm(`Remove access for ${displayName}?`);
         if (!confirmed) {
           return;
         }
         permissionSelect.disabled = true;
         removeButton.disabled = true;
         try {
-          await dataManager.revokeShare({
-            contentType,
-            contentId: record.id,
-            username: entry.username,
-          });
+          if (isGroup) {
+            await dataManager.revokeGroupShare({
+              contentType,
+              contentId: record.id,
+              groupId: entry.group_id,
+            });
+          } else {
+            await dataManager.revokeShare({
+              contentType,
+              contentId: record.id,
+              username: entry.username,
+            });
+          }
           if (status) {
-            status.show(`Removed ${entry.username}.`, { type: "success", timeout: 1800 });
+            status.show(`Removed ${displayName}.`, { type: "success", timeout: 1800 });
           }
           await refreshShareModal();
         } catch (error) {
@@ -1087,12 +1136,17 @@ async function refreshShareEligibleUsers() {
       contentType,
       contentId: shareState.record.id,
     });
-    const users = Array.isArray(result?.users) ? result.users : [];
-    shareState.eligibleUsers = users.map((user) => ({
-      username: user.username,
-      tier: normalizeTier(user.tier),
-      special: user.special || "",
-    }));
+    const targets = Array.isArray(result?.targets) ? result.targets : [];
+    shareState.eligibleUsers = targets.map((entry) =>
+      entry.type === "group"
+        ? { type: "group", id: entry.id, name: entry.name }
+        : {
+            type: "user",
+            username: entry.username,
+            tier: normalizeTier(entry.tier),
+            special: entry.special || "",
+          }
+    );
   } catch (error) {
     console.error("Failed to load eligible users", error);
     if (status) {
@@ -2100,45 +2154,88 @@ if (elements.shareLinkDisable) {
   });
 }
 
+if (elements.shareQuickButton) {
+  elements.shareQuickButton.addEventListener("click", async () => {
+    if (!shareState.record) {
+      return;
+    }
+    const active = dataManager.getActiveGroup();
+    if (!active || !active.groupId) {
+      return;
+    }
+    const contentType = contentTypeFromBucket(shareState.record.bucket);
+    elements.shareQuickButton.disabled = true;
+    try {
+      await dataManager.shareWithGroup({
+        contentType,
+        contentId: shareState.record.id,
+        groupId: active.groupId,
+        permissions: "view",
+      });
+      if (status) {
+        status.show(`Shared with ${active.name || "active campaign"}.`, { type: "success", timeout: 1800 });
+      }
+    } catch (error) {
+      console.error("Failed to share with active campaign", error);
+      if (status) {
+        status.show(error.message || "Unable to share", { type: "danger" });
+      }
+    } finally {
+      elements.shareQuickButton.disabled = false;
+      await refreshShareModal();
+    }
+  });
+}
+
 if (elements.shareAddForm) {
   elements.shareAddForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!shareState.record) {
       return;
     }
-    const username = (elements.shareUsername?.value || "").trim();
+    const typedValue = (elements.shareUsername?.value || "").trim();
     let permissions = elements.sharePermission?.value || "view";
-    if (!username) {
+    if (!typedValue) {
       if (status) {
-        status.show("Enter a username to share with.", { type: "warning", timeout: 1800 });
+        status.show("Enter a username or campaign group to share with.", { type: "warning", timeout: 1800 });
       }
       return;
     }
-    const match = findEligibleShareEntry(username);
+    const match = findEligibleShareEntry(typedValue);
+    const isGroup = Boolean(match && match.type === "group");
     const isAllUsers = Boolean(match && match.special === SHARE_SPECIAL_ALL_USERS);
-    const targetUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : username;
+    const targetUsername = isAllUsers ? SHARE_ALL_USERS_LABEL : typedValue;
     if (isAllUsers) {
       permissions = "view";
     }
     const contentType = contentTypeFromBucket(shareState.record.bucket);
     disableForm(elements.shareAddForm, true);
     try {
-      await dataManager.shareWithUser({
-        contentType,
-        contentId: shareState.record.id,
-        username: targetUsername,
-        permissions,
-      });
+      if (isGroup) {
+        await dataManager.shareWithGroup({
+          contentType,
+          contentId: shareState.record.id,
+          groupId: match.id,
+          permissions,
+        });
+      } else {
+        await dataManager.shareWithUser({
+          contentType,
+          contentId: shareState.record.id,
+          username: targetUsername,
+          permissions,
+        });
+      }
       elements.shareAddForm.reset();
       if (elements.sharePermission) {
         elements.sharePermission.value = "view";
       }
       enforceSharePermissionConstraints();
       if (status) {
-        status.show(`Shared with ${targetUsername}.`, { type: "success", timeout: 1800 });
+        status.show(`Shared with ${isGroup ? match.name : targetUsername}.`, { type: "success", timeout: 1800 });
       }
     } catch (error) {
-      console.error("Failed to share with user", error);
+      console.error("Failed to share", error);
       if (status) {
         status.show(error.message || "Unable to share", { type: "danger" });
       }
@@ -2367,6 +2464,9 @@ if (elements.passwordForm) {
 
 window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
 window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
+window.addEventListener("workbench:active-group-changed", () => {
+  renderShareQuickButton();
+});
 
 renderShareModal();
 handleAuthChanged();

@@ -639,8 +639,11 @@ export function buildTemplatePreview(template, data) {
 // kind, DB-indexed by category so Press only ever loads its own "print" templates,
 // never a Workbench character template). The bucket listing only carries metadata
 // (id/title/category/etc, not the full layout), so each print template still needs
-// its own follow-up fetch for the actual body.
-async function listPrintTemplateEntries(dataManager) {
+// its own follow-up fetch for the actual body. Exported (not just used
+// internally by loadTemplates) so a "Show to table" template picker in
+// another tool (Sanctum/Forge/Crucible/Vault) can list print templates by
+// id/title without loading every template's full body up front.
+export async function listPrintTemplateEntries(dataManager) {
   const listing = await dataManager.list("templates", { refresh: true });
   const entries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
   return entries.filter((entry) => (entry.category || "character") === "print");

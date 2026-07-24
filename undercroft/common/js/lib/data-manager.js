@@ -1,5 +1,10 @@
 const DEFAULT_STORAGE_PREFIX = "undercroft";
 const DEFAULT_SESSION_KEY = "undercroft.session";
+// Same "shared, unprefixed" trick as the session key — every tool's
+// DataManager instance uses its own storagePrefix for local content, but
+// login state (and now the active campaign selection) has to be visible
+// identically across every tool without re-picking it per page.
+const DEFAULT_ACTIVE_GROUP_KEY = "undercroft.activeGroup";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
 const ROLE_ORDER = ["free", "player", "gm", "creator", "admin"];
@@ -213,6 +218,7 @@ export class DataManager {
       this._listCache.clear();
       this._ownedCache.clear();
       this._groupCache = null;
+      this.setActiveGroup(null);
       return;
     }
     const sanitized = sanitizeSession(session);
@@ -223,6 +229,7 @@ export class DataManager {
       this._listCache.clear();
       this._ownedCache.clear();
       this._groupCache = null;
+      this.setActiveGroup(null);
       return;
     }
     storage.setItem(this._sessionKey, JSON.stringify(sanitized));
@@ -253,6 +260,38 @@ export class DataManager {
     const nextSession = { token: this._session.token, user: nextUser };
     this._persistSession(nextSession);
     return this._session ? this._session.user : null;
+  }
+
+  // "Open a campaign" once (any tool, any page) and every tool sees the same
+  // selection without re-picking it — mirrors the session key's shared,
+  // unprefixed storage exactly. Cleared automatically on logout (see
+  // _persistSession above), since it's meaningless without being signed in
+  // as that group's owner.
+  getActiveGroup() {
+    try {
+      const storage = this._requireStorage();
+      const stored = storage.getItem(DEFAULT_ACTIVE_GROUP_KEY);
+      const parsed = safeJsonParse(stored, null);
+      if (!parsed || typeof parsed !== "object" || !parsed.groupId) {
+        return null;
+      }
+      return { groupId: String(parsed.groupId), name: parsed.name || "" };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  setActiveGroup(groupId, name = "") {
+    const storage = this._requireStorage();
+    if (!groupId) {
+      storage.removeItem(DEFAULT_ACTIVE_GROUP_KEY);
+      this._emit("workbench:active-group-changed", { groupId: null, name: "" });
+      return null;
+    }
+    const entry = { groupId: String(groupId), name: name || "" };
+    storage.setItem(DEFAULT_ACTIVE_GROUP_KEY, JSON.stringify(entry));
+    this._emit("workbench:active-group-changed", entry);
+    return entry;
   }
 
   getUserTier(defaultTier = "free") {
@@ -1018,6 +1057,29 @@ export class DataManager {
     });
   }
 
+  // "Show to table": one call does both halves of the one-click ask — make
+  // sure the group can actually see this record (share_with_group is an
+  // idempotent upsert, safe to call every time, not just the first), then
+  // post the spotlight log entry the group's share-link page polls for.
+  // Also shares the template (if any) for the same reason: a private,
+  // GM-authored template needs the same visibility grant as the entity
+  // itself, or an anonymous share-link viewer's card render 403s on the
+  // template fetch even though the entity fetch succeeds.
+  async spotlightToGroup({ groupId, contentType, contentId, templateId = "" } = {}) {
+    if (!groupId || !contentType || !contentId) {
+      throw new Error("groupId, contentType, and contentId are required");
+    }
+    await this.shareWithGroup({ contentType, contentId, groupId, permissions: "view" });
+    if (templateId) {
+      await this.shareWithGroup({ contentType: "templates", contentId: templateId, groupId, permissions: "view" });
+    }
+    return this.createGroupLogEntry({
+      groupId,
+      type: "spotlight",
+      payload: { kind: contentType, id: contentId, templateId: templateId || undefined },
+    });
+  }
+
   async fetchGroupShare(token) {
     if (!token) {
       throw new Error("Share token is required");
@@ -1091,6 +1153,56 @@ export class DataManager {
       bucket: contentType,
       id: contentId,
       username,
+      action: "revoke",
+    });
+    return result;
+  }
+
+  // Sibling of shareWithUser/revokeShare for a campaign-group target instead
+  // of a single user — grants every member's owning user access at once
+  // (server/shares.py's share_with_group + storage.py's group-membership
+  // resolution), same /shares endpoint, same permissions vocabulary.
+  async shareWithGroup({ contentType, contentId, groupId, permissions = "view" } = {}) {
+    if (!contentType || !contentId || !groupId) {
+      throw new Error("contentType, contentId, and groupId are required");
+    }
+    const result = await this._request("/shares", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        group_id: groupId,
+        permissions,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share", {
+      bucket: contentType,
+      id: contentId,
+      groupId,
+      permissions,
+      action: "grant",
+    });
+    return result;
+  }
+
+  async revokeGroupShare({ contentType, contentId, groupId } = {}) {
+    if (!contentType || !contentId || !groupId) {
+      throw new Error("contentType, contentId, and groupId are required");
+    }
+    const result = await this._request("/shares/revoke", {
+      method: "POST",
+      body: {
+        content_type: contentType,
+        content_id: contentId,
+        group_id: groupId,
+      },
+      auth: true,
+    });
+    this._emit("workbench:content-share", {
+      bucket: contentType,
+      id: contentId,
+      groupId,
       action: "revoke",
     });
     return result;

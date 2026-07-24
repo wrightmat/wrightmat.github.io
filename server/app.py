@@ -38,10 +38,12 @@ from .router import Request, Response, Router
 from .shares import (
     create_share_link,
     get_share_link,
-    list_shareable_users,
+    list_shareable_targets,
     list_shares,
+    revoke_group_share,
     revoke_share,
     revoke_share_link,
+    share_with_group,
     share_with_user,
 )
 from .state import ServerState, configure_logging
@@ -991,9 +993,9 @@ def register_routes():
         query = parse_qs(urlsplit(request.handler.path).query)
         content_type = query.get("content_type", [""])[0]
         content_id = query.get("content_id", [""])[0]
-        _, bucket_name = ensure_share_permission(request, content_type, content_id, "manage shares")
-        users = list_shareable_users(request.state, bucket_name)
-        return json_response({"users": users})
+        user, bucket_name = ensure_share_permission(request, content_type, content_id, "manage shares")
+        targets = list_shareable_targets(request.state, bucket_name, user)
+        return json_response({"targets": targets})
 
     router.add("GET", r"^/shares/eligible$", handle_share_eligible)
 
@@ -1002,9 +1004,9 @@ def register_routes():
         params = getattr(request, "params")
         content_type = params["bucket"]
         content_id = params["content_id"]
-        _, bucket_name = ensure_share_permission(request, content_type, content_id, "manage shares")
-        users = list_shareable_users(request.state, bucket_name)
-        return json_response({"users": users})
+        user, bucket_name = ensure_share_permission(request, content_type, content_id, "manage shares")
+        targets = list_shareable_targets(request.state, bucket_name, user)
+        return json_response({"targets": targets})
 
     router.add(
         "GET",
@@ -1365,13 +1367,17 @@ def register_routes():
         content_type = data.get("content_type")
         content_id = data.get("content_id")
         username = data.get("username")
+        group_id = data.get("group_id")
         permissions = data.get("permissions", "view")
-        if not username:
+        if not username and not group_id:
             raise AuthError("Missing fields")
         if permissions not in {"view", "edit"}:
             raise AuthError("Invalid permissions")
-        _, bucket_name = ensure_share_permission(request, content_type, content_id, "share content")
-        result = share_with_user(request.state, bucket_name, content_id, username, permissions)
+        user, bucket_name = ensure_share_permission(request, content_type, content_id, "share content")
+        if group_id:
+            result = share_with_group(request.state, bucket_name, content_id, group_id, permissions, user)
+        else:
+            result = share_with_user(request.state, bucket_name, content_id, username, permissions)
         return json_response(result)
 
     router.add("POST", r"^/shares$", handle_share)
@@ -1382,10 +1388,14 @@ def register_routes():
         content_type = data.get("content_type")
         content_id = data.get("content_id")
         username = data.get("username")
-        if not username:
+        group_id = data.get("group_id")
+        if not username and not group_id:
             raise AuthError("Missing fields")
         _, bucket_name = ensure_share_permission(request, content_type, content_id, "revoke shares")
-        revoke_share(request.state, bucket_name, content_id, username)
+        if group_id:
+            revoke_group_share(request.state, bucket_name, content_id, group_id)
+        else:
+            revoke_share(request.state, bucket_name, content_id, username)
         return json_response({"ok": True})
 
     router.add("POST", r"^/shares/revoke$", handle_revoke_share)

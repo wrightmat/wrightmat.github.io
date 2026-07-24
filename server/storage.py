@@ -12,7 +12,8 @@ from typing import Any, Dict, List, Optional
 import re
 
 from .auth import AuthError, User
-from .kinds import load_kind_policy
+from .groups import accessible_group_ids, get_latest_spotlight, user_can_access_group
+from .kinds import load_kind_policy, normalize_kind
 from .roles import role_rank
 from .shares import resolve_share_token, touch_share_link
 from .state import ServerState
@@ -84,11 +85,12 @@ def init_storage_db(state: ServerState) -> None:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content_type TEXT NOT NULL,
             content_id TEXT NOT NULL,
-            shared_with_user_id INTEGER NOT NULL,
+            shared_with_user_id INTEGER,
+            shared_with_group_id TEXT,
             permissions TEXT DEFAULT 'view',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(content_type, content_id, shared_with_user_id),
-            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE
+            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (shared_with_group_id) REFERENCES groups(id) ON DELETE CASCADE
         )
         """
     )
@@ -171,9 +173,93 @@ def init_storage_db(state: ServerState) -> None:
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_owner ON library_items(kind, owner_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_public ON library_items(kind, is_public)")
+    # Must run before the two partial indexes below: on a pre-existing
+    # database, CREATE TABLE IF NOT EXISTS shares (above) is a no-op against
+    # the already-existing old-shape table (no shared_with_group_id column
+    # yet), so creating an index against that column would fail until this
+    # migration has actually rebuilt the table. A fresh install already has
+    # the new shape from CREATE TABLE IF NOT EXISTS, so this just no-ops.
+    _migrate_shares_table_for_group_targets(conn)
+    # Two partial unique indexes (one per target column) rather than one
+    # combined UNIQUE — SQLite treats NULLs as distinct from each other in a
+    # UNIQUE constraint, so a single UNIQUE(content_type, content_id,
+    # shared_with_user_id, shared_with_group_id) would let duplicate
+    # user-shares slip through (their both-NULL group_id never "matches").
+    # Each row targets exactly one of the two columns (enforced in
+    # server/shares.py, not by the schema), so a partial index scoped to
+    # "this column is set" gives the real one-share-per-target-per-record
+    # guarantee for each kind of target independently.
+    conn.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_shares_user_target
+        ON shares(content_type, content_id, shared_with_user_id)
+        WHERE shared_with_user_id IS NOT NULL
+        """
+    )
+    conn.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_shares_group_target
+        ON shares(content_type, content_id, shared_with_group_id)
+        WHERE shared_with_group_id IS NOT NULL
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_group ON shares(shared_with_group_id)")
     _migrate_legacy_buckets_to_library_items(conn)
     _backfill_flat_library_kinds(state)
     conn.commit()
+
+
+def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
+    # One-time (but idempotent — safe to run on every startup) migration for
+    # databases created before campaign-group sharing existed: the old
+    # `shares` table has `shared_with_user_id INTEGER NOT NULL` and no
+    # `shared_with_group_id` column at all. SQLite can't relax a NOT NULL
+    # constraint or add a column mid-table via ALTER TABLE, so this rebuilds
+    # the table (rename, recreate via init_storage_db's own CREATE TABLE/
+    # INDEX statements above, copy rows across, drop the renamed original).
+    # A fresh install already gets the new shape from CREATE TABLE IF NOT
+    # EXISTS above, so this only ever runs once per pre-existing database.
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(shares)")}
+    if not columns or "shared_with_group_id" in columns:
+        return
+    conn.execute("ALTER TABLE shares RENAME TO _legacy_shares")
+    conn.execute(
+        """
+        CREATE TABLE shares (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content_type TEXT NOT NULL,
+            content_id TEXT NOT NULL,
+            shared_with_user_id INTEGER,
+            shared_with_group_id TEXT,
+            permissions TEXT DEFAULT 'view',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (shared_with_group_id) REFERENCES groups(id) ON DELETE CASCADE
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_shares_user_target
+        ON shares(content_type, content_id, shared_with_user_id)
+        WHERE shared_with_user_id IS NOT NULL
+        """
+    )
+    conn.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_shares_group_target
+        ON shares(content_type, content_id, shared_with_group_id)
+        WHERE shared_with_group_id IS NOT NULL
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO shares (id, content_type, content_id, shared_with_user_id, permissions, created_at)
+        SELECT id, content_type, content_id, shared_with_user_id, permissions, created_at
+        FROM _legacy_shares
+        """
+    )
+    conn.execute("DROP TABLE _legacy_shares")
 
 
 def _migrate_legacy_buckets_to_library_items(conn: sqlite3.Connection) -> None:
@@ -410,22 +496,34 @@ def list_bucket(state: ServerState, kind: str, user: Optional[User]) -> Dict[str
                 )
             ]
         )
-        shared = _flatten_metadata_rows(
-            [
-                dict(row)
-                for row in state.db.execute(
-                    """
-                    SELECT li.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
-                    FROM library_items li
-                    JOIN shares s ON s.content_id = li.id AND s.content_type = li.kind
-                    LEFT JOIN users u ON u.id = li.owner_id
-                    WHERE li.kind = ? AND s.shared_with_user_id = ?
-                    ORDER BY li.modified_at DESC
-                    """,
-                    (kind, user.id),
-                )
-            ]
-        )
+        # A record can be shared directly with this user, or with a campaign
+        # group they can access (own it, or own a member character) — the
+        # latter set is precomputed in Python via accessible_group_ids since
+        # that resolution isn't a plain SQL join. A record could in principle
+        # match both, so duplicates are deduped afterward rather than tried
+        # to be avoided in the query itself.
+        group_ids = accessible_group_ids(state, user)
+        group_placeholders = ",".join("?" for _ in group_ids) if group_ids else "NULL"
+        shared_rows = [
+            dict(row)
+            for row in state.db.execute(
+                f"""
+                SELECT li.*, s.permissions, u.username AS owner_username, u.tier AS owner_tier
+                FROM library_items li
+                JOIN shares s ON s.content_id = li.id AND s.content_type = li.kind
+                LEFT JOIN users u ON u.id = li.owner_id
+                WHERE li.kind = ? AND (s.shared_with_user_id = ? OR s.shared_with_group_id IN ({group_placeholders}))
+                ORDER BY li.modified_at DESC
+                """,
+                (kind, user.id, *group_ids),
+            )
+        ]
+        deduped_shared: Dict[str, Dict[str, Any]] = {}
+        for row in shared_rows:
+            existing = deduped_shared.get(row["id"])
+            if not existing or (row.get("permissions") == "edit" and existing.get("permissions") != "edit"):
+                deduped_shared[row["id"]] = row
+        shared = _flatten_metadata_rows(list(deduped_shared.values()))
     return {"owned": owned, "shared": shared, "public": public}
 
 
@@ -446,18 +544,36 @@ def is_owner(state: ServerState, kind: str, id_: str, user: Optional[User]) -> b
 def is_shared(state: ServerState, kind: str, id_: str, user: Optional[User], require_edit: bool = False) -> bool:
     if not user:
         return False
+    content_id = id_.replace(".json", "")
     row = state.db.execute(
         """
         SELECT permissions FROM shares
         WHERE content_type = ? AND content_id = ? AND shared_with_user_id = ?
         """,
-        (kind, id_.replace(".json", ""), user.id),
+        (kind, content_id, user.id),
     ).fetchone()
-    if not row:
-        return False
-    if not require_edit:
-        return True
-    return row["permissions"] == "edit"
+    if row:
+        return True if not require_edit else row["permissions"] == "edit"
+    # No direct user share — check every group-targeted share on this record
+    # for one the user can actually access (owns the group, or owns a member
+    # character); a handful of rows per record at most, so a per-row Python
+    # check here is simpler and clearer than folding group-membership
+    # resolution into this query directly.
+    group_rows = state.db.execute(
+        """
+        SELECT shared_with_group_id, permissions FROM shares
+        WHERE content_type = ? AND content_id = ? AND shared_with_group_id IS NOT NULL
+        """,
+        (kind, content_id),
+    ).fetchall()
+    for group_row in group_rows:
+        if not user_can_access_group(state, group_row["shared_with_group_id"], user):
+            continue
+        if not require_edit:
+            return True
+        if group_row["permissions"] == "edit":
+            return True
+    return False
 
 
 def is_public(state: ServerState, kind: str, id_: str) -> bool:
@@ -525,6 +641,26 @@ def get_item(
             if row and row["group_owner_id"] is not None:
                 character_owner_id = row["character_owner_id"]
                 if character_owner_id is None or character_owner_id == row["group_owner_id"]:
+                    share_granted = True
+                    touch_share_link(state, token_info.get("token", ""))
+        if not share_granted and token_type == "group" and token_target:
+            # "Show to table": an anonymous share-link visitor can read
+            # exactly whatever the group's latest spotlight log entry points
+            # at — the entity itself, or its templateId — and nothing else.
+            # Deliberately narrow: this is not "share this group's members'
+            # content", it's "whatever's currently being projected to the
+            # table right now" (see groups.get_latest_spotlight).
+            spotlight = get_latest_spotlight(state, token_target)
+            if spotlight:
+                spotlight_kind = normalize_kind(str(spotlight.get("kind") or ""))
+                spotlight_id = str(spotlight.get("id") or "")
+                spotlight_template_id = str(spotlight.get("templateId") or "")
+                normalized_kind = normalize_kind(kind)
+                is_spotlighted_entity = normalized_kind == spotlight_kind and base_id == spotlight_id
+                is_spotlighted_template = (
+                    normalized_kind == "template" and spotlight_template_id and base_id == spotlight_template_id
+                )
+                if is_spotlighted_entity or is_spotlighted_template:
                     share_granted = True
                     touch_share_link(state, token_info.get("token", ""))
     if not (

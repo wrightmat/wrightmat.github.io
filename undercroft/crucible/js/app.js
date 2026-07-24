@@ -1,5 +1,6 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
+import { initSpotlightButton } from "../../common/js/lib/spotlight.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -20,6 +21,10 @@ let archetypes = [];
 let roles = [];
 let features = [];
 let currentRecord = null;
+// Handle returned by initSpotlightButton — its refresh() is the single
+// source of truth for the button's disabled state (has a record AND an
+// active campaign group), called alongside every other action-button gate.
+let spotlightControl = null;
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
@@ -31,6 +36,7 @@ const elements = {
   generateButton: document.querySelector("[data-generate-monster]"),
   saveButton: document.querySelector("[data-save-monster]"),
   exportButton: document.querySelector("[data-export-monster]"),
+  spotlightButton: document.querySelector("[data-spotlight-monster]"),
   emptyState: document.querySelector("[data-monster-empty-state]"),
   display: document.querySelector("[data-monster-display]"),
   nameInput: document.querySelector("[data-monster-name]"),
@@ -241,6 +247,7 @@ function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
   if (elements.saveButton) elements.saveButton.disabled = !hasRecord;
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
+  spotlightControl?.refresh();
 }
 
 function renderMonster(record) {
@@ -365,6 +372,14 @@ async function init() {
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);
   elements.exportButton?.addEventListener("click", handleExport);
+  spotlightControl = initSpotlightButton({
+    button: elements.spotlightButton,
+    dataManager,
+    status,
+    getKind: () => "monster",
+    getId: () => currentRecord?.id,
+    getLabel: () => currentRecord?.name,
+  });
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
 
