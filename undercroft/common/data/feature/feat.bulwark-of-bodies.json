@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a reaction, the creature can intercept an attack targeting an ally within 5 feet, redirecting it to itself instead."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "defense",

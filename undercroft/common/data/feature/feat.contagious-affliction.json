@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "A successful attack can inflict a condition on the target that spreads to another creature that touches or damages it."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "debuff",

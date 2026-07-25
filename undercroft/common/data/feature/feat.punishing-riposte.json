@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "When a creature misses the monster with a melee attack, the monster can make one melee attack against it as a reaction."
   },
+  "budgetCost": 1,
+  "combat": {
+    "damageType": "Slashing",
+    "damageWeight": 1,
+    "actionCost": "reaction"
+  },
   "tags": {
     "behaviors": [
       "damage"

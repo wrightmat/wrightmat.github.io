@@ -600,6 +600,65 @@ export const customFunctions = {
     });
   },
 
+  // Ported from ddb-parser.js's buildHitPoints (never carried over to this
+  // mapping-custom-functions.js rewrite, so DDB imports have never populated
+  // hit points until now). Real DDB characters have no simple "current HP"
+  // field — current is derived from baseHitPoints/bonusHitPoints/
+  // overrideHitPoints/removedHitPoints, the same as DDB's own sheet
+  // computes it. `temp` maps straight from DDB's own temporaryHitPoints —
+  // initially excluded as out of scope, now a real synced field (see the
+  // System's combatBindings.tempHp and the character template's Temp HP
+  // component), so it's included here too.
+  hitPoints(context) {
+    const rawCharacter = context.root;
+    const modifiers = getActiveModifiers(rawCharacter);
+    const scores = calculateAbilityScores(rawCharacter, modifiers);
+    const conModifier = Math.floor(((scores.constitution ?? 10) - 10) / 2);
+    const totalLevel = getTotalLevelRaw(rawCharacter.classes);
+    const perLevelBonus = collectModifiers(modifiers, "hit-points-per-level", "bonus");
+    const base = rawCharacter.overrideHitPoints || (rawCharacter.baseHitPoints || 0) + (rawCharacter.bonusHitPoints || 0);
+    const damageTaken = rawCharacter.removedHitPoints || 0;
+    const max = base + totalLevel * (conModifier + perLevelBonus);
+    return { max, current: Math.max(0, max - damageTaken), temp: rawCharacter.temporaryHitPoints || 0 };
+  },
+
+  // Ported from ddb-parser.js's buildArmorClass (also never carried over) —
+  // found while porting hitPoints above. DDB's export has no flat "armor
+  // class" field either; it's the best equipped-armor value plus Dex
+  // (capped by armor type) plus a shield and any flat AC modifiers, same
+  // computation DDB's own sheet does.
+  armorClass(context) {
+    const rawCharacter = context.root;
+    const modifiers = getActiveModifiers(rawCharacter);
+    const scores = calculateAbilityScores(rawCharacter, modifiers);
+    const dexModifier = Math.floor(((scores.dexterity ?? 10) - 10) / 2);
+    const bonus = collectModifiers(modifiers, "armor-class", "bonus");
+
+    const inventory = Array.isArray(rawCharacter.inventory) ? rawCharacter.inventory : [];
+    const equippedArmor = inventory.filter((item) => item.equipped && item.definition?.armorClass != null);
+    const hasShield = inventory.some(
+      (item) => item.equipped && /shield/i.test(item.definition?.type || item.definition?.filterType || "")
+    );
+
+    const armorValues = equippedArmor.map((item) => {
+      const def = item.definition || {};
+      const armorBase = def.armorClass || 0;
+      const dexContribution =
+        /light/i.test(def.type) || def.armorTypeId === 1
+          ? dexModifier
+          : /medium/i.test(def.type) || def.armorTypeId === 2
+          ? Math.min(dexModifier, 2)
+          : /heavy/i.test(def.type) || def.armorTypeId === 3
+          ? 0
+          : dexModifier;
+      return armorBase + dexContribution;
+    });
+
+    const naturalAc = 10 + dexModifier;
+    const baseAc = armorValues.length ? Math.max(...armorValues) : naturalAc;
+    return baseAc + bonus + (hasShield ? 2 : 0);
+  },
+
   savingThrowsTable(context) {
     const modifiers = getActiveModifiers(context.root);
     const scores = calculateAbilityScores(context.root, modifiers);

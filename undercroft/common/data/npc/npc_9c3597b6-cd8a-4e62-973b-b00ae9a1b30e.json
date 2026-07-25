@@ -1,8 +1,8 @@
 {
   "id": "npc_9c3597b6-cd8a-4e62-973b-b00ae9a1b30e",
   "locationId": "sharn",
+  "name": "Belimmar",
   "identity": {
-    "name": "Belimmar",
     "species": "Kalashtar",
     "archetype": "Noble",
     "alignment": "Chaotic Good",
@@ -19,15 +19,19 @@
   },
   "stats": {
     "abilities": {
-      "str": 11,
-      "dex": 12,
-      "con": 11,
-      "int": 12,
-      "wis": 14,
-      "cha": 16
+      "strength": 11,
+      "dexterity": 12,
+      "constitution": 11,
+      "intelligence": 12,
+      "wisdom": 14,
+      "charisma": 16
     },
-    "ac": 15,
-    "hp": 9
+    "armorClass": 15,
+    "hitPoints": {
+      "max": 9,
+      "current": 9
+    },
+    "initiativeBonus": 1
   },
   "note": null,
   "createdAt": "2026-07-21T04:39:00.834Z",

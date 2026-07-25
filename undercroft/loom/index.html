@@ -75,6 +75,9 @@
               </h1>
             </div>
             <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+              <div data-auth-control class="d-flex">
+                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+              </div>
               <div class="btn-group" role="group" aria-label="Theme toggle">
                 <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
                   <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
@@ -85,9 +88,6 @@
                   <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
                   <span class="visually-hidden">Dark theme</span>
                 </button>
-              </div>
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
               </div>
               <button
                 class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
@@ -275,60 +275,91 @@
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-places-new-setting
-                  data-loom-view-panel="places"
+                  data-loom-user-new
+                  data-loom-view-panel="users"
                   hidden
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="New Setting"
-                  aria-label="New Setting"
+                  data-bs-title="New User"
+                  aria-label="New User"
                 >
-                  <span class="iconify fs-5" data-icon="tabler:map-plus" aria-hidden="true"></span>
-                  <span class="visually-hidden">New Setting</span>
+                  <span class="iconify fs-5" data-icon="tabler:user-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New User</span>
                 </button>
                 <button
                   class="btn btn-outline-secondary p-2"
                   type="button"
-                  data-places-new-location
-                  data-loom-view-panel="places"
-                  hidden
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="New Location"
-                  aria-label="New Location"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
-                  <span class="visually-hidden">New Location</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2"
-                  type="button"
-                  data-places-save
-                  data-loom-view-panel="places"
+                  data-loom-user-save
+                  data-loom-view-panel="users"
                   hidden
                   disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
+                  data-bs-title="Save User"
+                  aria-label="Save User"
                 >
                   <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
+                  <span class="visually-hidden">Save User</span>
                 </button>
                 <button
                   class="btn btn-outline-danger p-2"
                   type="button"
-                  data-places-delete-location
-                  data-loom-view-panel="places"
+                  data-loom-user-delete
+                  data-loom-view-panel="users"
                   hidden
                   disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Delete Location"
-                  aria-label="Delete Location"
+                  data-bs-title="Delete User"
+                  aria-label="Delete User"
                 >
                   <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Delete Location</span>
+                  <span class="visually-hidden">Delete User</span>
+                </button>
+
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-loom-group-new
+                  data-loom-view-panel="groups"
+                  hidden
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="New Group"
+                  aria-label="New Group"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:folder-plus" aria-hidden="true"></span>
+                  <span class="visually-hidden">New Group</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary p-2"
+                  type="button"
+                  data-loom-group-save
+                  data-loom-view-panel="groups"
+                  hidden
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save Group"
+                  aria-label="Save Group"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save Group</span>
+                </button>
+                <button
+                  class="btn btn-outline-danger p-2"
+                  type="button"
+                  data-loom-group-delete
+                  data-loom-view-panel="groups"
+                  hidden
+                  disabled
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Delete Group"
+                  aria-label="Delete Group"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete Group</span>
                 </button>
               </div>
             </div>
@@ -368,6 +399,14 @@
             </div>
 
             <div class="d-flex flex-column gap-4" data-loom-view-panel="systems" hidden>
+              <section class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Systems</h2>
+                  <span class="align-middle" data-help-topic="loom.systems" data-help-insert="replace"></span>
+                </div>
+                <label class="form-label fw-semibold mb-0" for="loomSystemSelect">System</label>
+                <select class="form-select" id="loomSystemSelect" data-system-select></select>
+              </section>
               <section class="pane-card mt-auto">
                 <button
                   class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
@@ -393,11 +432,50 @@
                 </div>
               </section>
             </div>
+
+            <div class="d-flex flex-column gap-3" data-loom-view-panel="library" hidden>
+              <section class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Library Contents</h2>
+                  <span class="align-middle" data-help-topic="loom.libraryTable" data-help-insert="replace"></span>
+                </div>
+                <label class="form-label fw-semibold mb-0" for="loomLibraryTableType">Type</label>
+                <select class="form-select form-select-sm" id="loomLibraryTableType" data-loom-library-table-type></select>
+                <label class="form-label fw-semibold mb-0" for="loomLibraryTableSelect">Item</label>
+                <select class="form-select" id="loomLibraryTableSelect" data-loom-library-table-select></select>
+                <div class="text-body-secondary small" data-loom-library-table-message hidden></div>
+              </section>
+            </div>
+
+            <div class="d-flex flex-column gap-3" data-loom-view-panel="users" hidden>
+              <section class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Users</h2>
+                  <span class="align-middle" data-help-topic="accounts.roles" data-help-insert="replace"></span>
+                </div>
+                <label class="form-label fw-semibold mb-0" for="loomUsersTierFilter">Tier</label>
+                <select class="form-select form-select-sm" id="loomUsersTierFilter" data-loom-users-tier-filter></select>
+                <label class="form-label fw-semibold mb-0" for="loomUsersSelect">User</label>
+                <select class="form-select" id="loomUsersSelect" data-loom-users-select></select>
+              </section>
+            </div>
+
+            <div class="d-flex flex-column gap-3" data-loom-view-panel="groups" hidden>
+              <section class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Groups</h2>
+                  <span class="align-middle" data-help-topic="campaign.groups" data-help-insert="replace"></span>
+                </div>
+                <label class="form-label fw-semibold mb-0" for="loomGroupsSelect">Group</label>
+                <select class="form-select" id="loomGroupsSelect" data-loom-groups-select></select>
+                <div class="text-body-secondary small" data-loom-groups-message hidden></div>
+              </section>
+            </div>
           </div>
         </aside>
 
         <main class="workbench-main flex-grow-1 p-4 overflow-auto">
-          <ul class="nav nav-pills mb-3" role="tablist" data-loom-view-tabs>
+          <ul class="nav nav-tabs mb-3" role="tablist" data-loom-view-tabs>
             <li class="nav-item" role="presentation">
               <button class="nav-link active" type="button" role="tab" data-loom-view-tab="import" aria-selected="true">Import</button>
             </li>
@@ -408,7 +486,10 @@
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="systems" aria-selected="false">Systems</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="places" aria-selected="false">Places</button>
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="users" aria-selected="false">Users</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="groups" aria-selected="false">Groups</button>
             </li>
           </ul>
           <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
@@ -530,35 +611,14 @@
             <div class="card shadow-theme">
               <div class="card-body">
                 <section class="d-flex flex-column gap-3" data-library-section>
-                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                    <div class="d-flex align-items-center gap-2">
-                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Library</h2>
-                      <span class="align-middle" data-help-topic="loom.library" data-help-insert="replace"></span>
-                    </div>
-                    <button
-                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                      type="button"
-                      data-library-toggle
-                      aria-expanded="true"
-                    >
-                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                      <span class="visually-hidden" data-library-toggle-label>Collapse library</span>
-                    </button>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Library</h2>
+                    <span class="align-middle" data-help-topic="loom.library" data-help-insert="replace"></span>
                   </div>
                   <div class="d-flex flex-column gap-3" data-library-panel>
-                    <div class="row g-3 align-items-end">
-                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
-                        <label class="form-label fw-semibold mb-0" for="loomLibraryKind">Kind</label>
-                        <select class="form-select" id="loomLibraryKind" data-library-kind-select></select>
-                      </div>
-                      <div class="col-12 col-lg-6 d-flex flex-column gap-2">
-                        <label class="form-label fw-semibold mb-0" for="loomLibraryEntry">Entity</label>
-                        <select class="form-select" id="loomLibraryEntry" data-library-entry-select></select>
-                      </div>
-                    </div>
                     <div class="d-flex flex-column gap-1">
                       <label class="form-label fw-semibold mb-0" for="loomLibraryId">Id</label>
-                      <input class="form-control" type="text" id="loomLibraryId" data-library-id />
+                      <input class="form-control" type="text" id="loomLibraryId" disabled data-library-id />
                     </div>
                     <div class="d-flex flex-column gap-1">
                       <label class="form-label fw-semibold mb-0">Assigned Systems</label>
@@ -575,11 +635,12 @@
                       <label class="form-label fw-semibold mb-0" for="loomLibraryJson">Entity JSON</label>
                       <textarea
                         class="form-control form-control-sm font-monospace"
-                        rows="16"
+                        rows="20"
                         spellcheck="false"
                         id="loomLibraryJson"
                         data-library-json
                       ></textarea>
+                      <div class="invalid-feedback d-block mt-0 d-none" data-library-json-error></div>
                     </div>
                   </div>
                 </section>
@@ -591,30 +652,15 @@
             <div class="card shadow-theme">
               <div class="card-body">
                 <section class="d-flex flex-column gap-3" data-systems-section>
-                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                    <div class="d-flex align-items-center gap-2">
-                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Systems</h2>
-                      <span class="align-middle" data-help-topic="loom.systems" data-help-insert="replace"></span>
-                    </div>
-                    <button
-                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                      type="button"
-                      data-systems-toggle
-                      aria-expanded="true"
-                    >
-                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                      <span class="visually-hidden" data-systems-toggle-label>Collapse systems</span>
-                    </button>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Systems</h2>
+                    <span class="align-middle" data-help-topic="loom.systems" data-help-insert="replace"></span>
                   </div>
                   <div class="d-flex flex-column gap-3" data-systems-panel>
-                    <div class="d-flex flex-column gap-2">
-                      <label class="form-label fw-semibold mb-0" for="loomSystemSelect">System</label>
-                      <select class="form-select" id="loomSystemSelect" data-system-select></select>
-                    </div>
                     <div class="row g-3">
                       <div class="col-12 col-md-4 d-flex flex-column gap-1">
                         <label class="form-label fw-semibold mb-0">Id</label>
-                        <input class="form-control" type="text" data-system-id />
+                        <input class="form-control" type="text" disabled data-system-id />
                       </div>
                       <div class="col-12 col-md-4 d-flex flex-column gap-1">
                         <label class="form-label fw-semibold mb-0">Title</label>
@@ -645,7 +691,7 @@
                       </div>
                       <div
                         class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto"
-                        style="max-height: 28rem"
+                        style="max-height: 40vh;"
                         data-system-property-rows
                       ></div>
                     </section>
@@ -655,125 +701,101 @@
             </div>
           </div>
 
-          <div class="d-flex flex-column gap-4" data-loom-view-panel="places" hidden>
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="groups" hidden>
             <div class="card shadow-theme">
               <div class="card-body">
-                <section class="d-flex flex-column gap-3" data-places-section>
-                  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                    <div class="d-flex align-items-center gap-2">
-                      <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Places</h2>
-                      <span class="align-middle" data-help-topic="loom.places" data-help-insert="replace"></span>
-                    </div>
-                    <button
-                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                      type="button"
-                      data-places-toggle
-                      aria-expanded="true"
-                    >
-                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                      <span class="visually-hidden" data-places-toggle-label>Collapse places</span>
-                    </button>
+                <section class="d-flex flex-column gap-3" data-loom-groups-section>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Group</h2>
+                    <span class="align-middle" data-help-topic="campaign.groups" data-help-insert="replace"></span>
                   </div>
-                  <div class="d-flex flex-column gap-3" data-places-panel>
+                  <p class="text-body-secondary mb-0" data-loom-group-empty>
+                    Select a group from the left pane, or create a new one.
+                  </p>
+                  <div class="d-flex flex-column gap-3 d-none" data-loom-group-form>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label fw-semibold mb-0" for="loomGroupName">Name</label>
+                      <input class="form-control" type="text" id="loomGroupName" data-loom-group-name />
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                      <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2">
+                        <span>Characters in group</span>
+                        <span class="align-middle" data-help-topic="loom.groups.members" data-help-insert="replace"></span>
+                      </label>
+                      <div
+                        class="d-flex flex-column gap-1 border rounded-3 p-2 overflow-auto"
+                        style="max-height: 20rem"
+                        data-loom-group-members
+                      ></div>
+                      <div class="text-body-secondary small" data-loom-group-members-empty>No characters available to add.</div>
+                      <div class="text-body-secondary small">Check to add or remove a character from this group.</div>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                      <span class="badge text-bg-secondary align-self-start" data-loom-group-share-badge></span>
+                      <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-primary btn-sm" type="button" data-loom-group-share-generate>Generate link</button>
+                        <button class="btn btn-outline-secondary btn-sm" type="button" data-loom-group-share-copy hidden>Copy link</button>
+                        <button class="btn btn-outline-danger btn-sm" type="button" data-loom-group-share-disable hidden>Disable link</button>
+                      </div>
+                      <div class="text-body-secondary small" data-loom-group-share-status></div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="users" hidden>
+            <div class="card shadow-theme">
+              <div class="card-body">
+                <section class="d-flex flex-column gap-3" data-loom-users-section>
+                  <div class="d-flex align-items-center gap-2">
+                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">User</h2>
+                    <span class="align-middle" data-help-topic="accounts.roles" data-help-insert="replace"></span>
+                  </div>
+                  <p class="text-body-secondary mb-0" data-loom-users-empty>
+                    Select a user from the left pane to view or edit their account.
+                  </p>
+                  <div class="d-flex flex-column gap-3 d-none" data-loom-users-form>
                     <div class="row g-3">
-                      <div class="col-12 col-md-4 d-flex flex-column gap-2">
-                        <label class="form-label fw-semibold mb-0">System</label>
-                        <select class="form-select" data-places-system-select></select>
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0">Username</label>
+                        <input class="form-control" type="text" disabled data-loom-user-username />
                       </div>
-                      <div class="col-12 col-md-4 d-flex flex-column gap-2">
-                        <label class="form-label fw-semibold mb-0">Setting</label>
-                        <select class="form-select" data-places-setting-select></select>
-                      </div>
-                      <div class="col-12 col-md-4 d-flex flex-column gap-2">
-                        <label class="form-label fw-semibold mb-0">Location</label>
-                        <select class="form-select" data-places-location-select></select>
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0" for="loomUserEmail">Email</label>
+                        <input class="form-control" type="email" id="loomUserEmail" data-loom-user-email />
                       </div>
                     </div>
-                    <section class="d-flex flex-column gap-2" data-places-setting-fields>
-                      <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Setting</h3>
-                      <label class="form-label fw-semibold mb-0">Name</label>
-                      <input class="form-control" type="text" data-setting-name />
-                      <label class="form-label fw-semibold mb-0">Description</label>
-                      <textarea class="form-control form-control-sm" rows="2" data-setting-description></textarea>
-                    </section>
-
-                    <section class="d-flex flex-column gap-3" data-places-location-fields>
-                      <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Location</h3>
-                      <label class="form-label fw-semibold mb-0">Name</label>
-                      <input class="form-control" type="text" data-location-name />
-
-                      <section class="d-flex flex-column gap-2" id="loom-species-weights">
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Species Weights</h3>
-                          <div class="d-flex align-items-center gap-2">
-                            <span class="small text-body-secondary" data-location-weight-total>Total: 0</span>
-                            <button
-                              class="btn btn-outline-secondary btn-sm p-1"
-                              type="button"
-                              data-location-add-species
-                              data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              data-bs-title="Add Species"
-                              aria-label="Add Species"
-                            >
-                              <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-                            </button>
-                          </div>
-                        </div>
-                        <div
-                          class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto"
-                          style="max-height: 20rem"
-                          data-location-weight-rows
-                        ></div>
-                      </section>
-
-                      <section class="d-flex flex-column gap-2" id="loom-mixing-coefficient">
-                        <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Mixing Coefficient</h3>
-                        <div class="d-flex align-items-center gap-2">
-                          <input class="form-range" type="range" min="0" max="1" step="0.05" data-location-mixing-coefficient />
-                          <span class="small text-body-secondary" style="min-width: 3rem" data-location-mixing-coefficient-value>0.00</span>
-                        </div>
-                      </section>
-
-                      <section class="d-flex flex-column gap-2" id="loom-archetype-overrides">
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0">Setting-Specific Archetypes</h3>
-                          <button
-                            class="btn btn-outline-secondary btn-sm p-1"
-                            type="button"
-                            data-location-add-archetype-override
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            data-bs-title="Add Override"
-                            aria-label="Add Override"
-                          >
-                            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-                          </button>
-                        </div>
-                        <div class="d-flex flex-column gap-2" data-location-archetype-rows></div>
-                      </section>
-
-                      <section class="d-flex flex-column gap-2" id="loom-generic-name-fallback">
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                            <span>Generic Name Fallback</span>
-                            <span class="align-middle" data-help-topic="loom.genericNameFallback" data-help-insert="replace"></span>
-                          </h3>
-                          <button
-                            class="btn btn-outline-secondary btn-sm p-1"
-                            type="button"
-                            data-location-add-fallback-name
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            data-bs-title="Add Name"
-                            aria-label="Add Name"
-                          >
-                            <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
-                          </button>
-                        </div>
-                        <div class="d-flex flex-column gap-2" data-location-fallback-rows></div>
-                      </section>
-                    </section>
+                    <div class="row g-3" data-loom-user-password-field hidden>
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0" for="loomUserPassword">Password</label>
+                        <input class="form-control" type="password" id="loomUserPassword" autocomplete="new-password" data-loom-user-password />
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0" for="loomUserTier">Tier</label>
+                        <select class="form-select" id="loomUserTier" data-loom-user-tier></select>
+                      </div>
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <label class="form-label fw-semibold mb-0" for="loomUserStatus">Status</label>
+                        <select class="form-select" id="loomUserStatus" data-loom-user-status>
+                          <option value="1">Active</option>
+                          <option value="0">Inactive</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <span class="text-body-secondary small">Created</span>
+                        <span data-loom-user-created></span>
+                      </div>
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <span class="text-body-secondary small">Last activity</span>
+                        <span data-loom-user-last-activity></span>
+                      </div>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -796,20 +818,58 @@
               </div>
               <hr class="border-body-tertiary opacity-50 my-2" />
             </div>
-            <div class="d-flex align-items-center justify-content-between">
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Recent Saves</h2>
-              <button
-                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center"
-                type="button"
-                data-recent-saves-refresh
-                aria-label="Refresh recent saves"
-              >
-                <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
-                <span class="visually-hidden">Refresh</span>
-              </button>
+            <div class="d-flex flex-column gap-3" data-loom-view-panel="library" hidden>
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Library Item</h2>
+              <p class="small text-body-secondary mb-0" data-loom-library-table-inspector-empty>
+                Select an item from the Library Contents list to see its details.
+              </p>
+              <div class="d-flex flex-column gap-2 d-none" data-loom-library-table-inspector-details>
+                <div>
+                  <span class="text-body-secondary small d-block">Created</span>
+                  <span data-loom-library-table-created></span>
+                </div>
+                <div>
+                  <span class="text-body-secondary small d-block">Last accessed</span>
+                  <span data-loom-library-table-accessed></span>
+                </div>
+                <div>
+                  <span class="text-body-secondary small d-block">Owner</span>
+                  <span data-loom-library-table-owner></span>
+                </div>
+                <div class="text-body-secondary small" data-loom-library-table-share-summary>Loading access…</div>
+                <button class="btn btn-outline-primary btn-sm align-self-start" type="button" data-loom-library-table-share>
+                  Share
+                </button>
+              </div>
+              <hr class="border-body-tertiary opacity-50 my-2" />
             </div>
-            <div class="d-flex flex-column gap-1" data-recent-saves>
-              <p class="small text-body-secondary mb-0">No saved entries yet.</p>
+            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Recent Saves</h2>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center"
+                  type="button"
+                  data-recent-saves-refresh
+                  aria-label="Refresh recent saves"
+                >
+                  <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                  <span class="visually-hidden">Refresh</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-recent-saves-toggle
+                  aria-expanded="false"
+                >
+                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-recent-saves-toggle-label>Expand recent saves</span>
+                </button>
+              </div>
+            </div>
+            <div class="d-flex flex-column gap-1" data-recent-saves-panel hidden>
+              <div class="d-flex flex-column gap-1" data-recent-saves>
+                <p class="small text-body-secondary mb-0">No saved entries yet.</p>
+              </div>
             </div>
           </div>
         </aside>
@@ -821,7 +881,7 @@
         <div class="card-body d-flex flex-column gap-3">
           <h2 class="card-title h4 mb-0">Access required</h2>
           <p class="text-body-secondary mb-0">
-            Loom requires <span class="fw-semibold" data-tier-required-label>Creator</span> access or higher. Sign in
+            Loom requires <span class="fw-semibold" data-tier-required-label>GM</span> access or higher. Sign in
             with an eligible account or upgrade your tier to continue.
           </p>
           <div class="d-flex flex-wrap gap-2">
@@ -834,14 +894,20 @@
 
     <div class="status-root" data-status-root></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Module script placed before the deferred CDN scripts on purpose —
+         both execute in shared document order after parsing, so this
+         ordering keeps the page's own JS from waiting on the CDN scripts
+         to finish loading before it can run. See undercroft/index.html for
+         the full explanation. -->
+    <script type="module" src="js/app.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script
+      defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <script src="../common/ddb-content-parser.js"></script>
-    <script type="module" src="js/app.js"></script>
+    <script defer src="../common/ddb-content-parser.js"></script>
   </body>
 </html>

@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a reaction to being hit by an attack, the creature can teleport up to 15 feet to an unoccupied space it can see."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "mobility"

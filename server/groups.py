@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from .auth import AuthError, User
 from .roles import role_rank
 from .shares import (
+    content_exists,
     create_share_link,
     get_share_link,
     resolve_share_token,
@@ -18,12 +19,13 @@ from .state import ServerState
 
 _GROUP_ID_PREFIX = "grp_"
 # Groups aren't a Library kind (no kind-registry file, no readTier/writeTier
-# entry — see server/storage.py's library_items/load_kind_policy system),
-# but "start a campaign" is squarely an authoring action, so it gets the same
-# bar every other authoring action in the suite uses (System, Location Type,
-# etc.): creator tier or higher. Unlike every Library kind, this was
+# entry — see server/storage.py's library_items/load_kind_policy system).
+# GM tier, not Creator: Creator is about authoring reusable CONTENT (Systems,
+# Templates, ...) for others to use, while a Campaign Group is a GM's own
+# session-running tool — setting one up is exactly what "being a GM" means,
+# not a content-authoring action. Unlike every Library kind, this was
 # previously not gated at all.
-_CREATE_GROUP_MIN_TIER = "creator"
+_CREATE_GROUP_MIN_TIER = "gm"
 
 
 def _generate_group_id(state: ServerState) -> str:
@@ -326,22 +328,24 @@ def _fetch_group_log_entries(state: ServerState, group_id: str, limit: int) -> L
 
 def get_latest_spotlight(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
     """The group's most recent `spotlight` log entry's payload ({kind, id,
-    templateId}), or None. No access check here by design — this is only
-    ever called from a context that has already resolved group access
-    (storage.py's get_item, for the share-token special case that lets an
-    anonymous share-link visitor read exactly whatever's currently spotlighted,
-    and nothing else)."""
+    templateId}), or None if nothing is currently shown — either because
+    nothing was ever spotlighted, or because a later `spotlight-clear` entry
+    (the GM explicitly stopping) is more recent than the last `spotlight`.
+    No access check here by design — this is only ever called from a context
+    that has already resolved group access (storage.py's get_item, for the
+    share-token special case that lets an anonymous share-link visitor read
+    exactly whatever's currently spotlighted, and nothing else)."""
     row = state.db.execute(
         """
-        SELECT payload
+        SELECT entry_type, payload
         FROM group_logs
-        WHERE group_id = ? AND entry_type = 'spotlight'
+        WHERE group_id = ? AND entry_type IN ('spotlight', 'spotlight-clear')
         ORDER BY id DESC
         LIMIT 1
         """,
         (group_id,),
     ).fetchone()
-    if not row or not row["payload"]:
+    if not row or row["entry_type"] != "spotlight" or not row["payload"]:
         return None
     try:
         payload = json.loads(row["payload"])
@@ -384,7 +388,7 @@ def create_group_log_entry(
         raise AuthError("Sign in to post to the game log")
     row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
     normalized_type = (entry_type or "").strip().lower() or "message"
-    if normalized_type not in {"message", "roll", "spotlight"}:
+    if normalized_type not in {"message", "roll", "spotlight", "spotlight-clear"}:
         raise AuthError("Unsupported log entry type")
     text = (message or "").strip()
     if text:
@@ -403,6 +407,19 @@ def create_group_log_entry(
         # print template), but kind/id are required to know what to fetch.
         if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
             raise AuthError("Spotlight payload requires kind and id")
+        # Defense in depth: spotlightToGroup (data-manager.js) always shares
+        # the entity first via share_with_group, which already enforces this
+        # same check — but that's a client-side convention, not something
+        # this route itself relies on. Without checking again here, posting
+        # a spotlight entry straight to this endpoint (bypassing the share
+        # step) could reference a generated-but-never-saved record, which
+        # then fails later — and confusingly, on a viewer's screen — instead
+        # of immediately telling the GM to save it first.
+        if not content_exists(state, str(payload_value["kind"]), str(payload_value["id"])):
+            raise AuthError("Save this record before showing it to the table")
+        template_id = payload_value.get("templateId")
+        if template_id and not content_exists(state, "template", str(template_id)):
+            raise AuthError("Save this template before showing it to the table")
     payload_data = None
     if payload_value is not None:
         try:
@@ -507,7 +524,7 @@ def create_group(state: ServerState, owner: Optional[User], name: str, type_: Op
     if not owner:
         raise AuthError("Authentication required")
     if role_rank(owner.tier) < role_rank(_CREATE_GROUP_MIN_TIER):
-        raise AuthError("Creator tier or higher required to create a campaign group")
+        raise AuthError("GM tier or higher required to create a campaign group")
     label = (name or "").strip()
     if not label:
         raise AuthError("Group name is required")

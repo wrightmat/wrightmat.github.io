@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import hmac
 import secrets
@@ -117,6 +118,45 @@ def init_auth_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    _migrate_users_table_for_settings(conn)
+
+
+# A plain nullable column with no constraint — unlike storage.py's
+# rename-and-rebuild migrations (needed there for structural changes SQLite
+# can't ALTER around), a bare ADD COLUMN is all this needs. Holds a small
+# per-user JSON blob (today: {"dashboardLayout": {...}}) — deliberately
+# general-purpose rather than dashboard-specific, so future per-user
+# preferences can land in the same column without another migration.
+def _migrate_users_table_for_settings(conn: sqlite3.Connection) -> None:
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(users)")}
+    if "settings" in columns:
+        return
+    conn.execute("ALTER TABLE users ADD COLUMN settings TEXT")
+    conn.commit()
+
+
+def get_user_settings(state: ServerState, user: User) -> Dict[str, Any]:
+    row = state.db.execute("SELECT settings FROM users WHERE id = ?", (user.id,)).fetchone()
+    if not row or not row["settings"]:
+        return {}
+    try:
+        parsed = json.loads(row["settings"])
+    except (TypeError, ValueError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def update_user_settings(state: ServerState, user: User, patch: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(patch, dict):
+        raise AuthError("Settings patch must be an object")
+    current = get_user_settings(state, user)
+    current.update(patch)
+    state.db.execute(
+        "UPDATE users SET settings = ? WHERE id = ?",
+        (json.dumps(current), user.id),
+    )
+    state.db.commit()
+    return current
 
 
 def generate_verification_code() -> str:
@@ -351,6 +391,42 @@ def delete_user(state: ServerState, target_username: str) -> Dict[str, str]:
     return {"username": username}
 
 
+def admin_set_user_status(state: ServerState, target_username: str, is_active: bool) -> Dict[str, Any]:
+    row = state.db.execute("SELECT id, tier FROM users WHERE username = ?", (target_username,)).fetchone()
+    if not row:
+        raise AuthError("User not found")
+    if not is_active and row["tier"] == "admin" and count_active_admins(state, exclude_user_id=row["id"]) == 0:
+        raise AuthError("At least one administrator must remain active")
+    state.db.execute("UPDATE users SET is_active = ? WHERE id = ?", (1 if is_active else 0, row["id"]))
+    if not is_active:
+        # Deactivating only blocks future logins otherwise — get_user_by_session
+        # checks sessions.is_active, not the user's, so an already-signed-in
+        # session would keep working until it naturally expired without this.
+        state.db.execute("UPDATE sessions SET is_active = 0 WHERE user_id = ?", (row["id"],))
+    state.db.commit()
+    updated = state.db.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
+    return {"user": sanitize_user_row(updated)}
+
+
+def admin_update_user_email(state: ServerState, target_username: str, new_email: str) -> Dict[str, Any]:
+    email = (new_email or "").strip().lower()
+    if not email:
+        raise AuthError("Email is required")
+    row = state.db.execute("SELECT id FROM users WHERE username = ?", (target_username,)).fetchone()
+    if not row:
+        raise AuthError("User not found")
+    existing = state.db.execute(
+        "SELECT id FROM users WHERE email = ? AND id != ?",
+        (email, row["id"]),
+    ).fetchone()
+    if existing:
+        raise AuthError("Email already in use")
+    state.db.execute("UPDATE users SET email = ? WHERE id = ?", (email, row["id"]))
+    state.db.commit()
+    updated = state.db.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
+    return {"user": sanitize_user_row(updated)}
+
+
 def update_email_address(state: ServerState, user: User, new_email: str, password: str) -> Dict[str, Any]:
     email = (new_email or "").strip().lower()
     if not email:
@@ -387,6 +463,31 @@ def update_password(state: ServerState, user: User, current_password: str, new_p
     state.db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(new), user.id))
     state.db.commit()
     return {"ok": True}
+
+
+def admin_create_user(state: ServerState, username: str, email: str, password: str, tier: str) -> Dict[str, Any]:
+    tiers = ["free", "player", "gm", "creator", "admin"]
+    username = (username or "").strip()
+    email_value = (email or "").strip().lower()
+    tier_value = (tier or "free").strip().lower()
+    if not username or not email_value or not password:
+        raise AuthError("username, email, and password are required")
+    if tier_value not in tiers:
+        raise AuthError("Unknown tier")
+    password_hash = hash_password(password)
+    try:
+        # is_active=1 unconditionally — an admin creating the account directly
+        # is a stronger trust signal than self-registration, so this skips the
+        # email-verification step register_user() otherwise requires.
+        state.db.execute(
+            "INSERT INTO users (email, username, password_hash, tier, is_active) VALUES (?, ?, ?, ?, 1)",
+            (email_value, username, password_hash, tier_value),
+        )
+        state.db.commit()
+    except sqlite3.IntegrityError as exc:
+        raise AuthError("email or username already exists") from exc
+    user_row = state.db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    return {"user": sanitize_user_row(user_row)}
 
 
 def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]:

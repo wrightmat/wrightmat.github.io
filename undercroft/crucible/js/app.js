@@ -1,6 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { initSpotlightButton } from "../../common/js/lib/spotlight.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -9,8 +8,10 @@ import {
   listArchetypesForSystem,
   listRolesForSystem,
   listFeaturesForSystem,
+  loadCombatScalingLevels,
 } from "./lib/tables.js";
 import { generateMonster } from "./lib/generator.js";
+import { deriveStats } from "./lib/stats.js";
 import { createMonsterRecord, toPressExportShape } from "./lib/monster-schema.js";
 import { generateMonsterNote } from "./lib/llm-note.js";
 
@@ -20,29 +21,39 @@ let creatureTypes = [];
 let archetypes = [];
 let roles = [];
 let features = [];
+let combatScalingLevels = [];
 let currentRecord = null;
-// Handle returned by initSpotlightButton — its refresh() is the single
-// source of truth for the button's disabled state (has a record AND an
-// active campaign group), called alongside every other action-button gate.
-let spotlightControl = null;
+// JSON snapshot of the record as it was last successfully saved, or null
+// if the current record has never been saved (a freshly generated monster
+// is dirty by definition). Compared against a live snapshot — built from
+// currentRecord plus whatever's currently typed into Name/Notes, since
+// those two fields aren't written back into currentRecord until Save/
+// Export actually runs — to gate the Save button the same way Loom/
+// Workbench's editors do, and to know whether Delete has anything real on
+// the server to target.
+let lastSavedSnapshot = null;
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
   creatureTypeOverride: document.querySelector("[data-creature-type-override]"),
   archetypeOverride: document.querySelector("[data-archetype-override]"),
   roleOverride: document.querySelector("[data-role-override]"),
+  combatScalingOverride: document.querySelector("[data-combat-scaling-override]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateButton: document.querySelector("[data-generate-monster]"),
   saveButton: document.querySelector("[data-save-monster]"),
+  deleteButton: document.querySelector("[data-delete-monster]"),
   exportButton: document.querySelector("[data-export-monster]"),
-  spotlightButton: document.querySelector("[data-spotlight-monster]"),
   emptyState: document.querySelector("[data-monster-empty-state]"),
   display: document.querySelector("[data-monster-display]"),
   nameInput: document.querySelector("[data-monster-name]"),
   identityFields: document.querySelector("[data-identity-fields]"),
   featureList: document.querySelector("[data-feature-list]"),
   recipeSummary: document.querySelector("[data-recipe-summary]"),
+  statsFields: document.querySelector("[data-stats-fields]"),
+  statsActions: document.querySelector("[data-stats-actions]"),
+  statsBudget: document.querySelector("[data-stats-budget]"),
   notesText: document.querySelector("[data-notes-text]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
   jsonPreview: document.querySelector("[data-monster-json-preview]"),
@@ -62,7 +73,7 @@ function currentSystemId() {
 async function listAllSystems() {
   if (!dataManager) return [];
   try {
-    const listing = await dataManager.list("systems", { refresh: true });
+    const listing = await dataManager.list("systems");
     const entries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
     return entries
       .map((entry) => ({ id: entry.id, title: entry.title || entry.id }))
@@ -126,15 +137,17 @@ function populateLockedFeaturesSelect() {
 
 async function reloadReferenceData() {
   const systemId = currentSystemId();
-  [creatureTypes, archetypes, roles, features] = await Promise.all([
+  [creatureTypes, archetypes, roles, features, combatScalingLevels] = await Promise.all([
     listCreatureTypesForSystem(dataManager, systemId),
     listArchetypesForSystem(dataManager, systemId),
     listRolesForSystem(dataManager, systemId),
     listFeaturesForSystem(dataManager, systemId),
+    loadCombatScalingLevels(dataManager, systemId),
   ]);
   populateOverrideSelect(elements.creatureTypeOverride, creatureTypes, "Random");
   populateOverrideSelect(elements.archetypeOverride, archetypes, "Random");
   populateOverrideSelect(elements.roleOverride, roles, "Random");
+  populateOverrideSelect(elements.combatScalingOverride, combatScalingLevels, "Random");
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
 }
@@ -243,11 +256,90 @@ function renderRecipeSummary(record) {
   });
 }
 
+function statField(label, value) {
+  const col = document.createElement("div");
+  col.className = "col-6 col-md-3";
+  const labelEl = document.createElement("div");
+  labelEl.className = "small text-body-secondary text-uppercase";
+  labelEl.textContent = label;
+  const valueEl = document.createElement("div");
+  valueEl.className = "fw-semibold";
+  valueEl.textContent = value;
+  col.append(labelEl, valueEl);
+  return col;
+}
+
+function renderStats(record) {
+  if (!elements.statsFields) return;
+  elements.statsFields.innerHTML = "";
+  if (elements.statsActions) elements.statsActions.innerHTML = "";
+  if (elements.statsBudget) elements.statsBudget.textContent = "";
+  const stats = record.stats;
+  if (!stats) return;
+
+  const abilities = stats.abilities || {};
+  const hitPoints = stats.hitPoints || {};
+  const rows = [
+    ["Challenge", stats.challengeRating || "—"],
+    ["Armor Class", stats.armorClass ?? "—"],
+    ["Hit Points", hitPoints.max != null ? `${hitPoints.current ?? hitPoints.max}/${hitPoints.max}` : "—"],
+    ["Save DC", stats.saveDC ?? "—"],
+    ["STR", abilities.strength ?? "—"],
+    ["DEX", abilities.dexterity ?? "—"],
+    ["CON", abilities.constitution ?? "—"],
+    ["INT", abilities.intelligence ?? "—"],
+    ["WIS", abilities.wisdom ?? "—"],
+    ["CHA", abilities.charisma ?? "—"],
+  ];
+  if (stats.damageResistances?.length) rows.push(["Resistances", stats.damageResistances.join(", ")]);
+  if (stats.damageImmunities?.length) rows.push(["Immunities", stats.damageImmunities.join(", ")]);
+  if (stats.senses?.length) rows.push(["Senses", stats.senses.join(", ")]);
+  rows.forEach(([label, value]) => elements.statsFields.appendChild(statField(label, value)));
+
+  (stats.actions || []).forEach((action) => {
+    const row = document.createElement("div");
+    row.className = "d-flex justify-content-between gap-2";
+    const labelEl = document.createElement("span");
+    labelEl.className = "text-body-secondary";
+    labelEl.textContent = action.name;
+    const valueEl = document.createElement("span");
+    const bonus = action.attackBonus >= 0 ? `+${action.attackBonus}` : `${action.attackBonus}`;
+    valueEl.textContent = `${bonus} to hit, ${action.damageDice} ${action.damageType || ""} damage`.trim();
+    row.append(labelEl, valueEl);
+    elements.statsActions?.appendChild(row);
+  });
+
+  if (stats.budget && elements.statsBudget) {
+    const { target, spent, remaining } = stats.budget;
+    elements.statsBudget.textContent = `Feature budget: ${spent} / ${target} spent (${remaining} remaining)`;
+  }
+}
+
+// What Save/Export would actually write right now — currentRecord.name/
+// .notes only get synced from their input fields inside handleSave/
+// handleExport themselves, so a live dirty-check needs this instead of
+// reading currentRecord directly (a name/notes edit wouldn't otherwise be
+// visible until the next save).
+function buildRecordForSave() {
+  if (!currentRecord) return null;
+  return {
+    ...currentRecord,
+    name: elements.nameInput?.value || "",
+    notes: elements.notesText?.value || "",
+  };
+}
+
+function isRecordDirty() {
+  if (!currentRecord) return false;
+  if (lastSavedSnapshot === null) return true;
+  return JSON.stringify(toPressExportShape(buildRecordForSave())) !== lastSavedSnapshot;
+}
+
 function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
-  if (elements.saveButton) elements.saveButton.disabled = !hasRecord;
+  if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !isRecordDirty();
+  if (elements.deleteButton) elements.deleteButton.disabled = !hasRecord || lastSavedSnapshot === null;
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
-  spotlightControl?.refresh();
 }
 
 function renderMonster(record) {
@@ -265,6 +357,7 @@ function renderMonster(record) {
   renderIdentity(record);
   renderFeatureList(record);
   renderRecipeSummary(record);
+  renderStats(record);
   if (elements.notesText) elements.notesText.value = record.notes || "";
   elements.inspectorEmpty?.classList.remove("d-none");
   elements.inspectorDetail?.classList.add("d-none");
@@ -277,17 +370,27 @@ function readLockedFeatureIds() {
   return Array.from(elements.lockedFeatures.selectedOptions).map((option) => option.value);
 }
 
-function handleGenerate() {
+async function handleGenerate() {
   try {
+    const systemId = currentSystemId() || null;
     const generated = generateMonster(creatureTypes, archetypes, roles, features, {
-      systemId: currentSystemId() || null,
+      systemId,
       creatureTypeId: elements.creatureTypeOverride?.value || "",
       archetypeId: elements.archetypeOverride?.value || "",
       roleId: elements.roleOverride?.value || "",
       signatureFeatureId: elements.signatureOverride?.value || "",
       lockedFeatureIds: readLockedFeatureIds(),
     });
-    const record = createMonsterRecord(generated);
+    const { stats } = await deriveStats({
+      systemId,
+      combatScalingId: elements.combatScalingOverride?.value || "",
+      role: findById(roles, generated.roleId),
+      creatureType: findById(creatureTypes, generated.creatureTypeId),
+      features: generated.featureIds.map((id) => findById(features, id)).filter(Boolean),
+      dataManager,
+    });
+    const record = createMonsterRecord({ ...generated, stats });
+    lastSavedSnapshot = null;
     renderMonster(record);
     status?.show("Monster generated.", { type: "success", timeout: 1500 });
   } catch (error) {
@@ -303,10 +406,27 @@ async function handleSave() {
     // Default mode ("auto") matters here exactly like Forge's NPC save: an
     // anonymous GM saves locally to their own browser, a signed-in user gets
     // a real owned/shareable record — Crucible has no whole-tool login gate.
-    await dataManager.save("monster", currentRecord.id, toPressExportShape(currentRecord));
+    const exported = toPressExportShape(currentRecord);
+    await dataManager.save("monster", currentRecord.id, exported);
+    lastSavedSnapshot = JSON.stringify(exported);
     status?.show("Saved.", { type: "success", timeout: 1500 });
+    updateActionButtons();
   } catch (error) {
     status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+}
+
+async function handleDelete() {
+  if (!currentRecord || !dataManager || lastSavedSnapshot === null) return;
+  const label = currentRecord.name || currentRecord.id;
+  if (!window.confirm(`Delete "${label}"? This can't be undone.`)) return;
+  try {
+    await dataManager.delete("monster", currentRecord.id);
+    status?.show("Deleted.", { type: "success", timeout: 1500 });
+    lastSavedSnapshot = null;
+    renderMonster(null);
+  } catch (error) {
+    status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
   }
 }
 
@@ -352,6 +472,7 @@ async function handleGenerateNote() {
     currentRecord.notes = note;
     if (elements.nameInput) elements.nameInput.value = name;
     if (elements.notesText) elements.notesText.value = note;
+    updateActionButtons();
     status?.show("Note generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
@@ -366,22 +487,28 @@ async function handleGenerateNote() {
 async function init() {
   const shell = initAppShell({ namespace: "crucible", storagePrefix: "undercroft.crucible.undo" });
   status = shell.status;
-  const auth = initAuthControls({ status });
+  const auth = initAuthControls({
+    status,
+    spotlightContext: {
+      getKind: () => "monster",
+      getId: () => currentRecord?.id,
+      getLabel: () => currentRecord?.name,
+    },
+  });
   dataManager = auth.dataManager;
 
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);
+  elements.deleteButton?.addEventListener("click", handleDelete);
   elements.exportButton?.addEventListener("click", handleExport);
-  spotlightControl = initSpotlightButton({
-    button: elements.spotlightButton,
-    dataManager,
-    status,
-    getKind: () => "monster",
-    getId: () => currentRecord?.id,
-    getLabel: () => currentRecord?.name,
-  });
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
+  // Name/Notes aren't written back into currentRecord until Save/Export
+  // actually runs (see buildRecordForSave) — without this, editing either
+  // field wouldn't re-enable an already-saved record's Save button until
+  // some unrelated re-render happened to call updateActionButtons() again.
+  elements.nameInput?.addEventListener("input", updateActionButtons);
+  elements.notesText?.addEventListener("input", updateActionButtons);
 
   await populateSystemSelect();
   await reloadReferenceData();

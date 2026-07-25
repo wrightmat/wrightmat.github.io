@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from .auth import AuthError, User
-from .kinds import load_kind_policy
+from .kinds import load_kind_policy, normalize_kind
 from .state import ServerState
 from .roles import role_rank
 
@@ -123,9 +123,24 @@ def list_shareable_targets(state: ServerState, content_type: str, user: Optional
     return [all_users_entry, *eligible, *groups]
 
 
+# Exported (not just used internally by share_with_user/share_with_group):
+# groups.py's create_group_log_entry reuses this too, for the same "spotlight
+# payload references a real record" check — a share and a spotlight log
+# entry should never be creatable against content that was never actually
+# saved.
+def content_exists(state: ServerState, content_type: str, content_id: str) -> bool:
+    row = state.db.execute(
+        "SELECT 1 FROM library_items WHERE kind = ? AND id = ?",
+        (normalize_kind(content_type), content_id),
+    ).fetchone()
+    return bool(row)
+
+
 def share_with_user(
     state: ServerState, content_type: str, content_id: str, username: str, permissions: str
 ) -> Dict[str, str]:
+    if not content_exists(state, content_type, content_id):
+        raise AuthError("Save this record before sharing it")
     if _is_all_users_username(username):
         _set_record_public(state, content_type, content_id, True)
         return {
@@ -186,6 +201,17 @@ def _group_belongs_to(state: ServerState, group_id: str, user: User) -> bool:
 def share_with_group(
     state: ServerState, content_type: str, content_id: str, group_id: str, permissions: str, user: User
 ) -> Dict[str, str]:
+    # ensure_share_permission's is_owner check unconditionally passes for
+    # admin-tier callers regardless of whether content_id is a real, saved
+    # record (is_owner short-circuits to True for admins before ever
+    # querying library_items) — this is the one path that actually needs its
+    # own existence check as a result, since nothing upstream of here
+    # enforces it for that tier. Without this, "Show this item" on a
+    # generated-but-never-saved record would silently create a share + a
+    # spotlight log entry pointing at nothing, only failing later (and
+    # confusingly) when a viewer tries to actually fetch it.
+    if not content_exists(state, content_type, content_id):
+        raise AuthError("Save this record before sharing it")
     group_row = state.db.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
     if not group_row or not _group_belongs_to(state, group_id, user):
         raise AuthError("Group not found")

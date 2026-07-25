@@ -3,6 +3,7 @@ import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { createJsonPreviewRenderer } from "../../common/js/lib/json-preview.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
 import {
   createGroup,
@@ -48,7 +49,17 @@ const { status, undoStack, undo, redo } = initAppShell({
   },
 });
 
-const auth = initAuthControls({ status });
+const auth = initAuthControls({
+  status,
+  // A map has no print-card rendering of its own (see spotlight.js's
+  // LINK_ONLY_KINDS) — spotlighting one just posts a link back into Orrery
+  // with ?map=<id>, handled by loadMapFromUrlParam below.
+  spotlightContext: {
+    getKind: () => "map",
+    getId: () => state.map.id,
+    getLabel: () => state.map.name,
+  },
+});
 const dataManager = auth.dataManager;
 
 // Ownership metadata for saved Maps, used only for the Delete button's
@@ -115,11 +126,22 @@ const elements = {
   jsonSize: document.querySelector("[data-json-size]"),
 };
 
-const renderJson = createJsonPreviewRenderer({
+const renderJsonPreview = createJsonPreviewRenderer({
   resolvePreviewElement: () => elements.jsonPreview,
   resolveBytesElement: () => elements.jsonSize,
   serialize: () => state.map,
 });
+
+// Wraps the raw preview renderer so every one of this file's many renderJson()
+// call sites (already sitting after essentially every edit — layer/marker/
+// view/property changes, drag-end, etc.) also re-evaluates the Save button's
+// dirty-gated disabled state, without having to hunt down and touch each one
+// individually. updateMapToolbarState is a function declaration (hoisted), so
+// this is safe to reference here even though it's defined later in the file.
+function renderJson() {
+  renderJsonPreview();
+  updateMapToolbarState();
+}
 
 const LAYER_SETTINGS_SCHEMA = {
   vector: [
@@ -317,9 +339,30 @@ function getVisibleLayerIds() {
   return visible;
 }
 
+// "Clean" baseline for the whole map (a JSON snapshot at last load/save) —
+// Save only lights up once the live map actually differs from it, the same
+// isDirty/markClean convention Loom/Sanctum already use for their own
+// records (there just isn't a single "name" field to diff here, so this
+// diffs the whole serialized map instead). Re-established by
+// applyMapSnapshot — the one function New/Load/Undo/Redo all already funnel
+// through — and again right after a successful save.
+let mapCleanSnapshot = null;
+
+function isMapDirty() {
+  return mapCleanSnapshot !== JSON.stringify(state.map);
+}
+
+function markMapClean() {
+  mapCleanSnapshot = JSON.stringify(state.map);
+  updateMapToolbarState();
+}
+
 function updateMapToolbarState() {
   if (elements.deleteMapButton) {
     elements.deleteMapButton.disabled = !mapAllowsDelete(state.map.id);
+  }
+  if (elements.saveMapButton) {
+    elements.saveMapButton.disabled = !isMapDirty();
   }
 }
 
@@ -1101,10 +1144,20 @@ function createGridSelectionOverlay(layer, selectedCells, options = {}) {
   return overlay;
 }
 
+function isTileBaseMap() {
+  return state.map.baseMap.type === "tile";
+}
+
 // Layer position is a whole-layer pan offset applied on top of each marker
 // element's own coordinate — the exact convention grid layers already use
-// via getGridOffset (layer.position + each cell's own coord).
+// via getGridOffset (layer.position + each cell's own coord). Tile maps
+// don't use this: layer.position was never geo-anchored either, and every
+// marker now carries its own real {lat, lng}, so a separate manual "drag
+// the whole layer" pixel offset has no coherent meaning there.
 function getMarkerLayerOffset(layer) {
+  if (isTileBaseMap()) {
+    return { x: 0, y: 0 };
+  }
   const scale = getLayerPositionScale();
   return {
     x: (layer.position?.x || 0) * scale,
@@ -1112,24 +1165,84 @@ function getMarkerLayerOffset(layer) {
   };
 }
 
+// Converts a marker's *stored* position into a pixel position relative to
+// the marker layer's own overlay container, for the CURRENT base map pan/
+// zoom — excluding getMarkerLayerOffset (added separately by the caller).
+//
+// Tile maps store real {lat, lng} and re-derive the pixel position fresh on
+// every render via Leaflet's own layerPoint projection. This is the whole
+// fix for markers not tracking pan/zoom: a flat pixel offset only looks
+// right at the zoom level it was placed at — Leaflet doesn't just visually
+// rescale existing content on zoom, it resets its internal pixel origin and
+// re-renders tiles at the new resolution, so anything positioned by a raw
+// pixel number (not re-projected from a real lat/lng) ends up in the wrong
+// place the moment the zoom level changes. layerPoint is the same
+// coordinate space Leaflet's own overlays use internally, which is why it
+// stays correctly anchored: it's relative to the map's pixel origin, not the
+// live pan offset — the enclosing Leaflet pane's own transform (which our
+// overlay host already lives inside) is what supplies the pan, exactly like
+// every built-in Leaflet layer.
+//
+// Image/canvas maps keep the original flat {x, y} model: their overlay
+// lives inside the same CSS-transformed element PanZoomController pans and
+// scales, so a plain local pixel coordinate already tracks pan/zoom for
+// free, with no projection reset to worry about.
+function markerPositionToLocalPixel(position) {
+  if (isTileBaseMap()) {
+    const map = baseMapManager.getMap();
+    if (map && position && Number.isFinite(position.lat) && Number.isFinite(position.lng)) {
+      const point = map.latLngToLayerPoint(window.L.latLng(position.lat, position.lng));
+      return { x: point.x, y: point.y };
+    }
+    return { x: 0, y: 0 };
+  }
+  return { x: position?.x || 0, y: position?.y || 0 };
+}
+
+// The inverse — turns a local pixel position (relative to the marker
+// layer's overlay container, i.e. already excluding getMarkerLayerOffset)
+// into whatever this base map type actually stores.
+function localPixelToMarkerPosition(pixel) {
+  if (isTileBaseMap()) {
+    const map = baseMapManager.getMap();
+    if (map) {
+      const latlng = map.layerPointToLatLng(window.L.point(pixel.x, pixel.y));
+      return { lat: latlng.lat, lng: latlng.lng };
+    }
+    return { lat: 0, lng: 0 };
+  }
+  return { x: Math.round(pixel.x), y: Math.round(pixel.y) };
+}
+
 function getMarkerElementPixelPosition(layer, markerElement) {
   const offset = getMarkerLayerOffset(layer);
+  const local = markerPositionToLocalPixel(markerElement.position);
   return {
-    x: offset.x + (markerElement.position?.x || 0),
-    y: offset.y + (markerElement.position?.y || 0),
+    x: offset.x + local.x,
+    y: offset.y + local.y,
   };
 }
 
 let activeMarkerDrag = null;
 
+// Drag itself always operates in plain screen-pixel deltas (correct
+// regardless of base map type — you're never crossing a zoom-driven
+// projection reset mid-drag), and only converts the final pixel position
+// back into the marker's real stored representation (lat/lng or x/y) once
+// the gesture ends. Dragging incrementally in lat/lng space instead would be
+// wrong on a tile map anyway: degrees-per-pixel isn't constant across
+// latitude/zoom, so equal mouse movement wouldn't mean equal-looking
+// on-screen movement.
 function startMarkerElementDrag(event, layer, markerElement, dotEl) {
   dotEl.setPointerCapture(event.pointerId);
+  const startPixel = getMarkerElementPixelPosition(layer, markerElement);
   activeMarkerDrag = {
     elementId: markerElement.id,
     startX: event.clientX,
     startY: event.clientY,
-    originX: markerElement.position?.x || 0,
-    originY: markerElement.position?.y || 0,
+    originPixelX: startPixel.x,
+    originPixelY: startPixel.y,
+    lastPixel: null,
     before: JSON.stringify(state.map),
   };
   baseMapManager.setInteractionEnabled(false);
@@ -1140,10 +1253,10 @@ function startMarkerElementDrag(event, layer, markerElement, dotEl) {
     }
     const dx = moveEvent.clientX - activeMarkerDrag.startX;
     const dy = moveEvent.clientY - activeMarkerDrag.startY;
-    markerElement.position = { x: activeMarkerDrag.originX + dx, y: activeMarkerDrag.originY + dy };
-    const pixelPosition = getMarkerElementPixelPosition(layer, markerElement);
-    dotEl.style.left = `${pixelPosition.x}px`;
-    dotEl.style.top = `${pixelPosition.y}px`;
+    const nextPixel = { x: activeMarkerDrag.originPixelX + dx, y: activeMarkerDrag.originPixelY + dy };
+    activeMarkerDrag.lastPixel = nextPixel;
+    dotEl.style.left = `${nextPixel.x}px`;
+    dotEl.style.top = `${nextPixel.y}px`;
   };
   const onUp = (upEvent) => {
     if (!activeMarkerDrag || activeMarkerDrag.elementId !== markerElement.id) {
@@ -1153,6 +1266,14 @@ function startMarkerElementDrag(event, layer, markerElement, dotEl) {
     window.removeEventListener("pointermove", onMove);
     window.removeEventListener("pointerup", onUp);
     baseMapManager.setInteractionEnabled(true);
+    if (activeMarkerDrag.lastPixel) {
+      const offset = getMarkerLayerOffset(layer);
+      const localPixel = {
+        x: activeMarkerDrag.lastPixel.x - offset.x,
+        y: activeMarkerDrag.lastPixel.y - offset.y,
+      };
+      markerElement.position = localPixelToMarkerPosition(localPixel);
+    }
     updateMapTimestamp(state.map);
     const after = JSON.stringify(state.map);
     if (activeMarkerDrag.before !== after) {
@@ -1247,13 +1368,25 @@ function createMarkerLayerElement(layer, options = {}) {
       }
       event.preventDefault();
       event.stopPropagation();
-      const rect = container.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const clickY = event.clientY - rect.top;
-      const offset = getMarkerLayerOffset(layer);
-      const newElement = createMarkerElement({
-        position: { x: Math.round(clickX - offset.x), y: Math.round(clickY - offset.y) },
-      });
+      let localPixel;
+      if (isTileBaseMap()) {
+        // mouseEventToLayerPoint handles the container-relative math itself
+        // (robust regardless of how deeply nested this container is inside
+        // Leaflet's own panned panes) and returns coordinates already in the
+        // same layerPoint space markerPositionToLocalPixel/
+        // localPixelToMarkerPosition use everywhere else.
+        const map = baseMapManager.getMap();
+        if (!map) {
+          return;
+        }
+        const layerPoint = map.mouseEventToLayerPoint(event);
+        localPixel = { x: layerPoint.x, y: layerPoint.y };
+      } else {
+        const rect = container.getBoundingClientRect();
+        const offset = getMarkerLayerOffset(layer);
+        localPixel = { x: event.clientX - rect.left - offset.x, y: event.clientY - rect.top - offset.y };
+      }
+      const newElement = createMarkerElement({ position: localPixelToMarkerPosition(localPixel) });
       recordHistory("place marker", () => {
         layer.elements = layer.elements || [];
         layer.elements.push(newElement);
@@ -3123,7 +3256,10 @@ function setupMapEvents() {
     elements.newMapButton.addEventListener("click", () => {
       applyMapSnapshot(JSON.stringify(createMapModel()));
       if (elements.mapSelect) elements.mapSelect.value = "";
-      updateMapToolbarState();
+      // A brand-new, never-edited map has nothing worth saving yet — same
+      // "clean until you actually change something" convention Sanctum's
+      // New Setting/Location already follows.
+      markMapClean();
       status.show("Started a new map.", { type: "info", timeout: 1500 });
     });
   }
@@ -3137,6 +3273,10 @@ function setupMapEvents() {
       try {
         await dataManager.save("map", state.map.id, state.map);
         status.show(`Saved "${name}".`, { type: "success", timeout: 2000 });
+        // The in-memory map now exactly matches what's persisted — reset the
+        // dirty baseline before populateMapSelect's own updateMapToolbarState
+        // call (via refreshMapCatalog) re-evaluates Delete too.
+        markMapClean();
         await populateMapSelect();
       } catch (error) {
         status.show(`Unable to save map: ${error.message}`, { type: "error", timeout: 4000 });
@@ -3152,6 +3292,7 @@ function setupMapEvents() {
         await dataManager.delete("map", state.map.id);
         status.show("Deleted.", { type: "success", timeout: 2000 });
         applyMapSnapshot(JSON.stringify(createMapModel()));
+        markMapClean();
         await populateMapSelect();
       } catch (error) {
         status.show(`Unable to delete map: ${error.message}`, { type: "error", timeout: 4000 });
@@ -3160,23 +3301,53 @@ function setupMapEvents() {
   }
 
   if (elements.mapSelect) {
-    elements.mapSelect.addEventListener("change", async () => {
-      const id = elements.mapSelect.value;
-      if (!id) {
-        applyMapSnapshot(JSON.stringify(createMapModel()));
-        updateMapToolbarState();
-        return;
-      }
-      if (!dataManager) return;
-      try {
-        const result = await dataManager.get("map", id);
-        applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
-        updateMapToolbarState();
-      } catch (error) {
-        status.show(`Unable to load map: ${error.message}`, { type: "error", timeout: 4000 });
-      }
+    elements.mapSelect.addEventListener("change", () => {
+      void loadMapById(elements.mapSelect.value);
     });
   }
+}
+
+// Shared by the Map picker's own change handler and the ?map=<id> deep link
+// (see loadMapFromUrlParam) — a campaign's "Show this item" spotlight for a
+// map points here, since a map has no print-card rendering of its own, just
+// a direct link into Orrery itself. shareToken is only ever set by the
+// ?map=/&share= deep link (an anonymous group share-link visitor has no
+// session at all — see loadMapFromUrlParam) and forwarded straight to
+// dataManager.get, which is what lets get_item's narrow spotlight exception
+// (server/storage.py) grant read access to exactly this map with no account.
+async function loadMapById(id, shareToken = "") {
+  if (!id) {
+    applyMapSnapshot(JSON.stringify(createMapModel()));
+    markMapClean();
+    return;
+  }
+  if (!dataManager) return;
+  try {
+    const result = await dataManager.get("map", id, { shareToken });
+    applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
+    if (elements.mapSelect) elements.mapSelect.value = id;
+    // Just-loaded state matches the stored record exactly — nothing to save
+    // until an edit actually happens. NOT called from onUndo/onRedo (which
+    // also route through applyMapSnapshot): navigating undo history can land
+    // on a state that still legitimately differs from the last save, and
+    // Save needs to reflect that.
+    markMapClean();
+  } catch (error) {
+    status.show(`Unable to load map: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+}
+
+// A campaign's "Show this item" spotlight for a map is just a link (see
+// workbench-character-view.js's refreshNowShowing) — clicking it lands here
+// with ?map=<id>[&share=token] in the URL, and this loads that map the same
+// way picking it from the dropdown would. Runs after populateMapSelect so
+// the id is already in mapCatalog/the picker's own option list by the time
+// it's selected.
+async function loadMapFromUrlParam() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("map");
+  if (!id) return;
+  await loadMapById(id, params.get("share") || "");
 }
 
 function setupViewPanelToggle() {
@@ -3267,4 +3438,9 @@ setupViewPanelToggle();
 setupViewPanelDrag();
 renderAll();
 refreshTooltips();
-void populateMapSelect();
+initHelpSystem({ root: document });
+// The freshly created, never-edited map at page load has nothing to save
+// yet — without this, mapCleanSnapshot starts null and Save would show
+// enabled from the very first render.
+markMapClean();
+void populateMapSelect().then(() => loadMapFromUrlParam());

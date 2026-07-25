@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "When a creature misses the monster with an attack, the monster can immediately make one weapon attack against it."
   },
+  "budgetCost": 1,
+  "combat": {
+    "damageType": "Piercing",
+    "damageWeight": 1,
+    "actionCost": "reaction"
+  },
   "tags": {
     "behaviors": [
       "damage"

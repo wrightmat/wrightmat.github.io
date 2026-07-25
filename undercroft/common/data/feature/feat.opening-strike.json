@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "On its first turn in combat, the creature can move up to its speed and make one attack as a bonus action."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Slashing",
+    "damageWeight": 2,
+    "actionCost": "bonus-action"
+  },
   "tags": {
     "behaviors": [
       "mobility",

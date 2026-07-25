@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a bonus action, the creature grants one ally it can see an extra reaction this round."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "utility"

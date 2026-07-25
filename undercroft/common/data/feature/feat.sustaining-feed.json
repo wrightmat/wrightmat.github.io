@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature regains a small number of hit points whenever it deals damage with an attack."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "regeneration"

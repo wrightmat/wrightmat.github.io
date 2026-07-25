@@ -23,7 +23,7 @@ function ensureModal() {
           </div>
           <div class="modal-body d-flex flex-column gap-3">
             <p class="small text-body-secondary mb-0" data-spotlight-target></p>
-            <div>
+            <div data-spotlight-template-group>
               <label class="form-label" for="undercroft-spotlight-template-select">Template</label>
               <select class="form-select" id="undercroft-spotlight-template-select" data-spotlight-template-select></select>
             </div>
@@ -52,6 +52,15 @@ async function listPrintTemplates(dataManager) {
   return entries.filter((entry) => (entry.category || "character") === "print");
 }
 
+// Kinds with no print-card rendering of their own — Orrery's maps are a
+// spatial, pannable canvas, not a single-entity card Press can lay out.
+// Spotlighting one is just a link back into the owning tool (see
+// workbench-character-view.js's refreshNowShowing, which renders these as
+// an "Open" link instead of fetching+rendering a card), so the template
+// picker is irrelevant and skipped entirely rather than shown as a confusing
+// dropdown with nothing appropriate to pick.
+const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
+
 // Resolves once the modal closes: true if a spotlight entry was posted,
 // false if the GM cancelled. Callers generally don't need the result — it's
 // there mainly so a caller COULD chain a follow-up action if it ever needs to.
@@ -72,12 +81,15 @@ export async function openSpotlightModal({ dataManager, status, kind, id, label 
     return false;
   }
 
+  const isLinkOnly = LINK_ONLY_KINDS.has(kind);
   let templates = [];
-  try {
-    templates = await listPrintTemplates(dataManager);
-  } catch (error) {
-    status?.show("Unable to load templates.", { type: "error", timeout: 3000 });
-    return false;
+  if (!isLinkOnly) {
+    try {
+      templates = await listPrintTemplates(dataManager);
+    } catch (error) {
+      status?.show("Unable to load templates.", { type: "error", timeout: 3000 });
+      return false;
+    }
   }
 
   const modalElement = ensureModal();
@@ -86,6 +98,7 @@ export async function openSpotlightModal({ dataManager, status, kind, id, label 
       ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
       : null;
   const targetLine = modalElement.querySelector("[data-spotlight-target]");
+  const templateGroup = modalElement.querySelector("[data-spotlight-template-group]");
   const templateSelect = modalElement.querySelector("[data-spotlight-template-select]");
   const errorBox = modalElement.querySelector("[data-spotlight-error]");
   const confirmButton = modalElement.querySelector("[data-spotlight-confirm]");
@@ -96,25 +109,31 @@ export async function openSpotlightModal({ dataManager, status, kind, id, label 
   if (errorBox) {
     errorBox.textContent = "";
   }
+  if (templateGroup) {
+    templateGroup.classList.toggle("d-none", isLinkOnly);
+  }
   if (templateSelect) {
     templateSelect.innerHTML = "";
-    // A template is a nice-to-have, not a requirement — the "Now showing"
-    // viewer falls back to a plain name/description display when templateId
-    // is empty, so a GM with no Press print templates yet (or who just wants
-    // a quick plain reveal) can still use this without a hard blocker.
-    const plainOption = document.createElement("option");
-    plainOption.value = "";
-    plainOption.textContent = "No template (plain)";
-    templateSelect.appendChild(plainOption);
-    templates
-      .slice()
-      .sort((a, b) => (a.title || a.name || a.id).localeCompare(b.title || b.name || b.id))
-      .forEach((template) => {
-        const option = document.createElement("option");
-        option.value = template.id;
-        option.textContent = template.title || template.name || template.id;
-        templateSelect.appendChild(option);
-      });
+    if (!isLinkOnly) {
+      // A template is a nice-to-have, not a requirement — the "Now showing"
+      // viewer falls back to a plain name/description display when
+      // templateId is empty, so a GM with no Press print templates yet (or
+      // who just wants a quick plain reveal) can still use this without a
+      // hard blocker.
+      const plainOption = document.createElement("option");
+      plainOption.value = "";
+      plainOption.textContent = "No template (plain)";
+      templateSelect.appendChild(plainOption);
+      templates
+        .slice()
+        .sort((a, b) => (a.title || a.name || a.id).localeCompare(b.title || b.name || b.id))
+        .forEach((template) => {
+          const option = document.createElement("option");
+          option.value = template.id;
+          option.textContent = template.title || template.name || template.id;
+          templateSelect.appendChild(option);
+        });
+    }
   }
 
   return new Promise((resolve) => {
@@ -168,41 +187,3 @@ export async function openSpotlightModal({ dataManager, status, kind, id, label 
   });
 }
 
-// Wires a "Show to table" button: getKind/getId/getLabel are called fresh at
-// click time (not captured up front) so the button always reflects whatever
-// record is currently loaded/selected, the same "resolve at the moment of
-// the click" convention every other per-record action button in these tools
-// already follows.
-//
-// Returns { refresh() } so the disabled state can be re-evaluated whenever
-// EITHER of the two things it depends on changes — the current record
-// (whenever the caller's own updateActionButtons-style function runs) or the
-// active campaign group (this module listens for
-// "workbench:active-group-changed" itself so callers don't each have to
-// remember to wire that separately). Call refresh() from the caller's own
-// action-button gating function alongside its other buttons' disabled
-// checks, the same way this file's own initial refresh() call establishes
-// the button's starting state.
-export function initSpotlightButton({ button, dataManager, status, getKind, getId, getLabel } = {}) {
-  const noop = { refresh() {} };
-  if (!button || !dataManager) {
-    return noop;
-  }
-
-  function refresh() {
-    const id = typeof getId === "function" ? getId() : getId;
-    button.disabled = !id || !dataManager.getActiveGroup();
-  }
-
-  button.addEventListener("click", () => {
-    const kind = typeof getKind === "function" ? getKind() : getKind;
-    const id = typeof getId === "function" ? getId() : getId;
-    const label = typeof getLabel === "function" ? getLabel() : getLabel;
-    void openSpotlightModal({ dataManager, status, kind, id, label });
-  });
-
-  window.addEventListener("workbench:active-group-changed", refresh);
-  refresh();
-
-  return { refresh };
-}

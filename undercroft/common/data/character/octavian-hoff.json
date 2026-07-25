@@ -1,4 +1,7 @@
 {
+  "template": "tpl.5e.flex-basic",
+  "system": "sys.dnd5e",
+  "data": {},
   "kind": "character",
   "name": "Octavian Hoff",
   "identity": {
@@ -281,6 +284,14 @@
       "proficiency": 1
     }
   ],
+  "stats": {
+    "hitPoints": {
+      "max": 72,
+      "current": 58,
+      "temp": 0
+    },
+    "armorClass": 15
+  },
   "currencies": {
     "cp": 148,
     "sp": 290,
@@ -541,12 +552,5 @@
       }
     ]
   },
-  "updated_at": "2026-07-17T23:33:33.958Z",
-  "systemIds": [
-    "sys.dnd5e"
-  ],
-  "template": "tpl.5e.flex-basic",
-  "system": "sys.dnd5e",
-  "id": "octavian-hoff",
-  "data": {}
+  "id": "octavian-hoff"
 }

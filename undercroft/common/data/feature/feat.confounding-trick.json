@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "A successful attack can force the target to make its next attack against a random creature within its reach, including itself."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "debuff",

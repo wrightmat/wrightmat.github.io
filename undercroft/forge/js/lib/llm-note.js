@@ -8,7 +8,7 @@ export async function generateCharacterNote(record) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       identity: {
-        name: record.identity.name,
+        name: record.name,
         alignment: record.identity.alignment,
         gender: record.identity.gender,
         species: record.identity.species,

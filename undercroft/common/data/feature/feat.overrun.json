@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "The creature has advantage on attacks against a target that has two or more of the creature's allies adjacent to it."
   },
+  "budgetCost": 1,
+  "combat": {
+    "damageType": "Slashing",
+    "damageWeight": 1,
+    "actionCost": "free"
+  },
   "tags": {
     "behaviors": [
       "swarm-tactics",

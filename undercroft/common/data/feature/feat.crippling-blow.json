@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "A successful attack imposes disadvantage on the target's next attack roll before the end of its next turn."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "debuff",

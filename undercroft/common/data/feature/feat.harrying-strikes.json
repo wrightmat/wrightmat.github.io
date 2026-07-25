@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "A successful attack reduces the target's speed by 10 feet until the start of the monster's next turn."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "debuff",

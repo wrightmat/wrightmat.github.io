@@ -83,6 +83,9 @@
               </h1>
             </div>
             <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+              <div data-auth-control class="d-flex">
+                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+              </div>
               <div class="btn-group" role="group" aria-label="Theme toggle">
                 <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
                   <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
@@ -93,9 +96,6 @@
                   <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
                   <span class="visually-hidden">Dark theme</span>
                 </button>
-              </div>
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
               </div>
               <button
                 class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
@@ -121,17 +121,6 @@
           data-pane-initial="expanded"
         >
           <div class="workbench-pane-content d-flex flex-column gap-4 p-4 workbench-sticky-pane">
-            <section class="d-flex flex-column gap-2">
-              <label class="form-label fw-semibold mb-0" for="orreryMapSelect">Map</label>
-              <select class="form-select" id="orreryMapSelect" data-map-select></select>
-              <input
-                class="form-control form-control-sm"
-                id="orreryMapName"
-                data-map-name
-                placeholder="Map name"
-              />
-            </section>
-
             <section class="d-flex flex-column gap-3">
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Orrery actions">
                 <div class="btn-group" role="group">
@@ -199,6 +188,7 @@
                     class="btn btn-outline-secondary p-2"
                     type="button"
                     data-action="save-layout"
+                    disabled
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
                     data-bs-title="Save Map"
@@ -222,6 +212,20 @@
                   </button>
                 </div>
               </div>
+            </section>
+
+            <section class="d-flex flex-column gap-2">
+              <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="orreryMapSelect">
+                <span>Map</span>
+                <span class="align-middle" data-help-topic="orrery.maps" data-help-insert="replace"></span>
+              </label>
+              <select class="form-select" id="orreryMapSelect" data-map-select></select>
+              <input
+                class="form-control form-control-sm"
+                id="orreryMapName"
+                data-map-name
+                placeholder="Map name"
+              />
             </section>
 
             <section class="d-flex flex-column gap-3">
@@ -324,16 +328,7 @@
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                   <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Views</h2>
-                  <button
-                    class="btn btn-link p-0 text-body-secondary"
-                    type="button"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Views are presets for map visibility and audience tiers."
-                    aria-label="About views"
-                  >
-                    <span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>
-                  </button>
+                  <span data-help-topic="orrery.views" data-help-insert="replace"></span>
                 </div>
                 <div class="btn-toolbar" role="toolbar" aria-label="Add view">
                   <div class="btn-group btn-group-sm" role="group">
@@ -641,13 +636,22 @@
 
     <div class="status-root" data-status-root></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <!-- NOT reordered before these scripts, unlike every other tool page —
+         js/app.js calls baseMapManager.setBaseMap(...) synchronously at
+         module top level (not inside a deferred/lazy call), which for a
+         tile base map needs window.L (Leaflet) to already exist or it
+         falls back to a visible "Leaflet failed to load" placeholder with
+         no retry once Leaflet actually finishes loading. See
+         undercroft/index.html for why other pages ARE reordered. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
     <script
+      defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
     <script
+      defer
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""

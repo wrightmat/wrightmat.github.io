@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a bonus action, the creature imposes disadvantage on the next attack roll made against it before the start of its next turn."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "defense"

@@ -7,6 +7,21 @@
   color-scheme: light dark;
 }
 
+/* Iconify replaces `<span class="iconify">` placeholders with an `<svg
+   class="iconify ...">` asynchronously after they're inserted — the class
+   carries over, so this sizing applies to both the placeholder (reserving
+   its footprint up front) and the eventual SVG (keeping it unchanged),
+   which stops content from visibly shifting/popping when icons mount. Most
+   noticeable on any widget that rebuilds its own icon buttons on every
+   re-render (e.g. the Combat Tracker), where the shift previously read as
+   the whole toolbar row jumping. */
+.iconify {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
 html[data-theme="light"] .shadow-theme,
 body[data-theme="light"] .shadow-theme {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
@@ -409,6 +424,10 @@ a.undercroft-tool-card:focus-visible {
   }
 }
 
+/* Callers that only want the grab cursor while dragging is actually
+   enabled (e.g. the Dashboard's "Edit layout" toggle) should add/remove
+   this attribute themselves rather than leaving it on permanently — the
+   cursor shouldn't promise a drag that isn't wired up yet. */
 [data-sortable-handle] {
   cursor: grab;
 }
@@ -425,4 +444,35 @@ a.undercroft-tool-card:focus-visible {
 .extra-small {
   font-size: 0.75rem;
   line-height: 1.2;
+}
+
+/* Three independent Sortable lists (see dnd.js's initSortableGroup), not a
+   CSS grid — a plain auto-fill grid re-flows every card into strict
+   left-to-right reading order on every drag, so two shorter widgets can
+   never stack in the same column while a taller one sits beside them. Each
+   column is its own vertical flex list; widgets move within or between
+   columns via drag. */
+.dashboard-columns {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.dashboard-column {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-columns {
+    flex-direction: column;
+  }
+}
+
+.dashboard-widget-card.sortable-ghost {
+  opacity: 0.4;
+}
+
+.dashboard-widget-card.sortable-chosen {
+  border-color: var(--bs-primary) !important;
 }

@@ -99,3 +99,35 @@ export function resolveBinding(binding, context, formulaOptions) {
   }
   return resolvePath(trimmed);
 }
+
+// The write-side companion to resolveBinding()'s plain-path case (a formula
+// binding like "=@a+@b" has no single cell to write back to, so only a
+// simple "@a.b.c" binding is settable — anything else is a no-op). Mutates
+// `context` in place, auto-vivifying intermediate objects the same way
+// Workbench's own (now-retired) private setValueAtPath() did, so every
+// consumer of a binding path — Press's read-only rendering, Workbench's
+// editable sheet, Combat Tracker's write-through to a character record —
+// shares one implementation instead of three copies of dotted-path walking.
+export function setAtBinding(binding, context, value) {
+  if (typeof binding !== "string" || !context || typeof context !== "object") {
+    return false;
+  }
+  const trimmed = binding.trim();
+  if (!trimmed.startsWith("@")) {
+    return false;
+  }
+  const segments = trimmed.slice(1).split(".").filter(Boolean);
+  if (!segments.length) {
+    return false;
+  }
+  let cursor = context;
+  for (let index = 0; index < segments.length - 1; index += 1) {
+    const key = segments[index];
+    if (!cursor[key] || typeof cursor[key] !== "object") {
+      cursor[key] = {};
+    }
+    cursor = cursor[key];
+  }
+  cursor[segments[segments.length - 1]] = value;
+  return true;
+}

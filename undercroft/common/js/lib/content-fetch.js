@@ -338,7 +338,14 @@ export async function fetchKindEntriesWithIds(dataManager, kind) {
 // reasoning that fetchKindEntriesWithIds already applies elsewhere. Falls
 // back to the anonymous path when no dataManager is passed, so this stays a
 // non-breaking addition for any other caller.
-export async function loadLibraryData(value, dataManager) {
+// `shareToken` is optional and only meaningful for the single kind/id case —
+// it lets an anonymous (unauthenticated) visitor read a private record via a
+// share link (e.g. a campaign group's public share page fetching whatever's
+// currently spotlighted): forwarded straight through to
+// dataManager.get(kind, id, { shareToken }), which turns into ?share=token
+// on the request so the server's narrower share-token-scoped access checks
+// (server/storage.py's get_item) can grant it.
+export async function loadLibraryData(value, dataManager, shareToken = "") {
   const [kind, id] = String(value || "").split("/");
   if (!kind) {
     throw new Error("Select a library kind.");
@@ -359,7 +366,7 @@ export async function loadLibraryData(value, dataManager) {
     );
   }
   if (dataManager) {
-    return (await dataManager.get(kind, id)).payload;
+    return (await dataManager.get(kind, id, { shareToken })).payload;
   }
   return fetchLibraryEntry(kind, id);
 }

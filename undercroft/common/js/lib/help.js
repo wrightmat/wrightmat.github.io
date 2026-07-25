@@ -1,4 +1,5 @@
 import { refreshTooltips } from "./tooltips.js";
+import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
 
 const DEFAULT_TOPICS_URL = "../common/data/help-topics.json";
 
@@ -72,6 +73,23 @@ export async function loadHelpTopics(topicsUrl = DEFAULT_TOPICS_URL) {
   return cachedTopicsPromise;
 }
 
+// Every topic's own stored `href` (help-topics.json) predates a real,
+// working destination for most tools — some point at docs/index.html
+// (originally only ever reachable from under workbench/, since that's where
+// the page lived before it moved to common/docs/), others at
+// "../{tool}/index.html#..." anchors that were never actually added to that
+// tool's markup. The account page's right-pane help browser
+// (undercroft/common/account.js) is now the one destination guaranteed to
+// exist and work from every tool, so this ignores the stored href entirely
+// and always builds a fresh link there — the full common/docs/index.html
+// page (linked from the account page's panel) is still there too for anyone
+// who wants to browse everything at once.
+function resolveHelpTopicHref(topic) {
+  const base = resolveAccountHref(resolveToolContextPath());
+  const separator = base.includes("?") ? "&" : "?";
+  return `${base}${separator}help=${encodeURIComponent(topic.id)}`;
+}
+
 function createTriggerElement(topic, { icon, placement, classes, variant } = {}) {
   const trigger = document.createElement("button");
   trigger.type = "button";
@@ -96,7 +114,13 @@ function createTriggerElement(topic, { icon, placement, classes, variant } = {})
   trigger.appendChild(iconElement);
   trigger.addEventListener("click", (event) => {
     event.preventDefault();
-    window.open(topic.href, "_blank", "noopener,noreferrer");
+    // Already on Admin: jump to the topic in this same page's help browser
+    // instead of opening a redundant second tab pointed at itself.
+    if (resolveToolContextPath() === "admin") {
+      window.dispatchEvent(new CustomEvent("undercroft:show-help-topic", { detail: { topicId: topic.id } }));
+      return;
+    }
+    window.open(resolveHelpTopicHref(topic), "_blank", "noopener,noreferrer");
   });
   return trigger;
 }

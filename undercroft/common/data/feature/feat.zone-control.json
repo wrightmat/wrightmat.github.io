@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "Whenever a creature ends its turn within 10 feet of the monster, the monster can make one attack against it as a reaction."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Bludgeoning",
+    "damageWeight": 1,
+    "actionCost": "reaction"
+  },
   "tags": {
     "behaviors": [
       "control",

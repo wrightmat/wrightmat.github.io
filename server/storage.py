@@ -330,7 +330,7 @@ def _backfill_flat_library_kinds(state: ServerState) -> None:
                 payload = json.loads(entry.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 payload = {}
-            title = (payload.get("title") or payload.get("name") or entry_id) if isinstance(payload, dict) else entry_id
+            title = _title_from_payload(kind, payload) or entry_id
             # Each file's own on-disk mtime, not one shared "now" for the
             # whole batch — list_bucket() orders by modified_at DESC, so a
             # shared timestamp across an entire backfill makes the resulting
@@ -671,19 +671,53 @@ def get_item(
     ):
         raise AuthError("Access denied")
     payload = load_json(_record_path(state, kind, id_))
-    state.db.execute(
-        "UPDATE library_items SET last_accessed_at = ? WHERE kind = ? AND id = ?",
-        (datetime.utcnow().isoformat(), kind, base_id),
-    )
-    state.db.commit()
+    # Recorded in memory, not written here — every read used to do a
+    # synchronous UPDATE + commit (a full fsync on a plain read), which
+    # dominated load time for anything that reads several items in a row
+    # (e.g. populating a picker). last_accessed_at has exactly one consumer
+    # (list_owned_content's display field below), nothing depends on it
+    # being real-time, so batching it via flush_pending_touches() is free.
+    state.record_touch(kind, base_id)
     return payload
 
 
-def _extract_title(kind: str, body: Dict[str, Any], existing_row: Optional[sqlite3.Row]) -> str:
+def flush_pending_touches(state: ServerState) -> int:
+    """Persists every queued last_accessed_at touch in one batched commit
+    instead of one per read. Called periodically by a background thread
+    (see server/app.py) and once more on shutdown so nothing queued is
+    lost. Returns the number of rows touched, mainly for logging."""
+    pending = state.drain_pending_touches()
+    if not pending:
+        return 0
+    with state.lock:
+        for (kind, id_), timestamp in pending.items():
+            state.db.execute(
+                "UPDATE library_items SET last_accessed_at = ? WHERE kind = ? AND id = ?",
+                (timestamp, kind, id_),
+            )
+        state.db.commit()
+    return len(pending)
+
+
+def _title_from_payload(kind: str, payload: Dict[str, Any]) -> Optional[str]:
+    # Every kind keeps its display name at a top-level `title`/`name` — `npc`
+    # used to be the one exception (nested under `identity.name`, Forge's
+    # rolled-Identity block) until that got moved to match everyone else.
+    # `character` still nests under `data.name` for one payload shape
+    # (Workbench's sheet format) alongside a plain top-level `name` for the
+    # other. Used both at save time (_extract_title) and by the disk-scan
+    # backfill (_backfill_flat_library_kinds), so a pre-existing file and a
+    # freshly saved one get the same title instead of the backfill path
+    # falling back to the raw filename.
+    if not isinstance(payload, dict):
+        return None
     if kind == "character":
-        name = body.get("name") or (body.get("data") or {}).get("name")
-    else:
-        name = body.get("title") or body.get("name")
+        return payload.get("name") or (payload.get("data") or {}).get("name")
+    return payload.get("title") or payload.get("name")
+
+
+def _extract_title(kind: str, body: Dict[str, Any], existing_row: Optional[sqlite3.Row]) -> str:
+    name = _title_from_payload(kind, body)
     if name:
         return name
     if existing_row is not None and existing_row["title"]:

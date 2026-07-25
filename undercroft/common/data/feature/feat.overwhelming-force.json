@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "The creature's weapon attacks deal an extra die of damage."
   },
+  "budgetCost": 3,
+  "combat": {
+    "damageType": "Slashing",
+    "damageWeight": 3,
+    "actionCost": "free"
+  },
   "tags": {
     "behaviors": [
       "damage"

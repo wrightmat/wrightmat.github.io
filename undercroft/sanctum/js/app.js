@@ -1,6 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { initSpotlightButton } from "../../common/js/lib/spotlight.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -38,12 +37,6 @@ let locationsInSetting = [];
 let currentSettingId = null;
 let currentLocationId = null;
 let currentRecord = null;
-// Handle returned by initSpotlightButton (common/js/lib/spotlight.js) — its
-// own refresh() is the single source of truth for the button's disabled
-// state (has a record AND an active campaign group), called from
-// updateActionButtons alongside every other action-button gate rather than
-// this file separately tracking "hasRecord" on its own and racing with it.
-let spotlightControl = null;
 // Ownership metadata for Settings in the active System, used only for the
 // Delete button's access gate (owner-or-admin) — same rule and shape as
 // Loom's systemAllowsDelete/libraryEntryAllowsDelete. Keyed by setting id.
@@ -85,7 +78,6 @@ const elements = {
   generateButton: document.querySelector("[data-generate-location]"),
   saveButton: document.querySelector("[data-save-location]"),
   exportButton: document.querySelector("[data-export-location]"),
-  spotlightButton: document.querySelector("[data-spotlight-location]"),
   emptyState: document.querySelector("[data-location-empty-state]"),
   display: document.querySelector("[data-location-display]"),
   nameInput: document.querySelector("[data-location-name]"),
@@ -161,7 +153,7 @@ function currentSystemId() {
 async function listAllSystems() {
   if (!dataManager) return [];
   try {
-    const listing = await dataManager.list("systems", { refresh: true });
+    const listing = await dataManager.list("systems");
     const entries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
     return entries.map((entry) => ({ id: entry.id, title: entry.title || entry.id })).sort((a, b) => a.title.localeCompare(b.title));
   } catch (error) {
@@ -943,7 +935,6 @@ function updateActionButtons() {
   if (elements.saveButton) elements.saveButton.disabled = !canSaveLocation();
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
   if (elements.deleteLocationButton) elements.deleteLocationButton.disabled = !canDeleteLocation();
-  spotlightControl?.refresh();
 }
 
 function refreshEditableLists() {
@@ -1158,7 +1149,14 @@ function initCollapsibles() {
 async function init() {
   const shell = initAppShell({ namespace: "sanctum", storagePrefix: "undercroft.sanctum.undo" });
   status = shell.status;
-  const auth = initAuthControls({ status });
+  const auth = initAuthControls({
+    status,
+    spotlightContext: {
+      getKind: () => "location",
+      getId: () => currentRecord?.id,
+      getLabel: () => currentRecord?.name,
+    },
+  });
   dataManager = auth.dataManager;
 
   initCollapsibles();
@@ -1167,14 +1165,6 @@ async function init() {
   elements.saveButton?.addEventListener("click", handleSave);
   elements.exportButton?.addEventListener("click", handleExport);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
-  spotlightControl = initSpotlightButton({
-    button: elements.spotlightButton,
-    dataManager,
-    status,
-    getKind: () => "location",
-    getId: () => currentRecord?.id,
-    getLabel: () => currentRecord?.name,
-  });
 
   elements.addFeatureButton?.addEventListener("click", () => {
     const featureId = elements.addFeatureSelect?.value;

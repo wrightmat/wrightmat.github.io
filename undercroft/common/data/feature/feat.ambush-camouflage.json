@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature can take the Hide action even while only lightly obscured."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "stealth"

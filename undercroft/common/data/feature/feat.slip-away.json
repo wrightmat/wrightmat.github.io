@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a bonus action, the creature can take the Disengage action and move up to half its speed."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "mobility"

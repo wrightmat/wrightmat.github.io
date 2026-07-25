@@ -1,0 +1,52 @@
+{
+  "id": "9fbcd905-8c13-4601-9d46-ca9872ee2012",
+  "name": "Test Encounter",
+  "groupId": "",
+  "systemId": "sys.dnd5e",
+  "round": 1,
+  "activeIndex": 0,
+  "combatants": [
+    {
+      "id": "b6f11f23-8959-43da-9f62-f2710b0a98df",
+      "name": "Octavian Hoff",
+      "refKind": "character",
+      "refId": "octavian-hoff",
+      "initiative": 20,
+      "hp": 58,
+      "maxHp": 72,
+      "ac": 15,
+      "conditions": [],
+      "isPc": true,
+      "hidden": false,
+      "tempHp": 0
+    },
+    {
+      "id": "200ef124-97a2-4c2a-be74-eb21ed123e01",
+      "name": "Murk Slick",
+      "refKind": "monster",
+      "refId": "mon_7e4c3358-5eaf-42e4-a2f3-f048e9d8a5de",
+      "initiative": 19,
+      "hp": 138,
+      "maxHp": 138,
+      "ac": 15,
+      "conditions": [],
+      "isPc": false,
+      "hidden": false
+    },
+    {
+      "id": "ae52579e-0551-4761-94c0-461e277ff75b",
+      "name": "Glimmerwraith",
+      "refKind": "monster",
+      "refId": "mon_3e8000d1-8757-42f9-bb89-d692f75d1beb",
+      "initiative": 16,
+      "hp": 162,
+      "maxHp": 162,
+      "tempHp": 0,
+      "ac": 14,
+      "conditions": [],
+      "isPc": false,
+      "hidden": false
+    }
+  ],
+  "started": true
+}

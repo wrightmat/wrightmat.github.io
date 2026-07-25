@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "The creature's attacks deal increasing extra damage on each of its turns after the first in a combat."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Slashing",
+    "damageWeight": 2,
+    "actionCost": "free"
+  },
   "tags": {
     "behaviors": [
       "damage"

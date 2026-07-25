@@ -4,6 +4,7 @@ import http.server
 import json
 import logging
 import threading
+import time
 from datetime import datetime, timezone
 from http import HTTPStatus
 from pathlib import Path
@@ -27,8 +28,13 @@ from .auth import (
     verify_registration,
     upgrade_user,
     delete_user,
+    admin_create_user,
+    admin_update_user_email,
+    admin_set_user_status,
     update_email_address,
     update_password,
+    get_user_settings,
+    update_user_settings,
 )
 from .builtins import builtin_catalog
 from .config import ConfigLoader
@@ -52,6 +58,7 @@ from .kinds import normalize_kind
 from .storage import (
     AuthError as StorageAuthError,
     delete_item,
+    flush_pending_touches,
     get_item,
     init_storage_db,
     is_owner,
@@ -60,6 +67,20 @@ from .storage import (
     save_item,
     update_owner,
 )
+TOUCH_FLUSH_INTERVAL_SECONDS = 30
+
+# One connection per subscriber (ThreadingHTTPServer spawns a thread per
+# connection, daemon_threads=True — see SheetsHTTPServer below), held open
+# for at most LIVE_STREAM_SECONDS before the handler returns normally and
+# closes it; EventSource's own built-in auto-reconnect (see
+# undercroft/common/js/lib/live.js) opens a fresh one immediately. Capping
+# stream lifetime this way — rather than looping forever — bounds how many
+# stale threads a browser tab left open in a background window could ever
+# accumulate.
+LIVE_STREAM_SECONDS = 55
+LIVE_POLL_INTERVAL_SECONDS = 1.0
+
+
 class SheetsHTTPServer(http.server.ThreadingHTTPServer):
     def __init__(self, server_address, RequestHandlerClass, state: ServerState):
         super().__init__(server_address, RequestHandlerClass)
@@ -71,14 +92,51 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
         config = loader.get()
         if config.options.config_watch:
             loader.watch(lambda cfg: self.state.reload(cfg), stop_event=self._shutdown_event)
+        self._start_touch_flush_thread()
         super().serve_forever(poll_interval=poll_interval)
+
+    # Unlike the config watcher above (opt-in, behind config_watch), this
+    # runs unconditionally — every deployment does reads, and reads are
+    # exactly what queue up pending_touches (see get_item in storage.py).
+    # Same daemon-thread/stop-event shape as ConfigLoader.watch().
+    def _start_touch_flush_thread(self) -> None:
+        def _loop():
+            while not self._shutdown_event.is_set():
+                self._shutdown_event.wait(TOUCH_FLUSH_INTERVAL_SECONDS)
+                if self._shutdown_event.is_set():
+                    return
+                try:
+                    flush_pending_touches(self.state)
+                except Exception:  # pragma: no cover - best-effort background flush
+                    logging.exception("Failed to flush pending last_accessed_at touches")
+
+        threading.Thread(target=_loop, name="touch-flush", daemon=True).start()
 
     def shutdown(self) -> None:
         self._shutdown_event.set()
+        try:
+            flush_pending_touches(self.state)
+        except Exception:  # pragma: no cover - best-effort final flush
+            logging.exception("Failed to flush pending last_accessed_at touches on shutdown")
         super().shutdown()
 
 
 class RequestHandler(http.server.BaseHTTPRequestHandler):
+    # BaseHTTPRequestHandler defaults to HTTP/1.0, which never reuses a
+    # connection — every single request (every JS module import, every CSS
+    # file, every API call) pays a full new TCP connection setup. A HAR
+    # capture confirmed this directly: 36 of 38 requests for one page load
+    # each needed a brand-new connection, consistently costing ~300ms to
+    # establish (while the server's own response time was 3-9ms) — that's
+    # the dominant cost in the "several seconds before most of the UI
+    # appears" symptom, not anything server-side logic was doing. HTTP/1.1
+    # here enables keep-alive, so the browser can reuse one connection for
+    # many requests instead of opening a new one each time. This is safe
+    # with the existing response code: _send_response always sets
+    # Content-Length (required for the stdlib to manage keep-alive
+    # correctly), for both API and static-file responses.
+    protocol_version = "HTTP/1.1"
+
     router = Router()
 
     def log_message(self, fmt: str, *args) -> None:  # pragma: no cover - uses logging
@@ -118,7 +176,126 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     def respond(self, response: Response) -> None:
         self._send_response(response)
 
+    # GET /live/{groupId}?kinds=encounter,character&token=...&watermarks=...
+    #
+    # A Server-Sent-Events stream: combat-tracker.js/game-log.js/now-showing.js
+    # subscribe to whichever kinds they already poll and just get told
+    # {"kind": ..., "id": ...} when one of that kind's records changes, then
+    # re-fetch it through the exact same dataManager.get() path they already
+    # use — no business logic duplicated here, this only tails
+    # library_items.modified_at and reports what moved.
+    #
+    # EventSource (the browser API this feeds) cannot set a custom
+    # Authorization header, so auth here is a `token` query param instead,
+    # checked through the same session lookup every other endpoint's Bearer
+    # token goes through — not a separate, weaker auth path, just a
+    # different place the same token has to travel from.
+    #
+    # The one hard constraint: server.state.lock (see do_GET's own comment
+    # on it) is a single lock shared by literally every request this server
+    # handles — a loop that blocked while holding it would freeze the whole
+    # server for every user, not just this connection. So the lock is only
+    # ever held for the brief "check what changed" query each tick, released
+    # before writing to the socket or sleeping.
+    def _handle_live_stream(self, group_id: str, query: Dict[str, list]) -> None:
+        token = (query.get("token", [""])[0] or "").strip()
+        user = get_user_by_session(self.server.state, token) if token else None
+        share_token = (query.get("share", [""])[0] or "").strip()
+        if not user and not share_token:
+            self.send_response(HTTPStatus.UNAUTHORIZED)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
+        kinds_param = (query.get("kinds", [""])[0] or "").strip()
+        kinds = [k.strip() for k in kinds_param.split(",") if k.strip()]
+        if not kinds:
+            self.send_response(HTTPStatus.BAD_REQUEST)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
+        try:
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "keep-alive")
+            self.send_header("Access-Control-Allow-Origin", self.server.state.config.options.cors_origin)
+            self.end_headers()
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            return
+
+        shutdown_event = getattr(self.server, "_shutdown_event", None)
+        # "group_log" is the one special kind: the human-readable campaign
+        # log (group_logs table, spotlight/game-log's own backbone) has its
+        # own monotonic int id, a different watermark shape from every other
+        # kind's library_items.modified_at string — handled as its own case
+        # in the loop below rather than folded into that same query.
+        last_seen: Dict[str, Any] = {}
+        # The first tick only establishes each kind's current watermark —
+        # without this, every record that already existed before the client
+        # connected would look "new" against an empty last_seen and get
+        # reported all at once.
+        first_tick = True
+        deadline = time.monotonic() + LIVE_STREAM_SECONDS
+        while time.monotonic() < deadline:
+            if shutdown_event is not None and shutdown_event.is_set():
+                return
+            changed = []
+            with self.server.state.lock:
+                for kind in kinds:
+                    if kind == "group_log":
+                        rows = self.server.state.db.execute(
+                            "SELECT id FROM group_logs WHERE group_id = ? ORDER BY id DESC LIMIT 25",
+                            (group_id,),
+                        ).fetchall()
+                        watermark = last_seen.get(kind, 0)
+                        newest = watermark
+                        for row in rows:
+                            row_id = row["id"]
+                            if not first_tick and row_id > watermark:
+                                changed.append({"kind": "group_log", "id": row_id})
+                            if row_id > newest:
+                                newest = row_id
+                        if newest:
+                            last_seen[kind] = newest
+                        continue
+                    rows = self.server.state.db.execute(
+                        "SELECT id, modified_at FROM library_items WHERE kind = ? ORDER BY modified_at DESC LIMIT 25",
+                        (kind,),
+                    ).fetchall()
+                    watermark = last_seen.get(kind, "")
+                    newest = watermark
+                    for row in rows:
+                        modified_at = row["modified_at"] or ""
+                        if not first_tick and modified_at > watermark:
+                            changed.append({"kind": kind, "id": row["id"]})
+                        if modified_at > newest:
+                            newest = modified_at
+                    if newest:
+                        last_seen[kind] = newest
+            first_tick = False
+            try:
+                for event in changed:
+                    self.wfile.write(f"data: {json.dumps(event)}\n\n".encode("utf-8"))
+                self.wfile.write(b": ping\n\n")
+                self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError, OSError):
+                return
+            time.sleep(LIVE_POLL_INTERVAL_SECONDS)
+
     def do_GET(self) -> None:
+        path_only = self.path.split("?")[0]
+        if path_only.startswith("/live/"):
+            from urllib.parse import parse_qs, urlsplit
+
+            group_id = path_only[len("/live/") :]
+            query = parse_qs(urlsplit(self.path).query)
+            try:
+                self._handle_live_stream(group_id, query)
+            except Exception:  # pragma: no cover - best-effort stream, never crash the server
+                logging.exception("Live stream error")
+            return
         request = self._request()
         match = self.router.match("GET", request.handler.path.split("?")[0])
         if match:
@@ -1263,6 +1440,24 @@ def register_routes():
 
     router.add("POST", r"^/auth/upgrade$", handle_upgrade)
 
+    # POST /auth/users/create — admin creating a user directly (already
+    # active, no verification code), distinct from self-service /auth/register.
+    def handle_admin_create_user(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        data = require_json(request)
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+        tier = data.get("tier", "free")
+        if not username or not email or not password:
+            raise AuthError("username, email, and password required")
+        result = admin_create_user(request.state, username, email, password, tier)
+        return json_response(result, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/auth/users/create$", handle_admin_create_user)
+
     # GET /auth/users
     def handle_list_users(request: Request) -> Response:
         admin = request.handler.current_user()
@@ -1286,6 +1481,38 @@ def register_routes():
         return json_response(result)
 
     router.add("POST", r"^/auth/users/delete$", handle_delete_user)
+
+    # POST /auth/users/email — admin editing ANOTHER user's email directly
+    # (distinct from /auth/profile/email, which is self-service and requires
+    # the acting user's own password).
+    def handle_admin_update_user_email(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        data = require_json(request)
+        username = data.get("username")
+        email = data.get("email")
+        if not username or not email:
+            raise AuthError("username and email required")
+        result = admin_update_user_email(request.state, username, email)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/users/email$", handle_admin_update_user_email)
+
+    # POST /auth/users/status — admin activating/deactivating a user.
+    def handle_admin_set_user_status(request: Request) -> Response:
+        admin = request.handler.current_user()
+        if not admin or admin.tier != "admin":
+            raise AuthError("Admin only")
+        data = require_json(request)
+        username = data.get("username")
+        is_active = data.get("is_active")
+        if not username or is_active is None:
+            raise AuthError("username and is_active required")
+        result = admin_set_user_status(request.state, username, bool(is_active))
+        return json_response(result)
+
+    router.add("POST", r"^/auth/users/status$", handle_admin_set_user_status)
 
     # POST /auth/profile/email
     def handle_update_email(request: Request) -> Response:
@@ -1313,6 +1540,31 @@ def register_routes():
         return json_response(result)
 
     router.add("POST", r"^/auth/profile/password$", handle_update_password)
+
+    # GET /auth/profile/settings — a small per-user JSON blob (today: just
+    # the Dashboard's widget layout) stored directly on the users row (see
+    # auth.py's _migrate_users_table_for_settings), not a new Library kind —
+    # this is account-level preference, not shareable/owned content.
+    def handle_get_settings(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        return json_response(get_user_settings(request.state, user))
+
+    router.add("GET", r"^/auth/profile/settings$", handle_get_settings)
+
+    # POST /auth/profile/settings — merge-patch: only the keys provided are
+    # updated, so one feature's write (e.g. the Dashboard's layout) can't
+    # clobber another feature's settings stored in the same blob.
+    def handle_update_settings(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        data = require_json(request)
+        result = update_user_settings(request.state, user, data)
+        return json_response(result)
+
+    router.add("POST", r"^/auth/profile/settings$", handle_update_settings)
 
     # POST /content/{bucket}/{id}
     def handle_save_content(request: Request) -> Response:

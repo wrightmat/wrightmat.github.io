@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "version": "1.0",
-    "lastUpdated": "2024-11-05",
-    "description": "Contextual help topics for the Undercroft Workbench suite, Press, and future tools."
+    "version": "1.1",
+    "lastUpdated": "2026-07-24",
+    "description": "Contextual help topics for the Undercroft suite."
   },
   "topics": [
     {
@@ -118,16 +118,16 @@
     {
       "id": "collaboration.shares",
       "title": "Sharing & Collaboration",
-      "summary": "Grant access via direct shares, reusable share links, or campaign groups.",
+      "summary": "Grant access via direct shares, reusable share links, or Campaign Groups.",
       "details": [
-        "The server enforces owner/admin checks before creating shares. Eligible users are filtered by tier and existing permissions.",
+        "The server enforces owner/admin checks before creating shares, and the record itself must already be saved — sharing an unsaved draft fails with a clear error rather than silently doing nothing.",
         "Share links carry randomly generated tokens stored alongside the content id; access is logged for auditing.",
-        "Campaign groups bind characters to a shared log so dice rolls and notes broadcast to every participant."],
+        "A record can be shared with a specific user OR with an entire Campaign Group at once — sharing with a group grants every current member access transparently, and stays current as membership changes. See Campaign Groups and Sharing Content with a Campaign for the full picture."],
       "category": "Collaboration",
-      "href": "docs/index.html#collaboration-shares"
+      "href": "../common/account.html?help=collaboration.shares"
     },
     {
-      "id": "admin.groups.members",
+      "id": "loom.groups.members",
       "title": "Group Members",
       "summary": "Assign characters to a campaign group using the multi-select list.",
       "details": [
@@ -135,18 +135,29 @@
         "Hold Ctrl (Windows/Linux) or Cmd (macOS) to select multiple characters at once.",
         "Changes save automatically once you adjust the selection."],
       "category": "Collaboration",
-      "href": "docs/index.html#collaboration-shares"
+      "href": "../loom/index.html?help=loom.groups.members"
     },
     {
       "id": "accounts.roles",
       "title": "Account Tiers & Access Gates",
       "summary": "Feature availability is driven by user tier with graceful fallbacks for anonymous users.",
       "details": [
-        "Tier metadata comes from the session token; anonymous users operate in read-only mode with local drafts only.",
-        "Tier gates wrap tool content and automatically reload once a user upgrades or downgrades permissions.",
-        "Visual badges communicate when an action (like publishing a template) requires elevated privileges."],
+        "Tiers, low to high: Free, Player, GM, Creator, Admin. Each saved kind (Location, NPC, Monster, System, ...) declares its own read/write tier — most generator output is wide open, authoring-heavy kinds need Creator or higher.",
+        "Tier metadata comes from the session token; anonymous users operate in read-only mode with local drafts only, saved to their own browser instead of the server.",
+        "Creating a Campaign Group requires GM tier or higher — running a game is what GM tier is for, distinct from Creator tier's focus on authoring reusable content (Systems, Templates) for others to use."],
       "category": "Collaboration",
-      "href": "docs/index.html#accounts-roles"
+      "href": "../common/account.html?help=accounts.roles"
+    },
+    {
+      "id": "dashboard.widgets",
+      "title": "Dashboard Widgets",
+      "summary": "A customizable landing page — jump to a tool, or build a play view from widgets.",
+      "details": [
+        "Click \"Edit layout\" to add or remove widgets, and drag a widget's header to reorder it.",
+        "GMs get a Combat Tracker widget for running initiative, HP, and conditions; anyone in the group sees a read-only live view of the same encounter.",
+        "Your layout saves to this browser immediately, and syncs to your account too once you're signed in, so it follows you across devices."],
+      "category": "Dashboard",
+      "href": "../index.html?help=dashboard.widgets"
     },
     {
       "id": "press.flow",
@@ -266,12 +277,27 @@
       "href": "../loom/index.html#loom-selection"
     },
     {
+      "id": "loom.libraryTable",
+      "title": "Library Contents",
+      "summary": "Every saved item across every owner, with details and Share in the right-pane inspector.",
+      "details": [
+        "Unlike the account page's Owned Content (which only ever shows your own saved items), this list covers the whole Library — every owner, every kind — since managing the whole Library is Loom's job.",
+        "Use the Type filter above the list to narrow it to one kind at a time.",
+        "Pick an item to see its created date, last accessed date, and owner in the right-pane inspector, along with a Share button.",
+        "Share opens the same access dialog used everywhere else in the suite — a public link, or granting a specific user or Campaign Group view/edit access.",
+        "This is separate from the Kind/Entity picker below it, which is for directly editing one entity's raw JSON."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html?help=loom.libraryTable"
+    },
+    {
       "id": "loom.library",
       "title": "Library",
       "summary": "Browse, edit, and assign every saved entity — Species, Classes, and any kind a creator defines, including Kind itself.",
       "details": [
-        "Pick a Kind, then an Entity, to load its full JSON into the text box below for direct editing — this is the only place saved entities can be re-opened and changed; the Entities panel above only ever shows the current mapping's fresh output.",
-        "A new Kind is just another entity: pick \"Kind\" from the Kind select, New, and fill in id/label/plural/icon the same way you would for a Species.",
+        "Pick a Type and an Item from the left-pane Library Contents list — that same selection drives both this JSON editor and the right-pane inspector (created/last accessed/owner/Share).",
+        "This is the only place saved entities can be re-opened and changed; the Entities panel above only ever shows the current mapping's fresh output.",
+        "A new Kind is just another entity: pick \"Kind\" as the Type on the left, New, and fill in id/label/plural/icon the same way you would for a Species.",
         "Assigned Systems controls which System(s) can see this entity — an empty list means it isn't attached to any System yet."
       ],
       "category": "Loom",
@@ -588,6 +614,95 @@
         "Nothing shows here until something in Identity is selected."],
       "category": "Forge",
       "href": "../forge/index.html#forge-identity"
+    },
+    {
+      "id": "campaign.groups",
+      "title": "Campaign Groups",
+      "summary": "A Campaign Group is how a GM organizes a table: an owner, a roster of member characters, a live game log, and a public share link.",
+      "details": [
+        "Create one from Loom's Groups tab — requires GM tier or higher.",
+        "Add players' characters to the roster from the same tab — this is what determines who can see the group's game log while signed in.",
+        "Every group gets a public share link (also from the Groups tab) so players without an account can watch the game log and claim an unclaimed character."],
+      "category": "Campaigns",
+      "href": "../common/account.html?help=campaign.groups"
+    },
+    {
+      "id": "campaign.active",
+      "title": "Active Campaign Selector",
+      "summary": "The signed-in menu in every tool's header picks which of your own groups is \"active\" right now — the same selection follows you across every tool.",
+      "details": [
+        "Only your OWN groups (ones you created) show up here — it lists exactly what Loom's Groups tab lists for you.",
+        "Picking a group here is what \"Share with [active campaign]\" one-click buttons and \"Show this item…\" both target — no separate per-tool setup needed.",
+        "The selection is stored per-browser (not on the server against your account), so switching computers means picking it again."],
+      "category": "Campaigns",
+      "href": "../common/account.html?help=campaign.active"
+    },
+    {
+      "id": "campaign.sharing",
+      "title": "Sharing Content with a Campaign",
+      "summary": "Any saved record — a Location, NPC, Monster, Effect, Map, System, Template — can be shared with a specific person or an entire campaign group at once.",
+      "details": [
+        "Sharing with a group grants every current member access transparently — one action instead of sharing with each player individually, and it stays current as membership changes.",
+        "Share dialogs across the suite (Loom's Library inspector, the account page's Owned Content tab, and per-tool inspectors) offer a one-click \"Share with [active campaign]\" button alongside the full user/group picker once you have an active campaign selected.",
+        "Shares carry \"view\" or \"edit\" permission — view is the right choice for almost everything shared with players."],
+      "category": "Campaigns",
+      "href": "../common/account.html?help=campaign.sharing"
+    },
+    {
+      "id": "campaign.spotlight",
+      "title": "Show This Item / Now Showing",
+      "summary": "Put one card up in front of the table live, from whichever tool you built it in, without exporting anything or switching to Press yourself.",
+      "details": [
+        "Available from the signed-in menu in Sanctum, Forge, Crucible, Vault, and Orrery, once you have a record loaded and an active campaign selected.",
+        "The record must already be SAVED first — spotlighting something that only exists as an unsaved draft fails immediately with a clear error, rather than silently showing nothing to the table.",
+        "Picking a Press print template is optional — with none picked, the table sees a plain name/description card instead. Orrery maps are always a plain link back into Orrery, never a card.",
+        "Whoever's watching sees it in Workbench's \"Now Showing\" panel, next to the Game Log — including anonymous players on the group's public share link."],
+      "category": "Campaigns",
+      "href": "../common/account.html?help=campaign.spotlight"
+    },
+    {
+      "id": "campaign.gamelog",
+      "title": "Game Log",
+      "summary": "A live, lightweight feed of dice rolls, messages, and spotlighted cards for a campaign group — visible in Workbench, polling every 30 seconds.",
+      "details": [
+        "Shows automatically once Workbench has a group to follow: either a loaded character's own campaign, or — with no character loaded — your active campaign selection, so a GM/admin running the table (not playing a specific PC) still sees it.",
+        "Dice rolled from a character sheet in that campaign post to the log automatically.",
+        "Anonymous visitors on a group's public share link see the same log (and Now Showing panel) with no account needed."],
+      "category": "Campaigns",
+      "href": "../common/account.html?help=campaign.gamelog"
+    },
+    {
+      "id": "orrery.maps",
+      "title": "Saving & Loading Maps",
+      "summary": "Maps are saved records like everything else in the suite — pick one from the Map dropdown, or start a New one, and Save/Delete gate the same way other tools do.",
+      "details": [
+        "Save only lights up once you've actually changed something since loading — not on a fresh page load, and not right after saving.",
+        "Delete is only enabled for maps you own (or have edit-level sharing on) — someone else's shared or public map stays view-only.",
+        "Anonymous (signed-out) saves stay local to your own browser, same as every other generator tool in the suite."],
+      "category": "Orrery",
+      "href": "../common/account.html?help=orrery.maps"
+    },
+    {
+      "id": "orrery.markers",
+      "title": "Entity-Referencing Markers",
+      "summary": "A marker layer holds real pins, each optionally linked to any other saved record — a Location, NPC, Monster, and so on.",
+      "details": [
+        "Select a marker layer, then click empty space on the map to drop a new pin, or click an existing pin to select and edit it.",
+        "A selected pin can be dragged directly on the map to reposition it, and its inspector lets you pick what kind of entity it references and which specific one.",
+        "On a real-world (tile) base map, pins are anchored to actual coordinates, so they stay in the right place as you pan and zoom — unlike a flat pixel position, which would drift out of place on zoom."],
+      "category": "Orrery",
+      "href": "../common/account.html?help=orrery.markers"
+    },
+    {
+      "id": "orrery.views",
+      "title": "Tiered Views",
+      "summary": "A View is a named visibility preset that hides some layers from lower-tier viewers — useful for keeping a GM-only secrets layer off a shared or public map.",
+      "details": [
+        "The map's own owner (or anyone with edit-level sharing) always sees every layer, unfiltered — Views only ever apply to someone else viewing a shared or public map.",
+        "Each View lists which layers/groups it reveals and which account tiers can see it; leaving a View's tier list empty means it applies to every viewer tier.",
+        "If a map has no Views defined at all, every viewer sees every layer — Views are opt-in, not a default restriction."],
+      "category": "Orrery",
+      "href": "../common/account.html?help=orrery.views"
     }
   ]
 }

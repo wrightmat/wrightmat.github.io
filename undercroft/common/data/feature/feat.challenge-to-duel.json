@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "Once per short rest, the creature can force one creature it can see to have disadvantage on attacks against anyone but the monster until the end of the monster's next turn."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "control"
