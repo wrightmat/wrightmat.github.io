@@ -77,6 +77,9 @@
               </h1>
             </div>
             <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+              <div data-auth-control class="d-flex">
+                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
+              </div>
               <div class="btn-group" role="group" aria-label="Theme toggle">
                 <button class="btn btn-outline-primary" type="button" data-theme-option="light" aria-label="Use light theme">
                   <span class="iconify fs-5" data-icon="tabler:sun" aria-hidden="true"></span>
@@ -87,9 +90,6 @@
                   <span class="iconify fs-5" data-icon="tabler:moon" aria-hidden="true"></span>
                   <span class="visually-hidden">Dark theme</span>
                 </button>
-              </div>
-              <div data-auth-control class="d-flex">
-                <button class="btn btn-outline-secondary" type="button">Login / Register</button>
               </div>
               <button
                 class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
@@ -1730,14 +1730,22 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- NOT reordered before these scripts, unlike every other tool page —
+         js/app.js wires all of Press's drag-and-drop (initDragAndDrop, at
+         boot) exactly once with no retry, unlike e.g. Workbench's
+         destroy-and-recreate-on-every-render setupDropzones. If SortableJS
+         hadn't finished loading yet at that single call, drag-and-drop
+         would silently stay broken for the rest of the session. See
+         undercroft/index.html for why other pages ARE reordered. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script
+      defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <script src="../common/ddb-content-parser.js"></script>
+    <script defer src="../common/ddb-content-parser.js"></script>
     <script type="module" src="js/app.js"></script>
   </body>
 </html>

@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature has resistance to one damage type of its choice, chosen at the start of combat."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "defense"

@@ -313,6 +313,120 @@
     },
     {
       "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        { "name": "Blinded" },
+        { "name": "Charmed" },
+        { "name": "Deafened" },
+        { "name": "Frightened" },
+        { "name": "Grappled" },
+        { "name": "Incapacitated" },
+        { "name": "Invisible" },
+        { "name": "Paralyzed" },
+        { "name": "Petrified" },
+        { "name": "Poisoned" },
+        { "name": "Prone" },
+        { "name": "Restrained" },
+        { "name": "Stunned" },
+        { "name": "Unconscious" },
+        { "name": "Exhaustion" }
+      ]
+    },
+    {
+      "type": "combat-bindings",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "currentHp": "@stats.hitPoints.current",
+      "maxHp": "@stats.hitPoints.max",
+      "tempHp": "@stats.hitPoints.temp",
+      "armorClass": "@stats.armorClass",
+      "conditions": "@conditions",
+      "initiativeModifier": "@stats.initiativeBonus"
+    },
+    {
+      "type": "array",
+      "key": "combatScaling",
+      "label": "Combat Scaling",
+      "values": [
+        {
+          "name": "CR 0",
+          "targetBudget": 3,
+          "hitPoints": 4,
+          "armorClass": 13,
+          "damagePerRound": 0,
+          "attackBonus": 3,
+          "saveDC": 13
+        },
+        {
+          "name": "CR 1",
+          "targetBudget": 6,
+          "hitPoints": 78,
+          "armorClass": 13,
+          "damagePerRound": 11,
+          "attackBonus": 3,
+          "saveDC": 13
+        },
+        {
+          "name": "CR 2",
+          "targetBudget": 8,
+          "hitPoints": 93,
+          "armorClass": 13,
+          "damagePerRound": 18,
+          "attackBonus": 3,
+          "saveDC": 13
+        },
+        {
+          "name": "CR 3",
+          "targetBudget": 10,
+          "hitPoints": 108,
+          "armorClass": 13,
+          "damagePerRound": 23,
+          "attackBonus": 4,
+          "saveDC": 14
+        },
+        {
+          "name": "CR 4",
+          "targetBudget": 12,
+          "hitPoints": 123,
+          "armorClass": 14,
+          "damagePerRound": 29,
+          "attackBonus": 5,
+          "saveDC": 14
+        },
+        {
+          "name": "CR 5",
+          "targetBudget": 14,
+          "hitPoints": 138,
+          "armorClass": 15,
+          "damagePerRound": 35,
+          "attackBonus": 6,
+          "saveDC": 15
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        { "name": "Acid" },
+        { "name": "Bludgeoning" },
+        { "name": "Cold" },
+        { "name": "Fire" },
+        { "name": "Force" },
+        { "name": "Lightning" },
+        { "name": "Necrotic" },
+        { "name": "Piercing" },
+        { "name": "Poison" },
+        { "name": "Psychic" },
+        { "name": "Radiant" },
+        { "name": "Slashing" },
+        { "name": "Thunder" }
+      ]
+    },
+    {
+      "type": "array",
       "key": "alignments",
       "label": "Alignments",
       "values": [

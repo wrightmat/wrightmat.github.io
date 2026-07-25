@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "The creature has advantage on checks made to grapple or shove, and a creature it is grappling takes damage at the start of its turn."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Bludgeoning",
+    "damageWeight": 1,
+    "actionCost": "free"
+  },
   "tags": {
     "behaviors": [
       "control",

@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature has advantage on initiative rolls and wins all ties."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "mobility"

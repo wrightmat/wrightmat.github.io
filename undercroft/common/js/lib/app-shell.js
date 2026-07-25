@@ -12,6 +12,13 @@ import { KeyboardShortcuts } from "./keyboard.js";
 // tool to the roadmap doesn't silently produce a dead link.
 const TOOL_DEFINITIONS = [
   {
+    id: "home",
+    label: "Dashboard",
+    icon: "tabler:home",
+    summary: "Customizable landing page — jump to a tool or build a play view.",
+    built: true,
+  },
+  {
     id: "workbench",
     label: "Workbench",
     icon: "tabler:layout-dashboard",
@@ -47,13 +54,6 @@ const TOOL_DEFINITIONS = [
     built: true,
   },
   {
-    id: "admin",
-    label: "Admin",
-    icon: "tabler:shield-cog",
-    summary: "Account and content management.",
-    built: true,
-  },
-  {
     id: "crucible",
     label: "Crucible",
     icon: "tabler:flask",
@@ -76,6 +76,14 @@ const TOOL_DEFINITIONS = [
   },
 ];
 
+// The suite's own root folder name, hardcoded the same way every other
+// relative path in this file already assumes a fixed layout (e.g.
+// resolveAccountHref's "../common/account.html"). Only the Dashboard
+// (undercroft/index.html) lives directly inside it rather than in its own
+// subfolder, which is what makes it need special-casing everywhere else in
+// this file just treats "one level up" as constant.
+const SUITE_ROOT_FOLDER = "undercroft";
+
 export function resolveToolContextPath() {
   if (typeof window === "undefined") {
     return "workbench";
@@ -84,21 +92,72 @@ export function resolveToolContextPath() {
   if (segments.length < 2) {
     return "workbench";
   }
-  return segments[segments.length - 2];
+  const section = segments[segments.length - 2];
+  // The Dashboard sits directly under undercroft/ (no subfolder of its own),
+  // so its "section" is the suite root folder itself rather than a real tool
+  // folder name — remap that to "home" so every other resolver below can
+  // treat it as just another section id instead of a one-off case.
+  return section === SUITE_ROOT_FOLDER ? "home" : section;
 }
 
 // Every built tool lives at undercroft/{id}/index.html — same page linking
 // to itself resolves as a bare "index.html", any other tool reaches across
-// via "../{id}/index.html". Admin used to be nested under Workbench
-// (workbench/admin.html); it's its own tool now, at the same level as
-// Workbench/Press/Loom/Forge, so it follows this exact same rule instead of
-// needing a special case.
+// via "../{id}/index.html". The Dashboard ("home") is the one exception —
+// it lives at undercroft/index.html directly, one level shallower than
+// every other tool — so both directions of that path math get a branch:
+// linking to it is "../index.html" (not "../home/index.html"), and linking
+// from it descends straight into "{toolId}/index.html" (not "../{toolId}/...").
 export function resolveToolHref(toolId, currentSection) {
-  const builtToolIds = ["workbench", "press", "orrery", "loom", "forge", "admin", "crucible", "vault", "sanctum"];
+  const builtToolIds = ["home", "workbench", "press", "orrery", "loom", "forge", "crucible", "vault", "sanctum"];
   if (!builtToolIds.includes(toolId)) {
     return "#";
   }
+  if (currentSection === "home") {
+    return toolId === "home" ? "index.html" : `${toolId}/index.html`;
+  }
+  if (toolId === "home") {
+    return "../index.html";
+  }
   return currentSection === toolId ? "index.html" : `../${toolId}/index.html`;
+}
+
+// Account settings/owned-content isn't a "tool" (see TOOL_DEFINITIONS above —
+// Admin was retired as a distinct tool entirely), just a flat page directly
+// under common/ — undercroft/common/account.html, at the same nesting depth
+// as every tool's own index.html, so this mirrors resolveToolHref's exact
+// pattern (including the Dashboard's one-level-shallower special case).
+export function resolveAccountHref(currentSection) {
+  if (currentSection === "common") {
+    return "account.html";
+  }
+  if (currentSection === "home") {
+    return "common/account.html";
+  }
+  return "../common/account.html";
+}
+
+// The same tool-card grid the dropdown builds below, exposed for the
+// Dashboard's "Jump to a tool" widget so it doesn't need its own duplicate
+// of TOOL_DEFINITIONS/buildToolCard — one rendering path for both surfaces.
+// "home" itself is excluded (no point linking to the Dashboard from within
+// one of its own widgets).
+export function renderToolGrid(container, { currentSection = resolveToolContextPath() } = {}) {
+  if (!container) {
+    return;
+  }
+  container.innerHTML = "";
+  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false && tool.id !== "home");
+  const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
+  const grid = document.createElement("div");
+  grid.className = "undercroft-tool-grid";
+  builtTools.forEach((tool) => grid.appendChild(buildToolCard(tool, currentSection, true, false)));
+  container.appendChild(grid);
+  if (unbuiltOthers.length) {
+    const mutedGrid = document.createElement("div");
+    mutedGrid.className = "undercroft-tool-grid undercroft-tool-grid--muted";
+    unbuiltOthers.forEach((tool) => mutedGrid.appendChild(buildToolCard(tool, currentSection, false)));
+    container.appendChild(mutedGrid);
+  }
 }
 
 // A card for one tool inside the dropdown — a real <a> (built, and not the
@@ -143,6 +202,13 @@ function buildToolCard(tool, currentSection, built, isCurrent = false) {
 // (same hover-open + focus-accessible pattern as auth-ui.js's own account
 // dropdown) reveals the other tools as described cards instead of relying
 // on a tooltip per button.
+// Icon/label shown when the current page isn't one of TOOL_DEFINITIONS at
+// all — e.g. undercroft/common/account.html, which is account settings, not
+// a tool. Rather than the trigger going blank (the old behavior: no matching
+// definition meant this function bailed out entirely), it falls back to a
+// generic suite identity, with the full tool grid still available below it.
+const SUITE_ICON = "tabler:door";
+
 function initToolNavigation(root = document) {
   const toolNavs = Array.from(root.querySelectorAll("[data-undercroft-tool-nav]"));
   if (!toolNavs.length) {
@@ -151,29 +217,17 @@ function initToolNavigation(root = document) {
   const [primaryNav, ...extraNavs] = toolNavs;
   extraNavs.forEach((nav) => nav.remove());
   const activeTool = root.body?.dataset?.undercroftTool;
-  if (!activeTool) {
-    return;
-  }
   const activeDefinition = TOOL_DEFINITIONS.find((tool) => tool.id === activeTool);
-  if (!activeDefinition) {
-    return;
-  }
   const currentSection = resolveToolContextPath();
-  // Admin is reachable only from the user-info pane's "Admin controls" link
-  // (auth-ui.js, via this same resolveToolHref) — it's deliberately excluded
-  // from the tool switcher grid entirely, even when Admin is the active
-  // page. activeDefinition is still looked up against the full, unfiltered
-  // TOOL_DEFINITIONS above, so the trigger button in the header keeps
-  // showing "Admin" correctly; only the switchable grid omits it.
-  const navigableDefinitions = TOOL_DEFINITIONS.filter((tool) => tool.id !== "admin");
   // Current tool leads the grid (top-left), then the other built tools in
-  // their definition order — with 4 built tools total this fills the 2x2
-  // grid exactly, no blank cell.
-  const builtTools = navigableDefinitions.filter((tool) => tool.built !== false);
-  const orderedBuilt = navigableDefinitions.some((tool) => tool.id === activeTool)
+  // their definition order. When there's no matching definition (account.html
+  // and any other non-tool page), nothing leads — just the plain built-tool
+  // order, none marked current.
+  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false);
+  const orderedBuilt = activeDefinition
     ? [activeDefinition, ...builtTools.filter((tool) => tool.id !== activeTool)]
     : builtTools;
-  const unbuiltOthers = navigableDefinitions.filter((tool) => tool.built === false);
+  const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
 
   primaryNav.innerHTML = "";
 
@@ -182,21 +236,25 @@ function initToolNavigation(root = document) {
 
   const toggle = document.createElement("button");
   toggle.type = "button";
-  toggle.className = `btn dropdown-toggle undercroft-tool-trigger tool-${activeDefinition.id}`;
+  toggle.className = `btn dropdown-toggle undercroft-tool-trigger${activeDefinition ? ` tool-${activeDefinition.id}` : ""}`;
   toggle.dataset.bsToggle = "dropdown";
   toggle.setAttribute("aria-expanded", "false");
-  toggle.setAttribute("aria-label", `Switch tool — currently ${activeDefinition.label}`);
+  toggle.setAttribute(
+    "aria-label",
+    activeDefinition ? `Switch tool — currently ${activeDefinition.label}` : "Switch tool"
+  );
   toggle.dataset.toolSwitcherToggle = "";
   const triggerIcon = document.createElement("span");
   triggerIcon.className = "iconify";
-  triggerIcon.dataset.icon = activeDefinition.icon;
+  triggerIcon.dataset.icon = activeDefinition ? activeDefinition.icon : SUITE_ICON;
   triggerIcon.setAttribute("aria-hidden", "true");
   const triggerLabel = document.createElement("span");
   triggerLabel.className = "undercroft-tool-trigger-label";
   // "Undercroft" prefix only on the trigger (it's replacing the page's own
   // "Undercroft {Tool}" title) — dropdown cards just say the tool name,
-  // no need to repeat the suite name on every one of those.
-  triggerLabel.textContent = `Undercroft ${activeDefinition.label}`;
+  // no need to repeat the suite name on every one of those. No matching
+  // definition (account.html) just shows "Undercroft" alone.
+  triggerLabel.textContent = activeDefinition ? `Undercroft ${activeDefinition.label}` : "Undercroft";
   toggle.append(triggerIcon, triggerLabel);
 
   const menu = document.createElement("div");

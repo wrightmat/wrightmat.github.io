@@ -256,8 +256,28 @@ export function rollAttitude({ random = Math.random } = {}) {
 // rollX helper. Setting-specific archetypes (rolls 22/23) and Wildcard (24)
 // have no fixed identity, so no stat block exists for them — callers get
 // null and should show a graceful fallback rather than blank/zeroed stats.
+// Standard D&D 5e ability-modifier formula. Combat Tracker's "Roll
+// Initiative" button reads this via the System's combatBindings
+// (sys.dnd5e.json's initiativeModifier: "@stats.initiativeBonus") rather
+// than deriving it itself, keeping that D&D-specific math here in the 5e
+// generator instead of hardcoded in system-agnostic tracker code.
+function abilityModifier(score) {
+  return Math.floor((Number(score) - 10) / 2);
+}
+
+// stats-dnd5e.json stores hitPoints as a flat number (the archetype's max) —
+// wrapped into { max, current } here to match the shape every kind's
+// stats.hitPoints uses (see combat-tracker.js#addCombatant). A freshly
+// rolled NPC is undamaged, so current starts at max.
 export function getStatsForArchetype(statsTable, archetypeName) {
-  return statsTable?.archetypes?.[archetypeName] || null;
+  const entry = statsTable?.archetypes?.[archetypeName];
+  if (!entry) return null;
+  const maxHp = Number(entry.hitPoints ?? 0);
+  return {
+    ...entry,
+    hitPoints: { max: maxHp, current: maxHp },
+    initiativeBonus: abilityModifier(entry.abilities?.dexterity),
+  };
 }
 
 // Resolves every archetype entry to its final display name for a given

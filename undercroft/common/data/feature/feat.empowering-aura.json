@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "Allies within 10 feet of the creature add a bonus to their damage rolls."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "utility"

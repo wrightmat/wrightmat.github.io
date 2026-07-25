@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "At the start of its turn, the creature regains a small number of hit points if at least one ally of the same kind is within 30 feet."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "regeneration",

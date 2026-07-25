@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a bonus action, the creature can feint, gaining advantage on its next attack roll this turn."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "utility"

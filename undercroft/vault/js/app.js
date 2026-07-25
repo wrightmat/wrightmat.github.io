@@ -1,6 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { initSpotlightButton } from "../../common/js/lib/spotlight.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -14,10 +13,6 @@ let dataManager = null;
 let features = [];
 let propertyTypes = [];
 let currentRecord = null;
-// Handle returned by initSpotlightButton — its refresh() is the single
-// source of truth for the button's disabled state (has a record AND an
-// active campaign group), called alongside every other action-button gate.
-let spotlightControl = null;
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
@@ -27,7 +22,6 @@ const elements = {
   generateButton: document.querySelector("[data-generate-effect]"),
   saveButton: document.querySelector("[data-save-effect]"),
   exportButton: document.querySelector("[data-export-effect]"),
-  spotlightButton: document.querySelector("[data-spotlight-effect]"),
   emptyState: document.querySelector("[data-effect-empty-state]"),
   display: document.querySelector("[data-effect-display]"),
   nameInput: document.querySelector("[data-effect-name]"),
@@ -57,7 +51,7 @@ function currentSystemId() {
 async function listAllSystems() {
   if (!dataManager) return [];
   try {
-    const listing = await dataManager.list("systems", { refresh: true });
+    const listing = await dataManager.list("systems");
     const entries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
     return entries
       .map((entry) => ({ id: entry.id, title: entry.title || entry.id }))
@@ -345,7 +339,6 @@ function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
   if (elements.saveButton) elements.saveButton.disabled = !hasRecord;
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
-  spotlightControl?.refresh();
 }
 
 function renderEffect(record) {
@@ -461,21 +454,20 @@ async function handleGenerateNote() {
 async function init() {
   const shell = initAppShell({ namespace: "vault", storagePrefix: "undercroft.vault.undo" });
   status = shell.status;
-  const auth = initAuthControls({ status });
+  const auth = initAuthControls({
+    status,
+    spotlightContext: {
+      getKind: () => "effect",
+      getId: () => currentRecord?.id,
+      getLabel: () => currentRecord?.name,
+    },
+  });
   dataManager = auth.dataManager;
 
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);
   elements.exportButton?.addEventListener("click", handleExport);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
-  spotlightControl = initSpotlightButton({
-    button: elements.spotlightButton,
-    dataManager,
-    status,
-    getKind: () => "effect",
-    getId: () => currentRecord?.id,
-    getLabel: () => currentRecord?.name,
-  });
   elements.addFeatureButton?.addEventListener("click", () => {
     const featureId = elements.addFeatureSelect?.value;
     if (featureId) addFeature(featureId);

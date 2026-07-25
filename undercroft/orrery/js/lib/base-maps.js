@@ -193,6 +193,16 @@ class TileBaseMap {
     return this.overlayHost;
   }
 
+  // Real Leaflet map instance — needed by marker rendering (app.js) to
+  // convert a marker's stored {lat, lng} into a pixel position via
+  // latLngToLayerPoint, and to convert a click event into {lat, lng} via
+  // mouseEventToLayerPoint/layerPointToLatLng. null for image/canvas maps,
+  // which have no such projection (and don't need one — their overlay lives
+  // inside the same CSS-transformed element pan-zoom already handles).
+  getMap() {
+    return this.map;
+  }
+
   setInteractionEnabled(enabled) {
     if (!this.map?.dragging) {
       return;
@@ -497,6 +507,10 @@ export class BaseMapManager {
 
   getOverlayContainer() {
     return this.current?.getOverlayHost?.() || null;
+  }
+
+  getMap() {
+    return this.current?.getMap?.() || null;
   }
 
   getDefaultView() {

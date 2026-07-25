@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a reaction, the creature can move up to half its speed toward a creature that moves away from it, without provoking opportunity attacks."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "mobility",

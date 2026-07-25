@@ -31,8 +31,8 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
 
   return {
     locationId: location?.id ?? null,
+    name: nameResult.name,
     identity: {
-      name: nameResult.name,
       species: species.label,
       archetype: archetype.name,
       alignment: alignment.label,
@@ -82,14 +82,14 @@ export function rerollAttribute(record, tables, location, attribute, { random = 
       next.identity.species = species.label;
       next.rolls.species = species;
       const nameResult = generateSpeciesName(location, species.speciesId, tables.speciesProfiles, { random });
-      next.identity.name = nameResult.name;
+      next.name = nameResult.name;
       next.rolls.name = nameResult;
       break;
     }
     case "name": {
       const speciesId = next.rolls.species?.speciesId;
       const nameResult = generateSpeciesName(location, speciesId, tables.speciesProfiles, { random });
-      next.identity.name = nameResult.name;
+      next.name = nameResult.name;
       next.rolls.name = nameResult;
       break;
     }

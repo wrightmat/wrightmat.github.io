@@ -22,7 +22,44 @@
     },
     "optionalSlots": {}
   },
-  "notes": "Glimmerwraith (Monstrosity, Trickster, Solo). This deceptive creature manipulates positioning and perception, using False Opening to set up devastating attacks with advantage while its Confounding Trick turns enemies' own allies into weapons—forcing chaotic misdirected strikes. Between feints and attacks, it weaponizes Vanishing Step to dodge incoming blows and Slip Away to maintain distance, dancing around the battlefield in a dizzying display of evasion that leaves foes frustrated and disoriented.",
+  "notes": "Glimmerwraith (Monstrosity, Trickster, Solo). This deceptive creature manipulates positioning and perception, using False Opening to set up devastating attacks with advantage while its Confounding Trick turns enemies' own allies into weapons\u2014forcing chaotic misdirected strikes. Between feints and attacks, it weaponizes Vanishing Step to dodge incoming blows and Slip Away to maintain distance, dancing around the battlefield in a dizzying display of evasion that leaves foes frustrated and disoriented.",
   "createdAt": "2026-07-23T03:30:55.369Z",
-  "name": "Glimmerwraith"
+  "name": "Glimmerwraith",
+  "stats": {
+    "challengeRating": "cr-3",
+    "armorClass": 14,
+    "hitPoints": {
+      "max": 162,
+      "current": 162
+    },
+    "abilities": {
+      "strength": 14,
+      "dexterity": 10,
+      "constitution": 16,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "saveDC": 14,
+    "damageResistances": [],
+    "damageImmunities": [],
+    "conditionImmunities": [],
+    "senses": [
+      "darkvision 60 ft."
+    ],
+    "actions": [
+      {
+        "name": "Attack",
+        "damageType": "Bludgeoning",
+        "damageDice": "7d6-2",
+        "attackBonus": 4
+      }
+    ],
+    "budget": {
+      "target": 10,
+      "spent": 6,
+      "remaining": 4
+    },
+    "initiativeBonus": 0
+  }
 }

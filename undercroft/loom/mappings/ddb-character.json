@@ -43,6 +43,13 @@
     "abilities": { "type": "custom", "fn": "abilitiesTable" },
     "saves": { "type": "custom", "fn": "savingThrowsTable" },
     "skills": { "type": "custom", "fn": "skillsTable" },
+    "stats": {
+      "type": "object",
+      "fields": {
+        "hitPoints": { "type": "custom", "fn": "hitPoints" },
+        "armorClass": { "type": "custom", "fn": "armorClass" }
+      }
+    },
     "currencies": {
       "type": "object",
       "fields": {

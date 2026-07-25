@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "A successful attack forces the target to make its next concentration save with disadvantage."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "debuff",

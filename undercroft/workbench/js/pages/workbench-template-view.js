@@ -412,8 +412,12 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           markBuiltinAvailable("templates", metadata.id || selectedId);
         } else {
           const shareToken = metadata.shareToken || "";
+          // preferLocal: false — same reasoning as workbench-character-
+          // view.js's own template fetch: this is a load-then-edit round
+          // trip, and a stale local copy would silently shadow anything
+          // saved elsewhere (Loom, a direct data fix, another tab).
           const result = await dataManager.get("templates", selectedId, {
-            preferLocal: !shareToken,
+            preferLocal: false,
             shareToken,
           });
           payload = result?.payload || null;
@@ -885,15 +889,22 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           { syncOption: true }
         );
         ensureTemplateSelectValue();
-        syncTemplateActions();
         undoStack.push({
           type: "save",
           templateId: state.template?.id || "",
           count: state.components.length,
         });
+        // Must run before syncTemplateActions() below — it updates
+        // lastSavedTemplateSignature, which is exactly what
+        // hasUnsavedTemplateChanges() (called from syncTemplateActions)
+        // compares against. Calling them in the other order (as this used
+        // to) left the Save button looking dirty/enabled right after a
+        // successful save, since it evaluated against the pre-save
+        // signature a moment too early.
         if (savedToServer || !requireRemote) {
           markTemplateClean();
         }
+        syncTemplateActions();
         const label = payload.title || templateId;
         if (savedToServer) {
           status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
@@ -1398,6 +1409,23 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         return null;
       }
     }
+    // Network first, local cache only as an offline fallback — see the
+    // matching fetchSystemDefinition in workbench-character-view.js for why
+    // a System definition specifically shouldn't ever let a stale local
+    // cache silently win over a reachable server.
+    if (dataManager.baseUrl) {
+      try {
+        const result = await dataManager.get("systems", schemaId, { preferLocal: false });
+        const payload = result?.payload || null;
+        if (payload) {
+          systemDefinitionCache.set(schemaId, payload);
+          registerSystemRecord({ id: schemaId, title: payload.title || schemaId, source: result?.source || "remote", payload });
+          return payload;
+        }
+      } catch (error) {
+        console.warn("Template editor: unable to fetch system, trying local cache", error);
+      }
+    }
     try {
       const local = dataManager.getLocal("systems", schemaId);
       if (local) {
@@ -1408,21 +1436,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     } catch (error) {
       console.warn("Template editor: unable to read local system", error);
     }
-    if (!dataManager.baseUrl) {
-      return null;
-    }
-    try {
-      const result = await dataManager.get("systems", schemaId, { preferLocal: true });
-      const payload = result?.payload || null;
-      if (payload) {
-        systemDefinitionCache.set(schemaId, payload);
-        registerSystemRecord({ id: schemaId, title: payload.title || schemaId, source: result?.source || "remote", payload });
-      }
-      return payload;
-    } catch (error) {
-      console.warn("Template editor: unable to fetch system", error);
-      return null;
-    }
+    return null;
   }
 
   async function updateSystemContext(schemaId) {
@@ -2105,8 +2119,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       elements.templateSelect.value = targetId;
     }
     try {
+      // preferLocal: false — see the other dataManager.get("templates", ...)
+      // call in this file for why.
       const result = await dataManager.get("templates", targetId, {
-        preferLocal: !shareToken,
+        preferLocal: false,
         shareToken,
       });
       const payload = result?.payload;

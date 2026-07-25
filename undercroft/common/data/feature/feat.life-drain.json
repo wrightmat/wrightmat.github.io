@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "A successful attack deals extra necrotic damage, and the creature regains hit points equal to the necrotic damage dealt."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Necrotic",
+    "damageWeight": 2,
+    "actionCost": "free"
+  },
   "tags": {
     "behaviors": [
       "damage",

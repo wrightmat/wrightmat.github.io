@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "As a bonus action, the creature marks a target it can see; its attacks against the marked target deal extra damage."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Piercing",
+    "damageWeight": 2,
+    "actionCost": "bonus-action"
+  },
   "tags": {
     "behaviors": [
       "damage",

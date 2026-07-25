@@ -21,6 +21,7 @@ import {
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { createLabeledField } from "../lib/component-layout.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
+import { resolveBinding } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import {
   normalizeOptionEntries,
@@ -28,6 +29,7 @@ import {
   buildSystemPreviewData,
 } from "../lib/component-data.js";
 import { loadLibraryData } from "../../../common/js/lib/content-fetch.js";
+import { resolveToolHref, resolveToolContextPath } from "../../../common/js/lib/app-shell.js";
 import { createTemplate, getFormatById, getPageSize } from "../../../press/js/templates.js";
 import {
   applyAutoWidthCaps,
@@ -60,6 +62,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     characterOrigin: null,
     systemDefinition: null,
     systemPreviewData: {},
+    // Binding paths (e.g. "@stats.hitPoints.current") the active System's
+    // combatBindings field names as live-combat-adjustable — see
+    // updateSystemContext. A field bound to one of these stays editable
+    // outside Edit mode (Play view), since HP/AC/Conditions get adjusted
+    // mid-session, not during sheet editing; every other field keeps the
+    // normal edit-mode-only gating.
+    combatBindingPaths: new Set(),
     viewLocked: false,
     shareToken: "",
   };
@@ -183,11 +192,21 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return segments.length ? segments : null;
   }
 
+  // Rooted against the full draft record, not a `.data` sub-bucket — a
+  // record's real fields (identity, abilities, stats, conditions, ...) and a
+  // template author's own freeform fields (@data.whatever) are both just
+  // paths into the same record now. This used to hard-root every binding at
+  // `state.draft.data`, which silently sandboxed every template-bound field
+  // away from the character's actual imported/computed data (e.g. a field
+  // bound to "@name" wrote to a phantom data.name instead of the record's
+  // real top-level name) — confirmed safe to change: the one real character
+  // record's `data` bucket was empty, so nothing was actually relying on
+  // the old scoping.
   function getValueAtPath(pathSegments) {
     if (!Array.isArray(pathSegments) || !pathSegments.length) {
       return undefined;
     }
-    let cursor = state.draft?.data;
+    let cursor = state.draft;
     for (const segment of pathSegments) {
       if (!cursor || typeof cursor !== "object" || !(segment in cursor)) {
         return undefined;
@@ -204,13 +223,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!state.draft) {
       return false;
     }
-    if (!state.draft.data || typeof state.draft.data !== "object") {
-      if (value === undefined) {
-        return false;
-      }
-      state.draft.data = {};
-    }
-    let cursor = state.draft.data;
+    let cursor = state.draft;
     for (let index = 0; index < pathSegments.length - 1; index += 1) {
       const key = pathSegments[index];
       if (!cursor[key] || typeof cursor[key] !== "object") {
@@ -405,8 +418,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   assignSectionAriaConnections();
 
   const renderPreview = createJsonPreviewRenderer({
-    target: elements.jsonPreview,
-    bytesTarget: elements.jsonPreviewBytes,
+    resolvePreviewElement: () => elements.jsonPreview,
+    resolveBytesElement: () => elements.jsonPreviewBytes,
     serialize: () => state.draft || {},
   });
 
@@ -451,6 +464,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   syncCharacterActions();
   initializeSharedRecordHandling();
   syncCharacterToolbarVisibility();
+  // Every other path into the game log (loading a character, opening a
+  // share link) already calls this itself once it resolves — this covers
+  // the one case none of them do: an authenticated GM/admin who opens
+  // Workbench with no character loaded and no share link at all, relying
+  // solely on their own active-campaign selection (see syncGameLogContext's
+  // fallback) to see the table they're running.
+  void syncGameLogContext();
 
   function bindUiEvents() {
     if (elements.characterSelect) {
@@ -459,6 +479,45 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         if (selectedId) {
           await loadCharacter(selectedId);
         }
+      });
+    }
+
+    // Field edits only ever touched state.draft in memory — nothing called
+    // persistDraft() until the player hit Save or left Edit mode, so a long
+    // edit session could sit unsaved indefinitely (and a GM's concurrent
+    // change elsewhere, e.g. the combat tracker, risked being clobbered by
+    // that eventual full-draft overwrite). One delegated listener here
+    // (canvasRoot persists across renderCanvas()'s innerHTML rebuilds, so
+    // this only needs wiring once) auto-saves as soon as a bound field is
+    // committed by leaving it — not on every keystroke (the existing
+    // per-keystroke `input` listeners still just update state.draft; this
+    // only adds when that draft gets persisted). `focusout` bubbles, unlike
+    // `blur`, which is what makes one container-level listener work at all.
+    if (elements.canvasRoot) {
+      elements.canvasRoot.addEventListener("focusout", (event) => {
+        const target = event.target.closest?.("[data-binding-path]");
+        if (!target) return;
+        // Outside Edit mode, only a combat-binding field (Play-editable —
+        // see isCombatBindingComponent) still needs this; every other
+        // field is read-only in Play view and never fires this in the
+        // first place.
+        if (state.mode !== "edit" && !state.combatBindingPaths.has(target.dataset.bindingPath || "")) return;
+        // renderCanvas() fully rebuilds the DOM on every keystroke
+        // (applyBindingValue), destroying and recreating the very field
+        // being typed into, then synchronously restoring focus onto its
+        // replacement (restoreActiveField) — a transient, app-internal
+        // blur, not the user actually leaving the field. Deferred one
+        // tick so document.activeElement reflects where focus lands once
+        // that whole synchronous rebuild+refocus cycle finishes; only a
+        // real "left the field" (focus now outside the canvas, or on a
+        // non-bound element) triggers a save.
+        window.setTimeout(() => {
+          const active = document.activeElement;
+          if (active && elements.canvasRoot.contains(active) && active.closest?.("[data-binding-path]")) {
+            return;
+          }
+          void persistDraft({ silent: true });
+        }, 0);
       });
     }
 
@@ -772,6 +831,25 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   function resetSystemContext() {
     state.systemDefinition = null;
     state.systemPreviewData = {};
+    state.combatBindingPaths = new Set();
+  }
+
+  // combatBindings is a plain object of binding-path strings on the System
+  // record (type: "combat-bindings", key: "combatBindings" — see
+  // sys.dnd5e.json and combat-tracker.js's own loadCombatBindings, which
+  // reads the identical field for the same purpose from the tracker side).
+  // Absent on a System just means no field gets the Play-mode-editable
+  // treatment, gracefully — same convention as every other optional System
+  // field this suite uses.
+  function extractCombatBindingPaths(definition) {
+    const fields = Array.isArray(definition?.fields) ? definition.fields : [];
+    const field = fields.find((entry) => entry.type === "combat-bindings" && entry.key === "combatBindings");
+    if (!field) return new Set();
+    const paths = Object.entries(field)
+      .filter(([key, value]) => key !== "type" && key !== "key" && key !== "label" && typeof value === "string")
+      .map(([, value]) => value.trim())
+      .filter(Boolean);
+    return new Set(paths);
   }
 
   async function fetchSystemDefinition(systemId) {
@@ -812,6 +890,37 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         return null;
       }
     }
+    // A System definition (abilities, saves, combatBindings, generator
+    // properties, ...) is exactly the kind of content that gets edited
+    // directly and often — trusting a local cache as the first choice here
+    // (as this used to) meant any such edit could silently never reach an
+    // already-visited browser. Network first, local only as an offline
+    // fallback if the fetch itself fails — not a stale-but-present cache
+    // winning over a reachable server. Same reasoning as fetchTemplate/
+    // fetchCharacterPayload elsewhere in this file.
+    if (dataManager.baseUrl) {
+      try {
+        const shareToken = metadata.shareToken || "";
+        const result = await dataManager.get("systems", systemId, {
+          preferLocal: false,
+          shareToken,
+        });
+        const payload = result?.payload || null;
+        if (payload) {
+          systemDefinitionCache.set(systemId, payload);
+          registerSystemRecord({
+            id: systemId,
+            title: payload.title || systemId,
+            source: result?.source || "remote",
+            shareToken,
+            payload,
+          });
+          return payload;
+        }
+      } catch (error) {
+        console.warn("Character editor: unable to fetch system, trying local cache", error);
+      }
+    }
     try {
       const local = dataManager.getLocal("systems", systemId);
       if (local) {
@@ -822,31 +931,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     } catch (error) {
       console.warn("Character editor: unable to read local system", error);
     }
-    if (!dataManager.baseUrl) {
-      return null;
-    }
-    try {
-      const shareToken = metadata.shareToken || "";
-      const result = await dataManager.get("systems", systemId, {
-        preferLocal: !shareToken,
-        shareToken,
-      });
-      const payload = result?.payload || null;
-      if (payload) {
-        systemDefinitionCache.set(systemId, payload);
-        registerSystemRecord({
-          id: systemId,
-          title: payload.title || systemId,
-          source: result?.source || "remote",
-          shareToken,
-          payload,
-        });
-      }
-      return payload;
-    } catch (error) {
-      console.warn("Character editor: unable to fetch system", error);
-      return null;
-    }
+    return null;
   }
 
   async function updateSystemContext(systemId) {
@@ -860,6 +945,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       if (definition) {
         state.systemDefinition = definition;
         state.systemPreviewData = buildSystemPreviewData(definition);
+        state.combatBindingPaths = extractCombatBindingPaths(definition);
       }
     } catch (error) {
       console.warn("Character editor: unable to prepare system context", error);
@@ -1198,7 +1284,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     openToolsPane();
     try {
-      const result = rollDiceExpression(trimmed, { context: state.draft?.data || {} });
+      const result = rollDiceExpression(trimmed, { context: state.draft || {} });
       const notation = result.notation || trimmed;
       const prefix = label ? `${label}: ` : "";
       status.show(`${prefix}${notation} → ${result.total}`, { type: "success", timeout: 2200 });
@@ -1211,12 +1297,57 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
-  function handleComponentRoll(expression, label) {
+  // Same "latest spotlight or clear wins" resolution refreshNowShowing()
+  // already does (see its own comment above) — reused here rather than a
+  // second fetch, since gameLogState.entries is already kept fresh by the
+  // existing game-log poll. Returns "" if nothing's currently spotlighted,
+  // or the spotlighted thing isn't an encounter.
+  function resolveActiveEncounterId() {
+    const latest = gameLogState.entries.find((entry) => entry?.type === "spotlight" || entry?.type === "spotlight-clear");
+    if (!latest || latest.type === "spotlight-clear") {
+      return "";
+    }
+    const spotlight = latest.payload || {};
+    if (String(spotlight.kind || "").trim() !== "encounter") {
+      return "";
+    }
+    return String(spotlight.id || "").trim();
+  }
+
+  // Initiative is a one-way push, not a synced field (see the Initiative
+  // component's own comment in the template) — a rolled result updates
+  // whatever active encounter this character is currently in, not the
+  // character record itself, since initiative isn't persistent state.
+  async function pushInitiativeToActiveEncounter(value) {
+    const encounterId = resolveActiveEncounterId();
+    if (!encounterId || !state.draft?.id) {
+      return;
+    }
+    try {
+      const { payload: encounter } = await dataManager.get("encounter", encounterId);
+      const combatant = (encounter.combatants || []).find(
+        (entry) => entry.refKind === "character" && entry.refId === state.draft.id
+      );
+      if (!combatant) {
+        return;
+      }
+      combatant.initiative = value;
+      await dataManager.save("encounter", encounterId, encounter);
+      status.show(`Initiative ${value} sent to the encounter.`, { type: "success", timeout: 2000 });
+    } catch (error) {
+      console.warn("Character editor: unable to push initiative to the active encounter", error);
+    }
+  }
+
+  function handleComponentRoll(expression, label, component) {
     if (!expression) {
       return;
     }
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
-    executeDiceRoll(expression, { label: text, updateInput: true });
+    const result = executeDiceRoll(expression, { label: text, updateInput: true });
+    if (result && component?.id === "initiative") {
+      void pushInitiativeToActiveEncounter(result.total);
+    }
   }
 
   function createRollOverlayButton(component, expressions) {
@@ -1242,10 +1373,24 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
       const expression = expressions[index] || expressions[0];
       index = (index + 1) % expressions.length;
-      handleComponentRoll(expression, label);
+      handleComponentRoll(expression, label, component);
     });
     container.appendChild(button);
     return container;
+  }
+
+  function createSpinnerButton(iconName, label, onClick) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-outline-secondary";
+    button.setAttribute("aria-label", label);
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.dataset.icon = iconName;
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    button.addEventListener("click", onClick);
+    return button;
   }
 
   function ensureDicePanelMarkup() {
@@ -1705,6 +1850,21 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     elements.gameLogStatus.hidden = !message;
   }
 
+  const SPOTLIGHT_KIND_LABELS = {
+    npc: "an NPC",
+    location: "a Location",
+    monster: "a Monster",
+    effect: "an Effect",
+    map: "a Map",
+    encounter: "an Encounter",
+  };
+
+  function describeSpotlightPayload(payload) {
+    const kind = typeof payload?.kind === "string" ? payload.kind.trim() : "";
+    const article = SPOTLIGHT_KIND_LABELS[kind] || (kind ? `a "${kind}"` : "something");
+    return `Showed ${article} to the table`;
+  }
+
   function createGameLogEntryElement(entry) {
     const container = document.createElement("article");
     container.className = "game-log-entry";
@@ -1747,6 +1907,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
 
       summary.appendChild(summaryRow);
+    } else if (entry?.type === "spotlight") {
+      // A spotlight entry's own message is always empty (see
+      // server/groups.py's create_group_log_entry) — the payload
+      // ({kind, id, templateId}) is all there is, and the entity's real
+      // name/description already renders richly right next to the log in
+      // the Now-showing panel, so this line just needs to say something
+      // happened, not repeat that lookup here too.
+      container.classList.add("game-log-entry--spotlight");
+      const payload = entry && typeof entry.payload === "object" && entry.payload ? entry.payload : {};
+      summary.textContent = describeSpotlightPayload(payload);
+    } else if (entry?.type === "spotlight-clear") {
+      container.classList.add("game-log-entry--spotlight");
+      summary.textContent = "Stopped showing to the table";
     } else {
       container.classList.add("game-log-entry--message");
       summary.textContent = entry?.message || "";
@@ -1966,6 +2139,74 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     elements.nowShowingContent.appendChild(card);
   }
 
+  // Orrery maps have no print-card rendering of their own (see spotlight.js's
+  // LINK_ONLY_KINDS) — a map is a pannable spatial canvas, not a single-entity
+  // card Press can lay out. Spotlighting one just links back into Orrery
+  // itself with ?map=<id> (Orrery's own loadMapFromUrlParam loads it,
+  // read-only for anyone but its owner — see Orrery's getVisibleLayerIds/
+  // tiered Views). Opens in a new tab so the game log/Now-showing panel
+  // stays visible alongside the map.
+  function renderNowShowingMapLink(entity, id) {
+    if (!elements.nowShowingContent) {
+      return;
+    }
+    const card = document.createElement("div");
+    card.className = "border rounded-3 bg-body p-3 w-100 d-flex flex-column gap-2";
+    const name = document.createElement("div");
+    name.className = "fw-semibold";
+    name.textContent = entity?.name || "Map";
+    const link = document.createElement("a");
+    link.className = "btn btn-outline-primary btn-sm align-self-start";
+    const params = new URLSearchParams({ map: id });
+    // An authenticated group member already has real "shared with group"
+    // access to a spotlighted map (spotlightToGroup shares it, not just logs
+    // it) and needs nothing extra. An anonymous share-link visitor has no
+    // session at all, so the same share token this page itself was opened
+    // with has to travel along too — it's what get_item's narrow spotlight
+    // exception (server/storage.py) checks to grant read access to exactly
+    // the currently-spotlighted map, for someone with no account.
+    if (gameLogState.shareToken) {
+      params.set("share", gameLogState.shareToken);
+    }
+    link.href = `${resolveToolHref("orrery", resolveToolContextPath())}?${params.toString()}`;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "Open map";
+    card.append(name, link);
+    elements.nowShowingContent.innerHTML = "";
+    elements.nowShowingContent.appendChild(card);
+  }
+
+  // An Encounter is a live, constantly-changing combat state, not a
+  // single-entity card Press can lay out — same reasoning as the map-link
+  // case above (see spotlight.js's LINK_ONLY_KINDS). Spotlighting one links
+  // to the suite Dashboard's Combat Tracker widget (?encounter=<id>) rather
+  // than fetching+rendering a static card; the widget itself re-polls the
+  // encounter record on its own interval once open.
+  function renderNowShowingEncounterLink(entity, id) {
+    if (!elements.nowShowingContent) {
+      return;
+    }
+    const card = document.createElement("div");
+    card.className = "border rounded-3 bg-body p-3 w-100 d-flex flex-column gap-2";
+    const name = document.createElement("div");
+    name.className = "fw-semibold";
+    name.textContent = entity?.name || "Encounter";
+    const link = document.createElement("a");
+    link.className = "btn btn-outline-primary btn-sm align-self-start";
+    const params = new URLSearchParams({ encounter: id });
+    if (gameLogState.shareToken) {
+      params.set("share", gameLogState.shareToken);
+    }
+    link.href = `${resolveToolHref("home", resolveToolContextPath())}?${params.toString()}`;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "Open combat tracker";
+    card.append(name, link);
+    elements.nowShowingContent.innerHTML = "";
+    elements.nowShowingContent.appendChild(card);
+  }
+
   // Renders one card through Press's real template.createPage — the exact
   // function Press's own Grid View uses for a single-card render
   // (singleCardIndex), so this gets identical output to what the GM sees in
@@ -2015,8 +2256,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!elements.nowShowingSection) {
       return;
     }
-    const latest = gameLogState.entries.find((entry) => entry?.type === "spotlight");
-    if (!latest) {
+    // gameLogState.entries is already sorted newest-first (see
+    // refreshGameLog) — the first spotlight-or-clear entry found here is
+    // whichever happened most recently, so a `spotlight-clear` posted after
+    // the last `spotlight` correctly wins and hides the panel instead of
+    // this re-showing a stale broadcast.
+    const latest = gameLogState.entries.find((entry) => entry?.type === "spotlight" || entry?.type === "spotlight-clear");
+    if (!latest || latest.type === "spotlight-clear") {
       lastRenderedSpotlightEntryId = null;
       hideNowShowing();
       return;
@@ -2039,7 +2285,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     let entity = null;
     try {
-      entity = await loadLibraryData(`${kind}/${id}`, dataManager);
+      // The share token matters here too, not just for the map-link case
+      // below: an anonymous share-link visitor has no session at all, so
+      // fetching even a plain-card/print-card spotlighted entity needs it to
+      // read anything the group doesn't also own publicly.
+      entity = await loadLibraryData(`${kind}/${id}`, dataManager, gameLogState.shareToken);
     } catch (error) {
       if (elements.nowShowingContent) {
         elements.nowShowingContent.innerHTML =
@@ -2047,12 +2297,18 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
       return;
     }
+    if (kind === "map") {
+      renderNowShowingMapLink(entity, id);
+      return;
+    }
     if (!templateId) {
       renderNowShowingPlain(entity, spotlight.label);
       return;
     }
     try {
-      const { payload: templateRecord } = await dataManager.get("templates", templateId);
+      const { payload: templateRecord } = await dataManager.get("templates", templateId, {
+        shareToken: gameLogState.shareToken,
+      });
       renderNowShowingCard(templateRecord, entity);
     } catch (error) {
       // A private/unshared template (or one that's since been deleted)
@@ -2236,8 +2492,8 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (!state.draft?.id) {
       return null;
     }
-    const name = typeof state.draft.data?.name === "string" && state.draft.data.name.trim()
-      ? state.draft.data.name.trim()
+    const name = typeof state.draft.name === "string" && state.draft.name.trim()
+      ? state.draft.name.trim()
       : state.draft.id;
     const templateId = state.template?.id || state.draft.template || "";
     const templateTitle = state.template?.title || "";
@@ -2275,29 +2531,48 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       setGameLogContext({ groupId: shareGroupId, shareToken, groupName, access });
       return;
     }
-    if (!state.draft?.id) {
-      clearGameLogContext();
-      return;
-    }
     if (!dataManager.isAuthenticated()) {
-      characterGroupCache.delete(state.draft.id);
+      characterGroupCache.delete(state.draft?.id);
       clearGameLogContext();
       return;
     }
-    let memberships = characterGroupCache.get(state.draft.id);
-    if (force || memberships === undefined) {
-      memberships = await refreshCharacterGroups(state.draft.id);
+    // A loaded character's own campaign membership takes priority — playing
+    // a specific PC should always follow that PC's table. Only falls
+    // through to the active-campaign selector below when there's no
+    // character-derived campaign to use (no character loaded at all, or one
+    // that isn't in any campaign group) — the common GM/admin case: running
+    // a table (and, per this session's spotlight feature, showing things to
+    // it) without necessarily having any one PC loaded in Workbench.
+    let campaign = null;
+    if (state.draft?.id) {
+      let memberships = characterGroupCache.get(state.draft.id);
+      if (force || memberships === undefined) {
+        memberships = await refreshCharacterGroups(state.draft.id);
+      }
+      const groups = Array.isArray(memberships) ? memberships : [];
+      campaign =
+        groups.find((entry) => typeof entry?.type === "string" && entry.type.toLowerCase() === "campaign") ||
+        groups[0] ||
+        null;
     }
-    const groups = Array.isArray(memberships) ? memberships : [];
-    const campaign = groups.find((entry) => typeof entry?.type === "string" && entry.type.toLowerCase() === "campaign") || groups[0];
-    if (!campaign) {
-      clearGameLogContext();
+    if (campaign) {
+      const ownerId = campaign.owner_id ?? null;
+      const userId = dataManager.session?.user?.id ?? null;
+      const access = ownerId === userId ? "owner" : "member";
+      setGameLogContext({ groupId: campaign.id, groupName: campaign.name || "", access });
       return;
     }
-    const ownerId = campaign.owner_id ?? null;
-    const userId = dataManager.session?.user?.id ?? null;
-    const access = ownerId === userId ? "owner" : "member";
-    setGameLogContext({ groupId: campaign.id, groupName: campaign.name || "", access });
+    // The same shared, cross-tool selection every other tool's header
+    // exposes via its own Campaign dropdown (auth-ui.js/data-manager.js's
+    // getActiveGroup/setActiveGroup) — listGroups() (and so this) only ever
+    // includes groups the current user owns, so "owner" is always correct
+    // here, not just an assumption.
+    const active = dataManager.getActiveGroup();
+    if (active?.groupId) {
+      setGameLogContext({ groupId: active.groupId, groupName: active.name || "", access: "owner" });
+      return;
+    }
+    clearGameLogContext();
   }
 
   function applyGroupSharePayload(payload) {
@@ -2697,7 +2972,14 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return await response.json();
     }
     if (metadata.source === "remote" && dataManager.baseUrl) {
-      const result = await dataManager.get("templates", metadata.id, { preferLocal: true });
+      // preferLocal: false — the template a character's sheet renders
+      // against is exactly the kind of content that gets edited directly
+      // (Loom, a template-editor save, a direct data fix) out from under
+      // whatever this browser last cached. A stale local copy here would
+      // silently keep rendering an old sheet layout with no visible sign
+      // anything was wrong — same reasoning as this file's own character
+      // loader (fetchCharacterPayload) and Loom's editor.
+      const result = await dataManager.get("templates", metadata.id, { preferLocal: false });
       return result?.payload || null;
     }
     return null;
@@ -2769,7 +3051,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       state.characterOrigin = metadata.source || payload.origin || "";
       registerCharacterRecord({
         id: state.draft.id,
-        title: state.draft.data?.name || metadata.title || state.draft.id,
+        title: state.draft.name || metadata.title || state.draft.id,
         template: state.draft.template || metadata.template || "",
         source: metadata.source,
         ownership: metadata.ownership,
@@ -2792,7 +3074,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       syncCharacterOptions();
       syncCharacterActions();
       syncCharacterToolbarVisibility();
-      status.show(`Loaded ${state.draft.data?.name || metadata.title || state.draft.id}`, {
+      status.show(`Loaded ${state.draft.name || metadata.title || state.draft.id}`, {
         type: "success",
         timeout: 2000,
       });
@@ -2915,8 +3197,19 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       }
     }
     if (metadata.source === "remote" && dataManager.baseUrl) {
+      // preferLocal: false — a "remote" character is a real, server-synced
+      // record (unlike the "local" branch above, a genuinely local-only
+      // anonymous draft with no server counterpart, which SHOULD trust its
+      // local copy since that's the only copy that exists). DataManager's
+      // localStorage cache is keyed by the literal bucket string passed in,
+      // with no awareness that "characters" (used everywhere in Workbench)
+      // and "character" (used by Loom's Library editor for the same kind)
+      // are the same server-side record — so this cache can silently drift
+      // arbitrarily far from what Loom, or any other client, has since
+      // saved to the server, with no visible sign anything is stale. Same
+      // reasoning as Loom's own loadLibraryEntry (see its comment).
       const result = await dataManager.get("characters", metadata.id, {
-        preferLocal: !shareToken,
+        preferLocal: false,
         shareToken,
       });
       return result?.payload || null;
@@ -3239,11 +3532,49 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         });
       }
     }
+    // Combat-binding number fields (HP, AC, ...) get +/- stepper buttons
+    // instead of the plain input — they're adjusted repeatedly and quickly
+    // mid-combat, and a spinner is faster/more reliable than selecting and
+    // retyping a value each time, in both Play and Edit view. A `roller`
+    // takes priority over this: Initiative is both a combatBindings target
+    // (combat-tracker.js needs a generic path to its modifier for the "Roll
+    // Initiative" toolbar button) and a rollable field on the sheet — for
+    // the sheet itself, rolling is the more useful action than nudging the
+    // value by 1, so the roll button (below) wins for any component that
+    // has both.
+    const hasRoller = typeof component.roller === "string" && component.roller.trim().length > 0;
+    if (editable && variant === "number" && !hasRoller && isCombatBindingComponent(component)) {
+      const step = Number(component.step) || 1;
+      const applyDelta = (delta) => {
+        const current = Number(input.value) || 0;
+        const next = current + delta;
+        input.value = next;
+        updateBinding(component.binding, next);
+        void persistDraft({ silent: true });
+      };
+      const spinnerGroup = document.createElement("div");
+      spinnerGroup.className = "input-group input-group-sm";
+      input.classList.add("text-center");
+      spinnerGroup.appendChild(createSpinnerButton("tabler:minus", `Decrease ${labelText}`, () => applyDelta(-step)));
+      spinnerGroup.appendChild(input);
+      spinnerGroup.appendChild(createSpinnerButton("tabler:plus", `Increase ${labelText}`, () => applyDelta(step)));
+      return createLabeledField({
+        component,
+        control: spinnerGroup,
+        labelText,
+        labelTag: "label",
+        labelFor: input.id || "",
+        labelClasses,
+        applyFormatting: applyTextFormatting,
+      });
+    }
     const inputContainer = document.createElement("div");
     inputContainer.className = "position-relative";
     const rollExpressions = componentUid ? componentRollDirectives.get(componentUid) : null;
-    const showRollOverlay =
-      state.mode === "view" && Array.isArray(rollExpressions) && rollExpressions.length > 0;
+    // Shown in both Play and Edit view — a rollable field (Initiative, any
+    // formula-driven check/save) is just as useful to roll while editing
+    // the sheet as while playing.
+    const showRollOverlay = Array.isArray(rollExpressions) && rollExpressions.length > 0;
     if (showRollOverlay) {
       input.classList.add("character-rollable-input");
     }
@@ -3449,7 +3780,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       : value != null
       ? String(value)
       : "";
-    const options = resolveSelectionOptions(component);
+    const options = resolveSelectionOptions(component, { allowBlank: !component.multiple });
     const group = document.createElement("div");
     group.className = "btn-group flex-wrap";
     group.setAttribute("role", "group");
@@ -3481,6 +3812,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
           } else {
             updateBinding(component.binding, optionValue);
           }
+          // A button click is already a single, discrete action — unlike
+          // free-typed text/number input, there's no keystroke-batching
+          // reason to wait for a blur event before saving (and, in Play
+          // mode, no reliable blur to wait for anyway — see the focusout
+          // listener's own comment). Same immediate-persist approach as
+          // the HP/AC spinner buttons.
+          void persistDraft({ silent: true });
         });
       }
       group.appendChild(button);
@@ -3698,6 +4036,16 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return typeof component?.formula === "string" && component.formula.trim().length > 0;
   }
 
+  // A field bound to one of the active System's combatBindings paths (HP,
+  // AC, Conditions, ...) stays live-adjustable in Play view — those get
+  // adjusted mid-combat, not during a sheet-editing session, so gating them
+  // behind Edit mode the way every other field is would make them
+  // unreachable exactly when they're needed most.
+  function isCombatBindingComponent(component) {
+    const binding = normalizeBinding(component?.binding);
+    return Boolean(binding) && state.combatBindingPaths.has(binding);
+  }
+
   function isEditable(component) {
     if (!component) {
       return false;
@@ -3705,7 +4053,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (componentHasFormula(component)) {
       return false;
     }
-    return state.mode === "edit" && !component.readOnly;
+    if (component.readOnly) {
+      return false;
+    }
+    if (state.mode === "edit") {
+      return true;
+    }
+    return isCombatBindingComponent(component);
   }
 
   function resolveComponentValue(component, fallback = undefined) {
@@ -3742,7 +4096,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (componentHasFormula(component)) {
       const collected = new Set();
       try {
-        const dataContext = state.draft?.data || {};
+        const dataContext = state.draft || {};
         const result = evaluateFormula(component.formula, dataContext, {
           onRoll: (notation) => {
             if (typeof notation === "string") {
@@ -3784,17 +4138,23 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     return [{ value: "", label: "" }, ...entries];
   }
 
-  function resolveSelectionOptions(component) {
+  // A leading blank option makes sense for a single-select dropdown (an
+  // explicit "nothing chosen" state) but not for a multi-select toggle
+  // group — there's no such thing as a blank "pill," and clicking one
+  // would be a meaningless no-op. `allowBlank` lets multi-select callers
+  // (renderSelectGroupComponent with multiple: true) opt out.
+  function resolveSelectionOptions(component, { allowBlank = true } = {}) {
     const expectsSource = Boolean(component?.sourceBinding);
+    const addBlank = expectsSource && allowBlank;
     const boundOptions = normalizeOptionEntries(resolveSourceBindingValue(component?.sourceBinding));
     if (boundOptions.length || expectsSource) {
-      return expectsSource ? ensureLeadingBlankOption(boundOptions) : boundOptions;
+      return addBlank ? ensureLeadingBlankOption(boundOptions) : boundOptions;
     }
     const componentOptions = normalizeOptionEntries(component?.options);
     if (componentOptions.length) {
-      return expectsSource ? ensureLeadingBlankOption(componentOptions) : componentOptions;
+      return addBlank ? ensureLeadingBlankOption(componentOptions) : componentOptions;
     }
-    return expectsSource ? ensureLeadingBlankOption([]) : [];
+    return addBlank ? ensureLeadingBlankOption([]) : [];
   }
 
   function resolveToggleStates(component) {
@@ -3899,27 +4259,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
+  // A plain-path read against the full draft record — same job as
+  // resolveBinding() from the shared bindings.js, just without formula
+  // evaluation (formulas are handled separately in resolveComponentValue,
+  // above). Delegates to the shared implementation instead of re-walking
+  // the path locally.
   function getBindingValue(binding) {
     const normalizedBinding = normalizeBinding(binding);
-    if (!normalizedBinding) {
+    if (!normalizedBinding || typeof normalizedBinding !== "string" || !normalizedBinding.trim().startsWith("@")) {
       return undefined;
     }
-    const trimmed = normalizedBinding.trim();
-    if (!trimmed.startsWith("@")) {
-      return undefined;
-    }
-    const path = trimmed.slice(1).split(".").filter(Boolean);
-    if (!path.length) {
-      return undefined;
-    }
-    let cursor = state.draft?.data;
-    for (const segment of path) {
-      if (!cursor || typeof cursor !== "object" || !(segment in cursor)) {
-        return undefined;
-      }
-      cursor = cursor[segment];
-    }
-    return cursor;
+    return resolveBinding(normalizedBinding, state.draft || {});
   }
 
   function updateBinding(binding, value) {
@@ -4207,7 +4557,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       status.show("Built-in characters cannot be deleted.", { type: "info", timeout: 2400 });
       return;
     }
-    const label = state.draft.data?.name || metadata.title || id;
+    const label = state.draft.name || metadata.title || id;
     const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
     if (!confirmed) {
       return;
@@ -4532,6 +4882,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     if (detail.bucket === "characters" && detail.source === "remote") {
       refreshRemoteCharacters({ force: true });
     }
+  });
+
+  // Picking a different campaign from the header's Campaign dropdown while
+  // Workbench is already open (not just landing here fresh after switching
+  // it elsewhere) should immediately follow it — same fallback
+  // syncGameLogContext already applies when there's no character-derived
+  // campaign to use.
+  window.addEventListener("workbench:active-group-changed", () => {
+    void syncGameLogContext({ force: true });
   });
 
   return {

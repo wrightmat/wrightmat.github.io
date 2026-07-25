@@ -27,10 +27,10 @@
   },
   "view": {
     "mode": "geo",
-    "zoom": 2.75,
+    "zoom": 7,
     "center": {
-      "lat": -4.36931515670833,
-      "lng": 56.842674837553645
+      "lat": 7.2207996427109435,
+      "lng": -37.705078125
     },
     "pan": {
       "x": 0,
@@ -55,11 +55,52 @@
         "lineColor": "#0f172a"
       },
       "properties": {}
+    },
+    {
+      "id": "ead95f1e-5c3a-4527-9e3c-e1586ff4d587",
+      "type": "marker",
+      "name": "Marker Layer",
+      "visible": true,
+      "opacity": 1,
+      "position": {
+        "x": 529,
+        "y": 474
+      },
+      "elements": [
+        {
+          "id": "4ab653ac-ef3c-4f48-8fdd-2334dbf16e39",
+          "kind": "marker",
+          "refKind": "location",
+          "refId": "sharn",
+          "label": "Sharn",
+          "position": {
+            "x": -294,
+            "y": 25
+          }
+        },
+        {
+          "id": "a76d4257-4686-4fd1-bbf1-4f81f7fbc380",
+          "kind": "marker",
+          "refKind": "location",
+          "refId": "sharn",
+          "label": "Sharn",
+          "position": {
+            "lat": 7.36246686553575,
+            "lng": -40.75927734375
+          }
+        }
+      ],
+      "settings": {
+        "icon": "pin",
+        "size": 24,
+        "color": "#0ea5e9"
+      },
+      "properties": {}
     }
   ],
   "groups": [],
   "views": [],
   "properties": {},
   "createdAt": "2026-07-24T01:04:48.683Z",
-  "updatedAt": "2026-07-24T01:05:23.943Z"
+  "updatedAt": "2026-07-24T03:01:22.482Z"
 }

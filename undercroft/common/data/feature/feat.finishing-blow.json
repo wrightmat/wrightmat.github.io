@@ -9,6 +9,12 @@
     "type": "passive-or-triggered",
     "text": "Against a target at or below half its hit point maximum, the creature's attacks score a critical hit on a roll of 19 or 20."
   },
+  "budgetCost": 2,
+  "combat": {
+    "damageType": "Slashing",
+    "damageWeight": 1,
+    "actionCost": "free"
+  },
   "tags": {
     "behaviors": [
       "damage"

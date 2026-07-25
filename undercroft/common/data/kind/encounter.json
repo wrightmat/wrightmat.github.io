@@ -1,0 +1,8 @@
+{
+  "id": "encounter",
+  "label": "Encounter",
+  "plural": "Encounters",
+  "icon": "tabler:swords",
+  "readTier": "free",
+  "writeTier": "gm"
+}

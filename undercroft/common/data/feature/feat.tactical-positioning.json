@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "As a bonus action, the creature can swap places with a willing ally within 5 feet of it."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "mobility",

@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "Once per combat, when reduced to half its hit points or fewer, the creature splits into two weaker copies of itself."
   },
+  "budgetCost": 3,
   "tags": {
     "behaviors": [
       "swarm-tactics"

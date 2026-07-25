@@ -1,6 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { initSpotlightButton } from "../../common/js/lib/spotlight.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
@@ -46,7 +45,6 @@ const noteText = document.querySelector("[data-note-text]");
 
 const saveButton = document.querySelector("[data-save-npc]");
 const exportButton = document.querySelector("[data-export-npc]");
-const spotlightButton = document.querySelector("[data-spotlight-npc]");
 const npcJsonPreview = document.querySelector("[data-npc-json-preview]");
 const npcJsonBytes = document.querySelector("[data-npc-json-bytes]");
 
@@ -86,10 +84,6 @@ let currentLocation = null;
 let currentRecord = null;
 let selectedFieldKey = null;
 let dataManager = null;
-// Handle returned by initSpotlightButton — its refresh() is the single
-// source of truth for the button's disabled state (has a record AND an
-// active campaign group), called alongside every other action-button gate.
-let spotlightControl = null;
 
 const IDENTITY_FIELD_DEFS = [
   { key: "name", label: "Name" },
@@ -111,12 +105,12 @@ const FOURD_FIELD_DEFS = [
 ];
 
 const ABILITY_FIELD_DEFS = [
-  { key: "str", label: "STR" },
-  { key: "dex", label: "DEX" },
-  { key: "con", label: "CON" },
-  { key: "int", label: "INT" },
-  { key: "wis", label: "WIS" },
-  { key: "cha", label: "CHA" },
+  { key: "strength", label: "STR" },
+  { key: "dexterity", label: "DEX" },
+  { key: "constitution", label: "CON" },
+  { key: "intelligence", label: "INT" },
+  { key: "wisdom", label: "WIS" },
+  { key: "charisma", label: "CHA" },
 ];
 
 const ABILITY_KEYS = new Set(ABILITY_FIELD_DEFS.map((entry) => entry.key));
@@ -241,22 +235,33 @@ function renderStats(stats) {
   });
   statsFields.appendChild(
     buildFieldCard({
-      key: "ac",
+      key: "armorClass",
       label: "AC",
-      value: stats.ac,
+      value: stats.armorClass,
       rerollable: false,
-      colClass: "col-6",
+      colClass: "col-4",
       compact: true,
       editable: true,
     })
   );
   statsFields.appendChild(
     buildFieldCard({
-      key: "hp",
-      label: "HP",
-      value: stats.hp,
+      key: "currentHp",
+      label: "Current HP",
+      value: stats.hitPoints?.current ?? "",
       rerollable: false,
-      colClass: "col-6",
+      colClass: "col-4",
+      compact: true,
+      editable: true,
+    })
+  );
+  statsFields.appendChild(
+    buildFieldCard({
+      key: "maxHp",
+      label: "Max HP",
+      value: stats.hitPoints?.max ?? "",
+      rerollable: false,
+      colClass: "col-4",
       compact: true,
       editable: true,
     })
@@ -269,7 +274,6 @@ function renderNpc(record) {
   npcDisplay.classList.toggle("d-none", !record);
   saveButton.disabled = !record;
   exportButton.disabled = !record;
-  spotlightControl?.refresh();
 
   if (!record) {
     updateJsonPreview(npcJsonPreview, npcJsonBytes, {});
@@ -282,7 +286,10 @@ function renderNpc(record) {
       buildFieldCard({
         key,
         label,
-        value: key === "location" ? currentLocation?.name || "" : formatIdentityValue(key, record.identity[key]),
+        value:
+          key === "location"
+            ? currentLocation?.name || ""
+            : formatIdentityValue(key, key === "name" ? record.name : record.identity[key]),
         rerollable: key !== "location",
         editable: key === "name",
         selectable: true,
@@ -386,7 +393,7 @@ async function listAllSystems() {
     // builtins are a nice-to-have, not required
   }
   try {
-    const listing = await dataManager.list("systems", { refresh: true });
+    const listing = await dataManager.list("systems");
     const remoteEntries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
     remoteEntries.forEach((entry) => merged.set(entry.id, { id: entry.id, title: entry.title || entry.id }));
     (listing.local || []).forEach((entry) => {
@@ -686,14 +693,16 @@ generateButton.addEventListener("click", () => {
   });
 });
 
-// Typing directly into an editable field (currently just Name) keeps the
-// record in sync without re-running renderNpc — same reasoning as the note
-// textarea below: resetting .value mid-edit would jump the cursor.
+// Typing directly into an editable field (currently just Name, which lives
+// at the record's top level — see undercroft/forge/js/lib/generator.js —
+// not nested in `identity` like the rest of the rolled Identity block) keeps
+// the record in sync without re-running renderNpc — same reasoning as the
+// note textarea below: resetting .value mid-edit would jump the cursor.
 identityFields.addEventListener("input", (event) => {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord) return;
   const field = input.dataset.editableField;
-  currentRecord = { ...currentRecord, identity: { ...currentRecord.identity, [field]: input.value } };
+  currentRecord = field === "name" ? { ...currentRecord, name: input.value } : currentRecord;
   updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
 });
 
@@ -712,6 +721,12 @@ statsFields.addEventListener("input", (event) => {
     };
     const suffixEl = statsFields.querySelector(`[data-editable-suffix="${field}"]`);
     if (suffixEl) suffixEl.textContent = abilityModifierText(numericValue);
+  } else if (field === "currentHp" || field === "maxHp") {
+    const hpKey = field === "currentHp" ? "current" : "max";
+    currentRecord = {
+      ...currentRecord,
+      stats: { ...currentRecord.stats, hitPoints: { ...currentRecord.stats.hitPoints, [hpKey]: numericValue } },
+    };
   } else {
     currentRecord = { ...currentRecord, stats: { ...currentRecord.stats, [field]: numericValue } };
   }
@@ -769,7 +784,7 @@ exportButton.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${currentRecord.identity.name || currentRecord.id}.json`;
+  link.download = `${currentRecord.name || currentRecord.id}.json`;
   link.click();
   URL.revokeObjectURL(url);
 });
@@ -816,16 +831,15 @@ speciesLastNameFormSelect.addEventListener("change", () => toggleSpeciesLastName
 async function init() {
   const shell = initAppShell({ namespace: "forge", storagePrefix: "undercroft.forge.undo" });
   status = shell.status;
-  const auth = initAuthControls({ status });
-  dataManager = auth.dataManager;
-  spotlightControl = initSpotlightButton({
-    button: spotlightButton,
-    dataManager,
+  const auth = initAuthControls({
     status,
-    getKind: () => "npc",
-    getId: () => currentRecord?.id,
-    getLabel: () => currentRecord?.identity?.name,
+    spotlightContext: {
+      getKind: () => "npc",
+      getId: () => currentRecord?.id,
+      getLabel: () => currentRecord?.identity?.name,
+    },
   });
+  dataManager = auth.dataManager;
 
   bindCollapsibleToggle(inspectorToggle, inspectorPanel, {
     collapsed: false,

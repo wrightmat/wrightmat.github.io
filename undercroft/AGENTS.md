@@ -7,7 +7,7 @@
   - `css/`: contains a single stylesheet (`styles.css`) for any custom rules that Bootstrap cannot express (kept to bare minimum).
   - `data/`: schemas, templates, and characters data consumed by the editors.
   - `docs/`, `ROADMAP.md`, and `COLLABORATION.md`: planning and collaboration artifacts.
-- The 'admin' directory is its own suite-wide tool (not part of Workbench, despite having lived at `workbench/admin.html` early on) — account tier management, content ownership transfer, sharing, and groups. Reachable from any tool's user-menu dropdown ("Admin controls", wired via `common/js/lib/auth-ui.js`) and from the cross-tool switcher like any other built tool.
+- The "admin" tool was retired. Account settings and per-user owned-content browsing now live at the flat page `common/account.html` (+ `common/account.js`), reachable via "Account Settings" in the merged signed-in menu (`common/js/lib/auth-ui.js`) rather than the cross-tool switcher — it isn't a distinct tool. Suite-wide data administration (user tiers, Campaign Groups, cross-owner Library management/sharing) lives in Loom, tier-gated per tab (GM tier and up).
 - The 'server' directory hosts the shared Python server used for all projects, including this one.
 - Other directories to be added later as additional tools are developed under this suite.
 

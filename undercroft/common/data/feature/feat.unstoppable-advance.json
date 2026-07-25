@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature has advantage on saves against being knocked prone or having its speed reduced."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "defense",

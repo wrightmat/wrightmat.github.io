@@ -838,6 +838,37 @@ export class DataManager {
     });
   }
 
+  // Admin editing ANOTHER user's email directly — distinct from updateEmail
+  // above, which is self-service and requires the acting user's own password.
+  async updateUserEmail(username, email) {
+    return this._request("/auth/users/email", {
+      method: "POST",
+      body: { username, email },
+      auth: true,
+    });
+  }
+
+  // Deactivating also invalidates that user's existing sessions server-side
+  // (see admin_set_user_status) — not just future logins.
+  async updateUserStatus(username, isActive) {
+    return this._request("/auth/users/status", {
+      method: "POST",
+      body: { username, is_active: Boolean(isActive) },
+      auth: true,
+    });
+  }
+
+  // Admin creating a user directly — already active, no verification code
+  // needed — distinct from register() above, which is self-service and
+  // subject to require_email_verification.
+  async createUser({ username, email, password, tier = "free" } = {}) {
+    return this._request("/auth/users/create", {
+      method: "POST",
+      body: { username, email, password, tier },
+      auth: true,
+    });
+  }
+
   async deleteUser(username) {
     return this._request("/auth/users/delete", {
       method: "POST",
@@ -862,6 +893,32 @@ export class DataManager {
     return this._request("/auth/profile/password", {
       method: "POST",
       body: { current_password, new_password },
+      auth: true,
+    });
+  }
+
+  // A small per-user JSON blob stored directly on the users row (see
+  // auth.py's _migrate_users_table_for_settings), not a Library kind — this
+  // is account-level preference (today: the Dashboard's widget layout), not
+  // shareable/owned content. Only meaningful when signed in; callers fall
+  // back to localStorage otherwise (same local-first pattern every other
+  // kind already follows).
+  async getUserSettings() {
+    if (!this.isAuthenticated()) {
+      return {};
+    }
+    return this._request("/auth/profile/settings", { method: "GET", auth: true });
+  }
+
+  // Merge-patch — only the keys in `patch` are updated server-side, so this
+  // can't clobber some other feature's settings stored in the same blob.
+  async saveUserSettings(patch) {
+    if (!this.isAuthenticated()) {
+      throw new Error("Sign in to sync settings.");
+    }
+    return this._request("/auth/profile/settings", {
+      method: "POST",
+      body: patch,
       auth: true,
     });
   }
@@ -1078,6 +1135,17 @@ export class DataManager {
       type: "spotlight",
       payload: { kind: contentType, id: contentId, templateId: templateId || undefined },
     });
+  }
+
+  // The other half of "show to table" — posts a `spotlight-clear` entry, so
+  // anything reading "what's currently shown" (Now Showing panels, the
+  // Combat Tracker's player view, the anonymous share-link's narrow
+  // get_item exception) sees nothing again, without deleting log history.
+  async clearSpotlight({ groupId, shareToken = "" } = {}) {
+    if (!groupId && !shareToken) {
+      throw new Error("groupId is required");
+    }
+    return this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-clear" });
   }
 
   async fetchGroupShare(token) {

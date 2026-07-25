@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "At the start of each of its turns, the creature gains resistance to the last damage type that hit it since its last turn."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "defense"

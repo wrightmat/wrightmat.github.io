@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature ignores difficult terrain and doesn't provoke opportunity attacks when it moves."
   },
+  "budgetCost": 1,
   "tags": {
     "behaviors": [
       "mobility"

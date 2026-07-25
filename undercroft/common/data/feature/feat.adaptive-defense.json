@@ -9,6 +9,7 @@
     "type": "passive-or-triggered",
     "text": "The creature has resistance to the first damage type that hits it in each combat."
   },
+  "budgetCost": 2,
   "tags": {
     "behaviors": [
       "defense"
