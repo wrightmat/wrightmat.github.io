@@ -158,7 +158,7 @@
                   <span class="visually-hidden">Export JSON</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2 d-none"
+                  class="btn btn-outline-danger p-2 d-none"
                   type="button"
                   data-action="clear-canvas"
                   data-workbench-view-panel="template"
@@ -172,7 +172,7 @@
                 </button>
 
                 <button
-                  class="btn btn-outline-success p-2"
+                  class="btn btn-outline-primary p-2"
                   type="button"
                   data-action="new-character"
                   data-workbench-view-panel="edit"
@@ -183,6 +183,19 @@
                 >
                   <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
                   <span class="visually-hidden">New Character</span>
+                </button>
+                <button
+                  class="btn btn-outline-success p-2 d-none"
+                  type="button"
+                  data-action="save-character"
+                  data-workbench-view-panel="edit"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Save"
+                  aria-label="Save"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                  <span class="visually-hidden">Save</span>
                 </button>
                 <button
                   class="btn btn-outline-secondary p-2"
@@ -196,19 +209,6 @@
                 >
                   <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
                   <span class="visually-hidden">Export JSON</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary p-2 d-none"
-                  type="button"
-                  data-action="save-character"
-                  data-workbench-view-panel="edit"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Save"
-                  aria-label="Save"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                  <span class="visually-hidden">Save</span>
                 </button>
                 <button
                   class="btn btn-outline-danger p-2 d-none"
@@ -320,7 +320,7 @@
                 </button>
                 <div class="collapse" id="template-json-preview">
                   <div class="bg-body p-2 mt-2">
-                    <pre class="text-body-secondary small overflow-auto mb-0 workbench-json-preview" style="max-height: 16rem" data-json-preview>{}</pre>
+                    <pre class="text-body-secondary small overflow-auto mb-0 json-preview-text" style="max-height: 16rem" data-json-preview>{}</pre>
                   </div>
                 </div>
               </section>
@@ -348,25 +348,21 @@
                 ></textarea>
               </div>
             </section>
-            <section class="pane-card d-flex flex-column gap-3" data-workbench-view-panel="play edit" data-json-section>
-              <div class="d-flex align-items-center justify-content-between">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">JSON Preview</h2>
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge text-bg-secondary" data-character-preview-bytes>0 B</span>
-                  <button
-                    class="btn btn-link btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle text-decoration-none p-0"
-                    type="button"
-                    data-json-toggle
-                    aria-expanded="false"
-                  >
-                    <span class="iconify" data-json-toggle-icon data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                    <span class="visually-hidden" data-json-toggle-label>Expand JSON preview</span>
-                  </button>
-                </div>
-              </div>
-              <div class="d-flex flex-column gap-3" data-json-panel hidden>
-                <div class="bg-body p-2">
-                  <pre class="text-body-secondary small overflow-auto mb-0 workbench-json-preview" style="max-height: 16rem" data-character-json-preview>{}</pre>
+            <section class="pane-card" data-workbench-view-panel="play edit" data-json-section id="workbench-character-json">
+              <button
+                class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#workbench-character-json-preview"
+                aria-expanded="false"
+                aria-controls="workbench-character-json-preview"
+              >
+                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
+                <span class="badge text-bg-secondary" data-character-preview-bytes>0 B</span>
+              </button>
+              <div class="collapse" id="workbench-character-json-preview">
+                <div class="bg-body p-2 mt-2">
+                  <pre class="text-body-secondary small overflow-auto mb-0 json-preview-text" style="max-height: 16rem" data-character-json-preview>{}</pre>
                 </div>
               </div>
             </section>
@@ -388,9 +384,8 @@
             </section>
           </div>
         </aside>
-        <main class="workbench-main flex-grow-1 bg-body-secondary py-4">
-          <div class="container-xl d-flex flex-column gap-4">
-            <ul class="nav nav-pills mb-0" role="tablist" data-workbench-view-tabs>
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
+            <ul class="nav nav-tabs mb-0" role="tablist" data-workbench-view-tabs>
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link"
@@ -411,24 +406,22 @@
               </li>
             </ul>
             <section class="d-flex flex-column gap-4 d-none" data-workbench-view-panel="template">
-              <div class="card border-0 shadow-theme">
+              <div class="card shadow-theme">
                 <div class="card-header bg-body d-flex justify-content-between align-items-center">
                   <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Selections</h2>
                   <div class="d-flex align-items-center gap-2">
                     <button
-                      class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                      class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center collapsible-toggle"
                       type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target="#template-selections"
+                      data-selections-toggle
                       aria-expanded="true"
-                      aria-controls="template-selections"
                     >
                       <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
                       <span class="visually-hidden">Toggle selections</span>
                     </button>
                   </div>
                 </div>
-                <div class="collapse show" id="template-selections">
+                <div data-selections-panel>
                   <div class="card-body">
                     <div class="row g-3 align-items-end">
                       <div class="col-12 col-md-4 col-lg-3">
@@ -442,7 +435,7 @@
                   </div>
                 </div>
               </div>
-              <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
+              <div class="card shadow-theme flex-grow-1 min-h-24rem">
                 <div class="card-body d-flex flex-column gap-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
@@ -454,7 +447,7 @@
             </section>
 
             <section class="d-flex flex-column gap-4" data-workbench-view-panel="play edit">
-              <div class="card border-0 shadow-theme" data-character-toolbar>
+              <div class="card shadow-theme" data-character-toolbar>
                 <div class="card-body">
                   <div class="row g-3 align-items-end">
                     <div class="col-12 col-lg-4 col-xl-3">
@@ -467,7 +460,7 @@
                   </div>
                 </div>
               </div>
-              <div class="card border-0 shadow-theme flex-grow-1 min-h-24rem">
+              <div class="card shadow-theme flex-grow-1 min-h-24rem">
                 <div class="card-body d-flex flex-column gap-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sheet</h2>
@@ -477,7 +470,6 @@
                 </div>
               </div>
             </section>
-          </div>
         </main>
         <aside
           class="workbench-pane border-start border-body-tertiary bg-body-tertiary flex-shrink-0 workbench-sidebar-lg"
@@ -491,12 +483,10 @@
               <div class="d-flex justify-content-between align-items-center">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Template Properties</h2>
                 <button
-                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center collapsible-toggle"
                   type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#template-properties-collapse"
+                  data-template-properties-toggle
                   aria-expanded="true"
-                  aria-controls="template-properties-collapse"
                 >
                   <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
                   <span class="visually-hidden">Toggle template properties</span>
@@ -505,7 +495,7 @@
               <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Template management">
                 <div class="btn-group" role="group">
                   <button
-                    class="btn btn-outline-success p-2"
+                    class="btn btn-outline-primary p-2"
                     type="button"
                     data-action="new-template"
                     data-bs-toggle="tooltip"
@@ -517,7 +507,20 @@
                     <span class="visually-hidden">New Template</span>
                   </button>
                   <button
-                    class="btn btn-outline-primary p-2 d-none"
+                    class="btn btn-outline-success p-2 d-none"
+                    type="button"
+                    data-action="save-template"
+                    data-workbench-view-panel="template"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Save"
+                    aria-label="Save"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
+                    <span class="visually-hidden">Save</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-success p-2 d-none"
                     type="button"
                     data-action="duplicate-template"
                     data-duplicate-template
@@ -541,22 +544,9 @@
                     <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
                     <span class="visually-hidden">Delete Template</span>
                   </button>
-                  <button
-                    class="btn btn-outline-secondary p-2 d-none"
-                    type="button"
-                    data-action="save-template"
-                    data-workbench-view-panel="template"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Save"
-                    aria-label="Save"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
-                    <span class="visually-hidden">Save</span>
-                  </button>
                 </div>
               </div>
-              <div class="collapse show" id="template-properties-collapse">
+              <div data-template-properties-panel>
                 <div class="d-flex flex-column gap-3 fs-6" data-template-properties>
                   <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select or create a template to edit its properties.</p>
                 </div>
@@ -568,18 +558,16 @@
                   <span class="align-middle" data-help-topic="template.properties" data-help-insert="replace"></span>
                 </h2>
                 <button
-                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                  class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center collapsible-toggle"
                   type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#component-properties-collapse"
+                  data-component-properties-toggle
                   aria-expanded="false"
-                  aria-controls="component-properties-collapse"
                 >
-                  <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
                   <span class="visually-hidden">Toggle component properties</span>
                 </button>
               </div>
-              <div class="collapse" id="component-properties-collapse">
+              <div data-component-properties-panel>
                 <div class="d-flex flex-column gap-3 fs-6" data-inspector>
                   <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a component on the canvas to edit its settings.</p>
                 </div>

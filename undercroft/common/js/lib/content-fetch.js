@@ -5,12 +5,17 @@
 // press/js/source-data.js now re-exports from this module unchanged.
 
 import { applyMapping } from "./mapping-engine.js";
-import { LOOKUP_TABLES } from "./lookup-tables.js";
-import { customFunctions } from "./mapping-custom-functions.js";
+import { deriveLookupTables } from "./system-lookup-tables.js";
+import { createMappingCustomFunctions } from "./mapping-custom-functions.js";
 
 const SRD_BASE_URL = "https://www.dnd5eapi.co";
 const DDB_CHARACTER_URL = "https://character-service.dndbeyond.com/character/v5/character/";
 const CORS_PROXY = "https://corsproxy.io/?url=";
+// The DDB-import pipeline is inherently D&D-5e-specific (D&D Beyond only ever
+// has 5e content) — hardcoding which System record to derive lookup tables
+// from is the same degree of specificity loadCharacterMappingDefinition
+// below already has for ddb-character.json.
+const DND5E_SYSTEM_ID = "sys.dnd5e";
 
 // The browser's own SyntaxError for malformed JSON only ever gives a
 // position/line/column — never which fetch it came from. Every
@@ -159,13 +164,30 @@ function loadCharacterMappingDefinition() {
   return characterMappingPromise;
 }
 
-export async function loadDdbData(value) {
+// The System's fields don't change mid-session, so — same reasoning as
+// loadCharacterMappingDefinition above — fetched once and cached rather than
+// re-fetched on every character/monster import. `{ preferLocal: false }`:
+// a Loom edit to sys.dnd5e's fields (adding/renaming a condition, alignment,
+// skill, ...) must be visible immediately, not hidden behind a stale local
+// cache — same convention as combat-tracker.js's System reads.
+let ddbLookupTablesPromise = null;
+function loadDdbLookupTables(dataManager) {
+  if (!dataManager) return Promise.resolve(deriveLookupTables(null));
+  if (!ddbLookupTablesPromise) {
+    ddbLookupTablesPromise = dataManager
+      .get("system", DND5E_SYSTEM_ID, { preferLocal: false })
+      .then((result) => deriveLookupTables(result?.payload));
+  }
+  return ddbLookupTablesPromise;
+}
+
+export async function loadDdbData(value, dataManager) {
   const raw = await loadDdbRawData(value);
   if (detectDdbContentType(value)) {
     return raw;
   }
-  const definition = await loadCharacterMappingDefinition();
-  return applyMapping(definition, raw, { lookupTables: LOOKUP_TABLES, customFunctions });
+  const [definition, lookupTables] = await Promise.all([loadCharacterMappingDefinition(), loadDdbLookupTables(dataManager)]);
+  return applyMapping(definition, raw, { lookupTables, customFunctions: createMappingCustomFunctions(lookupTables) });
 }
 
 export function normalizeSrdInput(value) {
@@ -393,7 +415,7 @@ export async function loadSourceData(source, value, dataManager) {
   }
   switch (source.id) {
     case "ddb":
-      return loadDdbData(value);
+      return loadDdbData(value, dataManager);
     case "srd":
       return loadSrdData(value);
     case "library":

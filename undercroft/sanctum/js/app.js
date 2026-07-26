@@ -1,5 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
-import { initAuthControls } from "../../common/js/lib/auth-ui.js";
+import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
@@ -19,6 +19,15 @@ import {
 import { generateLocation } from "./lib/generator.js";
 import { createLocationRecord, toPressExportShape } from "./lib/location-schema.js";
 import { generateLocationNote } from "./lib/llm-note.js";
+import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
+import {
+  listAllSystems,
+  findById,
+  featureLabel as sharedFeatureLabel,
+  readLockedFeatureIds as sharedReadLockedFeatureIds,
+  exportRecordAsJson,
+  generateNoteForRecord,
+} from "../../common/js/lib/generator-kit.js";
 
 const ASSET_NEED_KINDS = ["resource", "npc", "monster", "effect"];
 
@@ -121,19 +130,15 @@ const elements = {
   addFallbackNameButton: document.querySelector("[data-add-fallback-name]"),
   notesText: document.querySelector("[data-notes-text]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
-  jsonToggle: document.querySelector("[data-json-toggle]"),
-  jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
-  jsonPanel: document.querySelector("[data-json-panel]"),
   jsonPreview: document.querySelector("[data-location-json-preview]"),
   jsonBytes: document.querySelector("[data-location-json-bytes]"),
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
+  inspectorToggle: document.querySelector("[data-inspector-toggle]"),
+  inspectorToggleLabel: document.querySelector("[data-inspector-toggle-label]"),
+  inspectorPanel: document.querySelector("[data-inspector-panel]"),
 };
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
-}
 
 function slugify(name) {
   return (
@@ -149,20 +154,8 @@ function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
 
-// --- Systems (own small copy, same as Crucible/Vault/Forge each keep) ------
-async function listAllSystems() {
-  if (!dataManager) return [];
-  try {
-    const listing = await dataManager.list("systems");
-    const entries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
-    return entries.map((entry) => ({ id: entry.id, title: entry.title || entry.id })).sort((a, b) => a.title.localeCompare(b.title));
-  } catch (error) {
-    return [];
-  }
-}
-
 async function populateSystemSelect() {
-  const systems = await listAllSystems();
+  const systems = await listAllSystems(dataManager);
   const previous = elements.systemSelect?.value;
   if (!elements.systemSelect) return systems;
   elements.systemSelect.innerHTML = "";
@@ -207,46 +200,12 @@ async function populateSettingSelect(systemId) {
 // `ownership: "local"` — those are always deletable, since it's just the
 // current browser's own storage with no real access-control question.
 async function refreshSettingCatalog(ids) {
-  settingCatalog = new Map();
-  if (!dataManager || !ids.length) return;
-  const idSet = new Set(ids);
-  try {
-    const listing = await dataManager.list("setting", { refresh: true });
-    const remoteEntries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
-    remoteEntries.forEach((entry) => {
-      if (!idSet.has(entry.id)) return;
-      settingCatalog.set(entry.id, {
-        ownerId: entry.owner_id ?? entry.ownerId ?? null,
-        ownerUsername: entry.owner_username || entry.ownerUsername || "",
-        permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
-      });
-    });
-    (listing.local || []).forEach((entry) => {
-      if (!idSet.has(entry.id) || settingCatalog.has(entry.id)) return;
-      settingCatalog.set(entry.id, { ownership: "local" });
-    });
-  } catch (error) {
-    // leave settingCatalog empty — Delete stays gated off defensively
-  }
+  settingCatalog = await refreshOwnershipCatalog(dataManager, "setting", ids);
 }
 
 // Owner-or-admin, same rule as Loom's systemAllowsDelete/libraryEntryAllowsDelete.
 function settingAllowsDelete(id) {
-  if (!id) return false;
-  if (dataManager?.getUserTier() === "admin") return true;
-  const metadata = settingCatalog.get(id);
-  if (!metadata) return false;
-  if (metadata.ownership === "local") return true;
-  if (metadata.permissions === "edit") return true;
-  const user = dataManager?.session?.user;
-  if (!user || !dataManager.isAuthenticated()) return false;
-  if (metadata.ownerId !== null && metadata.ownerId !== undefined && user.id !== undefined && user.id !== null) {
-    if (String(metadata.ownerId) === String(user.id)) return true;
-  }
-  if (metadata.ownerUsername && user.username) {
-    return metadata.ownerUsername.toLowerCase() === user.username.toLowerCase();
-  }
-  return false;
+  return allowsDelete(settingCatalog, id, { dataManager });
 }
 
 function createSettingSnapshot() {
@@ -317,46 +276,12 @@ async function reloadLocationsForSetting(settingId) {
 // comes from the list response (owned/shared/public + local), not the full
 // fetched body, and local-only entries are always deletable.
 async function refreshLocationCatalog(ids) {
-  locationCatalog = new Map();
-  if (!dataManager || !ids.length) return;
-  const idSet = new Set(ids);
-  try {
-    const listing = await dataManager.list("location", { refresh: true });
-    const remoteEntries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
-    remoteEntries.forEach((entry) => {
-      if (!idSet.has(entry.id)) return;
-      locationCatalog.set(entry.id, {
-        ownerId: entry.owner_id ?? entry.ownerId ?? null,
-        ownerUsername: entry.owner_username || entry.ownerUsername || "",
-        permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
-      });
-    });
-    (listing.local || []).forEach((entry) => {
-      if (!idSet.has(entry.id) || locationCatalog.has(entry.id)) return;
-      locationCatalog.set(entry.id, { ownership: "local" });
-    });
-  } catch (error) {
-    // leave locationCatalog empty — Delete stays gated off defensively
-  }
+  locationCatalog = await refreshOwnershipCatalog(dataManager, "location", ids);
 }
 
 // Owner-or-admin, same rule as settingAllowsDelete/Loom's systemAllowsDelete.
 function locationAllowsDelete(id) {
-  if (!id) return false;
-  if (dataManager?.getUserTier() === "admin") return true;
-  const metadata = locationCatalog.get(id);
-  if (!metadata) return false;
-  if (metadata.ownership === "local") return true;
-  if (metadata.permissions === "edit") return true;
-  const user = dataManager?.session?.user;
-  if (!user || !dataManager.isAuthenticated()) return false;
-  if (metadata.ownerId !== null && metadata.ownerId !== undefined && user.id !== undefined && user.id !== null) {
-    if (String(metadata.ownerId) === String(user.id)) return true;
-  }
-  if (metadata.ownerUsername && user.username) {
-    return metadata.ownerUsername.toLowerCase() === user.username.toLowerCase();
-  }
-  return false;
+  return allowsDelete(locationCatalog, id, { dataManager });
 }
 
 function canDeleteLocation() {
@@ -745,13 +670,8 @@ function selectInspectorEntry(row, entity) {
 }
 
 // --- Identity / Features / Assets / Needs / Relationships rendering --------
-function findById(list, id) {
-  return list.find((entry) => entry.id === id) || null;
-}
-
 function featureLabel(id) {
-  const feature = findById(features, id);
-  return feature ? feature.name || feature.id : id;
+  return sharedFeatureLabel(features, id);
 }
 
 function locationLabel(id) {
@@ -976,8 +896,7 @@ function renderLocation(record) {
 }
 
 function readLockedFeatureIds() {
-  if (!elements.lockedFeatures) return [];
-  return Array.from(elements.lockedFeatures.selectedOptions).map((option) => option.value);
+  return sharedReadLockedFeatureIds(elements.lockedFeatures);
 }
 
 // --- Generate / Save / Export / Note ----------------------------------------
@@ -1047,66 +966,45 @@ function handleExport() {
   if (!currentRecord) return;
   currentRecord.name = elements.nameInput?.value || "";
   currentRecord.notes = elements.notesText?.value || "";
-  const record = toPressExportShape(currentRecord);
-  const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${record.name || record.id}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
+  exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
 async function handleGenerateNote() {
-  if (!currentRecord) return;
-  currentRecord.name = elements.nameInput?.value || "";
-  const originalHtml = elements.generateNoteButton?.innerHTML;
-  if (elements.generateNoteButton) {
-    elements.generateNoteButton.disabled = true;
-    elements.generateNoteButton.innerHTML =
-      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating…';
-  }
-  try {
-    const environmentLabel = currentRecord.environment
-      ? environmentPropertyType?.values?.find((value) => value.id === currentRecord.environment)?.label || currentRecord.environment
-      : "";
-    const { name, note } = await generateLocationNote({
-      name: currentRecord.name || "",
-      typeLabel: currentRecord.typeId ? findById(locationTypes, currentRecord.typeId)?.name || currentRecord.typeId : "",
-      purposeLabel: currentRecord.purposeId ? findById(locationPurposes, currentRecord.purposeId)?.name || currentRecord.purposeId : "",
-      environmentLabel,
-      features: currentRecord.featureIds.map((featureId) => {
-        const feature = findById(features, featureId);
-        return { name: feature?.name || featureId, description: feature?.description || "" };
-      }),
-      assets: (currentRecord.assets || []).map((entry) => entry.label || referenceLabel(entry.kind, entry.refId)),
-      needs: (currentRecord.needs || []).map((entry) => entry.label || referenceLabel(entry.kind, entry.refId)),
-    });
-    currentRecord.name = name;
-    currentRecord.notes = note;
-    if (elements.nameInput) elements.nameInput.value = name;
-    if (elements.notesText) elements.notesText.value = note;
-    // Programmatic .value assignment doesn't fire input/change, so the
-    // delegated dirty-check listener won't see this — refresh explicitly.
-    updateActionButtons();
-    status?.show("Note generated.", { type: "success", timeout: 1500 });
-  } catch (error) {
-    status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
-  } finally {
-    if (elements.generateNoteButton) {
-      elements.generateNoteButton.disabled = false;
-      elements.generateNoteButton.innerHTML = originalHtml;
-    }
-  }
+  const success = await generateNoteForRecord({
+    record: currentRecord,
+    elements,
+    status,
+    generateNote: generateLocationNote,
+    buildRequestBody: (record) => {
+      const environmentLabel = record.environment
+        ? environmentPropertyType?.values?.find((value) => value.id === record.environment)?.label || record.environment
+        : "";
+      return {
+        name: record.name || "",
+        typeLabel: record.typeId ? findById(locationTypes, record.typeId)?.name || record.typeId : "",
+        purposeLabel: record.purposeId ? findById(locationPurposes, record.purposeId)?.name || record.purposeId : "",
+        environmentLabel,
+        features: record.featureIds.map((featureId) => {
+          const feature = findById(features, featureId);
+          return { name: feature?.name || featureId, description: feature?.description || "" };
+        }),
+        assets: (record.assets || []).map((entry) => entry.label || referenceLabel(entry.kind, entry.refId)),
+        needs: (record.needs || []).map((entry) => entry.label || referenceLabel(entry.kind, entry.refId)),
+      };
+    },
+  });
+  // Programmatic .value assignment doesn't fire input/change, so the
+  // delegated dirty-check listener won't see this — refresh explicitly.
+  if (success) updateActionButtons();
 }
 
 // --- Wiring ------------------------------------------------------------------
 function initCollapsibles() {
-  bindCollapsibleToggle(elements.jsonToggle, elements.jsonPanel, {
-    collapsed: true,
-    expandLabel: "Expand JSON preview",
-    collapseLabel: "Collapse JSON preview",
-    labelElement: elements.jsonToggleLabel,
+  bindCollapsibleToggle(elements.inspectorToggle, elements.inspectorPanel, {
+    collapsed: false,
+    expandLabel: "Expand inspector",
+    collapseLabel: "Collapse inspector",
+    labelElement: elements.inspectorToggleLabel,
   });
   bindCollapsibleToggle(elements.settingToggle, elements.settingPanel, {
     collapsed: false,
@@ -1305,7 +1203,7 @@ async function init() {
 
   elements.deleteSettingButton?.addEventListener("click", async () => {
     if (!dataManager || !currentSettingId) return;
-    if (!window.confirm(`Delete setting "${currentSettingId}"? This can't be undone.`)) return;
+    if (!confirmDelete({ label: `setting "${currentSettingId}"` })) return;
     try {
       await dataManager.delete("setting", currentSettingId);
       status?.show("Deleted.", { type: "success", timeout: 2000 });
@@ -1337,7 +1235,7 @@ async function init() {
 
   elements.deleteLocationButton?.addEventListener("click", async () => {
     if (!dataManager || !currentLocationId) return;
-    if (!window.confirm(`Delete location "${currentLocationId}"? This can't be undone.`)) return;
+    if (!confirmDelete({ label: `location "${currentLocationId}"` })) return;
     const settingId = currentSettingId || elements.settingSelect?.value || null;
     try {
       await dataManager.delete("location", currentLocationId);

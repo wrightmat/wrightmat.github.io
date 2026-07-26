@@ -7,6 +7,7 @@
 // combatScaling field (tables.js#loadCombatScalingLevels) exactly the way
 // Vault pulls Rarity/Activation/Form from its own generator-property fields.
 import { loadCombatScalingLevels, loadDamageTypesPropertyType } from "./tables.js";
+import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 
 function pickRandom(list, random) {
   if (!list.length) return null;
@@ -50,15 +51,6 @@ function diceExpressionForAverage(average) {
 function resolveCombatScalingLevel(levels, combatScalingId, random) {
   if (!levels.length) return null;
   return (combatScalingId && levels.find((level) => level.id === combatScalingId)) || pickRandom(levels, random);
-}
-
-// Standard D&D 5e ability-modifier formula. Combat Tracker's "Roll
-// Initiative" button reads this via the System's combatBindings
-// (sys.dnd5e.json's initiativeModifier: "@stats.initiativeBonus") rather
-// than deriving it itself, keeping that D&D-specific math here in the 5e
-// generator instead of hardcoded in system-agnostic tracker code.
-function abilityModifier(score) {
-  return Math.floor((Number(score) - 10) / 2);
 }
 
 function deriveAbilities(role) {
@@ -174,6 +166,10 @@ export async function deriveStats({
       // A freshly generated monster is undamaged, so current starts at max.
       hitPoints: { max: hitPoints, current: hitPoints },
       abilities,
+      // Combat Tracker's "Roll Initiative" button reads this via the
+      // System's combatBindings (sys.dnd5e.json's Initiative modifier
+      // binding) rather than deriving it itself — the D&D-specific math
+      // stays here in the 5e generator, not in system-agnostic tracker code.
       initiativeBonus: abilityModifier(abilities.dexterity),
       saveDC,
       damageResistances: creatureType?.defaultResistances || [],

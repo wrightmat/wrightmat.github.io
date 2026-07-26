@@ -34,11 +34,17 @@ function slugify(name) {
     .replace(/(^-|-$)/g, "");
 }
 
-function toLegacyPropertyType(field) {
+// setsBudgetCeiling isn't System data at all — which field acts as the
+// ceiling is Vault's own tool-level preference (which field Vault's
+// generator should treat specially), not part of the game system's schema.
+// It's supplied here by the caller (see vault/js/app.js's local
+// budgetCeilingField preference, stored per System in this browser) rather
+// than read off the System record.
+function toLegacyPropertyType(field, budgetCeilingField) {
   return {
     id: field.key,
     label: field.label || field.key,
-    setsBudgetCeiling: !!field.setsBudgetCeiling,
+    setsBudgetCeiling: field.key === budgetCeilingField,
     values: (field.values || []).map((value) => ({
       id: slugify(value.name),
       label: value.name,
@@ -51,12 +57,15 @@ function toLegacyPropertyType(field) {
 // propertyTypes lives on one specific System record, not a systemId-filtered
 // list of a kind's entries — fetched directly via dataManager.get, the same
 // way Loom's own System editor reads a System record.
-export async function getSystemPropertyTypes(dataManager, systemId) {
+// preferLocal: false — a Loom edit to the System's fields must be visible
+// immediately, not hidden behind a stale local cache. Same reasoning as
+// combat-tracker.js's System reads.
+export async function getSystemPropertyTypes(dataManager, systemId, budgetCeilingField = "") {
   if (!dataManager || !systemId) return [];
   try {
-    const result = await dataManager.get("systems", systemId);
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    return fields.filter(isGeneratorPropertyField).map(toLegacyPropertyType);
+    return fields.filter(isGeneratorPropertyField).map((field) => toLegacyPropertyType(field, budgetCeilingField));
   } catch (error) {
     return [];
   }

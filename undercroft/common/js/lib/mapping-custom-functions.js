@@ -14,9 +14,22 @@
 // pipeline-step custom function receives (currentValue, context, args, env).
 // `context.root` is always the original raw character object, regardless of
 // how deep the mapping tree has descended.
+import { resolveDottedPath as resolvePath } from "./dotted-path.js";
 
-import { ABILITIES, SAVING_THROW_SUBTYPES, SKILLS, SIZES } from "./lookup-tables.js";
-
+// Factory rather than a static export: ABILITIES/SAVING_THROW_SUBTYPES/
+// SKILLS/SIZES used to be static imports from common/js/lib/lookup-tables.js
+// (a hardcoded module); they're now derived at runtime from the active D&D
+// 5e System record (see common/js/lib/system-lookup-tables.js's
+// deriveLookupTables), so this whole module becomes a factory closing over
+// whatever the caller derived, called once per DDB import (content-fetch.js,
+// loom/js/app.js) rather than a module-level singleton. Every function body
+// below is otherwise unchanged from the previous static-import version.
+export function createMappingCustomFunctions({
+  abilities: ABILITIES,
+  savingThrowSubtypes: SAVING_THROW_SUBTYPES,
+  skills: SKILLS,
+  sizes: SIZES,
+}) {
 // Best-effort text parsing for D&D Beyond's scraped "Core <Class> Traits"
 // values (plain descriptive strings, e.g. "D12 per Barbarian level" or
 // "Strength and Constitution") into the 5e API's more structured shapes
@@ -229,12 +242,6 @@ function slugify(value) {
     .replace(/'/g, "") // "Explorer's Pack" -> "explorers-pack", matching the 5e API's own index convention
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
-}
-
-function resolvePath(obj, path) {
-  return String(path || "")
-    .split(".")
-    .reduce((acc, key) => (acc && typeof acc === "object" ? acc[key] : undefined), obj);
 }
 
 function formatSigned(value) {
@@ -490,7 +497,7 @@ function determineSpellcastingAbility(classes) {
 
 // --- Registered custom functions (referenced by name from mapping JSON) ---
 
-export const customFunctions = {
+return {
   // `args.path` defaults to "name"; use e.g. {"path":"root.name"} to slug the
   // root/parent entity's name instead of the current context's own name.
   slug(context, args) {
@@ -769,4 +776,5 @@ export const customFunctions = {
     }
     return entries;
   },
-};
+  };
+}

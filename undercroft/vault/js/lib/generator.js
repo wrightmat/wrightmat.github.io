@@ -287,15 +287,3 @@ export function generateEffect(allFeatures, propertyTypes, options = {}) {
   };
 }
 
-// Re-runs generation fresh with the previous properties/signature pinned
-// (unless overridden) but the supporting traversal free to differ — mirrors
-// Crucible's rerollMonster, which likewise re-runs the full recipe rather
-// than locking in every previously-selected feature.
-export function rerollEffect(allFeatures, propertyTypes, record, overrides = {}) {
-  return generateEffect(allFeatures, propertyTypes, {
-    systemId: record.systemIds?.[0] || null,
-    signatureFeatureId: record.signatureFeatureId,
-    propertyOverrides: record.properties,
-    ...overrides,
-  });
-}

@@ -10,6 +10,7 @@ import { initGameLogWidget } from "./common/js/lib/widgets/game-log.js";
 import { initNowShowingWidget } from "./common/js/lib/widgets/now-showing.js";
 import { initCombatTrackerWidget } from "./common/js/lib/widgets/combat-tracker.js";
 import { resolveGroupContext } from "./common/js/lib/widgets/group-context.js";
+import { el } from "./common/js/lib/dom.js";
 
 const LOCAL_LAYOUT_KEY = "undercroft.dashboard.layout";
 const SORTABLE_GROUP = "dashboard-widgets";
@@ -178,13 +179,6 @@ const addPanel = document.querySelector("[data-dashboard-add-widget]");
 const addSelect = document.querySelector("[data-dashboard-add-select]");
 const addButton = document.querySelector("[data-dashboard-add-button]");
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
-
 function allWidgetIds() {
   return layout.columns.flat();
 }
@@ -194,7 +188,7 @@ function findWidgetColumnIndex(id) {
 }
 
 function createWidgetCard(id, label) {
-  const card = el("div", "card border-0 shadow-theme dashboard-widget-card");
+  const card = el("div", "card shadow-theme dashboard-widget-card");
   card.dataset.widgetId = id;
   const body = el("div", "card-body d-flex flex-column gap-2");
   const header = el("div", "d-flex justify-content-between align-items-center");

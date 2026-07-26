@@ -169,17 +169,3 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     notes: "",
   };
 }
-
-// Rerolls in place: keeps whichever axis/feature the caller pins (mirroring
-// Forge's per-attribute reroll — rerolling one thing doesn't reroll
-// everything), regenerating only what's left unpinned.
-export function rerollMonster(allCreatureTypes, allArchetypes, allRoles, allFeatures, record, overrides = {}) {
-  return generateMonster(allCreatureTypes, allArchetypes, allRoles, allFeatures, {
-    systemId: record.systemIds?.[0] || null,
-    creatureTypeId: record.creatureTypeId,
-    archetypeId: record.archetypeId,
-    roleId: record.roleId,
-    signatureFeatureId: record.signatureFeatureId,
-    ...overrides,
-  });
-}

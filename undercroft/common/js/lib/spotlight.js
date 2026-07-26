@@ -59,7 +59,7 @@ async function listPrintTemplates(dataManager) {
 // an "Open" link instead of fetching+rendering a card), so the template
 // picker is irrelevant and skipped entirely rather than shown as a confusing
 // dropdown with nothing appropriate to pick.
-const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
+export const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
 
 // Resolves once the modal closes: true if a spotlight entry was posted,
 // false if the GM cancelled. Callers generally don't need the result — it's

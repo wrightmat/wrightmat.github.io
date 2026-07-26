@@ -51,18 +51,47 @@ function slugify(name) {
 // sys.dnd5e.json's own copy) — absent on a System means no scaling data,
 // which callers should treat as "derive nothing, or a bare minimum" rather
 // than an error.
-export async function loadCombatScalingLevels(dataManager, systemId) {
-  if (!dataManager || !systemId) return [];
+//
+// Which field supplies this data is Crucible's own tool preference (like
+// Vault's Budget ceiling field — see vault/js/app.js), not System data: a
+// different generator entirely might not care about combat scaling at all,
+// or a System might want to reuse the same field for a different purpose.
+// Defaults to "combatScaling" so existing Systems keep working without
+// needing to set anything.
+export async function loadCombatScalingLevels(dataManager, systemId, combatScalingField = "combatScaling") {
+  if (!dataManager || !systemId || !combatScalingField) return [];
   try {
-    const result = await dataManager.get("systems", systemId);
+    // preferLocal: false — a Loom edit to the System's fields must be
+    // visible immediately, not hidden behind a stale local cache. Same
+    // reasoning as combat-tracker.js's System reads.
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "array" && entry.key === "combatScaling");
+    const field = fields.find((entry) => entry.type === "array" && entry.key === combatScalingField);
     if (!field) return [];
     return (field.values || []).map((value, index) => ({
       id: value.id || slugify(value.name) || `combat-scaling-${index}`,
       name: value.name || value.label || String(value.id || index),
       ...value,
     }));
+  } catch (error) {
+    return [];
+  }
+}
+
+// Every top-level array field, so Crucible's "Combat scaling field" tool
+// preference dropdown can list all real candidates — deliberately not
+// filtered by shape (unlike Vault's cost/targetBudget-based
+// isGeneratorPropertyField) since a scaling field's own shape is whatever
+// stats this System's generator actually needs, not a fixed set this
+// function could check for.
+export async function listArrayFieldOptions(dataManager, systemId) {
+  if (!dataManager || !systemId) return [];
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    return fields
+      .filter((entry) => entry.type === "array")
+      .map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
   } catch (error) {
     return [];
   }

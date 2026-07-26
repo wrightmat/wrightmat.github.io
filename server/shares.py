@@ -306,6 +306,31 @@ def get_share_link(state: ServerState, content_type: str, content_id: str) -> Op
     }
 
 
+def get_share_links_batch(state: ServerState, content_type: str, content_ids: List[str]) -> Dict[str, Dict[str, str]]:
+    if not content_ids:
+        return {}
+    placeholders = ",".join("?" for _ in content_ids)
+    rows = state.db.execute(
+        f"""
+        SELECT content_id, token, permissions, created_at, last_accessed_at
+        FROM share_links
+        WHERE content_type = ? AND content_id IN ({placeholders})
+        """,
+        (content_type, *content_ids),
+    ).fetchall()
+    return {
+        row["content_id"]: {
+            "content_type": content_type,
+            "content_id": row["content_id"],
+            "token": row["token"],
+            "permissions": row["permissions"],
+            "created_at": row["created_at"],
+            "last_accessed_at": row["last_accessed_at"],
+        }
+        for row in rows
+    }
+
+
 def resolve_share_token(state: ServerState, token: str) -> Optional[Dict[str, str]]:
     if not token:
         return None

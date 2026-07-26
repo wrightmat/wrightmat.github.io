@@ -7,5 +7,7 @@
   "writeTier": "free",
   "maxPerOwner": {
     "free": 5
-  }
+  },
+  "titleFields": ["name", "data.name"],
+  "metadataFields": ["system", "template"]
 }

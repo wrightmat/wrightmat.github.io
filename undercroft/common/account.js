@@ -1,10 +1,12 @@
 import { initAppShell, resolveToolHref, resolveToolContextPath } from "./js/lib/app-shell.js";
-import { DataManager } from "./js/lib/data-manager.js";
+import { DataManager, ROLE_ORDER, WRITE_ROLE_REQUIREMENTS, roleRank } from "./js/lib/data-manager.js";
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
 import { initHelpSystem, loadHelpTopics } from "./js/lib/help.js";
 import { expandPane } from "./js/lib/panes.js";
+import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
+import { disableForm } from "./js/lib/dom.js";
 
 const { status } = initAppShell({ namespace: "account" });
 const loomHref = resolveToolHref("loom", resolveToolContextPath());
@@ -66,19 +68,14 @@ const OWNED_TYPE_LABELS = {
   system: "System",
 };
 
-const OWNER_ROLE_REQUIREMENTS = {
-  character: ["player", "gm", "creator", "admin"],
-  template: ["gm", "creator", "admin"],
-  system: ["creator", "admin"],
-};
-
-const ROLE_RANKS = {
-  free: 0,
-  player: 1,
-  gm: 2,
-  creator: 3,
-  admin: 4,
-};
+// The inverse of server/kinds.py's own _LEGACY_BUCKET_ALIASES — that file's
+// comment explains why: character/template/system predate the unified kind
+// registry and still use plural DataManager bucket names
+// ("characters"/"templates"/"systems") everywhere else in the client, while
+// this page's own item.bucket (from list_owned_content()) uses the singular
+// kind id like every other kind. WRITE_ROLE_REQUIREMENTS is keyed by the
+// plural form, so this translates before looking it up.
+const OWNER_BUCKET_ALIASES = { character: "characters", template: "templates", system: "systems" };
 
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
@@ -111,30 +108,22 @@ function currentUser() {
   return dataManager.session?.user || null;
 }
 
-function normalizeTier(tier) {
-  return typeof tier === "string" ? tier.trim().toLowerCase() : "";
-}
-
-function tierRank(tier) {
-  const normalized = normalizeTier(tier);
-  return normalized in ROLE_RANKS ? ROLE_RANKS[normalized] : -1;
-}
-
+// Derived from data-manager.js's own WRITE_ROLE_REQUIREMENTS/ROLE_ORDER
+// (imported) rather than a second hand-maintained tier list — this used to
+// be an independent OWNER_ROLE_REQUIREMENTS array that had already drifted
+// out of sync with it (excluding "free" from character ownership, while
+// WRITE_ROLE_REQUIREMENTS and character.json's own writeTier both already
+// agreed free tier can write/own a character).
 function tierMeetsOwnerRequirement(tier, bucket) {
-  const normalized = normalizeTier(tier);
-  const allowed = OWNER_ROLE_REQUIREMENTS[bucket];
-  if (!allowed || !allowed.length) {
+  const requirement = WRITE_ROLE_REQUIREMENTS[OWNER_BUCKET_ALIASES[bucket] || bucket];
+  if (!requirement) {
     return true;
   }
-  const minRank = Math.min(
-    ...allowed
-      .map((role) => tierRank(role))
-      .filter((rank) => rank >= 0),
-  );
-  if (!Number.isFinite(minRank)) {
+  const minRank = roleRank(requirement);
+  if (minRank < 0) {
     return true;
   }
-  return tierRank(normalized) >= minRank;
+  return roleRank(tier) >= minRank;
 }
 
 function resolveTabFromHash() {
@@ -643,8 +632,7 @@ function renderOwnedItems(rawItems, owner) {
 
     deleteButton.addEventListener("click", async () => {
       const typeLabel = OWNED_TYPE_LABELS[item.bucket] || item.bucket;
-      const confirmed = window.confirm(`Delete this ${typeLabel.toLowerCase()}? This cannot be undone.`);
-      if (!confirmed) {
+      if (!confirmDelete({ label: `this ${typeLabel.toLowerCase()}` })) {
         return;
       }
       deleteButton.disabled = true;
@@ -772,14 +760,6 @@ function setPasswordError(message = "") {
   }
 }
 
-function disableForm(form, disabled) {
-  if (!form) return;
-  Array.from(form.elements).forEach((element) => {
-    if (typeof element.disabled !== "undefined") {
-      element.disabled = disabled;
-    }
-  });
-}
 
 function handleAuthChanged() {
   renderQuickReference();
@@ -1125,7 +1105,7 @@ function renderQuickReference() {
   if (!elements.quickReference) return;
   elements.quickReference.innerHTML = "";
   const user = currentUser();
-  const eligible = user && tierRank(user.tier) >= tierRank("gm");
+  const eligible = user && roleRank(user.tier) >= roleRank("gm");
   if (!eligible) {
     const heading = document.createElement("h2");
     heading.className = "text-uppercase fs-6 fw-semibold text-body-secondary";

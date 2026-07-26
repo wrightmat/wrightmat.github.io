@@ -141,7 +141,7 @@
                 </button>
 
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-primary p-2"
                   type="button"
                   data-action="new-mapping"
                   data-loom-view-panel="import"
@@ -154,7 +154,7 @@
                   <span class="visually-hidden">New Mapping</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-action="save-mapping"
                   data-loom-view-panel="import"
@@ -183,7 +183,7 @@
                 </button>
 
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-primary p-2"
                   type="button"
                   data-library-new
                   data-loom-view-panel="library"
@@ -197,7 +197,7 @@
                   <span class="visually-hidden">New Entity</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-library-save
                   data-loom-view-panel="library"
@@ -228,7 +228,7 @@
                 </button>
 
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-primary p-2"
                   type="button"
                   data-system-new
                   data-loom-view-panel="systems"
@@ -242,7 +242,7 @@
                   <span class="visually-hidden">New System</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-system-save
                   data-loom-view-panel="systems"
@@ -273,7 +273,7 @@
                 </button>
 
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-primary p-2"
                   type="button"
                   data-loom-user-new
                   data-loom-view-panel="users"
@@ -287,7 +287,7 @@
                   <span class="visually-hidden">New User</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-loom-user-save
                   data-loom-view-panel="users"
@@ -318,7 +318,7 @@
                 </button>
 
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-primary p-2"
                   type="button"
                   data-loom-group-new
                   data-loom-view-panel="groups"
@@ -332,7 +332,7 @@
                   <span class="visually-hidden">New Group</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-loom-group-save
                   data-loom-view-panel="groups"
@@ -365,8 +365,11 @@
             </div>
 
             <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
-              <section class="d-flex flex-column gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Node Palette</h2>
+              <section class="d-flex flex-column gap-2" id="loom-node-palette">
+                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Node Palette</span>
+                  <span class="align-middle" data-help-topic="loom.nodePalette" data-help-insert="replace"></span>
+                </h2>
                 <div class="d-flex flex-column gap-1" data-node-palette>
                   <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="object">Object</button>
                   <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="field">Field</button>
@@ -374,7 +377,6 @@
                   <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="with">With</button>
                   <button class="btn btn-outline-secondary btn-sm text-start" type="button" data-palette-node-type="custom">Custom</button>
                 </div>
-                <p class="small text-body-secondary mb-0">Select a node in the tree, then click a palette entry to add it as a child (object fields) or step (pipelines).</p>
               </section>
 
               <section class="d-flex flex-column gap-2" data-step-palette-section hidden>
@@ -471,10 +473,43 @@
                 <div class="text-body-secondary small" data-loom-groups-message hidden></div>
               </section>
             </div>
+
+            <!-- Not wrapped in a data-loom-view-panel — shown for every tab,
+                 same as before this moved here from the right pane. mt-auto
+                 pushes it to the bottom of this pane regardless of how much
+                 (or little) content the active tab's own section above has. -->
+            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mt-auto">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Recent Saves</h2>
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center"
+                  type="button"
+                  data-recent-saves-refresh
+                  aria-label="Refresh recent saves"
+                >
+                  <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                  <span class="visually-hidden">Refresh</span>
+                </button>
+                <button
+                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                  type="button"
+                  data-recent-saves-toggle
+                  aria-expanded="false"
+                >
+                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                  <span class="visually-hidden" data-recent-saves-toggle-label>Expand recent saves</span>
+                </button>
+              </div>
+            </div>
+            <div class="d-flex flex-column gap-1" data-recent-saves-panel hidden>
+              <div class="d-flex flex-column gap-1" data-recent-saves>
+                <p class="small text-body-secondary mb-0">No saved entries yet.</p>
+              </div>
+            </div>
           </div>
         </aside>
 
-        <main class="workbench-main flex-grow-1 p-4 overflow-auto">
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto">
           <ul class="nav nav-tabs mb-3" role="tablist" data-loom-view-tabs>
             <li class="nav-item" role="presentation">
               <button class="nav-link active" type="button" role="tab" data-loom-view-tab="import" aria-selected="true">Import</button>
@@ -690,8 +725,7 @@
                         </button>
                       </div>
                       <div
-                        class="d-flex flex-column gap-2 border rounded-3 p-2 overflow-auto"
-                        style="max-height: 40vh;"
+                        class="d-flex flex-column gap-2 border rounded-3 p-2"
                         data-system-property-rows
                       ></div>
                     </section>
@@ -728,7 +762,6 @@
                         data-loom-group-members
                       ></div>
                       <div class="text-body-secondary small" data-loom-group-members-empty>No characters available to add.</div>
-                      <div class="text-body-secondary small">Check to add or remove a character from this group.</div>
                     </div>
                     <div class="d-flex flex-column gap-2">
                       <span class="badge text-bg-secondary align-self-start" data-loom-group-share-badge></span>
@@ -843,33 +876,69 @@
               </div>
               <hr class="border-body-tertiary opacity-50 my-2" />
             </div>
-            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Recent Saves</h2>
-              <div class="d-flex gap-2">
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center"
-                  type="button"
-                  data-recent-saves-refresh
-                  aria-label="Refresh recent saves"
-                >
-                  <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
-                  <span class="visually-hidden">Refresh</span>
-                </button>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-recent-saves-toggle
-                  aria-expanded="false"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-recent-saves-toggle-label>Expand recent saves</span>
-                </button>
+            <div class="d-flex flex-column gap-3" data-loom-view-panel="systems" hidden>
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Property Inspector</h2>
+              <p class="small text-body-secondary mb-0" data-system-inspector-empty>
+                Select a property from the list to edit it here — a second, more spacious way to edit the same
+                property, not a separate one.
+              </p>
+              <div class="d-flex flex-column gap-3 d-none" data-system-inspector-details>
+                <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Property actions">
+                  <div class="btn-group" role="group" aria-label="Property actions">
+                    <button
+                      class="btn btn-outline-primary p-2"
+                      type="button"
+                      data-system-inspector-new
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="New Property"
+                      aria-label="New Property"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:file-plus" aria-hidden="true"></span>
+                      <span class="visually-hidden">New Property</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-danger p-2"
+                      type="button"
+                      data-system-inspector-delete
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Delete Property"
+                      aria-label="Delete Property"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                      <span class="visually-hidden">Delete Property</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary p-2"
+                      type="button"
+                      data-system-inspector-duplicate
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Duplicate Property"
+                      aria-label="Duplicate Property"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:copy" aria-hidden="true"></span>
+                      <span class="visually-hidden">Duplicate Property</span>
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary p-2"
+                      type="button"
+                      data-system-inspector-required
+                      aria-pressed="false"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Mark as Required"
+                      aria-label="Mark as Required"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:asterisk" aria-hidden="true"></span>
+                      <span class="visually-hidden">Mark as Required</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-system-inspector-fields></div>
               </div>
-            </div>
-            <div class="d-flex flex-column gap-1" data-recent-saves-panel hidden>
-              <div class="d-flex flex-column gap-1" data-recent-saves>
-                <p class="small text-body-secondary mb-0">No saved entries yet.</p>
-              </div>
+              <hr class="border-body-tertiary opacity-50 my-2" />
             </div>
           </div>
         </aside>
@@ -877,7 +946,7 @@
     </div>
 
     <div class="container-lg py-5 my-5 d-none" data-tier-gate>
-      <div class="card border-0 shadow-theme mx-auto" style="max-width: 40rem;">
+      <div class="card shadow-theme mx-auto" style="max-width: 40rem;">
         <div class="card-body d-flex flex-column gap-3">
           <h2 class="card-title h4 mb-0">Access required</h2>
           <p class="text-body-secondary mb-0">

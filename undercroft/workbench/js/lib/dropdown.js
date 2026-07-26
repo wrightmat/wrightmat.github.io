@@ -28,20 +28,3 @@ export function populateSelect(select, options, { placeholder = null, clear = tr
     select.appendChild(option);
   });
 }
-
-export function populateDataList(list, options, { clear = true } = {}) {
-  if (!(list instanceof HTMLDataListElement)) {
-    throw new Error("populateDataList requires a datalist element");
-  }
-  if (clear) {
-    list.innerHTML = "";
-  }
-  options.forEach((value) => {
-    const option = document.createElement("option");
-    option.value = value.value || value;
-    if (value.label) {
-      option.label = value.label;
-    }
-    list.appendChild(option);
-  });
-}

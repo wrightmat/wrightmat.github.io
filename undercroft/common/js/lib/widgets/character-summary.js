@@ -7,19 +7,13 @@
 // group-context.js) — same character-drives-campaign logic Workbench
 // itself already uses.
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
+import { el } from "../dom.js";
 
 export function initCharacterSummaryWidget(container, { dataManager, pinnedCharacterId = "", onPin } = {}) {
   if (!container || !dataManager) {
     return { destroy() {} };
   }
   let destroyed = false;
-
-  function el(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
 
   async function loadOwnCharacters() {
     if (!dataManager.isAuthenticated()) {

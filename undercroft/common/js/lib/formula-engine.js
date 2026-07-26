@@ -1,3 +1,5 @@
+import { resolveDottedPath } from "./dotted-path.js";
+
 const SAFE_PATTERN = /^[0-9+\-*/().,@\s<>=!?&|%:'"_\[\]A-Za-z]+$/;
 
 const BASE_FUNCTIONS = {
@@ -29,15 +31,6 @@ const BASE_FUNCTIONS = {
   or: (...values) => values.some(Boolean),
   not: (value) => !value,
 };
-
-function resolvePath(context, path) {
-  return path.split(".").reduce((acc, key) => {
-    if (acc && typeof acc === "object" && key in acc) {
-      return acc[key];
-    }
-    return undefined;
-  }, context);
-}
 
 function coerceValue(value) {
   if (value === undefined || value === null) {
@@ -102,17 +95,12 @@ export function evaluateFormula(formula, context = {}, options = {}) {
     `const { ${functionNames.join(", ")} } = __fn; return (${normalizedExpression});`
   );
 
-  const getter = (path) => coerceValue(resolvePath(context, path));
+  // coerceValue turns a missing path into 0 — correct here since a formula
+  // is always a math context, but bindings.js deliberately does NOT do this
+  // (see its own comment) since a resolved binding can be a string/array/
+  // boolean where coercing to 0 would be wrong.
+  const getter = (path) => coerceValue(resolveDottedPath(context, path));
   return evaluator(getter, runtimeFunctions);
-}
-
-export function extractDependencies(formula) {
-  if (typeof formula !== "string") {
-    return [];
-  }
-  const sanitized = formula.trim().startsWith("=") ? formula.trim().slice(1) : formula;
-  const matches = sanitized.match(/@([A-Za-z0-9_.]+)/g) || [];
-  return Array.from(new Set(matches.map((token) => token.slice(1))));
 }
 
 export function listFormulaFunctions() {

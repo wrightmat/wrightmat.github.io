@@ -38,6 +38,13 @@ class ServerState:
     # brief moment it actually touches the shared `db` connection.
     pending_touches: Dict[Tuple[str, str], str] = field(default_factory=dict)
     touches_lock: threading.Lock = field(default_factory=threading.Lock)
+    # Kind registry files (undercroft/common/data/kind/{id}.json) are static
+    # at runtime — they're deploy-time/hand-edited data, not written by any
+    # route — so kinds.py#load_kind_policy caches its parsed result here for
+    # the process lifetime instead of re-reading+re-parsing the same file on
+    # every call (some request paths call it more than once). Cleared in
+    # reload() below since root_dir can change there.
+    kind_policy_cache: Dict[str, Dict[str, object]] = field(default_factory=dict)
 
     @classmethod
     def from_loader(cls, loader: ConfigLoader) -> "ServerState":
@@ -68,6 +75,7 @@ class ServerState:
             self.config = new_config
             self.mounts = dict(new_config.mounts)
             self.root_dir = self.config_loader.path.resolve().parent
+            self.kind_policy_cache = {}
 
     def get_mount(self, name: str) -> MountConfig:
         try:

@@ -32,15 +32,25 @@ same way as every other kind in the suite:
   separate concept or Library kind — they're ordinary array-type fields in a System
   record's `fields` (Loom's single "Properties" editor, the same place `classes`/
   `species`/etc. live), distinguished only by carrying a numeric `cost` or
-  `targetBudget` on every value; a field may additionally set `setsBudgetCeiling: true`,
-  meaning its chosen value's `targetBudget` becomes the generation's target budget while
-  every other such field's chosen value contributes its `cost` into the amount spent.
+  `targetBudget` on every value. Exactly one field is the ceiling-setter, named by
+  Vault's own `budgetCeilingField` **tool preference** — a per-System choice stored in
+  this browser's local storage (`js/app.js`'s `getBudgetCeilingFieldPreference`/
+  `setBudgetCeilingFieldPreference`, bucket `"vault-settings"`), picked from a dropdown
+  in Vault itself, not System data edited in Loom: which field acts as the ceiling is
+  Vault's own interpretive choice among a System's fields, not an objective fact about
+  the System's data model, so it never round-trips through the System record. That
+  field's chosen value's `targetBudget` becomes the generation's target budget while
+  every other generator-property field's chosen value contributes its `cost` into the
+  amount spent.
   Vault has **no hardcoded knowledge** of "Rarity"/"Activation"/"Form" as concepts — its
-  `js/lib/tables.js#getSystemPropertyTypes` reads `system.fields`, filters to fields
-  that qualify as generator properties, and translates them to the legacy
-  `{id, label, setsBudgetCeiling, values: [{id, label, cost, targetBudget}]}` shape the
-  rest of Vault's code (unchanged) already expects — `id` is a slugified form of each
-  value's `name`. A different System (a different game) can define a completely
+  `js/lib/tables.js#getSystemPropertyTypes` reads `system.fields` (plus the
+  `budgetCeilingField` preference, passed in as a parameter), filters to fields that
+  qualify as generator properties, and translates them to the legacy `{id, label,
+  setsBudgetCeiling, values: [{id, label, cost, targetBudget}]}` shape the rest of
+  Vault's code (unchanged) already expects — `setsBudgetCeiling` here is derived per
+  field (`field.key === budgetCeilingField`), not read from the field itself; `id` is a
+  slugified form of each value's `name`.
+  A different System (a different game) can define a completely
   different set of property types/values with zero Vault code changes, the same way
   adding a new Library kind requires zero server code changes. Every newly-created
   System is seeded with the 4 default generator-property fields (Rarity, Activation,

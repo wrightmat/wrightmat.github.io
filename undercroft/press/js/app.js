@@ -39,6 +39,7 @@ import { resolveBinding } from "../../common/js/lib/bindings.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
 import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
 import { collectDataFields } from "../../common/js/lib/data-fields.js";
+import { allowsDeleteForRecord, confirmDelete } from "../../common/js/lib/ownership.js";
 import {
   PATTERN_CATEGORIES,
   getPresetsByCategory,
@@ -1442,17 +1443,7 @@ function updateSaveState() {
 // duplicated locally, never saved) has no server-side row to delete at all.
 function templateAllowsDelete(template) {
   if (!template || template.origin === "draft") return false;
-  if (dataManager?.getUserTier() === "admin") return true;
-  if (template.permissions === "edit") return true;
-  const user = dataManager?.session?.user;
-  if (!user || !dataManager.isAuthenticated()) return false;
-  if (template.ownerId !== null && template.ownerId !== undefined && user.id !== undefined && user.id !== null) {
-    if (String(template.ownerId) === String(user.id)) return true;
-  }
-  if (template.ownerUsername && user.username) {
-    return template.ownerUsername.toLowerCase() === user.username.toLowerCase();
-  }
-  return false;
+  return allowsDeleteForRecord(template, { dataManager });
 }
 
 function updateTemplateDeleteState() {
@@ -1779,8 +1770,7 @@ async function deleteActiveTemplate() {
     status?.show("You don't have permission to delete this template.", { type: "error", timeout: 3000 });
     return;
   }
-  const confirmed = window.confirm(`Delete ${template.name || template.id}? This action cannot be undone.`);
-  if (!confirmed) {
+  if (!confirmDelete({ label: template.name || template.id })) {
     return;
   }
   try {

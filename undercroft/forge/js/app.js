@@ -1,5 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
-import { initAuthControls } from "../../common/js/lib/auth-ui.js";
+import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
@@ -25,6 +25,9 @@ import { generateNpc, rerollAttribute } from "./lib/generator.js";
 import { createNpcRecord, toPressExportShape } from "./lib/npc-schema.js";
 import { generateCharacterNote } from "./lib/llm-note.js";
 import { buildLocationPressTemplate } from "./lib/press-export.js";
+import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
+import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
+import { confirmDelete } from "../../common/js/lib/ownership.js";
 
 const systemSelect = document.querySelector("[data-system-select]");
 const settingSelect = document.querySelector("[data-setting-select]");
@@ -45,6 +48,7 @@ const noteText = document.querySelector("[data-note-text]");
 
 const saveButton = document.querySelector("[data-save-npc]");
 const exportButton = document.querySelector("[data-export-npc]");
+const deleteButton = document.querySelector("[data-delete-npc]");
 const npcJsonPreview = document.querySelector("[data-npc-json-preview]");
 const npcJsonBytes = document.querySelector("[data-npc-json-bytes]");
 
@@ -82,6 +86,12 @@ let status = null;
 let tables = null;
 let currentLocation = null;
 let currentRecord = null;
+// Gates Save (dirty relative to the last save) and Delete (only a record
+// that's actually been saved, not just generated/rerolled locally, can be
+// deleted) — see common/js/lib/dirty-gate.js. currentRecord is kept live
+// (every edit/reroll patches it directly, unlike Crucible's separate input
+// fields), so the snapshot is just its own export shape.
+const dirtyGate = createDirtyGate({ buildSnapshot: () => (currentRecord ? toPressExportShape(currentRecord) : null) });
 let selectedFieldKey = null;
 let dataManager = null;
 
@@ -115,15 +125,6 @@ const ABILITY_FIELD_DEFS = [
 
 const ABILITY_KEYS = new Set(ABILITY_FIELD_DEFS.map((entry) => entry.key));
 
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 function formatIdentityValue(key, value) {
   if (key === "attitude") {
     return `${getAttitudeLabel(value)} (${value})`;
@@ -132,7 +133,7 @@ function formatIdentityValue(key, value) {
 }
 
 function abilityModifierText(score) {
-  const modifier = Math.floor((Number(score) - 10) / 2);
+  const modifier = abilityModifier(score);
   return `(${modifier >= 0 ? "+" : ""}${modifier})`;
 }
 
@@ -268,12 +269,21 @@ function renderStats(stats) {
   );
 }
 
+// Save (dirty-gated) and Delete (saved-gated) button state, shared by
+// renderNpc's full re-render and the in-place field-edit handlers below
+// (which patch currentRecord directly and skip a full renderNpc to avoid
+// jumping the edited input's cursor).
+function refreshActionButtons() {
+  saveButton.disabled = !currentRecord || !dirtyGate.isDirty();
+  exportButton.disabled = !currentRecord;
+  deleteButton.disabled = !currentRecord || !dirtyGate.hasSaved();
+}
+
 function renderNpc(record) {
   currentRecord = record;
   npcEmptyState.classList.toggle("d-none", Boolean(record));
   npcDisplay.classList.toggle("d-none", !record);
-  saveButton.disabled = !record;
-  exportButton.disabled = !record;
+  refreshActionButtons();
 
   if (!record) {
     updateJsonPreview(npcJsonPreview, npcJsonBytes, {});
@@ -372,9 +382,9 @@ function readOverrides() {
 }
 
 // --- System > Setting > Location cascading selects --------------------------
-// Places (and Species) are managed in Loom now — these three selects just
-// pick which already-saved Location to generate from, mirroring the same
-// System/Setting/Location tree Loom's own Places editor presents.
+// Locations are authored in Sanctum, Species in Loom — these three selects
+// just pick which already-saved Location to generate from, mirroring the
+// same System/Setting/Location tree Sanctum's own picker presents.
 
 async function listAllSystems() {
   if (!dataManager) return [];
@@ -473,7 +483,7 @@ async function selectLocation(id) {
   }
 }
 
-// --- Location / Species inspector (read-only — edited in Loom) -------------
+// --- Location inspector (read-only — edited in Sanctum) --------------------
 
 function renderSpeciesWeightRow(entry = { entityId: "", weight: 0 }) {
   const row = document.createElement("div");
@@ -670,6 +680,7 @@ generateButton.addEventListener("click", () => {
   if (!currentLocation || !tables) return;
   const overrides = readOverrides();
   const record = createNpcRecord(generateNpc(currentLocation, tables, { overrides }));
+  dirtyGate.markDirty();
   renderNpc(record);
 });
 
@@ -704,6 +715,7 @@ identityFields.addEventListener("input", (event) => {
   const field = input.dataset.editableField;
   currentRecord = field === "name" ? { ...currentRecord, name: input.value } : currentRecord;
   updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
+  refreshActionButtons();
 });
 
 // Typing directly into a Stats field (ability scores, AC, HP) keeps the
@@ -731,6 +743,7 @@ statsFields.addEventListener("input", (event) => {
     currentRecord = { ...currentRecord, stats: { ...currentRecord.stats, [field]: numericValue } };
   }
   updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
+  refreshActionButtons();
 });
 
 generateNoteButton.addEventListener("click", async () => {
@@ -758,6 +771,7 @@ noteText.addEventListener("input", () => {
   if (!currentRecord) return;
   currentRecord = { ...currentRecord, note: noteText.value };
   updateJsonPreview(npcJsonPreview, npcJsonBytes, toPressExportShape(currentRecord));
+  refreshActionButtons();
 });
 
 saveButton.addEventListener("click", async () => {
@@ -771,9 +785,25 @@ saveButton.addEventListener("click", async () => {
     // keeps saving locally to their own browser exactly as before, while a
     // signed-in user's NPC becomes a real, owned, shareable record.
     await dataManager.save("npc", currentRecord.id, record);
+    dirtyGate.markClean(record);
+    refreshActionButtons();
     status?.show("Saved.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+});
+
+deleteButton.addEventListener("click", async () => {
+  if (!currentRecord || !dataManager || !dirtyGate.hasSaved()) return;
+  const label = currentRecord.name || currentRecord.id;
+  if (!confirmDelete({ label: `"${label}"` })) return;
+  try {
+    await dataManager.delete("npc", currentRecord.id);
+    status?.show("Deleted.", { type: "success", timeout: 1500 });
+    dirtyGate.markDirty();
+    renderNpc(null);
+  } catch (error) {
+    status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
   }
 });
 

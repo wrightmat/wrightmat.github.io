@@ -4,5 +4,6 @@
   "plural": "Templates",
   "icon": "tabler:layout",
   "readTier": "free",
-  "writeTier": "gm"
+  "writeTier": "gm",
+  "metadataFields": ["schema", "category"]
 }

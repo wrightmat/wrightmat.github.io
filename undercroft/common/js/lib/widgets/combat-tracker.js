@@ -7,8 +7,10 @@
 // see the Dashboard plan this widget was built for.
 import { openSpotlightModal } from "../spotlight.js";
 import { disposeTooltips, refreshTooltips } from "../tooltips.js";
-import { resolveBinding, setAtBinding } from "../bindings.js";
+import { resolveBinding, setAtBinding, findRoleBoundField } from "../bindings.js";
 import { connectLiveStream } from "../live.js";
+import { el } from "../dom.js";
+import { confirmDelete } from "../ownership.js";
 
 const POLL_INTERVAL_MS = 15000;
 
@@ -40,54 +42,61 @@ function blankEncounter(name) {
   };
 }
 
-// Conditions are just the "conditions"-keyed array field on the active
-// System's `fields` (Loom's Properties editor) — same mechanism as Sanctum's
-// loadEnvironmentPropertyType, deliberately not auto-seeded on new Systems
-// (see sys.dnd5e.json's own "conditions" field for the one System that has
-// it filled in today). Absent on a System = no tag suggestions offered,
-// gracefully — a GM can still type any freeform tag either way.
-async function loadConditionsPropertyType(dataManager, systemId) {
+// The tag vocabulary field (default key "conditions", but see
+// deriveConditionsPropertyType) and the combat-bindings field (whichever
+// array field's values carry a `role` — see findRoleBoundField) both live on
+// the same System record's `fields` — one fetch serves both instead of each
+// maintaining its own independent round trip. Absent field(s) = no tag
+// suggestions / no write-through, gracefully, not an error.
+async function loadSystemFields(dataManager, systemId) {
   if (!systemId) return null;
   try {
     // preferLocal: false — a Loom edit to the System's fields (adding/
-    // changing conditions or combatBindings) must be visible immediately,
+    // changing conditions or role-bound values) must be visible immediately,
     // not hidden behind whatever copy of this System this browser happened
     // to cache locally on a previous visit. Same reasoning as
     // writeThroughToCharacter's character fetch below.
     const result = await dataManager.get("system", systemId, { preferLocal: false });
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "array" && entry.key === "conditions");
-    if (!field) return null;
-    return (field.values || []).map((value, index) => ({
-      id: value.id || value.name || `condition-${index}`,
-      label: value.name || value.label || String(value.id || index),
-    }));
+    return Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
   } catch (error) {
     return null;
   }
 }
 
-// combatBindings is a System-level field (a plain object of binding-path
-// strings, not a generator-property array — see sys.dnd5e.json) declaring
-// where each System's characters keep their live combat state. Reads the
-// same way loadConditionsPropertyType does; absent on a System (or on a
-// non-"combat-bindings" field) just means write-through to the character
-// record is skipped, not an error.
-async function loadCombatBindings(dataManager, systemId) {
-  if (!systemId) return null;
-  try {
-    // preferLocal: false — same staleness risk as loadConditionsPropertyType
-    // above: a stale locally-cached System record silently missing (or
-    // out of date on) combatBindings makes writeThroughToCharacter no-op
-    // with no visible error, which looks exactly like "HP changes don't
-    // propagate to the character sheet."
-    const result = await dataManager.get("system", systemId, { preferLocal: false });
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "combat-bindings" && entry.key === "combatBindings");
-    return field || null;
-  } catch (error) {
-    return null;
-  }
+// Combat Bindings isn't a field type of its own, or even a flagged field —
+// it's just whichever ordinary Enum-mode array field's values happen to use
+// Role (see findRoleBoundField in common/js/lib/bindings.js), a generic
+// structural vocabulary: "resource" (a number with a ceiling, optionally a
+// temp buffer — HP is one instance, not the concept), "value" (one
+// standalone number — AC is one instance), "tags" (a multi-select status
+// list — Conditions is one instance), "modifier" (a number feeding a roll —
+// Initiative is one instance).
+function deriveCombatBindings(fields) {
+  if (!fields) return null;
+  const field = findRoleBoundField(fields);
+  return field && Array.isArray(field.values) ? field.values : null;
+}
+
+function findBindingByRole(bindings, role) {
+  return (bindings || []).find((entry) => entry && entry.role === role) || null;
+}
+
+// The tags-role binding's own `sourceField` names which other array field on
+// this System supplies the tag vocabulary (e.g. "conditions") — a generic
+// "where do the valid options come from" pointer (see loom/js/app.js's
+// VALUE_COLUMNS), not specific to combat bindings. Defaulting to
+// "conditions" when absent keeps existing Systems working without requiring
+// them to set it explicitly.
+function deriveConditionsPropertyType(fields, bindings) {
+  if (!fields) return null;
+  const tagsEntry = findBindingByRole(bindings, "tags");
+  const vocabularyKey = tagsEntry?.sourceField || "conditions";
+  const field = fields.find((entry) => entry.type === "array" && entry.key === vocabularyKey);
+  if (!field) return null;
+  return (field.values || []).map((value, index) => ({
+    id: value.id || value.name || `condition-${index}`,
+    label: value.name || value.label || String(value.id || index),
+  }));
 }
 
 const REF_KIND_LABELS = { character: "Character", npc: "NPC", monster: "Monster" };
@@ -141,13 +150,6 @@ export function initCombatTrackerWidget(
     persist();
   }
 
-  function el(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
-
   function icon(name) {
     const span = el("span", "iconify");
     span.dataset.icon = name;
@@ -177,19 +179,21 @@ export function initCombatTrackerWidget(
   }
 
   async function loadCombatantEntityLists() {
-    const lists = {};
-    for (const kind of ["character", "npc", "monster"]) {
-      try {
-        const listing = await dataManager.list(kind, { refresh: true });
-        lists[kind] = dataManager
-          .collectListEntries(listing.remote, ["owned", "shared", "public", "items"])
-          .slice()
-          .sort((a, b) => (a.title || a.name || a.id).localeCompare(b.title || b.name || b.id));
-      } catch (error) {
-        lists[kind] = [];
-      }
-    }
-    state.combatantEntityLists = lists;
+    const kinds = ["character", "npc", "monster"];
+    const results = await Promise.all(
+      kinds.map(async (kind) => {
+        try {
+          const listing = await dataManager.list(kind, { refresh: true });
+          return dataManager
+            .collectListEntries(listing.remote, ["owned", "shared", "public", "items"])
+            .slice()
+            .sort((a, b) => (a.title || a.name || a.id).localeCompare(b.title || b.name || b.id));
+        } catch (error) {
+          return [];
+        }
+      })
+    );
+    state.combatantEntityLists = Object.fromEntries(kinds.map((kind, index) => [kind, results[index]]));
   }
 
   async function loadOwnedEncounters() {
@@ -218,8 +222,9 @@ export function initCombatTrackerWidget(
     try {
       const result = await dataManager.get("encounter", id, { shareToken });
       state.encounter = result.payload;
-      state.conditions = await loadConditionsPropertyType(dataManager, state.encounter.systemId);
-      state.combatBindings = await loadCombatBindings(dataManager, state.encounter.systemId);
+      const fields = await loadSystemFields(dataManager, state.encounter.systemId);
+      state.combatBindings = deriveCombatBindings(fields);
+      state.conditions = deriveConditionsPropertyType(fields, state.combatBindings);
       render();
     } catch (error) {
       status?.show("Unable to load that encounter.", { type: "error" });
@@ -246,7 +251,7 @@ export function initCombatTrackerWidget(
 
   async function deleteEncounter() {
     if (!state.encounter) return;
-    if (!window.confirm(`Delete "${state.encounter.name}"? This can't be undone.`)) return;
+    if (!confirmDelete({ label: `"${state.encounter.name}"` })) return;
     try {
       await dataManager.delete("encounter", state.encounter.id);
       state.encounter = null;
@@ -260,8 +265,9 @@ export function initCombatTrackerWidget(
   async function changeSystem(systemId) {
     if (!state.encounter) return;
     state.encounter.systemId = systemId;
-    state.conditions = await loadConditionsPropertyType(dataManager, systemId);
-    state.combatBindings = await loadCombatBindings(dataManager, systemId);
+    const fields = await loadSystemFields(dataManager, systemId);
+    state.combatBindings = deriveCombatBindings(fields);
+    state.conditions = deriveConditionsPropertyType(fields, state.combatBindings);
     markDirty();
   }
 
@@ -281,14 +287,19 @@ export function initCombatTrackerWidget(
     render();
   }
 
-  // Monster, Forge NPC, and now character records all carry the same
-  // `stats.hitPoints: { max, current }` / `stats.armorClass` shape — a
-  // freshly added combatant starts at whatever the source record's own
-  // current/max already are (a fresh monster/NPC's current always equals
-  // max; a character's current reflects any damage it's already carrying).
-  // Falls back to `.max` if `.current` is somehow absent. Records with no
-  // `stats` at all (a not-yet-imported character, a Freeform combatant)
-  // fall back to the existing manual-entry 0/0 default.
+  // Monster, Forge NPC, and now character records all resolve through the
+  // same combatBindings resource/value paths writeThroughToCharacter uses to
+  // write back — a freshly added combatant starts at whatever the source
+  // record's own current/max already are (a fresh monster/NPC's current
+  // always equals max; a character's current reflects any damage it's
+  // already carrying). Falls back to the resource's max if current is
+  // somehow absent. A System with no matching binding, or a record with
+  // nothing at that path (a not-yet-imported character, a Freeform
+  // combatant), falls back to the existing manual-entry 0/0 default —
+  // previously this hardcoded `stats.hitPoints`/`stats.armorClass` directly
+  // instead of resolving through the configured bindings, silently
+  // disagreeing with writeThroughToCharacter for any System whose paths
+  // pointed elsewhere.
   async function addCombatant({ refKind, refId, name }) {
     if (!state.encounter) return;
     let resolvedName = name;
@@ -298,19 +309,29 @@ export function initCombatTrackerWidget(
     let ac = 0;
     if (refKind && refId) {
       try {
-        const result = await dataManager.get(refKind, refId);
+        const result = await dataManager.get(refKind, refId, { preferLocal: false });
         const payload = result.payload || {};
         if (!resolvedName) resolvedName = payload.name || payload.title || refId;
-        const stats = payload.stats;
-        if (typeof stats?.hitPoints?.max === "number") {
-          maxHp = stats.hitPoints.max;
-          hp = typeof stats.hitPoints.current === "number" ? stats.hitPoints.current : maxHp;
+        const resource = findBindingByRole(state.combatBindings, "resource");
+        const value = findBindingByRole(state.combatBindings, "value");
+        if (resource?.binding) {
+          const current = resolveBinding(resource.binding, payload);
+          const max = resource.maxPath ? resolveBinding(resource.maxPath, payload) : undefined;
+          if (typeof max === "number") {
+            maxHp = max;
+            hp = typeof current === "number" ? current : maxHp;
+          } else if (typeof current === "number") {
+            hp = current;
+            maxHp = current;
+          }
+          if (resource.tempPath) {
+            const temp = resolveBinding(resource.tempPath, payload);
+            if (typeof temp === "number") tempHp = temp;
+          }
         }
-        if (typeof stats?.hitPoints?.temp === "number") {
-          tempHp = stats.hitPoints.temp;
-        }
-        if (typeof stats?.armorClass === "number") {
-          ac = stats.armorClass;
+        if (value?.binding) {
+          const resolvedValue = resolveBinding(value.binding, payload);
+          if (typeof resolvedValue === "number") ac = resolvedValue;
         }
       } catch (error) {
         resolvedName = resolvedName || refId;
@@ -366,23 +387,27 @@ export function initCombatTrackerWidget(
     markDirty();
   }
 
-  function rollD20() {
-    return Math.floor(Math.random() * 20) + 1;
+  function rollDie(sides = 20) {
+    return Math.floor(Math.random() * sides) + 1;
   }
 
   // Players roll their own characters' initiative on their sheet (the
   // template's own Initiative field/roller — see tpl.5e.flex-basic.json),
   // so this only touches non-character combatants: monster/npc combatants
-  // (whose linked record supplies a modifier via combatBindings'
-  // initiativeModifier, the same generic binding-path mechanism as
+  // (whose linked record supplies a modifier via combatBindings' own
+  // "modifier"-role entry, the same generic binding-path mechanism as
   // HP/AC/Conditions) and freeform combatants (no linked record, so a flat
-  // d20 with +0). Best-effort per combatant — a record fetch failure just
-  // falls back to +0 rather than aborting the whole roll.
+  // roll with +0). The die itself comes from that entry's own `die` (e.g.
+  // "d20"), defaulting to d20 for Systems that don't specify one. Best-effort
+  // per combatant — a record fetch failure just falls back to +0 rather than
+  // aborting the whole roll.
   async function rollInitiativeForNonCharacters() {
     if (!state.encounter) return;
     const targets = state.encounter.combatants.filter((c) => c.refKind !== "character");
     if (!targets.length) return;
-    const modifierPath = state.combatBindings?.initiativeModifier;
+    const modifierEntry = findBindingByRole(state.combatBindings, "modifier");
+    const modifierPath = modifierEntry?.binding;
+    const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
     await Promise.all(
       targets.map(async (combatant) => {
         let modifier = 0;
@@ -395,7 +420,7 @@ export function initCombatTrackerWidget(
             // Fall back to +0 — see comment above.
           }
         }
-        combatant.initiative = rollD20() + modifier;
+        combatant.initiative = rollDie(sides) + modifier;
       })
     );
     markDirty();
@@ -429,6 +454,9 @@ export function initCombatTrackerWidget(
     if (combatant.refKind !== "character" || !combatant.refId) return;
     const bindings = state.combatBindings;
     if (!bindings) return;
+    const resource = findBindingByRole(bindings, "resource");
+    const value = findBindingByRole(bindings, "value");
+    const tags = findBindingByRole(bindings, "tags");
     try {
       // preferLocal: false — this is a read-modify-write round trip against
       // whatever the character record actually is right now (possibly just
@@ -439,24 +467,24 @@ export function initCombatTrackerWidget(
       const result = await dataManager.get("character", combatant.refId, { preferLocal: false });
       const character = result.payload || {};
       let changed = false;
-      if (updates.hp !== undefined && bindings.currentHp) {
-        setAtBinding(bindings.currentHp, character, updates.hp);
+      if (updates.hp !== undefined && resource?.binding) {
+        setAtBinding(resource.binding, character, updates.hp);
         changed = true;
       }
-      if (updates.maxHp !== undefined && bindings.maxHp) {
-        setAtBinding(bindings.maxHp, character, updates.maxHp);
+      if (updates.maxHp !== undefined && resource?.maxPath) {
+        setAtBinding(resource.maxPath, character, updates.maxHp);
         changed = true;
       }
-      if (updates.tempHp !== undefined && bindings.tempHp) {
-        setAtBinding(bindings.tempHp, character, updates.tempHp);
+      if (updates.tempHp !== undefined && resource?.tempPath) {
+        setAtBinding(resource.tempPath, character, updates.tempHp);
         changed = true;
       }
-      if (updates.ac !== undefined && bindings.armorClass) {
-        setAtBinding(bindings.armorClass, character, updates.ac);
+      if (updates.ac !== undefined && value?.binding) {
+        setAtBinding(value.binding, character, updates.ac);
         changed = true;
       }
-      if (updates.conditions !== undefined && bindings.conditions) {
-        setAtBinding(bindings.conditions, character, updates.conditions);
+      if (updates.conditions !== undefined && tags?.binding) {
+        setAtBinding(tags.binding, character, updates.conditions);
         changed = true;
       }
       if (changed) {
@@ -599,7 +627,9 @@ export function initCombatTrackerWidget(
       const result = await dataManager.get("encounter", id, { shareToken, preferLocal: false });
       state.encounter = result.payload;
       if (!state.conditions || state.conditions.__systemId !== state.encounter.systemId) {
-        state.conditions = await loadConditionsPropertyType(dataManager, state.encounter.systemId);
+        const fields = await loadSystemFields(dataManager, state.encounter.systemId);
+        state.combatBindings = deriveCombatBindings(fields);
+        state.conditions = deriveConditionsPropertyType(fields, state.combatBindings);
         if (state.conditions) state.conditions.__systemId = state.encounter.systemId;
       }
       render();
@@ -658,19 +688,29 @@ export function initCombatTrackerWidget(
     if (!combatant) return;
     try {
       const result = await dataManager.get("character", characterId, { preferLocal: false });
-      const stats = result.payload?.stats;
-      if (typeof stats?.hitPoints?.max === "number") {
-        combatant.maxHp = stats.hitPoints.max;
-        combatant.hp = typeof stats.hitPoints.current === "number" ? stats.hitPoints.current : combatant.maxHp;
+      const payload = result.payload || {};
+      const resource = findBindingByRole(state.combatBindings, "resource");
+      const value = findBindingByRole(state.combatBindings, "value");
+      const tags = findBindingByRole(state.combatBindings, "tags");
+      if (resource?.binding) {
+        const max = resource.maxPath ? resolveBinding(resource.maxPath, payload) : undefined;
+        if (typeof max === "number") {
+          combatant.maxHp = max;
+          const current = resolveBinding(resource.binding, payload);
+          combatant.hp = typeof current === "number" ? current : combatant.maxHp;
+        }
+        if (resource.tempPath) {
+          const temp = resolveBinding(resource.tempPath, payload);
+          if (typeof temp === "number") combatant.tempHp = temp;
+        }
       }
-      if (typeof stats?.hitPoints?.temp === "number") {
-        combatant.tempHp = stats.hitPoints.temp;
+      if (value?.binding) {
+        const resolvedValue = resolveBinding(value.binding, payload);
+        if (typeof resolvedValue === "number") combatant.ac = resolvedValue;
       }
-      if (typeof stats?.armorClass === "number") {
-        combatant.ac = stats.armorClass;
-      }
-      if (Array.isArray(result.payload?.conditions)) {
-        combatant.conditions = result.payload.conditions.slice();
+      if (tags?.binding) {
+        const resolvedTags = resolveBinding(tags.binding, payload);
+        if (Array.isArray(resolvedTags)) combatant.conditions = resolvedTags.slice();
       }
       markDirty();
     } catch (error) {
@@ -943,9 +983,21 @@ export function initCombatTrackerWidget(
     deleteButton.addEventListener("click", deleteSelected);
     nameRow.append(visibleButton, deleteButton);
 
+    // Labels come from the active System's own combatBindings entries (e.g.
+    // a non-D&D System might call these "Reflexes"/"Stress"/"Defense"
+    // instead of Init/HP/AC) — falling back to these generic names only
+    // when a System hasn't configured combat bindings at all, since the
+    // tracker still needs *some* label to show either way. Initiative
+    // tracking itself always shows regardless (core turn-order feature,
+    // independent of whether a System defines a "modifier" binding to
+    // auto-roll it — see rollInitiativeForNonCharacters).
+    const resourceBinding = findBindingByRole(state.combatBindings, "resource");
+    const valueBinding = findBindingByRole(state.combatBindings, "value");
+    const modifierBinding = findBindingByRole(state.combatBindings, "modifier");
+
     const statsRow = el("div", "d-flex gap-2 align-items-center flex-wrap");
     const initWrap = el("div", "d-flex align-items-center gap-1");
-    initWrap.appendChild(el("span", "small text-body-secondary", "Init"));
+    initWrap.appendChild(el("span", "small text-body-secondary", modifierBinding?.name || "Init"));
     const initInput = el("input", "form-control form-control-sm");
     initInput.type = "number";
     initInput.style.width = "4.5rem";
@@ -957,7 +1009,7 @@ export function initCombatTrackerWidget(
     initWrap.appendChild(initInput);
 
     const hpWrap = el("div", "d-flex align-items-center gap-1");
-    hpWrap.appendChild(el("span", "small text-body-secondary", "HP"));
+    hpWrap.appendChild(el("span", "small text-body-secondary", resourceBinding?.name || "Resource"));
     const hpInput = el("input", "form-control form-control-sm");
     hpInput.type = "number";
     hpInput.style.width = "4.5rem";
@@ -992,7 +1044,7 @@ export function initCombatTrackerWidget(
     tempHpWrap.appendChild(tempHpInput);
 
     const acWrap = el("div", "d-flex align-items-center gap-1");
-    acWrap.appendChild(el("span", "small text-body-secondary", "AC"));
+    acWrap.appendChild(el("span", "small text-body-secondary", valueBinding?.name || "Value"));
     const acInput = el("input", "form-control form-control-sm");
     acInput.type = "number";
     acInput.style.width = "4.5rem";

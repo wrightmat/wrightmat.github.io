@@ -116,7 +116,19 @@
             <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Monster actions">
               <div class="btn-group" role="group">
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-primary p-2"
+                  type="button"
+                  data-generate-monster
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Generate Monster"
+                  aria-label="Generate Monster"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:flask" aria-hidden="true"></span>
+                  <span class="visually-hidden">Generate Monster</span>
+                </button>
+                <button
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-save-monster
                   disabled
@@ -127,19 +139,6 @@
                 >
                   <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
                   <span class="visually-hidden">Save</span>
-                </button>
-                <button
-                  class="btn btn-outline-danger p-2"
-                  type="button"
-                  data-delete-monster
-                  disabled
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Delete"
-                  aria-label="Delete"
-                >
-                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Delete</span>
                 </button>
                 <button
                   class="btn btn-outline-secondary p-2"
@@ -155,16 +154,17 @@
                   <span class="visually-hidden">Export JSON</span>
                 </button>
                 <button
-                  class="btn btn-primary p-2"
+                  class="btn btn-outline-danger p-2"
                   type="button"
-                  data-generate-monster
+                  data-delete-monster
+                  disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Generate Monster"
-                  aria-label="Generate Monster"
+                  data-bs-title="Delete"
+                  aria-label="Delete"
                 >
-                  <span class="iconify fs-5" data-icon="tabler:flask" aria-hidden="true"></span>
-                  <span class="visually-hidden">Generate Monster</span>
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete</span>
                 </button>
               </div>
             </div>
@@ -172,6 +172,14 @@
             <section class="d-flex flex-column gap-2" id="crucible-generate">
               <label class="form-label fw-semibold mb-0" for="crucibleSystemSelect">System</label>
               <select class="form-select" id="crucibleSystemSelect" data-system-select></select>
+
+              <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-1" for="crucibleCombatScalingField">
+                Combat scaling field
+                <span class="align-middle" data-help-topic="crucible.combatScalingField" data-help-insert="replace"></span>
+              </label>
+              <select class="form-select" id="crucibleCombatScalingField" data-combat-scaling-field>
+                <option value="">None</option>
+              </select>
 
               <div class="d-flex flex-column gap-2" id="crucible-overrides">
                 <label class="form-label fw-semibold mb-0 d-flex align-items-center gap-2" for="crucibleCreatureTypeOverride">
@@ -324,12 +332,25 @@
           data-pane-initial="expanded"
         >
           <div class="workbench-pane-content d-flex flex-column gap-3 p-3 workbench-sticky-pane">
-            <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Inspector</h2>
-            <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
-              Select a feature in the Features list to see its full detail here.
+            <div class="d-flex align-items-center justify-content-between">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Inspector</h2>
+              <button
+                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                type="button"
+                data-inspector-toggle
+                aria-expanded="true"
+              >
+                <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                <span class="visually-hidden" data-inspector-toggle-label>Collapse inspector</span>
+              </button>
             </div>
-            <div data-inspector-detail class="d-none">
-              <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
+            <div class="d-flex flex-column gap-3" data-inspector-panel>
+              <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
+                Select a feature in the Features list to see its full detail here.
+              </div>
+              <div data-inspector-detail class="d-none">
+                <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
+              </div>
             </div>
           </div>
         </aside>

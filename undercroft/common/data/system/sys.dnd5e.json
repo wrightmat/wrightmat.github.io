@@ -73,6 +73,8 @@
           "type": "number",
           "key": "abilities.strength",
           "label": "Strength",
+          "shortName": "STR",
+          "sourceId": 1,
           "minimum": 1,
           "maximum": 20
         },
@@ -80,6 +82,8 @@
           "type": "number",
           "key": "abilities.dexterity",
           "label": "Dexterity",
+          "shortName": "DEX",
+          "sourceId": 2,
           "minimum": 1,
           "maximum": 20
         },
@@ -87,6 +91,8 @@
           "type": "number",
           "key": "abilities.constitution",
           "label": "Constitution",
+          "shortName": "CON",
+          "sourceId": 3,
           "minimum": 1,
           "maximum": 20
         },
@@ -94,6 +100,8 @@
           "type": "number",
           "key": "abilities.intelligence",
           "label": "Intelligence",
+          "shortName": "INT",
+          "sourceId": 4,
           "minimum": 1,
           "maximum": 20
         },
@@ -101,6 +109,8 @@
           "type": "number",
           "key": "abilities.wisdom",
           "label": "Wisdom",
+          "shortName": "WIS",
+          "sourceId": 5,
           "minimum": 1,
           "maximum": 20
         },
@@ -108,6 +118,8 @@
           "type": "number",
           "key": "abilities.charisma",
           "label": "Charisma",
+          "shortName": "CHA",
+          "sourceId": 6,
           "minimum": 1,
           "maximum": 20
         }
@@ -122,6 +134,7 @@
           "type": "number",
           "key": "saves.strength",
           "label": "Strength Saving Throw",
+          "ddbSubtype": "strength-saving-throws",
           "minimum": 1,
           "maximum": 20
         },
@@ -129,6 +142,7 @@
           "type": "number",
           "key": "saves.dexterity",
           "label": "Dexterity Saving Throw",
+          "ddbSubtype": "dexterity-saving-throws",
           "minimum": 1,
           "maximum": 20
         },
@@ -136,6 +150,7 @@
           "type": "number",
           "key": "saves.constitution",
           "label": "Constitution Saving Throw",
+          "ddbSubtype": "constitution-saving-throws",
           "minimum": 1,
           "maximum": 20
         },
@@ -143,6 +158,7 @@
           "type": "number",
           "key": "saves.intelligence",
           "label": "Intelligence Saving Throw",
+          "ddbSubtype": "intelligence-saving-throws",
           "minimum": 1,
           "maximum": 20
         },
@@ -150,6 +166,7 @@
           "type": "number",
           "key": "saves.wisdom",
           "label": "Wisdom Saving Throw",
+          "ddbSubtype": "wisdom-saving-throws",
           "minimum": 1,
           "maximum": 20
         },
@@ -157,6 +174,7 @@
           "type": "number",
           "key": "saves.charisma",
           "label": "Charisma Saving Throw",
+          "ddbSubtype": "charisma-saving-throws",
           "minimum": 1,
           "maximum": 20
         }
@@ -201,7 +219,6 @@
       "type": "array",
       "key": "rarity",
       "label": "Rarity",
-      "setsBudgetCeiling": true,
       "values": [
         {
           "name": "Common",
@@ -232,19 +249,49 @@
       "values": [
         {
           "name": "Action",
-          "cost": 0
+          "cost": 0,
+          "sourceId": 1,
+          "shortName": "A"
         },
         {
           "name": "Bonus Action",
-          "cost": 2
+          "cost": 2,
+          "sourceId": 3,
+          "shortName": "BA"
         },
         {
           "name": "Reaction",
-          "cost": 1
+          "cost": 1,
+          "sourceId": 4,
+          "shortName": "R"
         },
         {
           "name": "Ritual (10 min, no slot)",
           "cost": -2
+        },
+        {
+          "name": "Seconds",
+          "cost": null,
+          "sourceId": 5,
+          "shortName": "s"
+        },
+        {
+          "name": "Minutes",
+          "cost": null,
+          "sourceId": 6,
+          "shortName": "m"
+        },
+        {
+          "name": "Hours",
+          "cost": null,
+          "sourceId": 7,
+          "shortName": "h"
+        },
+        {
+          "name": "Special",
+          "cost": null,
+          "sourceId": 8,
+          "shortName": "S"
         }
       ]
     },
@@ -316,33 +363,98 @@
       "key": "conditions",
       "label": "Conditions",
       "values": [
-        { "name": "Blinded" },
-        { "name": "Charmed" },
-        { "name": "Deafened" },
-        { "name": "Frightened" },
-        { "name": "Grappled" },
-        { "name": "Incapacitated" },
-        { "name": "Invisible" },
-        { "name": "Paralyzed" },
-        { "name": "Petrified" },
-        { "name": "Poisoned" },
-        { "name": "Prone" },
-        { "name": "Restrained" },
-        { "name": "Stunned" },
-        { "name": "Unconscious" },
-        { "name": "Exhaustion" }
+        {
+          "name": "Blinded",
+          "sourceId": 1
+        },
+        {
+          "name": "Charmed",
+          "sourceId": 2
+        },
+        {
+          "name": "Deafened",
+          "sourceId": 3
+        },
+        {
+          "name": "Exhaustion",
+          "sourceId": 4
+        },
+        {
+          "name": "Frightened",
+          "sourceId": 5
+        },
+        {
+          "name": "Grappled",
+          "sourceId": 6
+        },
+        {
+          "name": "Incapacitated",
+          "sourceId": 7
+        },
+        {
+          "name": "Invisible",
+          "sourceId": 8
+        },
+        {
+          "name": "Paralyzed",
+          "sourceId": 9
+        },
+        {
+          "name": "Petrified",
+          "sourceId": 10
+        },
+        {
+          "name": "Poisoned",
+          "sourceId": 11
+        },
+        {
+          "name": "Prone",
+          "sourceId": 12
+        },
+        {
+          "name": "Restrained",
+          "sourceId": 13
+        },
+        {
+          "name": "Stunned",
+          "sourceId": 14
+        },
+        {
+          "name": "Unconscious",
+          "sourceId": 15
+        }
       ]
     },
     {
-      "type": "combat-bindings",
+      "type": "array",
       "key": "combatBindings",
       "label": "Combat Bindings",
-      "currentHp": "@stats.hitPoints.current",
-      "maxHp": "@stats.hitPoints.max",
-      "tempHp": "@stats.hitPoints.temp",
-      "armorClass": "@stats.armorClass",
-      "conditions": "@conditions",
-      "initiativeModifier": "@stats.initiativeBonus"
+      "values": [
+        {
+          "name": "Hit Points",
+          "role": "resource",
+          "binding": "@stats.hitPoints.current",
+          "maxPath": "@stats.hitPoints.max",
+          "tempPath": "@stats.hitPoints.temp"
+        },
+        {
+          "name": "Armor Class",
+          "role": "value",
+          "binding": "@stats.armorClass"
+        },
+        {
+          "name": "Conditions",
+          "role": "tags",
+          "binding": "@conditions",
+          "sourceField": "conditions"
+        },
+        {
+          "name": "Initiative",
+          "role": "modifier",
+          "binding": "@stats.initiativeBonus",
+          "die": "d20"
+        }
+      ]
     },
     {
       "type": "array",
@@ -410,19 +522,45 @@
       "key": "damageTypes",
       "label": "Damage Types",
       "values": [
-        { "name": "Acid" },
-        { "name": "Bludgeoning" },
-        { "name": "Cold" },
-        { "name": "Fire" },
-        { "name": "Force" },
-        { "name": "Lightning" },
-        { "name": "Necrotic" },
-        { "name": "Piercing" },
-        { "name": "Poison" },
-        { "name": "Psychic" },
-        { "name": "Radiant" },
-        { "name": "Slashing" },
-        { "name": "Thunder" }
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Bludgeoning"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Force"
+        },
+        {
+          "name": "Lightning"
+        },
+        {
+          "name": "Necrotic"
+        },
+        {
+          "name": "Piercing"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Psychic"
+        },
+        {
+          "name": "Radiant"
+        },
+        {
+          "name": "Slashing"
+        },
+        {
+          "name": "Thunder"
+        }
       ]
     },
     {
@@ -481,8 +619,220 @@
           "sourceId": 10
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "sizes",
+      "label": "Sizes",
+      "values": [
+        {
+          "name": "Tiny",
+          "sourceId": 2,
+          "shortName": "tiny"
+        },
+        {
+          "name": "Small",
+          "sourceId": 3,
+          "shortName": "sm"
+        },
+        {
+          "name": "Medium",
+          "sourceId": 4,
+          "shortName": "med"
+        },
+        {
+          "name": "Large",
+          "sourceId": 5,
+          "shortName": "lg"
+        },
+        {
+          "name": "Huge",
+          "sourceId": 6,
+          "shortName": "huge"
+        },
+        {
+          "name": "Gargantuan",
+          "sourceId": 7,
+          "shortName": "grg"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "senses",
+      "label": "Senses",
+      "values": [
+        {
+          "name": "Blindsight",
+          "sourceId": 1
+        },
+        {
+          "name": "Darkvision",
+          "sourceId": 2
+        },
+        {
+          "name": "Tremorsense",
+          "sourceId": 3
+        },
+        {
+          "name": "Truesight",
+          "sourceId": 4
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "speeds",
+      "label": "Speeds",
+      "values": [
+        {
+          "name": "Walk",
+          "sourceId": 1,
+          "shortName": "walking"
+        },
+        {
+          "name": "Burrow",
+          "sourceId": 2,
+          "shortName": "burrowing"
+        },
+        {
+          "name": "Climb",
+          "sourceId": 3,
+          "shortName": "climbing"
+        },
+        {
+          "name": "Fly",
+          "sourceId": 4,
+          "shortName": "flying"
+        },
+        {
+          "name": "Swim",
+          "sourceId": 5,
+          "shortName": "swimming"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "components",
+      "label": "Spell Components",
+      "values": [
+        {
+          "name": "Verbal",
+          "sourceId": 1,
+          "shortName": "V"
+        },
+        {
+          "name": "Somatic",
+          "sourceId": 2,
+          "shortName": "S"
+        },
+        {
+          "name": "Material",
+          "sourceId": 3,
+          "shortName": "M"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "skills",
+      "label": "Skills",
+      "values": [
+        {
+          "name": "Acrobatics",
+          "ability": "dexterity",
+          "sourceId": 3
+        },
+        {
+          "name": "Animal Handling",
+          "ability": "wisdom",
+          "sourceId": 11
+        },
+        {
+          "name": "Arcana",
+          "ability": "intelligence",
+          "sourceId": 6
+        },
+        {
+          "name": "Athletics",
+          "ability": "strength",
+          "sourceId": 2
+        },
+        {
+          "name": "Deception",
+          "ability": "charisma",
+          "sourceId": 16
+        },
+        {
+          "name": "History",
+          "ability": "intelligence",
+          "sourceId": 7
+        },
+        {
+          "name": "Insight",
+          "ability": "wisdom",
+          "sourceId": 12
+        },
+        {
+          "name": "Intimidation",
+          "ability": "charisma",
+          "sourceId": 17
+        },
+        {
+          "name": "Investigation",
+          "ability": "intelligence",
+          "sourceId": 8
+        },
+        {
+          "name": "Medicine",
+          "ability": "wisdom",
+          "sourceId": 13
+        },
+        {
+          "name": "Nature",
+          "ability": "intelligence",
+          "sourceId": 9
+        },
+        {
+          "name": "Perception",
+          "ability": "wisdom",
+          "sourceId": 14
+        },
+        {
+          "name": "Performance",
+          "ability": "charisma",
+          "sourceId": 18
+        },
+        {
+          "name": "Persuasion",
+          "ability": "charisma",
+          "sourceId": 19
+        },
+        {
+          "name": "Religion",
+          "ability": "intelligence",
+          "sourceId": 10
+        },
+        {
+          "name": "Sleight of Hand",
+          "ability": "dexterity",
+          "sourceId": 4
+        },
+        {
+          "name": "Stealth",
+          "ability": "dexterity",
+          "sourceId": 5
+        },
+        {
+          "name": "Survival",
+          "ability": "wisdom",
+          "sourceId": 15
+        }
+      ]
     }
   ],
+  "importers": [],
   "preview": {
     "inventory": [
       {
@@ -504,6 +854,5 @@
         "notes": "Restores 2d4+2 hit points"
       }
     ]
-  },
-  "importers": []
+  }
 }

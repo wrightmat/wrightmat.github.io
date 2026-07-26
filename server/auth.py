@@ -308,18 +308,6 @@ def get_user_by_username(state: ServerState, username: str) -> Optional[User]:
     return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"])
 
 
-def require_role(user: Optional[User], role: str) -> None:
-    tiers = ["free", "player", "gm", "creator", "admin"]
-    if user is None:
-        raise AuthError("Authentication required")
-    if role not in tiers:
-        raise AuthError("Unknown role requirement")
-    user_index = tiers.index(user.tier) if user.tier in tiers else -1
-    required_index = tiers.index(role)
-    if user_index < required_index:
-        raise AuthError("Insufficient permissions")
-
-
 def count_active_admins(state: ServerState, exclude_user_id: Optional[int] = None) -> int:
     if exclude_user_id is not None:
         row = state.db.execute(

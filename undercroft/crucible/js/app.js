@@ -3,17 +3,29 @@ import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import {
   listCreatureTypesForSystem,
   listArchetypesForSystem,
   listRolesForSystem,
   listFeaturesForSystem,
   loadCombatScalingLevels,
+  listArrayFieldOptions,
 } from "./lib/tables.js";
 import { generateMonster } from "./lib/generator.js";
 import { deriveStats } from "./lib/stats.js";
 import { createMonsterRecord, toPressExportShape } from "./lib/monster-schema.js";
 import { generateMonsterNote } from "./lib/llm-note.js";
+import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
+import {
+  listAllSystems,
+  findById,
+  featureLabel as sharedFeatureLabel,
+  readLockedFeatureIds as sharedReadLockedFeatureIds,
+  exportRecordAsJson,
+  generateNoteForRecord,
+} from "../../common/js/lib/generator-kit.js";
+import { confirmDelete } from "../../common/js/lib/ownership.js";
 
 let status = null;
 let dataManager = null;
@@ -22,16 +34,15 @@ let archetypes = [];
 let roles = [];
 let features = [];
 let combatScalingLevels = [];
+let arrayFieldOptions = [];
 let currentRecord = null;
-// JSON snapshot of the record as it was last successfully saved, or null
-// if the current record has never been saved (a freshly generated monster
-// is dirty by definition). Compared against a live snapshot — built from
-// currentRecord plus whatever's currently typed into Name/Notes, since
-// those two fields aren't written back into currentRecord until Save/
-// Export actually runs — to gate the Save button the same way Loom/
-// Workbench's editors do, and to know whether Delete has anything real on
-// the server to target.
-let lastSavedSnapshot = null;
+// Tracks whether the record as last successfully saved differs from a live
+// snapshot — built from currentRecord plus whatever's currently typed into
+// Name/Notes, since those two fields aren't written back into currentRecord
+// until Save/Export actually runs — to gate the Save button the same way
+// Loom/Workbench's editors do, and to know whether Delete has anything real
+// on the server to target (see common/js/lib/dirty-gate.js).
+const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
@@ -39,6 +50,7 @@ const elements = {
   archetypeOverride: document.querySelector("[data-archetype-override]"),
   roleOverride: document.querySelector("[data-role-override]"),
   combatScalingOverride: document.querySelector("[data-combat-scaling-override]"),
+  combatScalingFieldSelect: document.querySelector("[data-combat-scaling-field]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateButton: document.querySelector("[data-generate-monster]"),
@@ -61,30 +73,58 @@ const elements = {
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
+  inspectorToggle: document.querySelector("[data-inspector-toggle]"),
+  inspectorToggleLabel: document.querySelector("[data-inspector-toggle-label]"),
+  inspectorPanel: document.querySelector("[data-inspector-panel]"),
 };
 
 function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
 
-// Systems themselves are still the "systems" DataManager bucket (same as
-// every other tool) — Creature Type/Archetype/Role/Feature are the four new
-// kinds specific to Crucible, cascading off whichever System is selected.
-async function listAllSystems() {
-  if (!dataManager) return [];
-  try {
-    const listing = await dataManager.list("systems");
-    const entries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
-    return entries
-      .map((entry) => ({ id: entry.id, title: entry.title || entry.id }))
-      .sort((a, b) => a.title.localeCompare(b.title));
-  } catch (error) {
-    return [];
+// Which array field Crucible treats as combat-scaling data is a Crucible tool
+// preference, not System data — it's not game content, it's "which of this
+// System's fields does Crucible's own generator special-case," so it lives in
+// this browser's local storage (keyed per System), never in the System record
+// edited in Loom. Mirrors Vault's budgetCeilingField preference exactly (see
+// vault/js/app.js).
+const COMBAT_SCALING_BUCKET = "crucible-settings";
+
+function getCombatScalingFieldPreference(systemId) {
+  if (!dataManager || !systemId) return "";
+  return dataManager.getLocal(COMBAT_SCALING_BUCKET, systemId)?.combatScalingField || "";
+}
+
+function setCombatScalingFieldPreference(systemId, fieldKey) {
+  if (!dataManager || !systemId) return;
+  if (fieldKey) {
+    dataManager.saveLocal(COMBAT_SCALING_BUCKET, systemId, { combatScalingField: fieldKey });
+  } else {
+    dataManager.removeLocal(COMBAT_SCALING_BUCKET, systemId);
+  }
+}
+
+function populateCombatScalingFieldSelect(selectedFieldKey) {
+  const select = elements.combatScalingFieldSelect;
+  if (!select) return;
+  select.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "None";
+  select.appendChild(blank);
+  arrayFieldOptions.forEach((field) => {
+    const option = document.createElement("option");
+    option.value = field.key;
+    option.textContent = field.label || field.key;
+    select.appendChild(option);
+  });
+  if (arrayFieldOptions.some((field) => field.key === selectedFieldKey)) {
+    select.value = selectedFieldKey;
   }
 }
 
 async function populateSystemSelect() {
-  const systems = await listAllSystems();
+  const systems = await listAllSystems(dataManager);
   const previous = elements.systemSelect?.value;
   if (!elements.systemSelect) return systems;
   elements.systemSelect.innerHTML = "";
@@ -137,12 +177,14 @@ function populateLockedFeaturesSelect() {
 
 async function reloadReferenceData() {
   const systemId = currentSystemId();
-  [creatureTypes, archetypes, roles, features, combatScalingLevels] = await Promise.all([
+  const combatScalingField = getCombatScalingFieldPreference(systemId);
+  [creatureTypes, archetypes, roles, features, combatScalingLevels, arrayFieldOptions] = await Promise.all([
     listCreatureTypesForSystem(dataManager, systemId),
     listArchetypesForSystem(dataManager, systemId),
     listRolesForSystem(dataManager, systemId),
     listFeaturesForSystem(dataManager, systemId),
-    loadCombatScalingLevels(dataManager, systemId),
+    loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
+    listArrayFieldOptions(dataManager, systemId),
   ]);
   populateOverrideSelect(elements.creatureTypeOverride, creatureTypes, "Random");
   populateOverrideSelect(elements.archetypeOverride, archetypes, "Random");
@@ -150,15 +192,11 @@ async function reloadReferenceData() {
   populateOverrideSelect(elements.combatScalingOverride, combatScalingLevels, "Random");
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
-}
-
-function findById(list, id) {
-  return list.find((entry) => entry.id === id) || null;
+  populateCombatScalingFieldSelect(combatScalingField);
 }
 
 function featureLabel(id) {
-  const feature = findById(features, id);
-  return feature ? feature.name || feature.id : id;
+  return sharedFeatureLabel(features, id);
 }
 
 function renderIdentity(record) {
@@ -329,16 +367,10 @@ function buildRecordForSave() {
   };
 }
 
-function isRecordDirty() {
-  if (!currentRecord) return false;
-  if (lastSavedSnapshot === null) return true;
-  return JSON.stringify(toPressExportShape(buildRecordForSave())) !== lastSavedSnapshot;
-}
-
 function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
-  if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !isRecordDirty();
-  if (elements.deleteButton) elements.deleteButton.disabled = !hasRecord || lastSavedSnapshot === null;
+  if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !dirtyGate.isDirty();
+  if (elements.deleteButton) elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved();
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
 }
 
@@ -366,8 +398,7 @@ function renderMonster(record) {
 }
 
 function readLockedFeatureIds() {
-  if (!elements.lockedFeatures) return [];
-  return Array.from(elements.lockedFeatures.selectedOptions).map((option) => option.value);
+  return sharedReadLockedFeatureIds(elements.lockedFeatures);
 }
 
 async function handleGenerate() {
@@ -390,7 +421,7 @@ async function handleGenerate() {
       dataManager,
     });
     const record = createMonsterRecord({ ...generated, stats });
-    lastSavedSnapshot = null;
+    dirtyGate.markDirty();
     renderMonster(record);
     status?.show("Monster generated.", { type: "success", timeout: 1500 });
   } catch (error) {
@@ -408,7 +439,7 @@ async function handleSave() {
     // a real owned/shareable record — Crucible has no whole-tool login gate.
     const exported = toPressExportShape(currentRecord);
     await dataManager.save("monster", currentRecord.id, exported);
-    lastSavedSnapshot = JSON.stringify(exported);
+    dirtyGate.markClean(exported);
     status?.show("Saved.", { type: "success", timeout: 1500 });
     updateActionButtons();
   } catch (error) {
@@ -417,13 +448,13 @@ async function handleSave() {
 }
 
 async function handleDelete() {
-  if (!currentRecord || !dataManager || lastSavedSnapshot === null) return;
+  if (!currentRecord || !dataManager || !dirtyGate.hasSaved()) return;
   const label = currentRecord.name || currentRecord.id;
-  if (!window.confirm(`Delete "${label}"? This can't be undone.`)) return;
+  if (!confirmDelete({ label: `"${label}"` })) return;
   try {
     await dataManager.delete("monster", currentRecord.id);
     status?.show("Deleted.", { type: "success", timeout: 1500 });
-    lastSavedSnapshot = null;
+    dirtyGate.markDirty();
     renderMonster(null);
   } catch (error) {
     status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
@@ -434,54 +465,31 @@ function handleExport() {
   if (!currentRecord) return;
   currentRecord.name = elements.nameInput?.value || "";
   currentRecord.notes = elements.notesText?.value || "";
-  const record = toPressExportShape(currentRecord);
-  const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${record.name || record.id}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
+  exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
 async function handleGenerateNote() {
-  if (!currentRecord) return;
-  currentRecord.name = elements.nameInput?.value || "";
-  const originalHtml = elements.generateNoteButton?.innerHTML;
-  if (elements.generateNoteButton) {
-    elements.generateNoteButton.disabled = true;
-    elements.generateNoteButton.innerHTML =
-      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating…';
-  }
-  try {
-    // Leave name blank rather than falling back to currentRecord.id here —
-    // an id like "mon_abc123" would look like a real name to the server and
-    // stop it from suggesting one.
-    const { name, note } = await generateMonsterNote({
-      name: currentRecord.name || "",
-      creatureType: findById(creatureTypes, currentRecord.creatureTypeId)?.name || currentRecord.creatureTypeId,
-      archetype: findById(archetypes, currentRecord.archetypeId)?.name || currentRecord.archetypeId,
-      role: findById(roles, currentRecord.roleId)?.name || currentRecord.roleId,
-      signatureFeature: currentRecord.signatureFeatureId ? featureLabel(currentRecord.signatureFeatureId) : "",
-      features: currentRecord.featureIds.map((featureId) => {
+  const success = await generateNoteForRecord({
+    record: currentRecord,
+    elements,
+    status,
+    generateNote: generateMonsterNote,
+    // Leave name blank rather than falling back to record.id here — an id
+    // like "mon_abc123" would look like a real name to the server and stop
+    // it from suggesting one.
+    buildRequestBody: (record) => ({
+      name: record.name || "",
+      creatureType: findById(creatureTypes, record.creatureTypeId)?.name || record.creatureTypeId,
+      archetype: findById(archetypes, record.archetypeId)?.name || record.archetypeId,
+      role: findById(roles, record.roleId)?.name || record.roleId,
+      signatureFeature: record.signatureFeatureId ? featureLabel(record.signatureFeatureId) : "",
+      features: record.featureIds.map((featureId) => {
         const feature = findById(features, featureId);
         return { name: feature?.name || featureId, description: feature?.description || "" };
       }),
-    });
-    currentRecord.name = name;
-    currentRecord.notes = note;
-    if (elements.nameInput) elements.nameInput.value = name;
-    if (elements.notesText) elements.notesText.value = note;
-    updateActionButtons();
-    status?.show("Note generated.", { type: "success", timeout: 1500 });
-  } catch (error) {
-    status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
-  } finally {
-    if (elements.generateNoteButton) {
-      elements.generateNoteButton.disabled = false;
-      elements.generateNoteButton.innerHTML = originalHtml;
-    }
-  }
+    }),
+  });
+  if (success) updateActionButtons();
 }
 
 async function init() {
@@ -503,12 +511,23 @@ async function init() {
   elements.exportButton?.addEventListener("click", handleExport);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
+  elements.combatScalingFieldSelect?.addEventListener("change", () => {
+    setCombatScalingFieldPreference(currentSystemId(), elements.combatScalingFieldSelect.value);
+    reloadReferenceData();
+  });
   // Name/Notes aren't written back into currentRecord until Save/Export
   // actually runs (see buildRecordForSave) — without this, editing either
   // field wouldn't re-enable an already-saved record's Save button until
   // some unrelated re-render happened to call updateActionButtons() again.
   elements.nameInput?.addEventListener("input", updateActionButtons);
   elements.notesText?.addEventListener("input", updateActionButtons);
+
+  bindCollapsibleToggle(elements.inspectorToggle, elements.inspectorPanel, {
+    collapsed: false,
+    expandLabel: "Expand inspector",
+    collapseLabel: "Collapse inspector",
+    labelElement: elements.inspectorToggleLabel,
+  });
 
   await populateSystemSelect();
   await reloadReferenceData();

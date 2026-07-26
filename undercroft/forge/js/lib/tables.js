@@ -6,6 +6,7 @@
 // rather than duplicating a second dice parser.
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { fetchLibraryEntry, fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 
 // Alignment (d10, 9 alignments + Unaligned, equal weighting) and Gender (d8,
 // Male x3 / Female x3 / Androgynous x1 / Non-Binary x1) are genuinely uniform
@@ -85,11 +86,11 @@ export async function loadForgeTables() {
   return tablesPromise;
 }
 
-// Places (System > Setting > Location) and Species are all managed in Loom
-// now, as three more generic Library kinds (setting/location/species) rather
-// than Forge-only files — fetchKindEntriesWithIds (common/js/lib/content-fetch.js)
-// fetches each kind's saved entries and pairs them with their id, since the
-// generic listing route only returns ids/filenames, not full bodies.
+// Setting/Location are authored in Sanctum and Species in Loom, both as
+// generic Library kinds (setting/location/species) rather than Forge-only
+// files — fetchKindEntriesWithIds (common/js/lib/content-fetch.js) fetches
+// each kind's saved entries and pairs them with their id, since the generic
+// listing route only returns ids/filenames, not full bodies.
 export async function listSettingsForSystem(dataManager, systemId) {
   if (!systemId) return [];
   const entries = await fetchKindEntriesWithIds(dataManager, "setting");
@@ -256,15 +257,6 @@ export function rollAttitude({ random = Math.random } = {}) {
 // rollX helper. Setting-specific archetypes (rolls 22/23) and Wildcard (24)
 // have no fixed identity, so no stat block exists for them — callers get
 // null and should show a graceful fallback rather than blank/zeroed stats.
-// Standard D&D 5e ability-modifier formula. Combat Tracker's "Roll
-// Initiative" button reads this via the System's combatBindings
-// (sys.dnd5e.json's initiativeModifier: "@stats.initiativeBonus") rather
-// than deriving it itself, keeping that D&D-specific math here in the 5e
-// generator instead of hardcoded in system-agnostic tracker code.
-function abilityModifier(score) {
-  return Math.floor((Number(score) - 10) / 2);
-}
-
 // stats-dnd5e.json stores hitPoints as a flat number (the archetype's max) —
 // wrapped into { max, current } here to match the shape every kind's
 // stats.hitPoints uses (see combat-tracker.js#addCombatant). A freshly
@@ -276,6 +268,9 @@ export function getStatsForArchetype(statsTable, archetypeName) {
   return {
     ...entry,
     hitPoints: { max: maxHp, current: maxHp },
+    // Combat Tracker's "Roll Initiative" button reads this via the System's
+    // combatBindings rather than deriving it itself — the D&D-specific math
+    // stays here in the 5e generator, not in system-agnostic tracker code.
     initiativeBonus: abilityModifier(entry.abilities?.dexterity),
   };
 }

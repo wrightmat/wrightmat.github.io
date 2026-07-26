@@ -1,4 +1,5 @@
 import { evaluateFormula } from "./formula-engine.js";
+import { resolveDottedPath } from "./dotted-path.js";
 
 const SIMPLE_BINDING_PATTERN = /^@[A-Za-z0-9_.]+$/;
 const FORMULA_HINT_PATTERN = /[+*/<>=!?&|()-]|\bif\s*\(/;
@@ -71,15 +72,12 @@ export function resolveBinding(binding, context, formulaOptions) {
   if (!trimmed) {
     return binding;
   }
-  const resolvePath = (path) => {
-    const segments = path.slice(1).split(".");
-    return segments.reduce((acc, key) => {
-      if (acc && typeof acc === "object" && key in acc) {
-        return acc[key];
-      }
-      return undefined;
-    }, context);
-  };
+  // Deliberately no coerceValue here, unlike formula-engine.js's own getter —
+  // a resolved binding can be a string/array/boolean (e.g. a Tags-role
+  // value, an Object field) where coercing a missing path to 0 would be
+  // wrong; formula-engine.js's coercion only makes sense because it's always
+  // a math context.
+  const resolvePath = (path) => resolveDottedPath(context, path.slice(1));
   if (shouldEvaluateFormula(trimmed)) {
     try {
       return evaluateFormula(trimmed, context ?? {}, formulaOptions);
@@ -130,4 +128,27 @@ export function setAtBinding(binding, context, value) {
   }
   cursor[segments[segments.length - 1]] = value;
   return true;
+}
+
+const ROLE_BOUND_ROLES = new Set(["resource", "value", "tags", "modifier"]);
+
+// A System's live play-state (health, AC, conditions, initiative, or
+// whatever else a game tracks) lives on an ordinary array field — not a
+// dedicated field type or a special marker checkbox — identified purely by
+// its values carrying a `role`. Role is a generic structural vocabulary a
+// value can use for any purpose (see Loom's "Role" help topic), not
+// something reserved for combat; this just finds whichever field happens to
+// use it. Combat Tracker and Workbench's character view both resolve the
+// same field this way, so a System only has to author Role/Binding once for
+// both to pick it up — see their own comments for how each one consumes it.
+export function findRoleBoundField(fields) {
+  const list = Array.isArray(fields) ? fields : [];
+  return (
+    list.find(
+      (entry) =>
+        entry?.type === "array" &&
+        Array.isArray(entry.values) &&
+        entry.values.some((value) => value && ROLE_BOUND_ROLES.has(value.role))
+    ) || null
+  );
 }

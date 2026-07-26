@@ -116,20 +116,19 @@
             <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Location actions">
               <div class="btn-group" role="group">
                 <button
-                  class="btn btn-outline-danger p-2"
+                  class="btn btn-primary p-2"
                   type="button"
-                  data-delete-location
-                  disabled
+                  data-generate-location
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Delete Location"
-                  aria-label="Delete Location"
+                  data-bs-title="Generate Location"
+                  aria-label="Generate Location"
                 >
-                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
-                  <span class="visually-hidden">Delete Location</span>
+                  <span class="iconify fs-5" data-icon="tabler:map-2" aria-hidden="true"></span>
+                  <span class="visually-hidden">Generate Location</span>
                 </button>
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-save-location
                   disabled
@@ -155,16 +154,17 @@
                   <span class="visually-hidden">Export JSON</span>
                 </button>
                 <button
-                  class="btn btn-primary p-2"
+                  class="btn btn-outline-danger p-2"
                   type="button"
-                  data-generate-location
+                  data-delete-location
+                  disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Generate Location"
-                  aria-label="Generate Location"
+                  data-bs-title="Delete Location"
+                  aria-label="Delete Location"
                 >
-                  <span class="iconify fs-5" data-icon="tabler:map-2" aria-hidden="true"></span>
-                  <span class="visually-hidden">Generate Location</span>
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete Location</span>
                 </button>
               </div>
             </div>
@@ -205,21 +205,21 @@
             </section>
 
             <section class="pane-card mt-auto" id="sanctum-json">
-              <div class="d-flex align-items-center justify-content-between gap-2">
-                <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">JSON Preview</h2>
-                <button
-                  class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
-                  type="button"
-                  data-json-toggle
-                  aria-expanded="false"
-                >
-                  <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
-                  <span class="visually-hidden" data-json-toggle-label>Expand JSON preview</span>
-                </button>
-              </div>
-              <div class="d-flex flex-column gap-2" data-json-panel hidden>
-                <span class="badge text-bg-secondary align-self-start" data-location-json-bytes>0 B</span>
-                <pre class="border rounded-3 p-2 bg-body small mb-0" data-location-json-preview></pre>
+              <button
+                class="btn btn-link w-100 d-flex justify-content-between align-items-center text-decoration-none px-0 py-1"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#sanctum-json-preview"
+                aria-expanded="false"
+                aria-controls="sanctum-json-preview"
+              >
+                <span class="text-uppercase fs-6 fw-semibold text-body-secondary">JSON Preview</span>
+                <span class="badge text-bg-secondary" data-location-json-bytes>0 B</span>
+              </button>
+              <div class="collapse" id="sanctum-json-preview">
+                <div class="bg-body p-2 mt-2">
+                  <pre class="border rounded-3 p-2 bg-body small mb-0" data-location-json-preview></pre>
+                </div>
               </div>
             </section>
           </div>
@@ -513,7 +513,7 @@
                 <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Setting actions">
                   <div class="btn-group" role="group">
                     <button
-                      class="btn btn-outline-secondary p-2"
+                      class="btn btn-outline-primary p-2"
                       type="button"
                       data-new-setting
                       data-bs-toggle="tooltip"
@@ -525,7 +525,7 @@
                       <span class="visually-hidden">New Setting</span>
                     </button>
                     <button
-                      class="btn btn-outline-secondary p-2"
+                      class="btn btn-outline-success p-2"
                       type="button"
                       data-save-setting
                       data-bs-toggle="tooltip"
@@ -564,12 +564,25 @@
               </div>
             </section>
 
-            <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Inspector</h2>
-            <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
-              Select a Feature, Asset, or Need to see its full detail here.
+            <div class="d-flex align-items-center justify-content-between">
+              <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Inspector</h2>
+              <button
+                class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                type="button"
+                data-inspector-toggle
+                aria-expanded="true"
+              >
+                <span class="iconify" data-icon="tabler:chevron-down" aria-hidden="true"></span>
+                <span class="visually-hidden" data-inspector-toggle-label>Collapse inspector</span>
+              </button>
             </div>
-            <div data-inspector-detail class="d-none">
-              <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
+            <div class="d-flex flex-column gap-3" data-inspector-panel>
+              <div data-inspector-empty class="border border-dashed rounded-3 p-3 text-center text-body-secondary small">
+                Select a Feature, Asset, or Need to see its full detail here.
+              </div>
+              <div data-inspector-detail class="d-none">
+                <pre class="border rounded-3 p-2 bg-body small mb-0" data-inspector-json></pre>
+              </div>
             </div>
           </div>
         </aside>

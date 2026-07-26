@@ -7,7 +7,11 @@ const DEFAULT_SESSION_KEY = "undercroft.session";
 const DEFAULT_ACTIVE_GROUP_KEY = "undercroft.activeGroup";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
-const ROLE_ORDER = ["free", "player", "gm", "creator", "admin"];
+// Exported (not just used internally by getRequiredTier/hasWriteAccess below)
+// so account.js can derive its own owner-tier check from the exact same data
+// instead of keeping a second, independently-drifting copy — see that file's
+// tierMeetsOwnerRequirement.
+export const ROLE_ORDER = ["free", "player", "gm", "creator", "admin"];
 const ANONYMOUS_SCOPE = "anonymous";
 const ROLE_LABELS = {
   free: "Free",
@@ -17,7 +21,7 @@ const ROLE_LABELS = {
   admin: "Admin",
 };
 
-const WRITE_ROLE_REQUIREMENTS = {
+export const WRITE_ROLE_REQUIREMENTS = {
   characters: "free",
   templates: "gm",
   systems: "creator",
@@ -27,7 +31,9 @@ function normalizeTier(tier) {
   return tier ? String(tier).trim().toLowerCase() : "";
 }
 
-function roleRank(role) {
+// Exported alongside ROLE_ORDER/WRITE_ROLE_REQUIREMENTS for the same reason —
+// see account.js's tierMeetsOwnerRequirement.
+export function roleRank(role) {
   const normalized = normalizeTier(role);
   return ROLE_ORDER.indexOf(normalized);
 }
@@ -153,10 +159,6 @@ export class DataManager {
     this._legacyBucketPrefix = `${this.storagePrefix}:bucket`;
     this._session = this._loadSession();
     this._scope = computeScopeKey(this._session);
-  }
-
-  setBaseUrl(url) {
-    this.baseUrl = normalizeBaseUrl(url);
   }
 
   _requireFetch() {
@@ -334,10 +336,6 @@ export class DataManager {
 
   describeTier(tier) {
     return formatTierLabel(tier);
-  }
-
-  canSyncToServer(bucket) {
-    return Boolean(this.baseUrl) && this.isAuthenticated() && this.hasWriteAccess(bucket);
   }
 
   clearSession() {
@@ -815,17 +813,6 @@ export class DataManager {
     return { source: shouldTargetRemote ? "remote" : "local", id };
   }
 
-  async promote(bucket, id) {
-    if (!this.isAuthenticated()) {
-      throw new Error("Cannot promote without an active session");
-    }
-    const localPayload = this.getLocal(bucket, id);
-    if (localPayload === undefined) {
-      throw new Error(`No local payload found for ${bucket}/${id}`);
-    }
-    return this.save(bucket, id, localPayload, { mode: "remote" });
-  }
-
   async listUsers() {
     return this._request("/auth/users", { method: "GET", auth: true });
   }
@@ -1033,13 +1020,6 @@ export class DataManager {
       method: "GET",
       auth: true,
     });
-  }
-
-  async getGroupShareLink(id) {
-    if (!id) {
-      throw new Error("Group id is required");
-    }
-    return this._request(`/groups/${encodeURIComponent(id)}/share-link`, { method: "GET", auth: true });
   }
 
   async createGroupShareLink(id) {

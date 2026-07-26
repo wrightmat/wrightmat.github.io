@@ -3,6 +3,8 @@
 // the account page (Owned Content) and Loom (the Library table) can each
 // open the same modal for whatever record a Share button was clicked on,
 // without every caller re-implementing this ~500 lines of modal wiring.
+import { disableForm } from "./dom.js";
+
 const MODAL_ID = "undercroft-share-modal";
 const SHARE_SPECIAL_ALL_USERS = "all-users";
 const SHARE_ALL_USERS_LABEL = "All Users";
@@ -105,15 +107,6 @@ function ensureModal() {
   document.body.appendChild(element);
   modal = document.getElementById(MODAL_ID);
   return modal;
-}
-
-function disableForm(form, disabled) {
-  const elements = form ? Array.from(form.elements) : [];
-  elements.forEach((el) => {
-    if (typeof el.disabled !== "undefined") {
-      el.disabled = disabled;
-    }
-  });
 }
 
 // `bucket` (from list_owned_content's `item.bucket`) is already the Library
