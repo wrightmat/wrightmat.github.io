@@ -1,5 +1,21 @@
 /* Loom-specific styling builds on the shared Workbench shell. */
 
+/* The System editor's per-property type toggle (renderSystemPropertyRow in
+   js/app.js) doubles as a drag handle — cursor:grab is set inline since it
+   only applies to this one button (not the whole row, which would otherwise
+   override text inputs' native I-beam cursor). Matches Press's
+   .press-component/.press-palette-item :active convention. */
+[data-property-type]:active {
+  cursor: grabbing;
+}
+
+/* Marks whichever property row the Property Inspector (right pane) is
+   currently showing — set/cleared in js/app.js's selectSystemPropertyRow. */
+[data-system-row-selected="true"] {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 1px;
+}
+
 .loom-node {
   border: 1px solid var(--bs-border-color);
   border-radius: 0.35rem;

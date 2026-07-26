@@ -3,25 +3,46 @@ import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { listFeaturesForSystem, getSystemPropertyTypes } from "./lib/tables.js";
 import { generateEffect, computeBudget } from "./lib/generator.js";
 import { createEffectRecord, toPressExportShape } from "./lib/effect-schema.js";
 import { generateEffectNote } from "./lib/llm-note.js";
+import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
+import {
+  listAllSystems,
+  findById,
+  featureLabel as sharedFeatureLabel,
+  readLockedFeatureIds as sharedReadLockedFeatureIds,
+  exportRecordAsJson,
+  generateNoteForRecord,
+} from "../../common/js/lib/generator-kit.js";
+import { confirmDelete } from "../../common/js/lib/ownership.js";
 
 let status = null;
 let dataManager = null;
 let features = [];
 let propertyTypes = [];
 let currentRecord = null;
+// Tracks whether the record as last successfully saved differs from a live
+// snapshot — built from currentRecord (feature add/remove already patches it
+// directly) plus whatever's currently typed into Name/Notes, since those two
+// fields aren't written back into currentRecord until Save/Export actually
+// runs. Gates Save (dirty) and Delete (nothing saved yet) — see
+// common/js/lib/dirty-gate.js, lifted from Crucible's original version of
+// this exact pattern.
+const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
 const elements = {
   systemSelect: document.querySelector("[data-system-select]"),
+  budgetCeilingFieldSelect: document.querySelector("[data-budget-ceiling-field]"),
   propertyOverridesContainer: document.querySelector("[data-property-overrides]"),
   signatureOverride: document.querySelector("[data-signature-feature-override]"),
   lockedFeatures: document.querySelector("[data-locked-features]"),
   generateButton: document.querySelector("[data-generate-effect]"),
   saveButton: document.querySelector("[data-save-effect]"),
   exportButton: document.querySelector("[data-export-effect]"),
+  deleteButton: document.querySelector("[data-delete-effect]"),
   emptyState: document.querySelector("[data-effect-empty-state]"),
   display: document.querySelector("[data-effect-display]"),
   nameInput: document.querySelector("[data-effect-name]"),
@@ -39,30 +60,58 @@ const elements = {
   inspectorEmpty: document.querySelector("[data-inspector-empty]"),
   inspectorDetail: document.querySelector("[data-inspector-detail]"),
   inspectorJson: document.querySelector("[data-inspector-json]"),
+  inspectorToggle: document.querySelector("[data-inspector-toggle]"),
+  inspectorToggleLabel: document.querySelector("[data-inspector-toggle-label]"),
+  inspectorPanel: document.querySelector("[data-inspector-panel]"),
 };
 
 function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
 
-// Systems themselves are still the "systems" DataManager bucket (same as
-// every other tool) — Features and each System's own propertyTypes cascade
-// off whichever System is selected. Mirrors Crucible's own copy of this.
-async function listAllSystems() {
-  if (!dataManager) return [];
-  try {
-    const listing = await dataManager.list("systems");
-    const entries = dataManager.collectListEntries(listing.remote, ["items", "owned", "shared", "public"]);
-    return entries
-      .map((entry) => ({ id: entry.id, title: entry.title || entry.id }))
-      .sort((a, b) => a.title.localeCompare(b.title));
-  } catch (error) {
-    return [];
+// Which generator-property field Vault treats as the budget ceiling is a
+// Vault tool preference, not System data — it's not game content, it's
+// "which of this System's fields does Vault's own generator special-case,"
+// so it lives in this browser's local storage (keyed per System), never in
+// the System record edited in Loom. See common/docs/... — this replaced an
+// earlier attempt that stored it on the System itself before being corrected.
+const BUDGET_CEILING_BUCKET = "vault-settings";
+
+function getBudgetCeilingFieldPreference(systemId) {
+  if (!dataManager || !systemId) return "";
+  return dataManager.getLocal(BUDGET_CEILING_BUCKET, systemId)?.budgetCeilingField || "";
+}
+
+function setBudgetCeilingFieldPreference(systemId, fieldKey) {
+  if (!dataManager || !systemId) return;
+  if (fieldKey) {
+    dataManager.saveLocal(BUDGET_CEILING_BUCKET, systemId, { budgetCeilingField: fieldKey });
+  } else {
+    dataManager.removeLocal(BUDGET_CEILING_BUCKET, systemId);
+  }
+}
+
+function populateBudgetCeilingFieldSelect(selectedFieldKey) {
+  const select = elements.budgetCeilingFieldSelect;
+  if (!select) return;
+  select.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = "None";
+  select.appendChild(blank);
+  propertyTypes.forEach((propertyType) => {
+    const option = document.createElement("option");
+    option.value = propertyType.id;
+    option.textContent = propertyType.label || propertyType.id;
+    select.appendChild(option);
+  });
+  if (propertyTypes.some((propertyType) => propertyType.id === selectedFieldKey)) {
+    select.value = selectedFieldKey;
   }
 }
 
 async function populateSystemSelect() {
-  const systems = await listAllSystems();
+  const systems = await listAllSystems(dataManager);
   const previous = elements.systemSelect?.value;
   if (!elements.systemSelect) return systems;
   elements.systemSelect.innerHTML = "";
@@ -171,23 +220,20 @@ function populateAddFeatureSelect() {
 
 async function reloadReferenceData() {
   const systemId = currentSystemId();
+  const budgetCeilingField = getBudgetCeilingFieldPreference(systemId);
   [features, propertyTypes] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
-    getSystemPropertyTypes(dataManager, systemId),
+    getSystemPropertyTypes(dataManager, systemId, budgetCeilingField),
   ]);
   populatePropertyOverrides();
   populateOverrideSelect(elements.signatureOverride, features, "Random");
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
-}
-
-function findById(list, id) {
-  return list.find((entry) => entry.id === id) || null;
+  populateBudgetCeilingFieldSelect(budgetCeilingField);
 }
 
 function featureLabel(id) {
-  const feature = findById(features, id);
-  return feature ? feature.name || feature.id : id;
+  return sharedFeatureLabel(features, id);
 }
 
 function propertyValueLabel(propertyTypeId, valueId) {
@@ -313,6 +359,19 @@ function refreshEffectView() {
   renderBudget(currentRecord);
   populateAddFeatureSelect();
   updateJsonPreview(elements.jsonPreview, elements.jsonBytes, toPressExportShape(currentRecord));
+  updateActionButtons();
+}
+
+// What Save/Export would actually write right now — name/notes only get
+// synced from their input fields inside handleSave/handleExport themselves,
+// so a live dirty-check needs this instead of reading currentRecord directly.
+function buildRecordForSave() {
+  if (!currentRecord) return null;
+  return {
+    ...currentRecord,
+    name: elements.nameInput?.value || "",
+    notes: elements.notesText?.value || "",
+  };
 }
 
 function removeFeature(featureId) {
@@ -331,14 +390,14 @@ function addFeature(featureId) {
 }
 
 function readLockedFeatureIds() {
-  if (!elements.lockedFeatures) return [];
-  return Array.from(elements.lockedFeatures.selectedOptions).map((option) => option.value);
+  return sharedReadLockedFeatureIds(elements.lockedFeatures);
 }
 
 function updateActionButtons() {
   const hasRecord = Boolean(currentRecord);
-  if (elements.saveButton) elements.saveButton.disabled = !hasRecord;
+  if (elements.saveButton) elements.saveButton.disabled = !hasRecord || !dirtyGate.isDirty();
   if (elements.exportButton) elements.exportButton.disabled = !hasRecord;
+  if (elements.deleteButton) elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved();
 }
 
 function renderEffect(record) {
@@ -373,6 +432,7 @@ function handleGenerate() {
       propertyOverrides: readPropertyOverrides(),
     });
     const record = createEffectRecord(generated);
+    dirtyGate.markDirty();
     renderEffect(record);
     status?.show("Effect generated.", { type: "success", timeout: 1500 });
   } catch (error) {
@@ -388,10 +448,27 @@ async function handleSave() {
     // Default mode ("auto") matters here exactly like Crucible/Forge's save:
     // an anonymous GM saves locally to their own browser, a signed-in user
     // gets a real owned/shareable record — Vault has no whole-tool login gate.
-    await dataManager.save("effect", currentRecord.id, toPressExportShape(currentRecord));
+    const exported = toPressExportShape(currentRecord);
+    await dataManager.save("effect", currentRecord.id, exported);
+    dirtyGate.markClean(exported);
+    updateActionButtons();
     status?.show("Saved.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+  }
+}
+
+async function handleDelete() {
+  if (!currentRecord || !dataManager || !dirtyGate.hasSaved()) return;
+  const label = currentRecord.name || currentRecord.id;
+  if (!confirmDelete({ label: `"${label}"` })) return;
+  try {
+    await dataManager.delete("effect", currentRecord.id);
+    status?.show("Deleted.", { type: "success", timeout: 1500 });
+    dirtyGate.markDirty();
+    renderEffect(null);
+  } catch (error) {
+    status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
   }
 }
 
@@ -399,56 +476,36 @@ function handleExport() {
   if (!currentRecord) return;
   currentRecord.name = elements.nameInput?.value || "";
   currentRecord.notes = elements.notesText?.value || "";
-  const record = toPressExportShape(currentRecord);
-  const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${record.name || record.id}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
+  exportRecordAsJson(currentRecord, toPressExportShape);
 }
 
 async function handleGenerateNote() {
-  if (!currentRecord) return;
-  currentRecord.name = elements.nameInput?.value || "";
-  const originalHtml = elements.generateNoteButton?.innerHTML;
-  if (elements.generateNoteButton) {
-    elements.generateNoteButton.disabled = true;
-    elements.generateNoteButton.innerHTML =
-      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating…';
-  }
-  try {
-    // Leave name blank rather than falling back to currentRecord.id here —
-    // an id like "eff_abc123" would look like a real name to the server and
-    // stop it from suggesting one.
-    const propertySummary = {};
-    propertyTypes.forEach((propertyType) => {
-      const valueId = currentRecord.properties?.[propertyType.id];
-      if (valueId) propertySummary[propertyType.label || propertyType.id] = propertyValueLabel(propertyType.id, valueId);
-    });
-    const { name, note } = await generateEffectNote({
-      name: currentRecord.name || "",
-      properties: propertySummary,
-      signatureFeature: currentRecord.signatureFeatureId ? featureLabel(currentRecord.signatureFeatureId) : "",
-      features: currentRecord.featureIds.map((featureId) => {
-        const feature = findById(features, featureId);
-        return { name: feature?.name || featureId, description: feature?.description || "" };
-      }),
-    });
-    currentRecord.name = name;
-    currentRecord.notes = note;
-    if (elements.nameInput) elements.nameInput.value = name;
-    if (elements.notesText) elements.notesText.value = note;
-    status?.show("Note generated.", { type: "success", timeout: 1500 });
-  } catch (error) {
-    status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
-  } finally {
-    if (elements.generateNoteButton) {
-      elements.generateNoteButton.disabled = false;
-      elements.generateNoteButton.innerHTML = originalHtml;
-    }
-  }
+  const success = await generateNoteForRecord({
+    record: currentRecord,
+    elements,
+    status,
+    generateNote: generateEffectNote,
+    // Leave name blank rather than falling back to record.id here — an id
+    // like "eff_abc123" would look like a real name to the server and stop
+    // it from suggesting one.
+    buildRequestBody: (record) => {
+      const propertySummary = {};
+      propertyTypes.forEach((propertyType) => {
+        const valueId = record.properties?.[propertyType.id];
+        if (valueId) propertySummary[propertyType.label || propertyType.id] = propertyValueLabel(propertyType.id, valueId);
+      });
+      return {
+        name: record.name || "",
+        properties: propertySummary,
+        signatureFeature: record.signatureFeatureId ? featureLabel(record.signatureFeatureId) : "",
+        features: record.featureIds.map((featureId) => {
+          const feature = findById(features, featureId);
+          return { name: feature?.name || featureId, description: feature?.description || "" };
+        }),
+      };
+    },
+  });
+  if (success) updateActionButtons();
 }
 
 async function init() {
@@ -467,12 +524,37 @@ async function init() {
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);
   elements.exportButton?.addEventListener("click", handleExport);
+  elements.deleteButton?.addEventListener("click", handleDelete);
   elements.generateNoteButton?.addEventListener("click", handleGenerateNote);
   elements.addFeatureButton?.addEventListener("click", () => {
     const featureId = elements.addFeatureSelect?.value;
     if (featureId) addFeature(featureId);
   });
   elements.systemSelect?.addEventListener("change", () => reloadReferenceData());
+  elements.budgetCeilingFieldSelect?.addEventListener("change", () => {
+    const fieldKey = elements.budgetCeilingFieldSelect.value;
+    setBudgetCeilingFieldPreference(currentSystemId(), fieldKey);
+    propertyTypes.forEach((propertyType) => {
+      propertyType.setsBudgetCeiling = propertyType.id === fieldKey;
+    });
+    if (currentRecord) {
+      recomputeBudget(currentRecord);
+      refreshEffectView();
+    }
+  });
+  // Name/Notes aren't written back into currentRecord until Save/Export
+  // actually runs (see buildRecordForSave) — without this, editing either
+  // field wouldn't re-enable an already-saved record's Save button until
+  // some unrelated re-render happened to call updateActionButtons() again.
+  elements.nameInput?.addEventListener("input", updateActionButtons);
+  elements.notesText?.addEventListener("input", updateActionButtons);
+
+  bindCollapsibleToggle(elements.inspectorToggle, elements.inspectorPanel, {
+    collapsed: false,
+    expandLabel: "Expand inspector",
+    collapseLabel: "Collapse inspector",
+    labelElement: elements.inspectorToggleLabel,
+  });
 
   await populateSystemSelect();
   await reloadReferenceData();

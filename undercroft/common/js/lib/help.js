@@ -114,9 +114,10 @@ function createTriggerElement(topic, { icon, placement, classes, variant } = {})
   trigger.appendChild(iconElement);
   trigger.addEventListener("click", (event) => {
     event.preventDefault();
-    // Already on Admin: jump to the topic in this same page's help browser
-    // instead of opening a redundant second tab pointed at itself.
-    if (resolveToolContextPath() === "admin") {
+    // Already on the account page (where the help browser itself lives):
+    // jump to the topic in this same page's help browser instead of opening
+    // a redundant second tab pointed at itself.
+    if (resolveToolContextPath() === "common") {
       window.dispatchEvent(new CustomEvent("undercroft:show-help-topic", { detail: { topicId: topic.id } }));
       return;
     }

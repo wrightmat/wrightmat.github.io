@@ -1,4 +1,5 @@
 import { populateSelect } from "../lib/dropdown.js";
+import { matchesOwner, confirmDelete } from "../../../common/js/lib/ownership.js";
 import {
   createCanvasPlaceholder,
   initPaletteInteractions,
@@ -13,6 +14,7 @@ import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.j
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
+import { bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
 import {
   listBuiltinSystems,
   listBuiltinTemplates,
@@ -310,9 +312,33 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     jsonPreview: document.querySelector("[data-json-preview]"),
     jsonPreviewBytes: document.querySelector("[data-preview-bytes]"),
     templateProperties: document.querySelector("[data-template-properties]"),
-    templatePropertiesCollapse: document.getElementById("template-properties-collapse"),
-    componentPropertiesCollapse: document.getElementById("component-properties-collapse"),
+    selectionsToggle: document.querySelector("[data-selections-toggle]"),
+    selectionsPanel: document.querySelector("[data-selections-panel]"),
+    templatePropertiesToggle: document.querySelector("[data-template-properties-toggle]"),
+    templatePropertiesPanel: document.querySelector("[data-template-properties-panel]"),
+    componentPropertiesToggle: document.querySelector("[data-component-properties-toggle]"),
+    componentPropertiesPanel: document.querySelector("[data-component-properties-panel]"),
   });
+
+  // Same shared collapse mechanism as every other tool (Forge/Loom/Press/
+  // Sanctum/Orrery) — these three sections used to be wired as raw Bootstrap
+  // `data-bs-toggle="collapse"` without the `.collapsible-toggle` class,
+  // which meant their chevron icon never rotated on toggle. Template
+  // Properties and Component Properties also need programmatic control
+  // (renderInspector swaps which one is expanded based on selection — see
+  // expandTemplatePropertiesSection/collapseComponentPropertiesSection
+  // below), so their bindCollapsibleToggle() return value is kept.
+  const applyTemplatePropertiesCollapse = bindCollapsibleToggle(
+    elements.templatePropertiesToggle,
+    elements.templatePropertiesPanel,
+    { collapsed: false }
+  );
+  const applyComponentPropertiesCollapse = bindCollapsibleToggle(
+    elements.componentPropertiesToggle,
+    elements.componentPropertiesPanel,
+    { collapsed: true }
+  );
+  bindCollapsibleToggle(elements.selectionsToggle, elements.selectionsPanel, { collapsed: false });
 
   const insertComponentAtCanvasRoot = createRootInsertionHandler({
     createItem: (type) => {
@@ -963,8 +989,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       return;
     }
     const label = state.template.title || state.template.id;
-    const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
-    if (!confirmed) {
+    if (!confirmDelete({ label })) {
       return;
     }
     const wantsRemote = dataManager.isAuthenticated() && Boolean(dataManager.baseUrl);
@@ -1514,59 +1539,19 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   }
 
   function expandTemplatePropertiesSection() {
-    if (!elements.templatePropertiesCollapse) {
-      return;
-    }
-    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
-      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.templatePropertiesCollapse, {
-        toggle: false,
-      });
-      instance.show();
-      return;
-    }
-    elements.templatePropertiesCollapse.classList.add("show");
+    applyTemplatePropertiesCollapse(false);
   }
 
   function collapseTemplatePropertiesSection() {
-    if (!elements.templatePropertiesCollapse) {
-      return;
-    }
-    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
-      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.templatePropertiesCollapse, {
-        toggle: false,
-      });
-      instance.hide();
-      return;
-    }
-    elements.templatePropertiesCollapse.classList.remove("show");
+    applyTemplatePropertiesCollapse(true);
   }
 
   function expandComponentPropertiesSection() {
-    if (!elements.componentPropertiesCollapse) {
-      return;
-    }
-    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
-      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.componentPropertiesCollapse, {
-        toggle: false,
-      });
-      instance.show();
-      return;
-    }
-    elements.componentPropertiesCollapse.classList.add("show");
+    applyComponentPropertiesCollapse(false);
   }
 
   function collapseComponentPropertiesSection() {
-    if (!elements.componentPropertiesCollapse) {
-      return;
-    }
-    if (window.bootstrap && typeof window.bootstrap.Collapse === "function") {
-      const instance = window.bootstrap.Collapse.getOrCreateInstance(elements.componentPropertiesCollapse, {
-        toggle: false,
-      });
-      instance.hide();
-      return;
-    }
-    elements.componentPropertiesCollapse.classList.remove("show");
+    applyComponentPropertiesCollapse(true);
   }
 
   function prepareNewTemplateForm({ mode = "new", seedTemplate = null } = {}) {
@@ -1661,28 +1646,17 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (ownership === "local" || ownership === "draft" || ownership === "owned") {
       return true;
     }
-    const user = sessionUser();
-    if (!user || !dataManager.isAuthenticated()) {
+    if (!sessionUser() || !dataManager.isAuthenticated()) {
       return false;
     }
-    const ownerId =
-      metadata?.ownerId ?? metadata?.owner_id ?? state.template?.ownerId ?? null;
-    if (ownerId !== null && ownerId !== undefined && user.id !== undefined && user.id !== null) {
-      if (String(ownerId) === String(user.id)) {
-        return true;
-      }
-    }
-    const ownerUsername =
-      metadata?.ownerUsername ||
-      metadata?.owner_username ||
-      state.template?.ownerUsername ||
-      "";
-    if (ownerUsername && user.username) {
-      if (ownerUsername.toLowerCase() === user.username.toLowerCase()) {
-        return true;
-      }
-    }
-    return false;
+    // Fall back to state.template's own owner fields when metadata (a
+    // catalog lookup, possibly stale/absent) doesn't carry them — the same
+    // reasoning templateOwnership/templatePermissions above already apply.
+    const merged = {
+      ownerId: metadata?.ownerId ?? metadata?.owner_id ?? state.template?.ownerId ?? null,
+      ownerUsername: metadata?.ownerUsername || metadata?.owner_username || state.template?.ownerUsername || "",
+    };
+    return matchesOwner(merged, { session: dataManager.session });
   }
 
   function templateAllowsEdits(metadata) {
@@ -3872,20 +3846,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       syncTemplateActions();
     });
 
-    form.appendChild(createTemplateField({ labelText: "Name", control: nameInput, id: "template-title" }));
     form.appendChild(createTemplateField({ labelText: "ID", control: idInput, id: "template-id" }));
-
-    const descriptionInput = document.createElement("textarea");
-    descriptionInput.className = "form-control";
-    descriptionInput.rows = 3;
-    descriptionInput.placeholder = "Add a short description";
-    descriptionInput.value = state.template.description || "";
-    descriptionInput.disabled = !canEdit;
-    descriptionInput.addEventListener("input", (event) => {
-      state.template.description = event.target.value || "";
-      syncTemplateActions();
-    });
-    form.appendChild(createTemplateField({ labelText: "Description", control: descriptionInput, id: "template-description" }));
+    form.appendChild(createTemplateField({ labelText: "Name", control: nameInput, id: "template-title" }));
 
     const typeSelect = document.createElement("select");
     typeSelect.className = "form-select";
@@ -3914,6 +3876,18 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       syncTemplateActions();
     });
     form.appendChild(createTemplateField({ labelText: "Type", control: typeSelect, id: "template-type" }));
+
+    const descriptionInput = document.createElement("textarea");
+    descriptionInput.className = "form-control";
+    descriptionInput.rows = 3;
+    descriptionInput.placeholder = "Add a short description";
+    descriptionInput.value = state.template.description || "";
+    descriptionInput.disabled = !canEdit;
+    descriptionInput.addEventListener("input", (event) => {
+      state.template.description = event.target.value || "";
+      syncTemplateActions();
+    });
+    form.appendChild(createTemplateField({ labelText: "Description", control: descriptionInput, id: "template-description" }));
 
     const systemSelect = document.createElement("select");
     systemSelect.className = "form-select";

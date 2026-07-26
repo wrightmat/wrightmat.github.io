@@ -10,7 +10,8 @@
     "debug_verification_codes": false,
     "default_admin_username": "admin",
     "default_admin_password": "admin",
-    "default_admin_email": "admin@example.com"
+    "default_admin_email": "admin@example.com",
+    "ddb_proxy_allowed_hosts": ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com"]
   },
   "database": {
     "path": "data/database.sqlite"

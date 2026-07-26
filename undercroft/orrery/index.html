@@ -127,18 +127,6 @@
                   <button
                     class="btn btn-outline-secondary p-2"
                     type="button"
-                    data-action="new-map"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="New Map"
-                    aria-label="New Map"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:map-plus" aria-hidden="true"></span>
-                    <span class="visually-hidden">New Map</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
                     data-action="undo-layout"
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
@@ -161,6 +149,18 @@
                     <span class="visually-hidden">Redo</span>
                   </button>
                   <button
+                    class="btn btn-outline-primary p-2"
+                    type="button"
+                    data-action="new-map"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="New Map"
+                    aria-label="New Map"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:map-plus" aria-hidden="true"></span>
+                    <span class="visually-hidden">New Map</span>
+                  </button>
+                  <button
                     class="btn btn-outline-secondary p-2"
                     type="button"
                     data-action="import-layout"
@@ -173,19 +173,7 @@
                     <span class="visually-hidden">Import</span>
                   </button>
                   <button
-                    class="btn btn-outline-secondary p-2"
-                    type="button"
-                    data-action="export-layout"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="bottom"
-                    data-bs-title="Export"
-                    aria-label="Export"
-                  >
-                    <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
-                    <span class="visually-hidden">Export</span>
-                  </button>
-                  <button
-                    class="btn btn-outline-secondary p-2"
+                    class="btn btn-outline-success p-2"
                     type="button"
                     data-action="save-layout"
                     disabled
@@ -196,6 +184,18 @@
                   >
                     <span class="iconify fs-5" data-icon="tabler:device-floppy" aria-hidden="true"></span>
                     <span class="visually-hidden">Save Map</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary p-2"
+                    type="button"
+                    data-action="export-layout"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    data-bs-title="Export"
+                    aria-label="Export"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:download" aria-hidden="true"></span>
+                    <span class="visually-hidden">Export</span>
                   </button>
                   <button
                     class="btn btn-outline-danger p-2"
@@ -246,7 +246,7 @@
                 <div class="btn-toolbar" role="toolbar" aria-label="Add layers">
                   <div class="btn-group btn-group-sm" role="group">
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-primary"
                       type="button"
                       data-add-layer="vector"
                       data-bs-toggle="tooltip"
@@ -256,7 +256,7 @@
                       <span class="visually-hidden">Add vector layer</span>
                     </button>
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-primary"
                       type="button"
                       data-add-layer="grid"
                       data-bs-toggle="tooltip"
@@ -266,7 +266,7 @@
                       <span class="visually-hidden">Add grid layer</span>
                     </button>
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-primary"
                       type="button"
                       data-add-layer="raster"
                       data-bs-toggle="tooltip"
@@ -276,7 +276,7 @@
                       <span class="visually-hidden">Add raster layer</span>
                     </button>
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-primary"
                       type="button"
                       data-add-layer="marker"
                       data-bs-toggle="tooltip"
@@ -309,7 +309,7 @@
                 <div class="btn-toolbar" role="toolbar" aria-label="Add group">
                   <div class="btn-group btn-group-sm" role="group">
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-primary"
                       type="button"
                       data-add-group
                       data-bs-toggle="tooltip"
@@ -333,7 +333,7 @@
                 <div class="btn-toolbar" role="toolbar" aria-label="Add view">
                   <div class="btn-group btn-group-sm" role="group">
                     <button
-                      class="btn btn-outline-secondary"
+                      class="btn btn-outline-primary"
                       type="button"
                       data-add-view
                       data-bs-toggle="tooltip"
@@ -374,7 +374,7 @@
               </div>
               <div class="collapse" id="orrery-json-preview">
                 <div class="bg-body p-2 mt-2">
-                  <pre class="text-body-secondary small mb-0 orrery-json-preview" data-json-preview>{}</pre>
+                  <pre class="text-body-secondary small mb-0 json-preview-text orrery-json-preview" data-json-preview>{}</pre>
                 </div>
               </div>
             </section>
@@ -614,7 +614,7 @@
                   </button>
                 </div>
               </div>
-              <div class="d-flex flex-column gap-3" data-selection-panel>
+              <div class="d-flex flex-column gap-3" data-selection-panel id="orrery-selection">
                 <div class="pane-card">
                   <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>

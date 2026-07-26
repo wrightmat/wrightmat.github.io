@@ -343,13 +343,142 @@
       "title": "System Properties",
       "summary": "Each property is one field a Workbench Template can bind to.",
       "details": [
-        "Default is applied when a new record is created; Category is just a display grouping label.",
-        "Minimum/Maximum only apply to Number properties.",
+        "The asterisk button toggles Required; the trash button removes the property entirely.",
+        "Default is applied when a new record is created. Minimum/Maximum only apply to Number properties.",
         "Object properties can have Sub-fields (their own nested properties, e.g. an Abilities object containing Strength/Dexterity/etc.).",
-        "Array properties are either a fixed list of Enum values, or an Item schema — a repeating set of sub-fields (e.g. an Inventory of Name/Quantity/Weight rows) with a Display field marking which sub-field represents each row.",
-        "Enum values can set a Library kind (e.g. \"class\") — each value then links directly to a real Library entity of that kind instead of just being a display string, so the System stays the roster (names, order, what's expected to exist) while showing exactly which entries already have real Library data behind them and which don't yet.",
-        "Saving a Library entity assigned to this System auto-links it into a matching, still-unlinked value by name — no need to link it by hand unless the match is ambiguous.",
+        "Array properties are either Enum — a fixed, System-defined list of values shared by every record (e.g. Rarity) — or Records — a repeating set of sub-fields whose shape (not values) is System-defined, so each record has its own actual items (e.g. an Inventory of Name/Quantity/Weight rows), with a Display field marking which sub-field represents each row.",
+        "Enum values' options row only enables the columns a value actually needs — see 'Array value options' for what each one does.",
+        "Every value also has an Extra properties (JSON) box as a catch-all for anything not covered by a column yet (e.g. a field-specific stat block) — it round-trips untouched even if this editor has no dedicated control for it.",
         "Preview Data is sample data shown when previewing bindings in Workbench's Template editor — it isn't part of any real character's data."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemArrayOptions",
+      "title": "Array value options",
+      "summary": "Which extra columns show on each of this property's values, and what each one actually does.",
+      "details": [
+        "Cost — a number each value spends from (or, if negative, refunds into) the active budget ceiling. Only meaningful on a Property that is NOT the one picked as Vault's Budget ceiling field (see that Vault topic): if this Property IS the ceiling field, Vault's own budget math ignores its Cost entirely and uses its Target budget instead. Turn this on for Properties like Activation or Item Form, where every value has a point cost.",
+        "Target budget — a number each value sets as a target budget. It's only read as \"the ceiling\" from whichever one Property Vault's Budget ceiling field setting names; on every other Property, a Target budget value is just stored data some other consumer can use however it wants (e.g. Combat Scaling's per-CR entries carry Target budget for Crucible's own stat scaling, completely unrelated to Vault's economy). Cost and Target budget are not \"pick whichever fits\" — which one a given Property's values actually use is decided entirely by whether that Property is the current ceiling field.",
+        "Source ID — a stable numeric ID (typically a D&D Beyond identifier) this value can be looked up by. This is what lets a DDB character/monster import resolve a raw numeric code (e.g. an alignment or condition ID from D&D Beyond's export) back to this value — see common/docs/lookup-tables-migration.md for the full list of fields that use it and why.",
+        "Short name — a short label or abbreviation for this value (e.g. \"STR\" for Strength, \"LG\" for Lawful Good, \"V\"/\"S\"/\"M\" for spell components, \"A\"/\"BA\"/\"R\" for Activation's action-economy codes) shown anywhere full names don't fit. It's one shared property name used the same way across every Property that needs a short form — Alignments, Abilities, Activation, Spell Components, Sizes, and Speeds all use it — rather than each Property inventing its own name for the same idea.",
+        "Library-linked — each value can point at a real Library entity of a chosen kind (the Library kind field shown in the main Array contents row) instead of just being a display string. Turning this on reveals a Library-kind field and, per value, a select of that kind's saved entities — saving a matching Library entity later auto-links it by name, so linking by hand is only needed when a match is ambiguous.",
+        "Role — a small fixed vocabulary describing this value's structural behavior, useful anywhere it fits: Resource (a number with a max, optionally a temp buffer that absorbs damage first), Value (one standalone number), Tags (a multi-select status list), or Modifier (a number that feeds a die roll). Whichever array's values use Role is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings') — but nothing requires that to be its only use.",
+        "Binding — a generic @-path pointing this value at another field (e.g. @stats.hitPoints.current) — where this value's live data is read/written. Not specific to Role or Combat Bindings — any value on any array can carry one.",
+        "Source field — a different kind of pointer: the key of another array field on this same System whose values are this value's list of valid options (e.g. a Tags-role value naming a Conditions field), not where data lives but where the choices are defined.",
+        "A role's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) has no dedicated column — it's authored directly in that value's Extra properties JSON instead, the same as any other one-off property (see 'System Properties')."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueCost",
+      "title": "Cost",
+      "summary": "How much this value spends from (or refunds into) the active budget ceiling.",
+      "details": [
+        "A positive Cost spends from the budget; negative refunds into it (a drawback-style value, e.g. a Potion of Healing's negative cost representing single-use convenience).",
+        "Only meaningful when this Property is NOT the one Vault's Budget ceiling field setting points at — if it IS the ceiling field, this value's Cost is ignored entirely and its Target budget is used instead.",
+        "Turn this on for Properties like Activation or Item Form, where every value carries a point cost toward Vault's generation economy."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueTargetBudget",
+      "title": "Target budget",
+      "summary": "The target budget this value sets — only counts as \"the\" generation ceiling when Vault's own setting points at this Property.",
+      "details": [
+        "Read as the actual generation ceiling only from whichever one Property Vault's Budget ceiling field preference names (a Vault setting, not part of this System — see that Vault topic).",
+        "On every other Property, this is just stored data some other consumer can use however it wants — e.g. Combat Scaling's per-CR entries carry Target budget for Crucible's own stat scaling, completely unrelated to Vault's economy.",
+        "Cost and Target budget aren't \"pick whichever fits\" per value — which one actually gets used is decided entirely by whether this Property is the current ceiling field."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueSourceId",
+      "title": "Source ID",
+      "summary": "A stable numeric ID this value can be looked up by.",
+      "details": [
+        "Typically a D&D Beyond identifier — lets a DDB character/monster import resolve a raw numeric code from D&D Beyond's export (e.g. an alignment or condition ID) back to this value.",
+        "See common/docs/lookup-tables-migration.md for the full list of fields that use this and why."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueShortName",
+      "title": "Short name",
+      "summary": "A short label or abbreviation for this value, shown anywhere the full name doesn't fit.",
+      "details": [
+        "One shared property name used the same way across every Property that needs a short form — STR for Strength, LG for Lawful Good, V/S/M for spell components, A/BA/R for Activation's action-economy codes, tiny/sm for Sizes, walking/burrowing for Speeds — rather than each Property inventing its own name for the same idea."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueLibraryLinked",
+      "title": "Library-linked",
+      "summary": "Lets each value point at a real Library entity instead of just being a display string.",
+      "details": [
+        "Turning this on reveals a Library kind field (e.g. \"class\") in the Array contents row above, plus a per-value select of that kind's saved entities.",
+        "Saving a matching Library entity later auto-links it into a still-unlinked value by name — linking by hand is only needed when a match is ambiguous.",
+        "This is what lets a System stay the roster (names, order, what's expected to exist) while showing exactly which entries already have real Library data behind them and which don't yet."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueRole",
+      "title": "Role",
+      "summary": "A small fixed vocabulary describing this value's structural behavior — useful for more than just combat.",
+      "details": [
+        "Resource — a number with a max, optionally a temp buffer that absorbs damage first without raising the max — e.g. Hit Points.",
+        "Value — one standalone number with no max — e.g. Armor Class.",
+        "Tags — a multi-select status list, drawing its options from another array field named by Source field — e.g. Conditions.",
+        "Modifier — a number that feeds a die roll — e.g. an initiative bonus.",
+        "These are generic structural categories, not D&D concepts, and not tied to any one consumer — any array's values can use Role for whatever purpose calls for that shape.",
+        "Whichever array field's values happen to use Role is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings'), simply because that's the shape they're built to read — nothing about Role itself is combat-specific.",
+        "A role's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) isn't a dedicated column — author it directly in that value's Extra properties JSON instead (e.g. {\"maxPath\": \"@stats.hitPoints.max\", \"tempPath\": \"@stats.hitPoints.temp\"})."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueBinding",
+      "title": "Binding",
+      "summary": "An @-path pointing this value at another field — where its live data is read and written.",
+      "details": [
+        "Generic, not specific to Role or Combat Bindings — any value on any array can carry one, the same way a Workbench Template's own fields bind to data with @-paths (see common/js/lib/bindings.js).",
+        "On whichever array the Combat Tracker widget and Workbench's character view treat as a System's live play-state, this is the path they read and write for this value — e.g. @stats.hitPoints.current or @stats.armorClass.",
+        "Not to be confused with Source field, which points at where a value's list of valid *options* is defined, not where its own data lives — see that topic."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueSourceField",
+      "title": "Source field",
+      "summary": "The key of another array field on this System whose values are this value's list of valid options.",
+      "details": [
+        "E.g. a Conditions binding (Tags role) naming \"conditions\" so the Combat Tracker's tag picker offers exactly this System's own condition vocabulary, instead of a hardcoded list.",
+        "Generic, not specific to Role or Combat Bindings — it's a pointer to where the *choices* are defined, distinct from Binding (which points to where a value's own live data is read/written) and from Source ID (a numeric lookup id, not a field reference).",
+        "Most commonly meaningful on a Tags-role value, but nothing about it is tags-specific — any value that needs its options sourced from another field can use it."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemCombatBindings",
+      "title": "Combat Bindings",
+      "summary": "Which ordinary Array property holds this System's live combat state, and how each of its values behaves.",
+      "details": [
+        "Combat Bindings isn't a separate property type, and there's no marker checkbox for it either — it's simply whichever Array property has values that use Role (Resource, Value, Tags, or Modifier — see that topic). The Combat Tracker widget and Workbench's character view both look for that shape and read/write it during play.",
+        "Each value in that array names a Role plus a Binding — the @-path into a character record it reads and writes — so the shape is entirely up to the System: add as many or as few bound values as this game actually needs, with whatever names make sense (Hit Points, Sanity, Armor Class, Conditions, Initiative, ...). A Tags-role value also names a Source field — the other array field supplying its valid options.",
+        "A role that needs more than one path or other single-field-specific metadata (Resource's max/temp path, Modifier's die) doesn't get its own column — author it in that value's Extra properties JSON instead.",
+        "A System with no array using Role simply skips write-through — Workbench/Combat Tracker degrade gracefully, they don't error.",
+        "This replaced an earlier fixed six-slot version of this field (HP/AC/Conditions/Initiative hardcoded as separate inputs) that assumed every game tracked the same D&D-like stats — if you're looking at an older System that still has a field literally typed 'combat-bindings', re-author it as an Enum array whose values use Role instead."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
@@ -703,6 +832,262 @@
         "If a map has no Views defined at all, every viewer sees every layer — Views are opt-in, not a default restriction."],
       "category": "Orrery",
       "href": "../common/account.html?help=orrery.views"
+    },
+    {
+      "id": "crucible.overrides",
+      "title": "Fixing Specific Attributes",
+      "summary": "Pick a Creature Type, Archetype, or Role to use that exact value instead of rolling it — leave any of them on \"Random\" to roll as usual.",
+      "details": [
+        "Each select defaults to \"Random\". Choosing a value there locks that one axis for the next Generate Monster click — everything you didn't pick still resolves randomly.",
+        "Combat Scaling, Signature Feature, and Locked Features work the same way — pin any of them to steer generation without hand-building the whole thing.",
+        "These only affect the initial Generate Monster roll — there's no per-attribute reroll on an already-generated monster the way Forge has; regenerate to try a new combination."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-overrides"
+    },
+    {
+      "id": "crucible.combatScaling",
+      "title": "Combat Scaling",
+      "summary": "Pick which HP/AC/damage band this monster is generated at — Crucible's rough equivalent of a challenge tier — or leave it on \"Random\".",
+      "details": [
+        "Each Combat Scaling level defines a base HP, AC, damage-per-round, attack bonus, save DC, and target Feature budget — pinning a level fixes all of those together, not just one stat.",
+        "A Role's own mechanical tendencies (HP/AC bands, damage profile) multiply on top of whichever level is used, so two monsters at the same Combat Scaling can still come out noticeably different.",
+        "These levels are authored in Loom, not hardcoded — a System can define its own scale."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-overrides"
+    },
+    {
+      "id": "crucible.combatScalingField",
+      "title": "Combat scaling field",
+      "summary": "Which of this System's Array properties Crucible reads as its Combat Scaling levels.",
+      "details": [
+        "This is a Crucible tool preference, not System data — it's stored only in this browser (per System), never written into the System record edited in Loom, the same way Vault's Budget ceiling field setting works.",
+        "Defaults to a property literally named \"combatScaling\" if one exists and nothing is picked here, so existing Systems keep working without needing to set anything.",
+        "A different System, or a different generator entirely, might reuse the same property for something else or have no combat-scaling concept at all — picking None here just means Crucible generates without a scaling axis."
+      ],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-overrides"
+    },
+    {
+      "id": "crucible.lockedFeatures",
+      "title": "Locked Features",
+      "summary": "Pin one or more Features to guarantee they're included, instead of leaving traversal to pick everything on its own.",
+      "details": [
+        "Locked Features are added before traversal runs and count against the budget immediately, the same as the Signature Feature — traversal then fills the remaining required/optional slots around them.",
+        "Nothing stops you from locking features that don't share a recipe slot or synergy with each other — traversal still tries to build a coherent result around whatever you've pinned.",
+        "Leave this empty to let Crucible pick every feature itself, guided only by the Archetype's recipe and whatever Role/Creature Type you've set."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-overrides"
+    },
+    {
+      "id": "crucible.identity",
+      "title": "Identity",
+      "summary": "The resolved Creature Type, Archetype, and Role for this monster, plus its Name — edit the Name directly; the rest comes from generation.",
+      "details": [
+        "Creature Type, Archetype, and Role are each either what you pinned in the overrides above, or a random eligible value if you left it blank — Identity shows whichever it ended up as.",
+        "The Name field is the only thing here you edit directly; regenerate the monster to get a new resolved Identity instead."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-identity"
+    },
+    {
+      "id": "crucible.features",
+      "title": "Features",
+      "summary": "The atomic building blocks selected for this monster — its Signature Feature plus everything traversal pulled in to fill the Archetype's recipe.",
+      "details": [
+        "Every feature shown here was chosen for synergy with what's already selected and for not conflicting with it — traversal never adds a feature that fights with one already picked.",
+        "This list is exactly what's saved with the monster — there's no separate hidden layer of mechanics behind it."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-features"
+    },
+    {
+      "id": "crucible.recipe",
+      "title": "Recipe Fulfillment",
+      "summary": "Shows which of the Archetype's recipe slots (signature, required, optional) got filled, and by which Feature — including any slot traversal couldn't fill.",
+      "details": [
+        "An Archetype's recipe is a signature slot plus required and optional slots, each expecting a Feature tagged for that slot and compatible with the resolved Role/Creature Type.",
+        "An unfulfilled optional slot isn't an error — it just means nothing compatible and synergistic was available, and the result is still a usable, honestly-labeled monster."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-recipe"
+    },
+    {
+      "id": "crucible.stats",
+      "title": "Stats",
+      "summary": "Armor Class, HP, ability scores, and Initiative Bonus derived from the resolved Combat Scaling level and Role — editable directly if you want to hand-tune the numbers.",
+      "details": [
+        "HP and AC come from the Combat Scaling level's base values, adjusted by the Role's own HP/AC band multipliers — a Brute and a Skirmisher at the same Combat Scaling won't have identical stats.",
+        "Ability scores favor whichever ability the Role's damage profile relies on (Strength for melee-leaning roles, Dexterity for ranged-leaning ones), with Constitution scaled to the HP band.",
+        "Initiative Bonus is the standard ability-modifier math on Dexterity — it's what the Combat Tracker's \"Roll Initiative\" button uses for this monster once it's added to an encounter."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-stats"
+    },
+    {
+      "id": "crucible.notes",
+      "title": "Notes (optional)",
+      "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this monster's resolved Creature Type, Archetype, Role, and Features.",
+      "details": [
+        "A monster is complete without a note — every generated value already stands on its own as the record.",
+        "Generate Note sends the resolved axes and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."],
+      "category": "Crucible",
+      "href": "../crucible/index.html#crucible-notes"
+    },
+    {
+      "id": "vault.lockedFeatures",
+      "title": "Locked Features",
+      "summary": "Pin one or more Features to guarantee they're included in generation, instead of leaving traversal to pick everything on its own.",
+      "details": [
+        "Locked Features are added before traversal runs and spend from (or, if negative, refund into) the budget immediately, the same as the Signature Effect.",
+        "Traversal then repeatedly adds whichever remaining feature has the strongest synergy with what's locked/selected so far and still fits the remaining budget — a zero-synergy feature is never pulled in automatically.",
+        "Leave this empty to let Vault pick everything itself, guided only by the resolved Properties and Signature Effect."],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-generate"
+    },
+    {
+      "id": "vault.budgetCeilingField",
+      "title": "Budget ceiling field",
+      "summary": "Which one Property Vault treats as the generator economy's ceiling-setter, for the currently selected System.",
+      "details": [
+        "Picks exactly one of this System's generator-property fields (e.g. Rarity) whose chosen value's Target budget becomes the overall budget ceiling for generation — every other Property with Cost values spends from that ceiling.",
+        "This is a Vault preference, not part of the System itself — it's remembered locally per System in this browser, not saved into the System record edited in Loom. A different System can have a completely different field (or none) picked here with zero effect on any other System.",
+        "A Property can carry Target budget values without being the ceiling-setter (e.g. Combat Scaling tracks its own per-CR budget, unrelated to this economy) — this setting is what tells Vault which one actually counts.",
+        "Leave at None to fall back to Vault's built-in default target budget with no field-driven ceiling."
+      ],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-generate"
+    },
+    {
+      "id": "vault.identity",
+      "title": "Identity",
+      "summary": "The resolved Properties (Rarity, Activation, Item Form, etc.) for this effect, plus its Name — edit the Name directly; the rest comes from generation.",
+      "details": [
+        "Each Property is either what you pinned in the overrides above, or a random eligible value if you left it blank.",
+        "Whichever Property is picked as the Budget ceiling field (see that topic) sets the Feature budget's target ceiling; every other Property's chosen value spends from (or refunds into) that budget.",
+        "The Name field is the only thing here you edit directly; regenerate the effect to get a new resolved set of Properties instead."],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-identity"
+    },
+    {
+      "id": "vault.features",
+      "title": "Features",
+      "summary": "The Signature Effect plus every Feature traversal pulled in to build toward the budget — add or remove Features here to hand-build or tweak the result.",
+      "details": [
+        "Add a Feature from the select below the list at any time; going over budget is allowed and shown as a warning in the Remaining figure rather than blocked outright.",
+        "Every Feature shown was chosen for synergy with what's already selected and for not conflicting with it during generation — hand-adding one doesn't run that same check, so a manual add can introduce a conflict traversal would have avoided.",
+        "Target/Spent/Remaining recompute live on every add or remove, using the same budget math the automatic generator itself uses."],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-features"
+    },
+    {
+      "id": "vault.notes",
+      "title": "Notes (optional)",
+      "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this effect's resolved Properties and Features.",
+      "details": [
+        "An effect is complete without a note — every generated value already stands on its own as the record.",
+        "Generate Note sends the resolved Properties and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."],
+      "category": "Vault",
+      "href": "../vault/index.html#vault-notes"
+    },
+    {
+      "id": "sanctum.lockedFeatures",
+      "title": "Locked Features",
+      "summary": "Pin one or more Features to guarantee they're included, instead of leaving traversal to pick everything on its own.",
+      "details": [
+        "Locked Features seed the traversal alongside (or instead of) the automatic random seed feature — traversal then repeatedly adds whichever remaining compatible feature has the strongest synergy with what's already selected.",
+        "A zero-synergy feature is never pulled in automatically, the same restraint Crucible/Vault's own traversal applies — locking is the way to force one in regardless.",
+        "Leave this empty to let Sanctum pick every feature itself, guided only by the resolved Type/Purpose/Environment."],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-overrides"
+    },
+    {
+      "id": "sanctum.identity",
+      "title": "Identity",
+      "summary": "The resolved Type, Purpose, and Environment for this Location, plus its Name — edit the Name directly; the rest comes from generation or the overrides above.",
+      "details": [
+        "Type and Purpose are each either what you pinned in the overrides above, or a random eligible value if you left it blank; Environment comes from the active System's own environment list, if it defines one.",
+        "The Name field is the only thing here you edit directly; regenerate the Location to get a new resolved Type/Purpose/Environment instead."],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-identity"
+    },
+    {
+      "id": "sanctum.features",
+      "title": "Features",
+      "summary": "The atomic characteristics selected for this Location — a Fortified Walls, Black Market, or Haunted, for example — chosen for tag compatibility and synergy.",
+      "details": [
+        "Unlike Crucible/Vault, there's no recipe or budget here — one random compatible feature seeds the result, then the best-synergy, non-conflicting candidate is added repeatedly until a randomized target count is reached.",
+        "A narrow, specific function (\"this place is a shop\") is modeled as a Feature, not a Type or Purpose — Type/Purpose stay broad, Features layer on the specifics.",
+        "This list is exactly what's saved with the Location — there's no separate hidden layer of mechanics behind it."],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-features"
+    },
+    {
+      "id": "sanctum.assets",
+      "title": "Assets & Needs",
+      "summary": "What this Location has (Assets) and lacks (Needs) — usually Resources, but any kind of saved record (an NPC, a Monster) can be linked too.",
+      "details": [
+        "The automatic generator only ever populates these with Resources (1-3 for Assets, then 1-3 more for Needs, excluding whatever Assets already took) — linking a specific NPC/Monster/Effect instead is a manual step, done with the kind + entity pickers below each list.",
+        "Assets and Needs share one row shape (kind, linked entity, label, description) and one add-row pattern, the same as Features — they're meant to feel like the same kind of list, not three different UIs.",
+        "This is deliberately not a full economy or ledger — Assets/Needs describe what a place has or lacks in broad strokes for a GM to use at the table, not a simulated inventory."],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-assets-needs"
+    },
+    {
+      "id": "sanctum.relationships",
+      "title": "Relationships",
+      "summary": "How this Location connects to others in the same Setting — one Parent (containment) and any number of Connected To peer links.",
+      "details": [
+        "Parent is containment (a settlement's parent is its region) — the Parent select lists other Locations in the same Setting. Children are never stored directly; they're computed as whichever Locations list this one as their parent.",
+        "Connected To is a peer link (a road, a tunnel) — it's bidirectional and only needs to be added from one side; the other Location shows the connection automatically.",
+        "Relationships always start empty on a freshly generated Location — set them deliberately once you know how this place fits into the rest of the Setting."],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-relationships"
+    },
+    {
+      "id": "sanctum.notes",
+      "title": "Notes (optional)",
+      "summary": "Optional. Type your own note directly, or use Generate Note to have Claude write one from this Location's resolved Identity and Features.",
+      "details": [
+        "A Location is complete without a note — every generated value already stands on its own as the record.",
+        "Generate Note sends the resolved Identity and selected Features to Claude and fills this box with its response; whatever's in the box when you Save is what gets saved."],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-notes"
+    },
+    {
+      "id": "forge.locations",
+      "title": "Location Details",
+      "summary": "Read-only here — Locations, and their Setting/System, are authored in Sanctum. This panel just shows the currently selected Location's basics.",
+      "details": [
+        "Selecting a Location here only picks which one to generate NPCs from — to create a new Location, edit an existing one's Type/Purpose/Environment/Features, or manage its Setting, open Sanctum instead.",
+        "Species Weights, Mixing Coefficient, and Setting-Specific Archetypes below are the one part of a Location Forge itself still edits, since they're specifically about how Forge generates NPCs here."],
+      "category": "Forge",
+      "href": "../forge/index.html#forge-manage-species"
+    },
+    {
+      "id": "loom.nodePalette",
+      "title": "Node Palette",
+      "summary": "Select a node in the tree, then click a palette entry to add it as a child (object fields) or step (pipelines).",
+      "details": [
+        "The palette always adds to whatever's currently selected in the tree — select an Object or With node before clicking a palette entry to add a child field to it, or a Pipeline node to add a step to it.",
+        "Field/Custom/Pipeline entries add a new node under an Object; Map/Filter/Flatten/Group By/Sort entries (shown once a Pipeline node is selected) add a new step to it instead."],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-node-palette"
+    },
+    {
+      "id": "orrery.bulkEdit",
+      "title": "Editing Multiple Grid Cells",
+      "summary": "With more than one grid cell selected, the Custom Properties editor applies whatever you set to every selected cell at once.",
+      "details": [
+        "There's no per-cell distinction shown while multiple cells are selected — every property edit here is applied identically across the whole selection.",
+        "Select a single cell instead if you need to see or edit that one cell's own values without affecting its neighbors."],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "orrery.gridSelection",
+      "title": "Adding Grid Cells to a Group",
+      "summary": "To add members to a Group, select grid cells on the map first, then come back here and click Add selected cells.",
+      "details": [
+        "The Members list only ever adds whatever your most recent grid-cell selection on the map was — select cells first, then return to this panel.",
+        "\"Last selection\" shown here (layer name and cell count) is exactly what Add selected cells will add if you click it right now."],
+      "category": "Orrery",
+      "href": "../orrery/index.html#orrery-selection"
     }
   ]
 }

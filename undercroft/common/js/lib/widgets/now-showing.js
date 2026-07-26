@@ -12,9 +12,10 @@
 import { loadLibraryData } from "../content-fetch.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { connectLiveStream } from "../live.js";
+import { LINK_ONLY_KINDS } from "../spotlight.js";
+import { el } from "../dom.js";
 
 const POLL_INTERVAL_MS = 30000;
-const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
 
 export function initNowShowingWidget(container, { dataManager, groupId = "", shareToken = "" } = {}) {
   if (!container || !dataManager) {
@@ -23,13 +24,6 @@ export function initNowShowingWidget(container, { dataManager, groupId = "", sha
   let pollTimer = 0;
   let destroyed = false;
   let lastEntryId = null;
-
-  function el(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
 
   function renderEmpty(message) {
     container.innerHTML = "";

@@ -1,4 +1,5 @@
 import { parseBindingPathSegments } from "./component-data.js";
+import { escapeHtml } from "../../../common/js/lib/auth-ui.js";
 
 const MAX_DICE_COUNT = 200;
 const MAX_REROLLS = 100;
@@ -30,15 +31,6 @@ const DICE_FUNCTIONS = {
 
 function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function resolveContextValue(context, path) {

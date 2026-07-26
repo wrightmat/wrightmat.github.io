@@ -43,7 +43,17 @@ def kind_registry_path(state: ServerState, kind: str) -> Path:
 
 
 def load_kind_policy(state: ServerState, kind: str) -> Dict[str, Any]:
-    path = kind_registry_path(state, kind)
+    normalized = normalize_kind(kind)
+    cached = state.kind_policy_cache.get(normalized)
+    if cached is not None:
+        return dict(cached)
+    policy = _read_kind_policy(state, normalized)
+    state.kind_policy_cache[normalized] = policy
+    return dict(policy)
+
+
+def _read_kind_policy(state: ServerState, normalized_kind: str) -> Dict[str, Any]:
+    path = kind_registry_path(state, normalized_kind)
     if not path.exists():
         return dict(DEFAULT_KIND_POLICY)
     try:
@@ -56,4 +66,9 @@ def load_kind_policy(state: ServerState, kind: str) -> Dict[str, Any]:
         "readTier": data.get("readTier") or DEFAULT_KIND_POLICY["readTier"],
         "writeTier": data.get("writeTier") or DEFAULT_KIND_POLICY["writeTier"],
         "maxPerOwner": data.get("maxPerOwner"),
+        # Optional — see storage.py's _title_from_payload/_extract_metadata.
+        # Absent for every kind that doesn't need anything beyond the
+        # suite-wide default (top-level title/name, no extracted metadata).
+        "titleFields": data.get("titleFields"),
+        "metadataFields": data.get("metadataFields"),
     }

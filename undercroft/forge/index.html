@@ -116,7 +116,19 @@
             <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="NPC actions">
               <div class="btn-group" role="group">
                 <button
-                  class="btn btn-outline-secondary p-2"
+                  class="btn btn-primary p-2"
+                  type="button"
+                  data-generate-npc
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="bottom"
+                  data-bs-title="Generate NPC"
+                  aria-label="Generate NPC"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:dice-5" aria-hidden="true"></span>
+                  <span class="visually-hidden">Generate NPC</span>
+                </button>
+                <button
+                  class="btn btn-outline-success p-2"
                   type="button"
                   data-save-npc
                   disabled
@@ -142,16 +154,17 @@
                   <span class="visually-hidden">Export JSON</span>
                 </button>
                 <button
-                  class="btn btn-primary p-2"
+                  class="btn btn-outline-danger p-2"
                   type="button"
-                  data-generate-npc
+                  data-delete-npc
+                  disabled
                   data-bs-toggle="tooltip"
                   data-bs-placement="bottom"
-                  data-bs-title="Generate NPC"
-                  aria-label="Generate NPC"
+                  data-bs-title="Delete"
+                  aria-label="Delete"
                 >
-                  <span class="iconify fs-5" data-icon="tabler:dice-5" aria-hidden="true"></span>
-                  <span class="visually-hidden">Generate NPC</span>
+                  <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                  <span class="visually-hidden">Delete</span>
                 </button>
               </div>
             </div>
@@ -306,9 +319,10 @@
 
                 <div class="d-flex flex-column gap-3" data-inspector-location hidden>
               <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                <p class="small text-body-secondary mb-0">
-                  Read-only here — edit Locations (and their Setting/System) in <a href="../loom/index.html">Loom</a>.
-                </p>
+                <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                  <span>Location Details</span>
+                  <span class="align-middle" data-help-topic="forge.locations" data-help-insert="replace"></span>
+                </h3>
                 <button
                   class="btn btn-outline-secondary p-2 flex-shrink-0"
                   type="button"
@@ -377,9 +391,10 @@
             </div>
 
             <div class="d-flex flex-column gap-3" data-inspector-species hidden id="forge-manage-species">
-              <p class="small text-body-secondary mb-0">
-                Read-only here — edit Species (traits and names) in <a href="../loom/index.html">Loom</a>.
-              </p>
+              <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                <span>Species Name Profile</span>
+                <span class="align-middle" data-help-topic="forge.speciesProfileEditor" data-help-insert="replace"></span>
+              </h3>
               <div class="d-flex flex-column gap-2">
                 <label class="form-label fw-semibold mb-0" for="forgeSpeciesLabel">Label</label>
                 <input class="form-control" type="text" id="forgeSpeciesLabel" data-species-label readonly />

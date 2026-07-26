@@ -8,7 +8,7 @@ import time
 from datetime import datetime, timezone
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from . import groups as group_store
 
@@ -38,7 +38,6 @@ from .auth import (
 )
 from .builtins import builtin_catalog
 from .config import ConfigLoader
-from .importer import run_importer
 from .roles import role_rank
 from .router import Request, Response, Router
 from .shares import (
@@ -618,7 +617,37 @@ def register_routes():
             return ""
         return str(data.get("api_key") or "").strip()
 
-    def handle_forge_generate_note(request: Request) -> Response:
+    def _format_note_only(raw_text: str, name: str) -> Dict[str, Any]:
+        return {"note": raw_text}
+
+    def _format_name_and_note(raw_text: str, name: str) -> Dict[str, Any]:
+        # First line is the (possibly Claude-suggested) name; everything after
+        # is the note itself. Falls back to the original name/full text if
+        # the model doesn't follow the two-line format exactly.
+        first_line, _, rest = raw_text.partition("\n")
+        suggested_name = first_line.strip() or name
+        note = rest.strip() or raw_text
+        return {"name": suggested_name, "note": note}
+
+    # Shared by the four *_generate-note routes below (Forge/Crucible/Vault/
+    # Sanctum): each optional LLM synthesis step (CLAUDE.md: "entirely
+    # optional... rolled/generated values stand on their own") proxies
+    # Anthropic's Messages API the same no-extra-dependency way as
+    # handle_press_google_fonts_metadata/handle_ddb_proxy above (urllib only),
+    # reading the API key from a local, gitignored file mirroring
+    # server/ddb-session.local.json's own convention. The four routes differ
+    # only in system prompt and how the request payload becomes user_content —
+    # `build_user_content` returns (user_content, fallback_name) and may raise
+    # ValueError for a 400 (Forge's required identity.name); `format_result`
+    # shapes the final response (Forge returns just {note}, the other three
+    # also return a possibly-Claude-suggested {name}).
+    def _handle_generate_note(
+        request: Request,
+        *,
+        system_prompt: str,
+        build_user_content: Callable[[Dict[str, Any]], tuple[str, str]],
+        format_result: Callable[[str, str], Dict[str, Any]],
+    ) -> Response:
         import urllib.error
         import urllib.request
 
@@ -634,30 +663,15 @@ def register_routes():
                 status=HTTPStatus.BAD_REQUEST,
             )
         payload = require_json(request)
-        identity = payload.get("identity") or {}
-        four_d = payload.get("fourD") or {}
-        name = str(identity.get("name") or "").strip()
-        if not name:
-            return json_response({"error": "identity.name is required"}, status=HTTPStatus.BAD_REQUEST)
-        user_content = (
-            f"Name: {name}\n"
-            f"Alignment: {identity.get('alignment', '')}\n"
-            f"Gender: {identity.get('gender', '')}\n"
-            f"Species: {identity.get('species', '')}\n"
-            f"Archetype: {identity.get('archetype', '')}\n"
-            f"Age: {identity.get('age', '')}\n"
-            f"Relationship: {identity.get('relationship', '')}\n"
-            f"Attitude: {identity.get('attitude', '')}\n"
-            f"Description: {four_d.get('description', '')}\n"
-            f"Demeanor: {four_d.get('demeanor', '')}\n"
-            f"Drive: {four_d.get('drive', '')}\n"
-            f"Direction: {four_d.get('direction', '')}\n"
-        )
+        try:
+            user_content, fallback_name = build_user_content(payload)
+        except ValueError as exc:
+            return json_response({"error": str(exc)}, status=HTTPStatus.BAD_REQUEST)
         request_body = json.dumps(
             {
                 "model": "claude-haiku-4-5-20251001",
                 "max_tokens": 300,
-                "system": FORGE_NOTE_SYSTEM_PROMPT,
+                "system": system_prompt,
                 "messages": [{"role": "user", "content": user_content}],
             }
         ).encode("utf-8")
@@ -687,12 +701,42 @@ def register_routes():
             )
 
         content_blocks = response_body.get("content") or []
-        note = "".join(
+        raw_text = "".join(
             block.get("text", "") for block in content_blocks if isinstance(block, dict)
         ).strip()
-        if not note:
+        if not raw_text:
             return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
-        return json_response({"note": note})
+        return json_response(format_result(raw_text, fallback_name))
+
+    def _build_forge_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
+        identity = payload.get("identity") or {}
+        four_d = payload.get("fourD") or {}
+        name = str(identity.get("name") or "").strip()
+        if not name:
+            raise ValueError("identity.name is required")
+        user_content = (
+            f"Name: {name}\n"
+            f"Alignment: {identity.get('alignment', '')}\n"
+            f"Gender: {identity.get('gender', '')}\n"
+            f"Species: {identity.get('species', '')}\n"
+            f"Archetype: {identity.get('archetype', '')}\n"
+            f"Age: {identity.get('age', '')}\n"
+            f"Relationship: {identity.get('relationship', '')}\n"
+            f"Attitude: {identity.get('attitude', '')}\n"
+            f"Description: {four_d.get('description', '')}\n"
+            f"Demeanor: {four_d.get('demeanor', '')}\n"
+            f"Drive: {four_d.get('drive', '')}\n"
+            f"Direction: {four_d.get('direction', '')}\n"
+        )
+        return user_content, name
+
+    def handle_forge_generate_note(request: Request) -> Response:
+        return _handle_generate_note(
+            request,
+            system_prompt=FORGE_NOTE_SYSTEM_PROMPT,
+            build_user_content=_build_forge_note_content,
+            format_result=_format_note_only,
+        )
 
     router.add("POST", r"^/forge/generate-note$", handle_forge_generate_note)
 
@@ -720,22 +764,7 @@ def register_routes():
         "after these two lines."
     )
 
-    def handle_crucible_generate_note(request: Request) -> Response:
-        import urllib.error
-        import urllib.request
-
-        api_key = resolve_anthropic_api_key(request.state)
-        if not api_key:
-            return json_response(
-                {
-                    "error": (
-                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
-                        "server/anthropic.local.json and fill in api_key."
-                    )
-                },
-                status=HTTPStatus.BAD_REQUEST,
-            )
-        payload = require_json(request)
+    def _build_crucible_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
         monster = payload.get("monster") or {}
         # Name is optional now — Crucible's Name field is blank by default, and
         # this endpoint is the one place that can fill it in, so an empty name
@@ -756,52 +785,15 @@ def register_routes():
             f"Signature Feature: {monster.get('signatureFeature', '')}\n"
             f"Features:\n{feature_lines}\n"
         )
-        request_body = json.dumps(
-            {
-                "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 300,
-                "system": CRUCIBLE_NOTE_SYSTEM_PROMPT,
-                "messages": [{"role": "user", "content": user_content}],
-            }
-        ).encode("utf-8")
-        proxy_request = urllib.request.Request(
-            "https://api.anthropic.com/v1/messages",
-            data=request_body,
-            headers={
-                "Content-Type": "application/json",
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
-                response_body = json.loads(upstream.read())
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            return json_response(
-                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
-                status=HTTPStatus.BAD_GATEWAY,
-            )
-        except urllib.error.URLError as exc:
-            return json_response(
-                {"error": f"Anthropic API request failed ({exc.reason})"},
-                status=HTTPStatus.BAD_GATEWAY,
-            )
+        return user_content, name
 
-        content_blocks = response_body.get("content") or []
-        raw_text = "".join(
-            block.get("text", "") for block in content_blocks if isinstance(block, dict)
-        ).strip()
-        if not raw_text:
-            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
-        # First line is the (possibly Claude-suggested) name; everything after
-        # is the tactical note. Falls back to the original name/full text if
-        # the model doesn't follow the two-line format exactly.
-        first_line, _, rest = raw_text.partition("\n")
-        suggested_name = first_line.strip() or name
-        note = rest.strip() or raw_text
-        return json_response({"name": suggested_name, "note": note})
+    def handle_crucible_generate_note(request: Request) -> Response:
+        return _handle_generate_note(
+            request,
+            system_prompt=CRUCIBLE_NOTE_SYSTEM_PROMPT,
+            build_user_content=_build_crucible_note_content,
+            format_result=_format_name_and_note,
+        )
 
     router.add("POST", r"^/crucible/generate-note$", handle_crucible_generate_note)
 
@@ -829,22 +821,7 @@ def register_routes():
         "after these two lines."
     )
 
-    def handle_vault_generate_note(request: Request) -> Response:
-        import urllib.error
-        import urllib.request
-
-        api_key = resolve_anthropic_api_key(request.state)
-        if not api_key:
-            return json_response(
-                {
-                    "error": (
-                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
-                        "server/anthropic.local.json and fill in api_key."
-                    )
-                },
-                status=HTTPStatus.BAD_REQUEST,
-            )
-        payload = require_json(request)
+    def _build_vault_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
         effect = payload.get("effect") or {}
         # Name is optional now — Vault's Name field is blank by default, and
         # this endpoint is the one place that can fill it in, so an empty name
@@ -865,52 +842,15 @@ def register_routes():
             f"Signature Effect: {effect.get('signatureFeature', '')}\n"
             f"Features:\n{feature_lines}\n"
         )
-        request_body = json.dumps(
-            {
-                "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 300,
-                "system": VAULT_NOTE_SYSTEM_PROMPT,
-                "messages": [{"role": "user", "content": user_content}],
-            }
-        ).encode("utf-8")
-        proxy_request = urllib.request.Request(
-            "https://api.anthropic.com/v1/messages",
-            data=request_body,
-            headers={
-                "Content-Type": "application/json",
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
-                response_body = json.loads(upstream.read())
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            return json_response(
-                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
-                status=HTTPStatus.BAD_GATEWAY,
-            )
-        except urllib.error.URLError as exc:
-            return json_response(
-                {"error": f"Anthropic API request failed ({exc.reason})"},
-                status=HTTPStatus.BAD_GATEWAY,
-            )
+        return user_content, name
 
-        content_blocks = response_body.get("content") or []
-        raw_text = "".join(
-            block.get("text", "") for block in content_blocks if isinstance(block, dict)
-        ).strip()
-        if not raw_text:
-            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
-        # First line is the (possibly Claude-suggested) name; everything after
-        # is the flavor note. Falls back to the original name/full text if the
-        # model doesn't follow the two-line format exactly.
-        first_line, _, rest = raw_text.partition("\n")
-        suggested_name = first_line.strip() or name
-        note = rest.strip() or raw_text
-        return json_response({"name": suggested_name, "note": note})
+    def handle_vault_generate_note(request: Request) -> Response:
+        return _handle_generate_note(
+            request,
+            system_prompt=VAULT_NOTE_SYSTEM_PROMPT,
+            build_user_content=_build_vault_note_content,
+            format_result=_format_name_and_note,
+        )
 
     router.add("POST", r"^/vault/generate-note$", handle_vault_generate_note)
 
@@ -938,22 +878,7 @@ def register_routes():
         "after these two lines."
     )
 
-    def handle_sanctum_generate_note(request: Request) -> Response:
-        import urllib.error
-        import urllib.request
-
-        api_key = resolve_anthropic_api_key(request.state)
-        if not api_key:
-            return json_response(
-                {
-                    "error": (
-                        "Missing Anthropic API key — copy server/anthropic.local.json.example to "
-                        "server/anthropic.local.json and fill in api_key."
-                    )
-                },
-                status=HTTPStatus.BAD_REQUEST,
-            )
-        payload = require_json(request)
+    def _build_sanctum_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
         location = payload.get("location") or {}
         # Name is optional now — Sanctum's Name field is blank by default, and this
         # endpoint is the one place that can fill it in, so an empty name is a
@@ -977,49 +902,15 @@ def register_routes():
             f"Assets: {', '.join(str(a) for a in assets)}\n"
             f"Needs: {', '.join(str(n) for n in needs)}\n"
         )
-        request_body = json.dumps(
-            {
-                "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 300,
-                "system": SANCTUM_NOTE_SYSTEM_PROMPT,
-                "messages": [{"role": "user", "content": user_content}],
-            }
-        ).encode("utf-8")
-        proxy_request = urllib.request.Request(
-            "https://api.anthropic.com/v1/messages",
-            data=request_body,
-            headers={
-                "Content-Type": "application/json",
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(proxy_request, timeout=30) as upstream:
-                response_body = json.loads(upstream.read())
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
-            return json_response(
-                {"error": f"Anthropic API request failed ({exc.code}): {detail}"},
-                status=HTTPStatus.BAD_GATEWAY,
-            )
-        except urllib.error.URLError as exc:
-            return json_response(
-                {"error": f"Anthropic API request failed ({exc.reason})"},
-                status=HTTPStatus.BAD_GATEWAY,
-            )
+        return user_content, name
 
-        content_blocks = response_body.get("content") or []
-        raw_text = "".join(
-            block.get("text", "") for block in content_blocks if isinstance(block, dict)
-        ).strip()
-        if not raw_text:
-            return json_response({"error": "Anthropic API returned an empty response"}, status=HTTPStatus.BAD_GATEWAY)
-        first_line, _, rest = raw_text.partition("\n")
-        suggested_name = first_line.strip() or name
-        note = rest.strip() or raw_text
-        return json_response({"name": suggested_name, "note": note})
+    def handle_sanctum_generate_note(request: Request) -> Response:
+        return _handle_generate_note(
+            request,
+            system_prompt=SANCTUM_NOTE_SYSTEM_PROMPT,
+            build_user_content=_build_sanctum_note_content,
+            format_result=_format_name_and_note,
+        )
 
     router.add("POST", r"^/sanctum/generate-note$", handle_sanctum_generate_note)
 
@@ -1043,8 +934,9 @@ def register_routes():
     # to that proxy, which this deliberately avoids by keeping the cookie
     # server-side and talking directly to dndbeyond.com. Response body is
     # passed through byte-for-byte regardless of host — works for both
-    # scraped HTML pages and monster-service's JSON.
-    DDB_PROXY_ALLOWED_HOSTS = {"www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com"}
+    # scraped HTML pages and monster-service's JSON. Allowed hosts come from
+    # server.config.json (server.ddb_proxy_allowed_hosts), not a hardcoded
+    # constant — see config.py's ServerOptions.
 
     def load_ddb_session_cookie(state: ServerState) -> str:
         path = state.root_dir / "server" / "ddb-session.local.json"
@@ -1072,7 +964,8 @@ def register_routes():
         if not target:
             return json_response({"error": "Missing url parameter"}, status=HTTPStatus.BAD_REQUEST)
         parsed_target = urlsplit(target)
-        if parsed_target.hostname not in DDB_PROXY_ALLOWED_HOSTS:
+        allowed_hosts = set(request.state.config.options.ddb_proxy_allowed_hosts)
+        if parsed_target.hostname not in allowed_hosts:
             return json_response({"error": "Only dndbeyond.com URLs are allowed"}, status=HTTPStatus.BAD_REQUEST)
 
         headers = {
@@ -1131,12 +1024,6 @@ def register_routes():
 
     router.add("GET", r"^/content/owned$", handle_owned_content)
 
-    def require_authenticated_user(request: Request) -> User:
-        user = request.handler.current_user()
-        if not user:
-            raise AuthError("Authentication required")
-        return user
-
     def ensure_share_permission(
         request: Request,
         content_type: str,
@@ -1145,7 +1032,7 @@ def register_routes():
     ) -> tuple[User, str]:
         if not content_type or not content_id:
             raise AuthError("Missing fields")
-        user = require_authenticated_user(request)
+        user = require_user(request)
         bucket_name = bucket_from_content_type(content_type)
         if user.tier != "admin" and not is_owner(request.state, bucket_name, f"{content_id}.json", user):
             raise AuthError(f"Only owner or admin can {action}")
@@ -1706,21 +1593,6 @@ def register_routes():
         r"^/shares/(?P<bucket>[^/]+)/(?P<content_id>[^/]+)/link/revoke$",
         handle_share_link_revoke_for_content,
     )
-
-    # POST /import/{system}/{importer}
-    def handle_import(request: Request) -> Response:
-        params = getattr(request, "params")
-        system_id = params["system"]
-        importer_id = params["importer"]
-        user = request.handler.current_user()
-        if not user:
-            raise AuthError("Authentication required")
-        data = require_json(request)
-        payload = data.get("payload", {})
-        result = run_importer(request.state, system_id, importer_id, payload)
-        return json_response({"dryRun": bool(data.get("dryRun", True)), **result})
-
-    router.add("POST", r"^/import/(?P<system>[^/]+)/(?P<importer>[^/]+)$", handle_import)
 
 
 register_routes()

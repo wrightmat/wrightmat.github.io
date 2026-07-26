@@ -314,23 +314,26 @@ def _backfill_flat_library_kinds(state: ServerState) -> None:
         "SELECT id FROM users WHERE tier = 'admin' ORDER BY id LIMIT 1"
     ).fetchone()
     admin_id = admin_row["id"] if admin_row else None
+    # One query for every already-tracked (kind, id) pair instead of one
+    # query per file on disk — this loop is otherwise an N+1 against the
+    # filesystem's own file count, run on every server start.
+    existing_ids = {
+        (row["kind"], row["id"]) for row in state.db.execute("SELECT kind, id FROM library_items")
+    }
     for kind_dir in sorted(data_root.iterdir()):
         if not kind_dir.is_dir():
             continue
         kind = kind_dir.name
+        policy = load_kind_policy(state, kind)
         for entry in sorted(kind_dir.glob("*.json")):
             entry_id = entry.stem
-            existing = state.db.execute(
-                "SELECT 1 FROM library_items WHERE kind = ? AND id = ?",
-                (kind, entry_id),
-            ).fetchone()
-            if existing:
+            if (kind, entry_id) in existing_ids:
                 continue
             try:
                 payload = json.loads(entry.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 payload = {}
-            title = _title_from_payload(kind, payload) or entry_id
+            title = _title_from_payload(kind, payload, policy) or entry_id
             # Each file's own on-disk mtime, not one shared "now" for the
             # whole batch — list_bucket() orders by modified_at DESC, so a
             # shared timestamp across an entire backfill makes the resulting
@@ -699,25 +702,42 @@ def flush_pending_touches(state: ServerState) -> int:
     return len(pending)
 
 
-def _title_from_payload(kind: str, payload: Dict[str, Any]) -> Optional[str]:
-    # Every kind keeps its display name at a top-level `title`/`name` — `npc`
-    # used to be the one exception (nested under `identity.name`, Forge's
-    # rolled-Identity block) until that got moved to match everyone else.
-    # `character` still nests under `data.name` for one payload shape
-    # (Workbench's sheet format) alongside a plain top-level `name` for the
-    # other. Used both at save time (_extract_title) and by the disk-scan
-    # backfill (_backfill_flat_library_kinds), so a pre-existing file and a
-    # freshly saved one get the same title instead of the backfill path
-    # falling back to the raw filename.
+def _resolve_dotted(payload: Dict[str, Any], path: str) -> Any:
+    current: Any = payload
+    for part in path.split("."):
+        if not isinstance(current, dict):
+            return None
+        current = current.get(part)
+    return current
+
+
+def _title_from_payload(kind: str, payload: Dict[str, Any], policy: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    # Which field(s) hold a kind's display name is declared on that kind's
+    # own registry entry (titleFields — see common/data/kind/{id}.json),
+    # falling back to the suite-wide default of top-level `title`/`name` for
+    # every kind that doesn't need anything special (the vast majority) —
+    # adding a kind with an unusual title location is a JSON edit, not a
+    # server code change. `character`'s titleFields (["name", "data.name"])
+    # is what covers Workbench's `data.name`-nested sheet shape alongside the
+    # plain top-level `name` DDB-import shape. Used both at save time
+    # (_extract_title) and by the disk-scan backfill
+    # (_backfill_flat_library_kinds), so a pre-existing file and a freshly
+    # saved one get the same title instead of the backfill path falling back
+    # to the raw filename.
     if not isinstance(payload, dict):
         return None
-    if kind == "character":
-        return payload.get("name") or (payload.get("data") or {}).get("name")
-    return payload.get("title") or payload.get("name")
+    fields = (policy or {}).get("titleFields") or ["title", "name"]
+    for field in fields:
+        value = _resolve_dotted(payload, field)
+        if value:
+            return value
+    return None
 
 
-def _extract_title(kind: str, body: Dict[str, Any], existing_row: Optional[sqlite3.Row]) -> str:
-    name = _title_from_payload(kind, body)
+def _extract_title(
+    kind: str, body: Dict[str, Any], existing_row: Optional[sqlite3.Row], policy: Optional[Dict[str, Any]] = None
+) -> str:
+    name = _title_from_payload(kind, body, policy)
     if name:
         return name
     if existing_row is not None and existing_row["title"]:
@@ -725,21 +745,17 @@ def _extract_title(kind: str, body: Dict[str, Any], existing_row: Optional[sqlit
     return "Unnamed"
 
 
-def _extract_metadata(kind: str, body: Dict[str, Any]) -> Optional[str]:
+def _extract_metadata(kind: str, body: Dict[str, Any], policy: Optional[Dict[str, Any]] = None) -> Optional[str]:
     # Small, kind-specific fields worth surfacing in list responses without an
     # N+1 fetch per entry (e.g. Loom's Assigned Template picker filtering by
-    # template.category, or a character's system/template for display) — see
-    # templates' `category` field, added deliberately for exactly this reason
-    # earlier this session.
-    if kind == "character":
-        fields = {"system": body.get("system"), "template": body.get("template")}
-    elif kind == "template":
-        fields = {"schema": body.get("schema"), "category": body.get("category")}
-    elif kind == "system":
-        fields = {"index": body.get("index")}
-    else:
+    # template.category, or a character's system/template for display) —
+    # declared per-kind via metadataFields on that kind's own registry entry
+    # (common/data/kind/{id}.json), not hardcoded here — a new kind that
+    # wants this just adds the field to its own JSON, no server code changes.
+    field_names = (policy or {}).get("metadataFields")
+    if not field_names:
         return None
-    fields = {key: value for key, value in fields.items() if value is not None}
+    fields = {name: body.get(name) for name in field_names if body.get(name) is not None}
     return json.dumps(fields) if fields else None
 
 
@@ -765,8 +781,9 @@ def save_item(state: ServerState, kind: str, id_: str, body: Dict[str, Any], use
     now_ts = datetime.utcnow().isoformat()
     filename = _record_filename(id_)
     owner_id = user.id if user else None
-    title = _extract_title(kind, body, existing_row)
-    metadata = _extract_metadata(kind, body)
+    policy = load_kind_policy(state, kind)
+    title = _extract_title(kind, body, existing_row, policy)
+    metadata = _extract_metadata(kind, body, policy)
     is_public_value = existing_row["is_public"] if existing_row is not None else 0
     state.db.execute(
         """
@@ -920,15 +937,3 @@ def list_owned_content(state: ServerState, owner: Optional[User], scope: str = "
             "tier": owner.tier,
         }
     return {"owner": owner_info, "items": items, "scope": scope}
-
-
-def list_static(state: ServerState, bucket: str, relative_path: str = "") -> List[str]:
-    mount = state.get_mount(bucket)
-    if mount.type != "static":
-        raise AuthError("Mount is not static")
-    base = mount.root / relative_path
-    if not base.exists():
-        return []
-    if base.is_file():
-        return [relative_path]
-    return [str(Path(relative_path) / entry.name) if relative_path else entry.name for entry in base.iterdir()]

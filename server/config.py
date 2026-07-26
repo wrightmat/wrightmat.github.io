@@ -49,6 +49,14 @@ class ServerOptions:
     default_admin_username: str = "admin"
     default_admin_password: str = "admin"
     default_admin_email: str = "admin@example.com"
+    # Hosts the /ddb-proxy route is allowed to fetch from — the one place the
+    # otherwise system-agnostic core server has to know about a specific
+    # third-party game-content service (D&D Beyond). Configurable rather than
+    # hardcoded so a fork targeting a different system's content site isn't
+    # forced to patch app.py.
+    ddb_proxy_allowed_hosts: List[str] = field(
+        default_factory=lambda: ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com"]
+    )
 
 
 @dataclass
@@ -108,6 +116,12 @@ class ConfigLoader:
             default_admin_username=server_opts.get("default_admin_username", "admin"),
             default_admin_password=server_opts.get("default_admin_password", "admin"),
             default_admin_email=server_opts.get("default_admin_email", "admin@example.com"),
+            ddb_proxy_allowed_hosts=list(
+                server_opts.get(
+                    "ddb_proxy_allowed_hosts",
+                    ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com"],
+                )
+            ),
         )
 
         db_opts = payload.get("database", {})

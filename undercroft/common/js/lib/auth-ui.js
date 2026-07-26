@@ -2,6 +2,7 @@ import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
 import { openSpotlightModal } from "./spotlight.js";
+import { disableForm } from "./dom.js";
 
 const MODAL_ID = "undercroft-auth-modal";
 const AUTH_CHANGED_EVENT = "undercroft:auth-changed";
@@ -110,22 +111,10 @@ function setError(element, message) {
   }
 }
 
-function disableForm(form, disabled) {
-  const elements = form ? Array.from(form.elements) : [];
-  elements.forEach((el) => {
-    if (typeof el.disabled !== "undefined") {
-      el.disabled = disabled;
-    }
-  });
-}
-
-function formatTierLabel(tier) {
-  if (!tier) return "";
-  const value = String(tier);
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function escapeHtml(value) {
+// Exported so the tool-side copies of this same function (Forge/Loom/
+// Sanctum/Workbench's dice.js/character-view.js) can share one implementation
+// instead of re-defining it — see common/docs/code-audit.md.
+export function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
 
@@ -266,7 +255,7 @@ export function initAuthControls({
         </span>
       </button>
       <ul class="dropdown-menu dropdown-menu-end undercroft-auth-dropdown">
-        <li><span class="dropdown-item-text text-body-secondary">Tier: ${formatTierLabel(user.tier)}</span></li>
+        <li><span class="dropdown-item-text text-body-secondary">Tier: ${escapeHtml(manager.describeTier(user.tier) || user.tier || "")}</span></li>
         <li><hr class="dropdown-divider" /></li>
         ${
           groups.length

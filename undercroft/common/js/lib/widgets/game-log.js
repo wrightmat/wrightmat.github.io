@@ -5,6 +5,7 @@
 // (gameLogState/elements.*, built for one page's DOM, not a mountable
 // widget). Same polling cadence (30s) and spotlight-entry phrasing.
 import { connectLiveStream } from "../live.js";
+import { el } from "../dom.js";
 
 const POLL_INTERVAL_MS = 30000;
 
@@ -44,13 +45,6 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
   let pollTimer = 0;
   let destroyed = false;
   let activeList = null;
-
-  function el(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
 
   function renderEntries(list, entries) {
     list.innerHTML = "";

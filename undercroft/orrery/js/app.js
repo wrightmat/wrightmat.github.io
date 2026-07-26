@@ -5,6 +5,7 @@ import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds, loadLibraryKinds } from "../../common/js/lib/content-fetch.js";
+import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import {
   createGroup,
   createGridCell,
@@ -248,48 +249,14 @@ function applyMapSnapshot(snapshot) {
 // Owner-or-admin, or a local/anonymous entry — same rule as Sanctum's
 // settingAllowsDelete/locationAllowsDelete and Loom's systemAllowsDelete.
 function mapAllowsDelete(id) {
-  if (!id) return false;
-  if (dataManager?.getUserTier() === "admin") return true;
-  const metadata = mapCatalog.get(id);
-  if (!metadata) return false;
-  if (metadata.ownership === "local") return true;
-  if (metadata.permissions === "edit") return true;
-  const user = dataManager?.session?.user;
-  if (!user || !dataManager.isAuthenticated()) return false;
-  if (metadata.ownerId !== null && metadata.ownerId !== undefined && user.id !== undefined && user.id !== null) {
-    if (String(metadata.ownerId) === String(user.id)) return true;
-  }
-  if (metadata.ownerUsername && user.username) {
-    return metadata.ownerUsername.toLowerCase() === user.username.toLowerCase();
-  }
-  return false;
+  return allowsDelete(mapCatalog, id, { dataManager });
 }
 
 // Same shape/reasoning as Sanctum's refreshSettingCatalog: ownership
 // metadata comes from a dedicated dataManager.list() call (not the full
 // fetched body), and local-only entries are always deletable.
 async function refreshMapCatalog(ids) {
-  mapCatalog = new Map();
-  if (!dataManager || !ids.length) return;
-  const idSet = new Set(ids);
-  try {
-    const listing = await dataManager.list("map", { refresh: true });
-    const remoteEntries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
-    remoteEntries.forEach((entry) => {
-      if (!idSet.has(entry.id)) return;
-      mapCatalog.set(entry.id, {
-        ownerId: entry.owner_id ?? entry.ownerId ?? null,
-        ownerUsername: entry.owner_username || entry.ownerUsername || "",
-        permissions: typeof entry.permissions === "string" ? entry.permissions.toLowerCase() : "",
-      });
-    });
-    (listing.local || []).forEach((entry) => {
-      if (!idSet.has(entry.id) || mapCatalog.has(entry.id)) return;
-      mapCatalog.set(entry.id, { ownership: "local" });
-    });
-  } catch (error) {
-    // leave mapCatalog empty — Delete stays gated off defensively
-  }
+  mapCatalog = await refreshOwnershipCatalog(dataManager, "map", ids);
 }
 
 // Tiered Views (state.map.views) only ever filter what a non-owner sees —
@@ -2427,10 +2394,19 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   container.appendChild(createSelectionSectionTitle("Custom Properties"));
 
   if (selectedCells.length > 1) {
-    const notice = document.createElement("p");
-    notice.className = "small text-body-secondary";
-    notice.textContent = "Editing properties applies to all selected cells.";
+    const notice = document.createElement("div");
+    notice.className = "d-flex align-items-center gap-2";
+    const noticeLabel = document.createElement("span");
+    noticeLabel.className = "small text-body-secondary";
+    noticeLabel.textContent = "Editing properties applies to all selected cells.";
+    notice.appendChild(noticeLabel);
+    const help = document.createElement("span");
+    help.className = "align-middle";
+    help.dataset.helpTopic = "orrery.bulkEdit";
+    help.dataset.helpInsert = "replace";
+    notice.appendChild(help);
     container.appendChild(notice);
+    initHelpSystem({ root: notice });
   }
 
   const propertiesWrapper = document.createElement("div");
@@ -2710,20 +2686,14 @@ function renderGroupSelectionEditor(group) {
   const membersHeader = document.createElement("div");
   membersHeader.className = "d-flex align-items-center justify-content-between gap-2";
   const membersTitle = createSelectionSectionTitle("Members");
-  const membersHelp = document.createElement("button");
-  membersHelp.type = "button";
-  membersHelp.className = "btn btn-link p-0 text-body-secondary";
-  membersHelp.setAttribute("aria-label", "How to add members");
-  membersHelp.setAttribute("data-bs-toggle", "tooltip");
-  membersHelp.setAttribute("data-bs-placement", "top");
-  membersHelp.setAttribute(
-    "data-bs-title",
-    "To add members, select grid cells on the map, then return here and click Add selected cells.",
-  );
-  membersHelp.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:help\" aria-hidden=\"true\"></span>";
+  const membersHelp = document.createElement("span");
+  membersHelp.className = "align-middle";
+  membersHelp.dataset.helpTopic = "orrery.gridSelection";
+  membersHelp.dataset.helpInsert = "replace";
   membersHeader.appendChild(membersTitle);
   membersHeader.appendChild(membersHelp);
   container.appendChild(membersHeader);
+  initHelpSystem({ root: membersHeader });
 
   const memberActions = document.createElement("div");
   memberActions.className = "d-flex flex-column gap-2";
@@ -3287,7 +3257,7 @@ function setupMapEvents() {
   if (elements.deleteMapButton) {
     elements.deleteMapButton.addEventListener("click", async () => {
       if (!dataManager || !mapAllowsDelete(state.map.id)) return;
-      if (!window.confirm(`Delete map "${state.map.name}"? This can't be undone.`)) return;
+      if (!confirmDelete({ label: `map "${state.map.name}"` })) return;
       try {
         await dataManager.delete("map", state.map.id);
         status.show("Deleted.", { type: "success", timeout: 2000 });

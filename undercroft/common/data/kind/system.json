@@ -4,5 +4,6 @@
   "plural": "Systems",
   "icon": "tabler:settings",
   "readTier": "free",
-  "writeTier": "creator"
+  "writeTier": "creator",
+  "metadataFields": ["index"]
 }

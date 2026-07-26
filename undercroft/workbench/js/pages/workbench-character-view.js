@@ -6,7 +6,9 @@ import {
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
 import { createJsonPreviewRenderer } from "../../../common/js/lib/json-preview.js";
+import { escapeHtml } from "../../../common/js/lib/auth-ui.js";
 import { refreshTooltips } from "../../../common/js/lib/tooltips.js";
+import { confirmDelete } from "../../../common/js/lib/ownership.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
 import {
   listBuiltinTemplates,
@@ -21,7 +23,7 @@ import {
 import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
 import { createLabeledField } from "../lib/component-layout.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, findRoleBoundField } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import {
   normalizeOptionEntries,
@@ -101,18 +103,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   // entry shows up.
   let lastRenderedSpotlightEntryId = null;
 
-  function escapeHtml(value) {
-    if (value === undefined || value === null) {
-      return "";
-    }
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
   markCharacterClean();
 
   let suppressNotesChange = false;
@@ -140,7 +130,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   };
 
   const notesState = { collapsed: true };
-  const jsonPreviewState = { collapsed: true };
   const dicePanelState = { collapsed: false };
   const gameLogPanelState = { collapsed: false };
 
@@ -373,11 +362,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     notesToggle: document.querySelector("[data-notes-toggle]"),
     notesToggleLabel: document.querySelector("[data-notes-toggle-label]"),
     notesPanel: document.querySelector("[data-notes-panel]"),
-    jsonSection: document.querySelector("[data-json-section]"),
     jsonPreview: document.querySelector("[data-character-json-preview]"),
-    jsonToggle: document.querySelector("[data-json-toggle]"),
-    jsonToggleLabel: document.querySelector("[data-json-toggle-label]"),
-    jsonPanel: document.querySelector("[data-json-panel]"),
     jsonPreviewBytes: document.querySelector("[data-character-preview-bytes]"),
     diceSection: document.querySelector("[data-dice-section]"),
     diceForm: document.querySelector("[data-dice-form]"),
@@ -424,7 +409,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   });
 
   setNotesCollapsed(true);
-  setJsonPreviewCollapsed(true);
   setGroupShareCollapsed(groupShareState.collapsed);
   setDiceCollapsed(false);
   setGameLogCollapsed(false);
@@ -593,13 +577,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       });
     }
 
-    if (elements.jsonToggle) {
-      elements.jsonToggle.addEventListener("click", (event) => {
-        event.preventDefault();
-        setJsonPreviewCollapsed(!jsonPreviewState.collapsed);
-      });
-    }
-
     if (elements.diceToggle) {
       elements.diceToggle.addEventListener("click", (event) => {
         event.preventDefault();
@@ -687,20 +664,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       collapsed: next,
       expandLabel: "Expand notes",
       collapseLabel: "Collapse notes",
-    });
-  }
-
-  function setJsonPreviewCollapsed(collapsed) {
-    const next = Boolean(collapsed);
-    jsonPreviewState.collapsed = next;
-    updateCollapsibleSection({
-      section: elements.jsonSection,
-      panel: elements.jsonPanel,
-      toggle: elements.jsonToggle,
-      label: elements.jsonToggleLabel,
-      collapsed: next,
-      expandLabel: "Expand JSON preview",
-      collapseLabel: "Collapse JSON preview",
     });
   }
 
@@ -834,21 +797,29 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     state.combatBindingPaths = new Set();
   }
 
-  // combatBindings is a plain object of binding-path strings on the System
-  // record (type: "combat-bindings", key: "combatBindings" — see
-  // sys.dnd5e.json and combat-tracker.js's own loadCombatBindings, which
-  // reads the identical field for the same purpose from the tracker side).
+  // Combat Bindings isn't a field type or a marker of its own — it's
+  // whichever ordinary Enum-mode Array field's values happen to use Role
+  // (see findRoleBoundField in common/js/lib/bindings.js and
+  // combat-tracker.js's own deriveCombatBindings, which reads the identical
+  // field for the same purpose from the tracker side), so any System can
+  // name its bindings array whatever it wants. Each value names a Role
+  // (resource/value/tags/modifier) plus a generic `binding` @-path it reads
+  // and writes; a Resource-role value may also carry maxPath/tempPath in its
+  // Extra properties JSON (no dedicated column — see loom/js/app.js's
+  // VALUE_COLUMNS). Every binding/maxPath/tempPath across every value is
+  // collected here since any of them can be a live Play-mode-editable
+  // target.
   // Absent on a System just means no field gets the Play-mode-editable
   // treatment, gracefully — same convention as every other optional System
   // field this suite uses.
   function extractCombatBindingPaths(definition) {
     const fields = Array.isArray(definition?.fields) ? definition.fields : [];
-    const field = fields.find((entry) => entry.type === "combat-bindings" && entry.key === "combatBindings");
+    const field = findRoleBoundField(fields);
     if (!field) return new Set();
-    const paths = Object.entries(field)
-      .filter(([key, value]) => key !== "type" && key !== "key" && key !== "label" && typeof value === "string")
-      .map(([, value]) => value.trim())
-      .filter(Boolean);
+    const paths = (field.values || [])
+      .flatMap((value) => [value?.binding, value?.maxPath, value?.tempPath])
+      .filter((value) => typeof value === "string" && value.trim())
+      .map((value) => value.trim());
     return new Set(paths);
   }
 
@@ -1722,10 +1693,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     const notesPanelId = ensureElementId(elements.notesPanel, "character-notes");
     if (notesPanelId && elements.notesToggle) {
       elements.notesToggle.setAttribute("aria-controls", notesPanelId);
-    }
-    const jsonPanelId = ensureElementId(elements.jsonPanel, "character-json");
-    if (jsonPanelId && elements.jsonToggle) {
-      elements.jsonToggle.setAttribute("aria-controls", jsonPanelId);
     }
     const sharePanelId = ensureElementId(elements.groupSharePanel, "character-group-share");
     if (sharePanelId && elements.groupShareToggle) {
@@ -4558,8 +4525,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return;
     }
     const label = state.draft.name || metadata.title || id;
-    const confirmed = window.confirm(`Delete ${label}? This action cannot be undone.`);
-    if (!confirmed) {
+    if (!confirmDelete({ label })) {
       return;
     }
     const button = elements.deleteCharacterButton;

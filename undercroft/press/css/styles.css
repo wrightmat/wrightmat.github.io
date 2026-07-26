@@ -1,20 +1,15 @@
 /* Press-specific styling builds on the shared Workbench shell. */
 
 .preview-stage {
-  /* A max-height (not just min-height) is what actually makes this
-     component's own overflow:auto kick in — with only a floor, a zoomed-in
-     page taller than 70vh just grows the container instead of scrolling
-     inside it, pushing the whole surrounding page to grow and scroll too
-     (the "two scrollbars" problem). Capping it here keeps all vertical
-     overflow from zoom contained to this one, always-in-the-same-place
-     scrollbar. */
+  /* max-height (not just min-height) forces overflow:auto to actually
+     scroll a zoomed-in page instead of growing the whole surrounding page
+     ("two scrollbars"). */
   min-height: 70vh;
   max-height: 70vh;
   display: flex;
-  /* "safe center": centers when the (possibly zoomed-in) page fits, but
-     falls back to start-alignment once it overflows — plain "center" here
-     would leave the page's leading edge permanently unreachable by scroll,
-     a well-known flexbox-overflow quirk. */
+  /* "safe center": centers when the page fits, falls back to start-align
+     once zoomed content overflows (plain "center" would leave the leading
+     edge unreachable by scroll). */
   align-items: safe center;
   justify-content: safe center;
   padding: 1rem;
@@ -29,13 +24,9 @@ body[data-theme="dark"] .preview-stage {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Grid View's front/back tiles — deliberately NOT .preview-stage, whose
-   min/max-height:70vh and scrollable full-page framing exist for showing
-   a whole printed sheet, not a single card/chip cropped down to its own
-   size (renderGridView sets an exact pixel width/height here once the real
-   page inside is measured). overflow:hidden is what actually performs the
-   crop — the full page still renders at full size underneath, shifted by a
-   negative offset so only the one card/chip tile shows through. */
+/* Grid View's per-card/chip crop, not .preview-stage's whole-page framing —
+   renderGridView sets an exact pixel size once the real page is measured;
+   overflow:hidden crops it via a negative offset on the full page beneath. */
 .press-grid-tile {
   position: relative;
   overflow: hidden;
@@ -117,13 +108,9 @@ body[data-theme="dark"] .preview-stage {
   cursor: grab;
 }
 
-/* The label/description column is a flex item inside the palette row
-   (app.js's renderPalette) with no explicit width — flex items default to
-   min-width:auto, which lets a long description's natural content width
-   (e.g. Repeater's "Repeating list, paragraphs, or table bound to an
-   array") override .text-truncate entirely and push the whole left pane
-   into horizontal scroll instead of actually truncating. Forcing min-width
-   to 0 here is what lets text-truncate have something to truncate against. */
+/* Flex items default to min-width:auto, which lets a long description's
+   content width override .text-truncate and push the pane into horizontal
+   scroll instead of truncating — min-width:0 fixes that. */
 .press-palette-item > div {
   min-width: 0;
 }
@@ -132,58 +119,12 @@ body[data-theme="dark"] .preview-stage {
   cursor: grabbing;
 }
 
+/* Base .template-color-grid/.template-color-control/.template-radio-group,
+   plus the --single-row layout variant (this tool's former --nowrap merged
+   into Workbench's --single-row, since both did the same job), all moved
+   to common/css/shell.css — only this tool's column override stays here. */
 .template-color-grid {
-  display: grid;
-  gap: 0.5rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.template-color-control {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.template-color-control .form-label {
-  font-size: 0.7rem;
-}
-
-.template-color-control .form-control-color {
-  padding: 0.15rem;
-  width: 2.75rem;
-  height: 1.85rem;
-}
-
-.template-color-control .btn {
-  padding: 0.2rem 0.45rem;
-}
-
-.template-radio-group {
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-
-.template-radio-group--nowrap {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-}
-
-.template-radio-group--nowrap .btn {
-  white-space: nowrap;
-}
-
-.template-radio-group .btn {
-  font-size: 0.7rem;
-  padding: 0.3rem 0.5rem;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-  line-height: 1.1;
-  text-align: center;
-  white-space: normal;
-  min-width: 2.75rem;
 }
 
 .press-text-orientation-group .btn {
@@ -198,43 +139,12 @@ body[data-theme="dark"] .preview-stage {
   overflow-x: auto;
 }
 
-.template-radio-group .btn .iconify {
-  font-size: 1.1rem;
-}
-
-.template-radio-group .btn .template-radio-label {
-  display: block;
-  font-size: 0.65rem;
-}
-
 .press-icon-preview {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1.25rem;
   height: 1.25rem;
-}
-
-.press-icon-options {
-  max-height: 12rem;
-  overflow-y: auto;
-  border: 1px solid var(--bs-border-color);
-  border-radius: 0.5rem;
-  background: var(--bs-body-bg);
-}
-
-.press-icon-option {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-
-.press-icon-option:hover,
-.press-icon-option.is-active {
-  background: var(--bs-tertiary-bg);
 }
 
 .press-icon-option__preview {
@@ -262,11 +172,8 @@ body[data-theme="dark"] .preview-stage {
   z-index: 2;
 }
 
-/* Fallback for non-card "sheet" templates only (no per-card concept to
-   anchor to) — a single box inset from the whole page by its margin. Card
-   and chip templates use the per-card .guide-safe-box boxes instead
-   (applyOverlays, app.js), each inset from that card's own edges by
-   card.safeInset. */
+/* Sheet templates only — a single box inset from the page margin. Card/chip
+   templates use the per-card .guide-safe-box instead (applyOverlays). */
 .page-overlay.safe-area {
   border: 2px dashed rgba(13, 110, 253, 0.6);
   inset: 0.25in;
@@ -290,19 +197,12 @@ body[data-theme="dark"] .preview-stage {
   font-size: 0.65rem;
 }
 
-.press-json-preview {
-  font-size: 0.65rem;
-}
-
 .card-guides {
   mix-blend-mode: multiply;
 }
 
-/* One bordered box per card cell (applyOverlays, app.js), rather than a
-   shared grid of straight line segments — that's what lets this guide
-   show rounded corners matching card.cornerRadius, and it generalizes
-   cleanly to a non-zero gutter (each card gets its own complete outline
-   instead of relying on shared segments between neighbors). */
+/* One bordered box per card cell rather than shared grid lines — lets each
+   guide follow card.cornerRadius and handle non-zero gutters cleanly. */
 .guide-trim-box {
   position: absolute;
   border: 1px solid rgba(0, 0, 0, 0.35);
@@ -323,13 +223,10 @@ body[data-theme="dark"] .preview-stage {
   border-radius: 50%;
 }
 
-/* Color key for the trim/bleed/safe-area guides — lives in the Live
-   Preview card header (index.html), not over the card itself, so it never
-   competes with the card's own content and isn't affected by canvas zoom
-   or scroll. The swatch colors are duplicated from .guide-trim-box/
-   .guide-bleed-box/.guide-safe-box rather than shared via a variable,
-   since keeping them next to each guide's own rule makes it obvious they
-   need to move together if a guide color ever changes. */
+/* Trim/bleed/safe-area color key, in the Live Preview header rather than
+   over the card so it's unaffected by zoom/scroll. Swatch colors are
+   duplicated from .guide-trim-box/.guide-bleed-box/.guide-safe-box (not a
+   shared variable) so each guide's color stays next to its own rule. */
 .press-guide-legend {
   display: flex;
   align-items: center;
@@ -376,12 +273,9 @@ body[data-theme="dark"] .preview-stage {
   justify-content: center;
 }
 
-/* No decorative border/shadow/rounding here by design — those used to
-   visually overlap the real trim guide and made it impossible to tell
-   which was the actual cut line. The trim guide (applyOverlays, app.js)
-   is the only thing that should read as "this is the card's boundary";
-   border-radius is set inline per template from card.cornerRadius (a
-   real, configurable property), defaulting to 0. */
+/* No decorative border/shadow/rounding by design — it used to overlap the
+   real trim guide and obscure the actual cut line; border-radius is set
+   inline per template from card.cornerRadius instead. */
 .card-tile {
   position: relative;
   background: #fff;
@@ -390,10 +284,8 @@ body[data-theme="dark"] .preview-stage {
   box-sizing: border-box;
 }
 
-/* Editor-only (see applyOverflowIndicators — never applied to the print
-   stack): a corner flag on any card/chip whose content is being clipped
-   by card-tile-content's/chip-circle's own overflow:hidden, so it's
-   visible at a glance without having to scan every card for cut-off text. */
+/* Editor-only corner flag (applyOverflowIndicators) for a card/chip whose
+   content is clipped by its own overflow:hidden — never shown when printed. */
 .press-tile--overflowing::after {
   content: "";
   position: absolute;
@@ -461,17 +353,8 @@ body[data-theme="dark"] .preview-stage {
   padding-top: 0.25rem;
 }
 
-/* Bootstrap's shadow-* utilities are box-shadow only — these are the
-   text-shadow equivalent, mainly for keeping text readable over a busy or
-   photo background (a full-bleed image, say): dark for light text, light
-   for dark text. */
-.text-shadow-dark {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.text-shadow-light {
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
-}
+/* .text-shadow-dark/.text-shadow-light moved to common/css/shell.css (shared
+   utility — also used by the header's tool-switcher label). */
 
 .chip-grid {
   display: grid;
@@ -505,19 +388,6 @@ body[data-theme="dark"] .preview-stage {
   box-sizing: border-box;
 }
 
-.chip-image {
-  align-self: center;
-  width: 0.5in;
-  height: 0.5in;
-  border-radius: 999px;
-}
-
-.press-image.chip-image {
-  min-height: 0;
-  padding: 0;
-  background: transparent;
-}
-
 .chip-meta {
   font-size: 0.55rem;
   line-height: 1.1;
@@ -543,22 +413,14 @@ body[data-theme="dark"] .preview-stage {
   background: rgba(13, 110, 253, 0.08);
 }
 
-/* Only a layer child's own positioned wrapper gives an image a definite
-   height to fill (e.g. a full-bleed background image at width/height:
-   "100%") — .card-tile-content is a flex column with a definite height, so
-   an unscoped height:100% here would also stretch ordinary stack/row images
-   that only ever had width set, pushing sibling content past the card
-   bounds and breaking print pagination. */
+/* Scoped to layer children only — an unscoped height:100% would also
+   stretch ordinary stack/row images that only ever had width set, pushing
+   sibling content past the card bounds. */
 .press-layer-item > .press-image {
   height: 100%;
-  /* .press-image's own min-height:2.5rem exists so a normal-flow image
-     field (no explicit height at all) doesn't collapse to nothing — but a
-     layer placement always has a deliberate, explicit height on its own
-     wrapper (owning this box, per height:100% above), so that floor only
-     fights an intentionally-small size here: the wrapper (and the drag
-     clamp, which measures the wrapper) correctly shrinks to the real
-     placement.height, while this min-height kept the image itself taller,
-     visually overflowing past the wrapper's own bottom edge. */
+  /* Layer placements always have an explicit height on their own wrapper;
+     .press-image's min-height:2.5rem floor would otherwise make the image
+     visually overflow past that wrapper's bottom edge. */
   min-height: 0;
 }
 
@@ -572,14 +434,9 @@ body[data-theme="dark"] .preview-stage {
 }
 
 .press-image__img {
-  /* Sized via absolute positioning (inset:0) rather than as a flex item of
-     .press-image — flex-item sizing for a replaced element like <img> has
-     more than one browser-specific edge case around explicit width/height
-     (min-width/min-height:auto being only one of them), and none of that
-     ambiguity exists for an absolutely-positioned box: inset:0 against a
-     position:relative parent always resolves to exactly that parent's
-     content box, full stop, so object-fit always has an unambiguous box to
-     compute cover/contain/fill against. */
+  /* Absolute positioning (inset:0) instead of flex-item sizing — avoids
+     browser-specific <img> flex-sizing quirks; inset:0 against a
+     position:relative parent gives object-fit an unambiguous box. */
   position: absolute;
   inset: 0;
   width: 100%;
@@ -677,20 +534,16 @@ body[data-theme="dark"] .preview-stage {
   gap: 0;
 }
 
-/* A layer's absolutely-positioned children stack by z-index among
-   themselves, scoped to this container — isolate so that stacking never
-   bleeds into (or gets interfered with by) unrelated z-indexed chrome
-   elsewhere on the page (editor guides, print-page frame, etc.). */
+/* Scopes a layer's z-index stacking to itself, so it can't bleed into or
+   be interfered with by unrelated chrome elsewhere on the page. */
 .press-layer {
   isolation: isolate;
 }
 
-/* Shown in place of a bound field's value when there's nothing to resolve it
-   against (no data loaded, or this field is blank in the loaded data) — keeps
-   the element's height so stacks relying on it for sizing don't collapse
-   while editing, and is visually distinct from real rendered content so it
-   doesn't get mistaken for it. Never appears once a binding resolves to an
-   actual value, and never appears for plain (non-bound) static text. */
+/* Shown only when a bound field has nothing to resolve against — keeps the
+   element's height (so sizing stacks don't collapse) while reading as
+   clearly-not-real-content. Never shown once a binding resolves or for
+   plain static text. */
 .press-binding-placeholder {
   opacity: 0.5;
   font-style: italic;
@@ -752,10 +605,8 @@ body[data-theme="dark"] .preview-stage {
     print-color-adjust: exact;
   }
 
-  /* page-break-after on every .print-page (including the last) makes most
-     print engines emit one trailing blank page after the final side, since
-     "always break after" still applies even when there's nothing left to
-     break to — only the non-last pages need it. */
+  /* Only non-last pages get page-break-after — on the last page it would
+     still fire and print engines emit a trailing blank page. */
   .print-page:not(:last-child) {
     page-break-after: always;
   }
@@ -778,148 +629,8 @@ body[data-theme="dark"] .preview-stage {
   }
 }
 
-/* Character notecard template styles. */
-
-.ability-scores {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.ability-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 15%;
-  border: 2px solid #000;
-  border-radius: 8px;
-  background: #f8f8f8;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin: 6px;
-}
-
-.ability-block .name {
-  font-size: 1em;
-  font-weight: bold;
-  text-transform: uppercase;
-  padding-bottom: 4px;
-}
-
-.ability-block .modifier {
-  font-size: 2em;
-  font-weight: bold;
-  color: #000;
-  padding-bottom: 4px;
-  line-height: 1em;
-}
-
-.ability-block .score {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-}
-
-.item-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.skill,
-.skill-row {
-  display: flex;
-  align-items: center;
-  font-size: 1em;
-}
-
-.skill .modifier,
-.skill-row .modifier {
-  padding: 0 6px;
-}
-
-.circle {
-  width: 10px;
-  height: 10px;
-  border: 2px solid #333;
-  border-radius: 50%;
-  background-color: #fff;
-  margin-right: 2px;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.p4 {
-  background-color: #36454f;
-}
-
-.p3 {
-  background-color: #b2beb5;
-}
-
-.p1 {
-  background-color: #e8e8e8;
-}
-
-.section {
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.section-short {
-  font-size: 1.1em;
-  font-weight: bold;
-  line-height: 1em;
-}
-
-.heading {
-  font-size: 1.3em;
-  text-decoration: underline;
-  font-weight: bold;
-  line-height: 1em;
-}
-
-.larger {
-  font-size: 2em;
-}
-
-.notes {
-  font-size: 0.7em;
-  line-height: 0.8;
-  display: inline-block;
-}
-
-.stat-0,
-.str {
-  color: red;
-}
-
-.stat-1,
-.dex {
-  color: gold;
-}
-
-.stat-2,
-.con {
-  color: darkorange;
-}
-
-.stat-3,
-.int {
-  color: blue;
-}
-
-.stat-4,
-.wis {
-  color: green;
-}
-
-.stat-5,
-.cha {
-  color: purple;
-}
+/* .circle moved to common/css/shell.css (shared marker/dot primitive) — still
+   used by notecard-character.json's saving-throw rows. */
 
 .press-table {
   width: 100%;

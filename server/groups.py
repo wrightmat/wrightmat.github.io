@@ -11,6 +11,7 @@ from .shares import (
     content_exists,
     create_share_link,
     get_share_link,
+    get_share_links_batch,
     resolve_share_token,
     revoke_share_link,
     touch_share_link,
@@ -60,14 +61,28 @@ def _require_owner(state: ServerState, group_id: str, owner: Optional[User]):
 
 
 def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, Any]]:
+    return _fetch_group_members_batch(state, [group_id]).get(group_id, [])
+
+
+# Batched form of the same lookup, used by list_groups so an owner with N
+# groups costs a handful of queries total instead of up to 3×N (one JOIN plus
+# up to two title lookups, per group, previously run inside a per-group
+# loop). Single-group callers go through _fetch_group_members above, which is
+# just this with a one-element id list — same query, same result shape,
+# kept as one implementation so the two paths can't drift.
+def _fetch_group_members_batch(state: ServerState, group_ids: List[str]) -> Dict[str, List[Dict[str, Any]]]:
+    if not group_ids:
+        return {}
     # Characters/systems/templates all live in the one generic library_items
     # table now (see server/storage.py) — system/template are id references
     # tucked inside a character's own `metadata` JSON, not a joinable column,
     # so their titles are resolved in a second pass here rather than via a
     # brittle multi-table SQL JOIN keyed off a JSON blob's contents.
+    group_placeholders = ",".join("?" for _ in group_ids)
     rows = state.db.execute(
-        """
-        SELECT gm.content_type,
+        f"""
+        SELECT gm.group_id,
+               gm.content_type,
                gm.content_id,
                gm.added_at,
                li.title AS character_title,
@@ -77,10 +92,10 @@ def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, An
         FROM group_members AS gm
         LEFT JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
         LEFT JOIN users AS u ON u.id = li.owner_id
-        WHERE gm.group_id = ?
-        ORDER BY COALESCE(li.title, gm.content_id) COLLATE NOCASE
+        WHERE gm.group_id IN ({group_placeholders})
+        ORDER BY gm.group_id, COALESCE(li.title, gm.content_id) COLLATE NOCASE
         """,
-        (group_id,),
+        tuple(group_ids),
     ).fetchall()
 
     parsed_metadata: Dict[str, Dict[str, Any]] = {}
@@ -110,7 +125,7 @@ def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, An
         ):
             titles[(kind, title_row["id"])] = title_row["title"]
 
-    members: List[Dict[str, Any]] = []
+    members_by_group: Dict[str, List[Dict[str, Any]]] = {group_id: [] for group_id in group_ids}
     for row in rows:
         content_type = row["content_type"]
         content_id = row["content_id"]
@@ -137,8 +152,8 @@ def _fetch_group_members(state: ServerState, group_id: str) -> List[Dict[str, An
                     "missing": row["character_title"] is None,
                 }
             )
-        members.append(entry)
-    return members
+        members_by_group[row["group_id"]].append(entry)
+    return members_by_group
 
 
 def _attach_member_status(members: Iterable[Dict[str, Any]], owner_id: Optional[int]) -> List[Dict[str, Any]]:
@@ -512,10 +527,13 @@ def list_groups(state: ServerState, owner: Optional[User]) -> Dict[str, Any]:
         """,
         (owner.id,),
     ).fetchall()
+    group_ids = [row["id"] for row in rows]
+    members_by_group = _fetch_group_members_batch(state, group_ids)
+    share_links = get_share_links_batch(state, "group", group_ids)
     groups: List[Dict[str, Any]] = []
     for row in rows:
-        members = _attach_member_status(_fetch_group_members(state, row["id"]), row["owner_id"])
-        share_link = get_share_link(state, "group", row["id"])
+        members = _attach_member_status(members_by_group.get(row["id"], []), row["owner_id"])
+        share_link = share_links.get(row["id"])
         groups.append(_serialize_group(row, members, share_link))
     return {"groups": groups}
 
