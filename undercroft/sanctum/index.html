@@ -561,6 +561,70 @@
                     <textarea class="form-control form-control-sm" id="sanctumSettingDescription" rows="2" data-setting-description></textarea>
                   </div>
                 </div>
+
+                <section class="d-flex flex-column gap-2" id="sanctum-calendar">
+                  <div class="d-flex align-items-center justify-content-between gap-2">
+                    <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                      <span>Calendar (optional)</span>
+                      <span class="align-middle" data-help-topic="sanctum.calendar" data-help-insert="replace"></span>
+                    </h3>
+                    <button
+                      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center justify-content-center collapsible-toggle"
+                      type="button"
+                      data-calendar-toggle
+                      aria-expanded="false"
+                    >
+                      <span class="iconify" data-icon="tabler:chevron-right" aria-hidden="true"></span>
+                      <span class="visually-hidden" data-calendar-toggle-label>Expand calendar</span>
+                    </button>
+                  </div>
+                  <div class="d-flex flex-column gap-3" data-calendar-panel hidden>
+                    <div class="row g-3">
+                      <div class="col-6">
+                        <label class="form-label small text-body-secondary fw-semibold" for="sanctumCalendarDaysPerWeek">Days per week</label>
+                        <input class="form-control form-control-sm" type="number" min="0" step="1" id="sanctumCalendarDaysPerWeek" data-calendar-days-per-week />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small text-body-secondary fw-semibold" for="sanctumCalendarEpochLabel">Epoch label</label>
+                        <input class="form-control form-control-sm" type="text" id="sanctumCalendarEpochLabel" placeholder="e.g. YK" data-calendar-epoch-label />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small text-body-secondary fw-semibold" for="sanctumCalendarStartingYear">Starting year</label>
+                        <input class="form-control form-control-sm" type="number" step="1" id="sanctumCalendarStartingYear" data-calendar-starting-year />
+                      </div>
+                    </div>
+
+                    <section class="d-flex flex-column gap-2">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h4 class="fs-6 fw-semibold text-body-secondary mb-0">Weekday Names</h4>
+                        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-weekday-name aria-label="Add weekday">
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                      <div class="d-flex flex-column gap-2" data-weekday-name-rows></div>
+                    </section>
+
+                    <section class="d-flex flex-column gap-2">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h4 class="fs-6 fw-semibold text-body-secondary mb-0">Months</h4>
+                        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-month aria-label="Add month">
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                      <div class="d-flex flex-column gap-2" data-month-rows></div>
+                    </section>
+
+                    <section class="d-flex flex-column gap-2">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h4 class="fs-6 fw-semibold text-body-secondary mb-0">Moon Cycles</h4>
+                        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-add-moon-cycle aria-label="Add moon">
+                          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                      <div class="d-flex flex-column gap-2" data-moon-cycle-rows></div>
+                    </section>
+                  </div>
+                </section>
               </div>
             </section>
 

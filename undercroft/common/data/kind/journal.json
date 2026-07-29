@@ -1,0 +1,9 @@
+{
+  "id": "journal",
+  "label": "Journal Page",
+  "plural": "Journal",
+  "icon": "tabler:notebook",
+  "readTier": "free",
+  "writeTier": "gm",
+  "metadataFields": ["tags"]
+}

@@ -1,6 +1,73 @@
 {
   "kind": "setting",
-  "systemIds": ["sys.dnd5e"],
+  "systemIds": [
+    "sys.dnd5e"
+  ],
   "name": "Eberron",
-  "description": "Eberron is a Dungeons & Dragons campaign setting created by Keith Baker that blends traditional fantasy with pulp-noir, industrial magic, and political intrigue. Set on the war-torn continent of Khorvaire, it features magitek like elemental-powered airships and lightning trains, and explores a world recovering from a devastating century-long conflict."
+  "description": "Eberron is a Dungeons & Dragons campaign setting created by Keith Baker that blends traditional fantasy with pulp-noir, industrial magic, and political intrigue. Set on the war-torn continent of Khorvaire, it features magitek like elemental-powered airships and lightning trains, and explores a world recovering from a devastating century-long conflict.",
+  "calendar": {
+    "daysPerWeek": 7,
+    "weekdayNames": [
+      "Sul",
+      "Mol",
+      "Zol",
+      "Wir",
+      "Zor",
+      "Far",
+      "Sar"
+    ],
+    "months": [
+      {
+        "name": "Zarantyr",
+        "days": 28
+      },
+      {
+        "name": "Olarune",
+        "days": 28
+      },
+      {
+        "name": "Therendor",
+        "days": 28
+      },
+      {
+        "name": "Eyre",
+        "days": 28
+      },
+      {
+        "name": "Dravago",
+        "days": 28
+      },
+      {
+        "name": "Nymm",
+        "days": 28
+      },
+      {
+        "name": "Lharvion",
+        "days": 28
+      },
+      {
+        "name": "Barrakas",
+        "days": 28
+      },
+      {
+        "name": "Rhaan",
+        "days": 28
+      },
+      {
+        "name": "Sypheros",
+        "days": 28
+      },
+      {
+        "name": "Aryth",
+        "days": 28
+      },
+      {
+        "name": "Vult",
+        "days": 28
+      }
+    ],
+    "moonCycles": [],
+    "epochLabel": "YK",
+    "startingYear": 998
+  }
 }

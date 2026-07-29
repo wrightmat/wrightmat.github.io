@@ -56,8 +56,13 @@
     <!-- Press's own card/chip rendering styles (.card-tile, .card-tile-content,
          etc.) — reused as-is for the "Now Showing" spotlight card so Press's
          existing template.createPage() output looks right here without any
-         separate rendering code (see workbench-character-view.js). -->
+         separate rendering code (see workbench-character-view.js). Also
+         supplies .press-image*/.press-icon* — reused as-is by the Template
+         editor's own Image/Icon components, ported from Press's identical
+         components. -->
     <link rel="stylesheet" href="../press/css/styles.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="../common/css/ddb-icons.css" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="workbench">
@@ -235,6 +240,27 @@
                 <span class="fs-6 text-body-secondary">Drag into canvas</span>
               </div>
               <div class="d-grid gap-2" data-palette>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="container" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Container</div>
+                    <div class="text-body-secondary extra-small text-truncate">Grids and tabs</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="icon" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:icons" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Icon</div>
+                    <div class="text-body-secondary extra-small text-truncate">A single icon glyph</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="image" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Image</div>
+                    <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or patterns</div>
+                  </div>
+                </div>
                 <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="input" data-sortable-handle="true">
                   <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
                   <div class="d-flex flex-column">
@@ -242,53 +268,11 @@
                     <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
                   </div>
                 </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="array" data-sortable-handle="true">
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="repeater" data-sortable-handle="true">
                   <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
                   <div class="d-flex flex-column">
-                    <div class="fw-semibold">List</div>
-                    <div class="text-body-secondary extra-small text-truncate">Inventory lists and repeaters</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="divider" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:separator-horizontal" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Divider</div>
-                    <div class="text-body-secondary extra-small text-truncate">Break up sections</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="image" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Image</div>
-                    <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or maps</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="label" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Label</div>
-                    <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="container" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Container</div>
-                    <div class="text-body-secondary extra-small text-truncate">Tabs, grids, columns, rows</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="linear-track" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Linear Track</div>
-                    <div class="text-body-secondary extra-small text-truncate">Segmented progress bars</div>
-                  </div>
-                </div>
-                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="circular-track" data-sortable-handle="true">
-                  <span class="iconify fs-4 text-primary" data-icon="tabler:gauge" aria-hidden="true"></span>
-                  <div class="d-flex flex-column">
-                    <div class="fw-semibold">Circular Track</div>
-                    <div class="text-body-secondary extra-small text-truncate">Dial-style clocks</div>
+                    <div class="fw-semibold">Repeater</div>
+                    <div class="text-body-secondary extra-small text-truncate">Inventory and item lists</div>
                   </div>
                 </div>
                 <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="select-group" data-sortable-handle="true">
@@ -298,11 +282,25 @@
                     <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
                   </div>
                 </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="text" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Text</div>
+                    <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
+                  </div>
+                </div>
                 <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="toggle" data-sortable-handle="true">
                   <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
                   <div class="d-flex flex-column">
                     <div class="fw-semibold">Toggle</div>
                     <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
+                  </div>
+                </div>
+                <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="track" data-sortable-handle="true">
+                  <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
+                  <div class="d-flex flex-column">
+                    <div class="fw-semibold">Track</div>
+                    <div class="text-body-secondary extra-small text-truncate">Progress bars or clocks</div>
                   </div>
                 </div>
               </div>
@@ -441,7 +439,7 @@
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Canvas</h2>
                     <span class="fs-6 text-body-secondary">Layout preview</span>
                   </div>
-                  <div class="flex-grow-1 d-flex flex-column gap-3" data-canvas-root data-sortable-id="canvas"></div>
+                  <div class="flex-grow-1 d-flex flex-column" data-canvas-root data-sortable-id="canvas"></div>
                 </div>
               </div>
             </section>
@@ -466,7 +464,7 @@
                     <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Sheet</h2>
                     <span class="fs-6 text-body-secondary" data-mode-indicator>Viewing</span>
                   </div>
-                  <div class="flex-grow-1 d-flex flex-column gap-3" data-character-canvas-root></div>
+                  <div class="flex-grow-1 d-flex flex-column" data-character-canvas-root></div>
                 </div>
               </div>
             </section>
@@ -742,6 +740,84 @@
           <div class="modal-footer d-flex justify-content-between align-items-center">
             <div class="text-body-secondary small" data-group-select-status></div>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Ported from Press's own identical pattern/shape picker (same
+         markup, same common/js/lib/pattern-library.js presets) — the Image
+         component's own "brush" button opens this. -->
+    <div class="modal fade" id="workbench-pattern-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Insert Pattern or Shape</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <div class="btn-group template-radio-group" role="group" aria-label="Pattern category">
+              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryFills" value="fills" checked data-pattern-category />
+              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryFills">Fills</label>
+              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryPatterns" value="patterns" data-pattern-category />
+              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryPatterns">Patterns</label>
+              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryBanners" value="banners" data-pattern-category />
+              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryBanners">Banners</label>
+              <input type="radio" class="btn-check" name="workbenchPatternCategory" id="workbenchPatternCategoryShapes" value="shapes" data-pattern-category />
+              <label class="btn btn-outline-secondary" for="workbenchPatternCategoryShapes">Shapes</label>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-7">
+                <div class="d-flex flex-wrap gap-2" data-pattern-thumbnails></div>
+              </div>
+              <div class="col-12 col-md-5 d-flex flex-column gap-3 border-start-md ps-md-3">
+                <div class="d-flex flex-column align-items-center gap-2 border rounded-3 bg-body-tertiary p-3">
+                  <img data-pattern-preview alt="" style="width: 140px; height: 140px; object-fit: contain" />
+                  <div class="fw-semibold small text-body-secondary" data-pattern-preview-label>Select a pattern</div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-pattern-controls></div>
+              </div>
+            </div>
+            <div class="text-body-secondary extra-small border-top pt-2">
+              Need something more elaborate? Paste a <code>data:image/svg+xml</code> URL from any online SVG editor
+              directly into the Image URL field.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-pattern-insert disabled>Insert</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="workbench-add-font-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Add a font</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-2">
+            <div class="form-floating">
+              <input
+                class="form-control"
+                placeholder="Encode Sans Expanded"
+                type="text"
+                id="workbenchAddFontValue"
+                data-add-font-value
+              />
+              <label class="fw-semibold" for="workbenchAddFontValue">Font name or CSS font-family value</label>
+            </div>
+            <div class="text-body-secondary extra-small">
+              A single name (e.g. <code>Roboto Condensed</code>) loads it from Google Fonts automatically and adds
+              it to the font list for everyone, from now on — the same shared library Press's own Font field uses.
+              Include a comma — a fallback font, like <code>'My Font', sans-serif</code> — to use it as a raw CSS
+              value instead, with nothing loaded.
+            </div>
+            <div class="small d-none" data-add-font-warning></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-add-font-submit disabled>Add</button>
           </div>
         </div>
       </div>

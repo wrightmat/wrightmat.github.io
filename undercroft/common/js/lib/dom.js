@@ -19,3 +19,60 @@ export function disableForm(form, disabled) {
     }
   });
 }
+
+// Mouseover-opens/closes a Bootstrap dropdown — shared by the tool switcher
+// (app-shell.js) and the account/campaign menu (auth-ui.js) so both are
+// guaranteed to behave identically instead of each carrying its own
+// near-identical copy that could quietly drift apart (which is exactly what
+// happened before this was factored out: the tool switcher's copy gated
+// attaching its hover listeners on `window.bootstrap` already existing at
+// setup time, and every page's own module script runs BEFORE Bootstrap's
+// own deferred, CDN-loaded <script> tag on purpose — see app-shell.js's own
+// script-order comment — so that check lost the race more often than not,
+// silently leaving that page's nav panel as click-only for the rest of the
+// session). Resolving the Bootstrap Dropdown instance INSIDE each handler,
+// not once up front, means a real user mouse/focus event — which can only
+// happen well after Bootstrap has had time to load — always finds it ready,
+// regardless of which script happened to finish loading first.
+export function attachHoverDropdown(dropdown, toggle, { hideDelay = 200 } = {}) {
+  if (!dropdown || !toggle) return;
+  let hideTimer = null;
+  const cancelHide = () => {
+    if (hideTimer !== null) {
+      window.clearTimeout(hideTimer);
+      hideTimer = null;
+    }
+  };
+  const getInstance = () =>
+    window.bootstrap && typeof window.bootstrap.Dropdown === "function"
+      ? window.bootstrap.Dropdown.getOrCreateInstance(toggle)
+      : null;
+  const showMenu = () => {
+    cancelHide();
+    getInstance()?.show();
+  };
+  const hideMenu = () => {
+    getInstance()?.hide();
+  };
+  // The trigger and menu are separate boxes with a small visual gap between
+  // them — crossing it briefly leaves the pointer over neither, which would
+  // otherwise close the menu before it reaches the cards. Delaying the hide
+  // (and canceling it on re-entry) gives that crossing room without needing
+  // the menu to visually touch the trigger.
+  const scheduleHide = () => {
+    cancelHide();
+    hideTimer = window.setTimeout(() => {
+      hideTimer = null;
+      hideMenu();
+    }, hideDelay);
+  };
+  dropdown.addEventListener("mouseenter", showMenu);
+  dropdown.addEventListener("mouseleave", scheduleHide);
+  toggle.addEventListener("focus", showMenu);
+  dropdown.addEventListener("focusout", (event) => {
+    if (!dropdown.contains(event.relatedTarget)) {
+      cancelHide();
+      hideMenu();
+    }
+  });
+}

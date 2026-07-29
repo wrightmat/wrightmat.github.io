@@ -3,6 +3,7 @@ from __future__ import annotations
 import http.server
 import json
 import logging
+import sys
 import threading
 import time
 from datetime import datetime, timezone
@@ -119,6 +120,19 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
             logging.exception("Failed to flush pending last_accessed_at touches on shutdown")
         super().shutdown()
 
+    # A client (browser tab close/reload, a dropped long-poll) tearing down
+    # its TCP connection mid-request is routine, not a bug — but the default
+    # socketserver.BaseServer.handle_error prints a full traceback for every
+    # one of these regardless. Suppress only the specific "connection went
+    # away" exceptions so real handler bugs still get their traceback.
+    def handle_error(self, request, client_address) -> None:
+        exc_type = sys.exc_info()[0]
+        if exc_type is not None and issubclass(
+            exc_type, (ConnectionAbortedError, ConnectionResetError, BrokenPipeError)
+        ):
+            return
+        super().handle_error(request, client_address)
+
 
 class RequestHandler(http.server.BaseHTTPRequestHandler):
     # BaseHTTPRequestHandler defaults to HTTP/1.0, which never reuses a
@@ -198,7 +212,18 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # before writing to the socket or sleeping.
     def _handle_live_stream(self, group_id: str, query: Dict[str, list]) -> None:
         token = (query.get("token", [""])[0] or "").strip()
-        user = get_user_by_session(self.server.state, token) if token else None
+        # Every other DB touch in this class (do_GET/do_POST's own handler
+        # dispatch, and this same method's polling loop further below) holds
+        # state.lock while it runs — this call is a session lookup, which
+        # both reads AND writes (last_accessed_at/expires_at refresh) the one
+        # shared sqlite3.Connection every thread uses. Left unlocked, it can
+        # race a concurrent request's own execute()/commit() on that same
+        # connection object — confirmed directly: this produced a real
+        # "cannot commit - no transaction is active" OperationalError, since
+        # a live-stream connection stays open (and threads keep firing
+        # ordinary API requests) for the whole LIVE_STREAM_SECONDS window.
+        with self.server.state.lock:
+            user = get_user_by_session(self.server.state, token) if token else None
         share_token = (query.get("share", [""])[0] or "").strip()
         if not user and not share_token:
             self.send_response(HTTPStatus.UNAUTHORIZED)
@@ -457,11 +482,14 @@ def register_routes():
 
     router.add("POST", r"^/press/custom-sizes$", handle_press_custom_size_save)
 
-    # POST /press/custom-fonts
-    def resolve_press_custom_fonts_path(state: ServerState) -> Path:
-        return state.root_dir / "undercroft" / "press" / "data" / "custom-fonts.json"
+    # POST /custom-fonts — a shared, server-persisted font library, not a
+    # Press-specific concept (Workbench's own Font field reads/writes the
+    # same list; see common/js/lib/font-library.js), same pattern as
+    # /soundboard/clips below.
+    def resolve_custom_fonts_path(state: ServerState) -> Path:
+        return state.root_dir / "undercroft" / "common" / "data" / "custom-fonts.json"
 
-    def handle_press_custom_font_save(request: Request) -> Response:
+    def handle_custom_font_save(request: Request) -> Response:
         user = request.handler.current_user()
         if not user:
             raise AuthError("Authentication required")
@@ -471,7 +499,7 @@ def register_routes():
         font = payload.get("font", payload)
         if not font or not isinstance(font, dict) or not font.get("id"):
             return json_response({"error": "Invalid custom font payload"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_press_custom_fonts_path(request.state)
+        path = resolve_custom_fonts_path(request.state)
         try:
             existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
         except (json.JSONDecodeError, OSError):
@@ -483,13 +511,13 @@ def register_routes():
         path.write_text(f"{serialized}\n", encoding="utf-8")
         return json_response({"ok": True, "fonts": fonts})
 
-    router.add("POST", r"^/press/custom-fonts$", handle_press_custom_font_save)
+    router.add("POST", r"^/custom-fonts$", handle_custom_font_save)
 
-    # POST /press/custom-fonts/delete — this server has no do_DELETE at all
+    # POST /custom-fonts/delete — this server has no do_DELETE at all
     # (only do_GET/do_POST are wired up), so every deletion in this codebase
     # goes through a POST .../delete route instead of a true HTTP DELETE
     # (see /auth/users/delete, /content/{bucket}/{id}/delete).
-    def handle_press_custom_font_delete(request: Request) -> Response:
+    def handle_custom_font_delete(request: Request) -> Response:
         user = request.handler.current_user()
         if not user or user.tier != "admin":
             raise AuthError("Admin only")
@@ -497,7 +525,7 @@ def register_routes():
         font_id = payload.get("id")
         if not font_id:
             return json_response({"error": "font id required"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_press_custom_fonts_path(request.state)
+        path = resolve_custom_fonts_path(request.state)
         try:
             existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
         except (json.JSONDecodeError, OSError):
@@ -508,9 +536,65 @@ def register_routes():
         path.write_text(f"{serialized}\n", encoding="utf-8")
         return json_response({"ok": True, "fonts": fonts})
 
-    router.add("POST", r"^/press/custom-fonts/delete$", handle_press_custom_font_delete)
+    router.add("POST", r"^/custom-fonts/delete$", handle_custom_font_delete)
 
-    # GET /press/google-fonts-metadata
+    # POST /soundboard/clips — a shared, GM-buildable audio clip library for
+    # the Dashboard's own Soundboard widget, same pattern as custom-fonts.json
+    # above (a flat, server-persisted JSON list anyone gm+ can add to,
+    # upserted by id) rather than a Library kind — there's no per-clip
+    # ownership/sharing to model, just one shared catalog.
+    def resolve_soundboard_clips_path(state: ServerState) -> Path:
+        return state.root_dir / "undercroft" / "common" / "data" / "audio-clips.json"
+
+    def handle_soundboard_clip_save(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user:
+            raise AuthError("Authentication required")
+        if role_rank(user.tier) < role_rank("gm"):
+            raise AuthError("GM tier or higher required to add clips")
+        payload = require_json(request)
+        clip = payload.get("clip", payload)
+        if not clip or not isinstance(clip, dict) or not clip.get("id") or not clip.get("url"):
+            return json_response({"error": "Invalid clip payload"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_soundboard_clips_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        clips = existing.get("clips") if isinstance(existing.get("clips"), list) else []
+        clips = [entry for entry in clips if entry.get("id") != clip.get("id")]
+        clips.append(clip)
+        serialized = json.dumps({"clips": clips}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "clips": clips})
+
+    router.add("POST", r"^/soundboard/clips$", handle_soundboard_clip_save)
+
+    # POST /soundboard/clips/delete — same "no true HTTP DELETE" reasoning as
+    # /press/custom-fonts/delete above.
+    def handle_soundboard_clip_delete(request: Request) -> Response:
+        user = request.handler.current_user()
+        if not user or user.tier != "admin":
+            raise AuthError("Admin only")
+        payload = require_json(request)
+        clip_id = payload.get("id")
+        if not clip_id:
+            return json_response({"error": "clip id required"}, status=HTTPStatus.BAD_REQUEST)
+        path = resolve_soundboard_clips_path(request.state)
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        clips = existing.get("clips") if isinstance(existing.get("clips"), list) else []
+        clips = [entry for entry in clips if entry.get("id") != clip_id]
+        serialized = json.dumps({"clips": clips}, indent=2, sort_keys=False)
+        path.write_text(f"{serialized}\n", encoding="utf-8")
+        return json_response({"ok": True, "clips": clips})
+
+    router.add("POST", r"^/soundboard/clips/delete$", handle_soundboard_clip_delete)
+
+    # GET /google-fonts-metadata — shared by both Press's and Workbench's
+    # Font pickers (common/js/lib/font-library.js), not Press-specific.
     #
     # Proxies Google's font-picker metadata endpoint server-side. That
     # endpoint is Google's internal API (not published for third-party use)
@@ -520,7 +604,7 @@ def register_routes():
     # callers outright. Fetching it here instead sidesteps CORS entirely,
     # same reasoning as /ddb-proxy above, just with a fixed target and no
     # session cookie needed.
-    def handle_press_google_fonts_metadata(request: Request) -> Response:
+    def handle_google_fonts_metadata(request: Request) -> Response:
         import urllib.error
         import urllib.request
 
@@ -539,7 +623,7 @@ def register_routes():
 
         return Response(status=200, body=body, headers={"Content-Type": "application/json; charset=utf-8"})
 
-    router.add("GET", r"^/press/google-fonts-metadata$", handle_press_google_fonts_metadata)
+    router.add("GET", r"^/google-fonts-metadata$", handle_google_fonts_metadata)
 
     # POST /loom/mappings/{id}
     def resolve_loom_mapping_path(state: ServerState, mapping_id: str) -> Path:
@@ -594,7 +678,7 @@ def register_routes():
     # Optional LLM synthesis step (CLAUDE.md: "entirely optional... all
     # rolled values stand on their own as the character record"). Proxies
     # Anthropic's Messages API the same no-extra-dependency way as
-    # handle_press_google_fonts_metadata/handle_ddb_proxy above (urllib
+    # handle_google_fonts_metadata/handle_ddb_proxy above (urllib
     # only), reading the API key from a local, gitignored file mirroring
     # server/ddb-session.local.json's own convention.
     FORGE_NOTE_SYSTEM_PROMPT = (
@@ -633,7 +717,7 @@ def register_routes():
     # Sanctum): each optional LLM synthesis step (CLAUDE.md: "entirely
     # optional... rolled/generated values stand on their own") proxies
     # Anthropic's Messages API the same no-extra-dependency way as
-    # handle_press_google_fonts_metadata/handle_ddb_proxy above (urllib only),
+    # handle_google_fonts_metadata/handle_ddb_proxy above (urllib only),
     # reading the API key from a local, gitignored file mirroring
     # server/ddb-session.local.json's own convention. The four routes differ
     # only in system prompt and how the request payload becomes user_content —

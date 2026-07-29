@@ -5,14 +5,21 @@
 // combat tracking is party/session-scoped, not character-scoped like
 // Workbench's view-switcher, and doesn't belong to any one existing tool —
 // see the Dashboard plan this widget was built for.
-import { openSpotlightModal } from "../spotlight.js";
+import { resolveActiveSpotlightId } from "../spotlight.js";
 import { disposeTooltips, refreshTooltips } from "../tooltips.js";
-import { resolveBinding, setAtBinding, findRoleBoundField } from "../bindings.js";
+import { resolveBinding, setAtBinding, findBindingByRole } from "../bindings.js";
+import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
 import { connectLiveStream } from "../live.js";
 import { el } from "../dom.js";
 import { confirmDelete } from "../ownership.js";
+import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "./combat-bindings.js";
+import { uniquifyCombatantName } from "./combatant-naming.js";
+import { createReliableInterval } from "../reliable-interval.js";
 
-const POLL_INTERVAL_MS = 15000;
+// 5s (was 15s) — a physical second-screen display wants combat to feel
+// live, and single-window background polling is now confirmed reliable
+// (reliable-interval.js) as long as the window stays genuinely visible.
+const POLL_INTERVAL_MS = 5000;
 
 function randomId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -42,69 +49,24 @@ function blankEncounter(name) {
   };
 }
 
-// The tag vocabulary field (default key "conditions", but see
-// deriveConditionsPropertyType) and the combat-bindings field (whichever
-// array field's values carry a `role` — see findRoleBoundField) both live on
-// the same System record's `fields` — one fetch serves both instead of each
-// maintaining its own independent round trip. Absent field(s) = no tag
-// suggestions / no write-through, gracefully, not an error.
-async function loadSystemFields(dataManager, systemId) {
-  if (!systemId) return null;
-  try {
-    // preferLocal: false — a Loom edit to the System's fields (adding/
-    // changing conditions or role-bound values) must be visible immediately,
-    // not hidden behind whatever copy of this System this browser happened
-    // to cache locally on a previous visit. Same reasoning as
-    // writeThroughToCharacter's character fetch below.
-    const result = await dataManager.get("system", systemId, { preferLocal: false });
-    return Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-  } catch (error) {
-    return null;
-  }
-}
-
-// Combat Bindings isn't a field type of its own, or even a flagged field —
-// it's just whichever ordinary Enum-mode array field's values happen to use
-// Role (see findRoleBoundField in common/js/lib/bindings.js), a generic
-// structural vocabulary: "resource" (a number with a ceiling, optionally a
-// temp buffer — HP is one instance, not the concept), "value" (one
-// standalone number — AC is one instance), "tags" (a multi-select status
-// list — Conditions is one instance), "modifier" (a number feeding a roll —
-// Initiative is one instance).
-function deriveCombatBindings(fields) {
-  if (!fields) return null;
-  const field = findRoleBoundField(fields);
-  return field && Array.isArray(field.values) ? field.values : null;
-}
-
-function findBindingByRole(bindings, role) {
-  return (bindings || []).find((entry) => entry && entry.role === role) || null;
-}
-
-// The tags-role binding's own `sourceField` names which other array field on
-// this System supplies the tag vocabulary (e.g. "conditions") — a generic
-// "where do the valid options come from" pointer (see loom/js/app.js's
-// VALUE_COLUMNS), not specific to combat bindings. Defaulting to
-// "conditions" when absent keeps existing Systems working without requiring
-// them to set it explicitly.
-function deriveConditionsPropertyType(fields, bindings) {
-  if (!fields) return null;
-  const tagsEntry = findBindingByRole(bindings, "tags");
-  const vocabularyKey = tagsEntry?.sourceField || "conditions";
-  const field = fields.find((entry) => entry.type === "array" && entry.key === vocabularyKey);
-  if (!field) return null;
-  return (field.values || []).map((value, index) => ({
-    id: value.id || value.name || `condition-${index}`,
-    label: value.name || value.label || String(value.id || index),
-  }));
-}
+// loadSystemFields/deriveCombatBindings now live in combat-bindings.js
+// (shared with Repository's own `encounter:` block builder) — see that
+// module's own comments for what each does.
 
 const REF_KIND_LABELS = { character: "Character", npc: "NPC", monster: "Monster" };
 const TAG_DATALIST_ID = "combat-tracker-tag-suggestions";
 
 export function initCombatTrackerWidget(
   container,
-  { dataManager, status, mode = "gm", groupId = "", shareToken = "", encounterId = "" } = {}
+  {
+    dataManager,
+    status,
+    mode = "gm",
+    groupId = "",
+    shareToken = "",
+    encounterId = "",
+    setRightAction,
+  } = {}
 ) {
   if (!container || !dataManager) {
     return { destroy() {} };
@@ -224,10 +186,22 @@ export function initCombatTrackerWidget(
       state.encounter = result.payload;
       const fields = await loadSystemFields(dataManager, state.encounter.systemId);
       state.combatBindings = deriveCombatBindings(fields);
-      state.conditions = deriveConditionsPropertyType(fields, state.combatBindings);
+      state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
       render();
     } catch (error) {
       status?.show("Unable to load that encounter.", { type: "error" });
+      // Same self-heal as pollActiveEncounter's own — a GM hitting a dead
+      // ?encounter=<id> deep link is just as good a moment to notice the
+      // group's active spotlight is stale and clear it for every viewer,
+      // not only a player's own passive poll finding it later.
+      if (error?.status === 404 && groupId) {
+        const activeId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }).catch(
+          () => ""
+        );
+        if (activeId === id) {
+          await dataManager.clearSpotlight({ groupId, shareToken, kind: "encounter", id }).catch(() => {});
+        }
+      }
     }
   }
 
@@ -252,11 +226,29 @@ export function initCombatTrackerWidget(
   async function deleteEncounter() {
     if (!state.encounter) return;
     if (!confirmDelete({ label: `"${state.encounter.name}"` })) return;
+    const deletedId = state.encounter.id;
     try {
-      await dataManager.delete("encounter", state.encounter.id);
+      await dataManager.delete("encounter", deletedId);
       state.encounter = null;
       await loadOwnedEncounters();
       render();
+      // Deleting the campaign's currently-spotlighted encounter would
+      // otherwise leave every viewer (any player polling, or the GM's own
+      // tab on a future reload via ?encounter=<id>) stuck re-fetching a dead
+      // id forever — checked authoritatively against the group's actual
+      // active spotlight (resolveActiveSpotlightId), not the local-only
+      // state.announced flag, since that resets on reload even when the
+      // spotlight itself is still live. See pollActiveEncounter's own
+      // matching cleanup for the reactive half of this (an already-stale
+      // spotlight from before this fix existed).
+      if (groupId) {
+        const activeId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }).catch(
+          () => ""
+        );
+        if (activeId === deletedId) {
+          await dataManager.clearSpotlight({ groupId, shareToken, kind: "encounter", id: deletedId }).catch(() => {});
+        }
+      }
     } catch (error) {
       status?.show(error.message || "Unable to delete the encounter.", { type: "error" });
     }
@@ -267,7 +259,7 @@ export function initCombatTrackerWidget(
     state.encounter.systemId = systemId;
     const fields = await loadSystemFields(dataManager, systemId);
     state.combatBindings = deriveCombatBindings(fields);
-    state.conditions = deriveConditionsPropertyType(fields, state.combatBindings);
+    state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
     markDirty();
   }
 
@@ -303,50 +295,27 @@ export function initCombatTrackerWidget(
   async function addCombatant({ refKind, refId, name }) {
     if (!state.encounter) return;
     let resolvedName = name;
-    let hp = 0;
-    let maxHp = 0;
-    let tempHp = 0;
-    let ac = 0;
+    let stats = { hp: 0, maxHp: 0, tempHp: 0, ac: 0 };
     if (refKind && refId) {
       try {
         const result = await dataManager.get(refKind, refId, { preferLocal: false });
         const payload = result.payload || {};
         if (!resolvedName) resolvedName = payload.name || payload.title || refId;
-        const resource = findBindingByRole(state.combatBindings, "resource");
-        const value = findBindingByRole(state.combatBindings, "value");
-        if (resource?.binding) {
-          const current = resolveBinding(resource.binding, payload);
-          const max = resource.maxPath ? resolveBinding(resource.maxPath, payload) : undefined;
-          if (typeof max === "number") {
-            maxHp = max;
-            hp = typeof current === "number" ? current : maxHp;
-          } else if (typeof current === "number") {
-            hp = current;
-            maxHp = current;
-          }
-          if (resource.tempPath) {
-            const temp = resolveBinding(resource.tempPath, payload);
-            if (typeof temp === "number") tempHp = temp;
-          }
-        }
-        if (value?.binding) {
-          const resolvedValue = resolveBinding(value.binding, payload);
-          if (typeof resolvedValue === "number") ac = resolvedValue;
-        }
+        stats = resolveCombatantStats(state.combatBindings, payload);
       } catch (error) {
         resolvedName = resolvedName || refId;
       }
     }
     state.encounter.combatants.push({
       id: randomId(),
-      name: resolvedName || "Combatant",
+      name: uniquifyCombatantName(resolvedName || "Combatant", state.encounter.combatants),
       refKind: refKind || null,
       refId: refId || null,
       initiative: 0,
-      hp,
-      maxHp,
-      tempHp,
-      ac,
+      hp: stats.hp,
+      maxHp: stats.maxHp,
+      tempHp: stats.tempHp,
+      ac: stats.ac,
       conditions: [],
       isPc: refKind === "character",
       hidden: false,
@@ -518,16 +487,25 @@ export function initCombatTrackerWidget(
   // doesn't stop combat. Each can be changed on its own afterward.
   async function showToTable() {
     if (!state.encounter || state.announced) return;
-    const posted = await openSpotlightModal({
-      dataManager,
-      status,
-      kind: "encounter",
-      id: state.encounter.id,
-      label: state.encounter.name,
-    });
-    if (posted) {
+    const active = dataManager.getActiveGroup();
+    if (!active?.groupId) {
+      status?.show("Pick an active campaign first (see the Campaign menu in the header).", {
+        type: "warning",
+        timeout: 3000,
+      });
+      return;
+    }
+    try {
+      await dataManager.spotlightToGroup({
+        groupId: active.groupId,
+        contentType: "encounter",
+        contentId: state.encounter.id,
+      });
       state.announced = true;
+      status?.show("Showing to the table.", { type: "success", timeout: 2000 });
       render();
+    } catch (error) {
+      status?.show(error.message || "Unable to show the encounter to the table.", { type: "error" });
     }
   }
 
@@ -536,7 +514,7 @@ export function initCombatTrackerWidget(
     const active = dataManager.getActiveGroup();
     if (active?.groupId) {
       try {
-        await dataManager.clearSpotlight({ groupId: active.groupId });
+        await dataManager.clearSpotlight({ groupId: active.groupId, kind: "encounter", id: state.encounter.id });
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } catch (error) {
         status?.show(error.message || "Unable to stop showing.", { type: "error" });
@@ -554,10 +532,12 @@ export function initCombatTrackerWidget(
     }
   }
 
-  // The *automatic* show-on-start below is deliberately silent (no
-  // confirm modal) — same "just is visible, no prompt" convention as a new
-  // combatant's own `hidden: false` default. showToTable()'s confirm
-  // dialog stays reserved for the manual eye-button click.
+  // The *automatic* show-on-start below is deliberately silent (no toast) —
+  // same "just is visible, no prompt" convention as a new combatant's own
+  // `hidden: false` default. showToTable() (the manual eye-button click)
+  // does the identical spotlightToGroup call, just with a toast — no
+  // confirmation dialog either, matching every other widget's own visibility
+  // toggle (Handout/Map/Clock never confirm before showing).
   async function autoShowOnStart() {
     if (!state.encounter || state.announced) return;
     const active = dataManager.getActiveGroup();
@@ -598,21 +578,7 @@ export function initCombatTrackerWidget(
 
   async function resolveActiveEncounterId() {
     if (encounterId) return encounterId;
-    try {
-      const log = await dataManager.getGroupLog({ groupId, shareToken, limit: 25 });
-      const entries = Array.isArray(log?.entries) ? log.entries : [];
-      // The server returns entries oldest-first — sort newest-first before
-      // picking "the latest spotlight or clear," so a `spotlight-clear`
-      // posted after the last `spotlight` correctly wins.
-      entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
-      const latest = entries.find((entry) => entry?.type === "spotlight" || entry?.type === "spotlight-clear");
-      if (!latest || latest.type === "spotlight-clear" || latest.payload?.kind !== "encounter") {
-        return "";
-      }
-      return latest.payload?.id || "";
-    } catch (error) {
-      return "";
-    }
+    return resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
   }
 
   async function pollActiveEncounter() {
@@ -629,27 +595,44 @@ export function initCombatTrackerWidget(
       if (!state.conditions || state.conditions.__systemId !== state.encounter.systemId) {
         const fields = await loadSystemFields(dataManager, state.encounter.systemId);
         state.combatBindings = deriveCombatBindings(fields);
-        state.conditions = deriveConditionsPropertyType(fields, state.combatBindings);
+        state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
         if (state.conditions) state.conditions.__systemId = state.encounter.systemId;
       }
       render();
     } catch (error) {
-      // Not shared with this viewer (yet), or deleted — just show nothing.
       state.encounter = null;
       render();
+      // A confirmed 404 (not "not shared with this viewer yet," a 403/other
+      // error, or a network blip) means the spotlighted encounter itself is
+      // gone — deleteEncounter is supposed to clear the spotlight when it
+      // deletes the active one, but this covers any record that ends up
+      // gone without that (an older deletion, a manual file removal, ...).
+      // Clearing it here, group-wide, is what actually stops every viewer's
+      // poll from re-hitting this same dead id every 15s forever — every
+      // group member (not just the GM) is allowed to post a spotlight-clear
+      // log entry (see groups.py's create_group_log_entry), so this is safe
+      // to do from a player's own passive polling, not just the GM's tab.
+      if (error?.status === 404 && groupId) {
+        dataManager.clearSpotlight({ groupId, shareToken, kind: "encounter", id }).catch(() => {});
+      }
     }
   }
 
+  // createReliableInterval (not plain window.setInterval) — a player-mode
+  // tracker popped out onto a physical second screen sits unfocused for the
+  // whole session; the browser's own background-tab timer throttling was
+  // confirmed to stall this poll until the window was manually refocused.
+  // See reliable-interval.js's own header for how/why this stays reliable.
   function startPolling() {
     stopPolling();
-    state.pollTimer = window.setInterval(() => {
+    state.pollTimer = createReliableInterval(() => {
       void pollActiveEncounter();
     }, POLL_INTERVAL_MS);
   }
 
   function stopPolling() {
     if (state.pollTimer) {
-      window.clearInterval(state.pollTimer);
+      state.pollTimer.stop();
       state.pollTimer = 0;
     }
   }
@@ -742,10 +725,6 @@ export function initCombatTrackerWidget(
 
   // --- Rendering: shared bits ----------------------------------------------
 
-  function conditionLabel(id) {
-    return state.conditions?.find((entry) => entry.id === id)?.label || id;
-  }
-
   function renderAcBadge(combatant) {
     const wrap = el("span", "d-flex align-items-center gap-1 text-body-secondary small");
     wrap.appendChild(icon("tabler:shield"));
@@ -753,25 +732,15 @@ export function initCombatTrackerWidget(
     return wrap;
   }
 
-  function renderTagBadges(combatant, { removable }) {
-    const wrap = el("div", "d-flex flex-wrap gap-1");
-    if (!combatant.conditions.length) {
-      wrap.appendChild(el("span", "text-body-secondary small", "—"));
-      return wrap;
-    }
-    combatant.conditions.forEach((value) => {
-      const badge = el("span", "badge text-bg-secondary d-inline-flex align-items-center gap-1", conditionLabel(value));
-      if (removable) {
-        const removeBtn = el("button", "btn-close btn-close-white");
-        removeBtn.type = "button";
-        removeBtn.style.fontSize = "0.55rem";
-        removeBtn.setAttribute("aria-label", `Remove ${conditionLabel(value)}`);
-        removeBtn.addEventListener("click", () => removeTag(combatant, value));
-        badge.appendChild(removeBtn);
-      }
-      wrap.appendChild(badge);
+  // tag-editor.js's shared renderTagBadges — takes this combatant's own
+  // conditions list + this System's vocabulary (state.conditions) plus an
+  // onRemove that knows how to write a change back to THIS combatant, since
+  // the shared function has no idea what a "combatant" is.
+  function renderCombatantTagBadges(combatant, { removable }) {
+    return renderTagBadges(combatant.conditions, state.conditions, {
+      removable,
+      onRemove: (value) => removeTag(combatant, value),
     });
-    return wrap;
   }
 
   // --- Rendering: GM ---------------------------------------------------------
@@ -895,15 +864,21 @@ export function initCombatTrackerWidget(
 
   // Separate from Start/Stop — visibility to the table and whether combat
   // is actively running are independent (see startCombat/stopCombat's own
-  // comment). Positioned on its own at the far right of the meta row.
-  function renderVisibilityButton() {
-    const button = iconButton(
-      state.announced ? "tabler:eye" : "tabler:eye-off",
-      state.announced ? "Visible to the table — click to hide" : "Not visible to the table — click to show",
-      state.announced ? "btn-primary" : "btn-outline-secondary"
-    );
-    button.addEventListener("click", () => void toggleVisibility());
-    return button;
+  // comment). Lives in the Dashboard card's own header now (setRightAction —
+  // same right-side slot Map/Handout/Game Log use), not inline in the
+  // widget's own content, so every widget that can be shown to the table
+  // puts that toggle in the same place.
+  function updateVisibilityAction() {
+    if (!state.encounter) {
+      setRightAction?.(null);
+      return;
+    }
+    setRightAction?.({
+      icon: state.announced ? "tabler:eye" : "tabler:eye-off",
+      tooltip: state.announced ? "Visible to the table — click to hide" : "Not visible to the table — click to show",
+      active: state.announced,
+      onClick: () => void toggleVisibility(),
+    });
   }
 
   // A badge (its own background box) reads clearly regardless of whether
@@ -948,7 +923,7 @@ export function initCombatTrackerWidget(
     const right = el("span", "d-flex align-items-center gap-2");
     right.appendChild(el("span", "text-body-secondary small", formatHpText(combatant)));
     right.appendChild(renderAcBadge(combatant));
-    right.appendChild(renderTagBadges(combatant, { removable: false }));
+    right.appendChild(renderCombatantTagBadges(combatant, { removable: false }));
 
     row.append(left, right);
     return row;
@@ -1060,44 +1035,11 @@ export function initCombatTrackerWidget(
 
     const tagsSection = el("div", "d-flex flex-column gap-1");
     tagsSection.appendChild(el("span", "small text-body-secondary", "Tags"));
-    tagsSection.appendChild(renderTagBadges(combatant, { removable: true }));
-    const tagInputRow = el("div", "d-flex gap-1");
-    const tagInput = el("input", "form-control form-control-sm");
-    tagInput.placeholder = "Add a tag…";
-    tagInput.setAttribute("list", TAG_DATALIST_ID);
-    const commitTag = () => {
-      addTag(combatant, tagInput.value);
-      tagInput.value = "";
-    };
-    tagInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        commitTag();
-      }
-    });
-    const addTagButton = el("button", "btn btn-outline-secondary btn-sm", "Add");
-    addTagButton.type = "button";
-    addTagButton.addEventListener("click", commitTag);
-    tagInputRow.append(tagInput, addTagButton);
-    tagsSection.appendChild(tagInputRow);
+    tagsSection.appendChild(renderCombatantTagBadges(combatant, { removable: true }));
+    tagsSection.appendChild(buildTagInputRow(TAG_DATALIST_ID, { onAdd: (value) => addTag(combatant, value) }));
 
     panel.append(nameRow, statsRow, tagsSection);
     return panel;
-  }
-
-  function renderTagDatalist() {
-    let datalist = document.getElementById(TAG_DATALIST_ID);
-    if (!datalist) {
-      datalist = document.createElement("datalist");
-      datalist.id = TAG_DATALIST_ID;
-      document.body.appendChild(datalist);
-    }
-    datalist.innerHTML = "";
-    (state.conditions || []).forEach((condition) => {
-      const option = document.createElement("option");
-      option.value = condition.label;
-      datalist.appendChild(option);
-    });
   }
 
   // Synchronous, and builds everything into a detached `root` before ever
@@ -1134,7 +1076,6 @@ export function initCombatTrackerWidget(
         rightMeta.appendChild(el("span", "text-body-secondary small", `Round ${state.encounter.round}`));
       }
       rightMeta.appendChild(renderEncounterToolbar());
-      rightMeta.appendChild(renderVisibilityButton());
       metaRow.appendChild(rightMeta);
       root.appendChild(metaRow);
 
@@ -1160,26 +1101,51 @@ export function initCombatTrackerWidget(
     disposeTooltips(container);
     container.innerHTML = "";
     container.appendChild(root);
-    renderTagDatalist();
+    renderTagDatalist(TAG_DATALIST_ID, state.conditions);
     refreshTooltips(container);
+    updateVisibilityAction();
   }
 
-  function renderPlayerCombatantRow(combatant, index) {
+  // A rough, numeric-free read on how hurt a non-PC combatant is — players
+  // never see a monster/NPC's actual HP numbers, just this. Full health
+  // renders no badge at all (nothing to report), matching the existing
+  // "only show temp HP when it's non-zero" convention elsewhere in this row.
+  function describeMonsterCondition(hp, maxHp) {
+    if (hp <= 0) return "Unconscious";
+    if (maxHp > 0 && hp / maxHp <= 0.5) return "Bleeding";
+    if (hp < maxHp) return "Hurt";
+    return "";
+  }
+
+  // "Character 1"/"NPC 1"/"Monster 1" — reuses REF_KIND_LABELS (already the
+  // suite's own Character/NPC/Monster vocabulary, see buildCombatantEntries
+  // above) rather than a new label set. `hiddenCombatants` is every
+  // currently-hidden combatant in the encounter, in render order — N is this
+  // one's ordinal among just the others sharing its own kind, so two hidden
+  // Characters and one hidden Monster read "Character 1"/"Character 2"/
+  // "Monster 1", not sharing one counter across kinds. Computed fresh every
+  // render, never stored, same reasoning as everywhere else names get
+  // numbered in this suite.
+  function anonymizedCombatantLabel(combatant, hiddenCombatants) {
+    const kind = REF_KIND_LABELS[combatant.refKind] || "Monster";
+    const ordinal = hiddenCombatants.filter((c) => (REF_KIND_LABELS[c.refKind] || "Monster") === kind).indexOf(combatant) + 1;
+    return `${kind} ${ordinal}`;
+  }
+
+  function renderPlayerCombatantRow(combatant, index, hiddenCombatants) {
     const row = el("div", "list-group-item d-flex justify-content-between align-items-center gap-2");
-    if (combatant.hidden) {
-      if (state.encounter.started && index === state.encounter.activeIndex) row.appendChild(renderTurnBadge());
-      row.appendChild(el("span", null, "—"));
-      row.appendChild(el("span", "text-body-secondary fst-italic", "???"));
-      return row;
-    }
     const left = el("span", "d-flex align-items-center gap-2");
     if (state.encounter.started && index === state.encounter.activeIndex) left.appendChild(renderTurnBadge());
     left.appendChild(el("span", "fw-semibold", String(combatant.initiative)));
-    left.appendChild(el("span", null, combatant.name));
+    left.appendChild(el("span", null, combatant.hidden ? anonymizedCombatantLabel(combatant, hiddenCombatants) : combatant.name));
     const right = el("span", "d-flex align-items-center gap-2");
-    right.appendChild(el("span", "text-body-secondary small", formatHpText(combatant)));
-    right.appendChild(renderAcBadge(combatant));
-    right.appendChild(renderTagBadges(combatant, { removable: false }));
+    if (combatant.isPc) {
+      right.appendChild(el("span", "text-body-secondary small", formatHpText(combatant)));
+    } else {
+      const condition = describeMonsterCondition(combatant.hp, combatant.maxHp);
+      if (condition) right.appendChild(el("span", "text-body-secondary small", condition));
+    }
+    right.appendChild(renderCombatantTagBadges(combatant, { removable: false }));
     row.append(left, right);
     return row;
   }
@@ -1200,8 +1166,9 @@ export function initCombatTrackerWidget(
     root.appendChild(header);
 
     const list = el("div", "list-group");
+    const hiddenCombatants = state.encounter.combatants.filter((c) => c.hidden);
     state.encounter.combatants.forEach((combatant, index) => {
-      list.appendChild(renderPlayerCombatantRow(combatant, index));
+      list.appendChild(renderPlayerCombatantRow(combatant, index, hiddenCombatants));
     });
     root.appendChild(list);
     container.appendChild(root);
@@ -1221,7 +1188,39 @@ export function initCombatTrackerWidget(
       await Promise.all([loadOwnedEncounters(), loadSystemsList(), loadCombatantEntityLists()]);
       if (encounterId) {
         await selectEncounter(encounterId);
+        if (!state.encounter) {
+          // The deep-linked encounter (?encounter=<id> — see dashboard.js's
+          // own encounterParam) no longer exists, e.g. deleted since the
+          // link was made. selectEncounter already surfaced a toast; this
+          // just stops that same dead reference from re-triggering (and
+          // re-toasting) on every future reload of this same dashboard tab.
+          const url = new URL(window.location.href);
+          url.searchParams.delete("encounter");
+          window.history.replaceState(null, "", url);
+        }
       } else {
+        // Resume whatever's actually still being shown to the table, if
+        // anything — without this, a plain page refresh (no ?encounter=
+        // deep link) always started with NOTHING selected, even though the
+        // server-side spotlight itself is untouched by the GM's own browser
+        // reloading. Confirmed bug this fixes: after a refresh, the GM's own
+        // tracker showed "no active encounter" while the second screen (and
+        // every player's own dashboard, which both read the same spotlight,
+        // not this widget's local state) correctly kept showing the
+        // still-running encounter — the two views disagreeing about
+        // something that was never actually stopped.
+        const activeId = groupId
+          ? await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }).catch(() => "")
+          : "";
+        if (activeId) {
+          await selectEncounter(activeId);
+          // Confirmed via the spotlight resolution above — selectEncounter
+          // itself always resets this to false at its own start, since it
+          // has no way to know WHY an id was selected; this is the one
+          // caller that does know, because resolving to this id at all
+          // means it's currently being shown.
+          if (state.encounter) state.announced = true;
+        }
         render();
       }
     } else {

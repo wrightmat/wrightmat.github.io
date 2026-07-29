@@ -1,8 +1,7 @@
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
-import { openSpotlightModal } from "./spotlight.js";
-import { disableForm } from "./dom.js";
+import { disableForm, attachHoverDropdown } from "./dom.js";
 
 const MODAL_ID = "undercroft-auth-modal";
 const AUTH_CHANGED_EVENT = "undercroft:auth-changed";
@@ -122,16 +121,6 @@ export function initAuthControls({
   root = document,
   status = null,
   dataManager = null,
-  // Opt-in "Show this item" support for tools with a single current record
-  // (Sanctum/Forge/Crucible/Vault) — one context-sensitive entry under the
-  // signed-in menu instead of a dedicated toolbar button repeated in every
-  // one of those tools. { getKind, getId, getLabel } — each called fresh at
-  // click time (not captured up front), same "resolve at the moment of the
-  // click" convention every per-record action already follows, so it always
-  // reflects whatever's currently loaded/selected. Tools with no such
-  // concept (Workbench, Orrery, Press, Loom) simply don't pass this, and get
-  // no such menu entry at all.
-  spotlightContext = null,
 } = {}) {
   const manager = dataManager || new DataManager({ baseUrl: resolveApiBase() });
   const container = root.querySelector("[data-auth-control]");
@@ -262,17 +251,6 @@ export function initAuthControls({
             ? groupItems
             : `<li><span class="dropdown-item-text text-body-secondary">No campaign groups yet</span></li>`
         }
-        ${
-          activeStillExists
-            ? `<li><hr class="dropdown-divider" /></li>
-               ${
-                 spotlightContext
-                   ? `<li><button class="dropdown-item" type="button" data-campaign-spotlight>Show this item…</button></li>`
-                   : ""
-               }
-               <li><button class="dropdown-item" type="button" data-campaign-spotlight-clear>Stop showing</button></li>`
-            : ""
-        }
         <li><hr class="dropdown-divider" /></li>
         <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account Settings</a></li>
         <li><button class="dropdown-item" type="button" data-auth-logout>Log out</button></li>
@@ -295,30 +273,6 @@ export function initAuthControls({
         renderUserMenu(user, groups);
       });
     });
-    const spotlightButton = dropdown.querySelector("[data-campaign-spotlight]");
-    if (spotlightButton && spotlightContext) {
-      spotlightButton.addEventListener("click", () => {
-        const kind = typeof spotlightContext.getKind === "function" ? spotlightContext.getKind() : spotlightContext.getKind;
-        const id = typeof spotlightContext.getId === "function" ? spotlightContext.getId() : spotlightContext.getId;
-        const label =
-          typeof spotlightContext.getLabel === "function" ? spotlightContext.getLabel() : spotlightContext.getLabel;
-        void openSpotlightModal({ dataManager: manager, status, kind, id, label });
-      });
-    }
-    // Not tied to spotlightContext — this is available from any page once a
-    // campaign is active, since "stop showing whatever's on display" isn't
-    // specific to the current tool's own record the way "Show this" is.
-    const spotlightClearButton = dropdown.querySelector("[data-campaign-spotlight-clear]");
-    if (spotlightClearButton && activeStillExists) {
-      spotlightClearButton.addEventListener("click", async () => {
-        try {
-          await manager.clearSpotlight({ groupId: active.groupId });
-          status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
-        } catch (error) {
-          status?.show(error.message || "Unable to stop showing.", { type: "error" });
-        }
-      });
-    }
     const logoutBtn = dropdown.querySelector("[data-auth-logout]");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async () => {
@@ -338,40 +292,8 @@ export function initAuthControls({
       });
     }
     const toggle = dropdown.querySelector("[data-auth-menu-toggle]");
-    if (toggle && window.bootstrap && typeof window.bootstrap.Dropdown === "function") {
-      const instance = window.bootstrap.Dropdown.getOrCreateInstance(toggle);
-      const showMenu = () => instance.show();
-      const hideMenu = () => instance.hide();
-      // A brief hide delay, cancelled by re-entering either the toggle or the
-      // menu, absorbs the moment the cursor crosses the small visual gap
-      // between the two while moving from one to the other — without this,
-      // that crossing reads as a real mouseleave and closes the menu before
-      // the pointer arrives.
-      let hideTimer = null;
-      const cancelHide = () => {
-        if (hideTimer !== null) {
-          window.clearTimeout(hideTimer);
-          hideTimer = null;
-        }
-      };
-      const scheduleHide = () => {
-        cancelHide();
-        hideTimer = window.setTimeout(() => {
-          hideTimer = null;
-          hideMenu();
-        }, 250);
-      };
-      dropdown.addEventListener("mouseenter", () => {
-        cancelHide();
-        showMenu();
-      });
-      dropdown.addEventListener("mouseleave", scheduleHide);
-      toggle.addEventListener("focus", showMenu);
-      dropdown.addEventListener("focusout", (event) => {
-        if (!dropdown.contains(event.relatedTarget)) {
-          hideMenu();
-        }
-      });
+    if (toggle) {
+      attachHoverDropdown(dropdown, toggle);
     }
   }
 

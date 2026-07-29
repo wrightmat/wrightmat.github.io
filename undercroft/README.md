@@ -106,34 +106,38 @@ finding the right group in a list every time.
 
 ---
 
-## Showing content live: "Show to table"
+## Showing content live: Handout widgets
 
 This is the feature that actually makes a live session work: a GM can put a
-generated card up in front of the table, live, from whichever tool they
-happened to build it in — without exporting anything or switching to Press
-themselves.
+generated card up in front of the table, live, without exporting anything or
+switching to Press themselves. The Dashboard is the single place this is
+controlled from — there's no separate "show to table" action buried in
+Sanctum/Forge/Crucible/Vault; what's visible to players is exactly what the
+GM's own Dashboard shows as toggled on.
 
-**On the GM's side** — Sanctum, Forge, Crucible, and Vault each have a
-**Show to table** button next to Save/Export, enabled once there's a record
-loaded *and* an active campaign is selected. Clicking it opens a small dialog:
-pick one of your saved Press templates (optional — no template just shows a
-plain name/description card) and confirm.
+**On the GM's side** — add a **Handout** widget from the Dashboard's
+Edit-layout toolbar: pick the record (an NPC, Location, Monster, or Effect)
+and, optionally, one of your saved Press templates (no template just shows a
+plain name/description card). Click the eye icon on the widget's header to
+show it to the active campaign, and again to stop — the icon always reflects
+whether *this* Handout is the one currently visible, even after a reload.
+Maps work the same way via a Map widget, or from Orrery's own signed-in menu.
 
 **On the table's side** — Workbench's Play view (the same page a group's
 public share link opens) polls the group's game log and shows a **Now
 showing** panel alongside it, rendering the latest spotlighted card through
-Press's own template-rendering engine — the exact same output the GM sees
-inside Press, not a re-implementation. Re-spotlighting anything replaces it
-instantly for everyone watching.
+Press's own template-rendering engine — the exact same function the Handout
+widget itself renders through, not a re-implementation. Showing a different
+Handout replaces it instantly for everyone watching.
 
 ```mermaid
 sequenceDiagram
-    participant GM as GM (Sanctum/Forge/Crucible/Vault)
+    participant GM as GM's Dashboard (Handout widget)
     participant Server
     participant Table as Workbench Play view / share link
 
-    GM->>GM: Load or generate a record (e.g. an NPC)
-    GM->>GM: Click "Show to table", pick a template
+    GM->>GM: Add a Handout, pick a record + template
+    GM->>GM: Click the eye icon to show it
     GM->>Server: Share record + template with active campaign
     GM->>Server: Post spotlight entry to the group's game log
     Table->>Server: Poll game log (every 30s)

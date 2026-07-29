@@ -39,15 +39,30 @@ class Request:
         self.path = handler.path
         self.headers = handler.headers
         self.state = handler.server.state
+        # Drained here, unconditionally, for every request regardless of
+        # method or whether the route handler ever calls .json() — a
+        # handler that doesn't need a body (e.g. .../delete, which only
+        # needs the URL's own {id}) previously left the client's declared
+        # Content-Length bytes unread on the socket. On this server's
+        # keep-alive (HTTP/1.1) connections, those leftover bytes sit at the
+        # front of the stream and get read as part of the *next* request's
+        # own request-line instead of a real "METHOD /path HTTP/1.1" —
+        # confirmed directly: a POST .../delete with body "{}" corrupted the
+        # following GET into the literal method "{}GET", a 501 the client
+        # then saw as a failed /list call. Reading (and discarding, if
+        # unused) the full declared body here, once, up front, guarantees
+        # the socket is always left at a clean request boundary for
+        # whatever comes next — independent of which handler runs or
+        # whether it happens to read the body itself.
+        length = int(handler.headers.get("Content-Length", "0") or "0")
+        self._body_bytes = handler.rfile.read(length) if length else b""
 
     def json(self) -> Any:
-        length = int(self.handler.headers.get("Content-Length", "0"))
-        if length == 0:
+        if not self._body_bytes:
             return None
-        body = self.handler.rfile.read(length)
         import json
 
-        return json.loads(body.decode("utf-8"))
+        return json.loads(self._body_bytes.decode("utf-8"))
 
 
 class Response:
@@ -61,7 +76,17 @@ class Response:
         import json
 
         payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
-        return cls(status=status, body=payload, headers={"Content-Type": "application/json; charset=utf-8"})
+        # no-store — every API response is dynamic (an encounter's current
+        # round, a clock's current fill, ...); none of it should ever be
+        # served from the browser's own HTTP cache on a repeat GET. Static
+        # files get their own equivalent header in static.py; this is the
+        # same reasoning applied to the other kind of response this server
+        # sends.
+        return cls(
+            status=status,
+            body=payload,
+            headers={"Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store"},
+        )
 
     @classmethod
     def text(cls, body: str, status: int = 200, content_type: str = "text/plain; charset=utf-8") -> "Response":

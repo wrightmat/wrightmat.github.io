@@ -20,11 +20,14 @@ import {
   applyBuiltinCatalog,
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
-import { COMPONENT_ICONS, applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
+import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
+import { resolveIconClassList } from "../../../common/js/lib/icon-picker.js";
 import { createLabeledField } from "../lib/component-layout.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveBinding, findRoleBoundField } from "../../../common/js/lib/bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
+import { QUICK_DICE, parseQuickDiceCounts, incrementDieInExpression } from "../../../common/js/lib/widgets/dice-roll.js";
 import {
   normalizeOptionEntries,
   resolveBindingFromContexts,
@@ -80,8 +83,11 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   const componentRollDirectives = new Map();
   const collapsedComponents = new Map();
   const diceQuickButtons = new Map();
-  const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
   const characterGroupCache = new Map();
+  // Which tab is showing per Tabs-type Container, keyed by component.uid —
+  // components are re-hydrated (deep-cloned) on every data change, so this
+  // has to live outside the component object itself to survive re-renders.
+  const containerActiveTabs = new Map();
 
   const gameLogState = {
     enabled: false,
@@ -109,9 +115,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   let currentNotesKey = "";
   let componentCounter = 0;
   const initialRecordParam = parseRecordParam();
-  let pendingSharedRecord = initialRecordParam && initialRecordParam.bucket === "characters"
-    ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
-    : null;
+  // Accepts both the legacy plural bucket this file's own save/load calls use
+  // ("characters") and the canonical singular one every other UI in the suite
+  // builds deep links with (character-summary.js, share-modal.js's
+  // buildShareUrl, combat-tracker.js's write-through, ...) — a `record=
+  // character:<id>` link (e.g. the Dashboard's "Open in Workbench" button)
+  // was silently falling through here and landing on whatever character (or
+  // none) was already selected, never pre-selecting the one the link named.
+  let pendingSharedRecord =
+    initialRecordParam && (initialRecordParam.bucket === "characters" || initialRecordParam.bucket === "character")
+      ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
+      : null;
   let pendingGroupShare = initialRecordParam && initialRecordParam.bucket === "groups"
     ? { id: initialRecordParam.id, shareToken: initialRecordParam.shareToken }
     : null;
@@ -436,6 +450,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
   }
 
   await initializeBuiltins();
+  // Awaited before the first render — this view has no Font field of its
+  // own to lazily load a custom/Google font the way the Template editor's
+  // does, so a character whose template uses one needs the shared library
+  // populated up front (see applyTextFormatting/findFontOptionByFamily in
+  // component-styles.js) or that font would never actually load here.
+  await loadCustomFonts();
   initNotesEditor();
   initDiceRoller();
   initGameLog();
@@ -1169,23 +1189,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
-  function parseQuickDiceCounts(expression) {
-    const counts = Object.fromEntries(QUICK_DICE.map((die) => [die, 0]));
-    if (typeof expression !== "string" || !expression) {
-      return counts;
-    }
-    const regex = /(\d*)d(4|6|8|10|12|20|100)(?!\d)/gi;
-    let match;
-    while ((match = regex.exec(expression)) !== null) {
-      const quantity = match[1] ? parseInt(match[1], 10) : 1;
-      const die = `d${match[2]}`.toLowerCase();
-      if (Number.isFinite(quantity) && counts[die] !== undefined) {
-        counts[die] += quantity;
-      }
-    }
-    return counts;
-  }
-
   function syncQuickDiceButtons() {
     if (!elements.diceExpression) {
       return;
@@ -1209,39 +1212,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
   }
 
-  function incrementDieInExpression(die, expression = "") {
-    const sides = die.slice(1);
-    const patternStart = new RegExp(`^(\\s*)(\\d*)d${sides}(?!\\d)`, "i");
-    if (patternStart.test(expression)) {
-      return expression.replace(patternStart, (match, leading, count) => {
-        const base = parseInt(count || "1", 10);
-        const next = Number.isFinite(base) ? base + 1 : 2;
-        return `${leading}${next}d${sides}`;
-      });
-    }
-    const pattern = new RegExp(`([^A-Za-z0-9_])(\\d*)d${sides}(?!\\d)`, "i");
-    let replaced = false;
-    const updated = expression.replace(pattern, (match, prefix, count) => {
-      if (replaced) {
-        return match;
-      }
-      const base = parseInt(count || "1", 10);
-      const next = Number.isFinite(base) ? base + 1 : 2;
-      replaced = true;
-      return `${prefix}${next}d${sides}`;
-    });
-    if (replaced) {
-      return updated;
-    }
-    const trimmed = expression.trim();
-    if (!trimmed) {
-      return `1d${sides}`;
-    }
-    if (/[+\-*/(]$/.test(trimmed)) {
-      return `${expression} 1d${sides}`;
-    }
-    return `${trimmed} + 1d${sides}`;
-  }
 
   function executeDiceRoll(expression, { label = "", updateInput = true } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
@@ -1268,21 +1238,31 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
-  // Same "latest spotlight or clear wins" resolution refreshNowShowing()
-  // already does (see its own comment above) — reused here rather than a
-  // second fetch, since gameLogState.entries is already kept fresh by the
-  // existing game-log poll. Returns "" if nothing's currently spotlighted,
-  // or the spotlighted thing isn't an encounter.
+  // Unlike refreshNowShowing() (a single-slot "show whichever thing was
+  // broadcast most recently, of any kind" panel — deliberately kind-agnostic,
+  // same as spotlight-inbox.js's own "notify about anything new"), this
+  // needs the CURRENT state of specifically the "encounter" kind, same
+  // as common/js/lib/spotlight.js's own resolveActiveSpotlightEntry (that
+  // module isn't imported on this page, or this would just call it directly)
+  // — an encounter spotlighted earlier is still active even if the GM
+  // later ALSO shows an unrelated NPC/map card; only an encounter-kind
+  // spotlight/clear (or a kind-agnostic global clear) actually changes
+  // whether combat is still "on". Confirmed bug this fixes: taking the
+  // single latest entry across every kind meant showing any OTHER kind of
+  // card mid-combat silently broke "push initiative to active encounter"
+  // for every player, with no encounter-related action having happened at
+  // all. Returns "" if nothing's currently spotlighted, or the spotlighted
+  // thing isn't an encounter.
   function resolveActiveEncounterId() {
-    const latest = gameLogState.entries.find((entry) => entry?.type === "spotlight" || entry?.type === "spotlight-clear");
+    const latest = gameLogState.entries.find((entry) => {
+      if (entry?.type === "spotlight") return entry.payload?.kind === "encounter";
+      if (entry?.type === "spotlight-clear") return !entry.payload?.kind || entry.payload.kind === "encounter";
+      return false;
+    });
     if (!latest || latest.type === "spotlight-clear") {
       return "";
     }
-    const spotlight = latest.payload || {};
-    if (String(spotlight.kind || "").trim() !== "encounter") {
-      return "";
-    }
-    return String(spotlight.id || "").trim();
+    return String(latest.payload?.id || "").trim();
   }
 
   // Initiative is a one-way push, not a synced field (see the Initiative
@@ -2910,6 +2890,21 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
+  // Called from workbench.js when the Template editor tab saves — this
+  // file loads its own separate copy of a template once, when a character
+  // is loaded, and otherwise never re-fetches it, so an edit saved in the
+  // other tab used to sit stale here until a full page reload. Only
+  // reloads if the currently-open character actually uses the template
+  // that was just saved; a no-op otherwise. Doesn't touch character
+  // data/unsaved edits — applyTemplateData only ever replaces
+  // state.template/state.components.
+  async function reloadTemplateIfActive(templateId) {
+    if (!templateId || !state.draft || state.draft.template !== templateId) {
+      return;
+    }
+    await loadTemplateById(templateId);
+  }
+
   async function fetchTemplatePayload(metadata) {
     if (!metadata) {
       return null;
@@ -3190,6 +3185,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     componentRollDirectives.clear();
     elements.canvasRoot.dataset.canvasMode = state.mode;
+    // Same cascade-via-inheritance the Template editor's own canvas uses —
+    // see font-library.js's own doc comment on DEFAULT_FONT_FAMILY.
+    elements.canvasRoot.style.fontFamily = state.template?.baseFontFamily || DEFAULT_FONT_FAMILY;
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id) {
       elements.canvasRoot.appendChild(
@@ -3217,31 +3215,53 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
     const fragment = document.createDocumentFragment();
     state.components.forEach((component) => {
-      fragment.appendChild(renderComponentCard(component));
+      const card = renderComponentCard(component);
+      if (card) {
+        fragment.appendChild(card);
+      }
     });
     elements.canvasRoot.appendChild(fragment);
     refreshTooltips(elements.canvasRoot);
     syncModeIndicator();
   }
 
-  function renderComponentCard(component) {
-    const iconName = COMPONENT_ICONS[component.type] || "tabler:app-window";
-    const showTypeIcon = state.mode === "edit";
+  // `nested: true` is passed for a Container zone child (see
+  // renderContainerComponent) — goes "bare" (see createCanvasCardElement),
+  // same as every top-level card here: this file never shows the type-icon
+  // badge/actions row at all, in either Edit or Play mode — that's a
+  // Template-editor-only authoring affordance (see
+  // workbench-template-view.js's own createComponentElement, which is a
+  // genuinely separate function, not shared with this one). Edit and Play
+  // are meant to render identically here except for which fields
+  // isEditable() actually allows typing into — showing the badge only in
+  // Edit mode (as this used to) was an unintended, unrequested divergence.
+  function renderComponentCard(component, { nested = false } = {}) {
+    if (!isComponentVisible(component)) {
+      return null;
+    }
+    const bare = nested;
     const collapsibleValue = component?.collapsible;
     const collapsible = typeof collapsibleValue === "string"
       ? collapsibleValue.toLowerCase() === "true"
       : Boolean(collapsibleValue);
-    const shouldRenderActions = showTypeIcon;
+    // The card's default padding-top reserves space for the icon/actions
+    // header row (see workbench/css/styles.css) — never shown at all here,
+    // so that reserved space is pure waste that compounds badly with
+    // nesting (a Container's own card plus every one of its children's own
+    // cards each reserve it), which is what read as excessive
+    // "indentation". `bare` (nested children specifically) goes further and
+    // drops the whole card box, not just the header space.
     const wrapper = createCanvasCardElement({
-      classes: ["character-component"],
+      classes: ["character-component", "workbench-canvas-card--no-header"],
       dataset: { componentId: component.uid || "" },
       gapClass: "gap-3",
+      bare,
     });
-    const { header, actions, ensureActions } = createStandardCardChrome({
-      icon: showTypeIcon ? iconName : null,
+    const { header } = createStandardCardChrome({
+      icon: null,
       iconLabel: component.type,
       headerOptions: { classes: ["character-component-header"], sortableHandle: false },
-      actionsOptions: shouldRenderActions ? { classes: ["character-component-actions"] } : false,
+      actionsOptions: false,
       iconOptions: { classes: ["character-component-icon"] },
       removeButtonOptions: false,
     });
@@ -3305,20 +3325,18 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     switch (component.type) {
       case "input":
         return renderInputComponent(component);
-      case "array":
-        return renderArrayComponent(component);
-      case "divider":
-        return renderDividerComponent(component);
+      case "repeater":
+        return renderRepeaterComponent(component);
       case "image":
         return renderImageComponent(component);
-      case "label":
-        return renderLabelComponent(component);
+      case "icon":
+        return renderIconComponent(component);
+      case "text":
+        return renderTextComponent(component);
       case "container":
         return renderContainerComponent(component);
-      case "linear-track":
-        return renderLinearTrackComponent(component);
-      case "circular-track":
-        return renderCircularTrackComponent(component);
+      case "track":
+        return renderTrackComponent(component);
       case "select-group":
         return renderSelectGroupComponent(component);
       case "toggle":
@@ -3332,10 +3350,29 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     }
   }
 
-  function renderInputComponent(component) {
+  // itemContext ({ repeaterComponent, index, item }), when set, means this
+  // control is being rendered inside a Repeater item template rather than
+  // at the top level — reads/writes are scoped to that one array item's own
+  // field instead of the top-level draft (see resolveRepeaterItemValue /
+  // setRepeaterItemValue). Every other component type below that supports
+  // real editing (Toggle, Select Group, Track) follows this same pattern,
+  // so Repeater items get the exact same interactive control as everywhere
+  // else instead of a separate, narrower hand-written copy.
+  function renderInputComponent(component, itemContext = null) {
     const labelText = component.label || component.name || "Field";
-    const editable = isEditable(component);
-    const resolvedValue = resolveComponentValue(component, component.value ?? "");
+    const editable = itemContext
+      ? Boolean(component.binding) && state.mode === "edit"
+      : isEditable(component);
+    const resolvedValue = itemContext
+      ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.value ?? "")
+      : resolveComponentValue(component, component.value ?? "");
+    const setValue = (value) => {
+      if (itemContext) {
+        setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, value);
+      } else {
+        updateBinding(component.binding, value);
+      }
+    };
     const variant = (component.variant || "text").toLowerCase();
     const componentUid = component?.uid || "";
     const labelClasses = ["form-label", "fw-semibold", "text-body-secondary", "mb-0"];
@@ -3361,7 +3398,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       assignBindingMetadata(select, component);
       if (editable) {
         select.addEventListener("change", () => {
-          updateBinding(component.binding, select.value);
+          setValue(select.value);
         });
       }
       return createLabeledField({
@@ -3389,7 +3426,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       assignBindingMetadata(textarea, component);
       if (editable) {
         textarea.addEventListener("input", () => {
-          updateBinding(component.binding, textarea.value);
+          setValue(textarea.value);
         });
       }
       return createLabeledField({
@@ -3437,12 +3474,12 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         if (editable) {
           input.addEventListener("change", () => {
             if (variant === "radio") {
-              updateBinding(component.binding, input.value);
+              setValue(input.value);
             } else {
               const checkedValues = Array.from(group.querySelectorAll("input[type=checkbox]"))
                 .filter((node) => node.checked)
                 .map((node) => node.value);
-              updateBinding(component.binding, checkedValues);
+              setValue(checkedValues);
             }
           });
         }
@@ -3487,15 +3524,15 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
         input.addEventListener("input", () => {
           const raw = input.value;
           if (raw === "") {
-            updateBinding(component.binding, null);
+            setValue(null);
             return;
           }
           const next = Number(raw);
-          updateBinding(component.binding, Number.isNaN(next) ? raw : next);
+          setValue(Number.isNaN(next) ? raw : next);
         });
       } else {
         input.addEventListener("input", () => {
-          updateBinding(component.binding, input.value);
+          setValue(input.value);
         });
       }
     }
@@ -3510,13 +3547,13 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     // value by 1, so the roll button (below) wins for any component that
     // has both.
     const hasRoller = typeof component.roller === "string" && component.roller.trim().length > 0;
-    if (editable && variant === "number" && !hasRoller && isCombatBindingComponent(component)) {
+    if (!itemContext && editable && variant === "number" && !hasRoller && isCombatBindingComponent(component)) {
       const step = Number(component.step) || 1;
       const applyDelta = (delta) => {
         const current = Number(input.value) || 0;
         const next = current + delta;
         input.value = next;
-        updateBinding(component.binding, next);
+        setValue(next);
         void persistDraft({ silent: true });
       };
       const spinnerGroup = document.createElement("div");
@@ -3560,65 +3597,383 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
   }
 
-  function renderArrayComponent(component) {
-    const labelText = component.label || component.name || "List";
-    const textarea = document.createElement("textarea");
-    textarea.className = "form-control";
-    textarea.rows = component.rows || 4;
-    if (component?.uid) {
-      textarea.id = `${component.uid}-array`;
+  // Resolves ONE item-template node's own value against a single repeater
+  // item's data — Press's own per-item context convention: an object
+  // item's fields are spread directly into scope ("@name" means item.name,
+  // not "@arrayField[].name"), a primitive item binds via "@value" — rather
+  // than the live draft record. See resolveRepeaterItemPath/
+  // setRepeaterItemValue below for the write-back counterpart, used by
+  // Input/Toggle/Select Group/Track item nodes to make them real, editable
+  // controls instead of read-only text.
+  function resolveRepeaterItemValue(item, raw) {
+    const text = typeof raw === "string" ? raw.trim() : "";
+    if (!text.startsWith("@")) return raw;
+    const path = text.slice(1).split(".").map((segment) => segment.trim()).filter(Boolean);
+    if (!path.length) return undefined;
+    if (item === null || typeof item !== "object") {
+      return path.length === 1 && path[0] === "value" ? item : undefined;
     }
-    const value = resolveComponentValue(component);
-    const serialized = Array.isArray(value)
-      ? JSON.stringify(value, null, 2)
-      : value != null
-      ? String(value)
-      : "";
-    textarea.value = serialized;
-    const editable = isEditable(component);
-    textarea.readOnly = !editable;
-    assignBindingMetadata(textarea, component);
-    if (editable) {
-      textarea.addEventListener("blur", () => {
-        const text = textarea.value.trim();
-        if (!text) {
-          updateBinding(component.binding, []);
-          return;
-        }
-        try {
-          const parsed = JSON.parse(text);
-          updateBinding(component.binding, parsed);
-        } catch (error) {
-          status.show("Enter valid JSON for this list.", { type: "warning", timeout: 2000 });
-        }
-      });
+    let cursor = item;
+    for (const segment of path) {
+      if (!cursor || typeof cursor !== "object" || !(segment in cursor)) return undefined;
+      cursor = cursor[segment];
     }
-    return createLabeledField({
-      component,
-      control: textarea,
-      labelText,
-      labelTag: "label",
-      labelFor: textarea.id || "",
-      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
-      applyFormatting: applyTextFormatting,
-    });
+    return cursor;
   }
 
-  function renderDividerComponent(component) {
-    const divider = document.createElement("hr");
-    divider.className = "my-2";
-    if (component.thickness) {
-      divider.style.borderWidth = `${component.thickness}px`;
+  // Full write-target path for one item-template node's own field: the
+  // repeater's own top-level binding path (e.g. ["inventory"]), then the
+  // array index, then the item-relative binding's own path segments (same
+  // parsing resolveRepeaterItemValue uses) — except the primitive-array
+  // "@value" case, which IS the item itself, so it resolves to just
+  // [...repeaterPath, index] with no further segment.
+  function resolveRepeaterItemPath(component, index, raw) {
+    const repeaterPath = resolveBindingPath(component?.binding);
+    if (!repeaterPath) return null;
+    const text = typeof raw === "string" ? raw.trim() : "";
+    if (!text.startsWith("@")) return null;
+    const itemPath = text.slice(1).split(".").map((segment) => segment.trim()).filter(Boolean);
+    if (!itemPath.length) return null;
+    if (itemPath.length === 1 && itemPath[0] === "value") {
+      return [...repeaterPath, String(index)];
     }
-    if (component.borderColor) {
-      divider.style.borderColor = component.borderColor;
+    return [...repeaterPath, String(index), ...itemPath];
+  }
+
+  // The write-back counterpart to resolveRepeaterItemValue — lets an Input/
+  // Toggle/Select Group/Track dropped into a Repeater's item template be a
+  // real, editable control whose changes land on that specific array item's
+  // own field, using the same setValueAtPath/rerender/undo-push machinery
+  // updateBinding itself uses, just rooted at the computed item path.
+  function setRepeaterItemValue(component, index, raw, value) {
+    const pathSegments = resolveRepeaterItemPath(component, index, raw);
+    if (!pathSegments) {
+      return;
     }
-    return divider;
+    const previousValue = cloneValue(getValueAtPath(pathSegments));
+    const nextValue = cloneValue(value);
+    if (valuesEqual(previousValue, nextValue)) {
+      return;
+    }
+    const focusSnapshot = captureActiveField();
+    const applied = applyBindingValue(pathSegments, nextValue, { focusSnapshot });
+    if (applied && undoStack) {
+      const previousValueDefined = previousValue !== undefined;
+      const nextValueDefined = nextValue !== undefined;
+      undoStack.push({
+        type: "binding",
+        characterId: state.draft?.id || "",
+        path: pathSegments,
+        previousValue: previousValueDefined ? previousValue : null,
+        previousValueDefined,
+        nextValue: nextValueDefined ? nextValue : null,
+        nextValueDefined,
+      });
+    }
+  }
+
+  // One item-template node, rendered against one item. Input/Toggle/Select
+  // Group/Track delegate to their own real top-level renderers (with an
+  // itemContext override so reads/writes scope to this item — see those
+  // functions' own comments) instead of a separate, narrower hand-written
+  // copy, so an item control is guaranteed identical to its top-level
+  // counterpart. Text/Icon/Image aren't interactive at the top level either
+  // (they never call updateBinding there), so they keep their existing
+  // display-only handling. Container/Repeater nested inside an item
+  // template remain unsupported — falls back to a plain resolved-value text
+  // line rather than reproducing every type's own full layout model here.
+  // repeaterComponent is omitted for a header cell (see renderRepeaterTable/
+  // renderRepeaterListHeader) — a header row is authored once, not per
+  // item, so there's no specific array item to write an edit back to.
+  // Without itemContext, Input/Toggle/Select Group/Track just fall back to
+  // their own ordinary top-level rendering (editable against the header
+  // node's own binding into the top-level draft, same as any other
+  // component outside a Repeater) rather than being force-disabled —
+  // matching Press's own "headers render with the outer context, not item
+  // context."
+  function renderRepeaterItemNode(node, item, repeaterComponent, index) {
+    const itemContext = repeaterComponent ? { repeaterComponent, index, item } : null;
+    switch (node.type) {
+      case "input":
+        return renderInputComponent(node, itemContext);
+      case "toggle":
+        return renderToggleComponent(node, itemContext);
+      case "select-group":
+        return renderSelectGroupComponent(node, itemContext);
+      case "track":
+        return renderTrackComponent(node, itemContext);
+      case "text": {
+        const text = document.createElement("div");
+        text.className = "text-body";
+        const resolved = node.binding ? resolveRepeaterItemValue(item, node.binding) : node.text || node.label || "";
+        text.textContent = resolved != null ? String(resolved) : "";
+        applyTextFormatting(text, node);
+        return text;
+      }
+      case "icon": {
+        const wrapper = document.createElement("span");
+        wrapper.className = "d-inline-flex align-items-center";
+        const raw = typeof node.iconClass === "string" ? node.iconClass.trim() : "";
+        const resolvedClass = raw.startsWith("@") ? resolveRepeaterItemValue(item, raw) : raw;
+        const classes = resolveIconClassList(resolvedClass);
+        if (classes.length) {
+          const icon = document.createElement("span");
+          icon.className = classes.join(" ");
+          wrapper.appendChild(icon);
+        }
+        return wrapper;
+      }
+      case "image": {
+        const img = document.createElement("img");
+        const rawUrl = node.url || node.src || "";
+        const resolvedUrl = typeof rawUrl === "string" && rawUrl.trim().startsWith("@") ? resolveRepeaterItemValue(item, rawUrl) : rawUrl;
+        img.src = resolvedUrl || "https://placehold.co/320x180?text=Image";
+        img.alt = node.alt || "Image";
+        applyImageStyles(img, node);
+        return img;
+      }
+      default: {
+        const value = resolveRepeaterItemValue(item, node.binding);
+        const text = document.createElement("div");
+        text.className = "text-body small";
+        text.textContent = value != null && value !== "" ? String(value) : node.label || node.name || "";
+        return text;
+      }
+    }
+  }
+
+  // Ported from Press's own Repeater decorator (none/bullet/number/custom)
+  // — bullet is a literal "•", number is "N.", custom is either a literal
+  // string or (if it starts with "@") resolved per-item the same way an
+  // item-template node's own binding would be, via resolveRepeaterItemValue.
+  function resolveRepeaterDecorator(component, item, index) {
+    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
+    const type = decorator?.type || "none";
+    if (type === "bullet") return "•";
+    if (type === "number") return `${index + 1}.`;
+    if (type === "custom") {
+      const raw = typeof decorator.text === "string" ? decorator.text : "";
+      const trimmed = raw.trim();
+      if (trimmed.startsWith("@")) {
+        const resolved = resolveRepeaterItemValue(item, trimmed);
+        return resolved != null && resolved !== "" ? String(resolved) : "";
+      }
+      return raw;
+    }
+    return "";
+  }
+
+  // Reads one column's zone nodes for a given row-kind ("item"/"header"),
+  // falling back to the legacy single `zones.item` array (from before
+  // columns/header existed) for item-column 0 — an old saved template's
+  // Repeater keeps this shape until it's next opened and re-saved in the
+  // Template editor (see workbench-template-view.js's own ensureRepeaterZone
+  // migration), and this file has no equivalent zone-normalizing hydrate
+  // pass of its own to rely on instead.
+  function getRepeaterColumnZoneNodes(component, prefix, col) {
+    const zones = component.zones && typeof component.zones === "object" ? component.zones : {};
+    const key = `${prefix}-${col}`;
+    if (Array.isArray(zones[key])) {
+      return zones[key];
+    }
+    if (prefix === "item" && col === 0 && Array.isArray(zones.item)) {
+      return zones.item;
+    }
+    return [];
+  }
+
+  function getRepeaterColumnCount(component) {
+    const raw = Number(component.columns);
+    return Number.isFinite(raw) && raw > 0 ? Math.min(Math.round(raw), 8) : 1;
+  }
+
+  function renderRepeaterItemRow(component, templateNodes, item, index) {
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-start gap-2 border-bottom pb-2";
+    row.dataset.repeaterIndex = String(index);
+    const decoratorText = resolveRepeaterDecorator(component, item, index);
+    if (decoratorText) {
+      const marker = document.createElement("span");
+      marker.className = "text-body-secondary flex-shrink-0";
+      marker.textContent = decoratorText;
+      row.appendChild(marker);
+    }
+    const body = document.createElement("div");
+    body.className = "d-flex flex-column gap-1 flex-grow-1";
+    templateNodes.forEach((node) => {
+      if (!isRepeaterItemNodeVisible(node, item)) {
+        return;
+      }
+      body.appendChild(renderRepeaterItemNode(node, item, component, index));
+    });
+    row.appendChild(body);
+    return row;
+  }
+
+  // The non-repeating header block for list mode (columns <= 1) — rendered
+  // once, outside the per-item loop, from the "header-0" zone. Table mode's
+  // own header (renderRepeaterTable) is the columns > 1 counterpart.
+  function renderRepeaterListHeader(headerNodes) {
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-start gap-2 border-bottom pb-2 fw-semibold";
+    headerNodes.forEach((node) => {
+      if (!isRepeaterItemNodeVisible(node, null)) {
+        return;
+      }
+      row.appendChild(renderRepeaterItemNode(node, null));
+    });
+    return row;
+  }
+
+  // A real <table>/<colgroup>/<thead>/<tbody> for a multi-column Repeater —
+  // ported from Press's own Repeater "table" mode (see the plan doc), not a
+  // CSS Grid, since this is genuinely tabular data: the header row must
+  // render exactly once regardless of how many items repeat, which a
+  // Container's zones (everything in them repeats) can't do at all.
+  function renderRepeaterTable(component, columns, itemColumns, items) {
+    const table = document.createElement("table");
+    table.className = "workbench-repeater-table";
+    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
+    const hasDecorator = Boolean(decorator && decorator.type && decorator.type !== "none");
+    const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
+    if (templateColumns) {
+      const colgroup = document.createElement("colgroup");
+      if (hasDecorator) {
+        colgroup.appendChild(document.createElement("col"));
+      }
+      templateColumns
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((width) => {
+          const col = document.createElement("col");
+          col.style.width = width;
+          colgroup.appendChild(col);
+        });
+      table.appendChild(colgroup);
+    }
+    if (component.showHeader) {
+      const headerColumns = Array.from({ length: columns }, (_, col) =>
+        getRepeaterColumnZoneNodes(component, "header", col)
+      );
+      const thead = document.createElement("thead");
+      const headerTr = document.createElement("tr");
+      if (hasDecorator) {
+        headerTr.appendChild(document.createElement("th"));
+      }
+      headerColumns.forEach((nodes) => {
+        const th = document.createElement("th");
+        nodes.forEach((node) => {
+          if (!isRepeaterItemNodeVisible(node, null)) return;
+          th.appendChild(renderRepeaterItemNode(node, null));
+        });
+        headerTr.appendChild(th);
+      });
+      thead.appendChild(headerTr);
+      table.appendChild(thead);
+    }
+    const tbody = document.createElement("tbody");
+    items.forEach((item, index) => {
+      const tr = document.createElement("tr");
+      if (hasDecorator) {
+        const decoratorTd = document.createElement("td");
+        decoratorTd.className = "text-body-secondary";
+        decoratorTd.textContent = resolveRepeaterDecorator(component, item, index);
+        tr.appendChild(decoratorTd);
+      }
+      itemColumns.forEach((nodes) => {
+        const td = document.createElement("td");
+        nodes.forEach((node) => {
+          if (!isRepeaterItemNodeVisible(node, item)) return;
+          td.appendChild(renderRepeaterItemNode(node, item, component, index));
+        });
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function renderRepeaterComponent(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+    const labelText = component.label || component.name;
+    if (labelText) {
+      const heading = document.createElement("div");
+      heading.className = "fw-semibold text-body-secondary";
+      heading.textContent = labelText;
+      wrapper.appendChild(heading);
+    }
+    const columns = getRepeaterColumnCount(component);
+    const itemColumns = Array.from({ length: columns }, (_, col) => getRepeaterColumnZoneNodes(component, "item", col));
+    const hasTemplate = itemColumns.some((nodes) => nodes.length);
+    if (!hasTemplate) {
+      wrapper.appendChild(
+        createCanvasPlaceholder("This repeater has no item template yet — add one in the Template editor.", {
+          variant: "compact",
+        })
+      );
+      return wrapper;
+    }
+    const value = resolveComponentValue(component);
+    const items = Array.isArray(value) ? value : [];
+    if (!items.length) {
+      wrapper.appendChild(createCanvasPlaceholder("No items.", { variant: "compact" }));
+      return wrapper;
+    }
+    if (columns > 1) {
+      wrapper.appendChild(renderRepeaterTable(component, columns, itemColumns, items));
+      return wrapper;
+    }
+    if (component.showHeader) {
+      const headerNodes = getRepeaterColumnZoneNodes(component, "header", 0);
+      if (headerNodes.length) {
+        wrapper.appendChild(renderRepeaterListHeader(headerNodes));
+      }
+    }
+    items.forEach((item, index) => {
+      wrapper.appendChild(renderRepeaterItemRow(component, itemColumns[0], item, index));
+    });
+    return wrapper;
+  }
+
+  // An old saved template may still have `component.src` instead of
+  // `component.url` (see workbench-template-view.js's own identical
+  // fallback/comment) — read here too so an existing Image component keeps
+  // showing its picture with no migration step.
+  function resolveImageUrl(component) {
+    return component.url || component.src || "";
+  }
+
+  // Mirrors workbench-template-view.js's own applyImageStyles exactly (a
+  // small enough function that duplicating it, same as every other
+  // per-type renderer in this file, is simpler than sharing a module
+  // between the two editors for one function).
+  function applyImageStyles(img, component) {
+    img.style.objectFit = component.fit === "fill" ? "fill" : component.fit === "contain" ? "contain" : "cover";
+    const width = typeof component.width === "string" ? component.width.trim() : "";
+    const height = typeof component.height === "string" ? component.height.trim() : "";
+    img.style.width = width || "100%";
+    img.style.height = height || "auto";
+    const cornerRadius = Number(component.cornerRadius);
+    img.style.borderRadius = Number.isFinite(cornerRadius) && cornerRadius > 0 ? `${cornerRadius}px` : "";
+    const focalX = Number.isFinite(Number(component.focalX)) ? Number(component.focalX) : 50;
+    const focalY = Number.isFinite(Number(component.focalY)) ? Number(component.focalY) : 50;
+    img.style.objectPosition = `${focalX}% ${focalY}%`;
+    const zoom = Number(component.zoom);
+    if (Number.isFinite(zoom) && zoom !== 1) {
+      img.style.transform = `scale(${zoom})`;
+      img.style.transformOrigin = `${focalX}% ${focalY}%`;
+    } else {
+      img.style.transform = "";
+      img.style.transformOrigin = "";
+    }
   }
 
   function renderImageComponent(component) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
+    wrapper.style.overflow = "hidden";
     const label = component.label || component.name;
     if (label) {
       const heading = document.createElement("div");
@@ -3627,117 +3982,355 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       wrapper.appendChild(heading);
     }
     const image = document.createElement("img");
-    image.className = "img-fluid rounded";
     image.alt = component.alt || label || "Image";
-    image.src = component.src || "https://placehold.co/640x360?text=Image";
+    image.src = resolveImageUrl(component) || "https://placehold.co/640x360?text=Image";
+    applyImageStyles(image, component);
     wrapper.appendChild(image);
     return wrapper;
   }
 
-  function renderLabelComponent(component) {
+  // iconClass is itself the binding-or-literal string (no separate generic
+  // Binding field — see the icon registry entry's own comment in
+  // workbench-template-view.js). An "@path" value resolves against the live
+  // draft record, same mechanism Track's segmentBinding uses.
+  function resolveIconClass(component) {
+    const raw = typeof component.iconClass === "string" ? component.iconClass.trim() : "";
+    if (!raw.startsWith("@")) return raw;
+    const path = resolveBindingPath(raw);
+    const resolved = path ? getValueAtPath(path) : undefined;
+    return typeof resolved === "string" ? resolved : "";
+  }
+
+  function renderIconComponent(component) {
+    const wrapper = document.createElement("span");
+    wrapper.className = "d-inline-flex align-items-center";
+    const classes = resolveIconClassList(resolveIconClass(component));
+    if (classes.length) {
+      const icon = document.createElement("span");
+      icon.className = classes.join(" ");
+      if (component.textColor) icon.style.color = component.textColor;
+      wrapper.appendChild(icon);
+    } else {
+      wrapper.classList.add("press-icon--empty");
+      const placeholder = document.createElement("span");
+      placeholder.className = "press-icon__placeholder";
+      placeholder.textContent = component.label || "Icon";
+      wrapper.appendChild(placeholder);
+    }
+    const ariaLabel = component.ariaLabel || "";
+    if (ariaLabel) {
+      wrapper.setAttribute("role", "img");
+      wrapper.setAttribute("aria-label", ariaLabel);
+    } else {
+      wrapper.setAttribute("aria-hidden", "true");
+    }
+    return wrapper;
+  }
+
+  function renderTextComponent(component) {
     const text = document.createElement("div");
     text.className = "text-body";
-    const resolved = resolveComponentValue(component, component.text || component.label || "Label");
+    const resolved = resolveComponentValue(component, component.text || component.label || "Text");
     text.textContent = resolved != null ? String(resolved) : "";
     applyTextFormatting(text, component);
     return text;
   }
 
+  // Legacy "columns"/"rows" containerType values (from before Container
+  // was consolidated to Grid/Tabs) are resolved here rather than mutated in
+  // place — this file only ever works with a hydrated, deep-cloned copy of
+  // the template (see hydrateComponent), so there's no persistent draft to
+  // migrate the way the Template editor's own normalizeContainerType has.
+  // "rows" ignores whatever stray `columns` value the old defaults left
+  // sitting on the component (1 column); "columns"/"grid" read `columns` as
+  // authored; anything else defaults to 2.
+  function resolveContainerColumns(component) {
+    if (component.containerType === "rows") return 1;
+    const raw = Number(component.columns);
+    return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 9) : 2;
+  }
+
   function renderContainerComponent(component) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-3";
     const zones = normalizeZones(component);
+    // Matches workbench-template-view.js's own renderContainerPreview —
+    // was missing here entirely, so a Container's own Label only ever
+    // showed in the Template editor's canvas, never in Play or Edit.
+    const labelText = component.label || component.name;
+    const outer = document.createElement("div");
+    outer.className = "d-flex flex-column gap-3";
+    if (labelText) {
+      const heading = document.createElement("div");
+      heading.className = "fw-semibold text-body-secondary";
+      heading.textContent = labelText;
+      outer.appendChild(heading);
+    }
     if (!zones.length) {
-      wrapper.appendChild(createCanvasPlaceholder("No components in this container yet.", { variant: "compact" }));
-      return wrapper;
+      outer.appendChild(
+        createCanvasPlaceholder("No components in this container yet.", { variant: "compact" })
+      );
+      return outer;
     }
-    zones.forEach((zone, index) => {
-      if (zones.length > 1) {
-        const badge = document.createElement("div");
-        badge.className = "text-uppercase extra-small text-body-secondary";
-        badge.textContent = zone.label || `Zone ${index + 1}`;
-        wrapper.appendChild(badge);
-      }
-      const group = document.createElement("div");
-      group.className = "d-flex flex-column gap-3";
+
+    if (component.containerType === "tabs") {
+      const wrapper = document.createElement("div");
+      wrapper.className = "d-flex flex-column gap-3";
+      const nav = document.createElement("div");
+      nav.className = "d-flex flex-wrap gap-2";
+      // No gap here — spacing between the zone's own components is each
+      // component's own Margin now (applyComponentStyles), not a Container-
+      // level stacking gap. See workbench/css/styles.css's
+      // .workbench-canvas-card default margin-bottom.
+      const body = document.createElement("div");
+      body.className = "d-flex flex-column";
+
+      const renderBody = (index) => {
+        body.innerHTML = "";
+        const zone = zones[index] || zones[0];
+        (zone?.components || []).forEach((child) => {
+          const card = renderComponentCard(child, { nested: true });
+          if (card) {
+            body.appendChild(card);
+          }
+        });
+      };
+
+      const initialIndex = Math.min(Math.max(containerActiveTabs.get(component.uid) ?? 0, 0), zones.length - 1);
+      zones.forEach((zone, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `btn btn-outline-secondary btn-sm${index === initialIndex ? " active" : ""}`;
+        button.textContent = zone.label || `Tab ${index + 1}`;
+        button.addEventListener("click", () => {
+          containerActiveTabs.set(component.uid, index);
+          Array.from(nav.children).forEach((btn, i) => btn.classList.toggle("active", i === index));
+          renderBody(index);
+        });
+        nav.appendChild(button);
+      });
+      renderBody(initialIndex);
+      wrapper.append(nav, body);
+      outer.appendChild(wrapper);
+      return outer;
+    }
+
+    // "grid" — the only remaining variant (see resolveContainerColumns for
+    // legacy "columns"/"rows" handling). Row count doesn't need resolving
+    // separately for CSS Grid purposes — with grid-template-columns set,
+    // the browser auto-wraps into however many rows the zone count needs,
+    // matching the editor's own row-major zone order.
+    const wrapper = document.createElement("div");
+    wrapper.className = "template-container-grid";
+    const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
+    const templateRows = typeof component.templateRows === "string" ? component.templateRows.trim() : "";
+    wrapper.style.gridTemplateColumns = templateColumns || `repeat(${resolveContainerColumns(component)}, minmax(0, 1fr))`;
+    if (templateRows) {
+      wrapper.style.gridTemplateRows = templateRows;
+    }
+    // Spacing BETWEEN grid columns/rows — the one remaining legitimate use
+    // of CSS gap (see Container's "Column/row gap" inspector field). Not
+    // the same thing as spacing between components stacked within one
+    // cell, which is each component's own Margin (see below).
+    const columnGap = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
+    wrapper.style.gap = `${columnGap}px`;
+    zones.forEach((zone) => {
+      const cell = document.createElement("div");
+      cell.className = "d-flex flex-column";
       zone.components.forEach((child) => {
-        group.appendChild(renderComponentCard(child));
+        const card = renderComponentCard(child, { nested: true });
+        if (card) {
+          cell.appendChild(card);
+        }
       });
-      wrapper.appendChild(group);
+      wrapper.appendChild(cell);
     });
-    return wrapper;
+    outer.appendChild(wrapper);
+    return outer;
   }
 
-  function renderLinearTrackComponent(component) {
-    const labelText = component.label || "Progress";
-    const input = document.createElement("input");
-    input.type = "range";
-    input.className = "form-range";
-    if (component?.uid) {
-      input.id = `${component.uid}-linear-track`;
+  // Resolves the track's own segment COUNT (not its active value — that's
+  // still the ordinary component.binding, via resolveComponentValue like
+  // every other bound component) from segmentFormula/segmentBinding, same
+  // precedence the Template editor's own resolveTrackSegmentCount uses:
+  // formula first, then a binding (either a literal number or an @path into
+  // the live draft), then the component's own static `segments`, then 6.
+  // Previously nothing in this file read any of these three fields at all —
+  // the segmented-track concept authored in the editor didn't exist here.
+  function resolveTrackSegments(component) {
+    const formula = typeof component.segmentFormula === "string" ? component.segmentFormula.trim() : "";
+    if (formula) {
+      try {
+        const result = evaluateFormula(formula, state.draft || {}, { rollDice: rollDiceExpression });
+        const numeric = Number(result);
+        if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
+      } catch (error) {
+        console.warn("Character view: unable to evaluate track segment formula", error);
+      }
     }
-    input.min = component.min ?? 0;
-    input.max = component.max ?? 100;
-    const resolved = resolveComponentValue(component, component.value ?? 0);
-    const value = Number(resolved ?? 0);
-    input.value = Number.isNaN(value) ? 0 : value;
-    const editable = isEditable(component);
-    input.disabled = !editable;
-    assignBindingMetadata(input, component);
-    if (editable) {
-      input.addEventListener("input", () => {
-        updateBinding(component.binding, Number(input.value));
-      });
+    const binding = typeof component.segmentBinding === "string" ? component.segmentBinding.trim() : "";
+    if (binding) {
+      const path = resolveBindingPath(binding);
+      if (path) {
+        const resolved = Number(getValueAtPath(path));
+        if (Number.isFinite(resolved) && resolved > 0) return Math.round(resolved);
+      } else {
+        const numeric = Number(binding);
+        if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
+      }
     }
-    return createLabeledField({
-      component,
-      control: input,
-      labelText,
-      labelTag: "label",
-      labelFor: input.id || "",
-      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
-      applyFormatting: applyTextFormatting,
-    });
+    const fallback = Number(component.segments);
+    return Number.isFinite(fallback) && fallback > 0 ? Math.round(fallback) : 6;
   }
 
-  function renderCircularTrackComponent(component) {
+  // Clicking the segment that's currently the LAST active one un-fills it
+  // (steps back by one); clicking any other segment fills up to and
+  // including it — one click always sets a clear, predictable fill level
+  // rather than needing a drag gesture.
+  function nextTrackValue(clickedIndex, active) {
+    return clickedIndex + 1 === active ? clickedIndex : clickedIndex + 1;
+  }
+
+  function renderTrackComponent(component, itemContext = null) {
+    return component.trackShape === "circular"
+      ? renderCircularTrackComponent(component, itemContext)
+      : renderLinearTrackComponent(component, itemContext);
+  }
+
+  function renderLinearTrackComponent(component, itemContext = null) {
     const labelText = component.label || "Track";
-    const input = document.createElement("input");
-    input.type = "number";
-    input.className = "form-control";
-    if (component?.uid) {
-      input.id = `${component.uid}-circular-track`;
+    const segments = Math.max(1, resolveTrackSegments(component));
+    const resolvedValue = Number(
+      itemContext
+        ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.value ?? 0)
+        : resolveComponentValue(component, component.value ?? 0)
+    );
+    const active = Number.isFinite(resolvedValue) ? Math.max(0, Math.min(segments, Math.round(resolvedValue))) : 0;
+    const editable = itemContext
+      ? Boolean(component.binding) && state.mode === "edit"
+      : isEditable(component);
+    const setValue = (value) => {
+      if (itemContext) {
+        setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, value);
+      } else {
+        updateBinding(component.binding, value);
+      }
+    };
+
+    const track = document.createElement("div");
+    track.className = "template-linear-track";
+    assignBindingMetadata(track, component);
+    for (let index = 0; index < segments; index += 1) {
+      const segment = document.createElement(editable ? "button" : "div");
+      segment.className = "template-linear-track__segment";
+      if (index < active) {
+        segment.classList.add("is-active");
+      }
+      segment.title = `Segment ${index + 1}`;
+      if (editable) {
+        segment.type = "button";
+        // A plain <button> reset — .template-linear-track__segment supplies
+        // the actual sizing/color/shape, this just strips the browser's own
+        // button chrome (border, padding, default background) so an
+        // interactive segment looks identical to the canvas preview's
+        // static <div> ones.
+        segment.style.border = "none";
+        segment.style.padding = "0";
+        segment.style.cursor = "pointer";
+        segment.addEventListener("click", () => {
+          setValue(nextTrackValue(index, active));
+        });
+      }
+      track.appendChild(segment);
     }
-    input.min = 0;
-    const max = component.max ?? 100;
-    input.max = max;
-    const resolved = resolveComponentValue(component, component.value ?? 0);
-    const value = Number(resolved ?? 0);
-    input.value = Number.isNaN(value) ? 0 : value;
-    const editable = isEditable(component);
-    input.disabled = !editable;
-    assignBindingMetadata(input, component);
-    if (editable) {
-      input.addEventListener("input", () => {
-        const next = Number(input.value);
-        updateBinding(component.binding, Number.isNaN(next) ? 0 : Math.max(0, Math.min(max, next)));
-      });
-    }
+
     return createLabeledField({
       component,
-      control: input,
+      control: track,
       labelText,
-      labelTag: "label",
-      labelFor: input.id || "",
-      labelClasses: ["fw-semibold", "text-body-secondary", "mb-0"],
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
       applyFormatting: applyTextFormatting,
     });
   }
 
-  function renderSelectGroupComponent(component) {
+  function renderCircularTrackComponent(component, itemContext = null) {
+    const labelText = component.label || "Track";
+    const segments = Math.max(1, resolveTrackSegments(component));
+    const resolvedValue = Number(
+      itemContext
+        ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.value ?? 0)
+        : resolveComponentValue(component, component.value ?? 0)
+    );
+    const active = Number.isFinite(resolvedValue) ? Math.max(0, Math.min(segments, Math.round(resolvedValue))) : 0;
+    const editable = itemContext
+      ? Boolean(component.binding) && state.mode === "edit"
+      : isEditable(component);
+    const setValue = (value) => {
+      if (itemContext) {
+        setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, value);
+      } else {
+        updateBinding(component.binding, value);
+      }
+    };
+    const step = 360 / segments;
+
+    const circle = document.createElement("div");
+    circle.className = "template-circular-track";
+    assignBindingMetadata(circle, component);
+    const gradientStops = [];
+    for (let index = 0; index < segments; index += 1) {
+      const start = index * step;
+      const end = start + step;
+      const color = index < active ? "var(--bs-primary)" : "var(--bs-border-color)";
+      gradientStops.push(`${color} ${start}deg ${end}deg`);
+    }
+    circle.style.background = `conic-gradient(${gradientStops.join(", ")})`;
+    if (editable) {
+      circle.style.cursor = "pointer";
+      circle.setAttribute("role", "slider");
+      circle.setAttribute("tabindex", "0");
+      circle.setAttribute("aria-valuemin", "0");
+      circle.setAttribute("aria-valuemax", String(segments));
+      circle.setAttribute("aria-valuenow", String(active));
+      // conic-gradient's own 0deg is straight up (12 o'clock), going
+      // clockwise — atan2 measures from the positive-x axis (3 o'clock)
+      // instead, so +90deg re-anchors the click angle to the same
+      // reference the gradient itself uses.
+      circle.addEventListener("click", (event) => {
+        const rect = circle.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const angle = (Math.atan2(event.clientY - cy, event.clientX - cx) * 180) / Math.PI + 90;
+        const normalized = ((angle % 360) + 360) % 360;
+        const clickedIndex = Math.min(segments - 1, Math.floor(normalized / step));
+        setValue(nextTrackValue(clickedIndex, active));
+      });
+    }
+    const mask = document.createElement("div");
+    mask.className = "template-circular-track__mask";
+    circle.appendChild(mask);
+    const value = document.createElement("div");
+    value.className = "template-circular-track__value";
+    value.textContent = `${active}/${segments}`;
+    circle.appendChild(value);
+
+    return createLabeledField({
+      component,
+      control: circle,
+      labelText,
+      labelTag: "div",
+      labelClasses: ["fw-semibold", "text-body-secondary"],
+      applyFormatting: applyTextFormatting,
+    });
+  }
+
+  function renderSelectGroupComponent(component, itemContext = null) {
     const labelText = component.label || "Options";
-    const editable = isEditable(component);
-    const value = resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
+    const editable = itemContext
+      ? Boolean(component.binding) && state.mode === "edit"
+      : isEditable(component);
+    const value = itemContext
+      ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? (component.multiple ? [] : "")
+      : resolveComponentValue(component, component.value ?? (component.multiple ? [] : ""));
     const activeValues = component.multiple
       ? Array.isArray(value)
         ? value.map(String)
@@ -3764,8 +4357,17 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       assignBindingMetadata(button, component, { value: optionValue });
       if (editable) {
         button.addEventListener("click", () => {
+          const setValue = (next) => {
+            if (itemContext) {
+              setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, next);
+            } else {
+              updateBinding(component.binding, next);
+            }
+          };
           if (component.multiple) {
-            const current = resolveComponentValue(component, component.value ?? []);
+            const current = itemContext
+              ? resolveRepeaterItemValue(itemContext.item, component.binding) ?? []
+              : resolveComponentValue(component, component.value ?? []);
             const normalizedCurrent = Array.isArray(current)
               ? current.map(String)
               : current != null
@@ -3775,9 +4377,9 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
             const next = exists
               ? normalizedCurrent.filter((entry) => entry !== normalizedOption)
               : [...normalizedCurrent, normalizedOption];
-            updateBinding(component.binding, next);
+            setValue(next);
           } else {
-            updateBinding(component.binding, optionValue);
+            setValue(optionValue);
           }
           // A button click is already a single, discrete action — unlike
           // free-typed text/number input, there's no keystroke-batching
@@ -3800,7 +4402,7 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     });
   }
 
-  function renderToggleComponent(component) {
+  function renderToggleComponent(component, itemContext = null) {
     const labelText = component.label || "Toggle";
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
@@ -3808,27 +4410,35 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       select.id = `${component.uid}-toggle`;
     }
     const states = resolveToggleStates(component);
-    const resolvedState = resolveComponentValue(component);
+    const resolvedState = itemContext
+      ? resolveRepeaterItemValue(itemContext.item, component.binding)
+      : resolveComponentValue(component);
     const normalizedState = resolvedState != null ? String(resolvedState) : null;
-    states.forEach((state, index) => {
-      const label = state != null ? String(state) : `State ${index + 1}`;
+    states.forEach((stateValue, index) => {
+      const label = stateValue != null ? String(stateValue) : `State ${index + 1}`;
       const option = document.createElement("option");
       option.value = label;
       option.textContent = label;
       const shouldSelect = normalizedState !== null
-        ? normalizedState === String(state)
+        ? normalizedState === String(stateValue)
         : component.activeIndex === index;
       if (shouldSelect) {
         option.selected = true;
       }
       select.appendChild(option);
     });
-    const editable = isEditable(component);
+    const editable = itemContext
+      ? Boolean(component.binding) && state.mode === "edit"
+      : isEditable(component);
     select.disabled = !editable;
     assignBindingMetadata(select, component);
     if (editable) {
       select.addEventListener("change", () => {
-        updateBinding(component.binding, select.value);
+        if (itemContext) {
+          setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, component.binding, select.value);
+        } else {
+          updateBinding(component.binding, select.value);
+        }
       });
     }
     return createLabeledField({
@@ -3875,6 +4485,25 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
       return null;
     }
     const clone = JSON.parse(JSON.stringify(component));
+    // Legacy component type strings from before Track was consolidated
+    // into one "track" type with a Shape selector (see
+    // workbench-template-view.js's own identical normalization) — rewritten
+    // here too since this file has its own separate render dispatch, not a
+    // shared one, and would otherwise show "Unsupported component" for an
+    // old saved template's track components.
+    if (clone.type === "linear-track" || clone.type === "circular-track") {
+      if (!clone.trackShape) {
+        clone.trackShape = clone.type === "circular-track" ? "circular" : "linear";
+      }
+      clone.type = "track";
+    }
+    // Legacy "label" type string from before it was renamed to "text" with a
+    // single combined Binding/Text field (see workbench-template-view.js's
+    // own identical normalization) — rewritten here too since this file has
+    // its own separate render dispatch, not a shared one.
+    if (clone.type === "label") {
+      clone.type = "text";
+    }
     const normalizedBinding = normalizeBinding(clone.binding ?? clone.bind ?? "");
     if (normalizedBinding) {
       clone.binding = normalizedBinding;
@@ -4001,6 +4630,51 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
 
   function componentHasFormula(component) {
     return typeof component?.formula === "string" && component.formula.trim().length > 0;
+  }
+
+  // A genuinely new capability (see workbench-template-view.js's
+  // createVisibilityControl) — real-time hide, evaluated against the actual
+  // character draft. Left blank on both fields, a component always shows.
+  // Fails open (visible) on a bad formula rather than silently disappearing
+  // UI a template author can't see the cause of.
+  function isComponentVisible(component) {
+    if (!component) return true;
+    const formula = typeof component.visibilityFormula === "string" ? component.visibilityFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormula(formula, state.draft || {}, { rollDice: rollDiceExpression }));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate visibility formula", error);
+        return true;
+      }
+    }
+    const binding = typeof component.visibilityBinding === "string" ? component.visibilityBinding.trim() : "";
+    if (binding) {
+      return Boolean(getBindingValue(binding));
+    }
+    return true;
+  }
+
+  // Same idea as isComponentVisible, but for a Repeater item-template node
+  // — evaluated against the current item as the data context (consistent
+  // with how an item node's own ordinary binding already resolves relative
+  // to the item, not the top-level draft — see resolveRepeaterItemValue).
+  function isRepeaterItemNodeVisible(node, item) {
+    if (!node) return true;
+    const formula = typeof node.visibilityFormula === "string" ? node.visibilityFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormula(formula, item && typeof item === "object" ? item : {}, {}));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate item visibility formula", error);
+        return true;
+      }
+    }
+    const binding = typeof node.visibilityBinding === "string" ? node.visibilityBinding.trim() : "";
+    if (binding) {
+      return Boolean(resolveRepeaterItemValue(item, binding));
+    }
+    return true;
   }
 
   // A field bound to one of the active System's combatBindings paths (HP,
@@ -4865,5 +5539,6 @@ export async function initCharacterView({ status, undoStack, dataManager }) {
     hasUnsavedChanges: hasUnsavedCharacterChanges,
     markClean: markCharacterClean,
     setMode,
+    reloadTemplateIfActive,
   };
 }

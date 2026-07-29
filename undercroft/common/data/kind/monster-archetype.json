@@ -1,0 +1,8 @@
+{
+  "id": "monster-archetype",
+  "label": "Monster Archetype",
+  "plural": "Monster Archetypes",
+  "icon": "tabler:chess-knight",
+  "readTier": "free",
+  "writeTier": "creator"
+}

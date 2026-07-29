@@ -57,7 +57,21 @@ def _serve_from_base(
     if not content_type:
         content_type = "application/octet-stream"
     data = target.read_bytes()
-    return Response(status=HTTPStatus.OK, body=data, headers={"Content-Type": content_type})
+    # No Cache-Control here at all meant every static asset (every JS module,
+    # every CSS file) was left to the browser's own heuristic caching, which
+    # can silently serve a stale cached copy on an ordinary navigation (e.g.
+    # journal-encounter.js's own location.search-driven reload) while a
+    # manual hard refresh happens to force revalidation and picks up the
+    # current file — confirmed as the actual cause of a "works after
+    # refresh, not right after" symptom that had nothing to do with the
+    # widget/render code itself. This is a local dev server with no build
+    # step or filename versioning, so there's no upside to letting the
+    # browser cache these at all.
+    return Response(
+        status=HTTPStatus.OK,
+        body=data,
+        headers={"Content-Type": content_type, "Cache-Control": "no-cache"},
+    )
 
 
 def serve_from_root(state: ServerState, relative_path: str) -> Response:

@@ -67,6 +67,7 @@ const renameButton = document.querySelector('[data-action="rename-mapping"]');
 // --- Library / Systems DOM refs ---------------------------------------------
 
 const libraryIdInput = document.querySelector("[data-library-id]");
+const librarySystemSection = document.querySelector("[data-library-system-section]");
 const librarySystemList = document.querySelector("[data-library-system-list]");
 const libraryTemplateSection = document.querySelector("[data-library-template-section]");
 const libraryTemplateSelect = document.querySelector("[data-library-template-select]");
@@ -2361,6 +2362,25 @@ function libraryEntryAllowsDelete(kind, id) {
 
 async function populateLibrarySystemCheckboxes(selectedIds) {
   if (!librarySystemList) return;
+  // A System entity can't be assigned to itself — nonsensical the same way
+  // a Template can't apply to non-character kinds (see
+  // populateLibraryTemplateSelect's isCharacter check just below).
+  const isSystemKind = loomLibraryTableState.activeKind === "system";
+  if (librarySystemSection) {
+    // Plain `.hidden` silently loses to this wrapper's own `.d-flex`
+    // (Bootstrap's `display: flex !important`) — same bug/fix as Press's
+    // own setElementVisible: an inline `!important` style is the one thing
+    // guaranteed to win regardless of class order.
+    if (isSystemKind) {
+      librarySystemSection.style.setProperty("display", "none", "important");
+    } else {
+      librarySystemSection.style.removeProperty("display");
+    }
+  }
+  if (isSystemKind) {
+    librarySystemList.innerHTML = "";
+    return;
+  }
   librarySystemList.innerHTML = "";
   const ids = new Set(Array.isArray(selectedIds) ? selectedIds : []);
   const systems = await listAllSystems();
@@ -4093,6 +4113,15 @@ if (newButton) {
     rerenderAll();
   });
 }
+
+// Same dirty checks the Save buttons already use — Loom had no guard at
+// all against navigating/closing away from unsaved edits (unlike
+// Workbench, which already had this).
+window.addEventListener("beforeunload", (event) => {
+  if (!canSaveMapping() && !canSaveLibrary() && !canSaveSystem()) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
 
 if (saveButton) {
   saveButton.addEventListener("click", async () => {

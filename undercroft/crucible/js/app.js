@@ -11,6 +11,7 @@ import {
   listFeaturesForSystem,
   loadCombatScalingLevels,
   listArrayFieldOptions,
+  loadAbilityFieldDefs,
 } from "./lib/tables.js";
 import { generateMonster } from "./lib/generator.js";
 import { deriveStats } from "./lib/stats.js";
@@ -35,6 +36,11 @@ let roles = [];
 let features = [];
 let combatScalingLevels = [];
 let arrayFieldOptions = [];
+// The active System's own ability key/label list (see stats.js#deriveStats,
+// which reads this same data independently for generation) — kept here too
+// so renderStats' display rows use the System's real ability vocabulary
+// instead of a second hardcoded STR/DEX/CON/INT/WIS/CHA copy.
+let abilityFieldDefs = [];
 let currentRecord = null;
 // Tracks whether the record as last successfully saved differs from a live
 // snapshot — built from currentRecord plus whatever's currently typed into
@@ -178,13 +184,14 @@ function populateLockedFeaturesSelect() {
 async function reloadReferenceData() {
   const systemId = currentSystemId();
   const combatScalingField = getCombatScalingFieldPreference(systemId);
-  [creatureTypes, archetypes, roles, features, combatScalingLevels, arrayFieldOptions] = await Promise.all([
+  [creatureTypes, archetypes, roles, features, combatScalingLevels, arrayFieldOptions, abilityFieldDefs] = await Promise.all([
     listCreatureTypesForSystem(dataManager, systemId),
     listArchetypesForSystem(dataManager, systemId),
     listRolesForSystem(dataManager, systemId),
     listFeaturesForSystem(dataManager, systemId),
     loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
     listArrayFieldOptions(dataManager, systemId),
+    loadAbilityFieldDefs(dataManager, systemId),
   ]);
   populateOverrideSelect(elements.creatureTypeOverride, creatureTypes, "Random");
   populateOverrideSelect(elements.archetypeOverride, archetypes, "Random");
@@ -322,12 +329,9 @@ function renderStats(record) {
     ["Armor Class", stats.armorClass ?? "—"],
     ["Hit Points", hitPoints.max != null ? `${hitPoints.current ?? hitPoints.max}/${hitPoints.max}` : "—"],
     ["Save DC", stats.saveDC ?? "—"],
-    ["STR", abilities.strength ?? "—"],
-    ["DEX", abilities.dexterity ?? "—"],
-    ["CON", abilities.constitution ?? "—"],
-    ["INT", abilities.intelligence ?? "—"],
-    ["WIS", abilities.wisdom ?? "—"],
-    ["CHA", abilities.charisma ?? "—"],
+    // Whichever ability keys the active System actually defines (see
+    // abilityFieldDefs above) — not a fixed STR/DEX/CON/INT/WIS/CHA list.
+    ...abilityFieldDefs.map(({ key, label }) => [label, abilities[key] ?? "—"]),
   ];
   if (stats.damageResistances?.length) rows.push(["Resistances", stats.damageResistances.join(", ")]);
   if (stats.damageImmunities?.length) rows.push(["Immunities", stats.damageImmunities.join(", ")]);
@@ -497,13 +501,17 @@ async function init() {
   status = shell.status;
   const auth = initAuthControls({
     status,
-    spotlightContext: {
-      getKind: () => "monster",
-      getId: () => currentRecord?.id,
-      getLabel: () => currentRecord?.name,
-    },
   });
   dataManager = auth.dataManager;
+
+  // Same dirty check updateActionButtons already uses for the Save button —
+  // Crucible had no guard at all against navigating/closing away from
+  // unsaved edits (unlike Workbench, which already had this).
+  window.addEventListener("beforeunload", (event) => {
+    if (!currentRecord || !dirtyGate.isDirty()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
 
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);

@@ -1,4 +1,17 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import {
+  ensureDdbIconOptionsLoaded,
+  ensureBootstrapIconNamesLoaded,
+  getAllIconOptions,
+  attachIconAutocomplete,
+} from "../../common/js/lib/icon-picker.js";
+import { attachFontFamilyAutocomplete, validateFontInput } from "../../common/js/lib/font-picker.js";
+import {
+  CLASS_NAME_SUGGESTIONS,
+  splitClassTokens,
+  attachClassNameAutocomplete,
+} from "../../common/js/lib/class-name-picker.js";
+import { TEXT_SIZE_PX, pxToPt, ptToPx } from "../../common/js/lib/text-size.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { DataManager } from "../../common/js/lib/data-manager.js";
 import { resolveApiBase } from "../../common/js/lib/api.js";
@@ -47,7 +60,7 @@ import {
   svgToDataUri,
   embedPatternMetadata,
   extractPatternMetadata,
-} from "./pattern-library.js";
+} from "../../common/js/lib/pattern-library.js";
 import {
   getAllFontOptions,
   findFontOptionByFamily,
@@ -58,9 +71,8 @@ import {
   deleteCustomFont,
   saveCustomFontDeletion,
   isCustomFontId,
-  verifyGoogleFontExists,
-  lookupGoogleFontCategory,
-} from "./font-library.js";
+  DEFAULT_FONT_FAMILY,
+} from "../../common/js/lib/font-library.js";
 
 const templateSelect = document.getElementById("templateSelect");
 const formatSelect = document.getElementById("formatSelect");
@@ -112,6 +124,7 @@ const templateIdInput = document.querySelector("[data-template-id]");
 const templateNameInput = document.querySelector("[data-template-name]");
 const templateDescriptionInput = document.querySelector("[data-template-description]");
 const templateTypeSelect = document.querySelector("[data-template-type]");
+const templateBaseFontInput = document.querySelector("[data-template-base-font]");
 const templateFormatsSelect = document.querySelector("[data-template-formats]");
 const customSizeLabelInput = document.querySelector("[data-custom-size-label]");
 const customSizeWidthInput = document.querySelector("[data-custom-size-width]");
@@ -164,23 +177,6 @@ const ariaLabelInput = document.querySelector("[data-component-aria-label]");
 const classNameField = document.querySelector("[data-inspector-class-name-field]");
 const classNameInput = document.querySelector("[data-component-class-name]");
 
-// A short, deliberately non-overlapping reference list — nothing here
-// duplicates a control the inspector already has a dedicated field for
-// (alignment, bold/italic, text size, color, border, corner radius, etc.),
-// so this is only ever the fastest way to reach for something that has no
-// other home. "badge text-bg-primary" specifically replaces what used to
-// be its own dedicated "Badge" field component, which was really always
-// just Text with this class combo.
-const CLASS_NAME_SUGGESTIONS = [
-  { classes: "badge text-bg-primary", label: "Badge", description: "Pill-style badge background" },
-  { classes: "text-body-secondary", label: "Muted", description: "Theme-aware secondary text color (adapts to light/dark)" },
-  { classes: "flex-grow-1", label: "Fill space", description: "Expands to fill remaining space in a Layer or Grid" },
-  { classes: "text-truncate", label: "Truncate", description: "Cuts off overflowing text with an ellipsis, single line" },
-  { classes: "text-nowrap", label: "No wrap", description: "Keeps text on one line, never wraps" },
-  { classes: "shadow-sm", label: "Shadow", description: "Soft drop shadow (box, not text)" },
-  { classes: "text-shadow-dark", label: "Dark text shadow", description: "Dark shadow behind text — for light text over a busy/photo background" },
-  { classes: "text-shadow-light", label: "Light text shadow", description: "Light shadow behind text — for dark text over a busy/photo background" },
-];
 const imageFieldGroups = Array.from(document.querySelectorAll("[data-inspector-image-field]"));
 const imageSizeFieldGroup = document.querySelector("[data-inspector-image-size-field]");
 const imageUrlInput = document.querySelector("[data-component-image-url]");
@@ -255,6 +251,12 @@ if (addFontModalElement) {
 // the field is edited again, which is also what keeps the Add button
 // disabled until a fresh blur-triggered validation succeeds.
 let pendingValidatedFont = null;
+// Called with the registered {id,label,family,...} once a font is
+// confirmed — set by whichever call to openAddFontModal is currently open,
+// so the same modal can apply the result either to a node's own Font field
+// or to the Template's own base font, without the modal itself needing to
+// know which. Mirrors Workbench's identical refactor for the same reason.
+let addFontApplyCallback = null;
 const colorGroup = document.querySelector("[data-inspector-color-group]");
 const alignmentGroup = document.querySelector("[data-inspector-alignment]");
 const textSizeInputs = Array.from(document.querySelectorAll("[data-component-text-size]"));
@@ -347,161 +349,6 @@ const COLOR_DEFAULTS = {
   background: "#ffffff",
   border: "#dee2e6",
 };
-const TEXT_SIZE_PX = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 20,
-  xl: 24,
-};
-// Cosmetic grouping only, for the small gray label on the right of each
-// autocomplete row — reused from the categories ddb-icons.css's own
-// existing icons happened to fall into. Anything not listed here (an icon
-// added to the stylesheet without also being added here) just falls under
-// a generic "DDB Icons" group instead of needing a registration step —
-// see ensureDdbIconOptionsLoaded below, which is what actually discovers
-// the icon names themselves, directly from the stylesheet.
-const DDB_ICON_GROUPS = {
-  bludgeoning: "Damage",
-  piercing: "Damage",
-  slashing: "Damage",
-  acid: "Damage",
-  cold: "Damage",
-  fire: "Damage",
-  force: "Damage",
-  lightning: "Damage",
-  necrotic: "Damage",
-  poison: "Damage",
-  psychic: "Damage",
-  radiant: "Damage",
-  thunder: "Damage",
-  abjuration: "Magic School",
-  conjuration: "Magic School",
-  divination: "Magic School",
-  enchantment: "Magic School",
-  evocation: "Magic School",
-  illusion: "Magic School",
-  necromancy: "Magic School",
-  transmutation: "Magic School",
-  artifice: "Inner Circle",
-  dunamancy: "Inner Circle",
-  psionics: "Inner Circle",
-  entropomancy: "Inner Circle",
-  sangromancy: "Inner Circle",
-  "melee-attack": "Attack",
-  "melee-weapon": "Attack",
-  "ranged-attack": "Attack",
-  "ranged-weapon": "Attack",
-  immunity: "Defense",
-  resistance: "Defense",
-  vulnerability: "Defense",
-  cone: "Area",
-  cube: "Area",
-  cylinder: "Area",
-  sphere: "Area",
-  square: "Area",
-  artificer: "Class",
-  barbarian: "Class",
-  bard: "Class",
-  cleric: "Class",
-  druid: "Class",
-  fighter: "Class",
-  monk: "Class",
-  paladin: "Class",
-  ranger: "Class",
-  rogue: "Class",
-  sorcerer: "Class",
-  warlock: "Class",
-  wizard: "Class",
-  advantage: "Misc",
-  attunement: "Misc",
-  concentration: "Misc",
-  disadvantage: "Misc",
-  healing: "Misc",
-  ritual: "Misc",
-};
-
-function titleCaseIconName(name) {
-  return name
-    .split("-")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-// Discovered directly from css/ddb-icons.css (same-origin, no CORS concern
-// unlike the Bootstrap Icons CDN fetch below) rather than a hand-maintained
-// list — a new `.ddb-whatever { ... }` rule added to that stylesheet just
-// shows up here automatically, no separate registration step needed. Same
-// lazy-fetch-once-and-cache shape as ensureBootstrapIconNamesLoaded.
-let ddbIconOptions = [];
-let ddbIconOptionsPromise = null;
-function ensureDdbIconOptionsLoaded(onLoaded) {
-  if (!ddbIconOptionsPromise) {
-    ddbIconOptionsPromise = fetch("css/ddb-icons.css")
-      .then((response) =>
-        response.ok ? response.text() : Promise.reject(new Error(`ddb-icons.css unavailable (${response.status})`))
-      )
-      .then((text) => {
-        const names = new Set();
-        const pattern = /\.ddb-([a-zA-Z0-9-]+)\s*\{/g;
-        let match = pattern.exec(text);
-        while (match) {
-          names.add(match[1]);
-          match = pattern.exec(text);
-        }
-        ddbIconOptions = Array.from(names)
-          .sort()
-          .map((name) => ({
-            group: DDB_ICON_GROUPS[name] ?? "DDB Icons",
-            label: titleCaseIconName(name),
-            value: `ddb-${name}`,
-          }));
-      })
-      .catch((error) => {
-        console.warn("ddb-icons.css icon list unavailable:", error);
-      });
-  }
-  ddbIconOptionsPromise.then(onLoaded);
-}
-
-// Bootstrap Icons is already loaded (index.html's bootstrap-icons.css link)
-// and the icon field's own renderer already knows how to use a "bi-*"
-// class (template-renderer.js's icon case, prepending the required base
-// "bi" class) — but nothing ever suggested any of its ~2000 icons, so
-// there was no way to discover a valid name to type. Fetched once, lazily,
-// from the same CDN/version already used for the stylesheet (jsdelivr
-// serves it with permissive CORS, unlike the Google Fonts metadata case
-// that needed a server-side proxy) — best-effort, same as that font
-// metadata lookup: a failure here just means no Bootstrap Icons show up
-// as suggestions, never a hard error.
-const BOOTSTRAP_ICONS_VERSION = "1.11.3";
-const BOOTSTRAP_ICONS_JSON_URL = `https://cdn.jsdelivr.net/npm/bootstrap-icons@${BOOTSTRAP_ICONS_VERSION}/font/bootstrap-icons.json`;
-let bootstrapIconNames = [];
-let bootstrapIconNamesPromise = null;
-function ensureBootstrapIconNamesLoaded(onLoaded) {
-  if (!bootstrapIconNamesPromise) {
-    bootstrapIconNamesPromise = fetch(BOOTSTRAP_ICONS_JSON_URL)
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`Bootstrap Icons list unavailable (${response.status})`))))
-      .then((data) => {
-        bootstrapIconNames = Object.keys(data ?? {}).sort();
-      })
-      .catch((error) => {
-        console.warn("Bootstrap Icons list unavailable:", error);
-      });
-  }
-  bootstrapIconNamesPromise.then(onLoaded);
-}
-
-function getAllIconOptions() {
-  const bootstrapOptions = bootstrapIconNames.map((name) => ({
-    group: "Bootstrap",
-    label: name,
-    value: `bi-${name}`,
-  }));
-  return [...ddbIconOptions, ...bootstrapOptions];
-}
-
 const paletteComponents = [
   {
     id: "grid",
@@ -670,10 +517,6 @@ function getComponentRequiredClassTokens(node) {
   return COMPONENT_REQUIRED_CLASS_MAP[node.component] ?? [];
 }
 
-function splitClassTokens(value = "") {
-  return value.split(/\s+/).filter(Boolean);
-}
-
 function getClassNameWithoutRequiredTokens(node, value) {
   const tokens = splitClassTokens(value);
   if (!tokens.length) return "";
@@ -686,142 +529,6 @@ function mergeRequiredClassTokens(node, value) {
   const tokens = splitClassTokens(value);
   const combined = [...requiredTokens, ...tokens];
   return Array.from(new Set(combined)).join(" ");
-}
-
-// Toggles the whole class combo as one unit (e.g. "badge" and
-// "text-bg-primary" together) rather than each token independently — that
-// matches how these are actually used, and avoids leaving a half-applied
-// combo behind.
-function toggleClassNameSuggestion(input, suggestion) {
-  const current = splitClassTokens(input.value);
-  const toggleTokens = splitClassTokens(suggestion.classes);
-  const hasAll = toggleTokens.every((token) => current.includes(token));
-  const next = hasAll
-    ? current.filter((token) => !toggleTokens.includes(token))
-    : [...current, ...toggleTokens.filter((token) => !current.includes(token))];
-  // One-shot programmatic write (a suggestion click), not a batched typing
-  // session, so it records its own undo entry here rather than relying on
-  // the field's focus/blur-based pending-undo — same reasoning, and the
-  // same dispatch-a-real-input-event trick to reuse the field's existing
-  // write path, as the pattern picker's own Insert button.
-  recordUndoableChange(() => {
-    input.value = next.join(" ");
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  });
-}
-
-function renderClassNameSuggestionRow(suggestion, isApplied) {
-  const row = document.createElement("button");
-  row.type = "button";
-  row.className = "list-group-item list-group-item-action d-flex align-items-start gap-2 py-1";
-  const check = document.createElement("span");
-  check.className = "flex-shrink-0";
-  check.style.width = "1rem";
-  check.setAttribute("aria-hidden", "true");
-  check.textContent = isApplied ? "✓" : "";
-  const textWrap = document.createElement("span");
-  textWrap.className = "d-flex flex-column";
-  const label = document.createElement("span");
-  label.className = "fw-semibold";
-  label.textContent = suggestion.label;
-  const description = document.createElement("small");
-  description.className = "text-body-secondary";
-  description.textContent = suggestion.description;
-  textWrap.append(label, description);
-  row.append(check, textWrap);
-  return row;
-}
-
-// Mirrors attachIconAutocomplete's own structure closely (same container
-// helper shape, same open-on-focus/click, arrow-key nav, blur-closes-after-
-// a-short-delay-so-clicks-land pattern) — the one real difference is that
-// this list is fixed (a short, curated reference, not a filtered search)
-// and a click toggles rather than replaces the field's value, so the
-// dropdown stays open afterward for toggling more than one suggestion in
-// a row.
-function ensureClassNameAutocompleteContainer(input) {
-  if (!input || !input.parentElement) return null;
-  const parent = input.closest(".form-floating") ?? input.parentElement;
-  parent.classList.add("position-relative");
-  let container = parent.querySelector("[data-classname-autocomplete]");
-  if (!container) {
-    container = document.createElement("div");
-    container.dataset.classnameAutocomplete = "true";
-    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
-    container.style.zIndex = "1300";
-    container.style.fontSize = "0.8125rem";
-    container.style.maxHeight = "16rem";
-    container.style.overflowY = "auto";
-    parent.appendChild(container);
-  }
-  return container;
-}
-
-function attachClassNameAutocomplete(input) {
-  if (!input) return null;
-  const container = ensureClassNameAutocompleteContainer(input);
-  if (!container) return null;
-  let activeIndex = -1;
-
-  const close = () => {
-    activeIndex = -1;
-    container.innerHTML = "";
-    container.classList.add("d-none");
-  };
-
-  const render = () => {
-    activeIndex = -1;
-    const current = splitClassTokens(input.value);
-    container.innerHTML = "";
-    CLASS_NAME_SUGGESTIONS.forEach((suggestion, index) => {
-      const tokens = splitClassTokens(suggestion.classes);
-      const isApplied = tokens.length > 0 && tokens.every((token) => current.includes(token));
-      const row = renderClassNameSuggestionRow(suggestion, isApplied);
-      row.dataset.classnameIndex = String(index);
-      row.setAttribute("role", "option");
-      row.addEventListener("mousedown", (event) => event.preventDefault());
-      row.addEventListener("click", () => {
-        toggleClassNameSuggestion(input, suggestion);
-        render();
-      });
-      container.appendChild(row);
-    });
-    container.classList.remove("d-none");
-  };
-
-  const onKeyDown = (event) => {
-    if (container.classList.contains("d-none")) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      activeIndex = Math.min(activeIndex + 1, CLASS_NAME_SUGGESTIONS.length - 1);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      activeIndex = Math.max(activeIndex - 1, 0);
-    } else if (event.key === "Enter") {
-      if (activeIndex < 0 || !CLASS_NAME_SUGGESTIONS[activeIndex]) return;
-      event.preventDefault();
-      toggleClassNameSuggestion(input, CLASS_NAME_SUGGESTIONS[activeIndex]);
-      render();
-      return;
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      close();
-      return;
-    } else {
-      return;
-    }
-    Array.from(container.querySelectorAll("[data-classname-index]")).forEach((row) => {
-      row.classList.toggle("active", Number(row.dataset.classnameIndex) === activeIndex);
-    });
-  };
-
-  input.addEventListener("focus", render);
-  input.addEventListener("click", render);
-  input.addEventListener("input", render);
-  input.addEventListener("keydown", onKeyDown);
-  input.addEventListener("blur", () => setTimeout(close, 120));
-
-  return { render, close };
 }
 
 let standardFormats = getStandardFormats();
@@ -1324,6 +1031,7 @@ function getTemplateProperties(template) {
     name: template.name ?? "",
     description: template.description ?? "",
     type: template.type ?? "",
+    baseFontFamily: template.baseFontFamily ?? "",
     formats: cloneState(template.formats ?? []),
     supportedSources: cloneState(template.supportedSources ?? []),
     card: template.card ? cloneState(template.card) : null,
@@ -1928,6 +1636,17 @@ function updateTemplateInspector(template) {
   if (templateTypeSelect) {
     templateTypeSelect.value = template.type ?? "sheet";
   }
+  if (templateBaseFontInput) {
+    // No "Default" entry here (excludeDefault on its autocomplete) — an
+    // unset baseFontFamily shows the raw effective fallback, same
+    // convention as any other raw CSS font-family value with no matching
+    // library entry (see the equivalent Workbench field).
+    const currentBaseFamily = typeof template.baseFontFamily === "string" ? template.baseFontFamily.trim() : "";
+    const matchedBaseOption = findFontOptionByFamily(currentBaseFamily);
+    templateBaseFontInput.value = matchedBaseOption
+      ? matchedBaseOption.label
+      : currentBaseFamily || DEFAULT_FONT_FAMILY;
+  }
   setTemplateFormatSelections(template);
   setTemplateSourceSelections(template);
   const isGrid = template.type === "card" || template.type === "chip" || Boolean(template.card);
@@ -2015,6 +1734,33 @@ function bindTemplateInspectorControls() {
       if (!template) return;
       template.description = templateDescriptionInput.value.trim();
       updateSaveState();
+    });
+  }
+
+  if (templateBaseFontInput) {
+    attachFontFamilyAutocomplete(templateBaseFontInput, {
+      onSelect: (option) => {
+        const template = getActiveTemplate();
+        if (!template) return;
+        template.baseFontFamily = option.family || "";
+        templateBaseFontInput.value = option.label;
+        updateSaveState();
+        renderPreview();
+      },
+      onAddFont: () =>
+        openAddFontModal((registered) => {
+          const template = getActiveTemplate();
+          if (!template) return;
+          template.baseFontFamily = registered.family;
+          templateBaseFontInput.value = registered.label;
+          updateSaveState();
+          renderPreview();
+        }),
+      canAddFont: () => userMeetsTier("creator"),
+      onAddDenied: () => status?.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+      onDeleteFont: (option) => handleDeleteCustomFont(option),
+      canDeleteFont: () => userMeetsTier("admin"),
+      excludeDefault: true,
     });
   }
 
@@ -2897,15 +2643,6 @@ function hasBorderStyles(styles = {}) {
   );
 }
 
-function pxToPt(value) {
-  if (!Number.isFinite(value)) return "";
-  return (value * 0.75).toFixed(1).replace(/\.0$/, "");
-}
-
-function ptToPx(value) {
-  if (!Number.isFinite(value)) return null;
-  return value * (4 / 3);
-}
 
 function getNodeIconClass(node) {
   if (!node) return "";
@@ -3103,163 +2840,6 @@ function ensureAutocompleteContainer(input) {
   return container;
 }
 
-function ensureIconAutocompleteContainer(input) {
-  if (!input || !input.parentElement) return null;
-  const parent = input.closest(".form-floating") ?? input.parentElement;
-  parent.classList.add("position-relative");
-  let container = parent.querySelector("[data-icon-autocomplete]");
-  if (!container) {
-    container = document.createElement("div");
-    container.dataset.iconAutocomplete = "true";
-    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
-    container.style.zIndex = "1300";
-    container.style.fontSize = "0.8125rem";
-    container.style.maxHeight = "16rem";
-    container.style.overflowY = "auto";
-    parent.appendChild(container);
-  }
-  return container;
-}
-
-function renderIconAutocompleteOption(option) {
-  const row = document.createElement("button");
-  row.type = "button";
-  row.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
-  const preview = document.createElement("span");
-  preview.className = "press-icon-option__preview";
-  const icon = document.createElement("span");
-  // Bootstrap Icons needs the shared "bi" base class alongside "bi-{name}"
-  // (the base class supplies the icon font/pseudo-element plumbing, the
-  // per-icon class only sets which glyph) — same rule template-renderer.js's
-  // own icon case already applies at render time; a ddb-* icon is a single
-  // self-contained class and needs nothing extra.
-  icon.className = option.value.startsWith("bi-") ? `bi ${option.value}` : option.value;
-  preview.appendChild(icon);
-  const label = document.createElement("span");
-  label.className = "text-truncate";
-  label.textContent = option.label;
-  const group = document.createElement("small");
-  group.className = "text-body-secondary text-nowrap ms-auto";
-  group.textContent = option.group;
-  row.append(preview, label, group);
-  return row;
-}
-
-function attachIconAutocomplete(input) {
-  if (!input) return null;
-  const container = ensureIconAutocompleteContainer(input);
-  if (!container) return null;
-  const MAX_ITEMS = 12;
-  let items = [];
-  let activeIndex = -1;
-
-  const close = () => {
-    items = [];
-    activeIndex = -1;
-    container.innerHTML = "";
-    container.classList.add("d-none");
-  };
-
-  const render = (nextItems) => {
-    items = nextItems;
-    activeIndex = -1;
-    container.innerHTML = "";
-    if (!items.length) {
-      close();
-      return;
-    }
-    items.forEach((option, index) => {
-      const row = renderIconAutocompleteOption(option);
-      row.dataset.iconIndex = String(index);
-      row.setAttribute("role", "option");
-      row.addEventListener("mousedown", (event) => event.preventDefault());
-      row.addEventListener("click", () => {
-        applyIconSelection(option.value);
-        close();
-      });
-      container.appendChild(row);
-    });
-    container.classList.remove("d-none");
-  };
-
-  const update = () => {
-    const value = input.value.trim();
-    if (value.startsWith("@") || value.startsWith("=")) {
-      close();
-      return;
-    }
-    const normalized = value.toLowerCase();
-    // Empty shows the first MAX_ITEMS of everything (ddb icons first, so
-    // they're what actually appears by default) rather than closing —
-    // same "see the options right away on focus" behavior the font
-    // autocomplete already has.
-    const filtered = getAllIconOptions()
-      .filter((option) => {
-        if (!normalized) return true;
-        return option.label.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized);
-      })
-      .slice(0, MAX_ITEMS);
-    render(filtered);
-  };
-
-  const onKeyDown = (event) => {
-    if (!items.length) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      activeIndex = Math.min(activeIndex + 1, items.length - 1);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      activeIndex = Math.max(activeIndex - 1, 0);
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      if (activeIndex >= 0 && items[activeIndex]) {
-        applyIconSelection(items[activeIndex].value);
-        close();
-      }
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      close();
-    }
-    Array.from(container.querySelectorAll("[data-icon-index]")).forEach((row) => {
-      row.classList.toggle("active", Number(row.dataset.iconIndex) === activeIndex);
-    });
-  };
-
-  input.addEventListener("input", update);
-  input.addEventListener("focus", () => {
-    update();
-    // Both lists are fetched lazily and may not have resolved yet the
-    // first time this field is used — re-run update() once each lands so
-    // the dropdown (if still open) picks up the fuller list instead of
-    // staying stuck showing whatever was available first.
-    ensureDdbIconOptionsLoaded(update);
-    ensureBootstrapIconNamesLoaded(update);
-  });
-  input.addEventListener("click", update);
-  input.addEventListener("keydown", onKeyDown);
-  input.addEventListener("blur", () => setTimeout(close, 120));
-
-  return { update, close };
-}
-
-function ensureFontFamilyAutocompleteContainer(input) {
-  if (!input || !input.parentElement) return null;
-  const parent = input.closest(".form-floating") ?? input.parentElement;
-  parent.classList.add("position-relative");
-  let container = parent.querySelector("[data-font-family-autocomplete]");
-  if (!container) {
-    container = document.createElement("div");
-    container.dataset.fontFamilyAutocomplete = "true";
-    container.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
-    container.style.zIndex = "1300";
-    container.style.fontSize = "0.8125rem";
-    container.style.maxHeight = "16rem";
-    container.style.overflowY = "auto";
-    parent.appendChild(container);
-  }
-  return container;
-}
-
 function applyFontSelection(input, option) {
   recordUndoableChange(() => {
     updateSelectedNode((node) => {
@@ -3297,8 +2877,9 @@ function resetAddFontValidationState() {
   }
 }
 
-function openAddFontModal() {
-  if (!window.bootstrap?.Modal || !addFontModalElement) return;
+function openAddFontModal(onApply) {
+  if (!window.bootstrap?.Modal || !addFontModalElement || typeof onApply !== "function") return;
+  addFontApplyCallback = onApply;
   if (addFontValueInput) addFontValueInput.value = "";
   resetAddFontValidationState();
   // Focus itself happens on the modal's own "shown.bs.modal" event (see
@@ -3308,56 +2889,6 @@ function openAddFontModal() {
   window.bootstrap.Modal.getOrCreateInstance(addFontModalElement).show();
 }
 
-// Shared by the blur-triggered check and (indirectly, via
-// pendingValidatedFont) the submit button — a comma means it's already a
-// full CSS font-family declaration (e.g. "Georgia, serif" or "'My Font',
-// sans-serif") — used verbatim, nothing to load or verify. No comma means
-// a bare name (e.g. "Roboto Condensed") — treated as a Google Font:
-// existence-checked, wrapped with a generic fallback for `family`, and
-// space-to-"+" encoded for `googleFont`. Throws with a user-facing
-// message on any validation failure.
-async function validateFontInput(raw) {
-  if (!raw) {
-    throw new Error("Enter a font name or CSS font-family value.");
-  }
-  const isRawCss = raw.includes(",");
-  // Different allowlists since the two shapes have different valid
-  // characters — catches obviously-wrong/junk input before any network
-  // activity, independent of the real-existence check below (which only
-  // applies to the bare-name path; a raw CSS stack can't be verified
-  // against anything).
-  const isValidFormat = isRawCss ? /^[a-zA-Z0-9 ,'"-]{1,150}$/.test(raw) : /^[a-zA-Z0-9 '-]{1,60}$/.test(raw);
-  if (!isValidFormat) {
-    throw new Error("That doesn't look like a valid font name or font-family value.");
-  }
-  const baseLabel = isRawCss ? raw.replace(/['"]/g, "").split(",")[0].trim() || raw : raw;
-  const id = baseLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  if (!id) {
-    throw new Error("Enter a valid font name or font-family value.");
-  }
-  let label = baseLabel;
-  let googleFont;
-  if (!isRawCss) {
-    googleFont = raw.replace(/\s+/g, "+");
-    // Confirms the name actually resolves to something Google Fonts
-    // serves before it's added to the shared library — throws with a
-    // user-facing message if not.
-    await verifyGoogleFontExists(raw, googleFont);
-    // Best-effort labeling, "if known" — the same style the old
-    // hand-curated list used (e.g. "Georgia (serif)"). Any lookup problem
-    // (including this specific metadata endpoint being unreachable or
-    // CORS-blocked from this origin, which is unconfirmed) just means no
-    // suffix, never blocks validation — logged so it's diagnosable if it
-    // keeps not showing up.
-    const { category } = await lookupGoogleFontCategory(raw);
-    if (category) {
-      label = `${raw} (${category})`;
-    } else {
-      console.warn(`No Google Fonts category found for "${raw}" — the metadata lookup may be unavailable from this origin.`);
-    }
-  }
-  return isRawCss ? { id, label, family: raw } : { id, label, family: `'${raw}', sans-serif`, googleFont };
-}
 
 async function handleAddFontValueBlur() {
   const raw = (addFontValueInput?.value || "").trim();
@@ -3406,138 +2937,6 @@ async function handleDeleteCustomFont(option) {
   }
 }
 
-// Same shape as attachIconAutocomplete (open on focus/click, filter as you
-// type, arrow-key nav, close on blur after a short delay so clicks land
-// first) — the two differences are a pinned "Add a font…" row always
-// appended after the filtered results (opens the add-font modal instead
-// of applying a selection), and each rendered row previews its own font
-// live via inline style, loading Google Fonts progressively as they
-// scroll into view so the preview isn't just the fallback.
-function attachFontFamilyAutocomplete(input) {
-  if (!input) return null;
-  const container = ensureFontFamilyAutocompleteContainer(input);
-  if (!container) return null;
-  const MAX_ITEMS = 20;
-  let items = [];
-  let activeIndex = -1;
-
-  const close = () => {
-    items = [];
-    activeIndex = -1;
-    container.innerHTML = "";
-    container.classList.add("d-none");
-  };
-
-  const activateItem = (item) => {
-    close();
-    if (item.type === "add") {
-      if (userMeetsTier("creator")) {
-        openAddFontModal();
-      } else {
-        status?.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 });
-      }
-    } else {
-      applyFontSelection(input, item.option);
-    }
-  };
-
-  const render = () => {
-    const value = input.value.trim().toLowerCase();
-    const matches = getAllFontOptions()
-      .filter((option) => {
-        if (!value) return true;
-        return option.label.toLowerCase().includes(value) || (option.family ?? "").toLowerCase().includes(value);
-      })
-      .slice(0, MAX_ITEMS);
-    items = [...matches.map((option) => ({ type: "font", option })), { type: "add" }];
-    activeIndex = -1;
-    container.innerHTML = "";
-    items.forEach((item, index) => {
-      // A <div>, not a <button> — the optional delete button below needs
-      // to nest inside a clickable row, and a <button> can't contain
-      // another <button> (invalid HTML). Click handling on the row itself
-      // does the same job a <button> would.
-      const row = document.createElement("div");
-      row.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1";
-      row.dataset.fontIndex = String(index);
-      row.setAttribute("role", "option");
-
-      const label = document.createElement("span");
-      label.className = "flex-grow-1 text-truncate";
-      if (item.type === "add") {
-        label.textContent = "Add a font…";
-        row.classList.add("fw-semibold");
-      } else {
-        label.textContent = item.option.label;
-        if (item.option.family) {
-          label.style.fontFamily = item.option.family;
-          ensureFontLoaded(item.option);
-        }
-      }
-      row.appendChild(label);
-
-      if (item.type === "font" && isCustomFontId(item.option.id) && userMeetsTier("admin")) {
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "btn btn-sm btn-outline-danger py-0 px-1 flex-shrink-0";
-        deleteButton.textContent = "×";
-        deleteButton.setAttribute("aria-label", `Delete ${item.option.label} from the font library`);
-        deleteButton.addEventListener("mousedown", (event) => event.preventDefault());
-        deleteButton.addEventListener("click", (event) => {
-          event.stopPropagation();
-          close();
-          handleDeleteCustomFont(item.option);
-        });
-        row.appendChild(deleteButton);
-      }
-
-      row.addEventListener("mousedown", (event) => event.preventDefault());
-      row.addEventListener("click", () => activateItem(item));
-      container.appendChild(row);
-    });
-    container.classList.remove("d-none");
-  };
-
-  const onKeyDown = (event) => {
-    if (container.classList.contains("d-none")) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      activeIndex = Math.min(activeIndex + 1, items.length - 1);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      activeIndex = Math.max(activeIndex - 1, 0);
-    } else if (event.key === "Enter") {
-      if (activeIndex < 0 || !items[activeIndex]) return;
-      event.preventDefault();
-      activateItem(items[activeIndex]);
-      return;
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      close();
-      return;
-    } else {
-      return;
-    }
-    Array.from(container.querySelectorAll("[data-font-index]")).forEach((row) => {
-      row.classList.toggle("active", Number(row.dataset.fontIndex) === activeIndex);
-    });
-  };
-
-  input.addEventListener("focus", () => {
-    // Select-all on focus: the common case is replacing one font with
-    // another, not editing the name in place, so this saves a
-    // select-all-then-type step every time (matches how a lot of native
-    // "pick one of these" text fields behave).
-    input.select();
-    render();
-  });
-  input.addEventListener("click", render);
-  input.addEventListener("input", render);
-  input.addEventListener("keydown", onKeyDown);
-  input.addEventListener("blur", () => setTimeout(close, 120));
-
-  return { render, close };
-}
 
 function attachBindingAutocomplete(input, { supportsFunctions = true, resolveContext = null } = {}) {
   if (!input) return null;
@@ -3569,13 +2968,31 @@ function initBindingAutocompletes() {
   const resolveInspectorContext = () => getInspectorPreviewContext(selectedNodeId);
   attachBindingAutocomplete(textEditor, { resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(iconInput, { resolveContext: resolveInspectorContext });
-  attachIconAutocomplete(iconInput);
+  attachIconAutocomplete(iconInput, { onSelect: applyIconSelection });
   attachBindingAutocomplete(repeaterItemsInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(repeaterDecoratorTextInput, { supportsFunctions: false, resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(imageUrlInput, { resolveContext: resolveInspectorContext });
   attachBindingAutocomplete(ariaLabelInput, { resolveContext: resolveInspectorContext });
-  attachClassNameAutocomplete(classNameInput);
-  attachFontFamilyAutocomplete(fontFamilyInput);
+  attachClassNameAutocomplete(classNameInput, { wrapChange: recordUndoableChange });
+  attachFontFamilyAutocomplete(fontFamilyInput, {
+    onSelect: (option) => applyFontSelection(fontFamilyInput, option),
+    onAddFont: () =>
+      openAddFontModal((registered) => {
+        recordUndoableChange(() => {
+          updateSelectedNode((node) => {
+            const styles = { ...(node.style ?? {}), fontFamily: registered.family };
+            node.style = styles;
+          });
+          renderPreview();
+        });
+        if (fontFamilyInput) fontFamilyInput.value = registered.label;
+        updateSaveState();
+      }),
+    canAddFont: () => userMeetsTier("creator"),
+    onAddDenied: () => status?.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+    onDeleteFont: (option) => handleDeleteCustomFont(option),
+    canDeleteFont: () => userMeetsTier("admin"),
+  });
 }
 
 function renderPalette() {
@@ -4672,6 +4089,12 @@ function renderGridView() {
     if (gridViewStageBack) gridViewStageBack.innerHTML = "";
     return;
   }
+  // Cascades to every node that leaves its own Font field unset via
+  // ordinary CSS inheritance — see the base font's own doc comment in
+  // font-library.js. Set here (not just in renderPreview) since Grid View
+  // has its own independent call sites that don't always go through it.
+  if (viewPanelGrid) viewPanelGrid.style.fontFamily = template.baseFontFamily || DEFAULT_FONT_FAMILY;
+
   const sourceContext = { ...source, value: sourceValue, data: sourceData };
 
   const frontCount = getRepeatItemCount(template, "front", { data: sourceData, page: getEditablePage("front") });
@@ -4840,6 +4263,11 @@ function renderPreview() {
   updateCardPageNav(totalCardPages);
   updateGridViewAvailability(template);
 
+  // Cascades to every node that leaves its own Font field unset via
+  // ordinary CSS inheritance — see the base font's own doc comment in
+  // font-library.js.
+  if (viewPanelPreview) viewPanelPreview.style.fontFamily = template.baseFontFamily || DEFAULT_FONT_FAMILY;
+
   previewStage.innerHTML = "";
   const sourceContext = { ...source, value: sourceValue, data: sourceData };
   const page = template.createPage(side, {
@@ -4892,6 +4320,7 @@ function renderPreview() {
 }
 
 function buildPrintStack(template, { size, format, data, source }) {
+  printStack.style.fontFamily = template.baseFontFamily || DEFAULT_FONT_FAMILY;
   printStack.innerHTML = "";
   // #printStack is display:none outside of an actual print (see styles.css)
   // so it never clutters the normal UI — but that also means
@@ -6247,22 +5676,15 @@ function bindInspectorControls() {
       // successfully validated the current value, so this should always
       // be set — guarded anyway rather than trusting the disabled state
       // alone.
-      if (!pendingValidatedFont) return;
+      if (!pendingValidatedFont || !addFontApplyCallback) return;
       const font = pendingValidatedFont;
+      const applyCallback = addFontApplyCallback;
       // registerCustomFont no-ops (returns the existing entry) if this id
       // is already registered — adding the same font twice just resolves
       // to the one shared entry rather than duplicating the list.
       const registered = registerCustomFont(font);
       ensureFontLoaded(registered);
-      recordUndoableChange(() => {
-        updateSelectedNode((node) => {
-          const styles = { ...(node.style ?? {}), fontFamily: registered.family };
-          node.style = styles;
-        });
-        renderPreview();
-      });
-      if (fontFamilyInput) fontFamilyInput.value = registered.label;
-      updateSaveState();
+      applyCallback(registered);
       window.bootstrap?.Modal?.getInstance(addFontModalElement)?.hide();
       try {
         await saveCustomFont(registered, dataManager?.session?.token);
@@ -6647,6 +6069,16 @@ function bindInspectorControls() {
 }
 
 function wireEvents() {
+  // Same dirty check updateSaveState already uses for the Save button —
+  // Press had no guard at all against navigating/closing away from
+  // unsaved edits (unlike Workbench, which already had this).
+  window.addEventListener("beforeunload", (event) => {
+    const hasTemplate = Boolean(getActiveTemplate());
+    const dirty = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
   if (newTemplateButton) {
     newTemplateButton.addEventListener("click", () => {
       startNewTemplate();

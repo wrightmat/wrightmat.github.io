@@ -513,13 +513,17 @@ async function init() {
   status = shell.status;
   const auth = initAuthControls({
     status,
-    spotlightContext: {
-      getKind: () => "effect",
-      getId: () => currentRecord?.id,
-      getLabel: () => currentRecord?.name,
-    },
   });
   dataManager = auth.dataManager;
+
+  // Same dirty check updateActionButtons already uses for the Save button —
+  // Vault had no guard at all against navigating/closing away from
+  // unsaved edits (unlike Workbench, which already had this).
+  window.addEventListener("beforeunload", (event) => {
+    if (!currentRecord || !dirtyGate.isDirty()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
 
   elements.generateButton?.addEventListener("click", handleGenerate);
   elements.saveButton?.addEventListener("click", handleSave);

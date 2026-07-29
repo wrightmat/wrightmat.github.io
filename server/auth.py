@@ -260,6 +260,19 @@ def _normalize_session_token(token: Optional[str]) -> Optional[str]:
     return token
 
 
+def _parse_expiry(value: Any) -> Optional[datetime]:
+    # A stored expires_at should always be a valid isoformat string (every
+    # writer in this file uses datetime.isoformat()) — but a single
+    # corrupted/malformed row here used to take down EVERY authenticated
+    # request with an uncaught ValueError, since get_user_by_session runs on
+    # every one of them. Treating an unparseable value as "no valid expiry"
+    # instead lets the caller fail safe (session invalid) rather than crash.
+    try:
+        return datetime.fromisoformat(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[User]:
     normalized = _normalize_session_token(token)
     if not normalized:
@@ -278,8 +291,11 @@ def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[Us
         return None
     if not row:
         return None
-    expires_at = datetime.fromisoformat(row["expires_at"])
-    if expires_at < datetime.utcnow():
+    expires_at = _parse_expiry(row["expires_at"])
+    if expires_at is None or expires_at < datetime.utcnow():
+        # A malformed expires_at is treated the same as an expired one —
+        # deactivated here too, so a corrupted row self-heals into a normal
+        # "please log in again" instead of crashing on every future request.
         state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (normalized,))
         state.db.commit()
         return None
@@ -569,8 +585,8 @@ def verify_registration(state: ServerState, payload: Dict[str, str]) -> Dict[str
         return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitized}
     if not record:
         raise AuthError("No verification code found")
-    expires_at = datetime.fromisoformat(record["expires_at"])
-    if expires_at < datetime.utcnow():
+    expires_at = _parse_expiry(record["expires_at"])
+    if expires_at is None or expires_at < datetime.utcnow():
         state.db.execute("UPDATE email_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
         state.db.commit()
         raise AuthError("Verification code expired")

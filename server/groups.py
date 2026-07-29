@@ -28,6 +28,27 @@ _GROUP_ID_PREFIX = "grp_"
 # previously not gated at all.
 _CREATE_GROUP_MIN_TIER = "gm"
 
+# Spotlight kinds whose entire "content" is inline in the spotlight log entry
+# itself (a `data` payload — undercroft/common/js/lib/data-manager.js's own
+# spotlightToGroup/updateSpotlightData) rather than a real, persisted Library
+# record — deliberately NOT a Library kind (no common/data/kind/browser.json
+# or clock.json, nothing for Loom's Library tab to list/manage), so there's
+# nothing here for content_exists() to check the existence of. The spotlight
+# log entry for one of these only ever needs to answer "is this specific
+# widget instance currently toggled on, and with what data" (kind+id+data,
+# same shape every other spotlight uses minus the Library-record dependency)
+# — a follower (another player who accepted this onto their own dashboard, or
+# the GM's own second-screen mirror) reads that data straight from the log
+# entry via spotlight.js's resolveSpotlightData, never from a fetched record.
+#
+# "calendar" and "soundboard" are both partial exceptions worth noting: the
+# WIDGET INSTANCE itself (kind+id here) still has no Library record of its
+# own, same as browser/clock — but Calendar's own widget separately shares
+# and references a real "setting" record for its vocabulary (a normal
+# share_with_group call, validated the ordinary way, nothing to do with this
+# set) alongside its own inline spotlight entry.
+_INLINE_SPOTLIGHT_KINDS = {"browser", "clock", "calendar", "soundboard"}
+
 
 def _generate_group_id(state: ServerState) -> str:
     while True:
@@ -341,32 +362,63 @@ def _fetch_group_log_entries(state: ServerState, group_id: str, limit: int) -> L
     return _serialize_log_entries(ordered)
 
 
-def get_latest_spotlight(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
-    """The group's most recent `spotlight` log entry's payload ({kind, id,
-    templateId}), or None if nothing is currently shown — either because
-    nothing was ever spotlighted, or because a later `spotlight-clear` entry
-    (the GM explicitly stopping) is more recent than the last `spotlight`.
-    No access check here by design — this is only ever called from a context
-    that has already resolved group access (storage.py's get_item, for the
+def get_active_spotlights(state: ServerState, group_id: str, limit: int = 200) -> List[Dict[str, Any]]:
+    """Every (kind, id) pair currently spotlighted in this group — replayed
+    forward through the group's own `spotlight`/`spotlight-clear` history,
+    same per-instance resolution spotlight.js's own resolveIsSpotlighted
+    applies client-side (a later entry, scoped by kind+id, kind-only, or
+    fully global, supersedes an earlier one), just computed for every kind
+    at once rather than one at a time — storage.py's get_item (the
     share-token special case that lets an anonymous share-link visitor read
-    exactly whatever's currently spotlighted, and nothing else)."""
-    row = state.db.execute(
+    exactly whatever's currently shown, and nothing else) needs to check an
+    arbitrary requested (kind, id) — or, for a template fetch, match against
+    any currently-active entry's own templateId — without knowing in advance
+    which kind is actually active. No access check here by design — only
+    ever called from a context that has already resolved group access.
+    Bounded to the most recent `limit` spotlight/spotlight-clear entries
+    (chronological order, oldest first, so a later clear is correctly
+    applied after the spotlight it clears) — same practical "recent window,
+    not full unbounded history" tradeoff resolveIsSpotlighted's own default
+    `limit` makes client-side; a GM realistically never has anywhere close
+    to this many simultaneously-relevant show/hide toggles outstanding."""
+    rows = state.db.execute(
         """
         SELECT entry_type, payload
         FROM group_logs
         WHERE group_id = ? AND entry_type IN ('spotlight', 'spotlight-clear')
         ORDER BY id DESC
-        LIMIT 1
+        LIMIT ?
         """,
-        (group_id,),
-    ).fetchone()
-    if not row or row["entry_type"] != "spotlight" or not row["payload"]:
-        return None
-    try:
-        payload = json.loads(row["payload"])
-    except json.JSONDecodeError:
-        return None
-    return payload if isinstance(payload, dict) else None
+        (group_id, limit),
+    ).fetchall()
+    active: Dict[Tuple[str, str], Dict[str, Any]] = {}
+    for row in reversed(rows):
+        if not row["payload"]:
+            continue
+        try:
+            payload = json.loads(row["payload"])
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        if row["entry_type"] == "spotlight":
+            kind_value = str(payload.get("kind") or "")
+            id_value = str(payload.get("id") or "")
+            if kind_value and id_value:
+                active[(kind_value, id_value)] = payload
+        else:  # spotlight-clear
+            clear_kind = payload.get("kind")
+            if not clear_kind:
+                active.clear()  # Global clear.
+                continue
+            clear_kind = str(clear_kind)
+            clear_id = payload.get("id")
+            if clear_id:
+                active.pop((clear_kind, str(clear_id)), None)
+            else:
+                for key in [k for k in active if k[0] == clear_kind]:
+                    active.pop(key, None)
+    return list(active.values())
 
 
 def list_group_log(
@@ -403,7 +455,7 @@ def create_group_log_entry(
         raise AuthError("Sign in to post to the game log")
     row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
     normalized_type = (entry_type or "").strip().lower() or "message"
-    if normalized_type not in {"message", "roll", "spotlight", "spotlight-clear"}:
+    if normalized_type not in {"message", "roll", "spotlight", "spotlight-clear", "spotlight-update"}:
         raise AuthError("Unsupported log entry type")
     text = (message or "").strip()
     if text:
@@ -417,24 +469,40 @@ def create_group_log_entry(
         if not payload_value:
             raise AuthError("Roll payload is required")
     if normalized_type == "spotlight":
-        # {kind, id, templateId} — templateId is optional (the "Now showing"
-        # viewer can fall back to a generic display if the GM didn't pick a
-        # print template), but kind/id are required to know what to fetch.
+        # {kind, id, templateId, data} — templateId is optional (the "Now
+        # showing" viewer can fall back to a generic display if the GM didn't
+        # pick a print template), but kind/id are required to know what to
+        # fetch. `data` is only meaningful for _INLINE_SPOTLIGHT_KINDS (see
+        # that set's own comment) — ignored otherwise, since a real
+        # Library-backed kind's content always comes from its own record.
         if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
             raise AuthError("Spotlight payload requires kind and id")
-        # Defense in depth: spotlightToGroup (data-manager.js) always shares
-        # the entity first via share_with_group, which already enforces this
-        # same check — but that's a client-side convention, not something
-        # this route itself relies on. Without checking again here, posting
-        # a spotlight entry straight to this endpoint (bypassing the share
-        # step) could reference a generated-but-never-saved record, which
-        # then fails later — and confusingly, on a viewer's screen — instead
-        # of immediately telling the GM to save it first.
-        if not content_exists(state, str(payload_value["kind"]), str(payload_value["id"])):
-            raise AuthError("Save this record before showing it to the table")
-        template_id = payload_value.get("templateId")
-        if template_id and not content_exists(state, "template", str(template_id)):
-            raise AuthError("Save this template before showing it to the table")
+        kind_value = str(payload_value["kind"])
+        if kind_value not in _INLINE_SPOTLIGHT_KINDS:
+            # Defense in depth: spotlightToGroup (data-manager.js) always
+            # shares the entity first via share_with_group, which already
+            # enforces this same check — but that's a client-side
+            # convention, not something this route itself relies on. Without
+            # checking again here, posting a spotlight entry straight to
+            # this endpoint (bypassing the share step) could reference a
+            # generated-but-never-saved record, which then fails later —
+            # and confusingly, on a viewer's screen — instead of immediately
+            # telling the GM to save it first.
+            if not content_exists(state, kind_value, str(payload_value["id"])):
+                raise AuthError("Save this record before showing it to the table")
+            template_id = payload_value.get("templateId")
+            if template_id and not content_exists(state, "template", str(template_id)):
+                raise AuthError("Save this template before showing it to the table")
+    if normalized_type == "spotlight-update":
+        # A silent data refresh on an already-shown inline-kind spotlight (a
+        # clock tick, a Browser URL edit) — never posted for a real
+        # Library-backed kind, whose content already lives in, and is always
+        # re-fetched from, its own record.
+        if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
+            raise AuthError("Spotlight update payload requires kind and id")
+        kind_value = str(payload_value["kind"])
+        if kind_value not in _INLINE_SPOTLIGHT_KINDS:
+            raise AuthError("This kind does not support inline spotlight updates")
     payload_data = None
     if payload_value is not None:
         try:

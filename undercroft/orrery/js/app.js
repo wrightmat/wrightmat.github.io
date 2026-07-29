@@ -17,6 +17,29 @@ import {
   updateMapTimestamp,
 } from "./lib/map-model.js";
 import { BaseMapManager } from "./lib/base-maps.js";
+// The shared map-rendering core (also used by the Dashboard's Map widget —
+// see its own header comment) — renderMapLayers is the whole render loop;
+// everything else here is either a pure helper Orrery's own authoring code
+// still calls directly (getGridType, getGridCellKey,
+// createGridCellSelectionEntry, findGridCellById, normalizeGroupMembers,
+// getLayerPositionScale, getLayerSizeScale, getLayerRenderPosition — all
+// identical signatures, no wrapper needed), or one bindLayerDrag's
+// whole-layer drag needs with baseMapManager/state.map injected (the
+// `sharedGet*` aliases, wrapped just below).
+import {
+  computeVisibleLayerIds,
+  renderMapLayers,
+  getGridType,
+  getGridCellKey,
+  createGridCellSelectionEntry,
+  findGridCellById,
+  normalizeGroupMembers,
+  getLayerPositionScale,
+  getLayerSizeScale,
+  getLayerRenderPosition,
+  getGridLayoutScale as sharedGetGridLayoutScale,
+  getGridOffset as sharedGetGridOffset,
+} from "./lib/map-viewer.js";
 
 const state = {
   map: createMapModel(),
@@ -50,17 +73,7 @@ const { status, undoStack, undo, redo } = initAppShell({
   },
 });
 
-const auth = initAuthControls({
-  status,
-  // A map has no print-card rendering of its own (see spotlight.js's
-  // LINK_ONLY_KINDS) — spotlighting one just posts a link back into Orrery
-  // with ?map=<id>, handled by loadMapFromUrlParam below.
-  spotlightContext: {
-    getKind: () => "map",
-    getId: () => state.map.id,
-    getLabel: () => state.map.name,
-  },
-});
+const auth = initAuthControls({ status });
 const dataManager = auth.dataManager;
 
 // Ownership metadata for saved Maps, used only for the Delete button's
@@ -281,29 +294,12 @@ function getEffectiveViewerTier() {
   return dataManager?.getUserTier() || "free";
 }
 
-// Returns null when nothing should be filtered (the current user has full
-// access, or the map has no authored Views at all — matches the "no Views
-// configured yet" case defaulting to unfiltered, same instinct as every
-// other kind's "empty array means unrestricted" tag convention elsewhere in
-// this codebase). Otherwise returns the Set of layer ids visible to the
-// current viewer's effective tier — the union of every View whose `tiers`
-// is empty (applies to everyone, same "empty means universal" convention as
-// Sanctum's/Vault's/Crucible's tag arrays) or includes their tier. An empty
-// Set is a legitimate result: Views exist, but none match this viewer, so
-// nothing is visible.
+// The actual filtering logic lives in lib/map-viewer.js now — shared with
+// the Dashboard's Map widget so there's exactly one implementation. See its
+// own doc comment for the "empty tiers = universal, empty Set = legitimate
+// all-hidden result" contract this preserves unchanged.
 function getVisibleLayerIds() {
-  if (currentUserHasFullMapAccess()) {
-    return null;
-  }
-  const views = state.map.views || [];
-  if (!views.length) {
-    return null;
-  }
-  const tier = getEffectiveViewerTier();
-  const applicableViews = views.filter((view) => !view.tiers?.length || view.tiers.includes(tier));
-  const visible = new Set();
-  applicableViews.forEach((view) => (view.layerIds || []).forEach((id) => visible.add(id)));
-  return visible;
+  return computeVisibleLayerIds(state.map, getEffectiveViewerTier(), currentUserHasFullMapAccess());
 }
 
 // "Clean" baseline for the whole map (a JSON snapshot at last load/save) —
@@ -644,90 +640,25 @@ function syncOverlayInteractivity() {
   }
 }
 
-function getBaseZoom() {
-  return baseMapManager.getDefaultView?.()?.zoom ?? 1;
-}
-
-function getGridZoomScale() {
-  const baseZoom = getBaseZoom();
-  const viewZoom = Number.isFinite(state.map.view?.zoom) ? state.map.view.zoom : baseZoom;
-  if (state.map.baseMap.type === "tile") {
-    return Math.pow(2, viewZoom - baseZoom);
-  }
-  return baseZoom ? viewZoom / baseZoom : 1;
-}
-
+// getGridLayoutScale/getGridOffset delegate to lib/map-viewer.js now (same
+// coordinate math the shared createGridLayerElement uses internally) — kept
+// here only because bindLayerDrag's whole-layer drag (Orrery-authoring-only)
+// still needs them directly. getGridType/getGridCellKey/
+// createGridCellSelectionEntry/findGridCellById/normalizeGroupMembers are
+// imported straight from the shared module below (identical signatures, no
+// wrapper needed) since findGridCell/ensureGridCell/buildGridRangeSelection/
+// formatGridCellLabel/summarizeGridSelection and the group-editing UI still
+// call them directly.
 function getGridLayoutScale() {
-  return state.map.baseMap.type === "tile" ? getGridZoomScale() * 0.1 : 1;
-}
-
-function getGridHitTestScale() {
-  return state.map.baseMap.type === "tile" ? 1 : getGridZoomScale();
+  return sharedGetGridLayoutScale(baseMapManager, state.map);
 }
 
 function getGridOffset(layer) {
-  const offsetScale = getGridLayoutScale();
-  return {
-    x: (layer.position?.x || 0) * offsetScale,
-    y: (layer.position?.y || 0) * offsetScale,
-  };
-}
-
-function getGridCellSize(layer) {
-  const baseSize = layer.settings?.cellSize || 50;
-  return baseSize * getGridLayoutScale();
-}
-
-function getGridType(layer) {
-  return layer.settings?.gridType || "square";
-}
-
-function getGridCellKey(layer, coord) {
-  const gridType = getGridType(layer);
-  if (gridType === "hex") {
-    return `hex:${coord.q},${coord.r}`;
-  }
-  return `square:${coord.col},${coord.row}`;
-}
-
-function createGridCellSelectionEntry(layer, coord) {
-  return {
-    key: getGridCellKey(layer, coord),
-    coord,
-  };
-}
-
-function normalizeGroupMembers(group) {
-  return (group.elementIds || []).map((entry) => {
-    if (typeof entry === "string") {
-      return { elementId: entry };
-    }
-    return entry || {};
-  });
+  return sharedGetGridOffset(baseMapManager, state.map, layer);
 }
 
 function getGroupMemberKey(member) {
   return `${member.layerId || "unknown"}:${member.elementId || "unknown"}`;
-}
-
-function findGridCellById(layer, elementId) {
-  return layer.elements?.find((element) => element.kind === "cell" && element.id === elementId) || null;
-}
-
-function getGroupCellsForLayer(group, layer) {
-  const members = normalizeGroupMembers(group);
-  const selections = [];
-  members.forEach((member) => {
-    if (member.kind !== "grid-cell" || member.layerId !== layer.id) {
-      return;
-    }
-    const cell = findGridCellById(layer, member.elementId);
-    if (!cell) {
-      return;
-    }
-    selections.push(createGridCellSelectionEntry(layer, cell.coord));
-  });
-  return selections;
 }
 
 function buildGridRangeSelection(layer, start, end) {
@@ -777,82 +708,6 @@ function ensureGridCell(layer, coord) {
   return cell;
 }
 
-function getHexMetrics(cellSize) {
-  const size = cellSize / 2;
-  const height = Math.sqrt(3) * size;
-  return {
-    size,
-    height,
-    width: cellSize,
-    offsetX: size,
-    offsetY: height / 2,
-  };
-}
-
-function axialRound(q, r) {
-  let x = q;
-  let z = r;
-  let y = -x - z;
-  let rx = Math.round(x);
-  let ry = Math.round(y);
-  let rz = Math.round(z);
-
-  const xDiff = Math.abs(rx - x);
-  const yDiff = Math.abs(ry - y);
-  const zDiff = Math.abs(rz - z);
-
-  if (xDiff > yDiff && xDiff > zDiff) {
-    rx = -ry - rz;
-  } else if (yDiff > zDiff) {
-    ry = -rx - rz;
-  } else {
-    rz = -rx - ry;
-  }
-
-  return { q: rx, r: rz };
-}
-
-function getGridCoordFromPoint(layer, point) {
-  const hitScale = getGridHitTestScale();
-  const scaledPoint = hitScale ? { x: point.x / hitScale, y: point.y / hitScale } : point;
-  const cellSize = getGridCellSize(layer);
-  const gridType = getGridType(layer);
-  if (gridType === "hex") {
-    const { size, offsetX, offsetY } = getHexMetrics(cellSize);
-    const x = scaledPoint.x - offsetX;
-    const y = scaledPoint.y - offsetY;
-    const q = (2 / 3) * (x / size);
-    const r = ((-1 / 3) * x + (Math.sqrt(3) / 3) * y) / size;
-    return axialRound(q, r);
-  }
-  return {
-    col: Math.floor(scaledPoint.x / cellSize),
-    row: Math.floor(scaledPoint.y / cellSize),
-  };
-}
-
-function getGridCellPixelRect(layer, coord) {
-  const cellSize = getGridCellSize(layer);
-  const gridType = getGridType(layer);
-  if (gridType === "hex") {
-    const { size, height, width, offsetX, offsetY } = getHexMetrics(cellSize);
-    const centerX = size * 1.5 * coord.q + offsetX;
-    const centerY = size * Math.sqrt(3) * (coord.r + coord.q / 2) + offsetY;
-    return {
-      x: centerX - width / 2,
-      y: centerY - height / 2,
-      width,
-      height,
-    };
-  }
-  return {
-    x: coord.col * cellSize,
-    y: coord.row * cellSize,
-    width: cellSize,
-    height: cellSize,
-  };
-}
-
 function formatGridCellLabel(layer, coord) {
   const gridType = getGridType(layer);
   if (gridType === "hex") {
@@ -884,144 +739,14 @@ function summarizeGridSelection(layer, selectedCells) {
   return `Col ${minCol}, Row ${minRow} → Col ${maxCol}, Row ${maxRow} · ${selectedCells.length} cells`;
 }
 
-function buildHexGridBackground(size, lineColor) {
-  const side = Math.max(size / 2, 1);
-  const hexHeight = Math.sqrt(3) * side;
-  const tileWidth = side * 3;
-  const tileHeight = hexHeight * 2;
-  const hexPoints = (centerX, centerY) =>
-    [
-      [centerX - side, centerY],
-      [centerX - side / 2, centerY - hexHeight / 2],
-      [centerX + side / 2, centerY - hexHeight / 2],
-      [centerX + side, centerY],
-      [centerX + side / 2, centerY + hexHeight / 2],
-      [centerX - side / 2, centerY + hexHeight / 2],
-    ]
-      .map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`)
-      .join(" ");
-  const hexes = [
-    [side, hexHeight / 2],
-    [side, hexHeight * 1.5],
-    [side * 2.5, 0],
-    [side * 2.5, hexHeight],
-  ];
-  const polygons = hexes
-    .map(([centerX, centerY]) => `<polygon points="${hexPoints(centerX, centerY)}" fill="none" stroke="${lineColor}" stroke-width="1" />`)
-    .join("");
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${tileWidth}" height="${tileHeight}" viewBox="0 0 ${tileWidth} ${tileHeight}">
-      ${polygons}
-    </svg>
-  `;
-  const encoded = encodeURIComponent(svg.trim());
-  return {
-    image: `url("data:image/svg+xml,${encoded}")`,
-    width: tileWidth,
-    height: tileHeight,
-  };
-}
-
-function createGridLayerElement(layer, selectionState) {
-  const grid = document.createElement("div");
-  grid.className = "orrery-layer-grid-overlay";
-  if (selectionState?.isInteractive) {
-    grid.classList.add("is-interactive");
-    grid.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      baseMapManager.setInteractionEnabled(false);
-      const rect = grid.getBoundingClientRect();
-      const offset = getGridOffset(layer);
-      const point = {
-        x: event.clientX - rect.left - offset.x,
-        y: event.clientY - rect.top - offset.y,
-      };
-      const coord = getGridCoordFromPoint(layer, point);
-      const entry = createGridCellSelectionEntry(layer, coord);
-      const isCtrl = event.metaKey || event.ctrlKey;
-      const isShift = event.shiftKey;
-      const existing =
-        state.selection.kind === "grid-cells" && state.selection.layerId === layer.id ? state.selection.cells : [];
-      const selectionMap = new Map(existing.map((cell) => [cell.key, cell]));
-      let nextAnchor = coord;
-      if (isShift && (state.selection.anchor || existing.length)) {
-        const anchor = state.selection.anchor || existing[0]?.coord || coord;
-        const range = buildGridRangeSelection(layer, anchor, coord);
-        selectionMap.clear();
-        range.forEach((cell) => selectionMap.set(cell.key, cell));
-        nextAnchor = anchor;
-      } else if (isCtrl) {
-        if (selectionMap.has(entry.key)) {
-          selectionMap.delete(entry.key);
-        } else {
-          selectionMap.set(entry.key, entry);
-        }
-      } else {
-        selectionMap.clear();
-        selectionMap.set(entry.key, entry);
-      }
-      const nextCells = Array.from(selectionMap.values());
-      if (nextCells.length === 0) {
-        setSelection("layer", layer.id);
-      } else {
-        setSelection("grid-cells", null, { layerId: layer.id, cells: nextCells, anchor: nextAnchor });
-      }
-    });
-    grid.addEventListener("pointerup", () => {
-      baseMapManager.setInteractionEnabled(true);
-    });
-    grid.addEventListener("pointercancel", () => {
-      baseMapManager.setInteractionEnabled(true);
-    });
-  }
-  const gridScale = 3;
-  grid.style.width = `${gridScale * 100}%`;
-  grid.style.height = `${gridScale * 100}%`;
-  grid.style.left = `-${((gridScale - 1) / 2) * 100}%`;
-  grid.style.top = `-${((gridScale - 1) / 2) * 100}%`;
-  grid.style.right = "auto";
-  grid.style.bottom = "auto";
-  const size = getGridCellSize(layer);
-  const gridType = layer.settings?.gridType || "square";
-  const lineColor = layer.settings?.lineColor || "#0f172a";
-  if (gridType === "hex") {
-    const hexBackground = buildHexGridBackground(size, lineColor);
-    grid.style.backgroundImage = hexBackground.image;
-    grid.style.backgroundSize = `${hexBackground.width}px ${hexBackground.height}px`;
-  } else {
-    grid.style.backgroundImage = `linear-gradient(${lineColor} 1px, transparent 1px), linear-gradient(90deg, ${lineColor} 1px, transparent 1px)`;
-    grid.style.backgroundSize = `${size}px ${size}px`;
-  }
-  const offset = getGridOffset(layer);
-  grid.style.backgroundPosition = `${offset.x}px ${offset.y}px`;
-  if (selectionState?.groupCells?.length) {
-    grid.appendChild(createGridSelectionOverlay(layer, selectionState.groupCells, { variant: "group" }));
-  }
-  if (selectionState?.selectedCells?.length) {
-    grid.appendChild(createGridSelectionOverlay(layer, selectionState.selectedCells));
-  }
-  return grid;
-}
-
-function getLayerPositionScale() {
-  return 1;
-}
-
-function getLayerSizeScale() {
-  return 1;
-}
-
-function getLayerRenderPosition(layer, scale) {
-  return {
-    x: (layer.position?.x || 0) * scale,
-    y: (layer.position?.y || 0) * scale,
-  };
-}
-
+// createGridLayerElement/buildHexGridBackground/createRasterLayerElement/
+// createGridSelectionOverlay now live only in lib/map-viewer.js — the shared
+// renderMapLayers orchestrator calls them internally, so nothing here needs
+// to call them directly anymore. getLayerPositionScale/getLayerSizeScale/
+// getLayerRenderPosition ARE still called directly, though — by
+// updateTileLayerElementPosition below (whole-layer drag,
+// Orrery-authoring-only) — imported from the same module (see the import
+// block at the top of this file), identical signatures, no wrapper needed.
 function updateTileLayerElementPosition(layer, element) {
   if (!element || state.map.baseMap.type !== "tile") {
     return;
@@ -1061,203 +786,16 @@ function updateTileLayerElementPosition(layer, element) {
   }
 }
 
-function createRasterLayerElement(layer, renderState = {}) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "orrery-layer-raster-overlay";
-  const src = layer.settings?.src || "";
-  const image = document.createElement("img");
-  image.src = src || "data/sample-map.svg";
-  image.alt = layer.name;
-  const scale = renderState.sizeScale ?? 1;
-  if (layer.settings?.width) {
-    image.width = Math.max(1, Math.round(layer.settings.width * scale));
-  }
-  if (layer.settings?.height) {
-    image.height = Math.max(1, Math.round(layer.settings.height * scale));
-  }
-  if (renderState.position) {
-    wrapper.style.display = "block";
-    image.style.position = "absolute";
-    image.style.left = `${renderState.position.x}px`;
-    image.style.top = `${renderState.position.y}px`;
-    image.style.transform = "translate(-50%, -50%)";
-  }
-  wrapper.appendChild(image);
-  return wrapper;
-}
-
-function createGridSelectionOverlay(layer, selectedCells, options = {}) {
-  const overlay = document.createElement("div");
-  overlay.className = "orrery-layer-grid-selection";
-  const variant = options.variant || "selection";
-  const gridType = getGridType(layer);
-  const offset = getGridOffset(layer);
-  selectedCells.forEach((cell) => {
-    const rect = getGridCellPixelRect(layer, cell.coord);
-    const highlight = document.createElement("div");
-    highlight.className = "orrery-grid-cell-highlight";
-    if (variant === "group") {
-      highlight.classList.add("is-group");
-    }
-    if (gridType === "hex") {
-      highlight.classList.add("is-hex");
-    }
-    highlight.style.left = `${rect.x + offset.x}px`;
-    highlight.style.top = `${rect.y + offset.y}px`;
-    highlight.style.width = `${rect.width}px`;
-    highlight.style.height = `${rect.height}px`;
-    overlay.appendChild(highlight);
-  });
-  return overlay;
-}
-
-function isTileBaseMap() {
-  return state.map.baseMap.type === "tile";
-}
-
-// Layer position is a whole-layer pan offset applied on top of each marker
-// element's own coordinate — the exact convention grid layers already use
-// via getGridOffset (layer.position + each cell's own coord). Tile maps
-// don't use this: layer.position was never geo-anchored either, and every
-// marker now carries its own real {lat, lng}, so a separate manual "drag
-// the whole layer" pixel offset has no coherent meaning there.
-function getMarkerLayerOffset(layer) {
-  if (isTileBaseMap()) {
-    return { x: 0, y: 0 };
-  }
-  const scale = getLayerPositionScale();
-  return {
-    x: (layer.position?.x || 0) * scale,
-    y: (layer.position?.y || 0) * scale,
-  };
-}
-
-// Converts a marker's *stored* position into a pixel position relative to
-// the marker layer's own overlay container, for the CURRENT base map pan/
-// zoom — excluding getMarkerLayerOffset (added separately by the caller).
+// isTileBaseMap/getMarkerLayerOffset/localPixelToMarkerPosition/
+// createMarkerDot/createMarkerLayerElement/createVectorLayerElement/
+// createLayerWrapper now live only in lib/map-viewer.js — the entire render
+// loop (renderLayerOverlays below) delegates to the shared renderMapLayers
+// orchestrator, which calls all of these internally, so nothing here needs
+// to call them directly anymore. selectMarkerElementForDrag stays: it's
+// passed to renderMapLayers as the onMarkerDragStart callback (Orrery-only —
+// updates state.selection and the property inspector, which the shared
+// module has no concept of).
 //
-// Tile maps store real {lat, lng} and re-derive the pixel position fresh on
-// every render via Leaflet's own layerPoint projection. This is the whole
-// fix for markers not tracking pan/zoom: a flat pixel offset only looks
-// right at the zoom level it was placed at — Leaflet doesn't just visually
-// rescale existing content on zoom, it resets its internal pixel origin and
-// re-renders tiles at the new resolution, so anything positioned by a raw
-// pixel number (not re-projected from a real lat/lng) ends up in the wrong
-// place the moment the zoom level changes. layerPoint is the same
-// coordinate space Leaflet's own overlays use internally, which is why it
-// stays correctly anchored: it's relative to the map's pixel origin, not the
-// live pan offset — the enclosing Leaflet pane's own transform (which our
-// overlay host already lives inside) is what supplies the pan, exactly like
-// every built-in Leaflet layer.
-//
-// Image/canvas maps keep the original flat {x, y} model: their overlay
-// lives inside the same CSS-transformed element PanZoomController pans and
-// scales, so a plain local pixel coordinate already tracks pan/zoom for
-// free, with no projection reset to worry about.
-function markerPositionToLocalPixel(position) {
-  if (isTileBaseMap()) {
-    const map = baseMapManager.getMap();
-    if (map && position && Number.isFinite(position.lat) && Number.isFinite(position.lng)) {
-      const point = map.latLngToLayerPoint(window.L.latLng(position.lat, position.lng));
-      return { x: point.x, y: point.y };
-    }
-    return { x: 0, y: 0 };
-  }
-  return { x: position?.x || 0, y: position?.y || 0 };
-}
-
-// The inverse — turns a local pixel position (relative to the marker
-// layer's overlay container, i.e. already excluding getMarkerLayerOffset)
-// into whatever this base map type actually stores.
-function localPixelToMarkerPosition(pixel) {
-  if (isTileBaseMap()) {
-    const map = baseMapManager.getMap();
-    if (map) {
-      const latlng = map.layerPointToLatLng(window.L.point(pixel.x, pixel.y));
-      return { lat: latlng.lat, lng: latlng.lng };
-    }
-    return { lat: 0, lng: 0 };
-  }
-  return { x: Math.round(pixel.x), y: Math.round(pixel.y) };
-}
-
-function getMarkerElementPixelPosition(layer, markerElement) {
-  const offset = getMarkerLayerOffset(layer);
-  const local = markerPositionToLocalPixel(markerElement.position);
-  return {
-    x: offset.x + local.x,
-    y: offset.y + local.y,
-  };
-}
-
-let activeMarkerDrag = null;
-
-// Drag itself always operates in plain screen-pixel deltas (correct
-// regardless of base map type — you're never crossing a zoom-driven
-// projection reset mid-drag), and only converts the final pixel position
-// back into the marker's real stored representation (lat/lng or x/y) once
-// the gesture ends. Dragging incrementally in lat/lng space instead would be
-// wrong on a tile map anyway: degrees-per-pixel isn't constant across
-// latitude/zoom, so equal mouse movement wouldn't mean equal-looking
-// on-screen movement.
-function startMarkerElementDrag(event, layer, markerElement, dotEl) {
-  dotEl.setPointerCapture(event.pointerId);
-  const startPixel = getMarkerElementPixelPosition(layer, markerElement);
-  activeMarkerDrag = {
-    elementId: markerElement.id,
-    startX: event.clientX,
-    startY: event.clientY,
-    originPixelX: startPixel.x,
-    originPixelY: startPixel.y,
-    lastPixel: null,
-    before: JSON.stringify(state.map),
-  };
-  baseMapManager.setInteractionEnabled(false);
-
-  const onMove = (moveEvent) => {
-    if (!activeMarkerDrag || activeMarkerDrag.elementId !== markerElement.id) {
-      return;
-    }
-    const dx = moveEvent.clientX - activeMarkerDrag.startX;
-    const dy = moveEvent.clientY - activeMarkerDrag.startY;
-    const nextPixel = { x: activeMarkerDrag.originPixelX + dx, y: activeMarkerDrag.originPixelY + dy };
-    activeMarkerDrag.lastPixel = nextPixel;
-    dotEl.style.left = `${nextPixel.x}px`;
-    dotEl.style.top = `${nextPixel.y}px`;
-  };
-  const onUp = (upEvent) => {
-    if (!activeMarkerDrag || activeMarkerDrag.elementId !== markerElement.id) {
-      return;
-    }
-    dotEl.releasePointerCapture(upEvent.pointerId);
-    window.removeEventListener("pointermove", onMove);
-    window.removeEventListener("pointerup", onUp);
-    baseMapManager.setInteractionEnabled(true);
-    if (activeMarkerDrag.lastPixel) {
-      const offset = getMarkerLayerOffset(layer);
-      const localPixel = {
-        x: activeMarkerDrag.lastPixel.x - offset.x,
-        y: activeMarkerDrag.lastPixel.y - offset.y,
-      };
-      markerElement.position = localPixelToMarkerPosition(localPixel);
-    }
-    updateMapTimestamp(state.map);
-    const after = JSON.stringify(state.map);
-    if (activeMarkerDrag.before !== after) {
-      undoStack.push({ label: "move marker", before: activeMarkerDrag.before, after });
-    }
-    activeMarkerDrag = null;
-    // Deferred until drag-end, same as bindLayerDrag's whole-layer drag: a
-    // full renderLayerOverlays() mid-drag would replace dotEl in the DOM out
-    // from under the pointer capture that's driving onMove/onUp.
-    renderLayerOverlays();
-    syncOverlayInteractivity();
-    renderJson();
-  };
-  window.addEventListener("pointermove", onMove);
-  window.addEventListener("pointerup", onUp);
-}
-
 // A lightweight selection update for the moment a marker drag begins: updates
 // state.selection and the inspector panel, but deliberately skips
 // renderLayerOverlays() — that would tear down and replace the very dot
@@ -1275,148 +813,6 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
       .forEach((node) => node.classList.remove("is-selected"));
   }
   dotEl.classList.add("is-selected");
-}
-
-function createMarkerDot(layer, markerElement, options = {}) {
-  const dot = document.createElement("div");
-  dot.className = "orrery-layer-marker-overlay";
-  if (options.selected) {
-    dot.classList.add("is-selected");
-  }
-  dot.dataset.elementId = markerElement.id;
-  const size = layer.settings?.size || 24;
-  dot.style.width = `${size}px`;
-  dot.style.height = `${size}px`;
-  // Centering (top/left 50% + translate(-50%,-50%)) already comes from the
-  // .orrery-layer-marker-overlay CSS rule — dot.style.left/top below just
-  // overrides that 50%/50% anchor with this element's own pixel position;
-  // the transform still applies on top, so the dot's center (not its
-  // top-left corner) lands on that pixel.
-  dot.style.backgroundColor = layer.settings?.color || "#0ea5e9";
-  dot.style.pointerEvents = "auto";
-  dot.style.cursor = "pointer";
-  const pixelPosition = getMarkerElementPixelPosition(layer, markerElement);
-  dot.style.left = `${pixelPosition.x}px`;
-  dot.style.top = `${pixelPosition.y}px`;
-  if (markerElement.label) {
-    dot.title = markerElement.label;
-  }
-  dot.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    selectMarkerElementForDrag(layer, markerElement, dot);
-    startMarkerElementDrag(event, layer, markerElement, dot);
-  });
-  return dot;
-}
-
-// Marker layers render a full-size, absolutely-positioned container (not a
-// single centered dot) so each placed pin can carry its own position — the
-// per-element authoring Orrery's marker layers never had before (previously
-// just one schema-only, layer-level `position` with no way to drop
-// individual pins at all). When the layer (or one of its own markers) is the
-// active selection, clicking empty space inside the container drops a new
-// pin there — the same "select the layer, then click the canvas to act on
-// it" convention grid layers already use for cell selection.
-function createMarkerLayerElement(layer, options = {}) {
-  const container = document.createElement("div");
-  container.className = "orrery-layer-marker-container";
-  container.style.position = "absolute";
-  container.style.inset = "0";
-  container.style.pointerEvents = options.isInteractive ? "auto" : "none";
-  if (options.isInteractive) {
-    container.classList.add("is-interactive");
-    container.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0 || event.target !== container) {
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      let localPixel;
-      if (isTileBaseMap()) {
-        // mouseEventToLayerPoint handles the container-relative math itself
-        // (robust regardless of how deeply nested this container is inside
-        // Leaflet's own panned panes) and returns coordinates already in the
-        // same layerPoint space markerPositionToLocalPixel/
-        // localPixelToMarkerPosition use everywhere else.
-        const map = baseMapManager.getMap();
-        if (!map) {
-          return;
-        }
-        const layerPoint = map.mouseEventToLayerPoint(event);
-        localPixel = { x: layerPoint.x, y: layerPoint.y };
-      } else {
-        const rect = container.getBoundingClientRect();
-        const offset = getMarkerLayerOffset(layer);
-        localPixel = { x: event.clientX - rect.left - offset.x, y: event.clientY - rect.top - offset.y };
-      }
-      const newElement = createMarkerElement({ position: localPixelToMarkerPosition(localPixel) });
-      recordHistory("place marker", () => {
-        layer.elements = layer.elements || [];
-        layer.elements.push(newElement);
-        updateMapTimestamp(state.map);
-      });
-      setSelection("marker-element", newElement.id, { layerId: layer.id });
-      renderJson();
-    });
-  }
-  (layer.elements || []).forEach((markerElement) => {
-    container.appendChild(createMarkerDot(layer, markerElement, { selected: options.selectedElementId === markerElement.id }));
-  });
-  return container;
-}
-
-function createVectorLayerElement(layer, renderState = {}) {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  const baseSize = 200;
-  const scale = renderState.sizeScale ?? 1;
-  const scaledSize = Math.max(1, Math.round(baseSize * scale));
-  svg.setAttribute("viewBox", "0 0 200 200");
-  if (renderState.position) {
-    svg.style.position = "absolute";
-    svg.style.left = `${renderState.position.x}px`;
-    svg.style.top = `${renderState.position.y}px`;
-    svg.style.right = "auto";
-    svg.style.bottom = "auto";
-    svg.style.transform = "translate(-50%, -50%)";
-    svg.style.width = `${scaledSize}px`;
-    svg.style.height = `${scaledSize}px`;
-  }
-  svg.classList.add("orrery-layer-vector-overlay");
-  const stroke = layer.settings?.strokeColor || "#0f172a";
-  const fill = layer.settings?.fillColor || "#93c5fd";
-  const width = layer.settings?.strokeWidth || 2;
-  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-  poly.setAttribute("points", "40,160 100,40 160,160");
-  poly.setAttribute("fill", fill);
-  poly.setAttribute("stroke", stroke);
-  poly.setAttribute("stroke-width", width);
-  svg.appendChild(poly);
-  return svg;
-}
-
-function createLayerWrapper(layer, isSelected) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "orrery-layer-item";
-  if (isSelected) {
-    wrapper.classList.add("is-selected");
-  }
-  const offsetX = layer.position?.x || 0;
-  const offsetY = layer.position?.y || 0;
-  // Marker layers fold layer.position into each element's own pixel position
-  // instead (see getMarkerLayerOffset/getMarkerElementPixelPosition) — same
-  // "layer position is a pan offset added on top of each element's own
-  // coordinate" convention grid cells already use via getGridOffset — so the
-  // wrapper itself must stay untransformed, or a marker layer's pan would be
-  // applied twice.
-  if (state.map.baseMap.type !== "tile" && layer.type !== "marker") {
-    wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-  }
-  wrapper.dataset.layerId = layer.id;
-  return wrapper;
 }
 
 let activeLayerDrag = null;
@@ -1499,65 +895,91 @@ function bindLayerDrag(target, layer, element) {
   target.addEventListener("pointercancel", stopDrag);
 }
 
+// The whole render loop lives in lib/map-viewer.js's renderMapLayers now —
+// shared with the Dashboard's Map widget, so every layer type (grid, raster,
+// vector, marker) renders identically in both places. Everything below is
+// just Orrery's own authoring behavior, supplied as callbacks: grid-cell
+// click-selection (ctrl/shift range semantics), "click empty space to place
+// a new marker," per-marker drag→undo-stack recording, and the whole-layer
+// drag handle. None of these run at all when a caller (the widget) doesn't
+// pass them.
 function renderLayerOverlays() {
   const overlay = baseMapManager.getOverlayContainer();
   if (!overlay) {
     return;
   }
   syncOverlayInteractivity();
-  overlay.innerHTML = "";
   const activeGroup =
     state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
-  const visibleLayerIds = getVisibleLayerIds();
-  state.map.layers.forEach((layer) => {
-    if (!layer.visible) {
-      return;
-    }
-    if (visibleLayerIds && !visibleLayerIds.has(layer.id)) {
-      return;
-    }
-    const isLayerSelected = state.selection.kind === "layer" && state.selection.id === layer.id;
-    const isGridCellsSelected = state.selection.kind === "grid-cells" && state.selection.layerId === layer.id;
-    const isMarkerElementSelected = state.selection.kind === "marker-element" && state.selection.layerId === layer.id;
-    const isSelected = isLayerSelected || isGridCellsSelected || isMarkerElementSelected;
-    const groupCells = activeGroup ? getGroupCellsForLayer(activeGroup, layer) : [];
-    const wrapper = createLayerWrapper(layer, isSelected);
-    let element = null;
-    const layerPositionScale = getLayerPositionScale();
-    const layerSizeScale = getLayerSizeScale();
-    const layerPosition = getLayerRenderPosition(layer, layerPositionScale);
-    const renderState =
-      state.map.baseMap.type === "tile"
-        ? { position: layerPosition, sizeScale: layerSizeScale }
-        : {};
-    if (layer.type === "grid") {
-      element = createGridLayerElement(layer, {
-        isInteractive: isSelected,
-        selectedCells: isGridCellsSelected ? state.selection.cells : [],
-        groupCells,
-      });
-    } else if (layer.type === "raster") {
-      element = createRasterLayerElement(layer, renderState);
-    } else if (layer.type === "marker") {
-      element = createMarkerLayerElement(layer, {
-        isInteractive: isSelected,
-        selectedElementId: isMarkerElementSelected ? state.selection.id : null,
-      });
-    } else {
-      element = createVectorLayerElement(layer, renderState);
-    }
-    if (element) {
-      element.style.opacity = String(layer.opacity ?? 1);
-      wrapper.appendChild(element);
-      if (isLayerSelected && layer.visible) {
-        const handle = document.createElement("div");
-        handle.className = "orrery-layer-handle";
-        wrapper.appendChild(handle);
-        wrapper.classList.add("is-draggable");
-        bindLayerDrag(handle, layer, element);
+  renderMapLayers(overlay, baseMapManager, state.map, {
+    viewerTier: getEffectiveViewerTier(),
+    hasFullAccess: currentUserHasFullMapAccess(),
+    selection: state.selection,
+    activeGroup,
+    onGridCellPointerDown: (layer, coord, event) => {
+      const entry = createGridCellSelectionEntry(layer, coord);
+      const isCtrl = event.metaKey || event.ctrlKey;
+      const isShift = event.shiftKey;
+      const existing =
+        state.selection.kind === "grid-cells" && state.selection.layerId === layer.id ? state.selection.cells : [];
+      const selectionMap = new Map(existing.map((cell) => [cell.key, cell]));
+      let nextAnchor = coord;
+      if (isShift && (state.selection.anchor || existing.length)) {
+        const anchor = state.selection.anchor || existing[0]?.coord || coord;
+        const range = buildGridRangeSelection(layer, anchor, coord);
+        selectionMap.clear();
+        range.forEach((cell) => selectionMap.set(cell.key, cell));
+        nextAnchor = anchor;
+      } else if (isCtrl) {
+        if (selectionMap.has(entry.key)) {
+          selectionMap.delete(entry.key);
+        } else {
+          selectionMap.set(entry.key, entry);
+        }
+      } else {
+        selectionMap.clear();
+        selectionMap.set(entry.key, entry);
       }
-      overlay.appendChild(wrapper);
-    }
+      const nextCells = Array.from(selectionMap.values());
+      if (nextCells.length === 0) {
+        setSelection("layer", layer.id);
+      } else {
+        setSelection("grid-cells", null, { layerId: layer.id, cells: nextCells, anchor: nextAnchor });
+      }
+    },
+    onMarkerLayerEmptyClick: (layer, position, event) => {
+      const newElement = createMarkerElement({ position });
+      recordHistory("place marker", () => {
+        layer.elements = layer.elements || [];
+        layer.elements.push(newElement);
+        updateMapTimestamp(state.map);
+      });
+      setSelection("marker-element", newElement.id, { layerId: layer.id });
+      renderJson();
+    },
+    onMarkerDragStart: (layer, markerElement, dotEl) => selectMarkerElementForDrag(layer, markerElement, dotEl),
+    onMarkerDragEnd: (layer, markerElement, nextPosition) => {
+      const before = JSON.stringify(state.map);
+      markerElement.position = nextPosition;
+      updateMapTimestamp(state.map);
+      const after = JSON.stringify(state.map);
+      if (before !== after) {
+        undoStack.push({ label: "move marker", before, after });
+      }
+      // Deferred until drag-end, same as bindLayerDrag's whole-layer drag: a
+      // full renderLayerOverlays() mid-drag would replace dotEl in the DOM
+      // out from under the pointer capture driving the gesture.
+      renderLayerOverlays();
+      syncOverlayInteractivity();
+      renderJson();
+    },
+    renderLayerHandle: (wrapper, layer, element) => {
+      const handle = document.createElement("div");
+      handle.className = "orrery-layer-handle";
+      wrapper.appendChild(handle);
+      wrapper.classList.add("is-draggable");
+      bindLayerDrag(handle, layer, element);
+    },
   });
 }
 
@@ -3234,6 +2656,15 @@ function setupMapEvents() {
     });
   }
 
+  // Same dirty check updateMapToolbarState already uses for the Save
+  // button — Orrery had no guard at all against navigating/closing away
+  // from unsaved edits (unlike Workbench, which already had this).
+  window.addEventListener("beforeunload", (event) => {
+    if (!isMapDirty()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
   if (elements.saveMapButton) {
     elements.saveMapButton.addEventListener("click", async () => {
       if (!dataManager) return;
@@ -3278,13 +2709,15 @@ function setupMapEvents() {
 }
 
 // Shared by the Map picker's own change handler and the ?map=<id> deep link
-// (see loadMapFromUrlParam) — a campaign's "Show this item" spotlight for a
-// map points here, since a map has no print-card rendering of its own, just
-// a direct link into Orrery itself. shareToken is only ever set by the
-// ?map=/&share= deep link (an anonymous group share-link visitor has no
-// session at all — see loadMapFromUrlParam) and forwarded straight to
-// dataManager.get, which is what lets get_item's narrow spotlight exception
-// (server/storage.py) grant read access to exactly this map with no account.
+// (see loadMapFromUrlParam) — the Dashboard's own Map widget spotlights a
+// map by posting exactly this same "map" kind (common/js/lib/widgets/map.js),
+// and this is where that link points, since a map has no print-card
+// rendering of its own, just a direct link into Orrery itself. shareToken is
+// only ever set by the ?map=<id>&share= deep link (an anonymous group
+// share-link visitor has no session at all — see loadMapFromUrlParam) and
+// forwarded straight to dataManager.get, which is what lets get_item's
+// narrow spotlight exception (server/storage.py) grant read access to
+// exactly this map with no account.
 async function loadMapById(id, shareToken = "") {
   if (!id) {
     applyMapSnapshot(JSON.stringify(createMapModel()));
@@ -3307,12 +2740,11 @@ async function loadMapById(id, shareToken = "") {
   }
 }
 
-// A campaign's "Show this item" spotlight for a map is just a link (see
-// workbench-character-view.js's refreshNowShowing) — clicking it lands here
-// with ?map=<id>[&share=token] in the URL, and this loads that map the same
-// way picking it from the dropdown would. Runs after populateMapSelect so
-// the id is already in mapCatalog/the picker's own option list by the time
-// it's selected.
+// A spotlighted map is just a link (see workbench-character-view.js's
+// refreshNowShowing) — clicking it lands here with ?map=<id>[&share=token]
+// in the URL, and this loads that map the same way picking it from the
+// dropdown would. Runs after populateMapSelect so the id is already in
+// mapCatalog/the picker's own option list by the time it's selected.
 async function loadMapFromUrlParam() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("map");

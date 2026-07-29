@@ -1,19 +1,49 @@
-// Shows one of the signed-in user's own characters — just enough to
-// recognize it and jump into Workbench for the rest (the full character
-// sheet engine lives there; duplicating it here would be a second, weaker
-// implementation of the same thing). The picked character is also reported
-// via onPin, since the Dashboard uses "which character is mine" to resolve
-// which campaign group's Game Log/Now Showing/Combat Tracker to show (see
-// group-context.js) — same character-drives-campaign logic Workbench
-// itself already uses.
+// Shows one of the signed-in user's own characters — a quick identity card,
+// a live "vitals" section (HP/AC/Initiative/Conditions — see character-
+// sheet.js's initCharacterVitals) for whichever combat-bound fields that
+// character's System defines, and an "Open in Workbench" header action for
+// the rest (the full arbitrary-template sheet engine lives there; duplicating
+// it here would be a second, weaker implementation of the same thing). The
+// picked character is also reported via onPin, since the Dashboard uses
+// "which character is mine" to resolve which campaign group's Game Log/Now
+// Showing/Combat Tracker to show (see group-context.js) — same character-
+// drives-campaign logic Workbench itself already uses.
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
+import { initCharacterVitals } from "./character-sheet.js";
 import { el } from "../dom.js";
 
-export function initCharacterSummaryWidget(container, { dataManager, pinnedCharacterId = "", onPin } = {}) {
+// A character listing entry is one of two shapes: a *remote* one (from
+// collectListEntries — flat `title`/`name` fields the server's list_bucket
+// already resolved via the kind's own titleFields) or a *local* one (from
+// listLocalEntries — `{id, payload, owner, scope}`, no flat title of its
+// own). Checking both here — instead of just `entry.title || entry.name ||
+// entry.id` — is what was showing a second, bare-id option for every
+// character that existed both remotely and in this browser's local cache
+// (DataManager mirrors every remote save into local too, see save()).
+function labelFor(entry) {
+  return (
+    entry.title ||
+    entry.name ||
+    entry.payload?.data?.name ||
+    entry.payload?.title ||
+    entry.payload?.name ||
+    entry.id
+  );
+}
+
+export function initCharacterSummaryWidget(
+  container,
+  { dataManager, status, pinnedCharacterId = "", groupId = "", shareToken = "", onPin, setTitle, setHeaderAction } = {}
+) {
   if (!container || !dataManager) {
     return { destroy() {} };
   }
   let destroyed = false;
+  let vitals = null;
+
+  function characterName(payload, fallbackId) {
+    return payload?.data?.name || payload?.title || payload?.name || fallbackId;
+  }
 
   async function loadOwnCharacters() {
     if (!dataManager.isAuthenticated()) {
@@ -21,30 +51,49 @@ export function initCharacterSummaryWidget(container, { dataManager, pinnedChara
     }
     const listing = await dataManager.list("character", { refresh: true });
     const remote = dataManager.collectListEntries(listing.remote, ["owned"]);
-    const local = dataManager.listLocalEntries("character") || [];
+    const remoteIds = new Set(remote.map((entry) => entry.id));
+    const local = (dataManager.listLocalEntries("character") || []).filter((entry) => !remoteIds.has(entry.id));
     return [...remote, ...local];
+  }
+
+  function mountVitals(id) {
+    vitals?.destroy?.();
+    vitals = null;
+    const host = el("div");
+    if (id) {
+      vitals = initCharacterVitals(host, { dataManager, status, characterId: id, groupId, shareToken });
+    }
+    return host;
+  }
+
+  function openInWorkbenchHref(id) {
+    const params = new URLSearchParams({ record: `character:${id}` });
+    return `${resolveToolHref("workbench", resolveToolContextPath())}?${params.toString()}`;
   }
 
   async function renderCharacterInto(id, target) {
     target.innerHTML = "";
     if (!id) {
       target.appendChild(el("p", "text-body-secondary small mb-0", "No character picked yet."));
+      setTitle?.("");
+      setHeaderAction?.(null);
       return;
     }
     try {
       const result = await dataManager.get("character", id);
       const payload = result.payload || {};
-      const card = el("div", "border rounded-3 bg-body p-3 d-flex flex-column gap-2");
-      card.appendChild(el("div", "fw-semibold fs-5", payload.name || id));
+      const name = characterName(payload, id);
+      setTitle?.(name);
+      setHeaderAction?.({ icon: "tabler:external-link", tooltip: "Open in Workbench", href: openInWorkbenchHref(id) });
+      const card = el("div", "d-flex flex-column gap-2");
       if (payload.class || payload.species) {
         card.appendChild(el("div", "text-body-secondary small", [payload.species, payload.class].filter(Boolean).join(" · ")));
       }
-      const link = el("a", "btn btn-outline-primary btn-sm align-self-start", "Open in Workbench");
-      const params = new URLSearchParams({ record: `character:${id}` });
-      link.href = `${resolveToolHref("workbench", resolveToolContextPath())}?${params.toString()}`;
-      card.appendChild(link);
+      card.appendChild(mountVitals(id));
       target.appendChild(card);
     } catch (error) {
+      setTitle?.("");
+      setHeaderAction?.(null);
       target.appendChild(el("p", "text-body-secondary small mb-0", "Unable to load that character."));
     }
   }
@@ -62,7 +111,7 @@ export function initCharacterSummaryWidget(container, { dataManager, pinnedChara
     } catch (error) {
       entries = [];
     }
-    entries.forEach((entry) => select.appendChild(new Option(entry.title || entry.name || entry.id, entry.id)));
+    entries.forEach((entry) => select.appendChild(new Option(labelFor(entry), entry.id)));
     select.value = pinnedCharacterId || "";
     wrap.appendChild(select);
 
@@ -83,6 +132,8 @@ export function initCharacterSummaryWidget(container, { dataManager, pinnedChara
   return {
     destroy() {
       destroyed = true;
+      vitals?.destroy?.();
+      setHeaderAction?.(null);
       container.innerHTML = "";
     },
   };

@@ -56,11 +56,13 @@ export function createLabeledField({
       applyFormatting(labelElement, component || {});
     }
     labelElement.textContent = labelText;
-    if (position === "bottom" || position === "right") {
-      wrapper.append(control, labelElement);
-    } else {
-      wrapper.append(labelElement, control);
-    }
+    // Always append in the same DOM order — the CSS classes above already
+    // handle all 4 positions on their own (column/column-reverse for top/
+    // bottom, row/row-reverse for left/right). A conditional DOM-order swap
+    // here used to ALSO run for bottom/right, which canceled out the CSS
+    // reversal and made bottom look identical to top, right identical to
+    // left.
+    wrapper.append(labelElement, control);
   } else {
     wrapper.append(control);
   }
