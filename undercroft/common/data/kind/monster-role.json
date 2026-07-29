@@ -1,0 +1,8 @@
+{
+  "id": "monster-role",
+  "label": "Monster Role",
+  "plural": "Monster Roles",
+  "icon": "tabler:sword",
+  "readTier": "free",
+  "writeTier": "creator"
+}

@@ -1,0 +1,357 @@
+// The "vitals" half of the Dashboard's Character widget — mounted by
+// character-summary.js underneath its own name/character-picker card, for
+// whichever of the viewer's own characters is currently selected there.
+// Always the viewer's own character (character-summary.js only ever lists
+// their own characters), so unlike Card/Map there's no read-only mode to
+// consider — everything here is editable.
+//
+// Shows whatever fields the character's own System marks as combat-bound
+// (resource/value/tags/modifier — the same Role vocabulary combat-tracker.js
+// and Workbench's own character view already key off, see bindings.js's
+// findRoleBoundField), writing straight back through the same setAtBinding
+// path combat-tracker.js's writeThroughToCharacter already uses, so this
+// widget, Workbench, and the GM's Combat Tracker all read/write one real
+// value instead of three drifting copies. The Conditions field reuses
+// combat-tracker.js's own tag-badge/input UI verbatim (tag-editor.js) rather
+// than a second hand-copied version. Initiative is a one-way roll-and-push
+// exactly like Workbench's own pushInitiativeToActiveEncounter: it isn't
+// persistent character state, so rolling it here just updates whichever
+// encounter is currently spotlighted to this character's group, the same
+// place Workbench's sheet and the Combat Tracker both already read it from.
+//
+// A full arbitrary-template sheet (every component a System/Template define,
+// not just the combat-bound ones) is deliberately out of scope — that engine
+// lives in Workbench (workbench-character-view.js) as a whole-page controller
+// with nothing factored out for reuse, and duplicating it here would be a
+// second, weaker implementation of the same thing (see character-summary.js's
+// own header comment for the identical reasoning).
+import { resolveBinding, setAtBinding, findRoleBoundField, findBindingByRole } from "../bindings.js";
+import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
+import { connectLiveStream } from "../live.js";
+import { rollExpression } from "./dice-roll.js";
+import { resolveActiveSpotlightId } from "../spotlight.js";
+import { el } from "../dom.js";
+
+const POLL_INTERVAL_MS = 30000;
+const TAG_DATALIST_ID = "undercroft-character-sheet-tag-suggestions";
+const NOTES_PREFIX = "undercroft.characterSheet.notes.";
+
+function icon(name) {
+  const span = el("span", "iconify");
+  span.dataset.icon = name;
+  span.setAttribute("aria-hidden", "true");
+  return span;
+}
+
+function numberInput(value, onCommit) {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.className = "form-control form-control-sm";
+  input.style.width = "4.5rem";
+  input.value = typeof value === "number" ? value : "";
+  input.addEventListener("change", () => {
+    const next = Number(input.value);
+    if (Number.isNaN(next)) return;
+    onCommit(next);
+  });
+  return input;
+}
+
+function loadNotes(characterId) {
+  try {
+    return localStorage.getItem(`${NOTES_PREFIX}${characterId}`) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function saveNotes(characterId, value) {
+  try {
+    localStorage.setItem(`${NOTES_PREFIX}${characterId}`, value);
+  } catch (error) {
+    // Local storage unavailable (private browsing, quota) — notes just won't
+    // persist past this session, same graceful-degrade as dashboard.js's own
+    // saveLocalSetting.
+  }
+}
+
+export function initCharacterVitals(container, { dataManager, status, characterId, groupId = "", shareToken = "" } = {}) {
+  if (!container || !dataManager || !characterId) {
+    return { destroy() {} };
+  }
+
+  let destroyed = false;
+  let character = null;
+  let combatBindings = null;
+  let conditionsVocabulary = null;
+  let tempHpFallback; // only used when the System has no tempPath binding — ephemeral, not persisted
+  let lastInitiativeRoll = null;
+
+  // Every field on this card writes through with its own fetch-modify-save
+  // round trip against the character record (see persistBinding below) — if
+  // two edits (e.g. Current HP then Max HP, right next to each other on the
+  // same line) fire in quick succession, the second one's fetch could land
+  // before the first one's save finishes, and whichever save completes last
+  // would silently overwrite the other's change. Chaining every persistBinding
+  // call through this one promise serializes them, so a field's fetch always
+  // sees the previous field's save already applied — this is what was making
+  // HP/AC edits look like they weren't sticking.
+  let pendingSave = Promise.resolve();
+
+  let liveStream = null;
+  let pollTimer = 0;
+
+  function renderError(message) {
+    container.innerHTML = "";
+    container.appendChild(el("p", "text-danger small mb-0", message));
+  }
+
+  async function loadSystemContext(systemId) {
+    if (!systemId) return;
+    try {
+      // preferLocal: false — a Loom edit to the System's role bindings/
+      // conditions vocabulary must be visible immediately, same reasoning as
+      // combat-tracker.js's own loadSystemFields.
+      const result = await dataManager.get("system", systemId, { preferLocal: false });
+      const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+      const field = findRoleBoundField(fields);
+      combatBindings = field && Array.isArray(field.values) ? field.values : null;
+      conditionsVocabulary = deriveConditionsVocabulary(fields, combatBindings);
+    } catch (error) {
+      combatBindings = null;
+      conditionsVocabulary = null;
+    }
+  }
+
+  // Read-modify-write against a *fresh* fetch (preferLocal: false), not the
+  // in-memory `character` this widget last loaded — same reasoning as
+  // combat-tracker.js's own writeThroughToCharacter: this character's sheet
+  // could have just changed elsewhere (Workbench, the GM's combat tracker) in
+  // the moments since. Queued through `pendingSave` — see its own comment.
+  function persistBinding(binding, value) {
+    if (!binding) return Promise.resolve();
+    pendingSave = pendingSave.then(() => doPersistBinding(binding, value));
+    return pendingSave;
+  }
+
+  async function doPersistBinding(binding, value) {
+    try {
+      const result = await dataManager.get("character", characterId, { preferLocal: false });
+      const fresh = result.payload || {};
+      setAtBinding(binding, fresh, value);
+      await dataManager.save("character", characterId, fresh);
+      character = fresh;
+    } catch (error) {
+      status?.show(error.message || "Unable to save that change.", { type: "error" });
+    } finally {
+      if (!destroyed) render();
+    }
+  }
+
+  function addCondition(value) {
+    const tagsEntry = findBindingByRole(combatBindings, "tags");
+    if (!tagsEntry?.binding) return;
+    const current = resolveBinding(tagsEntry.binding, character);
+    const list = Array.isArray(current) ? current.slice() : [];
+    if (list.includes(value)) return;
+    list.push(value);
+    void persistBinding(tagsEntry.binding, list);
+  }
+
+  function removeCondition(value) {
+    const tagsEntry = findBindingByRole(combatBindings, "tags");
+    if (!tagsEntry?.binding) return;
+    const current = resolveBinding(tagsEntry.binding, character);
+    const list = (Array.isArray(current) ? current : []).filter((entry) => entry !== value);
+    void persistBinding(tagsEntry.binding, list);
+  }
+
+  // One-way roll-and-push, not a synced field — mirrors Workbench's own
+  // pushInitiativeToActiveEncounter (workbench-character-view.js) exactly:
+  // finds whichever encounter is currently spotlighted to this character's
+  // group, and updates this character's combatant entry there. Initiative
+  // isn't persistent character state, so there's nothing to write back to
+  // the character record itself.
+  async function pushInitiativeToActiveEncounter(value) {
+    if (!groupId && !shareToken) {
+      status?.show("No active campaign to send initiative to.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    try {
+      const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
+      if (!encounterId) {
+        status?.show("No encounter is currently active for this campaign.", { type: "info", timeout: 2500 });
+        return;
+      }
+      const result = await dataManager.get("encounter", encounterId, { preferLocal: false });
+      const encounter = result.payload;
+      const combatant = (encounter.combatants || []).find(
+        (entry) => entry.refKind === "character" && entry.refId === characterId
+      );
+      if (!combatant) {
+        status?.show("You're not in the active encounter yet.", { type: "info", timeout: 2500 });
+        return;
+      }
+      combatant.initiative = value;
+      await dataManager.save("encounter", encounterId, encounter);
+      status?.show(`Initiative ${value} sent to the encounter.`, { type: "success", timeout: 2000 });
+    } catch (error) {
+      console.warn("Character sheet: unable to push initiative to the active encounter", error);
+      status?.show("Unable to send initiative to the active encounter.", { type: "error" });
+    }
+  }
+
+  async function rollInitiative(modifierEntry) {
+    const modifierValue = modifierEntry?.binding ? Number(resolveBinding(modifierEntry.binding, character)) || 0 : 0;
+    const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
+    const expression = modifierValue ? `1d${sides} + ${modifierValue}` : `1d${sides}`;
+    const rolled = await rollExpression(expression, { status, label: modifierEntry?.name || "Initiative" });
+    if (!rolled) return;
+    lastInitiativeRoll = rolled;
+    render();
+    await pushInitiativeToActiveEncounter(rolled.total);
+  }
+
+  function render() {
+    if (destroyed) return;
+    container.innerHTML = "";
+    const wrap = el("div", "d-flex flex-column gap-2");
+
+    const resource = findBindingByRole(combatBindings, "resource");
+    const value = findBindingByRole(combatBindings, "value");
+    const tags = findBindingByRole(combatBindings, "tags");
+    const modifier = findBindingByRole(combatBindings, "modifier");
+
+    if (!resource && !value && !tags && !modifier) {
+      wrap.appendChild(
+        el(
+          "p",
+          "text-body-secondary small mb-0",
+          "This character's System has no HP/AC/Initiative/Conditions fields set up to show here."
+        )
+      );
+    }
+
+    if (resource) {
+      const row = el("div", "d-flex align-items-center gap-2 flex-wrap");
+      row.appendChild(icon("tabler:heart"));
+      row.appendChild(el("span", "small text-body-secondary", resource.name || "HP"));
+      const current = resource.binding ? resolveBinding(resource.binding, character) : undefined;
+      row.appendChild(
+        numberInput(typeof current === "number" ? current : undefined, (next) => persistBinding(resource.binding, next))
+      );
+      if (resource.maxPath) {
+        row.appendChild(el("span", "text-body-secondary", "/"));
+        const max = resolveBinding(resource.maxPath, character);
+        row.appendChild(
+          numberInput(typeof max === "number" ? max : undefined, (next) => persistBinding(resource.maxPath, next))
+        );
+      }
+      row.appendChild(el("span", "small text-body-secondary ms-2", "Temp"));
+      const tempCurrent = resource.tempPath ? resolveBinding(resource.tempPath, character) : tempHpFallback;
+      row.appendChild(
+        numberInput(typeof tempCurrent === "number" ? tempCurrent : undefined, (next) => {
+          if (resource.tempPath) {
+            void persistBinding(resource.tempPath, next);
+          } else {
+            tempHpFallback = next;
+            render();
+          }
+        })
+      );
+      wrap.appendChild(row);
+    }
+
+    if (value?.binding) {
+      const row = el("div", "d-flex align-items-center gap-2");
+      row.appendChild(icon("tabler:shield"));
+      row.appendChild(el("span", "small text-body-secondary", value.name || "AC"));
+      const current = resolveBinding(value.binding, character);
+      row.appendChild(
+        numberInput(typeof current === "number" ? current : undefined, (next) => persistBinding(value.binding, next))
+      );
+      wrap.appendChild(row);
+    }
+
+    if (modifier) {
+      const modifierValue = modifier.binding ? Number(resolveBinding(modifier.binding, character)) || 0 : 0;
+      const row = el("div", "d-flex align-items-center gap-2 flex-wrap");
+      row.appendChild(icon("tabler:dice-5"));
+      row.appendChild(el("span", "small text-body-secondary", modifier.name || "Initiative"));
+      // Shows the modifier being rolled with, right on the button, so it's
+      // never ambiguous whether it's being added — e.g. "Roll (+3)".
+      const rollButton = el(
+        "button",
+        "btn btn-outline-secondary btn-sm",
+        `Roll (${modifierValue >= 0 ? "+" : ""}${modifierValue})`
+      );
+      rollButton.type = "button";
+      rollButton.addEventListener("click", () => void rollInitiative(modifier));
+      row.appendChild(rollButton);
+      if (lastInitiativeRoll) {
+        row.appendChild(
+          el("span", "text-body-secondary small", `${lastInitiativeRoll.expression} → ${lastInitiativeRoll.total}`)
+        );
+      }
+      wrap.appendChild(row);
+    }
+
+    if (tags?.binding) {
+      const current = resolveBinding(tags.binding, character);
+      const list = Array.isArray(current) ? current : [];
+      const section = el("div", "d-flex flex-column gap-1");
+      const labelRow = el("div", "d-flex align-items-center gap-1");
+      labelRow.appendChild(icon("tabler:tag"));
+      labelRow.appendChild(el("span", "small text-body-secondary", tags.name || "Conditions"));
+      section.appendChild(labelRow);
+      section.appendChild(
+        renderTagBadges(list, conditionsVocabulary, { removable: true, onRemove: removeCondition })
+      );
+      section.appendChild(buildTagInputRow(TAG_DATALIST_ID, { placeholder: "Add a condition…", onAdd: addCondition }));
+      wrap.appendChild(section);
+      renderTagDatalist(TAG_DATALIST_ID, conditionsVocabulary);
+    }
+
+    const notesSection = el("div", "d-flex flex-column gap-1 mt-1");
+    notesSection.appendChild(el("span", "small text-body-secondary", "Notes (just for you — not saved to the server)"));
+    const textarea = document.createElement("textarea");
+    textarea.className = "form-control form-control-sm";
+    textarea.rows = 3;
+    textarea.value = loadNotes(characterId);
+    textarea.addEventListener("input", () => saveNotes(characterId, textarea.value));
+    notesSection.appendChild(textarea);
+    wrap.appendChild(notesSection);
+
+    container.appendChild(wrap);
+  }
+
+  async function load() {
+    let result;
+    try {
+      result = await dataManager.get("character", characterId, { shareToken, preferLocal: false });
+    } catch (error) {
+      if (!destroyed) renderError("Unable to load this character.");
+      return;
+    }
+    if (destroyed) return;
+    character = result.payload || {};
+    await loadSystemContext(character.system);
+    if (destroyed) return;
+    render();
+  }
+
+  void load();
+  pollTimer = window.setInterval(() => void load(), POLL_INTERVAL_MS);
+  liveStream = connectLiveStream({ dataManager, groupId, kinds: ["character"], shareToken });
+  liveStream.subscribe("character", () => void load());
+
+  return {
+    refresh: load,
+    destroy() {
+      destroyed = true;
+      if (pollTimer) window.clearInterval(pollTimer);
+      liveStream?.close();
+      container.innerHTML = "";
+    },
+  };
+}

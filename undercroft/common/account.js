@@ -2,8 +2,8 @@ import { initAppShell, resolveToolHref, resolveToolContextPath } from "./js/lib/
 import { DataManager, ROLE_ORDER, WRITE_ROLE_REQUIREMENTS, roleRank } from "./js/lib/data-manager.js";
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
-import { initHelpSystem, loadHelpTopics } from "./js/lib/help.js";
-import { expandPane } from "./js/lib/panes.js";
+import { initHelpSystem } from "./js/lib/help.js";
+import { initHelpBrowser as initHelpBrowserModule } from "./js/lib/help-browser.js";
 import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
 import { disableForm } from "./js/lib/dom.js";
@@ -31,14 +31,6 @@ const elements = {
   ownedTypeSelect: document.querySelector("[data-admin-owned-type]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
   quickReference: document.querySelector("[data-quick-reference]"),
-  helpBrowserSearch: document.querySelector("[data-help-browser-search]"),
-  helpBrowserList: document.querySelector("[data-help-browser-list]"),
-  helpBrowserDetail: document.querySelector("[data-help-browser-detail]"),
-  helpBrowserBack: document.querySelector("[data-help-browser-back]"),
-  helpBrowserDetailTitle: document.querySelector("[data-help-browser-detail-title]"),
-  helpBrowserDetailCategory: document.querySelector("[data-help-browser-detail-category]"),
-  helpBrowserDetailSummary: document.querySelector("[data-help-browser-detail-summary]"),
-  helpBrowserDetailList: document.querySelector("[data-help-browser-detail-list]"),
   rightPane: document.querySelector('[data-pane="right"]'),
   rightPaneToggle: document.querySelector('[data-pane-toggle="right"]'),
   emailForm: document.querySelector("[data-admin-email-form]"),
@@ -928,45 +920,15 @@ if (elements.passwordForm) {
 // to (see common/js/lib/help.js) — this pane is what they land on, and it's
 // also just directly browsable/searchable on its own, independent of the
 // admin-gated content in the main panel (this pane isn't behind the sign-in
-// gate at all).
-let helpTopicsList = [];
-let helpTopicsById = new Map();
+// gate at all). The actual search/browse/detail wiring lives in
+// common/js/lib/help-browser.js, shared with the Dashboard's left-pane copy
+// (which adds pinning on top of the same module).
+let helpBrowserApi = null;
 
-function groupHelpTopicsByCategory(topics) {
-  const grouping = new Map();
-  topics.forEach((topic) => {
-    const category = topic.category || "General";
-    if (!grouping.has(category)) {
-      grouping.set(category, []);
-    }
-    grouping.get(category).push(topic);
-  });
-  return Array.from(grouping.entries());
-}
-
-function renderHelpBrowserList(topics) {
-  if (!elements.helpBrowserList) return;
-  elements.helpBrowserList.innerHTML = "";
-  if (!topics.length) {
-    const empty = document.createElement("p");
-    empty.className = "text-body-secondary small mb-0";
-    empty.textContent = "No matching topics.";
-    elements.helpBrowserList.appendChild(empty);
-    return;
-  }
-  groupHelpTopicsByCategory(topics).forEach(([category, entries]) => {
-    const heading = document.createElement("div");
-    heading.className = "text-uppercase small fw-semibold text-body-secondary mt-2";
-    heading.textContent = category;
-    elements.helpBrowserList.appendChild(heading);
-    entries.forEach((topic) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "btn btn-link text-start p-1 text-decoration-none link-body-emphasis small";
-      button.textContent = topic.title;
-      button.addEventListener("click", () => showHelpTopic(topic.id));
-      elements.helpBrowserList.appendChild(button);
-    });
+async function initHelpBrowser() {
+  helpBrowserApi = await initHelpBrowserModule({
+    topicsUrl: "data/help-topics.json",
+    pane: elements.rightPane ? { element: elements.rightPane, toggle: elements.rightPaneToggle } : null,
   });
 }
 
@@ -975,83 +937,7 @@ function renderHelpBrowserList(topics) {
 // navigation — the generic data-help-topic mechanism (help.js) is for
 // triggers OUTSIDE this page, which have to open Admin in a new tab instead.
 function showHelpTopic(topicId) {
-  const topic = helpTopicsById.get(topicId);
-  if (!topic) {
-    return;
-  }
-  if (elements.helpBrowserSearch) elements.helpBrowserSearch.classList.add("d-none");
-  if (elements.helpBrowserList) elements.helpBrowserList.classList.add("d-none");
-  if (elements.helpBrowserDetail) {
-    elements.helpBrowserDetail.classList.remove("d-none");
-    elements.helpBrowserDetail.classList.add("d-flex");
-  }
-  if (elements.helpBrowserDetailTitle) elements.helpBrowserDetailTitle.textContent = topic.title;
-  if (elements.helpBrowserDetailCategory) elements.helpBrowserDetailCategory.textContent = topic.category;
-  if (elements.helpBrowserDetailSummary) elements.helpBrowserDetailSummary.textContent = topic.summary;
-  if (elements.helpBrowserDetailList) {
-    elements.helpBrowserDetailList.innerHTML = "";
-    (topic.details || []).forEach((line) => {
-      const item = document.createElement("li");
-      item.textContent = line;
-      elements.helpBrowserDetailList.appendChild(item);
-    });
-  }
-  // Expanding here matters for the ?help=<id> deep link specifically — a
-  // fresh page load has the right pane already expanded (data-pane-initial),
-  // but jumping to a topic should never leave it looking collapsed/empty if
-  // something else changed that in the meantime.
-  if (elements.rightPane) {
-    expandPane(elements.rightPane, elements.rightPaneToggle);
-  }
-}
-
-function hideHelpTopicDetail() {
-  if (elements.helpBrowserDetail) {
-    elements.helpBrowserDetail.classList.add("d-none");
-    elements.helpBrowserDetail.classList.remove("d-flex");
-  }
-  if (elements.helpBrowserList) elements.helpBrowserList.classList.remove("d-none");
-  if (elements.helpBrowserSearch) elements.helpBrowserSearch.classList.remove("d-none");
-}
-
-async function initHelpBrowser() {
-  try {
-    const { topics, map } = await loadHelpTopics("data/help-topics.json");
-    helpTopicsList = topics;
-    helpTopicsById = map;
-  } catch (error) {
-    if (elements.helpBrowserList) {
-      elements.helpBrowserList.innerHTML =
-        '<p class="text-danger small mb-0">Unable to load help topics.</p>';
-    }
-    return;
-  }
-  renderHelpBrowserList(helpTopicsList);
-  if (elements.helpBrowserSearch) {
-    elements.helpBrowserSearch.addEventListener("input", () => {
-      const query = elements.helpBrowserSearch.value.trim().toLowerCase();
-      if (!query) {
-        renderHelpBrowserList(helpTopicsList);
-        return;
-      }
-      const filtered = helpTopicsList.filter(
-        (topic) =>
-          topic.title.toLowerCase().includes(query) ||
-          topic.summary.toLowerCase().includes(query) ||
-          topic.category.toLowerCase().includes(query)
-      );
-      renderHelpBrowserList(filtered);
-    });
-  }
-  if (elements.helpBrowserBack) {
-    elements.helpBrowserBack.addEventListener("click", hideHelpTopicDetail);
-  }
-  // ?help=<topicId> — how every OTHER tool's inline (?) help icons land here
-  // (see common/js/lib/help.js's default href).
-  const requestedTopic = new URLSearchParams(window.location.search).get("help");
-  if (requestedTopic) {
-    showHelpTopic(requestedTopic);
-  }
+  helpBrowserApi?.showTopic(topicId);
 }
 
 // ===== Campaign quick reference (left pane) ===================================
@@ -1088,7 +974,7 @@ const QUICK_REFERENCE_STEPS = [
   {
     title: "Show something live",
     description:
-      'Pick "Show this item…" from the Campaign dropdown while something’s loaded in Sanctum, Forge, Crucible, Vault, or Orrery.',
+      "Add a Handout widget to your Dashboard (or a Map widget for maps) and click its eye icon — that's what the table sees.",
     helpTopic: "campaign.spotlight",
   },
   {

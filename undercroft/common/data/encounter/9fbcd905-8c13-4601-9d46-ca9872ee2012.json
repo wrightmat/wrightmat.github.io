@@ -4,22 +4,8 @@
   "groupId": "",
   "systemId": "sys.dnd5e",
   "round": 1,
-  "activeIndex": 0,
+  "activeIndex": 1,
   "combatants": [
-    {
-      "id": "b6f11f23-8959-43da-9f62-f2710b0a98df",
-      "name": "Octavian Hoff",
-      "refKind": "character",
-      "refId": "octavian-hoff",
-      "initiative": 20,
-      "hp": 58,
-      "maxHp": 72,
-      "ac": 15,
-      "conditions": [],
-      "isPc": true,
-      "hidden": false,
-      "tempHp": 0
-    },
     {
       "id": "200ef124-97a2-4c2a-be74-eb21ed123e01",
       "name": "Murk Slick",
@@ -46,6 +32,20 @@
       "conditions": [],
       "isPc": false,
       "hidden": false
+    },
+    {
+      "id": "b6f11f23-8959-43da-9f62-f2710b0a98df",
+      "name": "Octavian Hoff",
+      "refKind": "character",
+      "refId": "octavian-hoff",
+      "initiative": 4,
+      "hp": 69,
+      "maxHp": 72,
+      "ac": 15,
+      "conditions": [],
+      "isPc": true,
+      "hidden": false,
+      "tempHp": 0
     }
   ],
   "started": true

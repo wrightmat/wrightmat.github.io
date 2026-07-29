@@ -86,3 +86,22 @@ export function expandPane(paneElement, toggleElement) {
     }
   }
 }
+
+export function collapsePane(paneElement, toggleElement) {
+  if (!paneElement) {
+    return;
+  }
+  const collapsedClass = paneElement.getAttribute("data-pane-collapsed-class") || DEFAULT_COLLAPSED_CLASS;
+  const expandedClass = paneElement.getAttribute("data-pane-expanded-class") || DEFAULT_EXPANDED_CLASS;
+  paneElement.dataset.state = "collapsed";
+  paneElement.classList.add(collapsedClass);
+  paneElement.classList.remove(expandedClass);
+  if (toggleElement) {
+    toggleElement.setAttribute("aria-expanded", "false");
+    toggleElement.dataset.active = "false";
+    if (toggleElement.classList.contains("btn")) {
+      toggleElement.classList.add("btn-outline-secondary");
+      toggleElement.classList.remove("btn-secondary");
+    }
+  }
+}

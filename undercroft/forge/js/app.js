@@ -14,7 +14,8 @@ import {
   getSpeciesOptions,
   getArchetypeOptions,
   getAttitudeLabel,
-  ALIGNMENT_FACES,
+  loadAlignmentFaces,
+  loadAbilityFieldDefs,
   GENDER_FACES,
   AGE_FACES,
   RELATIONSHIP_STATUS_FACES,
@@ -114,16 +115,30 @@ const FOURD_FIELD_DEFS = [
   { key: "direction", label: "Direction" },
 ];
 
-const ABILITY_FIELD_DEFS = [
-  { key: "strength", label: "STR" },
-  { key: "dexterity", label: "DEX" },
-  { key: "constitution", label: "CON" },
-  { key: "intelligence", label: "INT" },
-  { key: "wisdom", label: "WIS" },
-  { key: "charisma", label: "CHA" },
-];
+// Both read from the active System's own "alignments"/"abilities" fields
+// (loadAlignmentFaces/loadAbilityFieldDefs in lib/tables.js) rather than a
+// second hardcoded copy — refreshed by refreshSystemVocabulary() whenever
+// the System select changes, so switching Systems immediately reflects that
+// System's own vocabulary instead of always showing D&D 5e's.
+let ABILITY_FIELD_DEFS = [];
+let ABILITY_KEYS = new Set();
 
-const ABILITY_KEYS = new Set(ABILITY_FIELD_DEFS.map((entry) => entry.key));
+// Called once at init (after the default System is selected) and again on
+// every System select change — keeps the alignment override dropdown and
+// the ability-score card labels/keys in sync with whichever System is
+// currently active.
+async function refreshSystemVocabulary(systemId) {
+  const [alignmentFaces, abilityFieldDefs] = await Promise.all([
+    loadAlignmentFaces(dataManager, systemId),
+    loadAbilityFieldDefs(dataManager, systemId),
+  ]);
+  if (tables) {
+    tables.alignmentFaces = alignmentFaces;
+  }
+  ABILITY_FIELD_DEFS = abilityFieldDefs;
+  ABILITY_KEYS = new Set(abilityFieldDefs.map((entry) => entry.key));
+  populateSelectOptions(alignmentOverrideSelect, alignmentFaces);
+}
 
 function formatIdentityValue(key, value) {
   if (key === "attitude") {
@@ -357,8 +372,10 @@ function populateSelectOptions(selectEl, options, { blankLabel = "Random" } = {}
   }
 }
 
+// Alignment is intentionally NOT populated here — it's System-dependent (see
+// refreshSystemVocabulary), so it's populated once a System is known rather
+// than from a fixed constant at startup.
 function populateFixedOverrides() {
-  populateSelectOptions(alignmentOverrideSelect, ALIGNMENT_FACES);
   populateSelectOptions(genderOverrideSelect, [...new Set(GENDER_FACES)]);
 }
 
@@ -646,7 +663,7 @@ function getFieldTableData(key) {
     case "archetype":
       return getArchetypeOptions(tables.archetype, currentLocation);
     case "alignment":
-      return ALIGNMENT_FACES;
+      return tables?.alignmentFaces || [];
     case "gender":
       return GENDER_FACES;
     case "age":
@@ -774,6 +791,15 @@ noteText.addEventListener("input", () => {
   refreshActionButtons();
 });
 
+// Same dirty check refreshActionButtons already uses for the Save button —
+// Forge had no guard at all against navigating/closing away from unsaved
+// edits (unlike Workbench, which already had this).
+window.addEventListener("beforeunload", (event) => {
+  if (!currentRecord || !dirtyGate.isDirty()) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
+
 saveButton.addEventListener("click", async () => {
   if (!currentRecord) return;
   const record = toPressExportShape(currentRecord);
@@ -822,7 +848,7 @@ exportButton.addEventListener("click", () => {
 systemSelect.addEventListener("change", async () => {
   const systemId = systemSelect.value;
   currentLocation = null;
-  await populateSettingSelect(systemId);
+  await Promise.all([refreshSystemVocabulary(systemId), populateSettingSelect(systemId)]);
   await populateLocationSelectOptions("");
 });
 
@@ -863,11 +889,6 @@ async function init() {
   status = shell.status;
   const auth = initAuthControls({
     status,
-    spotlightContext: {
-      getKind: () => "npc",
-      getId: () => currentRecord?.id,
-      getLabel: () => currentRecord?.identity?.name,
-    },
   });
   dataManager = auth.dataManager;
 
@@ -889,6 +910,7 @@ async function init() {
   const defaultSystemId = systems.some((system) => system.id === "sys.dnd5e") ? "sys.dnd5e" : systems[0]?.id;
   if (defaultSystemId) {
     systemSelect.value = defaultSystemId;
+    await refreshSystemVocabulary(defaultSystemId);
     const settings = await populateSettingSelect(defaultSystemId);
     const defaultSettingId = settings.some((setting) => setting.id === "forgotten-realms")
       ? "forgotten-realms"

@@ -6,7 +6,7 @@
 // side of things, and pulls scaling targets from the active System's
 // combatScaling field (tables.js#loadCombatScalingLevels) exactly the way
 // Vault pulls Rarity/Activation/Form from its own generator-property fields.
-import { loadCombatScalingLevels, loadDamageTypesPropertyType } from "./tables.js";
+import { loadCombatScalingLevels, loadDamageTypesPropertyType, loadAbilityFieldDefs } from "./tables.js";
 import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 
 function pickRandom(list, random) {
@@ -53,22 +53,32 @@ function resolveCombatScalingLevel(levels, combatScalingId, random) {
   return (combatScalingId && levels.find((level) => level.id === combatScalingId)) || pickRandom(levels, random);
 }
 
-function deriveAbilities(role) {
+// `abilityFieldDefs` (loadAbilityFieldDefs in tables.js) supplies the SET of
+// ability keys to populate — read from the active System's own "abilities"
+// field rather than a hardcoded six-key copy. Which key is "primary" for a
+// melee/ranged build and which one benefits from the HP-band Constitution
+// bonus is still D&D-specific rules logic (same class of thing as
+// dnd-rules.js's abilityModifier — there's no data-driven home for "which
+// ability is Constitution" on a System record), so those two boosts are only
+// applied if the resulting key set actually contains "strength"/"dexterity"/
+// "constitution" — a System without one of those simply doesn't get that
+// particular boost, rather than erroring.
+function deriveAbilities(role, abilityFieldDefs) {
   const tendencies = role?.mechanicalTendencies || {};
   const damageProfile = tendencies.damageProfile || "";
   const isRanged = RANGED_DAMAGE_PROFILES.has(damageProfile);
   const primaryKey = isRanged ? "dexterity" : "strength";
-  const abilities = {
-    strength: 10,
-    dexterity: 10,
-    constitution: 10,
-    intelligence: 10,
-    wisdom: 10,
-    charisma: 10,
-  };
+  const abilities = {};
+  abilityFieldDefs.forEach((def) => {
+    abilities[def.key] = 10;
+  });
   const primaryBoost = DAMAGE_PROFILE_MULTIPLIER[damageProfile] ? Math.round((DAMAGE_PROFILE_MULTIPLIER[damageProfile] - 1) * 8) : 0;
-  abilities[primaryKey] = clamp(14 + primaryBoost, 8, 20);
-  abilities.constitution = clamp(12 + (CON_BAND_BONUS[tendencies.hpBand] ?? 0), 8, 20);
+  if (primaryKey in abilities) {
+    abilities[primaryKey] = clamp(14 + primaryBoost, 8, 20);
+  }
+  if ("constitution" in abilities) {
+    abilities.constitution = clamp(12 + (CON_BAND_BONUS[tendencies.hpBand] ?? 0), 8, 20);
+  }
   return abilities;
 }
 
@@ -127,9 +137,10 @@ export async function deriveStats({
   dataManager,
   random = Math.random,
 }) {
-  const [levels, damageTypeList] = await Promise.all([
+  const [levels, damageTypeList, abilityFieldDefs] = await Promise.all([
     loadCombatScalingLevels(dataManager, systemId),
     loadDamageTypesPropertyType(dataManager, systemId),
+    loadAbilityFieldDefs(dataManager, systemId),
   ]);
 
   const level = resolveCombatScalingLevel(levels, combatScalingId, random);
@@ -155,7 +166,7 @@ export async function deriveStats({
     actions[0].attackCount = 2;
   }
 
-  const abilities = deriveAbilities(role);
+  const abilities = deriveAbilities(role, abilityFieldDefs);
 
   return {
     stats: {
@@ -170,7 +181,9 @@ export async function deriveStats({
       // System's combatBindings (sys.dnd5e.json's Initiative modifier
       // binding) rather than deriving it itself — the D&D-specific math
       // stays here in the 5e generator, not in system-agnostic tracker code.
-      initiativeBonus: abilityModifier(abilities.dexterity),
+      // Falls back to 10 (a flat +0) if this System's abilities don't
+      // include a "dexterity" key at all.
+      initiativeBonus: abilityModifier(abilities.dexterity ?? 10),
       saveDC,
       damageResistances: creatureType?.defaultResistances || [],
       damageImmunities: creatureType?.defaultImmunities || [],

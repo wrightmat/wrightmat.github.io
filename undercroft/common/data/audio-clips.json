@@ -1,0 +1,88 @@
+{
+  "clips": [
+    {
+      "id": "3797384a-d0d3-47b5-ad19-527fe331c2fa",
+      "name": "Across the Dales",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/AcrosstheDales.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "2d703718-520b-46cc-a764-be2077fb915d",
+      "name": "The Gentle Court",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/TheGentleCourt.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "7e82cd12-d389-4408-9247-40cb5a986127",
+      "name": "Harvest Revelry",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/HarvestRevelry.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "689ea9d5-3ccf-4294-b712-04bfeecc7ac1",
+      "name": "Drowned Dungeon",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/DrownedDungeon.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "63aefa93-c151-40c8-876a-57c358384614",
+      "name": "Quiet at Sea",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/QuietatSea.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "606ea752-f796-4f57-9d76-8d483b836c66",
+      "name": "Toll the Grave",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/TolltheGrave.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "f1604388-6633-4c9d-a3fd-134c558f2a50",
+      "name": "You Meet in a Tavern",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/YouMeetinaTavern.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "8d161af8-6eb7-479a-a182-f241a6b5cbbb",
+      "name": "Outlaw",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/Outlaw.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "2ced56a3-2227-48ce-8e77-c8ae36fc9c09",
+      "name": "Ye Olde Tavern",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/YeOldeTavern.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "9b4b5308-def7-49f8-80ff-8efbdd8c4e09",
+      "name": "Tavern Music",
+      "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/TavernMusic.ogg",
+      "type": "music",
+      "loop": true
+    },
+    {
+      "id": "d98fcb90-0008-4513-91e3-fc235004c600",
+      "name": "Lightning",
+      "url": "https://cdn.freesound.org/previews/495/495525_9634739-lq.mp3",
+      "type": "sfx",
+      "loop": false
+    },
+    {
+      "id": "64316905-0f75-4df8-b1cf-a3dc423121bd",
+      "name": "Thunder",
+      "url": "https://cdn.freesound.org/previews/195/195439_3634316-lq.mp3",
+      "type": "sfx",
+      "loop": false
+    }
+  ]
+}

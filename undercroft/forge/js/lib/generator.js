@@ -21,7 +21,7 @@ import { generateSpeciesName } from "./name-generator.js";
 export function generateNpc(location, tables, { overrides = {}, random = Math.random } = {}) {
   const species = rollWeightedSpecies(location, tables.speciesProfiles, { random, override: overrides.species });
   const archetype = rollArchetype(tables.archetype, location, { random, override: overrides.archetype });
-  const alignment = rollAlignment({ random, override: overrides.alignment });
+  const alignment = rollAlignment({ random, override: overrides.alignment, faces: tables.alignmentFaces });
   const gender = rollGender({ random, override: overrides.gender });
   const age = rollAge({ random });
   const relationship = rollRelationship({ random });
@@ -101,7 +101,7 @@ export function rerollAttribute(record, tables, location, attribute, { random = 
       break;
     }
     case "alignment": {
-      const alignment = rollAlignment({ random });
+      const alignment = rollAlignment({ random, faces: tables.alignmentFaces });
       next.identity.alignment = alignment.label;
       next.rolls.alignment = alignment;
       break;

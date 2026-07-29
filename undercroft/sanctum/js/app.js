@@ -128,6 +128,18 @@ const elements = {
   addArchetypeOverrideButton: document.querySelector("[data-add-archetype-override]"),
   fallbackNameRows: document.querySelector("[data-fallback-name-rows]"),
   addFallbackNameButton: document.querySelector("[data-add-fallback-name]"),
+  calendarToggle: document.querySelector("[data-calendar-toggle]"),
+  calendarToggleLabel: document.querySelector("[data-calendar-toggle-label]"),
+  calendarPanel: document.querySelector("[data-calendar-panel]"),
+  daysPerWeekInput: document.querySelector("[data-calendar-days-per-week]"),
+  weekdayNameRows: document.querySelector("[data-weekday-name-rows]"),
+  addWeekdayNameButton: document.querySelector("[data-add-weekday-name]"),
+  monthRows: document.querySelector("[data-month-rows]"),
+  addMonthButton: document.querySelector("[data-add-month]"),
+  moonCycleRows: document.querySelector("[data-moon-cycle-rows]"),
+  addMoonCycleButton: document.querySelector("[data-add-moon-cycle]"),
+  epochLabelInput: document.querySelector("[data-calendar-epoch-label]"),
+  startingYearInput: document.querySelector("[data-calendar-starting-year]"),
   notesText: document.querySelector("[data-notes-text]"),
   generateNoteButton: document.querySelector("[data-generate-note]"),
   jsonPreview: document.querySelector("[data-location-json-preview]"),
@@ -212,13 +224,20 @@ function createSettingSnapshot() {
   return {
     name: elements.settingNameInput?.value || "",
     description: elements.settingDescriptionInput?.value || "",
+    // Cheap deep-compare via serialization — same idea as the plain string
+    // fields above, just for a structured value.
+    calendar: JSON.stringify(collectCalendarFromForm()),
   };
 }
 
 function isSettingDirty() {
   if (!settingCleanSnapshot) return false;
   const current = createSettingSnapshot();
-  return settingCleanSnapshot.name !== current.name || settingCleanSnapshot.description !== current.description;
+  return (
+    settingCleanSnapshot.name !== current.name ||
+    settingCleanSnapshot.description !== current.description ||
+    settingCleanSnapshot.calendar !== current.calendar
+  );
 }
 
 // Requires an actual change (isSettingDirty) plus the minimum needed to
@@ -246,6 +265,7 @@ function markSettingClean() {
 function populateSettingForm(entity) {
   if (elements.settingNameInput) elements.settingNameInput.value = entity?.name || "";
   if (elements.settingDescriptionInput) elements.settingDescriptionInput.value = entity?.description || "";
+  populateCalendarForm(entity?.calendar || null);
   markSettingClean();
 }
 
@@ -610,6 +630,110 @@ function collectNpcConfigFromForm() {
     archetypeOverrides,
     genericNameFallback,
   };
+}
+
+// --- Calendar (optional; read by the Dashboard Calendar widget) -------------
+// Same row-editor shape as NPC Generation Config just above (editable
+// per-row inputs, not the read-only createListRow used for Features/Assets/
+// Needs, since these are freely-typed values, not references to other
+// entities). A GM who never opens this section — or opens it and leaves it
+// blank — saves a Setting with no `calendar` key at all; see
+// hasCalendarContent below, checked at save time, not here.
+function renderWeekdayNameRow(name = "") {
+  if (!elements.weekdayNameRows) return;
+  const row = document.createElement("div");
+  row.className = "d-flex align-items-center gap-2";
+  row.innerHTML = `
+    <input class="form-control" type="text" placeholder="Weekday name" value="${escapeHtml(name)}" data-weekday-name />
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-weekday-name aria-label="Remove weekday">
+      <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
+    </button>
+  `;
+  elements.weekdayNameRows.appendChild(row);
+}
+
+function renderMonthRow(entry = { name: "", days: 30 }) {
+  if (!elements.monthRows) return;
+  const row = document.createElement("div");
+  row.className = "d-flex align-items-center gap-2";
+  row.innerHTML = `
+    <input class="form-control" type="text" placeholder="Month name" value="${escapeHtml(entry.name || "")}" data-month-name />
+    <input class="form-control" type="number" min="1" step="1" style="max-width: 6rem" placeholder="Days" value="${Number(entry.days) || 30}" data-month-days />
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-month aria-label="Remove month">
+      <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
+    </button>
+  `;
+  elements.monthRows.appendChild(row);
+}
+
+function renderMoonCycleRow(entry = { name: "", days: 29 }) {
+  if (!elements.moonCycleRows) return;
+  const row = document.createElement("div");
+  row.className = "d-flex align-items-center gap-2";
+  row.innerHTML = `
+    <input class="form-control" type="text" placeholder="Moon name" value="${escapeHtml(entry.name || "")}" data-moon-cycle-name />
+    <input class="form-control" type="number" min="1" step="1" style="max-width: 6rem" placeholder="Cycle days" value="${Number(entry.days) || 29}" data-moon-cycle-days />
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-moon-cycle aria-label="Remove moon">
+      <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
+    </button>
+  `;
+  elements.moonCycleRows.appendChild(row);
+}
+
+function populateCalendarForm(calendar) {
+  if (elements.daysPerWeekInput) elements.daysPerWeekInput.value = calendar?.daysPerWeek ?? "";
+  if (elements.epochLabelInput) elements.epochLabelInput.value = calendar?.epochLabel || "";
+  if (elements.startingYearInput) elements.startingYearInput.value = calendar?.startingYear ?? "";
+  if (elements.weekdayNameRows) {
+    elements.weekdayNameRows.innerHTML = "";
+    (calendar?.weekdayNames || []).forEach((name) => renderWeekdayNameRow(name));
+  }
+  if (elements.monthRows) {
+    elements.monthRows.innerHTML = "";
+    (calendar?.months || []).forEach((entry) => renderMonthRow(entry));
+  }
+  if (elements.moonCycleRows) {
+    elements.moonCycleRows.innerHTML = "";
+    (calendar?.moonCycles || []).forEach((entry) => renderMoonCycleRow(entry));
+  }
+}
+
+// Always returns a fully-shaped object (even all-empty) — that's what lets
+// createSettingSnapshot diff it cheaply via JSON.stringify. Whether it's
+// actually worth persisting on save is hasCalendarContent's own question,
+// not this function's.
+function collectCalendarFromForm() {
+  return {
+    daysPerWeek: Number(elements.daysPerWeekInput?.value) || 0,
+    weekdayNames: Array.from(elements.weekdayNameRows?.children || [])
+      .map((row) => row.querySelector("[data-weekday-name]").value.trim())
+      .filter(Boolean),
+    months: Array.from(elements.monthRows?.children || [])
+      .map((row) => ({
+        name: row.querySelector("[data-month-name]").value.trim(),
+        days: Number(row.querySelector("[data-month-days]").value) || 0,
+      }))
+      .filter((entry) => entry.name && entry.days > 0),
+    moonCycles: Array.from(elements.moonCycleRows?.children || [])
+      .map((row) => ({
+        name: row.querySelector("[data-moon-cycle-name]").value.trim(),
+        days: Number(row.querySelector("[data-moon-cycle-days]").value) || 0,
+      }))
+      .filter((entry) => entry.name && entry.days > 0),
+    epochLabel: elements.epochLabelInput?.value.trim() || "",
+    startingYear: Number(elements.startingYearInput?.value) || 0,
+  };
+}
+
+function hasCalendarContent(calendar) {
+  return Boolean(
+    calendar.daysPerWeek ||
+      calendar.weekdayNames.length ||
+      calendar.months.length ||
+      calendar.moonCycles.length ||
+      calendar.epochLabel ||
+      calendar.startingYear
+  );
 }
 
 // --- Shared row renderer (Features/Assets/Needs all look and function the ---
@@ -1018,6 +1142,12 @@ function initCollapsibles() {
     collapseLabel: "Collapse NPC Generation Config",
     labelElement: elements.npcConfigToggleLabel,
   });
+  bindCollapsibleToggle(elements.calendarToggle, elements.calendarPanel, {
+    collapsed: true,
+    expandLabel: "Expand calendar",
+    collapseLabel: "Collapse calendar",
+    labelElement: elements.calendarToggleLabel,
+  });
   bindCollapsibleToggle(elements.featuresToggle, elements.featuresPanel, {
     collapsed: false,
     expandLabel: "Expand features",
@@ -1049,11 +1179,6 @@ async function init() {
   status = shell.status;
   const auth = initAuthControls({
     status,
-    spotlightContext: {
-      getKind: () => "location",
-      getId: () => currentRecord?.id,
-      getLabel: () => currentRecord?.name,
-    },
   });
   dataManager = auth.dataManager;
 
@@ -1122,6 +1247,46 @@ async function init() {
     if (event.target.closest("[data-remove-fallback-name]")) event.target.closest(".d-flex").remove();
   });
 
+  elements.daysPerWeekInput?.addEventListener("input", updateSettingToolbarState);
+  elements.epochLabelInput?.addEventListener("input", updateSettingToolbarState);
+  elements.startingYearInput?.addEventListener("input", updateSettingToolbarState);
+
+  elements.addWeekdayNameButton?.addEventListener("click", () => {
+    renderWeekdayNameRow();
+    updateSettingToolbarState();
+  });
+  elements.weekdayNameRows?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-remove-weekday-name]")) {
+      event.target.closest(".d-flex").remove();
+      updateSettingToolbarState();
+    }
+  });
+  elements.weekdayNameRows?.addEventListener("input", updateSettingToolbarState);
+
+  elements.addMonthButton?.addEventListener("click", () => {
+    renderMonthRow();
+    updateSettingToolbarState();
+  });
+  elements.monthRows?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-remove-month]")) {
+      event.target.closest(".d-flex").remove();
+      updateSettingToolbarState();
+    }
+  });
+  elements.monthRows?.addEventListener("input", updateSettingToolbarState);
+
+  elements.addMoonCycleButton?.addEventListener("click", () => {
+    renderMoonCycleRow();
+    updateSettingToolbarState();
+  });
+  elements.moonCycleRows?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-remove-moon-cycle]")) {
+      event.target.closest(".d-flex").remove();
+      updateSettingToolbarState();
+    }
+  });
+  elements.moonCycleRows?.addEventListener("input", updateSettingToolbarState);
+
   elements.addConnectionButton?.addEventListener("click", () => {
     const id = elements.addConnectionSelect?.value;
     if (!id || !currentRecord) return;
@@ -1170,6 +1335,15 @@ async function init() {
     populateSettingForm(null);
   });
 
+  // Same dirty checks the Save buttons already use — Sanctum had no guard
+  // at all against navigating/closing away from unsaved edits (unlike
+  // Workbench, which already had this).
+  window.addEventListener("beforeunload", (event) => {
+    if (!canSaveSetting() && !canSaveLocation()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
   elements.saveSettingButton?.addEventListener("click", async () => {
     if (!dataManager) return;
     const systemId = currentSystemId();
@@ -1183,12 +1357,17 @@ async function init() {
       return;
     }
     const id = currentSettingId || slugify(name);
+    const calendar = collectCalendarFromForm();
     try {
       await dataManager.save("setting", id, {
         kind: "setting",
         systemIds: [systemId],
         name,
         description: elements.settingDescriptionInput?.value.trim() || "",
+        // Omitted entirely (not even an empty object) unless the GM actually
+        // filled the Calendar section in — same "optional fields start
+        // absent" convention as every other optional field in this suite.
+        ...(hasCalendarContent(calendar) ? { calendar } : {}),
       });
       currentSettingId = id;
       status?.show(`Saved Setting ${id}.`, { type: "success", timeout: 2000 });

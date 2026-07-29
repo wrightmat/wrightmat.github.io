@@ -286,11 +286,11 @@
   ],
   "stats": {
     "hitPoints": {
-      "max": 72,
-      "current": 58,
+      "max": 74,
+      "current": 74,
       "temp": 0
     },
-    "armorClass": 15
+    "armorClass": 14
   },
   "currencies": {
     "cp": 148,
@@ -299,6 +299,666 @@
     "gp": 30,
     "pp": 0
   },
+  "inventory": [
+    {
+      "name": "Light Crossbow of Warning",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Ring of X-ray Vision",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Ring of Fire Resistance",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Hide",
+      "quantity": 1,
+      "weight": 12,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Dagger",
+      "quantity": 1,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Dagger",
+      "quantity": 1,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Sickle",
+      "quantity": 1,
+      "weight": 2,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Crossbow, Light",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Shortsword",
+      "quantity": 1,
+      "weight": 2,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Crossbow, Heavy",
+      "quantity": 1,
+      "weight": 18,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Crossbow Bolts",
+      "quantity": 20,
+      "weight": 1.5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Backpack",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Iron Pot",
+      "quantity": 1,
+      "weight": 10,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Quiver",
+      "quantity": 1,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Carpenter's Tools",
+      "quantity": 1,
+      "weight": 6,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Shovel",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Healer's Kit",
+      "quantity": 1,
+      "weight": 3,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Grappling Hook",
+      "quantity": 1,
+      "weight": 4,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Sprig of Mistletoe",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Potion of Healing (Greater)",
+      "quantity": 1,
+      "weight": 0.5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Potion of Healing (Greater)",
+      "quantity": 1,
+      "weight": 0.5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Soul Coin",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Potion of Healing",
+      "quantity": 2,
+      "weight": 0.5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Horseshoes of a Zephyr",
+      "quantity": 1,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Potion of Invisibility",
+      "quantity": 2,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Potion of Speed",
+      "quantity": 3,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Rope, Silk (50 feet)",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Oil",
+      "quantity": 2,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Rations",
+      "quantity": 10,
+      "weight": 2,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Rope",
+      "quantity": 3,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Bedroll",
+      "quantity": 1,
+      "weight": 7,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Tinderbox",
+      "quantity": 1,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Torch",
+      "quantity": 10,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Waterskin",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Alchemist's Fire",
+      "quantity": 1,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Holy Water",
+      "quantity": 1,
+      "weight": 1,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Wyvern Poison",
+      "quantity": 4,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Crossbow Bolts, +1",
+      "quantity": 50,
+      "weight": 0,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    },
+    {
+      "name": "Book",
+      "quantity": 1,
+      "weight": 5,
+      "notes": {
+        "allies": null,
+        "personalPossessions": null,
+        "otherHoldings": null,
+        "organizations": null,
+        "enemies": null,
+        "backstory": "Octavian is part of a large family of farmers, but never saw himself as a farmer. Then one day, he came upon an old journal, that belonged to an unknown ancestor (possibly Olanthius), which described a great adventure to the depths of hell itself as part of a group known as the Hellriders. From that day on, Octavian become obsessed with learning more about the group, and swore to join them at the first opportunity. The day he turned 17 and was allowed to leave the farm was that opportunity!\n\nIn his travels, Octavian keeps the journal on him at all times and reads it in secret whenever possible. He refuses to discuss the contents of the book.",
+        "otherNotes": "Family:\n\nFather: Titus\nMother: Agrippa\n\nSiblings (oldest to youngest):\nPrimus (he/him) - 34\nSecunda (she/her) - 31\nTertius (he/him) - 28\nQuartus - died as a child\nQuintix (they/them) - 25\nSextus (he/him) - 22\nSeptima (she/her) - 20\n\nOctavian (he/him) - 17"
+      }
+    }
+  ],
   "background": {
     "name": "Farmer",
     "description": "<p><strong>Ability Scores:</strong>&nbsp;Strength, Constitution, Wisdom<br /><strong>Feat:</strong>&nbsp;Tough<br /><strong>Skill Proficiencies:</strong> Animal Handling and Nature<br /><strong>Tool Proficiency:</strong>&nbsp;Carpenter's Tools<br /><strong>Equipment:</strong> <em>Choose A or B:</em> (A) Sickle, Carpenter's Tools, Healer's Kit, Iron Pot, Shovel, Traveler's Clothes, 30 GP; or (B) 50 GP</p>\r\n<p>You grew up close to the land. Years tending animals and cultivating the earth rewarded you with patience and good health. You have a keen appreciation for nature’s bounty alongside a healthy respect for nature’s wrath.</p>",

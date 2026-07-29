@@ -51,10 +51,32 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <!-- Same Leaflet build Orrery itself loads (orrery/index.html) — the Map
+         widget's tile-type viewer (common/js/lib/widgets/map.js) reuses
+         Orrery's own BaseMapManager, which reads window.L directly. -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="common/css/shell.css" />
+    <!-- Styles the .orrery-map-stage/-content/-image and
+         .orrery-layer-*-overlay classes BaseMapManager builds internally —
+         NOT the page-level .orrery-map class itself (position: fixed;
+         inset: 0, meant for Orrery's own full-viewport host), which the Map
+         widget deliberately never applies (see map.js's own comment). -->
+    <link rel="stylesheet" href="orrery/css/styles.css" />
+    <!-- Styles a rendered Press template's own markup (.print-page,
+         .card-grid/.card-tile, .chip-grid/.chip-tile, ...) — the Handout
+         widget (common/js/lib/widgets/handout.js) renders a real template
+         via press/js/templates.js's template.createPage, the same function
+         Workbench's own "Now Showing" panel uses (workbench/index.html
+         loads this same stylesheet for that exact reason). -->
+    <link rel="stylesheet" href="press/css/styles.css" />
   </head>
   <body class="bg-body text-body" data-undercroft-tool="home">
-    <div class="d-flex flex-column min-vh-100">
+    <div class="d-flex flex-column min-vh-100" data-dashboard-shell>
       <header class="workbench-header border-bottom bg-body-tertiary">
         <div class="workbench-header-grid pe-2 py-3">
           <div></div>
@@ -104,50 +126,16 @@
       </header>
       <div class="d-flex flex-grow-1 overflow-hidden">
         <aside
-          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar"
+          class="d-none flex-column gap-4 border-end border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar overflow-hidden"
           data-pane="left"
           data-pane-collapsed-class="d-none"
           data-pane-expanded-class="d-flex"
           data-pane-initial="collapsed"
         >
-          <div class="d-flex flex-column gap-3 overflow-auto" data-quick-reference></div>
-        </aside>
-        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-              <h2 class="h4 mb-0 d-flex align-items-center gap-2">
-                <span>Dashboard</span>
-                <span class="align-middle" data-help-topic="dashboard.widgets" data-help-insert="replace"></span>
-              </h2>
-              <button class="btn btn-outline-secondary btn-sm" type="button" data-dashboard-edit-toggle>
-                Edit layout
-              </button>
-            </div>
-            <div class="d-none" data-dashboard-add-widget>
-              <div class="d-flex align-items-end gap-2 flex-wrap">
-                <div>
-                  <label class="form-label small mb-1" for="dashboardAddWidgetSelect">Add a widget</label>
-                  <select class="form-select form-select-sm" id="dashboardAddWidgetSelect" data-dashboard-add-select></select>
-                </div>
-                <button class="btn btn-primary btn-sm" type="button" data-dashboard-add-button>Add</button>
-              </div>
-            </div>
-            <div class="dashboard-columns" data-dashboard-columns>
-              <div class="dashboard-column d-flex flex-column gap-3" data-dashboard-column="0" data-sortable-group="dashboard-widgets"></div>
-              <div class="dashboard-column d-flex flex-column gap-3" data-dashboard-column="1" data-sortable-group="dashboard-widgets"></div>
-              <div class="dashboard-column d-flex flex-column gap-3" data-dashboard-column="2" data-sortable-group="dashboard-widgets"></div>
-            </div>
-        </main>
-        <aside
-          class="d-none flex-column gap-3 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg overflow-hidden"
-          data-pane="right"
-          data-pane-collapsed-class="d-none"
-          data-pane-expanded-class="d-flex"
-          data-pane-initial="expanded"
-        >
           <div class="d-flex flex-column gap-3 overflow-hidden" style="min-height: 0;" data-help-browser>
             <div>
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-1">Help &amp; Documentation</h2>
-              <p class="fs-6 text-body-secondary mb-0">How each tool and shared concept works, in one place.</p>
+              <p class="fs-6 text-body-secondary mb-0">Search or browse how each tool and shared concept works. Pin the ones you want close at hand.</p>
               <a class="small" href="common/docs/index.html" target="_blank" rel="noopener noreferrer">
                 Open the full documentation page &#8599;
               </a>
@@ -159,18 +147,29 @@
               aria-label="Search help topics"
               data-help-browser-search
             />
+            <div class="d-none flex-column gap-1" data-help-browser-pinned></div>
             <div class="d-flex flex-column gap-1 overflow-auto flex-grow-1" style="min-height: 0;" data-help-browser-list>
               <p class="text-body-secondary small mb-0">Loading topics…</p>
             </div>
             <div class="d-none flex-column gap-2 border-top pt-3 overflow-auto" data-help-browser-detail>
-              <button
-                class="btn btn-sm btn-link p-0 align-self-start text-decoration-none d-inline-flex align-items-center gap-1"
-                type="button"
-                data-help-browser-back
-              >
-                <span class="iconify" data-icon="tabler:arrow-left" aria-hidden="true"></span>
-                Back to topics
-              </button>
+              <div class="d-flex align-items-center justify-content-between">
+                <button
+                  class="btn btn-sm btn-link p-0 align-self-start text-decoration-none d-inline-flex align-items-center gap-1"
+                  type="button"
+                  data-help-browser-back
+                >
+                  <span class="iconify" data-icon="tabler:arrow-left" aria-hidden="true"></span>
+                  Back to topics
+                </button>
+                <button
+                  class="btn btn-sm btn-link p-0 text-decoration-none"
+                  type="button"
+                  data-help-browser-detail-pin
+                  aria-label="Pin topic for quick reference"
+                >
+                  <span class="iconify" data-icon="tabler:pin" aria-hidden="true"></span>
+                </button>
+              </div>
               <span class="badge text-bg-secondary align-self-start" data-help-browser-detail-category></span>
               <h3 class="h6 mb-0" data-help-browser-detail-title></h3>
               <p class="small text-body-secondary mb-0" data-help-browser-detail-summary></p>
@@ -178,8 +177,149 @@
             </div>
           </div>
         </aside>
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-4" data-dashboard-main>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <h2 class="h4 mb-0 d-flex align-items-center gap-2 flex-grow-1" style="min-width: 0;">
+                <span data-dashboard-title-display>Home</span>
+                <input
+                  class="dashboard-title-input d-none flex-grow-1"
+                  style="min-width: 0;"
+                  type="text"
+                  aria-label="Dashboard title"
+                  data-dashboard-title-input
+                />
+                <span class="align-middle" data-help-topic="dashboard.widgets" data-help-insert="replace"></span>
+              </h2>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div
+                  class="btn-toolbar align-items-center gap-2 d-none"
+                  role="toolbar"
+                  aria-label="Dashboard layout tools"
+                  data-dashboard-layout-tools
+                >
+                  <div class="btn-group" role="group" aria-label="Add a widget" data-dashboard-add-toolbar></div>
+                  <div class="input-group input-group-sm flex-nowrap" style="width: auto;" aria-label="Grid size">
+                    <span
+                      class="input-group-text"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Grid columns"
+                    >
+                      <span class="iconify" data-icon="tabler:columns" aria-hidden="true"></span>
+                      <span class="visually-hidden">Columns</span>
+                    </span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      style="width: 4.5rem;"
+                      aria-label="Grid columns"
+                      data-dashboard-grid-columns-input
+                    />
+                    <span
+                      class="input-group-text"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Grid rows"
+                    >
+                      <span class="iconify" data-icon="tabler:rows" aria-hidden="true"></span>
+                      <span class="visually-hidden">Rows</span>
+                    </span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      style="width: 4.5rem;"
+                      aria-label="Grid rows"
+                      data-dashboard-grid-rows-input
+                    />
+                  </div>
+                  <div class="btn-group" role="group" aria-label="Background color">
+                    <label
+                      class="btn btn-dark p-2 mb-0"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Background color"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:palette" aria-hidden="true"></span>
+                      <span class="visually-hidden">Background color</span>
+                      <input
+                        class="visually-hidden"
+                        type="color"
+                        aria-label="Background color"
+                        data-dashboard-color-input
+                      />
+                    </label>
+                    <button
+                      class="btn btn-dark p-2"
+                      type="button"
+                      data-dashboard-color-reset
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      data-bs-title="Reset background"
+                    >
+                      <span class="iconify fs-5" data-icon="tabler:eraser" aria-hidden="true"></span>
+                      <span class="visually-hidden">Reset background</span>
+                    </button>
+                  </div>
+                </div>
+                <button
+                  class="btn btn-dark p-2"
+                  type="button"
+                  data-dashboard-screen-toggle
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  data-bs-title="Open a live, read-only mirror of whatever's currently shown to the table — for a physical second screen/TV"
+                >
+                  <span class="iconify fs-5" data-icon="tabler:device-tv" aria-hidden="true"></span>
+                  <span class="visually-hidden">Second screen</span>
+                </button>
+                <button class="btn btn-dark py-2 px-3" type="button" data-dashboard-edit-toggle>
+                  Edit layout
+                </button>
+              </div>
+            </div>
+            <div class="dashboard-grid" data-dashboard-grid></div>
+        </main>
+        <aside
+          class="d-none flex-column gap-3 border-start border-body-tertiary bg-body-tertiary p-4 shadow-theme flex-shrink-0 workbench-sidebar-lg overflow-hidden"
+          data-pane="right"
+          data-pane-collapsed-class="d-none"
+          data-pane-expanded-class="d-flex"
+          data-pane-initial="collapsed"
+        >
+          <div class="d-flex flex-column gap-3 overflow-auto" data-widget-inspector>
+            <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Widget Inspector</h2>
+            <p class="small text-body-secondary mb-0" data-widget-inspector-empty>
+              Select a widget from your layout to inspect it here.
+            </p>
+            <div class="d-flex flex-column gap-3 d-none" data-widget-inspector-details>
+              <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Widget actions">
+                <div class="btn-group" role="group" aria-label="Widget actions">
+                  <button
+                    class="btn btn-outline-danger p-2"
+                    type="button"
+                    data-widget-inspector-remove
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Remove widget"
+                  >
+                    <span class="iconify fs-5" data-icon="tabler:trash" aria-hidden="true"></span>
+                    <span class="visually-hidden">Remove widget</span>
+                  </button>
+                </div>
+              </div>
+              <span class="badge text-bg-secondary align-self-start" data-widget-inspector-type></span>
+              <div class="d-flex flex-column gap-2" data-widget-inspector-body></div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
+    <!-- Shown instead of everything above (data-dashboard-shell) when the URL
+         carries ?screen=1 — a live, read-only mirror of whatever's currently
+         shown to the table, laid out exactly like the GM's own Edit layout
+         grid, for a physical second screen/TV. See dashboard.js's own
+         renderScreenView. -->
+    <div class="d-none flex-column vh-100 p-3" data-dashboard-screen-root></div>
     <div class="status-root" data-status-root></div>
     <!--
       The module script is placed BEFORE these classic deferred scripts on
@@ -205,5 +345,16 @@
       crossorigin="anonymous"
     ></script>
     <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script
+      defer
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <!-- Repository's own markdown renderer (common/js/lib/widgets/handout.js's
+         renderJournalEntry) runs here too, for a journal Handout widget — same
+         pinned versions as repository/index.html's own script tags. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.min.js"></script>
   </body>
 </html>

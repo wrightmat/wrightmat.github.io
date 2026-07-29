@@ -152,3 +152,12 @@ export function findRoleBoundField(fields) {
     ) || null
   );
 }
+
+// Finds the one entry of a given role (resource/value/tags/modifier) within
+// a role-bound field's own `.values` (the array findRoleBoundField above
+// locates) — combat-tracker.js and character-sheet.js both resolve HP/AC/
+// Conditions/Initiative this same way, so it lives here rather than as two
+// identical local copies.
+export function findBindingByRole(bindings, role) {
+  return (bindings || []).find((entry) => entry && entry.role === role) || null;
+}

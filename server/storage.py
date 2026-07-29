@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 import re
 
 from .auth import AuthError, User
-from .groups import accessible_group_ids, get_latest_spotlight, user_can_access_group
+from .groups import accessible_group_ids, get_active_spotlights, user_can_access_group
 from .kinds import load_kind_policy, normalize_kind
 from .roles import role_rank
 from .shares import resolve_share_token, touch_share_link
@@ -648,17 +648,20 @@ def get_item(
                     touch_share_link(state, token_info.get("token", ""))
         if not share_granted and token_type == "group" and token_target:
             # "Show to table": an anonymous share-link visitor can read
-            # exactly whatever the group's latest spotlight log entry points
-            # at — the entity itself, or its templateId — and nothing else.
-            # Deliberately narrow: this is not "share this group's members'
-            # content", it's "whatever's currently being projected to the
-            # table right now" (see groups.get_latest_spotlight).
-            spotlight = get_latest_spotlight(state, token_target)
-            if spotlight:
+            # exactly whatever the group currently has spotlighted — any of
+            # them, not just whichever was shown most recently (two things
+            # can legitimately be up at once, e.g. a Handout and a Map — see
+            # groups.get_active_spotlights's own comment on why this used to
+            # be a single-slot bug, same shape as the one already fixed
+            # client-side in spotlight.js) — the entity itself, or its
+            # templateId — and nothing else. Deliberately narrow: this is not
+            # "share this group's members' content", it's "whatever's
+            # currently being projected to the table right now."
+            normalized_kind = normalize_kind(kind)
+            for spotlight in get_active_spotlights(state, token_target):
                 spotlight_kind = normalize_kind(str(spotlight.get("kind") or ""))
                 spotlight_id = str(spotlight.get("id") or "")
                 spotlight_template_id = str(spotlight.get("templateId") or "")
-                normalized_kind = normalize_kind(kind)
                 is_spotlighted_entity = normalized_kind == spotlight_kind and base_id == spotlight_id
                 is_spotlighted_template = (
                     normalized_kind == "template" and spotlight_template_id and base_id == spotlight_template_id
@@ -666,6 +669,7 @@ def get_item(
                 if is_spotlighted_entity or is_spotlighted_template:
                     share_granted = True
                     touch_share_link(state, token_info.get("token", ""))
+                    break
     if not (
         share_granted
         or is_owner(state, kind, id_, user)

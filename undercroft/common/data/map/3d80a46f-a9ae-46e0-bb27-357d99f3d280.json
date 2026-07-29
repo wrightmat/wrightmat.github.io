@@ -68,17 +68,6 @@
       },
       "elements": [
         {
-          "id": "4ab653ac-ef3c-4f48-8fdd-2334dbf16e39",
-          "kind": "marker",
-          "refKind": "location",
-          "refId": "sharn",
-          "label": "Sharn",
-          "position": {
-            "x": -294,
-            "y": 25
-          }
-        },
-        {
           "id": "a76d4257-4686-4fd1-bbf1-4f81f7fbc380",
           "kind": "marker",
           "refKind": "location",

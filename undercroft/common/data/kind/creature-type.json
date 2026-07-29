@@ -1,8 +1,0 @@
-{
-  "id": "creature-type",
-  "label": "Creature Type",
-  "plural": "Creature Types",
-  "icon": "tabler:ghost",
-  "readTier": "free",
-  "writeTier": "creator"
-}

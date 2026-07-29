@@ -33,9 +33,30 @@ import {
   resolveBindingFromContexts,
   normalizeOptionEntries,
   buildSystemPreviewData,
-  parseBindingPathSegments,
 } from "../lib/component-data.js";
 import { createLabeledField, normalizeLabelPosition } from "../lib/component-layout.js";
+import {
+  PATTERN_CATEGORIES,
+  getPresetsByCategory,
+  getPresetDefaultValues,
+  svgToDataUri,
+  embedPatternMetadata,
+  extractPatternMetadata,
+} from "../../../common/js/lib/pattern-library.js";
+import { attachIconAutocomplete, resolveIconClassList } from "../../../common/js/lib/icon-picker.js";
+import { attachFontFamilyAutocomplete, validateFontInput } from "../../../common/js/lib/font-picker.js";
+import { attachClassNameAutocomplete } from "../../../common/js/lib/class-name-picker.js";
+import { TEXT_SIZE_PX, pxToPt, ptToPx } from "../../../common/js/lib/text-size.js";
+import {
+  findFontOptionByFamily,
+  ensureFontLoaded,
+  registerCustomFont,
+  loadCustomFonts,
+  saveCustomFont,
+  deleteCustomFont,
+  saveCustomFontDeletion,
+  DEFAULT_FONT_FAMILY,
+} from "../../../common/js/lib/font-library.js";
 
 // Relocated from the old standalone template.html/template.js — now one of
 // three views on Workbench's unified page (see js/pages/workbench.js), which
@@ -74,10 +95,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         }
         return ["string", "number"];
       }
+      case "track":
       case "linear-track":
       case "circular-track":
         return ["number"];
-      case "array":
+      case "repeater":
         return ["array", "object"];
       case "select-group":
         return component.multiple ? ["array", "object"] : ["string", "number"];
@@ -97,124 +119,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       return categories.includes("string") || categories.includes("any");
     }
     return categories.includes(entryCategory) || categories.includes("any");
-  }
-
-  function normalizeBindingPath(binding) {
-    const normalized = normalizeBindingValue(binding);
-    if (!normalized || normalized.startsWith("=")) {
-      return "";
-    }
-    if (normalized.startsWith("@")) {
-      return normalized.slice(1).trim();
-    }
-    return normalized;
-  }
-
-  function findBindingFieldEntry(binding, allowedCategories = null) {
-    const path = normalizeBindingPath(binding);
-    if (!path) {
-      return null;
-    }
-    const entry = state.bindingFields.find((field) => field?.path === path) || null;
-    if (!entry) {
-      return null;
-    }
-    if (!fieldMatchesCategories(entry, allowedCategories)) {
-      return null;
-    }
-    return entry;
-  }
-
-  function formatSegmentLabel(segment) {
-    if (!segment) {
-      return "";
-    }
-    const cleaned = segment.replace(/\[\]/g, "").replace(/[-_]+/g, " ").trim();
-    if (!cleaned) {
-      return "";
-    }
-    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-  }
-
-  function formatBindingLabel(binding) {
-    const path = normalizeBindingPath(binding);
-    if (!path) {
-      return "";
-    }
-    const parts = path.split(/[.\[\]]/).filter(Boolean);
-    if (!parts.length) {
-      return "";
-    }
-    return formatSegmentLabel(parts[parts.length - 1]);
-  }
-
-  function resolveRelativeSegments(sourceBinding, targetBinding) {
-    const sourceSegments = parseBindingPathSegments(sourceBinding) || [];
-    const targetSegments = parseBindingPathSegments(targetBinding) || [];
-    if (!sourceSegments.length || !targetSegments.length) {
-      return [];
-    }
-    const sourceRoot = sourceSegments[0];
-    if (targetSegments[0] !== sourceRoot) {
-      return [];
-    }
-    if (targetSegments.length > sourceSegments.length && sourceSegments.every((segment, index) => segment === targetSegments[index])) {
-      return targetSegments.slice(sourceSegments.length);
-    }
-    if (targetSegments.length > 1) {
-      return targetSegments.slice(1);
-    }
-    return [];
-  }
-
-  function getValueFromSegments(target, segments = []) {
-    if (!segments.length) {
-      return undefined;
-    }
-    let cursor = target;
-    for (const segment of segments) {
-      if (!segment) {
-        return undefined;
-      }
-      if (Array.isArray(cursor)) {
-        const index = Number(segment);
-        if (Number.isFinite(index) && index >= 0 && index < cursor.length) {
-          cursor = cursor[index];
-        } else {
-          return undefined;
-        }
-      } else if (cursor && typeof cursor === "object" && segment in cursor) {
-        cursor = cursor[segment];
-      } else {
-        return undefined;
-      }
-    }
-    return cursor;
-  }
-
-  function fallbackItemLabel(baseLabel, item, index) {
-    if (typeof item === "string") {
-      const trimmed = item.trim();
-      if (trimmed) {
-        return trimmed;
-      }
-    }
-    if (typeof item === "number") {
-      return String(item);
-    }
-    if (item && typeof item === "object") {
-      const candidates = ["name", "title", "label", "id"];
-      for (const key of candidates) {
-        const value = item[key];
-        if (typeof value === "string") {
-          const trimmed = value.trim();
-          if (trimmed) {
-            return trimmed;
-          }
-        }
-      }
-    }
-    return `${baseLabel} ${index + 1}`;
   }
 
   const systemDefinitionCache = new Map();
@@ -242,6 +146,30 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   const dropzones = new Map();
   const containerActiveTabs = new Map();
   const componentCollapsedState = new Map();
+
+  // Pattern/shape picker modal state (Image component) — declared here,
+  // not down near the picker's own functions, because initPatternModal()
+  // runs early during init (before those functions' own section of the
+  // file has executed) and a `let` is only initialized once its own
+  // statement actually runs, not merely hoisted like a function declaration.
+  let selectedPatternPreset = null;
+  let currentPatternValues = {};
+  let patternPickerComponentUid = null;
+  let patternPickerInput = null;
+
+  // Add Font modal state (Font field, see createFontFamilyControl) — same
+  // early-declaration reasoning as the pattern picker's own state above.
+  // The font validated on blur (see handleAddFontValueBlur), cached so the
+  // submit handler can reuse it instead of re-verifying — cleared whenever
+  // the field is edited again, which is also what keeps the Add button
+  // disabled until a fresh blur-triggered validation succeeds.
+  let pendingValidatedFont = null;
+  // Called with the registered {id,label,family,...} once a font is
+  // confirmed — set by whichever call to openAddFontModal is currently
+  // open, so the SAME modal can apply the result either to a component's
+  // own Font field or to the Template's own base font, without the modal
+  // itself needing to know which.
+  let addFontApplyCallback = null;
 
   function cloneComponentTree(component) {
     if (typeof structuredClone === "function") {
@@ -318,6 +246,17 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     templatePropertiesPanel: document.querySelector("[data-template-properties-panel]"),
     componentPropertiesToggle: document.querySelector("[data-component-properties-toggle]"),
     componentPropertiesPanel: document.querySelector("[data-component-properties-panel]"),
+    patternModal: document.getElementById("workbench-pattern-modal"),
+    patternCategoryInputs: Array.from(document.querySelectorAll("[data-pattern-category]")),
+    patternThumbnails: document.querySelector("[data-pattern-thumbnails]"),
+    patternPreview: document.querySelector("[data-pattern-preview]"),
+    patternPreviewLabel: document.querySelector("[data-pattern-preview-label]"),
+    patternControls: document.querySelector("[data-pattern-controls]"),
+    patternInsert: document.querySelector("[data-pattern-insert]"),
+    addFontModal: document.getElementById("workbench-add-font-modal"),
+    addFontValueInput: document.querySelector("[data-add-font-value]"),
+    addFontSubmitButton: document.querySelector("[data-add-font-submit]"),
+    addFontWarningElement: document.querySelector("[data-add-font-warning]"),
   });
 
   // Same shared collapse mechanism as every other tool (Forge/Loom/Press/
@@ -480,6 +419,15 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
   }
 
+  // Named once, used everywhere a Container's column/row count is clamped
+  // (zone-building, the canvas preview, and the inspector's steppers) —
+  // previously these were 4 separate magic-number literals (1-4 for
+  // columns, 1-6 for rows) that had to be kept in sync by hand.
+  const MAX_CONTAINER_COLUMNS = 9;
+  const MAX_CONTAINER_ROWS = 9;
+  // Matches Press's own Repeater column-count range.
+  const MAX_REPEATER_COLUMNS = 8;
+
   const COMPONENT_DEFINITIONS = {
     input: {
       label: "Input",
@@ -501,43 +449,63 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       colorControls: ["foreground", "background", "border"],
       supportsLabelPosition: true,
     },
-    array: {
-      label: "List",
+    // Core port of Press's own Repeater — replaces List entirely (a fixed
+    // list/cards variant + a raw-JSON textarea at play time) with a real
+    // item-template zone: drag in and bind arbitrary components (Text,
+    // Image, Icon, ...) exactly like a Container zone, repeated once per
+    // resolved array item. See ensureRepeaterZone (this file) and
+    // renderRepeaterComponent (workbench-character-view.js). Old saved
+    // "array"/List components aren't migrated (their shape has no clean
+    // 1:1 mapping to an item template) — same "clean removal, no
+    // compatibility shim" call already made for Divider.
+    repeater: {
+      label: "Repeater",
       defaults: {
-        name: "List",
-        variant: "list",
-        labelPosition: "top",
+        name: "Repeater",
+        zones: {},
+        // Ported from Press's own Repeater (none/bullet/number/custom —
+        // "text" only used for custom, a literal string or an @-bound
+        // per-item value). Without this there was no way to build even a
+        // simple bulleted list.
+        decorator: { type: "none", text: "" },
+        // Columns/templateColumns/showHeader — also ported from Press's own
+        // Repeater (its "table" mode). See ensureRepeaterZone for the
+        // per-column zone keys these drive.
+        columns: 1,
+        templateColumns: "",
+        showHeader: false,
       },
       supportsBinding: true,
       supportsFormula: false,
       supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    divider: {
-      label: "Divider",
-      defaults: {
-        name: "Divider",
-        style: "solid",
-        thickness: 2,
-      },
-      supportsBinding: false,
-      supportsFormula: false,
-      supportsReadOnly: false,
       supportsAlignment: false,
       textControls: false,
-      colorControls: ["foreground"],
+      colorControls: [],
     },
+    // Full port of Press's own Image component (including its pattern/shape
+    // picker — see the brush button in renderImageInspector) — replaces
+    // both the old bare-bones Image (just a URL + Fit + a fixed max-height)
+    // and the old Divider component entirely (a Divider's whole job — a
+    // plain line — is now one of the picker's own Shapes presets,
+    // "Horizontal rule", with real color/style/thickness control, so it
+    // needed no separate component of its own once Image could do this).
+    // `url` is the field name (matching Press exactly); an old saved
+    // template's `src` value is still read as a fallback wherever `url` is
+    // resolved, so nothing existing breaks — see renderImageInspector/
+    // renderImagePreview/renderImageComponent's own comments.
     image: {
       label: "Image",
       defaults: {
         name: "Image",
-        src: "https://placekitten.com/320/180",
+        url: "https://placekitten.com/320/180",
         alt: "Illustration",
-        fit: "contain",
-        height: 180,
+        fit: "cover",
+        width: "",
+        height: "200px",
+        cornerRadius: 0,
+        focalX: 50,
+        focalY: 50,
+        zoom: 1,
       },
       supportsBinding: false,
       supportsFormula: false,
@@ -546,11 +514,43 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       textControls: false,
       colorControls: [],
     },
-    label: {
-      label: "Label",
+    // Full port of Press's own Icon component — same ddb-icons.css/
+    // Bootstrap Icons search (common/js/lib/icon-picker.js) and the same
+    // "iconClass is itself a binding-or-literal string" convention (no
+    // separate generic Binding field the way Input/Track/etc. have; typing
+    // "@some.path" directly into the Icon field is how a bound icon is
+    // authored, exactly like Press).
+    icon: {
+      label: "Icon",
       defaults: {
-        name: "Label",
-        text: "Label text",
+        name: "Icon",
+        iconClass: "",
+        ariaLabel: "",
+      },
+      supportsBinding: false,
+      supportsFormula: false,
+      supportsReadOnly: false,
+      supportsAlignment: false,
+      textControls: false,
+      colorControls: ["foreground"],
+    },
+    // Renamed from "Label" — a single combined Binding/Text field (its own
+    // dedicated inspector control, renderTextInspector, using
+    // createBindingFormulaInput's new textKey support) replaces what used
+    // to be two separate, redundant controls: the generic Identity
+    // section's "Label" field (which specially wrote into draft.text for
+    // this type only) and a separate Data-section Binding field. Matches
+    // Press's own "Text" component's single "Binding / Text" field exactly.
+    // supportsBinding/supportsFormula are false here specifically to
+    // suppress the GENERIC Data section (createDataControls) from also
+    // rendering its own redundant binding control — resolveComponentValue
+    // doesn't consult these flags at all, so formula/binding still resolve
+    // normally at render time regardless.
+    text: {
+      label: "Text",
+      defaults: {
+        name: "Text",
+        text: "Text",
       },
       supportsBinding: false,
       supportsFormula: false,
@@ -563,9 +563,16 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       label: "Container",
       defaults: {
         name: "Container",
-        containerType: "columns",
+        // Only 2 variants now — Grid (which also covers what used to be
+        // separate "Columns"/"Rows" types: a Columns-only layout is a Grid
+        // with rows:1, a Rows-only layout is a Grid with columns:1) and
+        // Tabs. See normalizeContainerType, which migrates any legacy
+        // "columns"/"rows" value on an already-saved template in place.
+        containerType: "grid",
         columns: 2,
-        rows: 2,
+        rows: 1,
+        templateColumns: "",
+        templateRows: "",
         tabLabels: ["Tab 1", "Tab 2"],
         gap: 16,
         zones: {},
@@ -577,28 +584,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       textControls: true,
       colorControls: ["foreground", "background", "border"],
     },
-    "linear-track": {
-      label: "Linear Track",
+    track: {
+      label: "Track",
       defaults: {
-        name: "Linear Track",
-        segments: 6,
-        segmentBinding: "6",
-        segmentFormula: "",
-        value: 3,
-        labelPosition: "top",
-      },
-      supportsBinding: true,
-      supportsFormula: false,
-      supportsReadOnly: false,
-      supportsAlignment: true,
-      textControls: true,
-      colorControls: ["foreground", "background", "border"],
-      supportsLabelPosition: true,
-    },
-    "circular-track": {
-      label: "Circular Track",
-      defaults: {
-        name: "Circular Track",
+        name: "Track",
+        // Linear vs. Circular is now a variant of one component (see the
+        // "Shape" selector in renderTrackInspector) rather than two
+        // separate, byte-for-byte-identical-except-label types.
+        trackShape: "linear",
         segments: 6,
         segmentBinding: "6",
         segmentFormula: "",
@@ -685,6 +678,21 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     border: { label: "Border", prop: "borderColor" },
   };
 
+  // Matches Press's own border-style option list exactly (press/index.html).
+  const BORDER_STYLE_OPTIONS = [
+    { value: "solid", label: "Solid" },
+    { value: "dashed", label: "Dashed" },
+    { value: "dotted", label: "Dotted" },
+    { value: "double", label: "Double" },
+    { value: "groove", label: "Groove" },
+    { value: "ridge", label: "Ridge" },
+    { value: "inset", label: "Inset" },
+    { value: "outset", label: "Outset" },
+    { value: "none", label: "None" },
+  ];
+
+  const DEFAULT_BORDER_SIDES = { top: true, right: true, bottom: true, left: true };
+
   function getComponentLabel(component, fallback = "") {
     if (!component) return fallback || "";
     const { type } = component;
@@ -721,7 +729,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return normalizeBindingValue(value).length > 0;
   }
 
-  function getBindingEditorValue(component, { bindingKey = "binding", formulaKey = "formula" } = {}) {
+  function getBindingEditorValue(component, { bindingKey = "binding", formulaKey = "formula", textKey = null } = {}) {
     if (!component || typeof component !== "object") {
       return "";
     }
@@ -729,10 +737,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       const expression = normalizeBindingValue(component[formulaKey]);
       return expression ? `=${expression}` : "";
     }
-    if (!bindingKey) {
-      return "";
+    const boundValue = bindingKey ? normalizeBindingValue(component[bindingKey]) : "";
+    if (boundValue) {
+      return boundValue;
     }
-    return normalizeBindingValue(component[bindingKey]);
+    if (textKey && typeof component[textKey] === "string") {
+      return component[textKey];
+    }
+    return "";
   }
 
   function getComponentBindingLabel(component) {
@@ -931,6 +943,15 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           markTemplateClean();
         }
         syncTemplateActions();
+        // The Play/Edit tab loads its own separate copy of a template when
+        // a character is loaded and never re-fetches it afterward — saving
+        // an edit here used to leave that copy silently stale until a full
+        // page reload. workbench.js listens for this and force-reloads the
+        // template if the currently-open character actually uses it (see
+        // workbench-character-view.js's reloadTemplateIfActive).
+        window.dispatchEvent(
+          new CustomEvent("workbench:template-saved", { detail: { templateId } })
+        );
         const label = payload.title || templateId;
         if (savedToServer) {
           status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
@@ -945,7 +966,17 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         const message = error?.message || "Unable to save template";
         status.show(message, { type: "error", timeout: 3000 });
       } finally {
-        button.disabled = false;
+        // Not a blind `button.disabled = false` — syncTemplateActions()
+        // (already called above on the success path) is the single source
+        // of truth for whether the button should be enabled, and that call
+        // correctly disables it once there are no more unsaved changes.
+        // Unconditionally re-enabling here overrode that a moment later,
+        // which is exactly why Save looked un-dirty-gated: a successful
+        // save always left the button clickable again regardless of
+        // whether there was anything left to save. Calling it again here
+        // (rather than skipping this block) still correctly re-enables the
+        // button on a failed save, since the template is still dirty then.
+        syncTemplateActions();
         button.removeAttribute("aria-busy");
       }
     });
@@ -1118,13 +1149,26 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
   }
 
+  // Awaited before the first render — a template that already uses a
+  // custom/Google font needs the shared library populated (so
+  // findFontOptionByFamily/ensureFontLoaded in applyTextFormatting can
+  // actually find and load it) before that first paint, not just from
+  // whenever the Font field's own dropdown happens to load it lazily.
+  await loadCustomFonts();
   renderCanvas();
   renderInspector();
   ensureTemplateSelectValue();
   syncTemplateActions();
+  initPatternModal();
+  initAddFontModal();
 
   function renderCanvas() {
     if (!elements.canvasRoot) return;
+    // Cascades to every component that leaves its own Font field unset via
+    // ordinary CSS inheritance — no per-component rendering code needs to
+    // know about this at all (see the base font's own doc comment in
+    // font-library.js).
+    elements.canvasRoot.style.fontFamily = state.template?.baseFontFamily || DEFAULT_FONT_FAMILY;
     elements.canvasRoot.innerHTML = "";
     elements.canvasRoot.dataset.dropzone = "root";
     elements.canvasRoot.dataset.dropzoneParent = "";
@@ -2271,6 +2315,24 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     };
   }
 
+  // Container (Grid/Tabs, N zones) and Repeater (always exactly one zone,
+  // its item template — see ensureRepeaterZone below) are the two
+  // zone-bearing component types — every zone-aware traversal (drag-drop,
+  // selection lookup, pruning, rendering) goes through isZoneContainer/
+  // ensureComponentZones rather than checking component.type directly, so
+  // a third zone-bearing type later needs no changes at any of these call
+  // sites.
+  function isZoneContainer(component) {
+    return Boolean(component) && (component.type === "container" || component.type === "repeater");
+  }
+
+  function ensureComponentZones(component) {
+    if (!component) return [];
+    if (component.type === "container") return ensureContainerZones(component);
+    if (component.type === "repeater") return ensureRepeaterZone(component);
+    return [];
+  }
+
   function getCollection(parentId, zoneKey) {
     if (!parentId) {
       return state.components;
@@ -2280,10 +2342,10 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       return null;
     }
     const component = parent.component;
-    if (component.type !== "container") {
+    if (!isZoneContainer(component)) {
       return parent.collection;
     }
-    ensureContainerZones(component);
+    ensureComponentZones(component);
     if (!component.zones) {
       component.zones = {};
     }
@@ -2300,8 +2362,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       if (component.uid === uid) {
         return { component, collection: components, index, parent, zoneKey };
       }
-      if (component.type === "container") {
-        const zones = ensureContainerZones(component);
+      if (isZoneContainer(component)) {
+        const zones = ensureComponentZones(component);
         for (const zone of zones) {
           const found = findComponent(uid, zone.components, component, zone.key);
           if (found) return found;
@@ -2321,14 +2383,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
   }
 
   function containsComponent(component, targetId) {
-    if (!component || component.type !== "container") return false;
-    const zones = ensureContainerZones(component);
+    if (!isZoneContainer(component)) return false;
+    const zones = ensureComponentZones(component);
     for (const zone of zones) {
       for (const child of zone.components) {
         if (child.uid === targetId) {
           return true;
         }
-        if (child.type === "container" && containsComponent(child, targetId)) {
+        if (isZoneContainer(child) && containsComponent(child, targetId)) {
           return true;
         }
       }
@@ -2352,7 +2414,31 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       textColor: "",
       backgroundColor: "",
       borderColor: "",
+      borderWidth: 1,
+      borderStyle: "solid",
+      borderRadius: 0,
+      borderSides: { ...DEFAULT_BORDER_SIDES },
+      // Raw CSS shorthand strings (e.g. "8px" or "4px 8px 12px 16px"),
+      // passed straight through to the real padding/margin CSS properties
+      // — no Workbench-specific parsing. Empty means no override, letting
+      // the default (see workbench/css/styles.css's .workbench-canvas-card
+      // rule) show through.
+      padding: "",
+      margin: "",
+      visibilityBinding: "",
+      visibilityFormula: "",
       textSize: "md",
+      // Matches Press's own Font/Text Size/Font Size/Line Height system
+      // exactly (common/js/lib/font-picker.js, common/js/lib/text-size.js)
+      // — fontFamily/lineHeight empty/null means "no override, inherit the
+      // natural default"; fontSizeCustom (a pt value), when set, wins over
+      // the textSize preset above, same precedence Press uses.
+      fontFamily: "",
+      fontSizeCustom: null,
+      lineHeight: null,
+      // Freeform CSS class names (Advanced section) — see
+      // common/js/lib/class-name-picker.js's suggestion list.
+      className: "",
       textStyles: { bold: false, italic: false, underline: false },
       align: "start",
       binding: "",
@@ -2413,7 +2499,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     } else if (Object.prototype.hasOwnProperty.call(component, "labelPosition")) {
       delete component.labelPosition;
     }
-    if (component.type === "linear-track" || component.type === "circular-track") {
+    if (component.type === "track") {
       if (!component.segmentBinding) {
         const fallbackSegments = Number.isFinite(Number(component.segments)) ? Number(component.segments) : 6;
         component.segmentBinding = String(fallbackSegments);
@@ -2433,8 +2519,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (component.zones && typeof component.zones === "object") {
       component.zones = { ...component.zones };
     }
-    if (component.type === "container") {
-      ensureContainerZones(component);
+    if (isZoneContainer(component)) {
+      ensureComponentZones(component);
     }
     return component;
   }
@@ -2563,20 +2649,18 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     switch (component.type) {
       case "input":
         return renderInputPreview(component);
-      case "array":
-        return renderArrayPreview(component);
-      case "divider":
-        return renderDividerPreview(component);
+      case "repeater":
+        return renderRepeaterPreview(component);
       case "image":
         return renderImagePreview(component);
-      case "label":
-        return renderLabelPreview(component);
+      case "icon":
+        return renderIconPreview(component);
+      case "text":
+        return renderTextPreview(component);
       case "container":
         return renderContainerPreview(component);
-      case "linear-track":
-        return renderLinearTrackPreview(component);
-      case "circular-track":
-        return renderCircularTrackPreview(component);
+      case "track":
+        return renderTrackPreview(component);
       case "select-group":
         return renderSelectGroupComponentPreview(component);
       case "toggle":
@@ -2677,8 +2761,28 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return placeholder;
   }
 
+  // Legacy "columns"/"rows" containerType values collapse into "grid" in
+  // place — a Columns-only layout is just a Grid with rows:1, a Rows-only
+  // layout is just a Grid with columns:1 — so an already-saved template
+  // self-heals the first time its container is touched, no separate
+  // migration pass needed. Idempotent; safe to call on every render.
+  function normalizeContainerType(component) {
+    if (!component || component.type !== "container") return;
+    const raw = component.containerType;
+    if (raw === "columns") {
+      component.rows = 1;
+      component.containerType = "grid";
+    } else if (raw === "rows") {
+      component.columns = 1;
+      component.containerType = "grid";
+    } else if (raw !== "tabs" && raw !== "grid") {
+      component.containerType = "grid";
+    }
+  }
+
   function ensureContainerZones(component) {
     if (!component || component.type !== "container") return [];
+    normalizeContainerType(component);
     if (!component.zones || typeof component.zones !== "object") {
       component.zones = {};
     }
@@ -2693,8 +2797,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       zones.push({ key, label, components: component.zones[key] });
     };
 
-    const type = component.containerType || "columns";
-    if (type === "tabs") {
+    if (component.containerType === "tabs") {
       const labels = Array.isArray(component.tabLabels) && component.tabLabels.length
         ? component.tabLabels
         : ["Tab 1", "Tab 2"];
@@ -2702,29 +2805,27 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         registerZone(`tab-${index}`, (labelText || `Tab ${index + 1}`).trim() || `Tab ${index + 1}`);
       });
       setActiveTabIndex(component, getActiveTabIndex(component, labels.length));
-    } else if (type === "rows") {
+    } else {
+      // "grid" — the only other variant. Rows-major zone order (outer loop
+      // rows, inner loop columns) matches CSS Grid's own auto-placement
+      // order, so the flat zones list below can just be appended in order
+      // with no explicit grid-row/grid-column needed per cell.
       clearActiveTab(component);
-      const rows = clampInteger(component.rows || 2, 1, 6);
-      for (let index = 0; index < rows; index += 1) {
-        registerZone(`row-${index}`, `Row ${index + 1}`);
-      }
-    } else if (type === "grid") {
-      clearActiveTab(component);
-      const columns = clampInteger(component.columns || 2, 1, 4);
-      const rows = clampInteger(component.rows || 2, 1, 6);
+      const columns = clampInteger(component.columns || 2, 1, MAX_CONTAINER_COLUMNS);
+      const rows = clampInteger(component.rows || 1, 1, MAX_CONTAINER_ROWS);
       for (let row = 0; row < rows; row += 1) {
         for (let col = 0; col < columns; col += 1) {
-          registerZone(`grid-${row}-${col}`, `Row ${row + 1}, Column ${col + 1}`);
+          const label = rows > 1 && columns > 1 ? `Row ${row + 1}, Column ${col + 1}` : rows > 1 ? `Row ${row + 1}` : `Column ${col + 1}`;
+          registerZone(`grid-${row}-${col}`, label);
         }
-      }
-    } else {
-      clearActiveTab(component);
-      const columns = clampInteger(component.columns || 2, 1, 4);
-      for (let index = 0; index < columns; index += 1) {
-        registerZone(`col-${index}`, `Column ${index + 1}`);
       }
     }
 
+    // Any zone key that's no longer valid (e.g. a legacy "col-N"/"row-N" key
+    // from before normalizeContainerType ran, or a shrunk column/row count)
+    // has its children salvaged into the first remaining zone rather than
+    // discarded — same convention already used when a user shrinks a grid's
+    // own column count.
     Object.keys(component.zones).forEach((key) => {
       if (!validKeys.has(key)) {
         const items = component.zones[key];
@@ -2733,6 +2834,94 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         }
         delete component.zones[key];
       }
+    });
+
+    return zones;
+  }
+
+  function createDefaultRepeaterHeaderCell(text) {
+    const cell = createComponent("text");
+    cell.text = text;
+    cell.textStyles = { ...(cell.textStyles || {}), bold: true };
+    return cell;
+  }
+
+  // Repeater's item template and (optional) header row are both authored
+  // on canvas exactly like a Container's grid zones — one zone per column,
+  // per row-kind, reusing the exact same zones:{key:[]} storage shape and
+  // createContainerDropzone/drag-drop machinery Container already has.
+  // "item-{col}" zones repeat once per bound array item at render time
+  // (workbench-character-view.js's renderRepeaterComponent); "header-{col}"
+  // zones (only present when showHeader is on) are authored once and never
+  // repeat — this is what makes a real, non-repeating table header
+  // possible, which a Container can't do (everything in a Container's
+  // zones repeats).
+  //
+  // Backward compat, self-healing (same pattern as every other legacy
+  // normalization in this file): an old saved Repeater has a single flat
+  // zones.item array (from before columns/header existed) — migrated here,
+  // the first time it's encountered, into zones["item-0"] rather than
+  // discarded, so an existing single-column Repeater keeps its exact item
+  // template with zero visible change.
+  function ensureRepeaterZone(component) {
+    if (!component.zones || typeof component.zones !== "object") {
+      component.zones = {};
+    }
+    const columns = clampInteger(component.columns || 1, 1, MAX_REPEATER_COLUMNS);
+    component.columns = columns;
+    if (Array.isArray(component.zones.item) && !Array.isArray(component.zones["item-0"])) {
+      component.zones["item-0"] = component.zones.item;
+    }
+    delete component.zones.item;
+
+    const zones = [];
+    const validKeys = new Set();
+
+    const registerZone = (key, label, { seedText = null } = {}) => {
+      if (!Array.isArray(component.zones[key])) {
+        component.zones[key] = seedText ? [createDefaultRepeaterHeaderCell(seedText)] : [];
+      }
+      validKeys.add(key);
+      zones.push({ key, label, components: component.zones[key] });
+    };
+
+    if (component.showHeader) {
+      for (let col = 0; col < columns; col += 1) {
+        const label = columns > 1 ? `Header — Column ${col + 1}` : "Header";
+        registerZone(`header-${col}`, label, { seedText: `Column ${col + 1}` });
+      }
+    }
+    for (let col = 0; col < columns; col += 1) {
+      const label = columns > 1 ? `Item — Column ${col + 1}` : "Item template";
+      registerZone(`item-${col}`, label);
+    }
+
+    // Shrinking columns salvages the overflow columns' contents into the
+    // first remaining zone of the SAME row-kind (header content into the
+    // first header zone, item content into the first item zone) rather
+    // than discarding them — mirrors ensureContainerZones' own
+    // shrink-salvage behavior. Turning the header off specifically does
+    // NOT delete its zones' data (left untouched below) so re-enabling it
+    // later restores exactly what was there instead of regenerating
+    // defaults or losing it.
+    Object.keys(component.zones).forEach((key) => {
+      if (validKeys.has(key)) return;
+      const items = component.zones[key];
+      if (!Array.isArray(items) || !items.length) {
+        delete component.zones[key];
+        return;
+      }
+      const isHeaderKey = key.startsWith("header-");
+      if (!component.showHeader && isHeaderKey) {
+        return;
+      }
+      const salvageTarget = isHeaderKey
+        ? zones.find((zone) => zone.key.startsWith("header-"))
+        : zones.find((zone) => zone.key.startsWith("item-"));
+      if (salvageTarget) {
+        salvageTarget.components.push(...items);
+      }
+      delete component.zones[key];
     });
 
     return zones;
@@ -2773,17 +2962,19 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (component.uid) {
       componentCollapsedState.delete(component.uid);
     }
-    if (component.type !== "container") {
+    if (!isZoneContainer(component)) {
       return;
     }
-    clearActiveTab(component);
+    if (component.type === "container") {
+      clearActiveTab(component);
+    }
     const zoneEntries = component.zones && typeof component.zones === "object"
       ? Object.values(component.zones)
       : [];
     zoneEntries.forEach((items) => {
       if (!Array.isArray(items)) return;
       items.forEach((child) => {
-        if (child && child.type === "container") {
+        if (isZoneContainer(child)) {
           pruneContainerState(child);
         } else if (child?.uid) {
           componentCollapsedState.delete(child.uid);
@@ -2889,193 +3080,191 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return wrapper;
   }
 
-  function renderArrayPreview(component) {
-    const labelText = getComponentLabel(component, "List");
-    const control = document.createElement("div");
-    control.className = "d-flex flex-column gap-2";
-
-    const previewModel = (() => {
-      const sourceBinding = normalizeBindingValue(component?.sourceBinding);
-      const fallbackBinding = normalizeBindingValue(component?.binding);
-      const activeBinding = sourceBinding || fallbackBinding;
-      const sourceField = findBindingFieldEntry(activeBinding, ["array", "object"]);
-      const hasValidSource = Boolean(sourceField);
-      const baseLabel = hasValidSource
-        ? sourceField?.label?.trim() || formatBindingLabel(activeBinding) || "Item"
-        : "Item";
-      const bindingForPreview = hasValidSource ? activeBinding : "";
-      const bindingWithSource = hasValidSource ? sourceBinding || fallbackBinding : "";
-      let resolvedItems = [];
-      if (bindingWithSource) {
-        const boundItems = resolvePreviewBindingValue(bindingWithSource);
-        if (Array.isArray(boundItems)) {
-          resolvedItems = boundItems;
-        }
-      }
-      const displayBinding =
-        hasValidSource && typeof sourceField?.displayField === "string" && sourceField.displayField.trim()
-          ? sourceField.displayField.trim()
-          : "";
-      const displaySegments =
-        bindingForPreview && displayBinding
-          ? resolveRelativeSegments(
-              bindingForPreview,
-              displayBinding.startsWith("@") ? displayBinding : `@${displayBinding}`
-            )
-          : [];
-      const valueBinding = normalizeBindingValue(component?.binding);
-      const valueSegments =
-        bindingForPreview && valueBinding
-          ? resolveRelativeSegments(bindingForPreview, valueBinding)
-          : [];
-      const hasValueBinding = valueSegments.length > 0;
-      const valueLabel = hasValueBinding ? formatSegmentLabel(valueSegments[valueSegments.length - 1]) : "";
-      const entryCount = component.variant === "cards" ? 2 : 3;
-      const itemsToRender = [];
-      for (let index = 0; index < entryCount; index += 1) {
-        if (resolvedItems[index] !== undefined) {
-          itemsToRender.push(resolvedItems[index]);
-        } else {
-          itemsToRender.push(null);
-        }
-      }
-      const entries = itemsToRender.map((item, index) => {
-        const isPlaceholder = item === null || item === undefined;
-        const fallbackLabel = fallbackItemLabel(baseLabel, item, index);
-        let text = fallbackLabel;
-        if (!isPlaceholder && displaySegments.length) {
-          const raw = getValueFromSegments(item, displaySegments);
-          if (raw !== undefined && raw !== null) {
-            const stringValue = String(raw).trim();
-            if (stringValue) {
-              text = stringValue;
-            }
-          }
-        } else if (!isPlaceholder && typeof item === "string") {
-          const trimmed = item.trim();
-          if (trimmed) {
-            text = trimmed;
-          }
-        }
-        let badgeText = "";
-        let showBadge = false;
-        if (hasValueBinding) {
-          showBadge = true;
-          if (!isPlaceholder) {
-            const rawBadge = getValueFromSegments(item, valueSegments);
-            if (rawBadge !== undefined && rawBadge !== null) {
-              const badgeString = String(rawBadge).trim();
-              badgeText = badgeString || "—";
-            } else {
-              badgeText = "—";
-            }
-          } else {
-            badgeText = "—";
-          }
-        } else if (isPlaceholder) {
-          showBadge = true;
-          badgeText = "Value";
-        }
-        return {
-          text,
-          badgeText,
-          showBadge,
-          isPlaceholder,
-          hasValueBinding,
-          valueLabel,
-        };
-      });
-
-      return {
-        label: baseLabel,
-        items: entries,
-      };
-    })();
-
-    if (component.variant === "cards") {
-      const grid = document.createElement("div");
-      grid.className = "row g-2";
-      previewModel.items.forEach((entry) => {
-        const col = document.createElement("div");
-        col.className = "col-12 col-md-6";
-        const card = document.createElement("div");
-        card.className = "border rounded-3 p-3 bg-body";
-        const heading = document.createElement("div");
-        heading.className = "fw-semibold";
-        heading.textContent = entry.text;
-        card.appendChild(heading);
-        const detail = document.createElement("div");
-        detail.className = "text-body-secondary small";
-        if (entry.hasValueBinding) {
-          const label = entry.valueLabel || "Value";
-          detail.textContent = `${label}: ${entry.badgeText || "—"}`;
-        } else {
-          detail.textContent = entry.isPlaceholder ? "Repeatable entry" : "Repeatable entry";
-        }
-        card.appendChild(detail);
-        col.appendChild(card);
-        grid.appendChild(col);
-      });
-      control.appendChild(grid);
-    } else {
-      const list = document.createElement("ul");
-      list.className = "list-group";
-      previewModel.items.forEach((entry) => {
-        const item = document.createElement("li");
-        item.className = "list-group-item d-flex justify-content-between align-items-center";
-        const labelSpan = document.createElement("span");
-        labelSpan.textContent = entry.text;
-        item.appendChild(labelSpan);
-        if (entry.showBadge) {
-          const badge = document.createElement("span");
-          badge.className = "badge text-bg-secondary";
-          badge.textContent = entry.badgeText || "";
-          item.appendChild(badge);
-        }
-        list.appendChild(item);
-      });
-      control.appendChild(list);
+  // The canvas shows the item template ONCE, as a real editable dropzone
+  // (exactly like a Container zone) — not multiplied per resolved sample
+  // item the way old List's preview was, since the copies would only ever
+  // differ by data, not by structure, and multiplying editable dropzones
+  // would make it ambiguous which one a drag/drop edit is even targeting.
+  // The real per-item repetition happens at play time
+  // (workbench-character-view.js's own renderRepeaterComponent).
+  function renderRepeaterPreview(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+    const labelText = getComponentLabel(component, "Repeater");
+    if (labelText) {
+      const heading = document.createElement("div");
+      heading.className = "fw-semibold";
+      heading.textContent = labelText;
+      applyTextFormatting(heading, component);
+      wrapper.appendChild(heading);
     }
-    return createLabeledField({
-      component,
-      control,
-      labelText,
-      labelTag: "div",
-      labelClasses: ["fw-semibold", "text-body-secondary"],
-      applyFormatting: applyTextFormatting,
+    const binding = normalizeBindingValue(component.binding);
+    const hint = document.createElement("div");
+    hint.className = "extra-small text-body-secondary";
+    hint.textContent = binding
+      ? `Repeats once per item in ${binding} — build the item's own layout below.`
+      : "Bind this to an array field (Data section below), then build the item's own layout here.";
+    wrapper.appendChild(hint);
+    const decoratorPreview = previewRepeaterDecorator(component);
+    if (decoratorPreview) {
+      const decoratorRow = document.createElement("div");
+      decoratorRow.className = "d-flex align-items-center gap-2 extra-small text-body-secondary";
+      const marker = document.createElement("span");
+      marker.className = "fw-semibold";
+      marker.textContent = decoratorPreview;
+      decoratorRow.append("Decorator:", marker);
+      wrapper.appendChild(decoratorRow);
+    }
+    const zones = ensureRepeaterZone(component);
+    const headerZones = zones.filter((zone) => zone.key.startsWith("header-"));
+    const itemZones = zones.filter((zone) => zone.key.startsWith("item-"));
+    if (headerZones.length) {
+      const headerRow = document.createElement("div");
+      headerRow.className = "d-flex gap-2 align-items-stretch";
+      headerZones.forEach((zone) => {
+        headerRow.appendChild(
+          createContainerDropzone(component, zone, {
+            label: zone.label,
+            hint: "Drop header content here",
+          })
+        );
+      });
+      wrapper.appendChild(headerRow);
+    }
+    const itemRow = document.createElement("div");
+    itemRow.className = "d-flex gap-2 align-items-stretch";
+    itemZones.forEach((zone) => {
+      itemRow.appendChild(
+        createContainerDropzone(component, zone, {
+          label: itemZones.length > 1 ? zone.label : null,
+          hint: "Drag components here to build one item's layout",
+        })
+      );
     });
+    wrapper.appendChild(itemRow);
+    return wrapper;
   }
 
-  function renderDividerPreview(component) {
-    const hr = document.createElement("hr");
-    hr.className = "my-2";
-    hr.style.borderStyle = component.style || "solid";
-    hr.style.borderWidth = `${component.thickness || 2}px`;
-    const color = component.textColor || component.borderColor || "";
-    if (color) {
-      hr.style.borderColor = color;
+  // A representative first-item decorator, for the canvas hint only — the
+  // real per-item resolution (including a custom @-bound decorator's actual
+  // value) happens at play time (workbench-character-view.js's own
+  // resolveRepeaterDecorator).
+  function previewRepeaterDecorator(component) {
+    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
+    const type = decorator?.type || "none";
+    if (type === "bullet") return "•";
+    if (type === "number") return "1.";
+    if (type === "custom") return (decorator.text || "").trim() || "(empty)";
+    return "";
+  }
+
+  // An old saved template may still have `component.src` (the old, sole
+  // field before this port) instead of `component.url` — read as a
+  // fallback everywhere a URL is needed, written to `.url` on every edit
+  // going forward (never `.src` again), so existing Image components keep
+  // showing their picture with no migration step and self-heal on first edit.
+  function resolveImageUrl(component) {
+    return component.url || component.src || "";
+  }
+
+  // Shared by the canvas preview and (a duplicate small copy of the same
+  // logic, since that's a separate file) the real character-sheet render —
+  // matches Press's own template-renderer.js image case exactly, minus the
+  // inches/Layer-sizing branch, which has no equivalent here (Workbench
+  // components always fill their own container zone/cell, never a
+  // free-positioned print Layer).
+  function applyImageStyles(img, component) {
+    img.style.objectFit = component.fit === "fill" ? "fill" : component.fit === "contain" ? "contain" : "cover";
+    const width = typeof component.width === "string" ? component.width.trim() : "";
+    const height = typeof component.height === "string" ? component.height.trim() : "";
+    img.style.width = width || "100%";
+    img.style.height = height || "auto";
+    const cornerRadius = Number(component.cornerRadius);
+    img.style.borderRadius = Number.isFinite(cornerRadius) && cornerRadius > 0 ? `${cornerRadius}px` : "";
+    const focalX = Number.isFinite(Number(component.focalX)) ? Number(component.focalX) : 50;
+    const focalY = Number.isFinite(Number(component.focalY)) ? Number(component.focalY) : 50;
+    img.style.objectPosition = `${focalX}% ${focalY}%`;
+    const zoom = Number(component.zoom);
+    if (Number.isFinite(zoom) && zoom !== 1) {
+      img.style.transform = `scale(${zoom})`;
+      img.style.transformOrigin = `${focalX}% ${focalY}%`;
+    } else {
+      img.style.transform = "";
+      img.style.transformOrigin = "";
     }
-    return hr;
   }
 
   function renderImagePreview(component) {
     const wrapper = document.createElement("div");
     wrapper.className = "text-center";
+    wrapper.style.overflow = "hidden";
     const img = document.createElement("img");
-    img.className = "img-fluid rounded";
-    img.src = component.src || "https://placekitten.com/320/180";
+    img.src = resolveImageUrl(component) || "https://placekitten.com/320/180";
     img.alt = component.alt || "Image";
-    img.style.objectFit = component.fit === "cover" ? "cover" : "contain";
-    img.style.width = "100%";
-    if (component.height) {
-      img.style.maxHeight = `${component.height}px`;
-    }
+    applyImageStyles(img, component);
     wrapper.appendChild(img);
     return wrapper;
   }
 
-  function renderLabelPreview(component) {
-    const value = (component.text || "").trim() || getComponentLabel(component, "");
+  // iconClass is itself the binding-or-literal string (see the icon
+  // registry entry's own comment) — for the canvas preview specifically, an
+  // "@path" value resolves against the template's sample/preview data
+  // (resolvePreviewBindingValue, the same helper every other bound field's
+  // preview uses) rather than a live character record.
+  function resolveIconPreviewClassList(component) {
+    const raw = typeof component.iconClass === "string" ? component.iconClass.trim() : "";
+    if (raw.startsWith("@")) {
+      return resolveIconClassList(resolvePreviewBindingValue(raw));
+    }
+    return resolveIconClassList(raw);
+  }
+
+  function renderIconPreview(component) {
+    const wrapper = document.createElement("span");
+    wrapper.className = "d-inline-flex align-items-center";
+    const classes = resolveIconPreviewClassList(component);
+    if (classes.length) {
+      const icon = document.createElement("span");
+      icon.className = classes.join(" ");
+      if (component.textColor) icon.style.color = component.textColor;
+      wrapper.appendChild(icon);
+    } else {
+      wrapper.classList.add("press-icon--empty");
+      const placeholder = document.createElement("span");
+      placeholder.className = "press-icon__placeholder";
+      placeholder.textContent = component.label || "Icon";
+      wrapper.appendChild(placeholder);
+    }
+    return wrapper;
+  }
+
+  function renderTextPreview(component) {
+    // Binding/formula take priority over the static text fallback here too,
+    // matching resolveComponentValue's own precedence at play time — same
+    // reasoning as every other bound field's own canvas preview. But sample
+    // data can't always resolve a binding — most notably, a Text living
+    // inside a Repeater's item template has an @-path that's relative to
+    // the ITEM (see resolveRepeaterItemValue in workbench-character-view.js),
+    // not the top-level sample data resolvePreviewBindingValue resolves
+    // against, so it will always come back empty here. A formula can never
+    // be evaluated in the canvas at all (no live record to evaluate it
+    // against). In both cases, show the binding/formula itself instead of
+    // silently falling through to the generic "Text" type label, which
+    // looked exactly like the binding/formula hadn't been captured at all.
+    const binding = normalizeBindingValue(component.binding);
+    const formula = typeof component.formula === "string" ? component.formula.trim() : "";
+    let value = "";
+    if (formula) {
+      value = `=${formula}`;
+    } else if (binding) {
+      const resolved = resolvePreviewBindingValue(binding);
+      value = resolved !== undefined && resolved !== null && String(resolved).trim()
+        ? String(resolved).trim()
+        : binding;
+    }
+    if (!value) {
+      value = (component.text || "").trim() || getComponentLabel(component, "");
+    }
     if (!value) {
       return document.createDocumentFragment();
     }
@@ -3134,42 +3323,19 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         }
         break;
       }
-      case "grid": {
-        const grid = document.createElement("div");
-        grid.className = "template-container-grid";
-        const columns = clampInteger(component.columns || 2, 1, 4);
-        grid.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
-        grid.style.gap = `${gap}px`;
-        zones.forEach((zone) => {
-          grid.appendChild(
-            createContainerDropzone(component, zone, {
-              label: zone.label,
-              hint: `Drop components into ${zone.label}`,
-            })
-          );
-        });
-        wrapper.appendChild(grid);
-        break;
-      }
-      case "rows": {
-        const list = document.createElement("div");
-        list.className = "d-flex flex-column";
-        list.style.gap = `${gap}px`;
-        zones.forEach((zone) => {
-          list.appendChild(
-            createContainerDropzone(component, zone, {
-              label: zone.label,
-              hint: `Drop components into ${zone.label}`,
-            })
-          );
-        });
-        wrapper.appendChild(list);
-        break;
-      }
+      case "grid":
       default: {
+        // "grid" is the only remaining non-tabs variant (ensureContainerZones
+        // has already normalized any legacy "columns"/"rows" value above).
         const grid = document.createElement("div");
         grid.className = "template-container-grid";
-        grid.style.gridTemplateColumns = `repeat(${zones.length || 1}, minmax(0, 1fr))`;
+        const columns = clampInteger(component.columns || 2, 1, MAX_CONTAINER_COLUMNS);
+        const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
+        const templateRows = typeof component.templateRows === "string" ? component.templateRows.trim() : "";
+        grid.style.gridTemplateColumns = templateColumns || `repeat(${columns}, minmax(0, 1fr))`;
+        if (templateRows) {
+          grid.style.gridTemplateRows = templateRows;
+        }
         grid.style.gap = `${gap}px`;
         zones.forEach((zone) => {
           grid.appendChild(
@@ -3230,6 +3396,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const segments = resolveTrackSegmentCount(component);
     const active = resolveTrackActiveCount(component, segments);
     return { segments, active };
+  }
+
+  // The one dispatch point Track's canvas preview goes through — Linear and
+  // Circular differ only in which of these two shape-specific renderers
+  // gets called, not in any of the data/segment math above (shared by both
+  // via resolveTrackSegmentCount/resolveTrackActiveCount/getTrackPreviewState).
+  function renderTrackPreview(component) {
+    return component.trackShape === "circular" ? renderCircularTrackPreview(component) : renderLinearTrackPreview(component);
   }
 
   function renderLinearTrackPreview(component) {
@@ -3889,6 +4063,47 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     });
     form.appendChild(createTemplateField({ labelText: "Description", control: descriptionInput, id: "template-description" }));
 
+    // The Template-level "base font" — has no "Default" option of its own
+    // (excludeDefault: true — a template can't inherit from itself) and, if
+    // left unset, shows the raw effective fallback (DEFAULT_FONT_FAMILY)
+    // rather than a labeled option, same convention as any other raw CSS
+    // font-family value neither tool has a matching library entry for.
+    const baseFontInput = document.createElement("input");
+    baseFontInput.type = "text";
+    baseFontInput.className = "form-control";
+    baseFontInput.autocomplete = "off";
+    baseFontInput.disabled = !canEdit;
+    const currentBaseFamily =
+      typeof state.template.baseFontFamily === "string" ? state.template.baseFontFamily.trim() : "";
+    const matchedBaseOption = findFontOptionByFamily(currentBaseFamily);
+    baseFontInput.value = matchedBaseOption ? matchedBaseOption.label : currentBaseFamily || DEFAULT_FONT_FAMILY;
+    const baseFontField = createTemplateField({
+      labelText: "Base font",
+      control: baseFontInput,
+      id: "template-base-font",
+    });
+    form.appendChild(baseFontField);
+    // Runs AFTER baseFontInput has a DOM parent (baseFontField, above) —
+    // same requirement as createFontFamilyControl's own note.
+    attachFontFamilyAutocomplete(baseFontInput, {
+      onSelect: (option) => {
+        state.template.baseFontFamily = option.family || "";
+        baseFontInput.value = option.label;
+        renderCanvas();
+      },
+      onAddFont: () =>
+        openAddFontModal((registered) => {
+          state.template.baseFontFamily = registered.family;
+          baseFontInput.value = registered.label;
+          renderCanvas();
+        }),
+      canAddFont: () => dataManager.meetsTier("creator"),
+      onAddDenied: () => status.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+      onDeleteFont: (option) => handleDeleteCustomFont(option),
+      canDeleteFont: () => dataManager.meetsTier("admin"),
+      excludeDefault: true,
+    });
+
     const systemSelect = document.createElement("select");
     systemSelect.className = "form-select";
     systemSelect.disabled = !canEdit;
@@ -3930,8 +4145,8 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     collapseTemplatePropertiesSection();
     expandComponentPropertiesSection();
     const definition = COMPONENT_DEFINITIONS[component.type] || {};
-    if (component.type === "container") {
-      ensureContainerZones(component);
+    if (isZoneContainer(component)) {
+      ensureComponentZones(component);
     }
     const form = document.createElement("form");
     form.className = "d-flex flex-column gap-4";
@@ -3943,16 +4158,21 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
           draft.id = value.trim();
         }, { rerenderCanvas: true });
       }, { placeholder: "Unique identifier" }),
-      createTextInput(component, "Label", getComponentLabel(component), (value) => {
-        updateComponent(component.uid, (draft) => {
-          const next = value.trim();
-          draft.label = next;
-          draft.name = next;
-          if (draft.text !== undefined && draft.type === "label") {
-            draft.text = next;
-          }
-        }, { rerenderCanvas: true });
-      }, { placeholder: "Displayed label" }),
+      // Text has no separate "caption" concept the way Input/Toggle/etc.
+      // do — its own dedicated Binding/Text field (see renderTextInspector)
+      // IS its whole content. A generic Label field here would just be a
+      // second, redundant place to set text, exactly the "two fields for
+      // one concept" problem Text was created to eliminate in the first
+      // place — so it's omitted for this type only.
+      component.type === "text"
+        ? null
+        : createTextInput(component, "Label", getComponentLabel(component), (value) => {
+            updateComponent(component.uid, (draft) => {
+              const next = value.trim();
+              draft.label = next;
+              draft.name = next;
+            }, { rerenderCanvas: true });
+          }, { placeholder: "Displayed label" }),
     ].filter(Boolean);
     if (identityControls.length) {
       const identityGroup = document.createElement("div");
@@ -3979,17 +4199,21 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     const colorControls = getColorControls(component);
     if (colorControls.length) {
       appearanceControls.push(createColorRow(component, colorControls));
+      if (colorControls.includes("border")) {
+        appearanceControls.push(createBorderControls(component));
+      }
     }
     if (componentSupportsLabelPosition(component)) {
       appearanceControls.push(createLabelPositionControl(component));
     }
     if (componentHasTextControls(component)) {
-      appearanceControls.push(createTextSizeControls(component));
+      appearanceControls.push(...createTextFormattingControls(component));
       appearanceControls.push(createTextStyleControls(component));
     }
     if (definition.supportsAlignment !== false && componentHasTextControls(component)) {
       appearanceControls.push(createAlignmentControls(component));
     }
+    appearanceControls.push(...createSpacingControls(component));
     const appearanceSection = createSection("Appearance", appearanceControls);
     if (appearanceSection) {
       form.appendChild(appearanceSection);
@@ -3999,9 +4223,18 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (definition.supportsReadOnly) {
       behaviorControls.push(createReadOnlyToggle(component));
     }
+    behaviorControls.push(createVisibilityControl(component));
     const behaviorSection = createSection("Behavior", behaviorControls);
     if (behaviorSection) {
       form.appendChild(behaviorSection);
+    }
+
+    // Available unconditionally, every type — matches Press's own Classes
+    // field being ungated (unlike everything else in this inspector, which
+    // is gated by registry flags/component type).
+    const advancedSection = createSection("Advanced", [createClassNameControl(component)]);
+    if (advancedSection) {
+      form.appendChild(advancedSection);
     }
 
     elements.inspector.appendChild(form);
@@ -4078,33 +4311,6 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       (!supportsBinding && !supportsFormula && component.type !== "toggle" && !componentSupportsRoller(component))
     ) {
       return [];
-    }
-    if (component.type === "array") {
-      const controls = [
-        createBindingFormulaInput(component, {
-          labelText: "Source",
-          placeholder: "@inventory",
-          bindingKey: "sourceBinding",
-          formulaKey: null,
-          supportsFormula: false,
-          allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
-            if (!result || result.type === "empty") {
-              draft.sourceBinding = "";
-            }
-          },
-        }),
-      ];
-      controls.push(
-        createBindingFormulaInput(component, {
-          labelText: supportsFormula ? "Binding / Formula" : "Binding",
-          supportsBinding,
-          supportsFormula,
-          allowedFieldCategories: ["array", "object", "string", "number", "boolean"],
-        })
-      );
-      appendRollerControl(controls, component);
-      return controls;
     }
     if (component.type === "input" && (component.variant || "text") === "select") {
       const controls = [
@@ -4302,6 +4508,87 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return wrapper;
   }
 
+  // Ported from Press's own border fields (press/index.html:1528-1572) —
+  // shown alongside the Border color swatch whenever a component supports
+  // "border" in its colorControls, same gating the swatch itself already
+  // uses. Without width/style, a border color alone renders nothing (a
+  // 0-width border is invisible regardless of color).
+  function createBorderControls(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column gap-2";
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold text-body-secondary";
+    heading.textContent = "Border";
+    wrapper.appendChild(heading);
+
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-start gap-2 flex-wrap";
+    row.appendChild(
+      createNumberInput(component, "Thickness (px)", component.borderWidth ?? 1, (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.borderWidth = value === null ? 1 : value;
+        }, { rerenderCanvas: true });
+      }, { min: 0, max: 12, step: 1 })
+    );
+    row.appendChild(
+      createNumberInput(component, "Corner radius (px)", component.borderRadius ?? 0, (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.borderRadius = value === null ? 0 : value;
+        }, { rerenderCanvas: true });
+      }, { min: 0, max: 24, step: 1 })
+    );
+    wrapper.appendChild(row);
+
+    const styleWrapper = document.createElement("div");
+    styleWrapper.className = "d-flex flex-column";
+    const styleId = toId([component.uid, "border-style"]);
+    const styleLabel = document.createElement("label");
+    styleLabel.className = "form-label fw-semibold text-body-secondary";
+    styleLabel.setAttribute("for", styleId);
+    styleLabel.textContent = "Style";
+    const styleSelect = document.createElement("select");
+    styleSelect.className = "form-select";
+    styleSelect.id = styleId;
+    BORDER_STYLE_OPTIONS.forEach(({ value, label: optionLabel }) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = optionLabel;
+      if ((component.borderStyle || "solid") === value) {
+        option.selected = true;
+      }
+      styleSelect.appendChild(option);
+    });
+    styleSelect.addEventListener("change", () => {
+      updateComponent(component.uid, (draft) => {
+        draft.borderStyle = styleSelect.value;
+      }, { rerenderCanvas: true });
+    });
+    styleWrapper.append(styleLabel, styleSelect);
+    wrapper.appendChild(styleWrapper);
+
+    wrapper.appendChild(
+      createInspectorToggleGroup(
+        component,
+        "Sides",
+        [
+          { value: "top", label: "Top" },
+          { value: "right", label: "Right" },
+          { value: "bottom", label: "Bottom" },
+          { value: "left", label: "Left" },
+        ],
+        component.borderSides || DEFAULT_BORDER_SIDES,
+        (key, checked) => {
+          updateComponent(component.uid, (draft) => {
+            draft.borderSides = { ...(draft.borderSides || DEFAULT_BORDER_SIDES) };
+            draft.borderSides[key] = checked;
+          }, { rerenderCanvas: true });
+        }
+      )
+    );
+
+    return wrapper;
+  }
+
   function createColorInput(component, labelText, value, onChange) {
     const container = document.createElement("div");
     container.className = "template-color-control";
@@ -4342,18 +4629,160 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return container;
   }
 
-  function createTextSizeControls(component) {
-    const options = [
+  // Replaces the old single Text Size radio group with Press's own fuller
+  // system (common/js/lib/font-picker.js, common/js/lib/text-size.js) —
+  // Font, a 5-step Text Size preset + Auto, a custom Font Size (pt)
+  // override, and Line Height. Same call site/gating
+  // (componentHasTextControls) the old control used.
+  function createTextFormattingControls(component) {
+    const controls = [createFontFamilyControl(component)];
+
+    const sizeOptions = [
+      { value: "xs", label: "Xs" },
       { value: "sm", label: "Sm" },
       { value: "md", label: "Md" },
       { value: "lg", label: "Lg" },
       { value: "xl", label: "Xl" },
+      { value: "auto", label: "Auto" },
     ];
-    return createRadioButtonGroup(component, "Text size", options, component.textSize || "md", (value) => {
+    // component.fontSizeCustom != null first, not just Number.isFinite(Number(...))
+    // on its own — Number(null) coerces to 0, a "finite number", which
+    // wrongly made a just-cleared custom size (set back to null when a
+    // preset is clicked) look like it was still "custom, and set to 0pt":
+    // the radio group would show nothing checked, and the pt field would
+    // display 0 — even though the preset click itself worked correctly.
+    const hasCustomSize = component.fontSizeCustom != null && Number.isFinite(Number(component.fontSizeCustom));
+    controls.push(
+      createRadioButtonGroup(
+        component,
+        "Text size",
+        sizeOptions,
+        hasCustomSize ? null : component.textSize || "md",
+        (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.textSize = value;
+            // Preset and custom size are mutually exclusive — same
+            // precedence Press's own textSizeInputs click handler uses.
+            draft.fontSizeCustom = null;
+          }, { rerenderCanvas: true, rerenderInspector: true });
+        }
+      )
+    );
+
+    // Always shows the pt-equivalent of whatever size is currently
+    // effective (custom if set, else the preset's own px value converted),
+    // matching Press's own textSizeCustomInput populate behavior — not
+    // just "empty unless a custom value was explicitly typed".
+    const effectivePx = hasCustomSize
+      ? ptToPx(Number(component.fontSizeCustom))
+      : TEXT_SIZE_PX[component.textSize] ?? TEXT_SIZE_PX.md;
+    controls.push(
+      createNumberInput(
+        component,
+        "Font size (pt)",
+        hasCustomSize ? Number(component.fontSizeCustom) : Number(pxToPt(effectivePx)),
+        (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.fontSizeCustom = value;
+          }, { rerenderCanvas: true, rerenderInspector: true });
+        },
+        { min: 4, max: 144, step: 0.5 }
+      )
+    );
+
+    controls.push(
+      createNumberInput(
+        component,
+        "Line height",
+        Number.isFinite(Number(component.lineHeight)) ? Number(component.lineHeight) : null,
+        (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.lineHeight = value;
+          }, { rerenderCanvas: true });
+        },
+        { min: 0.5, max: 3, step: 0.05 }
+      )
+    );
+
+    return controls;
+  }
+
+  // Font input, searchable via the shared font library (common/js/lib/
+  // font-picker.js/font-library.js) — same "Add a font…" modal/Google
+  // Fonts flow as Press, sharing the exact same server-persisted list.
+  function createFontFamilyControl(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const id = toId([component.uid, "Font", "input"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = "Font";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    input.autocomplete = "off";
+    input.placeholder = "Default (template font)";
+    const currentFamily = typeof component.fontFamily === "string" ? component.fontFamily.trim() : "";
+    const matchedOption = findFontOptionByFamily(currentFamily);
+    input.value = matchedOption ? matchedOption.label : currentFamily || "Default (template font)";
+    // Must run AFTER the input has a local DOM parent (append below) —
+    // attachFontFamilyAutocomplete checks input.parentElement to find where
+    // to attach its dropdown, same lesson learned from the Icon field
+    // earlier this session.
+    wrapper.append(label, input);
+    attachFontFamilyAutocomplete(input, {
+      onSelect: (option) => {
+        updateComponent(component.uid, (draft) => {
+          draft.fontFamily = option.family || "";
+        }, { rerenderCanvas: true });
+        input.value = option.label;
+        if (option.family) {
+          ensureFontLoaded(option);
+        }
+      },
+      onAddFont: () =>
+        openAddFontModal((registered) => {
+          updateComponent(component.uid, (draft) => {
+            draft.fontFamily = registered.family;
+          }, { rerenderCanvas: true, rerenderInspector: true });
+        }),
+      canAddFont: () => dataManager.meetsTier("creator"),
+      onAddDenied: () => status.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+      onDeleteFont: (option) => handleDeleteCustomFont(option),
+      canDeleteFont: () => dataManager.meetsTier("admin"),
+    });
+    return wrapper;
+  }
+
+  // Freeform CSS class names — same suggestion list/autocomplete as Press
+  // (common/js/lib/class-name-picker.js), e.g. text-shadow-dark for a drop
+  // shadow. Applied via applyComponentStyles (component-styles.js).
+  function createClassNameControl(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const id = toId([component.uid, "Classes", "input"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = "Classes";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    input.autocomplete = "off";
+    input.placeholder = "shadow-sm text-shadow-dark";
+    input.value = component.className || "";
+    input.addEventListener("input", () => {
+      const next = input.value.trim();
       updateComponent(component.uid, (draft) => {
-        draft.textSize = value;
+        draft.className = next;
       }, { rerenderCanvas: true });
     });
+    wrapper.append(label, input);
+    attachClassNameAutocomplete(input);
+    return wrapper;
   }
 
   function createTextStyleControls(component) {
@@ -4428,6 +4857,51 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return wrapper;
   }
 
+  // Available on every component type (not gated by the registry) — a
+  // genuinely new capability neither Workbench nor Press had before (Press
+  // only has a static, author-set hide toggle). Left blank, the component
+  // always shows; a bound value or formula is evaluated at real character-
+  // view render time, never in the Template editor's own canvas preview
+  // (see renderComponentCard in workbench-character-view.js) — the canvas
+  // only has synthesized sample data, so hiding components there based on
+  // it could make them un-selectable/un-editable for reasons the author
+  // can't see.
+  function createVisibilityControl(component) {
+    return createBindingFormulaInput(component, {
+      labelText: "Visible when",
+      placeholder: "@conditions.prone or =@hitPoints.current > 0",
+      bindingKey: "visibilityBinding",
+      formulaKey: "visibilityFormula",
+      supportsFormula: true,
+      helperText: "Leave blank to always show.",
+    });
+  }
+
+  // Available on every component type, same as Visible when above — real
+  // CSS shorthand (1-4 space-separated values), not a Workbench-specific
+  // spacing concept. Margin is also what replaces every hardcoded
+  // stacking "gap" this codebase used to have (dropzones, canvas roots,
+  // Container cells) — a component's own Margin is now the one thing that
+  // controls its spacing from its siblings, the ordinary CSS way.
+  function createSpacingControls(component) {
+    return [
+      createTextInput(component, "Padding", component.padding || "", (value) => {
+        const next = value.trim();
+        updateComponent(component.uid, (draft) => {
+          if (next) draft.padding = next;
+          else delete draft.padding;
+        }, { rerenderCanvas: true });
+      }, { placeholder: "8px or 4px 8px 12px 16px" }),
+      createTextInput(component, "Margin", component.margin || "", (value) => {
+        const next = value.trim();
+        updateComponent(component.uid, (draft) => {
+          if (next) draft.margin = next;
+          else delete draft.margin;
+        }, { rerenderCanvas: true });
+      }, { placeholder: "8px or 4px 8px 12px 16px" }),
+    ];
+  }
+
   function createBindingFormulaInput(
     component,
     {
@@ -4437,6 +4911,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       placeholder = null,
       bindingKey = "binding",
       formulaKey = "formula",
+      // When set, a value that's neither "@..." nor "=..." is treated as
+      // literal text and written here instead of bindingKey — this is what
+      // makes the field a true combined Binding/Text control (Text's own
+      // inspector uses this; every other existing caller leaves it unset,
+      // which preserves their exact previous behavior: a bare non-@ value
+      // still goes into bindingKey as before, e.g. Track's Segments field
+      // storing a plain "6").
+      textKey = null,
       allowedFieldCategories: categoryOverride = null,
       helperText = null,
       afterCommit = null,
@@ -4470,7 +4952,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     input.placeholder = resolvedPlaceholder || "";
     input.autocomplete = "off";
     input.spellcheck = false;
-    input.value = getBindingEditorValue(component, { bindingKey, formulaKey });
+    input.value = getBindingEditorValue(component, { bindingKey, formulaKey, textKey });
     input.setAttribute("aria-autocomplete", "list");
 
     const suggestions = document.createElement("div");
@@ -4552,6 +5034,9 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
             if (supportsFormula && formulaKey) {
               draft[formulaKey] = "";
             }
+            if (textKey) {
+              draft[textKey] = "";
+            }
             result = { type: "empty", value: "" };
           } else if (supportsFormula && trimmed.startsWith("=")) {
             const expression = trimmed.slice(1).trim();
@@ -4561,13 +5046,34 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
             if (bindingKey) {
               draft[bindingKey] = "";
             }
+            if (textKey) {
+              draft[textKey] = "";
+            }
             result = { type: "formula", value: expression };
+          } else if (textKey && !trimmed.startsWith("@")) {
+            // Plain literal text (textKey configured, and this isn't a
+            // binding path either) — the case createBindingFormulaInput
+            // never handled before: everyone else's field is purely a
+            // binding-path selector, where a bare value like a number is
+            // still meant for bindingKey (see Track's Segments), not a
+            // literal-text concept at all.
+            draft[textKey] = trimmed;
+            if (bindingKey) {
+              draft[bindingKey] = "";
+            }
+            if (supportsFormula && formulaKey) {
+              draft[formulaKey] = "";
+            }
+            result = { type: "text", value: trimmed };
           } else {
             if (bindingKey) {
               draft[bindingKey] = supportsBinding ? trimmed : "";
             }
             if (supportsFormula && formulaKey) {
               draft[formulaKey] = "";
+            }
+            if (textKey) {
+              draft[textKey] = "";
             }
             result = { type: "binding", value: trimmed };
           }
@@ -4809,18 +5315,17 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     switch (component.type) {
       case "input":
         return renderInputInspector(component);
-      case "array":
-        return renderArrayInspector(component);
-      case "divider":
-        return renderDividerInspector(component);
+      case "repeater":
+        return renderRepeaterInspector(component);
       case "image":
         return renderImageInspector(component);
-      case "label":
-        return renderLabelInspector(component);
+      case "icon":
+        return renderIconInspector(component);
+      case "text":
+        return renderTextInspector(component);
       case "container":
         return renderContainerInspector(component);
-      case "linear-track":
-      case "circular-track":
+      case "track":
         return renderTrackInspector(component);
       case "select-group":
         return renderSelectGroupInspector(component);
@@ -4888,64 +5393,135 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     return controls;
   }
 
-  function renderArrayInspector(component) {
-    return [
-      createRadioButtonGroup(
-        component,
-        "Layout",
-        [
-          { value: "list", icon: "tabler:list", label: "List" },
-          { value: "cards", icon: "tabler:layout-cards", label: "Cards" },
-        ],
-        component.variant || "list",
-        (value) => {
-          updateComponent(component.uid, (draft) => {
-            draft.variant = value;
-          }, { rerenderCanvas: true });
-        }
-      ),
-    ];
+  // No component-specific controls beyond the generic Data section's own
+  // Binding field (which array repeats) — the item's own layout is authored
+  // directly on canvas (see renderRepeaterPreview), the same way a
+  // Container's zones have no inspector fields of their own either.
+  // Ported from Press's own Repeater decorator (none/bullet/number/custom)
+  // — the item's own layout is still authored on canvas (no controls for
+  // that here, same as before), but the decorator is a small enough,
+  // structural-not-content knob that it belongs in the inspector like
+  // everything else's Type/Shape selectors.
+  function createRepeaterHeaderToggle(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-check form-switch";
+    const id = toId([component.uid, "repeater-header"]);
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = id;
+    input.checked = !!component.showHeader;
+    input.addEventListener("change", () => {
+      updateComponent(component.uid, (draft) => {
+        draft.showHeader = input.checked;
+        ensureRepeaterZone(draft);
+      }, { rerenderCanvas: true, rerenderInspector: true });
+    });
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.setAttribute("for", id);
+    label.textContent = "Header row";
+    wrapper.append(input, label);
+    return wrapper;
   }
 
-  function renderDividerInspector(component) {
+  function renderRepeaterInspector(component) {
+    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : { type: "none" };
+    const columns = clampInteger(component.columns || 1, 1, MAX_REPEATER_COLUMNS);
     const controls = [];
+    controls.push(
+      createNumberInput(component, "Columns", columns, (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.columns = value === null ? 1 : clampInteger(value, 1, MAX_REPEATER_COLUMNS);
+          ensureRepeaterZone(draft);
+        }, { rerenderCanvas: true, rerenderInspector: true });
+      }, { min: 1, max: MAX_REPEATER_COLUMNS, step: 1 })
+    );
+    if (columns > 1) {
+      controls.push(
+        createTextInput(component, "Column widths", component.templateColumns || "", (value) => {
+          const next = value.trim();
+          updateComponent(component.uid, (draft) => {
+            if (next) draft.templateColumns = next;
+            else delete draft.templateColumns;
+          }, { rerenderCanvas: true });
+        }, { placeholder: "30% 70%" })
+      );
+    }
+    controls.push(createRepeaterHeaderToggle(component));
     controls.push(
       createRadioButtonGroup(
         component,
-        "Style",
+        "Item decorator",
         [
-          { value: "solid", label: "Solid" },
-          { value: "dashed", label: "Dashed" },
-          { value: "dotted", label: "Dotted" },
+          { value: "none", icon: "tabler:minus", label: "None" },
+          { value: "bullet", icon: "tabler:point-filled", label: "Bullet" },
+          { value: "number", icon: "tabler:list-numbers", label: "Number" },
+          { value: "custom", icon: "tabler:pencil", label: "Custom" },
         ],
-        component.style || "solid",
+        decorator.type || "none",
         (value) => {
           updateComponent(component.uid, (draft) => {
-            draft.style = value;
-          }, { rerenderCanvas: true });
+            draft.decorator = value === "custom" ? { type: "custom", text: draft.decorator?.text || "" } : { type: value };
+          }, { rerenderCanvas: true, rerenderInspector: true });
         }
       )
     );
-    controls.push(
-      createNumberInput(component, "Thickness", component.thickness || 2, (value) => {
-        const next = clampInteger(value ?? 1, 1, 6);
-        updateComponent(component.uid, (draft) => {
-          draft.thickness = next;
-        }, { rerenderCanvas: true, rerenderInspector: true });
-      }, { min: 1, max: 6 })
-    );
+    if (decorator.type === "custom") {
+      controls.push(
+        createTextInput(component, "Decorator text", decorator.text || "", (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.decorator = { type: "custom", text: value };
+          }, { rerenderCanvas: true });
+        }, { placeholder: "→ or @icon" })
+      );
+    }
     return controls;
+  }
+
+  // URL text input + the pattern/shape picker's own "brush" trigger button
+  // alongside it — the one piece of the Image inspector that isn't a plain
+  // createTextInput, since it needs a second control in the same row.
+  function createImageUrlControl(component) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const id = toId([component.uid, "Image URL", "input"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = "Image URL";
+    const row = document.createElement("div");
+    row.className = "d-flex gap-1";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    input.placeholder = "https://";
+    input.value = resolveImageUrl(component);
+    input.addEventListener("input", () => {
+      updateComponent(component.uid, (draft) => {
+        draft.url = input.value;
+      }, { rerenderCanvas: true });
+    });
+    const patternButton = document.createElement("button");
+    patternButton.type = "button";
+    patternButton.className = "btn btn-outline-secondary";
+    patternButton.title = "Insert a pattern or shape";
+    patternButton.setAttribute("aria-label", "Insert a pattern or shape");
+    const icon = document.createElement("span");
+    icon.className = "iconify";
+    icon.dataset.icon = "tabler:brush";
+    icon.setAttribute("aria-hidden", "true");
+    patternButton.appendChild(icon);
+    patternButton.addEventListener("click", () => openPatternPicker(component, input));
+    row.append(input, patternButton);
+    wrapper.append(label, row);
+    return wrapper;
   }
 
   function renderImageInspector(component) {
     const controls = [];
-    controls.push(
-      createTextInput(component, "Image URL", component.src || "", (value) => {
-        updateComponent(component.uid, (draft) => {
-          draft.src = value;
-        }, { rerenderCanvas: true });
-      }, { placeholder: "https://" })
-    );
+    controls.push(createImageUrlControl(component));
     controls.push(
       createTextInput(component, "Alt text", component.alt || "", (value) => {
         updateComponent(component.uid, (draft) => {
@@ -4958,10 +5534,11 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
         component,
         "Fit",
         [
-          { value: "contain", label: "Contain" },
           { value: "cover", label: "Cover" },
+          { value: "contain", label: "Contain" },
+          { value: "fill", label: "Fill" },
         ],
-        component.fit || "contain",
+        component.fit || "cover",
         (value) => {
           updateComponent(component.uid, (draft) => {
             draft.fit = value;
@@ -4970,33 +5547,539 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       )
     );
     controls.push(
-      createNumberInput(component, "Max height (px)", component.height || 180, (value) => {
-        const next = clampInteger(value ?? 180, 80, 600);
+      createTextInput(component, "Width", component.width || "", (value) => {
+        const next = value.trim();
+        updateComponent(component.uid, (draft) => {
+          draft.width = next;
+        }, { rerenderCanvas: true });
+      }, { placeholder: "100% or 320px" })
+    );
+    controls.push(
+      createTextInput(component, "Height", component.height || "", (value) => {
+        const next = value.trim();
         updateComponent(component.uid, (draft) => {
           draft.height = next;
         }, { rerenderCanvas: true });
-      }, { min: 80, max: 600, step: 10 })
+      }, { placeholder: "auto or 200px" })
+    );
+    controls.push(
+      createNumberInput(component, "Corner radius (px)", component.cornerRadius ?? 0, (value) => {
+        const next = clampInteger(value ?? 0, 0, 200);
+        updateComponent(component.uid, (draft) => {
+          draft.cornerRadius = next;
+        }, { rerenderCanvas: true });
+      }, { min: 0, max: 200 })
+    );
+    controls.push(
+      createNumberInput(component, "Pan X (%)", component.focalX ?? 50, (value) => {
+        const next = clampInteger(value ?? 50, 0, 100);
+        updateComponent(component.uid, (draft) => {
+          draft.focalX = next;
+        }, { rerenderCanvas: true });
+      }, { min: 0, max: 100 })
+    );
+    controls.push(
+      createNumberInput(component, "Pan Y (%)", component.focalY ?? 50, (value) => {
+        const next = clampInteger(value ?? 50, 0, 100);
+        updateComponent(component.uid, (draft) => {
+          draft.focalY = next;
+        }, { rerenderCanvas: true });
+      }, { min: 0, max: 100 })
+    );
+    controls.push(
+      createNumberInput(component, "Zoom", component.zoom ?? 1, (value) => {
+        const next = Math.max(0.5, Math.min(3, Number(value) || 1));
+        updateComponent(component.uid, (draft) => {
+          draft.zoom = next;
+        }, { rerenderCanvas: true });
+      }, { min: 0.5, max: 3, step: 0.1 })
     );
     return controls;
   }
 
-  function renderLabelInspector(component) {
-    return [];
+  // Pattern/shape picker modal (Image component) — full port of Press's own
+  // implementation (press/js/app.js), adapted from Press's "write onto
+  // whatever the selected node is" model to Workbench's own
+  // updateComponent(uid, ...) write path. The generator functions
+  // themselves (getPresetsByCategory/svgToDataUri/embedPatternMetadata/
+  // extractPatternMetadata) come from the shared common/js/lib/
+  // pattern-library.js — Press imports the exact same module, so both
+  // tools' pickers stay identical. State (selectedPatternPreset etc.) lives
+  // near the top of this file, not here, since initPatternModal() runs
+  // early during init — a `let` declared this far down wouldn't be
+  // initialized yet (TDZ) the first time these functions run.
+
+  function renderPatternThumbnails(categoryId) {
+    if (!elements.patternThumbnails) return;
+    elements.patternThumbnails.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    getPresetsByCategory(categoryId).forEach((preset) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-secondary p-1 d-flex flex-column align-items-center gap-1";
+      button.dataset.patternId = preset.id;
+      button.classList.toggle("active", preset.id === selectedPatternPreset?.id);
+      const img = document.createElement("img");
+      img.src = svgToDataUri(preset.buildSvg(getPresetDefaultValues(preset)));
+      img.alt = preset.label;
+      img.style.width = "56px";
+      img.style.height = "56px";
+      img.style.objectFit = "contain";
+      const label = document.createElement("span");
+      label.className = "extra-small";
+      label.textContent = preset.label;
+      button.append(img, label);
+      button.addEventListener("click", () => selectPatternPreset(preset));
+      fragment.appendChild(button);
+    });
+    elements.patternThumbnails.appendChild(fragment);
+  }
+
+  function updatePatternPreview() {
+    if (!selectedPatternPreset || !elements.patternPreview) return;
+    elements.patternPreview.src = svgToDataUri(selectedPatternPreset.buildSvg(currentPatternValues));
+  }
+
+  // Splits a pattern color value (6-digit hex, 8-digit hex-with-alpha, the
+  // legacy "transparent" keyword, or anything unrecognized) into a real hex
+  // swatch plus a 0-100 opacity percentage — the pairing <input type="color">
+  // + <input type="range"> below uses to represent one combined value as
+  // two separate widgets, since color inputs only ever accept opaque
+  // 6-digit hex.
+  function splitColorAlpha(value) {
+    if (typeof value === "string" && /^#[0-9a-fA-F]{8}$/.test(value)) {
+      const hex = value.slice(0, 7);
+      const alphaPercent = Math.round((parseInt(value.slice(7, 9), 16) / 255) * 100);
+      return { hex, alphaPercent };
+    }
+    if (typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value)) {
+      return { hex: value, alphaPercent: 100 };
+    }
+    if (value === "transparent") {
+      return { hex: "#000000", alphaPercent: 0 };
+    }
+    return { hex: "#000000", alphaPercent: 100 };
+  }
+
+  // Inverse of splitColorAlpha — SVG fill/stroke both accept 8-digit hex
+  // (#RRGGBBAA) directly in every modern browser, so this is the only
+  // encoding needed; full opacity collapses back to plain 6-digit hex to
+  // keep the common (fully opaque) case as a normal-looking color.
+  function combineColorAlpha(hex, alphaPercent) {
+    const clamped = Math.max(0, Math.min(100, Number(alphaPercent) || 0));
+    if (clamped >= 100) return hex;
+    const alphaHex = Math.round((clamped / 100) * 255)
+      .toString(16)
+      .padStart(2, "0");
+    return `${hex}${alphaHex}`;
+  }
+
+  function renderPatternControls(preset) {
+    if (!elements.patternControls) return;
+    elements.patternControls.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    (preset.colorSlots ?? []).forEach((slot, index) => {
+      const wrap = document.createElement("div");
+      wrap.className = "d-flex align-items-center justify-content-between gap-2";
+      const id = `patternColor-${slot.key}-${index}`;
+      const label = document.createElement("label");
+      label.className = "form-label small text-body-secondary mb-0";
+      label.setAttribute("for", id);
+      label.textContent = slot.label;
+
+      const { hex, alphaPercent } = splitColorAlpha(currentPatternValues[slot.key] ?? slot.default);
+
+      const colorInput = document.createElement("input");
+      colorInput.type = "color";
+      colorInput.id = id;
+      colorInput.className = "form-control form-control-color";
+      colorInput.value = hex;
+
+      const alphaId = `${id}-alpha`;
+      const alphaInput = document.createElement("input");
+      alphaInput.type = "range";
+      alphaInput.id = alphaId;
+      alphaInput.className = "form-range";
+      alphaInput.min = "0";
+      alphaInput.max = "100";
+      alphaInput.step = "1";
+      alphaInput.value = String(alphaPercent);
+      alphaInput.style.width = "4.5rem";
+      alphaInput.setAttribute("aria-label", `${slot.label} opacity`);
+
+      const alphaReadout = document.createElement("span");
+      alphaReadout.className = "extra-small text-body-secondary";
+      alphaReadout.style.width = "2.5rem";
+      alphaReadout.textContent = `${alphaPercent}%`;
+
+      const updateValue = () => {
+        alphaReadout.textContent = `${alphaInput.value}%`;
+        currentPatternValues[slot.key] = combineColorAlpha(colorInput.value, Number(alphaInput.value));
+        updatePatternPreview();
+      };
+      colorInput.addEventListener("input", updateValue);
+      alphaInput.addEventListener("input", updateValue);
+
+      const controlsWrap = document.createElement("div");
+      controlsWrap.className = "d-flex align-items-center gap-2";
+      controlsWrap.append(colorInput, alphaInput, alphaReadout);
+
+      wrap.append(label, controlsWrap);
+      fragment.appendChild(wrap);
+    });
+    (preset.params ?? []).forEach((param, index) => {
+      const wrap = document.createElement("div");
+      wrap.className = "d-flex align-items-center justify-content-between gap-2";
+      const id = `patternParam-${param.key}-${index}`;
+      const label = document.createElement("label");
+      label.className = "form-label small text-body-secondary mb-0 flex-grow-1";
+      label.setAttribute("for", id);
+      label.textContent = param.label;
+      let input;
+      if (param.type === "select") {
+        input = document.createElement("select");
+        input.className = "form-select form-select-sm";
+        input.style.width = "auto";
+        (param.options ?? []).forEach((option) => {
+          const optionEl = document.createElement("option");
+          optionEl.value = option.value;
+          optionEl.textContent = option.label;
+          input.appendChild(optionEl);
+        });
+      } else {
+        input = document.createElement("input");
+        input.type = "number";
+        input.className = "form-control form-control-sm";
+        input.style.width = "5.5rem";
+        if (Number.isFinite(param.min)) input.min = String(param.min);
+        if (Number.isFinite(param.max)) input.max = String(param.max);
+        if (Number.isFinite(param.step)) input.step = String(param.step);
+      }
+      input.id = id;
+      input.value = currentPatternValues[param.key];
+      input.addEventListener("input", () => {
+        currentPatternValues[param.key] = input.value;
+        updatePatternPreview();
+      });
+      wrap.append(label, input);
+      fragment.appendChild(wrap);
+    });
+    elements.patternControls.appendChild(fragment);
+  }
+
+  function selectPatternPreset(preset, initialValues) {
+    selectedPatternPreset = preset;
+    currentPatternValues = initialValues ?? getPresetDefaultValues(preset);
+    if (elements.patternPreviewLabel) elements.patternPreviewLabel.textContent = preset.label;
+    if (elements.patternInsert) elements.patternInsert.disabled = false;
+    renderPatternControls(preset);
+    updatePatternPreview();
+    elements.patternThumbnails?.querySelectorAll("[data-pattern-id]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.patternId === preset.id);
+    });
+  }
+
+  // Mirrors the modal's own default (unselected) markup exactly — used when
+  // the picker opens on a field that isn't a pattern this picker generated
+  // (a plain image, a hand-pasted URL, or nothing), so a stale selection
+  // from a previously-edited component can't be mistaken for the current one.
+  function resetPatternSelection() {
+    selectedPatternPreset = null;
+    currentPatternValues = {};
+    if (elements.patternPreviewLabel) elements.patternPreviewLabel.textContent = "Select a pattern";
+    if (elements.patternInsert) elements.patternInsert.disabled = true;
+    if (elements.patternControls) elements.patternControls.innerHTML = "";
+    if (elements.patternPreview) elements.patternPreview.removeAttribute("src");
+    elements.patternThumbnails?.querySelectorAll("[data-pattern-id]").forEach((button) => {
+      button.classList.remove("active");
+    });
+  }
+
+  function openPatternPicker(component, input) {
+    if (!window.bootstrap?.Modal || !elements.patternModal) return;
+    patternPickerComponentUid = component.uid;
+    patternPickerInput = input;
+    // Re-detect on every open (not just once) — the field can belong to a
+    // different component than the last time the modal was open, so its
+    // current value is the only thing that should drive this, not whatever
+    // was left selected before.
+    const detected = extractPatternMetadata(input?.value ?? "");
+    if (detected) {
+      const categoryInput = elements.patternCategoryInputs.find((entry) => entry.value === detected.preset.category);
+      if (categoryInput) {
+        categoryInput.checked = true;
+        renderPatternThumbnails(detected.preset.category);
+      }
+      selectPatternPreset(detected.preset, detected.values);
+    } else {
+      resetPatternSelection();
+    }
+    window.bootstrap.Modal.getOrCreateInstance(elements.patternModal).show();
+  }
+
+  function initPatternModal() {
+    if (!elements.patternModal) return;
+    renderPatternThumbnails(PATTERN_CATEGORIES[0]?.id ?? "fills");
+    // Switching category tabs only changes which thumbnails are shown — the
+    // current selection (preview, controls, Insert button) stays exactly as
+    // it was, even if the selected preset belongs to a different category,
+    // until the user actually clicks a new thumbnail.
+    elements.patternCategoryInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        if (!input.checked) return;
+        renderPatternThumbnails(input.value);
+      });
+    });
+    if (elements.patternInsert) {
+      elements.patternInsert.addEventListener("click", () => {
+        if (!selectedPatternPreset || !patternPickerComponentUid) return;
+        const svg = embedPatternMetadata(
+          selectedPatternPreset.buildSvg(currentPatternValues),
+          selectedPatternPreset.id,
+          currentPatternValues
+        );
+        const dataUri = svgToDataUri(svg);
+        if (patternPickerInput) patternPickerInput.value = dataUri;
+        updateComponent(patternPickerComponentUid, (draft) => {
+          draft.url = dataUri;
+        }, { rerenderCanvas: true, rerenderInspector: true });
+        window.bootstrap?.Modal?.getInstance(elements.patternModal)?.hide();
+      });
+    }
+  }
+
+  function resetAddFontValidationState() {
+    pendingValidatedFont = null;
+    if (elements.addFontSubmitButton) elements.addFontSubmitButton.disabled = true;
+    if (elements.addFontWarningElement) {
+      elements.addFontWarningElement.textContent = "";
+      elements.addFontWarningElement.classList.add("d-none");
+    }
+  }
+
+  // Opens the shared Add Font modal — `onApply(registeredFont)` is called
+  // once a font is validated and confirmed (see initAddFontModal's submit
+  // handler), so the same modal serves both a component's own Font field
+  // and the Template's own base font, each owning what "apply" means for
+  // itself.
+  function openAddFontModal(onApply) {
+    if (!window.bootstrap?.Modal || !elements.addFontModal || typeof onApply !== "function") return;
+    addFontApplyCallback = onApply;
+    if (elements.addFontValueInput) elements.addFontValueInput.value = "";
+    resetAddFontValidationState();
+    window.bootstrap.Modal.getOrCreateInstance(elements.addFontModal).show();
+  }
+
+  async function handleAddFontValueBlur() {
+    const raw = (elements.addFontValueInput?.value || "").trim();
+    if (!raw) {
+      resetAddFontValidationState();
+      return;
+    }
+    pendingValidatedFont = null;
+    if (elements.addFontSubmitButton) elements.addFontSubmitButton.disabled = true;
+    if (elements.addFontWarningElement) {
+      elements.addFontWarningElement.className = "small text-body-secondary";
+      elements.addFontWarningElement.textContent = "Checking…";
+      elements.addFontWarningElement.classList.remove("d-none");
+    }
+    try {
+      const font = await validateFontInput(raw);
+      // The field can change while this async check is in flight — only
+      // trust the result if it still matches what's actually typed.
+      if ((elements.addFontValueInput?.value || "").trim() !== raw) return;
+      pendingValidatedFont = font;
+      if (elements.addFontWarningElement) elements.addFontWarningElement.classList.add("d-none");
+      if (elements.addFontSubmitButton) elements.addFontSubmitButton.disabled = false;
+    } catch (error) {
+      if ((elements.addFontValueInput?.value || "").trim() !== raw) return;
+      if (elements.addFontWarningElement) {
+        elements.addFontWarningElement.className = "small text-danger";
+        elements.addFontWarningElement.textContent = error.message || "Couldn't validate this font.";
+        elements.addFontWarningElement.classList.remove("d-none");
+      }
+    }
+  }
+
+  // A shared library file, persisted with no in-app undo — unlike this
+  // app's own undo-backed component edits, a confirmation here is
+  // warranted since there's no Ctrl+Z to get it back.
+  async function handleDeleteCustomFont(option) {
+    if (!window.confirm(`Delete "${option.label}" from the font library? This can't be undone, and removes it for everyone.`)) {
+      return;
+    }
+    deleteCustomFont(option.id);
+    try {
+      await saveCustomFontDeletion(option.id, dataManager?.session?.token);
+      status.show(`Deleted "${option.label}" from the font library.`, { type: "success", timeout: 2500 });
+    } catch (error) {
+      status.show(error.message || "Unable to delete this font.", { type: "error", timeout: 4000 });
+    }
+    renderInspector();
+  }
+
+  function initAddFontModal() {
+    if (!elements.addFontModal) return;
+    // Bootstrap's own "modal finished appearing" event, the reliable point
+    // to focus something inside it (focusing earlier can get overridden by
+    // the modal's own entrance/backdrop focus handling).
+    elements.addFontModal.addEventListener("shown.bs.modal", () => {
+      elements.addFontValueInput?.focus();
+    });
+    if (elements.addFontValueInput) {
+      // Validation (format + Google Fonts existence + category lookup)
+      // happens once, here, on blur — not at submit time — so the Add
+      // button can stay disabled until it actually succeeds, and any
+      // problem shows up as an inline warning in the modal instead of only
+      // a toast after clicking Add.
+      elements.addFontValueInput.addEventListener("blur", handleAddFontValueBlur);
+      elements.addFontValueInput.addEventListener("input", () => {
+        // Typing again invalidates whatever was last checked — back to
+        // disabled until the next blur re-validates the new value.
+        pendingValidatedFont = null;
+        if (elements.addFontSubmitButton) elements.addFontSubmitButton.disabled = true;
+        if (elements.addFontWarningElement) elements.addFontWarningElement.classList.add("d-none");
+      });
+    }
+    if (elements.addFontSubmitButton) {
+      elements.addFontSubmitButton.addEventListener("click", async () => {
+        // The autocomplete's "Add a font…" row already blocks opening this
+        // modal for ineligible users — checked again here too, in case the
+        // modal is ever reachable another way (defense in depth; the real
+        // enforcement is server-side regardless).
+        if (!dataManager.meetsTier("creator")) {
+          status.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 });
+          return;
+        }
+        // The button is only ever enabled once handleAddFontValueBlur has
+        // successfully validated the current value, so this should always
+        // be set — guarded anyway rather than trusting the disabled state
+        // alone.
+        if (!pendingValidatedFont || !addFontApplyCallback) return;
+        const font = pendingValidatedFont;
+        const applyCallback = addFontApplyCallback;
+        // registerCustomFont no-ops (returns the existing entry) if this id
+        // is already registered — adding the same font twice just resolves
+        // to the one shared entry rather than duplicating the list.
+        const registered = registerCustomFont(font);
+        ensureFontLoaded(registered);
+        applyCallback(registered);
+        window.bootstrap?.Modal?.getInstance(elements.addFontModal)?.hide();
+        try {
+          await saveCustomFont(registered, dataManager?.session?.token);
+          status.show(`Added "${registered.label}" to the font library.`, { type: "success", timeout: 2500 });
+        } catch (error) {
+          status.show(error.message || "Unable to save the new font.", { type: "error", timeout: 4000 });
+        }
+      });
+    }
+  }
+
+  // Icon field row: a live glyph-preview swatch + a searchable text input
+  // (common/js/lib/icon-picker.js's attachIconAutocomplete, the same
+  // ddb-icons.css/Bootstrap Icons search Press's own Icon field uses) —
+  // typing "@some.path" directly into this same field is how a bound icon
+  // is authored (see the icon registry entry's own comment), so there's no
+  // separate generic Binding control below it the way most other types have.
+  function renderIconInspector(component) {
+    const controls = [];
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column";
+    const id = toId([component.uid, "Icon", "input"]);
+    const label = document.createElement("label");
+    label.className = "form-label fw-semibold text-body-secondary";
+    label.setAttribute("for", id);
+    label.textContent = "Icon";
+    const row = document.createElement("div");
+    row.className = "input-group";
+    // Two nested spans, matching Press's own markup exactly (press/index.html's
+    // icon field): an outer .input-group-text (Bootstrap's own padding
+    // wrapper) containing an inner, fixed-size .press-icon-preview that
+    // actually holds the glyph. Combining both classes onto one element (an
+    // earlier version of this) breaks the swatch's sizing — the wrapper's
+    // padding and the swatch's fixed 1.25rem box fight each other and the
+    // icon ends up with ~0 visible room.
+    const previewWrap = document.createElement("span");
+    previewWrap.className = "input-group-text";
+    const previewSpan = document.createElement("span");
+    previewSpan.className = "press-icon-preview";
+    previewSpan.setAttribute("aria-hidden", "true");
+    previewWrap.appendChild(previewSpan);
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.type = "text";
+    input.id = id;
+    input.placeholder = "ddb-fire, bi-star, or @some.path";
+    input.value = component.iconClass || "";
+
+    const refreshPreview = () => {
+      previewSpan.innerHTML = "";
+      const classes = resolveIconClassList(input.value.trim().startsWith("@") ? "" : input.value);
+      if (classes.length) {
+        const icon = document.createElement("span");
+        icon.className = classes.join(" ");
+        previewSpan.appendChild(icon);
+      }
+    };
+    refreshPreview();
+
+    const commit = (value) => {
+      updateComponent(component.uid, (draft) => {
+        draft.iconClass = value;
+      }, { rerenderCanvas: true });
+      refreshPreview();
+    };
+    input.addEventListener("input", () => commit(input.value));
+    // Must run AFTER the input has a parent — attachIconAutocomplete checks
+    // input.parentElement (via ensureIconAutocompleteContainer) to find
+    // where to attach the dropdown, and silently no-ops if it's still
+    // detached. Press's own icon field is static, always-in-the-DOM markup,
+    // so it never hit this; this one is built fresh on every inspector
+    // render and has to be appended first.
+    row.append(previewWrap, input);
+    wrapper.append(label, row);
+    attachIconAutocomplete(input, {
+      onSelect: (value) => {
+        input.value = value;
+        commit(value);
+      },
+    });
+    controls.push(wrapper);
+
+    controls.push(
+      createTextInput(component, "Aria label", component.ariaLabel || "", (value) => {
+        updateComponent(component.uid, (draft) => {
+          draft.ariaLabel = value;
+        }, { rerenderCanvas: true });
+      }, { placeholder: "Describes this icon for screen readers" })
+    );
+    return controls;
+  }
+
+  function renderTextInspector(component) {
+    return [
+      createBindingFormulaInput(component, {
+        labelText: "Binding / Text",
+        placeholder: "Static text, @path, or =formula",
+        textKey: "text",
+        supportsBinding: true,
+        supportsFormula: true,
+      }),
+    ];
   }
 
   function renderContainerInspector(component) {
+    normalizeContainerType(component);
     const controls = [];
     controls.push(
       createRadioButtonGroup(
         component,
         "Type",
         [
-          { value: "columns", icon: "tabler:columns-3", label: "Columns" },
-          { value: "rows", icon: "tabler:layout-rows", label: "Rows" },
-          { value: "tabs", icon: "tabler:layout-navbar", label: "Tabs" },
           { value: "grid", icon: "tabler:layout-grid", label: "Grid" },
+          { value: "tabs", icon: "tabler:layout-navbar", label: "Tabs" },
         ],
-        component.containerType || "columns",
+        component.containerType || "grid",
         (value) => {
           updateComponent(component.uid, (draft) => {
             draft.containerType = value;
@@ -5007,38 +6090,53 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     );
     if (component.containerType === "tabs") {
       controls.push(
-      createTextarea(component, "Tab labels (one per line)", (component.tabLabels || []).join("\n"), (value) => {
-        updateComponent(component.uid, (draft) => {
-          draft.tabLabels = parseLines(value);
-          ensureContainerZones(draft);
-        }, { rerenderCanvas: true });
-      }, { rows: 3, placeholder: "Details\nInventory" })
-    );
-    }
-    if (component.containerType === "columns" || component.containerType === "grid") {
+        createTextarea(component, "Tab labels (one per line)", (component.tabLabels || []).join("\n"), (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.tabLabels = parseLines(value);
+            ensureContainerZones(draft);
+          }, { rerenderCanvas: true });
+        }, { rows: 3, placeholder: "Details\nInventory" })
+      );
+    } else {
       controls.push(
         createNumberInput(component, "Columns", component.columns || 2, (value) => {
-          const next = clampInteger(value ?? 2, 1, 4);
+          const next = clampInteger(value ?? 2, 1, MAX_CONTAINER_COLUMNS);
           updateComponent(component.uid, (draft) => {
             draft.columns = next;
             ensureContainerZones(draft);
           }, { rerenderCanvas: true, rerenderInspector: true });
-        }, { min: 1, max: 4 })
+        }, { min: 1, max: MAX_CONTAINER_COLUMNS })
       );
-    }
-    if (component.containerType === "rows" || component.containerType === "grid") {
       controls.push(
-        createNumberInput(component, "Rows", component.rows || 2, (value) => {
-          const next = clampInteger(value ?? 2, 1, 6);
+        createNumberInput(component, "Rows", component.rows || 1, (value) => {
+          const next = clampInteger(value ?? 1, 1, MAX_CONTAINER_ROWS);
           updateComponent(component.uid, (draft) => {
             draft.rows = next;
             ensureContainerZones(draft);
           }, { rerenderCanvas: true, rerenderInspector: true });
-        }, { min: 1, max: 6 })
+        }, { min: 1, max: MAX_CONTAINER_ROWS })
+      );
+      controls.push(
+        createTextInput(component, "Column template", component.templateColumns || "", (value) => {
+          const next = value.trim();
+          updateComponent(component.uid, (draft) => {
+            if (next) draft.templateColumns = next;
+            else delete draft.templateColumns;
+          }, { rerenderCanvas: true });
+        }, { placeholder: "1fr 2fr" })
+      );
+      controls.push(
+        createTextInput(component, "Row template", component.templateRows || "", (value) => {
+          const next = value.trim();
+          updateComponent(component.uid, (draft) => {
+            if (next) draft.templateRows = next;
+            else delete draft.templateRows;
+          }, { rerenderCanvas: true });
+        }, { placeholder: "auto auto" })
       );
     }
     controls.push(
-      createNumberInput(component, "Gap (px)", component.gap ?? 16, (value) => {
+      createNumberInput(component, "Column/row gap (px)", component.gap ?? 16, (value) => {
         const next = clampInteger(value ?? 16, 0, 64);
         updateComponent(component.uid, (draft) => {
           draft.gap = next;
@@ -5050,6 +6148,22 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
 
   function renderTrackInspector(component) {
     const controls = [];
+    controls.push(
+      createRadioButtonGroup(
+        component,
+        "Shape",
+        [
+          { value: "linear", icon: "tabler:timeline", label: "Linear" },
+          { value: "circular", icon: "tabler:gauge", label: "Circular" },
+        ],
+        component.trackShape || "linear",
+        (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.trackShape = value;
+          }, { rerenderCanvas: true });
+        }
+      )
+    );
     controls.push(
       createBindingFormulaInput(component, {
         labelText: "Segments",
@@ -5172,6 +6286,24 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (!component || typeof component !== "object") {
       return null;
     }
+    // Legacy component type strings from before Track was consolidated
+    // into one "track" type with a Shape selector — rewritten here, before
+    // createComponent/cloning below, so an old saved template's track
+    // components still load with their data intact and the correct shape
+    // pre-selected, instead of silently becoming a blank Input the way an
+    // unrecognized type falls back today.
+    if (component.type === "linear-track" || component.type === "circular-track") {
+      if (!component.trackShape) {
+        component.trackShape = component.type === "circular-track" ? "circular" : "linear";
+      }
+      component.type = "track";
+    }
+    // Legacy "label" type string from before it was renamed to "text" with a
+    // single combined Binding/Text field — rewritten here so an old saved
+    // template's label components still load with their data intact.
+    if (component.type === "label") {
+      component.type = "text";
+    }
     const type = component.type || "input";
     const definition = COMPONENT_DEFINITIONS[type] || {};
     let base;
@@ -5186,7 +6318,7 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
     if (!merged.id) {
       merged.id = merged.uid;
     }
-    if (merged.type === "linear-track" || merged.type === "circular-track") {
+    if (merged.type === "track") {
       if (Array.isArray(copy.activeSegments)) {
         const total = copy.activeSegments.length || 0;
         const active = copy.activeSegments.filter(Boolean).length;
@@ -5250,14 +6382,14 @@ export async function initTemplateView({ status, undoStack, dataManager }) {
       merged.roller = "";
     }
     merged.roller = merged.roller.trim();
-    if (merged.type === "container") {
+    if (isZoneContainer(merged)) {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
       Object.keys(zones).forEach((key) => {
         const entries = Array.isArray(zones[key]) ? zones[key].map(hydrateComponent).filter(Boolean) : [];
         zones[key] = entries;
       });
       merged.zones = zones;
-      ensureContainerZones(merged);
+      ensureComponentZones(merged);
     }
     merged.collapsible = Boolean(merged.collapsible);
     if (definition.supportsLabelPosition) {

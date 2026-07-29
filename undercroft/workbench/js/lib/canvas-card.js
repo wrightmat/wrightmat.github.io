@@ -40,18 +40,32 @@ export function createCanvasCardElement({
   attributes = {},
   gapClass = "gap-3",
   selected = false,
+  bare = false,
 } = {}) {
   const element = document.createElement("div");
-  element.classList.add(
-    "workbench-canvas-card",
-    "border",
-    "rounded-3",
-    "bg-body",
-    "shadow-sm",
-    "p-3",
-    "d-flex",
-    "flex-column"
-  );
+  // Not Bootstrap's `.border`/`.rounded-3` utility classes — both are
+  // generated with `!important`, which unconditionally beat the per-side
+  // border-color/width/style/radius applyComponentStyles sets inline for a
+  // component's own authored border, making that setting a no-op. The
+  // equivalent default look (a subtle border + rounded corners for cards
+  // that haven't set their own border) lives in workbench/css/styles.css's
+  // .workbench-canvas-card rule instead, as a plain, override-able rule.
+  element.classList.add("workbench-canvas-card", "d-flex", "flex-column");
+  if (bare) {
+    // A component nested inside a Container/zone in Play view — no
+    // background/shadow/padding of its own (the outer Container's card
+    // already provides that boundary once; stacking a full second card's
+    // worth of padding per nested child is what made a Container's content
+    // sit noticeably indented from a plain sibling field's own left edge).
+    element.classList.add("workbench-canvas-card--bare");
+  } else {
+    // Not Bootstrap's `.p-3` utility class — also `!important`-generated,
+    // which would block a component's own custom Padding
+    // (applyComponentStyles) the same way `.border` blocked custom
+    // borders. The equivalent default padding lives in
+    // workbench/css/styles.css's .workbench-canvas-card rule instead.
+    element.classList.add("bg-body", "shadow-sm");
+  }
   if (gapClass) {
     element.classList.add(gapClass);
   }

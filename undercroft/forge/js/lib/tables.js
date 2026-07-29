@@ -8,12 +8,18 @@ import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { fetchLibraryEntry, fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
 import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 
-// Alignment (d10, 9 alignments + Unaligned, equal weighting) and Gender (d8,
-// Male x3 / Female x3 / Androgynous x1 / Non-Binary x1) are genuinely uniform
-// die rolls with a fixed face->outcome mapping — CLAUDE.md gives the full
-// face list for both, so they're plain constants here rather than JSON (they
-// never vary by location or system, unlike Archetype).
-export const ALIGNMENT_FACES = [
+// Gender (d8, Male x3 / Female x3 / Androgynous x1 / Non-Binary x1) is a
+// genuinely uniform die roll with a fixed face->outcome mapping — CLAUDE.md
+// gives the full face list, so it's a plain constant here rather than JSON
+// (it never varies by location or system, unlike Archetype). Alignment,
+// unlike Gender, IS game-specific (a System with no alignment concept at all
+// is entirely plausible) — its face list is loaded from the active System's
+// own "alignments" field (see loadAlignmentFaces below) instead of being a
+// second hardcoded copy of data sys.dnd5e.json already defines. This
+// fallback is only used if the active System defines no "alignments" field
+// of its own (so NPC generation never hard-fails for a System with no
+// alignment vocabulary authored yet).
+const DEFAULT_ALIGNMENT_FACES = [
   "Lawful Good",
   "Neutral Good",
   "Chaotic Good",
@@ -24,6 +30,19 @@ export const ALIGNMENT_FACES = [
   "Neutral Evil",
   "Chaotic Evil",
   "Unaligned",
+];
+
+// Same reasoning as DEFAULT_ALIGNMENT_FACES above — the six ability score
+// keys/short labels are read from the active System's own "abilities" field
+// (see loadAbilityFieldDefs below), falling back to this default only if the
+// System defines none.
+const DEFAULT_ABILITY_FIELD_DEFS = [
+  { key: "strength", label: "STR" },
+  { key: "dexterity", label: "DEX" },
+  { key: "constitution", label: "CON" },
+  { key: "intelligence", label: "INT" },
+  { key: "wisdom", label: "WIS" },
+  { key: "charisma", label: "CHA" },
 ];
 
 export const GENDER_FACES = [
@@ -84,6 +103,55 @@ export async function loadForgeTables() {
     })();
   }
   return tablesPromise;
+}
+
+// Fetches and caches the active System's own record — reads game-specific
+// vocabulary (alignments, ability names) directly from System data instead
+// of duplicating it as a second hardcoded copy in this file, mirroring
+// Sanctum's own loadEnvironmentPropertyType (sanctum/js/app.js) exactly.
+// Cache is keyed by systemId so switching Systems (via the System select)
+// re-fetches rather than serving a stale record.
+let systemRecordPromise = null;
+let systemRecordId = null;
+async function fetchSystemRecord(dataManager, systemId) {
+  if (!systemId) return null;
+  if (!systemRecordPromise || systemRecordId !== systemId) {
+    systemRecordId = systemId;
+    systemRecordPromise = dataManager
+      .get("systems", systemId)
+      .then((result) => result?.payload || null)
+      .catch(() => null);
+  }
+  return systemRecordPromise;
+}
+
+// The active System's own "alignments" array field, in order — falls back
+// to DEFAULT_ALIGNMENT_FACES if the System defines none (e.g. a homebrew
+// System with no alignment concept at all), so NPC generation never hard-
+// fails for lack of one.
+export async function loadAlignmentFaces(dataManager, systemId) {
+  const system = await fetchSystemRecord(dataManager, systemId);
+  const fields = Array.isArray(system?.fields) ? system.fields : [];
+  const field = fields.find((entry) => entry.type === "array" && entry.key === "alignments");
+  const faces = (field?.values || []).map((value) => value.name).filter(Boolean);
+  return faces.length ? faces : DEFAULT_ALIGNMENT_FACES;
+}
+
+// The active System's own "abilities" object field's children (key +
+// shortName) — same fallback reasoning as loadAlignmentFaces above. Strips
+// the "abilities." key prefix so callers get bare keys (e.g. "strength")
+// matching the shape stats-dnd5e.json's own ability data already uses.
+export async function loadAbilityFieldDefs(dataManager, systemId) {
+  const system = await fetchSystemRecord(dataManager, systemId);
+  const fields = Array.isArray(system?.fields) ? system.fields : [];
+  const field = fields.find((entry) => entry.type === "object" && entry.key === "abilities");
+  const defs = (field?.children || [])
+    .map((child) => ({
+      key: String(child.key || "").replace(/^abilities\./, ""),
+      label: child.shortName || child.label || "",
+    }))
+    .filter((entry) => entry.key && entry.label);
+  return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
 }
 
 // Setting/Location are authored in Sanctum and Species in Loom, both as
@@ -207,12 +275,13 @@ export function rollWeightedSpecies(location, speciesProfiles, { random = Math.r
   return { label: labelFor(last.entityId), speciesId: last.entityId, roll: total, total };
 }
 
-export function rollAlignment({ random = Math.random, override = "" } = {}) {
+export function rollAlignment({ random = Math.random, override = "", faces = DEFAULT_ALIGNMENT_FACES } = {}) {
   if (override) {
     return { label: override, roll: null, manual: true };
   }
-  const { face, notation } = rollUniformD(10, "1d10", { random });
-  return { label: ALIGNMENT_FACES[face - 1], roll: face, notation };
+  const dieSize = faces.length || DEFAULT_ALIGNMENT_FACES.length;
+  const { face, notation } = rollUniformD(dieSize, `1d${dieSize}`, { random });
+  return { label: faces[face - 1], roll: face, notation };
 }
 
 export function rollGender({ random = Math.random, override = "" } = {}) {

@@ -3,6 +3,7 @@ import { initPaneToggles } from "./panes.js";
 import { StatusManager } from "./status.js";
 import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
+import { attachHoverDropdown } from "./dom.js";
 
 // `icon` is an Iconify `tabler:*` id — same convention used everywhere else
 // across every tool page (`<span class="iconify" data-icon="tabler:...">`).
@@ -11,13 +12,6 @@ import { KeyboardShortcuts } from "./keyboard.js";
 // whether resolveToolHref happens to return a real path, so adding a new
 // tool to the roadmap doesn't silently produce a dead link.
 const TOOL_DEFINITIONS = [
-  {
-    id: "home",
-    label: "Dashboard",
-    icon: "tabler:home",
-    summary: "Customizable landing page — jump to a tool or build a play view.",
-    built: true,
-  },
   {
     id: "workbench",
     label: "Workbench",
@@ -74,6 +68,13 @@ const TOOL_DEFINITIONS = [
     summary: "Location and dungeon generator.",
     built: true,
   },
+  {
+    id: "repository",
+    label: "Repository",
+    icon: "tabler:notebook",
+    summary: "Campaign notes, lore, and wiki-style journal pages.",
+    built: true,
+  },
 ];
 
 // The suite's own root folder name, hardcoded the same way every other
@@ -108,7 +109,18 @@ export function resolveToolContextPath() {
 // linking to it is "../index.html" (not "../home/index.html"), and linking
 // from it descends straight into "{toolId}/index.html" (not "../{toolId}/...").
 export function resolveToolHref(toolId, currentSection) {
-  const builtToolIds = ["home", "workbench", "press", "orrery", "loom", "forge", "crucible", "vault", "sanctum"];
+  const builtToolIds = [
+    "home",
+    "workbench",
+    "press",
+    "orrery",
+    "loom",
+    "forge",
+    "crucible",
+    "vault",
+    "sanctum",
+    "repository",
+  ];
   if (!builtToolIds.includes(toolId)) {
     return "#";
   }
@@ -136,17 +148,18 @@ export function resolveAccountHref(currentSection) {
   return "../common/account.html";
 }
 
-// The same tool-card grid the dropdown builds below, exposed for the
-// Dashboard's "Jump to a tool" widget so it doesn't need its own duplicate
-// of TOOL_DEFINITIONS/buildToolCard — one rendering path for both surfaces.
-// "home" itself is excluded (no point linking to the Dashboard from within
-// one of its own widgets).
+// The same tool-card grid the dropdown builds below — one rendering path for
+// both surfaces. The Dashboard ("home") isn't in TOOL_DEFINITIONS at all (see
+// that array's own history: it used to be, back when the Dashboard had its
+// own dropdown card and nav-list entry — it's reached via the dedicated home
+// icon in initToolNavigation now instead), so there's nothing to exclude here
+// anymore.
 export function renderToolGrid(container, { currentSection = resolveToolContextPath() } = {}) {
   if (!container) {
     return;
   }
   container.innerHTML = "";
-  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false && tool.id !== "home");
+  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false);
   const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
   const grid = document.createElement("div");
   grid.className = "undercroft-tool-grid";
@@ -207,7 +220,7 @@ function buildToolCard(tool, currentSection, built, isCurrent = false) {
 // a tool. Rather than the trigger going blank (the old behavior: no matching
 // definition meant this function bailed out entirely), it falls back to a
 // generic suite identity, with the full tool grid still available below it.
-const SUITE_ICON = "tabler:door";
+const SUITE_ICON = "tabler:building-arch";
 
 function initToolNavigation(root = document) {
   const toolNavs = Array.from(root.querySelectorAll("[data-undercroft-tool-nav]"));
@@ -230,6 +243,7 @@ function initToolNavigation(root = document) {
   const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
 
   primaryNav.innerHTML = "";
+  primaryNav.classList.add("d-flex", "align-items-center", "gap-2");
 
   const dropdown = document.createElement("div");
   dropdown.className = "dropdown undercroft-tool-switcher";
@@ -280,41 +294,27 @@ function initToolNavigation(root = document) {
   dropdown.append(toggle, menu);
   primaryNav.appendChild(dropdown);
 
-  if (window.bootstrap && typeof window.bootstrap.Dropdown === "function") {
-    const instance = window.bootstrap.Dropdown.getOrCreateInstance(toggle);
-    let hideTimer = null;
-    const cancelHide = () => {
-      if (hideTimer !== null) {
-        window.clearTimeout(hideTimer);
-        hideTimer = null;
-      }
-    };
-    const showMenu = () => {
-      cancelHide();
-      instance.show();
-    };
-    // The trigger and menu are separate boxes with a small visual gap
-    // between them — crossing it briefly leaves the pointer over neither,
-    // which would otherwise close the menu before it reaches the cards.
-    // Delaying the hide (and canceling it on re-entry) gives that crossing
-    // room without needing the menu to visually touch the trigger.
-    const scheduleHide = () => {
-      cancelHide();
-      hideTimer = window.setTimeout(() => {
-        hideTimer = null;
-        instance.hide();
-      }, 200);
-    };
-    dropdown.addEventListener("mouseenter", showMenu);
-    dropdown.addEventListener("mouseleave", scheduleHide);
-    toggle.addEventListener("focus", showMenu);
-    dropdown.addEventListener("focusout", (event) => {
-      if (!dropdown.contains(event.relatedTarget)) {
-        cancelHide();
-        instance.hide();
-      }
-    });
+  // A small always-present way back to the Dashboard, now that it's not in
+  // TOOL_DEFINITIONS (and so has no card of its own in the dropdown above).
+  // Sits to the right of the switcher. Omitted on the Dashboard itself —
+  // clicking it would just reload the page you're already on, same reasoning
+  // buildToolCard uses to render the current tool as an inert span instead
+  // of a link.
+  if (currentSection !== "home") {
+    const homeLink = document.createElement("a");
+    homeLink.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center";
+    homeLink.href = resolveToolHref("home", currentSection);
+    homeLink.title = "Home";
+    homeLink.setAttribute("aria-label", "Home");
+    const homeIcon = document.createElement("span");
+    homeIcon.className = "iconify fs-5";
+    homeIcon.dataset.icon = "tabler:home";
+    homeIcon.setAttribute("aria-hidden", "true");
+    homeLink.appendChild(homeIcon);
+    primaryNav.appendChild(homeLink);
   }
+
+  attachHoverDropdown(dropdown, toggle);
 }
 
 function showFeedback(status, feedback, fallbackMessage) {

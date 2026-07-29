@@ -1,13 +1,7 @@
 import { resolveBinding } from "../../common/js/lib/bindings.js";
+import { TEXT_SIZE_PX as TEXT_SIZE_MAP } from "../../common/js/lib/text-size.js";
 
 const GAP_UNIT_REM = 0.25;
-const TEXT_SIZE_MAP = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 20,
-  xl: 24,
-};
 // Explicit fallback line-height for every text-bearing element (see
 // applyTextFormatting) — a unitless multiplier of the element's own
 // font-size, same convention CSS itself uses for line-height.

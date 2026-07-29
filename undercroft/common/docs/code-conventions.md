@@ -22,7 +22,7 @@ visual/CSS conventions.
 ## Shared JS layer (`common/js/lib/`)
 
 - **Widget factory shape**: `initXWidget(container, opts) → { destroy() }`.
-  Every widget (`combat-tracker.js`, `game-log.js`, `now-showing.js`,
+  Every widget (`combat-tracker.js`, `game-log.js`, `handout.js`,
   `character-summary.js`, ...) follows this — a container element in, an
   options object, a teardown handle out.
 - **Options-object with destructured defaults** — widget/helper constructors

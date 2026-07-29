@@ -104,6 +104,16 @@ async function init() {
     }
   });
 
+  // A save in the Template tab used to leave the Play/Edit tab silently
+  // rendering a stale copy of that same template until a full page
+  // reload — characterView loads its own copy once, when a character is
+  // loaded, and otherwise never re-fetches it. reloadTemplateIfActive is a
+  // no-op unless the currently-open character actually uses the template
+  // that was just saved.
+  window.addEventListener("workbench:template-saved", (event) => {
+    void characterView?.reloadTemplateIfActive?.(event.detail?.templateId);
+  });
+
   window.addEventListener("beforeunload", (event) => {
     const dirty = Boolean(templateView?.hasUnsavedChanges?.()) || Boolean(characterView?.hasUnsavedChanges?.());
     if (!dirty) return;

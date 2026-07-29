@@ -6,14 +6,82 @@
 .template-component,
 .workbench-canvas-card {
   position: relative;
+  /* No default border at all (replacing the old .border Bootstrap utility
+     class — see createCanvasCardElement) — a real per-component Border
+     setting exists now (applyComponentStyles), and any always-on default
+     here would make "no border" unreachable: there'd be no way to
+     distinguish "the author explicitly wants no border" from "nothing's
+     been set yet", since both would need to fall back to the same CSS.
+     Corner rounding is kept as a shape default for the card's
+     background/shadow even with no border line drawn — a component's own
+     explicit borderRadius (once it has a border) overrides this inline. */
+  border-radius: var(--bs-border-radius-lg);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  /* Plain (non-!important) defaults, replacing the old .p-3 Bootstrap
+     utility class (see createCanvasCardElement) for the same reason the
+     border/rounded-3 classes were replaced — .p-3 would otherwise block a
+     component's own custom Padding. padding-top stays higher, reserving
+     space for the icon/actions header row (see the --no-header variant
+     below for when that space isn't needed). */
+  padding: 1rem;
   padding-top: 2.25rem;
+  /* Replaces every hardcoded stacking gap this project used to have
+     (canvas-root's gap-3, Container cells' gap-3, the dropzone's own
+     gap: 0.75rem) — a component's own Margin (applyComponentStyles) is now
+     the one standard-CSS mechanism controlling its spacing from whatever
+     sibling follows it, with this as the sensible default when nothing
+     explicit is set. */
+  margin-bottom: 1rem;
+}
+
+/* Play/view mode never shows the icon/actions header row at all (see
+   renderComponentCard's showTypeIcon) — no reason to keep reserving
+   padding-top for it there. Matches the plain p-3 top padding every other
+   side already has. */
+.workbench-canvas-card--no-header {
+  padding-top: 1rem;
+}
+
+/* A nested (Container/zone-child) component in Play view — see
+   createCanvasCardElement's bare option, which already skips adding the
+   bg-body/shadow-sm/p-3 classes for this case (so there's no default
+   background/shadow to strip here — doing that with !important too would
+   wrongly blank out a component's own legitimately-set custom background
+   via applyComponentStyles). Only padding and the base rule's
+   border-radius need overriding here; no !important needed — same
+   specificity as the rules they override (.workbench-canvas-card,
+   .workbench-canvas-card--no-header), so source order (this rule comes
+   after both) is enough. Result: the nested component's content sits
+   flush with the cell it's in, lining up with a plain top-level sibling
+   field's own left edge instead of paying for a second nested card's
+   worth of padding on top of the Container's own. */
+.workbench-canvas-card--bare {
+  padding: 0;
+  border-radius: 0;
 }
 
 .template-component.template-component-selected,
 .workbench-canvas-card.is-selected {
-  border-color: var(--bs-primary) !important;
+  /* Full shorthand, not just border-color — there's no default
+     border-width/border-style anymore (see above), so border-color alone
+     wouldn't draw anything. !important here is intentional: the selection
+     outline should always be visible, even overriding a component's own
+     configured border while it's actively selected. */
+  border: 1px solid var(--bs-primary) !important;
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+/* Template editor only — .template-component is the class unique to this
+   canvas (character-view's own cards use .character-component instead, and
+   never carry it), so this never leaks into Play/Edit, where clicking a
+   card doesn't "select" anything the same way. A component often has no
+   border at all, so it's not otherwise clear what the cursor is even over
+   until you click — a light, transient outline while hovering answers
+   that. Skipped once already selected: the solid selected-state border
+   above already gives that same feedback. */
+.template-component:not(.template-component-selected):not(.is-selected):hover {
+  outline: 2px dashed var(--bs-border-color);
+  outline-offset: 2px;
 }
 
 .template-component-header,
@@ -28,6 +96,18 @@
   gap: 0.375rem;
   min-height: 2rem;
   z-index: 1;
+}
+
+/* An empty header (no icon/actions/collapse button — the normal case in
+   Play/Edit view now that the type-icon badge is Template-editor-only) is
+   invisible but was still a real, absolutely-positioned, z-index:1 box
+   sitting on top of whatever renders first inside the card (e.g. a
+   Container's tab row) — intercepting clicks on it despite having nothing
+   visible there to click. min-height/position never needed to change:
+   this is purely a hit-testing fix, not a layout one. */
+.template-component-header:empty,
+.workbench-canvas-card__header:empty {
+  pointer-events: none;
 }
 
 .template-component-header[data-sortable-handle],

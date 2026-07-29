@@ -1,0 +1,80 @@
+.repository-page-row {
+  cursor: pointer;
+  border-radius: var(--bs-border-radius);
+  padding: 0.25rem 0.5rem;
+}
+
+.repository-page-row:hover {
+  background: var(--bs-tertiary-bg);
+}
+
+.repository-page-row[data-repository-page-selected="true"] {
+  background: var(--bs-secondary-bg);
+  font-weight: 600;
+}
+
+.repository-group-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  padding: 0.5rem 0.25rem 0.125rem;
+}
+
+.repository-preview h1,
+.repository-preview h2,
+.repository-preview h3 {
+  margin-top: 1rem;
+}
+
+.repository-preview :first-child {
+  margin-top: 0;
+}
+
+/* Wikipedia-style link convention: blue for a page that exists, red for one
+   that doesn't yet (a "redlink") — clicking a redlink starts a new page
+   pre-filled with that title (see markdown.js's onNavigate handling). */
+.repository-preview a.journal-link {
+  color: var(--bs-link-color);
+  text-decoration: underline;
+}
+
+.repository-preview a.journal-link-missing {
+  color: var(--bs-danger);
+  text-decoration: underline;
+}
+
+/* Deliberately not `.btn`/`.btn-link` — this reads as document structure
+   (a table of contents), not as a row of link-styled buttons. Grey, no
+   underline, no focus ring; paddingLeft (set inline per-item, from each
+   heading's computed depth) is what actually conveys nesting. */
+.repository-outline-item {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  background: none;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding: 0.125rem 0;
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+}
+
+.repository-outline-item:hover,
+.repository-outline-item:focus {
+  color: var(--bs-body-color);
+  outline: none;
+  box-shadow: none;
+}
+
+/* Base chip look already comes from inline styles (journal-dice.js) so it
+   renders correctly inside handout.js's Dashboard widget too — this just
+   adds the hover feedback, which only matters on Repository's own page. */
+.repository-dice-roller:hover {
+  background: var(--bs-secondary-bg, #e9ecef) !important;
+}

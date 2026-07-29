@@ -151,11 +151,12 @@
     {
       "id": "dashboard.widgets",
       "title": "Dashboard Widgets",
-      "summary": "A customizable landing page — jump to a tool, or build a play view from widgets.",
+      "summary": "A customizable landing page — build your own play space out of widgets.",
       "details": [
         "Click \"Edit layout\" to add or remove widgets, and drag a widget's header to reorder it.",
         "GMs get a Combat Tracker widget for running initiative, HP, and conditions; anyone in the group sees a read-only live view of the same encounter.",
-        "Your layout saves to this browser immediately, and syncs to your account too once you're signed in, so it follows you across devices."],
+        "Your layout saves to this browser immediately, and syncs to your account too once you're signed in, so it follows you across devices.",
+        "Jump to any tool from the small home/switcher icons in the header — the Dashboard itself isn't in that list, since you're already on it."],
       "category": "Dashboard",
       "href": "../index.html?help=dashboard.widgets"
     },
@@ -507,6 +508,18 @@
       "href": "../sanctum/index.html#sanctum-npc-config"
     },
     {
+      "id": "sanctum.calendar",
+      "title": "Calendar",
+      "summary": "Optional in-fiction calendar vocabulary for this Setting — days per week, weekday names, months, and moon cycles.",
+      "details": [
+        "Months is the only field a real calendar needs: an ordered list of names with a day count each (e.g. Eberron's 13 months of 28 days), handling uneven real-world-style month lengths just as well.",
+        "Weekday names and moon cycles are optional extras — leave them empty if this Setting doesn't need a week or moon-phase tracking.",
+        "Leave the whole section empty for a Setting that will never use a Dashboard Calendar widget — a Calendar widget can only be added against a Setting that actually has one defined here."
+      ],
+      "category": "Sanctum",
+      "href": "../sanctum/index.html#sanctum-calendar"
+    },
+    {
       "id": "press.templates",
       "title": "Template & Size Pairing",
       "summary": "Template choices drive supported sizes and orientations, which auto-refresh when the template changes.",
@@ -761,7 +774,7 @@
       "summary": "The signed-in menu in every tool's header picks which of your own groups is \"active\" right now — the same selection follows you across every tool.",
       "details": [
         "Only your OWN groups (ones you created) show up here — it lists exactly what Loom's Groups tab lists for you.",
-        "Picking a group here is what \"Share with [active campaign]\" one-click buttons and \"Show this item…\" both target — no separate per-tool setup needed.",
+        "Picking a group here is what \"Share with [active campaign]\" one-click buttons target, and which campaign the Dashboard's own widgets (Handout, Combat Tracker, ...) read from — no separate per-tool setup needed.",
         "The selection is stored per-browser (not on the server against your account), so switching computers means picking it again."],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.active"
@@ -779,12 +792,13 @@
     },
     {
       "id": "campaign.spotlight",
-      "title": "Show This Item / Now Showing",
-      "summary": "Put one card up in front of the table live, from whichever tool you built it in, without exporting anything or switching to Press yourself.",
+      "title": "Handouts / Now Showing",
+      "summary": "Put one card up in front of the table live — add a Handout widget to your own Dashboard and click its visibility icon, no exporting or switching to Press yourself.",
       "details": [
-        "Available from the signed-in menu in Sanctum, Forge, Crucible, Vault, and Orrery, once you have a record loaded and an active campaign selected.",
-        "The record must already be SAVED first — spotlighting something that only exists as an unsaved draft fails immediately with a clear error, rather than silently showing nothing to the table.",
-        "Picking a Press print template is optional — with none picked, the table sees a plain name/description card instead. Orrery maps are always a plain link back into Orrery, never a card.",
+        "Add a Handout from the Dashboard's Edit-layout toolbar: pick the record (an NPC, Location, Monster, or Effect) and, optionally, a Press print template to render it with — with no template picked, the table sees a plain name/description card instead.",
+        "Click the eye icon on the Handout's header to show it to your active campaign, and again to stop — the icon reflects whatever's actually visible right now, even after a reload.",
+        "The record must already be SAVED first — showing something that only exists as an unsaved draft fails immediately with a clear error, rather than silently showing nothing to the table.",
+        "Maps work the same way from a Map widget instead, or from Orrery's own signed-in menu — a map is always a plain link back into Orrery, never a card.",
         "Whoever's watching sees it in Workbench's \"Now Showing\" panel, next to the Game Log — including anonymous players on the group's public share link."],
       "category": "Campaigns",
       "href": "../common/account.html?help=campaign.spotlight"
@@ -1088,6 +1102,38 @@
         "\"Last selection\" shown here (layer name and cell count) is exactly what Add selected cells will add if you click it right now."],
       "category": "Orrery",
       "href": "../orrery/index.html#orrery-selection"
+    },
+    {
+      "id": "repository.tags",
+      "title": "Tags, Groups, & Display Pills",
+      "summary": "Tags are plain freeform text, but two prefixes are meaningful to the page list on the left: group: and display:.",
+      "details": [
+        "A tag like group:Location puts this page under a \"Location\" group in the list on the left — group: names can contain a / to nest, e.g. group:Sessions/Arc 1.",
+        "A tag like display:Important shows \"Important\" as a small pill next to this page's title in the list — a page can have more than one display: tag.",
+        "There's no separate place to configure this — the tag's own text is the whole instruction. Any other tag (prefixed or not) is just a normal freeform tag, filterable but otherwise inert."],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-tags"
+    },
+    {
+      "id": "repository.completionStamp",
+      "title": "Task Completion Dates",
+      "summary": "Controls whether checking off a task in View mode adds today's date to the end of the line.",
+      "details": [
+        "On (default): checking a task adds a date, like ✅ 2026-07-27, to the end of the line.",
+        "Off: checking a task just marks it done — nothing is added to the line.",
+        "Unchecking a task always removes its date, regardless of this setting."],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-tags"
+    },
+    {
+      "id": "repository.parent",
+      "title": "Parent Pages",
+      "summary": "Set another page as this one's parent to nest it underneath that page in the list on the left.",
+      "details": [
+        "A page can have one parent. Setting one nests this page under it in the list on the left, however many levels deep.",
+        "This is different from a tag-based group or a Related link — it's a real parent/child relationship between two specific pages, not just a shared label or a loose reference."],
+      "category": "Repository",
+      "href": "../repository/index.html#repository-tags"
     }
   ]
 }

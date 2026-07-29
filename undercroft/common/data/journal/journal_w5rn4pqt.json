@@ -1,0 +1,7 @@
+{
+  "title": "Test",
+  "body": "### Random Tables\n\n| d6  | Endless     |\n| --- | ----------- |\n| 1   | Delirium    |\n| 2   | Desire      |\n| 3   | Despair     |\n| 4   | Death       |\n| 5   | Destruction |\n| 6   | Dream       |\n^random-endless\n\n\n`dice:[[Test#^random-endless]]`",
+  "tags": [],
+  "refs": [],
+  "parentId": ""
+}

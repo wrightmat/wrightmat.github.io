@@ -1102,30 +1102,74 @@ export class DataManager {
   // GM-authored template needs the same visibility grant as the entity
   // itself, or an anonymous share-link viewer's card render 403s on the
   // template fetch even though the entity fetch succeeds.
-  async spotlightToGroup({ groupId, contentType, contentId, templateId = "" } = {}) {
+  // `skipShare` — for a widget type with no real Library record behind it at
+  // all (the Dashboard's own Browser/Clock widgets: their content lives
+  // entirely in this log entry's own `data` payload, not a shareable record
+  // — see server/groups.py's own _INLINE_SPOTLIGHT_KINDS) — there's nothing
+  // to grant view permission ON, so this skips straight to posting the log
+  // entry; the server enforces the same "only these specific kinds may skip
+  // sharing" rule independently, this flag is just what avoids a doomed
+  // share_with_group call for one of them here.
+  // `data` — the inline payload for those same kinds (e.g. Browser's
+  // `{url}`, Clock's own config object). Ignored by the server for any kind
+  // with a real Library record, since that record is always the source of
+  // truth for those.
+  async spotlightToGroup({ groupId, contentType, contentId, templateId = "", skipShare = false, data = undefined } = {}) {
     if (!groupId || !contentType || !contentId) {
       throw new Error("groupId, contentType, and contentId are required");
     }
-    await this.shareWithGroup({ contentType, contentId, groupId, permissions: "view" });
-    if (templateId) {
-      await this.shareWithGroup({ contentType: "templates", contentId: templateId, groupId, permissions: "view" });
+    if (!skipShare) {
+      await this.shareWithGroup({ contentType, contentId, groupId, permissions: "view" });
+      if (templateId) {
+        await this.shareWithGroup({ contentType: "templates", contentId: templateId, groupId, permissions: "view" });
+      }
     }
     return this.createGroupLogEntry({
       groupId,
       type: "spotlight",
-      payload: { kind: contentType, id: contentId, templateId: templateId || undefined },
+      payload: { kind: contentType, id: contentId, templateId: templateId || undefined, data },
     });
+  }
+
+  // Refreshes the `data` payload on an ALREADY-shown inline-kind spotlight
+  // (a clock tick, a Browser URL edit) without re-announcing it as a new
+  // "show to table" — a fresh `spotlight` entry would re-trigger every other
+  // viewer's accept-prompt/Game Log row on every single edit, which is not
+  // what a live content update should do. Followers (spotlight.js's
+  // resolveSpotlightData/resolveIsSpotlighted) treat this the same as
+  // `spotlight` for "is this still active, and with what data" purposes;
+  // only a `spotlight-clear` ends it. Only valid for
+  // server/groups.py's own _INLINE_SPOTLIGHT_KINDS — the server rejects it
+  // for anything else.
+  async updateSpotlightData({ groupId, shareToken = "", kind, id, data } = {}) {
+    if ((!groupId && !shareToken) || !kind || !id) {
+      throw new Error("groupId (or shareToken), kind, and id are required");
+    }
+    return this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-update", payload: { kind, id, data } });
   }
 
   // The other half of "show to table" — posts a `spotlight-clear` entry, so
   // anything reading "what's currently shown" (Now Showing panels, the
   // Combat Tracker's player view, the anonymous share-link's narrow
   // get_item exception) sees nothing again, without deleting log history.
-  async clearSpotlight({ groupId, shareToken = "" } = {}) {
+  // `kind` + `id` scope the clear to just that ONE instance (a widget's own
+  // eye-icon toggling off should only ever affect ITS OWN spotlight, not
+  // every other instance of the same kind shown alongside it — two
+  // Handouts, two Maps, two Clocks — see spotlight.js's own
+  // resolveIsSpotlighted comment). `id` alone with no `kind` doesn't scope
+  // anything (there's nothing to disambiguate an id by), so it's ignored
+  // unless `kind` is also given; `kind` with no `id` clears every instance
+  // of that kind; omitting both is a deliberate "clear whatever's currently
+  // shown, of any kind" (the one legitimate use of that: auth-ui.js's global
+  // "stop showing to the table" header action, which isn't tied to any one
+  // tool/kind/instance).
+  async clearSpotlight({ groupId, shareToken = "", kind = "", id = "" } = {}) {
     if (!groupId && !shareToken) {
       throw new Error("groupId is required");
     }
-    return this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-clear" });
+    let payload;
+    if (kind) payload = id ? { kind, id } : { kind };
+    return this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-clear", payload });
   }
 
   async fetchGroupShare(token) {
